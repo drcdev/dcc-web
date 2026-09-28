@@ -36,6 +36,15 @@ pnpm-debug.log*
 .eslintcache
 *.tsbuildinfo
 
+# Setup check local data
+setup/*.local.json
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
 # Editors
 .vscode/*
 !.vscode/extensions.json

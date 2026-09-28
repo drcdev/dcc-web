@@ -1,0 +1,42 @@
+{
+  "name": "dcc-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.15.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "lint:secrets": "secretlint \"**/*\"",
+    "lint": "eslint .",
+    "typecheck": "astro check",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "verify": "pnpm run lint:secrets && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build && pnpm run test:e2e",
+    "setup:check": "node scripts/setup-check/cli.ts",
+    "setup:dns-snapshot": "node scripts/setup-check/dns-snapshot.ts"
+  },
+  "dependencies": {
+    "astro": "7.3.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.63.0",
+    "@secretlint/secretlint-rule-preset-recommend": "13.0.6",
+    "@types/node": "24.19.0",
+    "cloudflare": "7.2.0",
+    "eslint": "10.11.0",
+    "eslint-plugin-astro": "3.2.1",
+    "secretlint": "13.0.6",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.0",
+    "vitest": "5.0.2",
+    "wrangler": "4.143.0"
+  }
+}
