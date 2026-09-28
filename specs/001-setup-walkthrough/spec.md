@@ -12,7 +12,17 @@
 
 This is the first feature in the repository and a bootstrap slice. The repository currently holds only the constitution, Spec Kit tooling and a `.gitignore`. There is no package manifest, no automated check pipeline, and no local `verify` gate (the single local command that mirrors what CI runs). This slice is responsible for establishing the minimum of each that it needs: the setup check itself must be tested (Principle I), those tests must run locally through the `verify` gate and in CI (Principle II), and branch protection needs at least one real automated check to require.
 
-The constitution fixes the providers this setup targets: the code lives on GitHub, CI runs on GitHub Actions, the site is hosted on Cloudflare (with per-branch previews), and visitor statistics use Cloudflare Web Analytics. The spec below refers to them by role ("the code host", "the hosting provider") so the requirements read independently of any one tool, but the plan must use these providers.
+The constitution fixes the providers this setup targets: the code lives on GitHub, CI runs on GitHub Actions, the site is hosted on Cloudflare (Workers with static assets, built and deployed by Workers Builds, with per-branch preview URLs), DNS moves from Squarespace to Cloudflare, and visitor statistics use Cloudflare Web Analytics. The user stories refer to them by role ("the code host", "the hosting provider"). The setup-item requirements (FR-013 to FR-022) name the specific providers and products that were fixed during clarification, because those names define what the check confirms.
+
+## Clarifications
+
+### Session 2026-09-28
+
+- Q: How should major-change pull requests get an approval that GitHub will count, given that GitHub does not let an author approve their own pull request? → A: Machine account. Agents open pull requests as a separate GitHub machine user (for example `dcc-bot`) with write access, and Don is the required code-owner reviewer.
+- Q: Which Cloudflare hosting product and deploy trigger should the site use for production and per-branch previews? → A: Cloudflare Workers with static assets, deployed by Cloudflare's Git integration (Workers Builds). Main deploys to production and every other branch gets a preview URL. No Cloudflare deploy token is stored in GitHub.
+- Q: Should this slice move the whole domain's DNS to Cloudflare now, or keep DNS where it is until launch? → A: Move the nameservers to Cloudflare now. The domain is registered and DNS-hosted at Squarespace today. Squarespace stays as registrar only (Cloudflare Registrar does not sell .ca). Every existing record is copied to Cloudflare and checked against the originals before the switch, and Ghost keeps working unchanged.
+- Q: What subdomain should the pre-launch review address use? → A: `new.doncoleman.ca`.
+- Q: How should visitor statistics be set up in this slice? → A: Cloudflare Web Analytics, turned on now for `new.doncoleman.ca` with automatic (script-free) setup, because the zone will be on Cloudflare. The check confirms it is on, and production counting carries over at launch.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -69,12 +79,13 @@ The setup is written down in the repository as plain-language documentation: eac
 
 ### Edge Cases
 
-- **Existing DNS records**: Moving DNS management to the hosting provider must first copy every existing record (the Ghost site, email records such as MX, SPF, DKIM and DMARC, and any verification records). The walkthrough must have Don compare the imported records against the current ones before changing nameservers, so the live site and email keep working.
+- **Existing DNS records**: Before the nameservers at Squarespace are changed to Cloudflare's, every existing record at Squarespace (the Ghost site, email records such as MX, SPF, DKIM and DMARC, and any verification records) must be copied to Cloudflare. The walkthrough must have Don compare the imported records against the Squarespace originals, and they must match, before the nameservers change, so the live site and email keep working.
+- **Squarespace-only records**: Some records may be managed by Squarespace itself (for example its own defaults or domain-connect entries). The comparison must flag any record that exists at Squarespace but not at Cloudflare, and Don must decide on each one before the switch.
 - **Nameserver change in progress**: DNS delegation can take hours to take effect. The check reports this as "pending" with an explanation, not as missing.
 - **Live domain accidentally switched**: If the check finds the live domain pointing at the new site instead of the Ghost site before launch, it reports this as a problem, not as complete.
 - **Temporary address exposed to search engines**: The temporary review address must not be indexed; the check reports if it is publicly indexable.
 - **Secret names drift**: If the pipeline expects a secret name that is not documented, or the document lists one the pipeline no longer uses, the check or its tests flag the mismatch.
-- **Sole maintainer approval**: The code host may not let an author approve their own pull request. If Don is both the author (through the agents working as him) and the required approver, major changes could be blocked. The walkthrough must set up approval in a way that works for a single maintainer (see Assumptions).
+- **Sole maintainer approval**: GitHub does not let an author approve their own pull request. Agents therefore open pull requests as a separate machine account, so Don's review counts. If a pull request is opened from Don's own account by mistake, the check or the walkthrough must explain that Don's approval will not count, and the pull request must be reopened from the machine account.
 - **Partially configured branch protection**: If protection exists but does not require the automated checks, or allows bypass, the check reports exactly which rule is missing.
 - **Check run in CI versus locally**: Provider-side items that need Don's credentials may not be checkable in CI; the check must say which items it skipped and why, and must not fail CI because of them unless CI is meant to verify them.
 
@@ -102,16 +113,16 @@ The setup is written down in the repository as plain-language documentation: eac
 
 **Setup items covered**
 
-- **FR-013**: *Code repository*: the main branch MUST be protected so that changes merge only through pull requests, only when the required automated checks pass, and without force-pushes, deletion or admin bypass.
-- **FR-014**: *Major-change approval*: a pull request identified as a major change (as defined by constitution Principle III) MUST NOT be mergeable without Don's explicit approval; other pull requests may merge once checks pass.
+- **FR-013**: *Code repository*: the main branch MUST be protected so that changes merge only through pull requests, only when the required automated checks pass, and without force-pushes, deletion or admin bypass. Agents MUST open pull requests as a dedicated GitHub machine account (for example `dcc-bot`) with write access, separate from Don's account. The check MUST confirm that the machine account has access.
+- **FR-014**: *Major-change approval*: a pull request identified as a major change (as defined by constitution Principle III) MUST NOT be mergeable without Don's explicit approval, given as a required code-owner review from Don's account; other pull requests may merge once checks pass.
 - **FR-015**: *Automated check pipeline*: the repository MUST have a pipeline that runs on every pull request and on main, runs the same `verify` gate that runs locally, and reports a named check that branch protection requires.
 - **FR-016**: *Local verify gate*: the repository MUST have a single local `verify` command that mirrors what the pipeline runs. For this slice it covers at least the setup check's tests, type checks and linting; later features extend it (build, end-to-end, accessibility, performance) without replacing it.
-- **FR-017**: *Hosting*: a hosting account and a site project MUST exist, connected to the repository, deploying main to production and every other branch to its own preview link.
+- **FR-017**: *Hosting*: a Cloudflare account and a Worker with static assets MUST exist, connected to the repository through Workers Builds. Workers Builds MUST deploy main to production and upload every other branch as a version with its own preview URL. Because main is protected (FR-013), production only ever deploys code that has passed the required checks.
 - **FR-018**: *Deployable placeholder*: so that previews can be confirmed, the slice MUST deploy a minimal placeholder page; the real site is built by later features.
-- **FR-019**: *DNS*: the domain's DNS MUST be managed by the hosting provider, with all existing records preserved so the live domain still serves the current Ghost site and email still works.
-- **FR-020**: *Temporary address*: a temporary review address (a subdomain of the live domain) MUST serve the new site's production deployment over HTTPS, and MUST ask search engines not to index it.
-- **FR-021**: *Pipeline variables and secrets*: every variable and secret the pipeline needs for this slice MUST be defined by name in the pipeline's secret store, documented by name and purpose, and confirmed by the check without exposing values. Deployment credentials MUST be scoped to the minimum permissions needed.
-- **FR-022**: *Visitor statistics*: privacy-respecting visitor statistics (no cookies, no personal data, no third-party tracking scripts) MUST be enabled for the new site, and the check MUST confirm they are enabled.
+- **FR-019**: *DNS*: in this slice, the domain's nameservers MUST move from Squarespace to Cloudflare, with Squarespace kept as registrar only. Every existing record MUST be copied to Cloudflare and checked against the Squarespace originals before the nameserver switch, so the live domain still serves the current Ghost site, unchanged, and email still works.
+- **FR-020**: *Temporary address*: the review address `new.doncoleman.ca` MUST serve the new site's production deployment over HTTPS as a custom domain on the Worker, and MUST ask search engines not to index it.
+- **FR-021**: *Pipeline variables and secrets*: every variable and secret the pipeline needs for this slice MUST be defined by name in the pipeline's secret store, documented by name and purpose, and confirmed by the check without exposing values. Deployment credentials MUST be scoped to the minimum permissions needed. Deployment runs in Workers Builds, so no Cloudflare deploy token is stored in GitHub. The machine account's credential lives only in the agent's local sign-in or a gitignored file, never in the repository.
+- **FR-022**: *Visitor statistics*: Cloudflare Web Analytics MUST be turned on for `new.doncoleman.ca` using automatic setup (no script added to the page, no cookies, no personal data), and the check MUST confirm it is on. Production counting carries over to the live domain at launch.
 
 **Documentation and secrets**
 
@@ -140,13 +151,13 @@ The setup is written down in the repository as plain-language documentation: eac
 
 ## Assumptions
 
-- **Providers are fixed by the constitution**: GitHub for code (repository `drcdev/dcc-web` already exists), GitHub Actions for the pipeline, Cloudflare for hosting, DNS, previews and Web Analytics. No new provider is introduced.
+- **Providers are fixed by the constitution**: GitHub for code (repository `drcdev/dcc-web` already exists), GitHub Actions for the pipeline, Cloudflare for hosting (Workers with static assets through Workers Builds), DNS, previews and Web Analytics. Squarespace, the existing registrar, stays as registrar only. No new provider is introduced.
 - **Walkthrough form**: The walkthrough is run by Claude Code in Don's terminal session (the agent reads the documented steps, pauses for Don, then runs the step's confirmation). Chosen because Don already works through Claude Code and the constitution expects agents to do the building. A plain document is the fallback for doing it without an agent (Story 3).
-- **Temporary address**: Assumed to be a subdomain such as `new.doncoleman.ca`; the exact name is chosen during the walkthrough and recorded in the setup document.
+- **Temporary address**: `new.doncoleman.ca`, recorded in the setup document.
 - **Marking a change as major**: A pull request is treated as major when it carries a "major" label or touches paths that are major by definition (CI, deployment and infrastructure configuration, dependency manifests, the constitution). The plan chooses the enforcement mechanism, preferring the code host's own features (for example code owners and required reviews) before custom automation.
-- **Single-maintainer approval**: Because the code host may not count an author's approval of their own pull request, pull requests are assumed to be opened by an agent identity (or bot) distinct from Don's account, so Don's review counts. If that is not possible, the plan must name the fallback and its trade-off. This is the main open risk.
-- **Current DNS host and Ghost setup**: Don has admin access to the domain registrar and to the current Ghost hosting, and the existing DNS records can be exported or listed.
-- **Cloudflare plan**: The free plan covers DNS, per-branch previews, the temporary address and Web Analytics.
+- **Single-maintainer approval**: GitHub does not count an author's approval of their own pull request, so agents open pull requests as a dedicated GitHub machine account (for example `dcc-bot`, one free machine account per person under GitHub's terms). Don is the required code-owner reviewer for major changes.
+- **Current DNS host and Ghost setup**: The domain is registered and DNS-hosted at Squarespace today. Don has admin access to Squarespace and to the current Ghost hosting, and the existing DNS records can be exported or listed from Squarespace.
+- **Cloudflare plan**: The free plan covers DNS, Workers static assets, Workers Builds with preview URLs, the temporary address and Web Analytics.
 - **Package manager and tooling**: The plan chooses one package manager and the minimal tooling needed for the check, its tests, type checks and linting, consistent with the constitution's TypeScript-strict constraint. Adding these is a major change reviewed on this slice's pull request.
 - **This slice is itself a major change** (it adds CI, deployment and infrastructure configuration and dependencies), so its own pull request needs Don's approval after he views the preview.
 
