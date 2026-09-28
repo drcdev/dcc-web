@@ -301,6 +301,44 @@ describe("setup-check/cli main", () => {
   });
 });
 
+describe("setup-check/cli main redacts a secret leaked through a thrown error (FR-005, FR-030, partial)", () => {
+  it("never prints a CLOUDFLARE_API_TOKEN value that a check's thrown Error message contains, in --json or human output", async () => {
+    const canary = `canary-secret-${Math.random().toString(36).slice(2)}-value`;
+    const items = [
+      fakeItem("cloudflare-zone", 3, async () => {
+        throw new Error(`Cloudflare rejected token ${canary}`);
+      }),
+    ];
+    const ctx = fakeCtx({ env: { get: vi.fn((name: string) => (name === "CLOUDFLARE_API_TOKEN" ? canary : undefined)), has: vi.fn(() => true) } });
+
+    let stdout: string[] = [];
+    let stderr: string[] = [];
+    const jsonCode = await main(["--json"], {
+      items,
+      ctx,
+      stdout: (text) => stdout.push(text),
+      stderr: (text) => stderr.push(text),
+    });
+    expect(jsonCode).toBe(1);
+    expect(stdout.join("")).not.toContain(canary);
+    expect(stderr.join("")).not.toContain(canary);
+    expect(stdout.join("")).toContain("[redacted]");
+
+    stdout = [];
+    stderr = [];
+    const humanCode = await main([], {
+      items,
+      ctx,
+      stdout: (text) => stdout.push(text),
+      stderr: (text) => stderr.push(text),
+    });
+    expect(humanCode).toBe(1);
+    expect(stdout.join("")).not.toContain(canary);
+    expect(stderr.join("")).not.toContain(canary);
+    expect(stdout.join("")).toContain("[redacted]");
+  });
+});
+
 describe("setup-check/cli per-call timeout", () => {
   beforeEach(() => {
     vi.useFakeTimers();

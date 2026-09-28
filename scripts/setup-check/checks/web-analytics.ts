@@ -48,7 +48,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       return missing(
         ITEM,
         `No Web Analytics site exists for ${reviewHost} yet.`,
-        `Cloudflare dashboard → Analytics & Logs → Web Analytics → Add a site → ${reviewHost} → Enable (automatic setup).`,
+        `Add a site for ${reviewHost} with automatic setup: Cloudflare dashboard → Analytics & Logs → Web Analytics → Add a site → Enable.`,
       );
     }
     if (!site.autoInstall) {

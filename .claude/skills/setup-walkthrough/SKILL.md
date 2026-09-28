@@ -34,6 +34,9 @@ confirmation logic (FR-010): every "is this step done?" question is answered by 
        needed now, and offer to continue with steps that do not depend on it.
      - `missing` or `could-not-check` → show the `summary`, `details` and `nextAction`; stay on
        this step and pause again with the same three answers. There is no retry limit.
+   - At every pause (every `AskUserQuestion`, FR-009): the skill runs no further confirmations,
+     shows no later step's instructions, and prepares nothing for later steps until Don answers.
+     Nothing happens beyond the step being shown until his answer comes back.
    - On `Skip for now`: move to the next step; steps that depend on this one are shown as
      blocked until it is done.
    - On `Stop here`: print how to resume (`/setup-walkthrough`) and end. Nothing is stored —
@@ -71,20 +74,24 @@ Never run: `cat .env`, `printenv`, `gh auth token`, or any command with a `--ver
 `--debug` flag.
 
 Commands that change a provider's settings are **shown for Don to run himself** — the skill never
-runs them. For example, shown for Don to run when he reaches the `github-main-protection` step:
+runs them. Each example below is shown for Don to run himself when he reaches the matching step:
+
+Shown for Don to run himself at the `github-main-protection` step:
 
 ```sh
 gh api -X POST repos/drcdev/dcc-web/rulesets --input setup/github-ruleset.json
 ```
 
-or, when he reaches the `github-major-label` step:
+Shown for Don to run himself at the `github-major-label` step:
 
 ```sh
 gh label create major-change
 ```
 
-or, when this slice's pull request is ready to go to production, shown as what Workers Builds
-runs on `main` (never run by the skill itself):
+Workers Builds deploys automatically once this slice's pull request has merged to main, so the
+skill never shows or runs a deploy command as part of the normal walkthrough. If Don ever needs
+to trigger a manual deploy himself (for example, to recover from a stuck Workers Builds run),
+shown for Don to run himself:
 
 ```sh
 pnpm exec wrangler deploy

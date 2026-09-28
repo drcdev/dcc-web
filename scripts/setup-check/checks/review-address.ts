@@ -58,7 +58,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       return missing(
         ITEM,
         `${reviewHost} is not set up as a Custom Domain on ${workerName} yet.`,
-        `Cloudflare dashboard → Workers & Pages → ${workerName} → Settings → Domains & Routes → Add Custom Domain → ${reviewHost}.`,
+        `Add a Custom Domain for ${reviewHost}: Cloudflare dashboard → Workers & Pages → ${workerName} → Settings → Domains & Routes → Add Custom Domain.`,
       );
     }
 

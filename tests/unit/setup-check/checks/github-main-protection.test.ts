@@ -67,6 +67,35 @@ describe("checks/github-main-protection", () => {
     expect(result.docs).toBe("docs/setup.md#github-main-protection");
   });
 
+  it("is missing with 'protection active on main' when the ruleset's conditions do not cover refs/heads/main", async () => {
+    // Every other rule is fully compliant (identical to ruleset-full.json) —
+    // only the branch coverage is wrong — so this isolates the new logic
+    // added for spec setup item 14's "protection active on main" gap.
+    const full = loadFixture("github", "ruleset-wrong-branch");
+    const ctx = fakeProviderContext({
+      fs: { readJson: (() => CONFIG) as never },
+      github: { api: githubApi(RULESET_SUMMARY, full) },
+    });
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("missing");
+    expect(result.details).toEqual(["protection active on main"]);
+  });
+
+  it("is missing with 'protection active on main' when the ruleset's conditions explicitly exclude refs/heads/main", async () => {
+    const full = loadFixture("github", "ruleset-excludes-main");
+    const ctx = fakeProviderContext({
+      fs: { readJson: (() => CONFIG) as never },
+      github: { api: githubApi(RULESET_SUMMARY, full) },
+    });
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("missing");
+    expect(result.details).toContain("protection active on main");
+  });
+
   it("is could-not-check when the gh api call fails", async () => {
     const ctx = fakeProviderContext({
       fs: { readJson: (() => CONFIG) as never },

@@ -28,6 +28,19 @@ const ITEM_IDS = [
   "web-analytics",
 ];
 
+// Single-section extractor (distinct from extractSections below), matching
+// tests/unit/setup/docs-dns.test.ts's helper of the same purpose — used for
+// the two edge-case content checks below, which each target one section.
+function extractSection(markdown: string, id: string): string {
+  const pattern = new RegExp(`^##\\s+.*\\{#${id}\\}\\s*$`, "m");
+  const match = pattern.exec(markdown);
+  if (!match) return "";
+  const start = match.index;
+  const rest = markdown.slice(start + match[0].length);
+  const nextHeading = /^##\s+/m.exec(rest);
+  return rest.slice(0, nextHeading ? nextHeading.index : undefined);
+}
+
 function extractSections(markdown: string): { id: string; body: string }[] {
   const headingPattern = /^##\s+.*\{#([a-z0-9-]+)\}\s*$/gm;
   const matches = [...markdown.matchAll(headingPattern)];
@@ -68,5 +81,24 @@ describe("docs/setup.md structure", () => {
 
     expect(whatIndex).toBeLessThan(whereIndex);
     expect(whereIndex).toBeLessThan(howIndex);
+  });
+});
+
+// spec.md Edge Cases: "Sole maintainer approval" and "Temporary address
+// exposed to search engines" (T140, FR-028 partial).
+describe("docs/setup.md edge-case content", () => {
+  it("github-machine-account explains that Don's approval does not count on a pull request he authored, and that it must be reopened from dcc-bot", () => {
+    const section = extractSection(contents, "github-machine-account").toLowerCase();
+    expect(section).toMatch(/does not count/);
+    expect(section).toContain("authored");
+    expect(section).toMatch(/reopen/);
+    expect(section).toContain("dcc-bot");
+  });
+
+  it("review-address-noindex tells Don how to ask search engines to remove already-indexed pages, and never to block crawling with robots.txt", () => {
+    const section = extractSection(contents, "review-address-noindex").toLowerCase();
+    expect(section).toMatch(/search console|removal tool|request.*removal|remove.*already indexed/);
+    expect(section).toContain("robots.txt");
+    expect(section).toMatch(/never block crawling|must not.*block crawling|do not block crawling/);
   });
 });

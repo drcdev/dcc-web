@@ -40,7 +40,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     return missing(
       ITEM,
       ".github/CODEOWNERS does not exist.",
-      "This slice's pull request adds .github/CODEOWNERS; confirm it has merged to main.",
+      "Confirm this slice's pull request, which adds .github/CODEOWNERS, has merged to main.",
     );
   }
 

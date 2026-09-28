@@ -29,7 +29,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     return missing(
       ITEM,
       "Could not read the Cloudflare zone.",
-      "CLOUDFLARE_API_TOKEN is not set in .env. Create a read-only token (docs/setup.md#local-credentials) and add it to .env.",
+      "Create a read-only token (docs/setup.md#local-credentials) and add it to .env as CLOUDFLARE_API_TOKEN.",
     );
   }
   const zoneId = ctx.env.get("CLOUDFLARE_ZONE_ID");
@@ -37,7 +37,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     return missing(
       ITEM,
       "Could not read the Cloudflare zone.",
-      "CLOUDFLARE_ZONE_ID is not set in .env (docs/setup.md#local-credentials).",
+      "Add CLOUDFLARE_ZONE_ID to .env (docs/setup.md#local-credentials).",
     );
   }
 
@@ -71,7 +71,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     return missing(
       ITEM,
       `Public nameservers for ${zoneName} still point at Squarespace.`,
-      `At Squarespace's domain settings for ${zoneName}, change the nameservers to the two Cloudflare assigns for the zone, having read the rollback procedure first.`,
+      `Change the nameservers at Squarespace's domain settings for ${zoneName} to the two Cloudflare assigns for the zone, having read the rollback procedure first.`,
       [...publicAnswers],
     );
   } catch (err) {

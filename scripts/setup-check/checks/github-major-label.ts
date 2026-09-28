@@ -40,7 +40,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       return missing(
         ITEM,
         `Major-change marking is not fully set up: ${problems.join("; ")}.`,
-        `Repository → Labels → create ${LABEL_NAME}. Repository Settings → General → turn on Allow auto-merge.`,
+        `Create the "${LABEL_NAME}" label (Repository → Labels) and turn on auto-merge (Repository Settings → General → Allow auto-merge).`,
         problems,
       );
     }

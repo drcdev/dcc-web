@@ -42,7 +42,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       return missing(
         ITEM,
         `${missingPaths.join(" and ")} ${missingPaths.length > 1 ? "are" : "is"} missing from main.`,
-        "This slice's pull request adds these workflow files; confirm it has merged to main.",
+        "Confirm this slice's pull request, which adds these workflow files, has merged to main.",
         missingPaths,
       );
     }

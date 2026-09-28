@@ -31,7 +31,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       return missing(
         ITEM,
         `GitHub ${off.join(" and ")} ${off.length > 1 ? "are" : "is"} not enabled for this repository.`,
-        "Repository Settings → Code security → turn on Secret scanning and Push protection.",
+        "Turn on Secret scanning and Push protection: Repository Settings → Code security.",
       );
     }
 

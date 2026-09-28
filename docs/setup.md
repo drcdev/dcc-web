@@ -204,6 +204,12 @@ Create a GitHub account named `dcc-bot` (the name recorded in `setup/config.json
 keyring (`gh auth login`). Switch the active `gh` account back to Don afterwards (`gh auth
 switch`) — the check reads as Don.
 
+Don is the sole maintainer, so his approval does not count as an independent review on a pull
+request he authored himself — GitHub does not let an author approve their own pull request, and
+this setup does not try to work around that. If an agent ever opens a pull request under Don's
+own account by mistake, it must be closed and reopened from `dcc-bot` before Don can approve it;
+a pull request authored by Don cannot be merged through the normal review gate.
+
 **How it will be confirmed**
 `pnpm setup:check --item github-machine-account` reports complete when the machine account's
 collaborator permission is write or maintain, and not admin.
@@ -390,6 +396,16 @@ The review address must never be indexed by search engines while the real site i
 **Where to do it**
 Nothing new to do here; `public/_headers` (part of this slice) sends `X-Robots-Tag: noindex` on
 every path. This item confirms it is actually being served.
+
+Never block crawling with `robots.txt` (a `Disallow` rule in `public/robots.txt`) as a substitute
+for this — a crawl block can hide the no-index header's problem instead of fixing it, and search
+engines that already indexed a page can still show it in results even when it is disallowed. If
+`new.doncoleman.ca` was ever indexed before this header was in place, ask for those pages to be
+removed directly: submit the URL through Google Search Console's Removals tool (and the
+equivalent tool for any other search engine that indexed it), rather than waiting for the
+crawler to notice the `noindex` header on its own. This is a manual step outside `pnpm
+setup:check`'s reach — the check can only confirm the header is being served, not that a page
+already in a search index has been removed from it.
 
 **How it will be confirmed**
 `pnpm setup:check --item review-address-noindex` reports complete when the response from

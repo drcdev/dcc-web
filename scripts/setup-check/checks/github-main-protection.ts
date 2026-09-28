@@ -21,13 +21,35 @@ interface RulesetRule {
   parameters?: Record<string, unknown>;
 }
 
+interface RefNameCondition {
+  include?: string[];
+  exclude?: string[];
+}
+
+interface RulesetConditions {
+  ref_name?: RefNameCondition;
+}
+
 interface FullRuleset {
   id: number;
   name: string;
   target: string;
   enforcement: string;
+  conditions?: RulesetConditions;
   rules: RulesetRule[];
   bypass_actors: unknown[];
+}
+
+/** True when the ruleset's ref_name condition includes refs/heads/main (or the
+ * ~DEFAULT_BRANCH shorthand) and does not explicitly exclude it. */
+function coversMain(actual: FullRuleset | null): boolean {
+  const refName = actual?.conditions?.ref_name;
+  if (!refName) return false;
+  const include = refName.include ?? [];
+  const exclude = refName.exclude ?? [];
+  const included = include.includes("refs/heads/main") || include.includes("~DEFAULT_BRANCH");
+  const excluded = exclude.includes("refs/heads/main");
+  return included && !excluded;
 }
 
 function requiredContexts(rule: RulesetRule | undefined): string[] {
@@ -40,7 +62,7 @@ function requiredContexts(rule: RulesetRule | undefined): string[] {
 // when `actual` is null). Order matches the closed list in the spec.
 function evaluateGaps(actual: FullRuleset | null): string[] {
   const gaps: string[] = [];
-  if (actual?.enforcement !== "active") gaps.push("protection active on main");
+  if (actual?.enforcement !== "active" || !coversMain(actual)) gaps.push("protection active on main");
 
   const rules = actual?.rules ?? [];
   const pr = rules.find((r) => r.type === "pull_request");
