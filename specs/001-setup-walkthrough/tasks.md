@@ -276,7 +276,7 @@ audited without the walkthrough.
 it with purpose, location and confirmation, and that no secret value appears anywhere in the
 repository.
 
-- [ ] T122 [US3] Run quickstart §9 (Story 3 acceptance scenario 1): open `docs/setup.md` and confirm one section per check item with purpose, where, how confirmed, constitution principle and secret names only, matching the `pnpm run verify` drift test's result
+- [x] T122 [US3] Run quickstart §9 (Story 3 acceptance scenario 1): open `docs/setup.md` and confirm one section per check item with purpose, where, how confirmed, constitution principle and secret names only, matching the `pnpm run verify` drift test's result
 - [ ] T123 [US3] Run quickstart's negative check and Story 3 acceptance scenario 2 (SC-004): run `pnpm run lint:secrets` and manually scan the repository for any committed secret-like value; review the `/setup-walkthrough` transcript from T109, the GitHub Actions logs and the Workers Builds logs for any secret value; confirm none are found and only secret/variable names appear [PREVIEW-CHECK]
 
 **Checkpoint**: The setup is fully documented and auditable without the walkthrough or the agent.
@@ -294,7 +294,7 @@ phase is in place.
 - [ ] T127 As `dcc-bot`, open a non-major pull request with green checks and confirm it is mergeable (auto-merge) without Don's review (SC-006, quickstart §7.3) [PREVIEW-CHECK]
 - [ ] T128 Run `pnpm setup:check` live and confirm "18 of 18 complete" with exit code 0 (quickstart §8); record the elapsed time from the first walkthrough step to this result, minus pending/PR-review wait time, and confirm it is under 90 minutes (SC-001) [PREVIEW-CHECK]
 - [ ] T129 [P] Confirm added running cost is $0/month (SC-007) by reviewing the Cloudflare and GitHub plan tiers used (Free plan zone/Workers/Workers Builds/Web Analytics, public-repo GitHub Actions, one free `dcc-bot` machine account) and record the result as a comment on this slice's merged pull request [PREVIEW-CHECK]
-- [ ] T130 Run `pnpm run verify` one final time locally and confirm secretlint, ESLint, `astro check`, Vitest, `astro build` and Playwright (axe + page-budget) all pass together
+- [x] T130 Run `pnpm run verify` one final time locally and confirm secretlint, ESLint, `astro check`, Vitest, `astro build` and Playwright (axe + page-budget) all pass together
 
 ---
 
