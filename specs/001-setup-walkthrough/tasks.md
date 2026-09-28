@@ -176,24 +176,24 @@ value.
 missing with a next action. Complete one item by hand and confirm only that item flips to
 complete.
 
-- [ ] T052 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/local-tools.test.ts` (complete when Node ≥ 24, pnpm version matches `packageManager`, `gh` signed in as Don; missing/could-not-check cases from fixtures); confirm it **fails**
-- [ ] T053 [US1] Implement `scripts/setup-check/checks/local-tools.ts` — makes T052 pass
-- [ ] T054 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/local-credentials.test.ts` (`.env` has every required name non-empty; Cloudflare token-verify reports active; missing/could-not-check cases); confirm it **fails**
-- [ ] T055 [US1] Implement `scripts/setup-check/checks/local-credentials.ts` — makes T054 pass
-- [ ] T056 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/cloudflare-zone.test.ts` (zone `doncoleman.ca` exists on the Free plan, id equals `CLOUDFLARE_ZONE_ID`); confirm it **fails**
-- [ ] T057 [US1] Implement `scripts/setup-check/checks/cloudflare-zone.ts` — makes T056 pass
-- [ ] T058 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/dns-records-parity.test.ts` (every `keep` record matches per FR-035/FR-036 normalisation including `proxied: false` and exact TTL; an undecided record keeps the item `missing`; Squarespace-only unmatched records are flagged; records present in the Cloudflare zone but not in the baseline are listed in `details` for Don to add or delete; a baseline with no records or no `originalNameservers` keeps the item `missing` with "record the Squarespace baseline first", so parity can never pass vacuously before the nameserver switch); confirm it **fails**
-- [ ] T059 [US1] Implement `scripts/setup-check/checks/dns-records-parity.ts` — makes T058 pass
-- [ ] T060 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/dns-nameservers.test.ts` (public NS equal the zone's assigned nameservers and zone status active → complete; delegation in progress → pending; item stays `missing` with "complete DNS parity first" while `dns-records-parity` is not complete, per FR-037); confirm it **fails**
-- [ ] T061 [US1] Implement `scripts/setup-check/checks/dns-nameservers.ts` — makes T060 pass
-- [ ] T062 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/live-domain-ghost.test.ts` (apex/`www` A/AAAA/CNAME match the recorded Ghost baseline and every kept MX/email TXT record resolves as in the baseline → complete; any difference → `missing` with a "Problem:" summary per FR-038); confirm it **fails**
-- [ ] T063 [US1] Implement `scripts/setup-check/checks/live-domain-ghost.ts` — makes T062 pass
-- [ ] T064 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/cloudflare-worker.test.ts` (Worker `dcc-web` exists with `workers.dev` and preview URLs enabled); confirm it **fails**
-- [ ] T065 [US1] Implement `scripts/setup-check/checks/cloudflare-worker.ts` — makes T064 pass
-- [ ] T066 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/github-machine-account.test.ts` (`dcc-bot` collaborator permission is write or maintain, not admin, per FR-013); confirm it **fails**
-- [ ] T067 [US1] Implement `scripts/setup-check/checks/github-machine-account.ts` — makes T066 pass
-- [ ] T068 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/github-secret-scanning.test.ts` (`security_and_analysis.secret_scanning` and `…secret_scanning_push_protection` both `enabled`); confirm it **fails**
-- [ ] T069 [US1] Implement `scripts/setup-check/checks/github-secret-scanning.ts` — makes T068 pass
+- [x] T052 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/local-tools.test.ts` (complete when Node ≥ 24, pnpm version matches `packageManager`, `gh` signed in as Don; missing/could-not-check cases from fixtures); confirm it **fails**
+- [x] T053 [US1] Implement `scripts/setup-check/checks/local-tools.ts` — makes T052 pass
+- [x] T054 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/local-credentials.test.ts` (`.env` has every required name non-empty; Cloudflare token-verify reports active; missing/could-not-check cases); confirm it **fails**
+- [x] T055 [US1] Implement `scripts/setup-check/checks/local-credentials.ts` — makes T054 pass
+- [x] T056 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/cloudflare-zone.test.ts` (zone `doncoleman.ca` exists on the Free plan, id equals `CLOUDFLARE_ZONE_ID`); confirm it **fails**
+- [x] T057 [US1] Implement `scripts/setup-check/checks/cloudflare-zone.ts` — makes T056 pass
+- [x] T058 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/dns-records-parity.test.ts` (every `keep` record matches per FR-035/FR-036 normalisation including `proxied: false` and exact TTL; an undecided record keeps the item `missing`; Squarespace-only unmatched records are flagged; records present in the Cloudflare zone but not in the baseline are listed in `details` for Don to add or delete; a baseline with no records or no `originalNameservers` keeps the item `missing` with "record the Squarespace baseline first", so parity can never pass vacuously before the nameserver switch); confirm it **fails**
+- [x] T059 [US1] Implement `scripts/setup-check/checks/dns-records-parity.ts` — makes T058 pass
+- [x] T060 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/dns-nameservers.test.ts` (public NS equal the zone's assigned nameservers and zone status active → complete; delegation in progress → pending; item stays `missing` with "complete DNS parity first" while `dns-records-parity` is not complete, per FR-037); confirm it **fails**
+- [x] T061 [US1] Implement `scripts/setup-check/checks/dns-nameservers.ts` — makes T060 pass
+- [x] T062 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/live-domain-ghost.test.ts` (apex/`www` A/AAAA/CNAME match the recorded Ghost baseline and every kept MX/email TXT record resolves as in the baseline → complete; any difference → `missing` with a "Problem:" summary per FR-038); confirm it **fails**
+- [x] T063 [US1] Implement `scripts/setup-check/checks/live-domain-ghost.ts` — makes T062 pass
+- [x] T064 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/cloudflare-worker.test.ts` (Worker `dcc-web` exists with `workers.dev` and preview URLs enabled); confirm it **fails**
+- [x] T065 [US1] Implement `scripts/setup-check/checks/cloudflare-worker.ts` — makes T064 pass
+- [x] T066 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/github-machine-account.test.ts` (`dcc-bot` collaborator permission is write or maintain, not admin, per FR-013); confirm it **fails**
+- [x] T067 [US1] Implement `scripts/setup-check/checks/github-machine-account.ts` — makes T066 pass
+- [x] T068 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/github-secret-scanning.test.ts` (`security_and_analysis.secret_scanning` and `…secret_scanning_push_protection` both `enabled`); confirm it **fails**
+- [x] T069 [US1] Implement `scripts/setup-check/checks/github-secret-scanning.ts` — makes T068 pass
 - [ ] T070 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/workers-builds.test.ts` (latest `main` commit has a successful Workers Builds run; latest open PR head has one with a preview URL; `pending` while queued/running); confirm it **fails**
 - [ ] T071 [US1] Implement `scripts/setup-check/checks/workers-builds.ts` — makes T070 pass
 - [ ] T072 [P] [US1] Write Vitest test `tests/unit/setup-check/checks/github-ci-workflow.test.ts` (`ci.yml` and `major-change.yml` exist on `main`; latest `verify` run on `main` succeeded); confirm it **fails**
