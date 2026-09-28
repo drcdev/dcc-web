@@ -1,0 +1,140 @@
+import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { setupItems } from "../../../scripts/setup-check/items.ts";
+import { secretManifest } from "../../../scripts/setup-check/secrets.ts";
+
+const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
+
+function read(path: string): string {
+  return readFileSync(`${repoRoot}${path}`, "utf-8");
+}
+
+function stripJsonComments(text: string): string {
+  return text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+}
+
+const docsContents = read("docs/setup.md");
+const docsAnchors = [...docsContents.matchAll(/^##\s+.*\{#([a-z0-9-]+)\}\s*$/gm)].map((m) => m[1]!);
+
+describe("registry <-> docs/setup.md one-to-one coverage (FR-023)", () => {
+  it("every registry item has exactly one docs section", () => {
+    for (const item of setupItems) {
+      const count = docsAnchors.filter((id) => id === item.id).length;
+      expect(count, `expected exactly one docs/setup.md section for ${item.id}, found ${count}`).toBe(1);
+    }
+  });
+
+  it("every docs section has a matching registry item (no extra sections)", () => {
+    const itemIds = new Set(setupItems.map((i) => i.id));
+    for (const anchor of docsAnchors) {
+      expect(itemIds.has(anchor), `docs/setup.md#${anchor} has no matching registry item`).toBe(true);
+    }
+  });
+});
+
+describe("secret/variable names <-> manifest drift", () => {
+  const manifestNames = new Set(secretManifest.map((s) => s.name));
+
+  it("every secret/variable referenced in .github/workflows/*.yml exists in the manifest (GITHUB_TOKEN exempt)", () => {
+    const ci = read(".github/workflows/ci.yml");
+    const major = read(".github/workflows/major-change.yml");
+    for (const contents of [ci, major]) {
+      const refs = [...contents.matchAll(/secrets\.([A-Z0-9_]+)/g)].map((m) => m[1]!);
+      for (const name of refs) {
+        if (name === "GITHUB_TOKEN") continue;
+        expect(manifestNames.has(name), `workflow references unknown secret ${name}`).toBe(true);
+      }
+    }
+  });
+
+  it("every name in wrangler.jsonc's vars (if any) exists in the manifest", () => {
+    const config = JSON.parse(stripJsonComments(read("wrangler.jsonc"))) as { vars?: Record<string, unknown> };
+    for (const name of Object.keys(config.vars ?? {})) {
+      expect(manifestNames.has(name), `wrangler.jsonc references unknown var ${name}`).toBe(true);
+    }
+  });
+
+  it("every name in .env.example exists in the manifest", () => {
+    const contents = read(".env.example");
+    const names = contents
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0 && !l.startsWith("#"))
+      .map((l) => l.replace(/=$/, ""));
+    for (const name of names) {
+      expect(manifestNames.has(name), `.env.example references unknown name ${name}`).toBe(true);
+    }
+  });
+
+  it("every local-env manifest entry appears in .env.example", () => {
+    const contents = read(".env.example");
+    for (const secret of secretManifest.filter((s) => s.store === "local-env")) {
+      expect(contents, `.env.example is missing ${secret.name}`).toContain(`${secret.name}=`);
+    }
+  });
+
+  it("every github-actions manifest entry is referenced by a workflow", () => {
+    const ci = read(".github/workflows/ci.yml");
+    const major = read(".github/workflows/major-change.yml");
+    for (const secret of secretManifest.filter((s) => s.store === "github-actions")) {
+      expect(
+        ci.includes(secret.name) || major.includes(secret.name),
+        `no workflow references github-actions manifest entry ${secret.name}`,
+      ).toBe(true);
+    }
+  });
+
+  it("every gh-keyring manifest entry is named in docs/setup.md and lives in no committed file", () => {
+    for (const secret of secretManifest.filter((s) => s.store === "gh-keyring")) {
+      expect(docsContents, `docs/setup.md does not name gh-keyring secret ${secret.name}`).toContain(
+        secret.name,
+      );
+      // It must not be committed anywhere as a value-bearing file (.env.example lists names only).
+      const envExample = read(".env.example");
+      expect(envExample).not.toContain(secret.name);
+    }
+  });
+});
+
+describe("ruleset contexts <-> CI workflow job names", () => {
+  it("setup/github-ruleset.json required_status_checks contexts match the ci.yml and major-change.yml job names", () => {
+    const ruleset = JSON.parse(read("setup/github-ruleset.json")) as {
+      rules: Array<{ type: string; parameters?: { required_status_checks?: Array<{ context: string }> } }>;
+    };
+    const statusCheckRule = ruleset.rules.find((r) => r.type === "required_status_checks");
+    expect(statusCheckRule, "github-ruleset.json must have a required_status_checks rule").toBeDefined();
+    const contexts = statusCheckRule!.parameters!.required_status_checks!.map((c) => c.context);
+
+    const ci = read(".github/workflows/ci.yml");
+    const major = read(".github/workflows/major-change.yml");
+    expect(contexts).toContain("verify");
+    expect(contexts).toContain("major-change-approval");
+    expect(ci).toMatch(/^\s{2}verify:/m);
+    expect(major).toMatch(/^\s{2}major-change-approval:/m);
+  });
+});
+
+describe("CODEOWNERS covers every major-path item", () => {
+  it("assigns @drcdev to every path listed in contracts/ci-and-gates.md", () => {
+    const codeowners = read(".github/CODEOWNERS");
+    const majorPaths = [
+      "/.github/",
+      "/package.json",
+      "/pnpm-lock.yaml",
+      "/.nvmrc",
+      "/wrangler.jsonc",
+      "/astro.config.mjs",
+      "/public/_headers",
+      "/scripts/ci/",
+      "/setup/",
+      "/.specify/memory/constitution.md",
+      "/.github/CODEOWNERS",
+    ];
+    for (const path of majorPaths) {
+      const line = codeowners.split("\n").find((l) => l.trim().startsWith(path));
+      expect(line, `CODEOWNERS is missing ${path}`).toBeDefined();
+      expect(line).toContain("@drcdev");
+    }
+  });
+});

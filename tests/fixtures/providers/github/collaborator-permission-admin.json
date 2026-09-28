@@ -1,0 +1,1 @@
+{ "login": "dcc-bot", "permissions": { "admin": true, "maintain": true, "push": true, "pull": true } }

@@ -1,0 +1,7 @@
+{
+  "note": "records present only at Squarespace, discovered by pnpm setup:dns-snapshot and not yet in setup/dns-baseline.json",
+  "answers": [
+    { "type": "TXT", "name": "doncoleman.ca", "value": "google-site-verification=abcdefghijklmnopqrstuvwxyz" },
+    { "type": "CAA", "name": "doncoleman.ca", "value": "0 issue letsencrypt.org" }
+  ]
+}
