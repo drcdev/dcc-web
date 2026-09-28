@@ -1,39 +1,29 @@
 <!--
 Sync Impact Report
 ==================
-Version change: (template, unversioned) → 1.0.0
-Bump rationale: initial ratification. All template placeholders replaced with
-project-specific content; no prior principles existed to modify or remove.
+Version change: 1.0.0 → 1.1.0
+Bump rationale: MINOR. Principle IV (First-Party Before Custom) is materially
+expanded with a new rule that Astro development choices must be grounded in the
+official Astro documentation retrieved through the Astro Docs MCP server, and the
+Development Workflow gains a matching evidence requirement for plans. No principle
+was removed or redefined.
 
-Modified principles: none (initial adoption)
+Modified principles:
+- IV. First-Party Before Custom → IV. First-Party Before Custom (title unchanged;
+  added "Astro Docs MCP is the source of truth" rules)
 
-Added sections:
-- Preamble (purpose of the site and how the constitution is applied)
-- Core Principles I–XI:
-  I. Test-First (NON-NEGOTIABLE)
-  II. Automated Release Gate
-  III. Human Review for Major Changes
-  IV. First-Party Before Custom
-  V. Static by Default
-  VI. Content as Files
-  VII. Private Data: Minimal, Protected, in Canada
-  VIII. Fly.io Best Practices
-  IX. Cost Ceiling
-  X. Accessible, Fast and Private
-  XI. Spec Kit Workflow
-- Technology Constraints
-- Development Workflow
-- Governance
+Added sections: none (new rules were added inside existing sections)
+- Development Workflow: added the "Astro decisions cite the docs" rule
 
-Removed sections: none (template placeholder slots for principles 1–5,
-SECTION_2, SECTION_3 and GOVERNANCE_RULES were filled, not removed)
+Removed sections: none
 
 Templates reviewed (read at runtime, not modified by this command):
-- .specify/templates/plan-template.md — Constitution Check section must be
-  filled per Development Workflow; no structural change required.
+- .specify/templates/plan-template.md — Constitution Check should now confirm
+  that Astro-related choices were verified against the Astro Docs MCP; the
+  existing free-form Constitution Check section accommodates this without a
+  structural change.
 - .specify/templates/spec-template.md — no change required.
-- .specify/templates/tasks-template.md — task ordering rule (tests before
-  implementation) is compatible with Principle I; no change required.
+- .specify/templates/tasks-template.md — no change required.
 
 Follow-up TODOs: none. No placeholders deferred.
 -->
@@ -89,6 +79,15 @@ the change as major.
 ### IV. First-Party Before Custom
 
 - Follow Astro's documented best practices for the current stable version.
+- The official Astro documentation, retrieved through the Astro Docs MCP server
+  (`astro-docs`), is the source of truth for every Astro development choice: project
+  structure, configuration, content collections, routing, images, integrations, adapters,
+  testing and deployment. Agents MUST consult it before deciding how to build an Astro
+  feature, and MUST NOT rely on memory of older Astro versions or on third-party tutorials
+  when the official docs cover the topic.
+- If the Astro Docs MCP is unavailable, the agent MUST say so in the plan or task notes and
+  fall back to the published docs at docs.astro.build. It MUST NOT silently proceed from
+  memory.
 - Where Astro provides a first-party feature or official integration, use it rather than
   building or adding an alternative. Examples: content collections with schemas, the built-in
   image handling, view transitions, official integrations for MDX, sitemap and RSS, and typed
@@ -176,6 +175,10 @@ the change as major.
 
 - Plans must include a Constitution Check that confirms each principle above, or explains any
   exception in the plan's complexity section.
+- Astro decisions cite the docs: when a plan or research note chooses an Astro approach
+  (configuration, integration, API or pattern), it MUST name the Astro documentation page
+  that supports the choice, as found through the Astro Docs MCP. A reviewer can then confirm
+  the choice against the current docs rather than the agent's recollection.
 - Tasks are ordered so tests come before the implementation they cover.
 - Agents keep changes inside the feature's scope. Anything out of scope is noted in the spec
   as follow-up work, not done in passing.
@@ -192,4 +195,4 @@ the change as major.
   - PATCH for wording and clarifications.
 - Every pull request review checks compliance with this document.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-09-28
+**Version**: 1.1.0 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-09-28
