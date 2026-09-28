@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://doncoleman.ca/schemas/setup-check-report.json",
+  "title": "Setup check report (pnpm setup:check --json)",
+  "type": "object",
+  "required": ["generatedAt", "ok", "counts", "results"],
+  "additionalProperties": false,
+  "properties": {
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "ok": { "type": "boolean", "description": "true only when counts.complete === counts.total" },
+    "counts": {
+      "type": "object",
+      "required": ["complete", "missing", "pending", "couldNotCheck", "total"],
+      "additionalProperties": false,
+      "properties": {
+        "complete": { "type": "integer", "minimum": 0 },
+        "missing": { "type": "integer", "minimum": 0 },
+        "pending": { "type": "integer", "minimum": 0 },
+        "couldNotCheck": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "status", "summary", "details", "nextAction", "step", "docs", "reason", "needsDon"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+          "title": { "type": "string" },
+          "status": { "enum": ["complete", "missing", "pending", "could-not-check"] },
+          "summary": { "type": "string" },
+          "details": { "type": "array", "items": { "type": "string" } },
+          "nextAction": { "type": ["string", "null"] },
+          "step": { "type": "string", "pattern": "^Step [0-9]+ of [0-9]+$" },
+          "docs": { "type": "string", "pattern": "^docs/setup\\.md#[a-z0-9-]+$" },
+          "reason": { "type": ["string", "null"] },
+          "needsDon": { "type": "boolean" }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "status": { "not": { "const": "complete" } } } },
+            "then": { "properties": { "nextAction": { "type": "string", "minLength": 1 } } }
+          },
+          {
+            "if": { "properties": { "status": { "const": "could-not-check" } } },
+            "then": { "properties": { "reason": { "type": "string", "minLength": 1 } } }
+          }
+        ]
+      }
+    }
+  }
+}
