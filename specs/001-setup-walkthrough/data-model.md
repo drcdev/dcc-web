@@ -37,9 +37,9 @@ a docs section.
 | 1 | `local-tools` | Node >= 24, pnpm version matches `packageManager`, `gh` signed in as Don | before | FR-025 |
 | 2 | `local-credentials` | `.env` has every required name non-empty; Cloudflare token-verify says `active` | before | FR-025 |
 | 3 | `cloudflare-zone` | Zone `doncoleman.ca` exists on Free plan (id matches `CLOUDFLARE_ZONE_ID`) | before | FR-019 |
-| 4 | `dns-records-parity` | Every `keep` record in `setup/dns-baseline.json` exists in the Cloudflare zone with identical type/name/content/priority and `proxied: false`; every record without a decision is flagged | before | FR-019 |
+| 4 | `dns-records-parity` | Every `keep` record in `setup/dns-baseline.json` exists in the Cloudflare zone with identical type/name/content/TTL/priority and `proxied: false` (normalisation per spec FR-035); every record without a decision is flagged and keeps the item `missing` | before | FR-019, FR-034–FR-037 |
 | 5 | `dns-nameservers` | Public NS for `doncoleman.ca` equal the zone's assigned nameservers and zone `status: active`; `pending` while delegation propagates | before | FR-019 |
-| 6 | `live-domain-ghost` | `https://doncoleman.ca/` serves Ghost (generator meta), is not a Worker custom domain, and MX/SPF/DMARC resolve as in the baseline | before | FR-019, SC-005 |
+| 6 | `live-domain-ghost` | Deciding signal: public A/AAAA/CNAME answers for the apex and `www` equal the Ghost target records for those names in the baseline; every `keep` MX and email TXT record resolves as in the baseline. The Ghost generator meta is reported in `details` only | before | FR-019, FR-038, SC-005 |
 | 7 | `cloudflare-worker` | Worker `dcc-web` exists; `workers.dev` and preview URLs enabled | before | FR-017 |
 | 8 | `github-machine-account` | `dcc-bot` collaborator permission is `write` (or `maintain`), not `admin` | before | FR-013 |
 | 9 | `github-secret-scanning` | `security_and_analysis.secret_scanning` and `…secret_scanning_push_protection` are `enabled` | before | FR-024 |
@@ -125,7 +125,7 @@ GitHub Actions secrets expected: **none**. Workers Builds build variables expect
 | `name` | FQDN | Lower-case, ends in `doncoleman.ca`. |
 | `content` | string | Exact value (TXT unquoted-normalised). |
 | `priority` | integer \| null | MX/SRV only. |
-| `ttl` | integer | Informational; not compared. |
+| `ttl` | integer | Compared exactly with the Cloudflare record's TTL (spec FR-035); Cloudflare "automatic" TTL does not match. |
 | `source` | `'squarespace'` | |
 | `decision` | `'keep' \| 'drop' \| null` | `null` = undecided → reported by `dns-records-parity`. |
 | `reason` | string \| null | Required when `decision === 'drop'`. |
