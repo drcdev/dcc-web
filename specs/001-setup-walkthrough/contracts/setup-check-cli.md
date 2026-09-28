@@ -69,3 +69,12 @@ stdout is not a TTY or `NO_COLOR` is set.
 4. **Provider failures map to `could-not-check` with a reason**, never to `complete` or silence
    (Story 1 scenario 4).
 5. **Finishes in under 30 s** (SC-002): per-call timeout 10 s, checks run concurrently.
+6. **Prerequisites (spec "Setup items" table, FR-011)**: an item whose `dependsOn` prerequisite
+   is not `complete` is reported `missing` with a next action naming the prerequisite step;
+   `--item <id>` evaluates that item's prerequisites to decide this.
+7. **Accessible output (FR-029)**: every status is printed as its word(s); `could-not-check`
+   always has a "Reason:" line; no ANSI colour when stdout is not a TTY or `NO_COLOR` is set; no
+   box-drawing characters.
+8. **No provider debug output (FR-024)**: no provider tool or SDK is run in a verbose or debug
+   mode, and provider error text is redacted (`[redacted]`, secret still named, FR-030) before
+   it is shown.

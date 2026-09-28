@@ -4,7 +4,9 @@
 
 ## Behaviour
 
-1. Run `pnpm setup:check --json` (never re-implements confirmation logic — FR-010).
+1. Run `pnpm setup:check --json` (never re-implements confirmation logic — FR-010). If
+   `live-domain-ghost` reports a "Problem:" summary, show it before any other step (spec edge
+   case "Live domain accidentally switched").
 2. Show the full ordered step list with each step's status (Story 2 scenario 1).
 3. For each step in order:
    - `complete` → one line "Step N — already done, skipping" (FR-011).
@@ -19,7 +21,8 @@
    - `Skip for now` → move on; dependent steps are shown as blocked.
    - `Stop here` → print how to resume (`/setup-walkthrough`); state is recomputed next time.
 4. Before the `dns-nameservers` step, refuse to continue unless `dns-records-parity` is complete
-   (FR-007, spec edge case "Existing DNS records").
+   (FR-007, spec edge case "Existing DNS records"), and show the rollback procedure from
+   `docs/setup.md#dns-nameservers` before Don makes the switch (FR-039).
 5. Before the steps marked `after-merge`, tell Don the slice's PR must be merged first and give
    the PR link.
 6. End with the full report and the summary line.

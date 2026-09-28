@@ -22,7 +22,7 @@ drift test all read this list.
 | `principles` | `('I'…'XI')[]` | At least one. |
 | `requirements` | `string[]` | FR ids it satisfies, e.g. `["FR-019"]`. |
 | `secrets` | `SecretRef['name'][]` | Names only; must exist in the manifest. |
-| `dependsOn` | `id[]` | Items that must be complete first; used to report `missing` with "do step X first" rather than a confusing failure. |
+| `dependsOn` | `id[]` | Items that must be complete first. While any is not `complete`, the item is reported `missing` with a next action naming the prerequisite step, and its own check is not run; `--item <id>` evaluates the prerequisites to decide this. |
 | `phase` | `'before-merge' \| 'after-merge'` | Whether it can be done before this slice's PR is merged. |
 | `check` | `(ctx) => Promise<CheckResult>` | Pure function over injected providers. |
 
@@ -117,7 +117,15 @@ Defined in `scripts/setup-check/secrets.ts`. Values are never part of the model.
 
 GitHub Actions secrets expected: **none**. Workers Builds build variables expected: **none**.
 
-## DnsBaselineRecord (`setup/dns-baseline.json`)
+## DnsBaseline (`setup/dns-baseline.json`)
+
+File shape: `{ originalNameservers: string[], records: DnsBaselineRecord[] }`. `originalNameservers`
+holds the Squarespace nameservers recorded before the switch, for rollback (spec FR-034, FR-039);
+the same values appear in the `dns-nameservers` section of `docs/setup.md`. The committed file
+starts as `{ "originalNameservers": [], "records": [] }`; `dns-records-parity` stays `missing`
+while either list is empty, so parity can never pass vacuously.
+
+### DnsBaselineRecord
 
 | Field | Type | Rules |
 |---|---|---|
@@ -132,7 +140,7 @@ GitHub Actions secrets expected: **none**. Workers Builds build variables expect
 
 Validated by a Zod schema imported from `astro/zod` (Zod as re-exported by Astro, so no new
 dependency), with schema tests for valid and invalid files. The same approach validates
-`setup/config.json` (`{ owner, repo, machineAccount, workerName, zone, reviewHost }`) and the
+`setup/config.json` (`{ owner, repo, machineAccount, workerName, zone, reviewHost, ghostMarker }`; `ghostMarker` is used only for the informational detail in `live-domain-ghost`, never for its status) and the
 `--json` report shape.
 
 ## ProviderContext (test seam)

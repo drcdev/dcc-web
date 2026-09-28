@@ -57,7 +57,7 @@ Astro Cloudflare deploy guide.
 |---|---|---|---|
 | I | Test-First | PASS | Test layers defined below; tasks must write and see fail: setup-check unit tests (per item, with recorded fixtures), report-schema tests, registry/docs/secret-manifest drift tests, read-only and redaction guard tests, major-change gate tests, `_headers`/config tests, and Playwright a11y + budget tests — before the code they cover. No contact API or content collections exist yet, so their layers do not apply in this slice. Component tests (Astro Container API) are not needed for a single page with no components; the page is covered by E2E + a11y. |
 | II | Automated Release Gate | PASS | `pnpm run verify` runs secret scan, lint, type check, unit tests, build, and E2E/a11y/page-budget; CI job `verify` runs exactly that and is a required check. Production deploys only from `main` (Workers Builds), and `main` accepts only PRs with green required checks, no bypass. Every branch gets a Workers Builds preview URL. Full Lighthouse/CWV budget is added by the first feature with real templates (spec out-of-scope), and the page-budget test is the gate until then. |
-| III | Human Review for Major Changes | PASS — **this slice is a MAJOR change** | It adds dependencies, a new integration/service connection (Workers Builds, Web Analytics), and CI, deployment and infrastructure configuration (workflows, ruleset, `wrangler.jsonc`, DNS move). Don must approve the PR after viewing the Workers Builds preview. The plan also implements the Principle III mechanism: CODEOWNERS (native) for path-defined majors + a required `major-change-approval` check for the `major-change` label; PRs come from `dcc-bot` so Don's approval counts. Bootstrap exception: this PR predates `dcc-bot` and the ruleset, so Don merges it by hand after review. |
+| III | Human Review for Major Changes | PASS — **this slice is a MAJOR change** | It adds dependencies, a new integration/service connection (Workers Builds, Web Analytics), and CI, deployment and infrastructure configuration (workflows, ruleset, `wrangler.jsonc`, DNS move). Don must approve the PR after viewing the Workers Builds preview. The plan also implements the Principle III mechanism: CODEOWNERS (native) for path-defined majors + a required `major-change-approval` check for the `major-change` label; PRs come from `dcc-bot` so Don's approval counts. Bootstrap exception: this PR predates `dcc-bot` and the ruleset, so Don merges it by hand after review, and only when `verify` on the PR's latest commit is green (see Complexity Tracking). |
 | IV | First-Party Before Custom | PASS | See the first-party table below; every capability uses the Astro, Cloudflare, GitHub or Node first-party option, and each custom piece names the first-party option and why it falls short. |
 | V | Static by Default | PASS | `output: 'static'` (default), no adapter, placeholder has no client JS and works with JS disabled (E2E test). The edge-injected Web Analytics beacon is the constitution-permitted analytics exception (Principle X). |
 | VI | Content as Files | PASS (n/a in depth) | No content collections yet; the placeholder copy lives in the `.astro` file. No CMS or database. Setup data is committed JSON validated by `astro/zod` schemas that fail loudly. |
@@ -103,15 +103,16 @@ contracts and quickstart introduce no new services, costs or data flows beyond t
 |---|---|---|---|
 | Unit — check logic | Vitest | `tests/unit/setup-check/checks/*.test.ts` | Each of the 18 items: complete / missing / pending / could-not-check from recorded fixtures in `tests/fixtures/providers/` (FR-001, FR-002, FR-006, edge cases: partial protection, DNS-only-at-Squarespace, delegation pending, live domain switched, indexable review host, PR from Don's account). |
 | Unit — report & CLI | Vitest | `tests/unit/setup-check/report.test.ts`, `cli.test.ts` | Summary counts, exit codes 0/1/2, `--item`, `--json` validates against `contracts/check-report.schema.json`, `nextAction` present when not complete. |
-| Unit — safety guards | Vitest | `tests/unit/setup-check/read-only.test.ts`, `redaction.test.ts` | No mutating `gh api` flags or SDK write methods (FR-004); runtime canary secret never appears in output or errors (FR-005). |
+| Unit — safety guards | Vitest | `tests/unit/setup-check/providers/read-only.test.ts`, `providers/behaviour.test.ts`, `report.test.ts` | No mutating `gh api` flags, SDK write methods or non-GET/HEAD HTTP (FR-004); timeouts and auth failures map to `could-not-check`; no verbose/debug modes; provider error text redacted; runtime canary secret never appears in output or errors (FR-005, FR-024, FR-030). |
+| Unit — DNS helper | Vitest | `tests/unit/setup-check/dns-snapshot.test.ts` | Read-only snapshot resolves baseline + common names and reports unknown answers (FR-037). |
 | Schema | Vitest | `tests/unit/setup/schemas.test.ts` | `setup/config.json`, `setup/dns-baseline.json`, `setup/github-ruleset.json` valid; invalid samples rejected with clear errors. |
-| Drift | Vitest | `tests/unit/setup/drift.test.ts` | Registry ↔ `docs/setup.md` sections one-to-one; secret names in workflows / `wrangler.jsonc` / `.env.example` ↔ manifest; ruleset contexts ↔ workflow job names; CODEOWNERS covers the major-path list; skill file calls `pnpm setup:check`. |
+| Drift | Vitest | `tests/unit/setup/drift.test.ts`, `docs-structure.test.ts`, `docs-dns.test.ts`, `skill-behaviour.test.ts` | Registry ↔ `docs/setup.md` sections one-to-one with labelled parts; secret names in workflows / `wrangler.jsonc` / `.env.example` ↔ manifest; ruleset contexts ↔ workflow job names; CODEOWNERS covers the major-path list; skill confirms only via `pnpm setup:check` and runs no mutating command; DNS rollback content. |
 | Unit — gate | Vitest | `tests/unit/ci/major-change-gate.test.ts` | Label/no label, approval on stale commit, approval by non-owner, owner-authored PR. |
-| Config | Vitest | `tests/unit/site/headers.test.ts` | `public/_headers` sets `X-Robots-Tag: noindex` on `/*` and never `no-transform`. |
-| E2E + a11y | Playwright + axe | `tests/e2e/placeholder.a11y.spec.ts` | Zero WCAG 2.2 AA violations on `/`. |
+| Config | Vitest | `tests/unit/site/headers.test.ts`, `tests/unit/site/config-files.test.ts`, `tests/unit/ci/workflows.test.ts` | `public/_headers` sets `X-Robots-Tag: noindex` on `/*` and never `no-transform`; `wrangler.jsonc` and `.env.example` shape; workflow jobs, triggers, read-only permissions, SHA-pinned actions, no `continue-on-error`; CODEOWNERS paths. |
+| E2E + a11y | Playwright + axe | `tests/e2e/placeholder.a11y.spec.ts` | Zero WCAG 2.2 AA violations on `/`; landmark/heading structure, reflow at 320 px and 200% zoom, keyboard focus on the link (FR-031–FR-033). |
 | E2E + budget | Playwright | `tests/e2e/placeholder.budget.spec.ts` | 0 scripts, CLS 0, < 30 KB, readable with JS disabled, `noindex` meta, `lang="en"`. |
 | Secret scan | secretlint | `pnpm run lint:secrets` | Fails on committed secret-like values (FR-024). |
-| Live / preview | manual `[PREVIEW-CHECK]` | quickstart §7–8 | Branch-protection test PRs (SC-006), preview URL, review host, Ghost + email unchanged. |
+| Live / preview | manual `[PREVIEW-CHECK]` | quickstart §7–8 | Branch-protection test PRs (SC-006), preview URL, review host, Ghost + email unchanged, keyboard pass on the review address (SC-008). |
 
 ### `package.json` scripts (contract for the tasks phase)
 
@@ -175,7 +176,8 @@ src/pages/index.astro          # placeholder page
 public/_headers                # X-Robots-Tag: noindex
 scripts/
 ├── setup-check/
-│   ├── cli.ts                 # arg parsing, exit codes
+│   ├── cli.ts                 # arg parsing, prerequisite gating, exit codes
+│   ├── types.ts               # shared types (data-model.md)
 │   ├── items.ts               # setup item registry (single source of truth)
 │   ├── secrets.ts             # secret/variable manifest (names only)
 │   ├── schemas.ts             # astro/zod schemas for setup/*.json and the report
@@ -187,7 +189,7 @@ scripts/
     └── major-change-gate.ts   # pure decision function + thin CLI
 setup/
 ├── config.json                # owner, repo, machineAccount, workerName, zone, reviewHost
-├── dns-baseline.json          # Squarespace records + keep/drop decisions (filled during walkthrough)
+├── dns-baseline.json          # { originalNameservers, records } — starts empty; Don fills it during walkthrough step 4
 └── github-ruleset.json        # main-protection ruleset to import
 docs/setup.md                  # runbook, one section per item (anchor = item id)
 .claude/skills/setup-walkthrough/SKILL.md
@@ -245,3 +247,8 @@ Analytics. Numbers are the registry `order` in [data-model.md](./data-model.md).
 No constitution violations. Two custom pieces are justified in the Principle IV table (the
 ~50-line major-change label gate; the setup check itself, which the spec requires and no provider
 offers). Tailwind is deferred, not dropped.
+
+| Exception | Why it is needed | Simpler alternative rejected because |
+|---|---|---|
+| Principle I bootstrap: the tool configuration that tests need to run at all (`package.json`, `.nvmrc`, `tsconfig.json`, ESLint, secretlint, Vitest and Playwright configs, `.gitignore`, `astro.config.mjs`) is created before the first failing test | A test cannot be written, run and seen to fail until the test runner, TypeScript config and package manifest exist | Writing tests first is impossible for the runner's own configuration. The exception is limited to these files; every other file in the slice (including `wrangler.jsonc`, `.env.example`, workflows, CODEOWNERS, runbook and skill) has a failing test first, and these configuration files are exercised by every `pnpm run verify` run afterwards |
+| Principle II bootstrap: this slice's own PR merges before the `main` ruleset exists (it adds the files the ruleset requires) | GitHub cannot require checks and code-owner review that do not yet exist on `main` | Don merges by hand only when `verify` on the PR's latest commit is green, after viewing the preview; the exception covers enforcement, never a failing check |
