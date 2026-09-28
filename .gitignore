@@ -50,3 +50,6 @@ Thumbs.db
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Spec Kit extension catalog cache
+.specify/extensions/.cache/
