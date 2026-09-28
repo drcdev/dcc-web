@@ -1,29 +1,48 @@
 // The 18-item setup registry (data-model.md "SetupItem"). This is the single
 // source of truth the setup check, the `/setup-walkthrough` skill and
 // `docs/setup.md` (drift-tested) all derive from. Each item's `check` field is
-// wired to a placeholder function until Phase 3 (User Story 1) implements the
-// real per-item checks under `scripts/setup-check/checks/`.
-import type { CheckResult, ConstitutionPrinciple, ItemPhase, ProviderContext, SetupItem } from "./types.ts";
+// wired to its real implementation under `scripts/setup-check/checks/`
+// (Phase 3, User Story 1).
+import type { ConstitutionPrinciple, ItemPhase, ProviderContext, SetupItem } from "./types.ts";
+import { check as checkLocalTools } from "./checks/local-tools.ts";
+import { check as checkLocalCredentials } from "./checks/local-credentials.ts";
+import { check as checkCloudflareZone } from "./checks/cloudflare-zone.ts";
+import { check as checkDnsRecordsParity } from "./checks/dns-records-parity.ts";
+import { check as checkDnsNameservers } from "./checks/dns-nameservers.ts";
+import { check as checkLiveDomainGhost } from "./checks/live-domain-ghost.ts";
+import { check as checkCloudflareWorker } from "./checks/cloudflare-worker.ts";
+import { check as checkGithubMachineAccount } from "./checks/github-machine-account.ts";
+import { check as checkGithubSecretScanning } from "./checks/github-secret-scanning.ts";
+import { check as checkWorkersBuilds } from "./checks/workers-builds.ts";
+import { check as checkGithubCiWorkflow } from "./checks/github-ci-workflow.ts";
+import { check as checkGithubCodeowners } from "./checks/github-codeowners.ts";
+import { check as checkGithubMajorLabel } from "./checks/github-major-label.ts";
+import { check as checkGithubMainProtection } from "./checks/github-main-protection.ts";
+import { check as checkPipelineSecrets } from "./checks/pipeline-secrets.ts";
+import { check as checkReviewAddress } from "./checks/review-address.ts";
+import { check as checkReviewAddressNoindex } from "./checks/review-address-noindex.ts";
+import { check as checkWebAnalytics } from "./checks/web-analytics.ts";
 
-const TOTAL_ITEMS = 18;
-
-function stepLabel(order: number): string {
-  return `Step ${order} of ${TOTAL_ITEMS}`;
-}
-
-/** Placeholder check, replaced per item in Phase 3 (US1). Always reports could-not-check. */
-function notImplemented(id: string, order: number): (ctx: ProviderContext) => Promise<CheckResult> {
-  return async (): Promise<CheckResult> => ({
-    id,
-    status: "could-not-check",
-    summary: `The "${id}" check is not implemented yet.`,
-    details: [],
-    nextAction: "No action needed from Don yet; this check will be implemented in a later task.",
-    step: stepLabel(order),
-    docs: `docs/setup.md#${id}`,
-    reason: "check not implemented yet",
-  });
-}
+const checksById: Record<string, (ctx: ProviderContext) => ReturnType<SetupItem["check"]>> = {
+  "local-tools": checkLocalTools,
+  "local-credentials": checkLocalCredentials,
+  "cloudflare-zone": checkCloudflareZone,
+  "dns-records-parity": checkDnsRecordsParity,
+  "dns-nameservers": checkDnsNameservers,
+  "live-domain-ghost": checkLiveDomainGhost,
+  "cloudflare-worker": checkCloudflareWorker,
+  "github-machine-account": checkGithubMachineAccount,
+  "github-secret-scanning": checkGithubSecretScanning,
+  "workers-builds": checkWorkersBuilds,
+  "github-ci-workflow": checkGithubCiWorkflow,
+  "github-codeowners": checkGithubCodeowners,
+  "github-major-label": checkGithubMajorLabel,
+  "github-main-protection": checkGithubMainProtection,
+  "pipeline-secrets": checkPipelineSecrets,
+  "review-address": checkReviewAddress,
+  "review-address-noindex": checkReviewAddressNoindex,
+  "web-analytics": checkWebAnalytics,
+};
 
 interface ItemSeed {
   id: string;
@@ -309,10 +328,13 @@ const seeds: ItemSeed[] = [
   },
 ];
 
-export const setupItems: SetupItem[] = seeds.map((seed) => ({
-  ...seed,
-  check: notImplemented(seed.id, seed.order),
-}));
+export const setupItems: SetupItem[] = seeds.map((seed) => {
+  const check = checksById[seed.id];
+  if (!check) {
+    throw new Error(`No check implementation wired for setup item "${seed.id}"`);
+  }
+  return { ...seed, check };
+});
 
 export function getSetupItem(id: string): SetupItem | undefined {
   return setupItems.find((item) => item.id === id);
