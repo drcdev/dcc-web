@@ -77,3 +77,15 @@ auto_commit:
   after_taskstoissues:
     enabled: true
     message: "[Spec Kit] Sync tasks to issues"
+  # Bug extension events (used by the /squash pipeline). The bug extension
+  # declares no hooks, and default is false, so these must be enabled here
+  # for speckit-git-commit to commit after each bug phase.
+  after_bug_assess:
+    enabled: true
+    message: "[Spec Kit] Add bug assessment"
+  after_bug_fix:
+    enabled: true
+    message: "[Spec Kit] Apply bug fix"
+  after_bug_test:
+    enabled: true
+    message: "[Spec Kit] Add bug verification report"

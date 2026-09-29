@@ -56,6 +56,17 @@ invent scope the issue doesn't state.
   the diff per that skill.
 - Keep your own text output to one short status line per phase transition.
 
+## Local toolchain
+
+Tell every subagent that runs `pnpm`, `astro` or `playwright`:
+
+- Node comes from nvm and `.nvmrc` pins the major. Run `node -v` first; if it
+  is not the `.nvmrc` version, run `source ~/.nvm/nvm.sh && nvm use` in the
+  same command as the toolchain call (the Bash tool does not keep shell
+  state between calls).
+- macOS has no `timeout` binary. Bound long runs with
+  `perl -e 'alarm N; exec @ARGV' <cmd>` (N in seconds).
+
 ## Preflight
 
 1. `git status` — require a clean tree. If dirty, stop and tell the user what
@@ -96,7 +107,7 @@ phase:
 | 3   | plan      | `speckit-plan`      | opus   | The Constitution Check must address every principle. For each capability, name the Astro / Cloudflare / Fly.io first-party option and use it, or say why it falls short (Principle IV). State the expected monthly cost of anything new (Principle IX). Flag whether the slice is a **major change** under Principle III and why. If `package.json` has no `verify` script yet, the plan must add one that runs the whole local gate.                          |
 | 4   | checklist | `speckit-checklist` | sonnet | Generate the checklist(s) the spec's risk areas call for; always include accessibility (WCAG 2.2 AA) and, if the slice touches the contact form or API, privacy/security. **Generation only — do not evaluate or check off items.**                                                                                                                                                                                       |
 | 4b  | resolve   | — (no skill)        | opus   | **Resolve every checklist item — see below.**                                                                                                                                                                                                                                                                                                                                                                              |
-| 5   | tasks     | `speckit-tasks`     | sonnet | Tests are **mandatory**, not optional: every story gets unit/schema, component, E2E and accessibility test tasks as the plan's test layers require, ordered before the implementation they cover. Tasks a subagent cannot verify locally (needs the preview deployment or Don's eyes) get the suffix `[PREVIEW-CHECK]`.                                                                                                     |
+| 5   | tasks     | `speckit-tasks`     | sonnet | Tests are **mandatory**, not optional: every story gets unit/schema, component, E2E and accessibility test tasks as the plan's test layers require, ordered before the implementation they cover. If the slice alters what a snapshotted page looks like, include a task to update the macOS visual baselines (`pnpm run test:visual:update`) after the implementation. Tasks a subagent cannot verify locally (needs the preview deployment or Don's eyes) get the suffix `[PREVIEW-CHECK]`.                                                                                                     |
 | 6   | analyze   | `speckit-analyze`   | opus   | The skill is read-only and ends by offering remediation and telling you not to apply it. **Override for this pipeline: apply the concrete remediation edits yourself, re-run the consistency check on the edited artifacts, and commit.** Your summary must account for **every** finding as fixed or deferred-with-reason (CRITICAL findings, which include every constitution violation, may never be deferred).           |
 | 7   | implement | `speckit-implement` | sonnet | **Chunked per task phase — see below.**                                                                                                                                                                                                                                                                                                                                                                                   |
 | 8   | converge  | `speckit-converge`  | opus   | **One pass — see below.**                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -196,8 +207,8 @@ if the second implement pass still leaves gaps, stop and report them.
 ### Long-running suites (orchestrator and any subagent running tests)
 
 - Run `<pm> run verify` and any E2E run in the **foreground with an
-  explicit timeout** (Bash `timeout`, 10 minutes unless the script's
-  package.json comment or README documents more). Never background a run and poll for it.
+  explicit time limit** (10 minutes, via the `perl` alarm above — macOS has
+  no `timeout`). Never background a run and poll for it.
 - Keep only the pass/fail summary and the failing test names — never paste
   raw output into a summary.
 - If a run hits the timeout, treat it as red: report it, do not retry in a
@@ -205,6 +216,17 @@ if the second implement pass still leaves gaps, stop and report them.
 - E2E runs in a real browser (Playwright, per Principle I) both locally and
   in CI. There are no device tiers; a `src/` change simply means the whole
   suite runs again.
+- **Visual baselines.** The visual project compares each snapshotted page
+  against committed per-platform images. If the slice altered a page's
+  appearance on purpose, the implement phase updates the macOS baselines
+  (`pnpm run test:visual:update`); the **Linux** baselines can only be
+  regenerated in CI. After the PR is open, add the `visual-baselines`
+  label, wait for the `update-baselines` job, download its
+  `visual-baselines-linux` artifact with `gh run download`, review the
+  diff, commit the images to the branch and push. Until that lands, the
+  `verify` check on the PR is expected to be red on visual only — say so in
+  the PR body. A visual diff the spec did not predict is a regression, not
+  a baseline to refresh.
 
 ## Finish
 
@@ -235,13 +257,17 @@ if the second implement pass still leaves gaps, stop and report them.
    This pause is mandatory — never open the PR without having asked.
 4. Push the branch and open a PR with `gh pr create`: summary of the slice,
    the verify results, the `Closes #<n>` line when step 2 applies, the
-   major-change verdict and criteria, the list of `[PREVIEW-CHECK]` items
-   for Don to walk on the preview deployment, and any risks the phase
-   agents flagged. Apply the label / auto-merge chosen in step 3.
-5. **Watch the release gate.** Run `gh pr checks --watch` with a timeout
+   major-change verdict and criteria, whether Linux visual baselines are
+   pending, the list of `[PREVIEW-CHECK]` items for Don to walk on the
+   preview deployment, and any risks the phase agents flagged. Apply the
+   label / auto-merge chosen in step 3.
+5. If Linux baselines are owed, run the visual-baselines step from the
+   long-running-suites rules now, before watching the gate.
+6. **Watch the release gate.** Run `gh pr checks --watch` with a timeout
    (20 minutes). Red → dispatch a fix subagent on the branch, which fixes
    the cause (never the check), commits and pushes; watch again. Record the
    preview deployment URL from the checks or the Cloudflare PR comment.
-6. Final report to the user: what was built, test counts, PR link, preview
-   URL, the major-change verdict and merge mode, the `[PREVIEW-CHECK]`
-   items awaiting them, and any risks the phase agents flagged.
+7. Final report to the user: what was built, test counts, PR link, preview
+   URL, the major-change verdict and merge mode, whether baselines were
+   updated, the `[PREVIEW-CHECK]` items awaiting them, and any risks the
+   phase agents flagged.
