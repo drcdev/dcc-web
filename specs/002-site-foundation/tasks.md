@@ -682,7 +682,7 @@ set, and prepare the pull request for major-change review.
   `visual` project passes on this branch (FR-005b, research R13). The workflow only builds and
   regenerates snapshots; it never commits or pushes itself — committing stays a reviewed,
   human-approved step.
-- [ ] T096 Run `pnpm run verify` one more time locally, and confirm the pushed branch's `verify`
+- [x] T096 Run `pnpm run verify` one more time locally, and confirm the pushed branch's `verify`
   check is green on GitHub Actions, before treating any task in this feature as done (Principle
   II — never mark done on a red suite).
   - Local half done 2026-09-29: `pnpm run verify` green (Vitest 670/670 in 54 files; Playwright
