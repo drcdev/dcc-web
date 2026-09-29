@@ -8,6 +8,12 @@
 
 **Input**: User description: "Let visitors contact Don through a simple form, and let Don retrieve new messages without logging in to anything."
 
+## Clarifications
+
+### Session 2026-09-29
+
+- Q: Should contact messages be stored in Western North America ("wnam"), given that storage cannot be limited to Canada and the region cannot be changed once the stores are created? → A: Yes, Western North America. It stays a decision point for Don until he runs the store-creation command in the setup walkthrough, which must restate the region and that it cannot be changed before that command.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Visitor sends a message (Priority: P1)
@@ -331,6 +337,9 @@ after following the walkthrough, see it pass.
 - **FR-027**: A numbered walkthrough in the setup documentation MUST cover every step only Don
   can do, each stating what to do, where, and how to confirm it worked. Don enters secrets
   directly into the secret stores.
+- **FR-027a**: Immediately before the walkthrough step that creates the message stores, the
+  walkthrough MUST restate the storage region (Western North America) and that it cannot be
+  changed after the stores are created, so Don confirms it at that point.
 - **FR-028**: The existing setup check MUST be extended so it fails until every step in the
   walkthrough is complete: both message stores exist in the chosen region, their structure is
   up to date, the required secrets exist (checked by name only), the build setting for the
@@ -381,8 +390,9 @@ after following the walkthrough, see it pass.
 
 ## Assumptions
 
-- The storage region is Western North America. Storage cannot be limited to Canada and the
-  region cannot be changed after the stores are created, so it is confirmed before setup.
+- The storage region is Western North America (confirmed 2026-09-29). Storage cannot be
+  limited to Canada and the region cannot be changed after the stores are created, so it
+  remains Don's decision until he runs the store-creation step of the walkthrough.
 - The retention period is 12 months and is the same for read and unread messages.
 - Returning new messages oldest first suits a scheduled assistant that checks periodically; the
   list may be split into pages if it is large.
