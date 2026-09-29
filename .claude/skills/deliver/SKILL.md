@@ -252,7 +252,7 @@ if the second implement pass still leaves gaps, stop and report them.
    - **Major — hold for my review** (recommended when any criterion fired):
      PR is labelled `major-change`; Don approves after viewing the preview.
    - **Not major — auto-merge when green** (recommended when none fired):
-     enable `gh pr merge --auto --squash` after opening the PR.
+     enable `gh pr merge --auto --merge` after opening the PR.
    - **Not major — leave the PR open**: no auto-merge; Don merges by hand.
    This pause is mandatory — never open the PR without having asked.
 4. Push the branch and open a PR with `gh pr create`: summary of the slice,

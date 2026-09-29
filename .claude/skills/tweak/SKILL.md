@@ -219,7 +219,7 @@ again.
    Then ask the user with AskUserQuestion, showing which Principle III
    criteria fired (or "none"), with options:
    - **Not major — auto-merge when green** (recommended when none fired,
-     which is what triage predicted): enable `gh pr merge --auto --squash`
+     which is what triage predicted): enable `gh pr merge --auto --merge`
      after opening the PR.
    - **Major — hold for my review** (recommended, and say triage was wrong,
      when any criterion fired): PR is labelled `major-change`; Don approves

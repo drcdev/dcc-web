@@ -194,7 +194,7 @@ again.
    the user with AskUserQuestion, showing the criteria that fired (or
    "none"), with options:
    - **Not major — auto-merge when green** (recommended when none fired):
-     enable `gh pr merge --auto --squash` after opening the PR.
+     enable `gh pr merge --auto --merge` after opening the PR.
    - **Major — hold for my review** (recommended when any criterion fired):
      PR is labelled `major-change`; Don approves after viewing the preview.
    - **Not major — leave the PR open**: no auto-merge; Don merges by hand.
