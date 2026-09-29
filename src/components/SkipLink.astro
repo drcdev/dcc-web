@@ -1,0 +1,10 @@
+---
+// "Skip to main content" (contracts/shell-dom.md; FR-010). Visually hidden
+// until it receives keyboard focus, then shown at the top of the page with the
+// global focus ring; it targets main#main, which is programmatically focusable.
+---
+
+<a
+  href="#main"
+  class="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-0 focus:z-50 focus:m-2 focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-dusk-900 dark:focus:bg-dusk-900 dark:focus:text-white"
+>Skip to main content</a>

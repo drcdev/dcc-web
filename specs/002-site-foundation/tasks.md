@@ -280,34 +280,34 @@ placeholder specs) and the build-environment test before any page template exist
 document-level shell (landmarks, skip link, per-page metadata) and the pre-paint theme script,
 with placeholder header/footer components that Phases 5–6 fill in. [US1] [US2] [US3]
 
-- [ ] T033 [P] [US2] Write a failing unit test `tests/unit/site/theme.test.ts` for `parseTheme`,
+- [X] T033 [P] [US2] Write a failing unit test `tests/unit/site/theme.test.ts` for `parseTheme`,
   `nextTheme` (`dark → light → system → dark`), and `isDark(choice, prefersDark)` per
   [contracts/theme.md](../specs/002-site-foundation/contracts/theme.md) and data-model.md
   `ThemeChoice` (FR-011, FR-012, FR-015). Run it and confirm it fails.
-- [ ] T034 [P] [US2] Write a failing unit test `tests/unit/site/theme-init.test.ts` for
+- [X] T034 [P] [US2] Write a failing unit test `tests/unit/site/theme-init.test.ts` for
   `src/scripts/theme-init.js` against a stubbed `document`/`localStorage`: adds `js` to `<html>`;
   sets/removes `dark` per the stored choice, resolving `system` via
   `matchMedia('(prefers-color-scheme: dark)')`; treats absence, a throwing `localStorage`, or an
   unrecognised value as `dark`; never throws; does not write storage on first visit; file size
   ≤ 1 KB and no network API used (FR-013, FR-015). Run it and confirm it fails.
-- [ ] T035 [P] [US1] Write a failing component test `tests/component/BaseLayout.test.ts` (Astro
+- [X] T035 [P] [US1] Write a failing component test `tests/component/BaseLayout.test.ts` (Astro
   Container API, `renderToString`) asserting `<html lang="en" class="dark …">`, exactly one
   `<header>`, one `<nav aria-label="Main">`, one `<main id="main" tabindex="-1">`, one `<footer>`,
   exactly one `<h1>` with no skipped heading levels, the skip link as the first focusable
   element, no positive `tabindex` anywhere, and the inline theme-init script placed before the
   stylesheet link, per [contracts/shell-dom.md](../specs/002-site-foundation/contracts/shell-dom.md)
   and data-model.md (FR-010, FR-010a, FR-013, FR-020b). Run it and confirm it fails.
-- [ ] T036 [P] [US1] Write a failing component test `tests/component/SkipLink.test.ts` for
+- [X] T036 [P] [US1] Write a failing component test `tests/component/SkipLink.test.ts` for
   `src/components/SkipLink.astro`: `<a href="#main">Skip to main content</a>`, visually hidden
   until focused (FR-010). Run it and confirm it fails.
-- [ ] T037 [P] [US4] Write a failing component test `tests/component/Seo.test.ts` for
+- [X] T037 [P] [US4] Write a failing component test `tests/component/Seo.test.ts` for
   `src/components/Seo.astro` per
   [contracts/head-metadata.md](../specs/002-site-foundation/contracts/head-metadata.md): title
   format, description/canonical/robots `noindex`/OG/twitter tags, `og:type` `website`, defaults
   from `src/config/site.ts`, per-field overrides (overriding only the image keeps the default
   description), absolute image URL with alt text, canonical and `og:url` omitted when
   `canonical=false` (FR-017, FR-017b, FR-017c, FR-019). Run it and confirm it fails.
-- [ ] T038 [P] [US4] Write a failing test `tests/unit/site/build-env.test.ts` (Vitest, timeout
+- [X] T038 [P] [US4] Write a failing test `tests/unit/site/build-env.test.ts` (Vitest, timeout
   ≥ 180 s) that runs `astro build` into two temporary `outDir`s — once with `WORKERS_CI=1`,
   `WORKERS_CI_BRANCH=main` and once with `WORKERS_CI=1`,
   `WORKERS_CI_BRANCH=002-site-foundation` — and for each build asserts: every HTML file has a
@@ -316,7 +316,7 @@ with placeholder header/footer components that Phases 5–6 fill in. [US1] [US2]
   absolute address in the build uses that one origin; `_headers` in the output carries
   `X-Robots-Tag: noindex` (FR-017a, FR-019: the main-branch build is checked the same way as a
   preview build). Temporary directories are removed afterwards. Run it and confirm it fails.
-- [ ] T039 [P] [US3] Write `tests/e2e/a11y.spec.ts`, the successor of
+- [X] T039 [P] [US3] Write `tests/e2e/a11y.spec.ts`, the successor of
   `tests/e2e/placeholder.a11y.spec.ts`, and delete the placeholder in the same task.
   `@axe-core/playwright` with tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22a`,
   `wcag22aa` against the home (`/`) and not-found (`/nope/`) templates, each at phone (390) and
@@ -336,7 +336,7 @@ with placeholder header/footer components that Phases 5–6 fill in. [US1] [US2]
   placeholder assertions (they contradict this feature's spec): "no non-text content" and "first
   Tab stop is the link to the current site"; list them for the PR description (T097, FR-030a).
   Run `pnpm run build && pnpm exec playwright test --project=a11y` and confirm it fails.
-- [ ] T040 [P] [US3] Write `tests/e2e/budget.spec.ts`, the successor of
+- [X] T040 [P] [US3] Write `tests/e2e/budget.spec.ts`, the successor of
   `tests/e2e/placeholder.budget.spec.ts`, and delete the placeholder in the same task: for the
   home and not-found templates, independently, using CDP `Network.emulateNetworkConditions`
   (150 ms RTT, 1.6 Mbps down, 750 kbps up) and `Emulation.setCPUThrottlingRate(4)` at 390×844,
@@ -346,33 +346,33 @@ with placeholder header/footer components that Phases 5–6 fill in. [US1] [US2]
   templates. Deliberately dropped (superseded by the spec's budget): "zero `<script>` elements",
   "CLS exactly 0" and "total under 30 KB"; list them for the PR description (T097, FR-030a). Run
   `pnpm exec playwright test --project=budget` and confirm it fails.
-- [ ] T041 [P] [US1] Write `tests/e2e/visual.spec.ts`: `expect(locator).toHaveScreenshot()` for
+- [X] T041 [P] [US1] Write `tests/e2e/visual.spec.ts`: `expect(locator).toHaveScreenshot()` for
   the header, the footer and the full not-found page at phone (390) and desktop (1280) widths, and
   the open mobile menu at phone width only, each in dark and light themes (14 images), using the
   config defaults from T018 (`maxDiffPixelRatio: 0.001`, animations disabled, caret hidden)
   (FR-005a). Run `pnpm exec playwright test --project=visual` and confirm it fails (no baselines
   exist; `updateSnapshots: "none"` makes a missing baseline a failure, FR-005b).
-- [ ] T042 [US2] Implement `src/lib/theme.ts` (`parseTheme`, `nextTheme`, `isDark`) to pass T033.
-- [ ] T043 [US2] Implement `src/scripts/theme-init.js` (plain JS, ≤ 1 KB, no network access) to
+- [X] T042 [US2] Implement `src/lib/theme.ts` (`parseTheme`, `nextTheme`, `isDark`) to pass T033.
+- [X] T043 [US2] Implement `src/scripts/theme-init.js` (plain JS, ≤ 1 KB, no network access) to
   pass T034 (research R5).
-- [ ] T044 [US1] [US4] Implement `src/config/site.ts` (`SiteConfig`: `name`, `defaultDescription`,
+- [X] T044 [US1] [US4] Implement `src/config/site.ts` (`SiteConfig`: `name`, `defaultDescription`,
   `defaultImage`, `defaultImageAlt`, `locale: "en_CA"`, `indexable: false`, `copyrightName`) per
   data-model.md `SiteConfig`, then implement `src/components/Seo.astro` to pass T037.
-- [ ] T045 [US1] Implement `src/components/SkipLink.astro` to pass T036.
-- [ ] T046 [P] [US1] Create minimal placeholder `src/components/SiteHeader.astro` (a bare
+- [X] T045 [US1] Implement `src/components/SkipLink.astro` to pass T036.
+- [X] T046 [P] [US1] Create minimal placeholder `src/components/SiteHeader.astro` (a bare
   `<header>` landmark containing `<nav aria-label="Main">`) and `src/components/SiteFooter.astro`
   (a bare `<footer>` landmark) so `BaseLayout` can compose them now; Phase 5 and Phase 6 replace
   their contents.
-- [ ] T047 [US1] Implement `src/layouts/BaseLayout.astro`: `<html lang="en" class="dark
+- [X] T047 [US1] Implement `src/layouts/BaseLayout.astro`: `<html lang="en" class="dark
   motion-safe:scroll-smooth">`, imports `src/styles/global.css`, renders the inline
   `theme-init.js` script (via `?raw`) before the stylesheet link, renders `<Seo />`, `<SkipLink
   />`, `<SiteHeader />`, `<main id="main" tabindex="-1">` with a slot, `<SiteFooter />` — to pass
   T035 (FR-013, FR-021).
-- [ ] T048 Replace `src/pages/index.astro` with a minimal placeholder home page that uses
+- [X] T048 Replace `src/pages/index.astro` with a minimal placeholder home page that uses
   `BaseLayout` and has one `<h1>` (FR-020b, FR-023; spec Assumptions: real content is a later
   feature); run
   T038 and make it pass.
-- [ ] T049 Run `pnpm exec vitest run tests/unit/site/theme.test.ts tests/unit/site/theme-init.test.ts
+- [X] T049 Run `pnpm exec vitest run tests/unit/site/theme.test.ts tests/unit/site/theme-init.test.ts
   tests/unit/site/build-env.test.ts tests/component/BaseLayout.test.ts
   tests/component/SkipLink.test.ts tests/component/Seo.test.ts` and `pnpm run typecheck`; fix
   anything red before moving to Phase 5. The `a11y`, `budget` and `visual` projects written in
