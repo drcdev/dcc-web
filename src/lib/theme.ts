@@ -24,3 +24,14 @@ export function nextTheme(choice: ThemeChoice): ThemeChoice {
 export function isDark(choice: ThemeChoice, prefersDark: boolean): boolean {
   return choice === "system" ? prefersDark : choice === "dark";
 }
+
+const LABELS: Record<ThemeChoice, string> = {
+  dark: "Dark",
+  light: "Light",
+  system: "Match device",
+};
+
+/** The name visitors see and hear for a choice (FR-012a). */
+export function themeLabel(choice: ThemeChoice): string {
+  return LABELS[choice];
+}

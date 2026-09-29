@@ -456,18 +456,18 @@ page.
 **Purpose**: Replace the footer placeholder with the real links, copyright and theme switch,
 completing US1 and delivering US2 (dark/light/system without a flash). [US1] [US2]
 
-- [ ] T060 [P] [US1] Write a failing component test `tests/component/SiteFooter.test.ts` per
+- [X] T060 [P] [US1] Write a failing component test `tests/component/SiteFooter.test.ts` per
   contracts/shell-dom.md: links to `/privacy-policy/`, `/terms-of-use/`, `/technology/`; social
   links to `https://github.com/drcdev` (name "GitHub") and
   `https://www.linkedin.com/in/drcdev` (name "LinkedIn") with decorative (`aria-hidden="true"`)
   icons; copyright text `© {build year} Don Coleman. All rights reserved.`; the theme switch
   present; no Facebook/X/portal links (FR-004, FR-008, FR-008a). Run it and confirm it fails.
-- [ ] T061 [P] [US2] Write a failing component test `tests/component/ThemeToggle.test.ts` per
+- [X] T061 [P] [US2] Write a failing component test `tests/component/ThemeToggle.test.ts` per
   [contracts/theme.md](../specs/002-site-foundation/contracts/theme.md): visible label `Theme:`
   then a `<button type="button">`; accessible name `Theme: Dark` / `Theme: Light` / `Theme: Match
   device`; decorative icons; a visually hidden `aria-live="polite"` region; hidden when
   JavaScript is off (FR-008a, FR-012, FR-012a). Run it and confirm it fails.
-- [ ] T062 [P] [US2] Write a failing E2E test `tests/e2e/theme.spec.ts` implementing the
+- [X] T062 [P] [US2] Write a failing E2E test `tests/e2e/theme.spec.ts` implementing the
   first-paint guarantee (SC-003) from contracts/theme.md: for each stored value (`dark`, `light`,
   `system` with the device set to light and to dark, absent, `garbage`), across first load,
   reload, following an in-site link, and back/forward navigation, at least 5 loads each, record
@@ -482,27 +482,27 @@ completing US1 and delivering US2 (dark/light/system without a flash). [US1] [US
   write, the switch still changes the current page with no page error and the next load uses the
   stored value or dark; with `localStorage` throwing on read, the page is dark with no error
   (FR-011, FR-012, FR-012a, FR-013, FR-014, FR-015). Run it and confirm it fails.
-- [ ] T063 [P] [US1] Extend `tests/e2e/shell.spec.ts` with failing footer assertions on home and
+- [X] T063 [P] [US1] Extend `tests/e2e/shell.spec.ts` with failing footer assertions on home and
   not-found: footer links (`/privacy-policy/`, `/terms-of-use/`, `/technology/`, GitHub,
   LinkedIn) and the copyright line with the build year are present; Tab continues from main
   content through the footer's links and then the theme switch in visual order, and Shift+Tab
   walks back; every footer link activates with Enter and the theme switch with Enter and Space;
   visible focus at every stop; no keyboard trap anywhere on the page (FR-008, FR-010a, SC-005).
   Run it and confirm it fails.
-- [ ] T064 [P] [US1] Port `src/icons/sun.svg`, `src/icons/moon.svg`, `src/icons/github.svg`, and
+- [X] T064 [P] [US1] Port `src/icons/sun.svg`, `src/icons/moon.svg`, `src/icons/github.svg`, and
   `src/icons/linkedin.svg` from `.reference/flux/partials/Icons/*`, keeping `fill="none"
   stroke="currentColor"` (research R15); decorative, `aria-hidden="true"`; covered by T060/T061.
-- [ ] T065 [US1] Implement `src/components/SiteFooter.astro` using `src/config/navigation.ts`'s
+- [X] T065 [US1] Implement `src/components/SiteFooter.astro` using `src/config/navigation.ts`'s
   footer/social items to pass T060.
-- [ ] T066 [US2] Implement `src/components/ThemeToggle.astro` (uses `src/lib/theme.ts` helpers; a
+- [X] T066 [US2] Implement `src/components/ThemeToggle.astro` (uses `src/lib/theme.ts` helpers; a
   bundled script cycles `dark → light → system → dark` on activation, applies the class
   immediately, writes `localStorage["color-theme"]` wrapped in `try` (FR-015), announces the
   change via the live region, and — in `system` mode — re-applies the theme on a `matchMedia`
   change and on `visibilitychange` without reload (FR-014)) to pass T061.
-- [ ] T067 Wire `ThemeToggle` into `SiteFooter.astro`, confirm `BaseLayout.astro` composes the
+- [X] T067 Wire `ThemeToggle` into `SiteFooter.astro`, confirm `BaseLayout.astro` composes the
   now-complete `SiteHeader`/`SiteFooter`, and fix any wiring between `theme-init.js` and
   `ThemeToggle.astro` until T062 and T063 pass (FR-012, FR-013, SC-003).
-- [ ] T068 Run `pnpm exec vitest run tests/component/SiteFooter.test.ts
+- [X] T068 Run `pnpm exec vitest run tests/component/SiteFooter.test.ts
   tests/component/ThemeToggle.test.ts` and `pnpm run build && pnpm exec playwright test
   tests/e2e/shell.spec.ts tests/e2e/menu.spec.ts tests/e2e/no-js.spec.ts tests/e2e/theme.spec.ts
   --project=e2e`; fix anything red — this is the checkpoint for both US1 and US2 together.

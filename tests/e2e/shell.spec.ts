@@ -1,6 +1,7 @@
 // The shared shell on every page template: header part (FR-006, FR-009,
 // FR-010, FR-010a, FR-021, SC-005; contracts/shell-dom.md "Header" and
-// "Focus"). Phase 6 (T063) extends this file with the footer.
+// "Focus"), and the footer part (FR-008, FR-010a, SC-005; contracts/shell-dom.md
+// "Footer").
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { MENU_BUTTON, NAV_LIST, NOT_FOUND_PENDING, PRIMARY, TEMPLATES } from "./templates.ts";
 
@@ -207,4 +208,142 @@ test.describe("narrow screens", () => {
       });
     });
   }
+});
+
+// ---------------------------------------------------------------------------
+// Footer (T063)
+
+const FOOTER_LINKS = [
+  ["Privacy policy", "/privacy-policy/"],
+  ["Terms of use", "/terms-of-use/"],
+  ["Technology", "/technology/"],
+] as const;
+
+const SOCIAL_LINKS = [
+  ["GitHub", "https://github.com/drcdev"],
+  ["LinkedIn", "https://www.linkedin.com/in/drcdev"],
+] as const;
+
+/** Footer focus stops in visual order: site name, site links, theme switch, social links. */
+const FOOTER_ORDER = [
+  "/",
+  ...FOOTER_LINKS.map(([, href]) => href),
+  "theme-switch",
+  ...SOCIAL_LINKS.map(([, href]) => href),
+];
+
+async function footerStop(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const el = document.activeElement;
+    if (!el || el === document.body) return "body";
+    if (!document.querySelector("footer")?.contains(el)) return `outside:${el.getAttribute("href") ?? el.tagName}`;
+    if (el.hasAttribute("data-theme-toggle")) return "theme-switch";
+    return el.getAttribute("href") ?? el.tagName.toLowerCase();
+  });
+}
+
+/** External destinations are answered locally so the tests never leave the machine. */
+async function stubExternal(page: Page) {
+  await page.route(/^https:\/\/(github\.com|www\.linkedin\.com)\//, (route) =>
+    route.fulfill({ status: 200, contentType: "text/html", body: "<!doctype html><title>stub</title>" }),
+  );
+}
+
+test.describe("footer on every template", () => {
+  for (const template of TEMPLATES) {
+    test(`${template.name}: shows the footer links, social links and copyright with the build year`, async ({
+      page,
+    }) => {
+      test.fixme(!template.built, NOT_FOUND_PENDING);
+      await page.goto(template.path);
+      const footer = page.getByRole("contentinfo");
+      await expect(footer).toHaveCount(1);
+      for (const [name, href] of [...FOOTER_LINKS, ...SOCIAL_LINKS]) {
+        await expect(footer.getByRole("link", { name, exact: true })).toHaveAttribute("href", href);
+      }
+      await expect(footer).toContainText(`© ${new Date().getFullYear()} Don Coleman. All rights reserved.`);
+      await expect(footer.getByRole("button", { name: /^Theme: / })).toBeVisible();
+    });
+
+    test(`${template.name}: Tab goes from main content through the footer in visual order, Shift+Tab walks back, with no trap`, async ({
+      page,
+    }) => {
+      test.fixme(!template.built, NOT_FOUND_PENDING);
+      await page.setViewportSize(DESKTOP);
+      await page.goto(template.path);
+      await page.locator("main#main").focus();
+
+      const forward: string[] = [];
+      for (let i = 0; i < FOOTER_ORDER.length; i += 1) {
+        await page.keyboard.press("Tab");
+        forward.push(await footerStop(page));
+        await expectVisibleFocusRing(page.locator(":focus"));
+      }
+      expect(forward).toEqual(FOOTER_ORDER);
+
+      // Focus leaves the last footer control: no keyboard trap.
+      await page.keyboard.press("Tab");
+      expect(FOOTER_ORDER).not.toContain(await footerStop(page));
+
+      await page.getByRole("contentinfo").getByRole("link", { name: "LinkedIn" }).focus();
+      const backward: string[] = [await footerStop(page)];
+      for (let i = 1; i < FOOTER_ORDER.length; i += 1) {
+        await page.keyboard.press("Shift+Tab");
+        backward.push(await footerStop(page));
+        await expectVisibleFocusRing(page.locator(":focus"));
+      }
+      expect(backward).toEqual([...FOOTER_ORDER].reverse());
+      await page.keyboard.press("Shift+Tab");
+      expect(await footerStop(page)).not.toBe("/");
+    });
+  }
+
+  test("Tab from the skip link reaches the end of the page without getting stuck", async ({ page }) => {
+    await page.setViewportSize(DESKTOP);
+    await page.goto("/");
+    const seen: string[] = [];
+    for (let i = 0; i < 40; i += 1) {
+      await page.keyboard.press("Tab");
+      const stop = await footerStop(page);
+      seen.push(stop);
+      if (stop === "https://www.linkedin.com/in/drcdev") break;
+    }
+    expect(seen.at(-1)).toBe("https://www.linkedin.com/in/drcdev");
+    // Each stop is visited once on the way down (the header and footer each link "/" twice or once).
+    const distinct = seen.filter((s) => s !== "/" && s !== "outside:/");
+    expect(new Set(distinct).size).toBe(distinct.length);
+  });
+});
+
+test.describe("footer activation", () => {
+  test.use({ viewport: DESKTOP });
+
+  test("each footer link activates with Enter", async ({ page }) => {
+    await stubExternal(page);
+    const footerLink = (href: string) => page.getByRole("contentinfo").locator(`a[href="${href}"]`);
+    for (const href of ["/", ...FOOTER_LINKS.map(([, h]) => h)]) {
+      await page.goto("/?from-footer");
+      await footerLink(href).focus();
+      await Promise.all([
+        page.waitForURL((url) => url.pathname === href && url.search === ""),
+        page.keyboard.press("Enter"),
+      ]);
+    }
+    for (const [, href] of SOCIAL_LINKS) {
+      await page.goto("/");
+      await footerLink(href).focus();
+      await Promise.all([page.waitForURL(href), page.keyboard.press("Enter")]);
+    }
+  });
+
+  test("the theme switch activates with Enter and Space", async ({ page }) => {
+    await page.goto("/");
+    const toggle = page.getByRole("contentinfo").locator("button[data-theme-toggle]");
+    await toggle.focus();
+    await page.keyboard.press("Enter");
+    await expect(toggle).toHaveAccessibleName("Theme: Light");
+    await page.keyboard.press("Space");
+    await expect(toggle).toHaveAccessibleName("Theme: Match device");
+    await expect(toggle).toBeFocused();
+  });
 });
