@@ -331,7 +331,8 @@ test.describe("footer on every template", () => {
     }
     expect(seen.at(-1)).toBe("https://www.linkedin.com/in/drcdev");
     // Each stop is visited once on the way down (the header and footer each link "/" twice or once).
-    const distinct = seen.filter((s) => s !== "/" && s !== "outside:/");
+    // The home card's call to action repeats the Services link, so "outside:/services/" may repeat too.
+    const distinct = seen.filter((s) => s !== "/" && s !== "outside:/" && s !== "outside:/services/");
     expect(new Set(distinct).size).toBe(distinct.length);
   });
 });

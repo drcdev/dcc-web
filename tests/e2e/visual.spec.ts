@@ -45,6 +45,21 @@ for (const size of WIDTHS) {
   }
 }
 
+// The new pages: home (with the introduction card) and about, full page.
+for (const size of WIDTHS) {
+  for (const theme of THEMES) {
+    for (const [name, path] of [
+      ["home", "/"],
+      ["about", "/about/"],
+    ] as const) {
+      test(`${name} page — ${size.name} — ${theme}`, async ({ page }) => {
+        await open(page, path, size.width, size.height, theme);
+        await expect(page).toHaveScreenshot(`${name}-${size.name}-${theme}.png`, { fullPage: true });
+      });
+    }
+  }
+}
+
 for (const theme of THEMES) {
   test(`mobile menu open — phone — ${theme}`, async ({ page }) => {
     await open(page, "/", 390, 844, theme);

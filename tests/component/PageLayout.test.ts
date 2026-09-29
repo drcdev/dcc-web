@@ -106,3 +106,21 @@ describe("PageLayout navigation", () => {
     expect(list).not.toContain("Services");
   });
 });
+
+describe("PageLayout with an intro (home)", () => {
+  it("replaces the title heading with the card and keeps one <h1>", async () => {
+    const html = await render({
+      title: "Don Coleman",
+      intro: {
+        photo: { src: sample, alt: "Don, smiling" },
+        name: "Don Coleman",
+        tagline: "Tagline",
+        bio: "Bio",
+        cta: { label: "Help", href: "/services/" },
+      },
+    });
+    expect(byName(html, "h1")).toHaveLength(1);
+    expect(html).toContain("bg-gradient-to-br");
+    expect(html).not.toContain("text-5xl");
+  });
+});

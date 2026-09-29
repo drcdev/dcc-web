@@ -110,3 +110,64 @@ test("the sitemap lists the seven pages and neither the not-found page nor the c
   expect(paths).toEqual(["/", "/about/", "/privacy-policy/", "/services/", "/speaking/", "/technology/", "/terms-of-use/"]);
   expect(paths.some((p) => p.startsWith("/404") || p === "/cookie-policy/")).toBe(false);
 });
+
+test.describe("home introduction card (FR-016 to FR-019, FR-028a)", () => {
+  test("shows the card with one h1 equal to the name and no Subscribe", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("h1")).toHaveCount(1);
+    await expect(page.locator("h1")).toHaveText("Don Coleman");
+    const card = page.locator("main section").first();
+    await expect(card.locator("img")).toBeVisible();
+    await expect(card.locator("img")).toHaveAttribute("alt", /\S{3,}/);
+    await expect(card.locator("p.italic")).toBeVisible();
+    await expect(card.getByRole("link", { name: "GitHub" })).toBeVisible();
+    await expect(card.getByRole("link", { name: "LinkedIn" })).toBeVisible();
+    await expect(page.getByText(/subscribe/i)).toHaveCount(0);
+  });
+
+  test("the call to action navigates to /services/", async ({ page }) => {
+    await page.goto("/");
+    await page.locator("main section").first().locator('a[href="/services/"]').click();
+    await expect(page).toHaveURL(/\/services\/$/);
+  });
+
+  test("the text below the card says who Don helps and what he does", async ({ page }) => {
+    await page.goto("/");
+    const body = page.locator("#content-section");
+    await expect(body).toContainText(/helps/i);
+    await expect(body).toContainText(/what don does/i);
+    await expect(body.locator("a.bg-rust-600, a[class*='bg-rust']")).toHaveCount(0);
+  });
+
+  test("the photo is an optimised WebP loaded with high priority", async ({ page }) => {
+    await page.goto("/");
+    const img = page.locator("main section").first().locator("img");
+    await expect(img).toHaveAttribute("fetchpriority", "high");
+    await expect(img).toHaveAttribute("src", /\.webp/);
+    const type = await page.evaluate(async () => {
+      const src = document.querySelector("main section img")!.getAttribute("src")!;
+      return (await fetch(src)).headers.get("content-type");
+    });
+    expect(type).toBe("image/webp");
+  });
+
+  test("social links and the call to action have the focus indicator and 24px targets", async ({ page }) => {
+    await page.goto("/");
+    const targets = page.locator("main section").first().locator("a");
+    await expect(targets).toHaveCount(3);
+    for (let i = 0; i < 3; i++) {
+      const link = targets.nth(i);
+      await link.focus();
+      const style = await link.evaluate((el) => {
+        const s = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return { style: s.outlineStyle, width: parseFloat(s.outlineWidth), offset: parseFloat(s.outlineOffset), w: r.width, h: r.height };
+      });
+      expect(style.style).toBe("solid");
+      expect(style.width).toBeGreaterThanOrEqual(2);
+      expect(style.offset).toBe(2);
+      expect(style.w).toBeGreaterThanOrEqual(24);
+      expect(style.h).toBeGreaterThanOrEqual(24);
+    }
+  });
+});

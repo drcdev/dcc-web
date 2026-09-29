@@ -8,6 +8,7 @@
 import { getCollection, render } from "astro:content";
 import { getImage } from "astro:assets";
 import type { ImageMetadata } from "astro";
+import type { ComponentProps } from "astro/types";
 import PageLayout from "../layouts/PageLayout.astro";
 import { futureDestinations } from "../config/navigation";
 import { sectionComponents } from "../components/sections/index";
@@ -55,6 +56,7 @@ const share = imageSrc ? await getImage({ src: imageSrc, width: 1200, format: "p
   image={share?.src}
   imageAlt={data.image?.alt}
   featureImage={featureImage}
+  intro={data.intro as ComponentProps<typeof PageLayout>["intro"]}
   draft={data.draft}
   home={addressOf(entry) === "/"}
 >

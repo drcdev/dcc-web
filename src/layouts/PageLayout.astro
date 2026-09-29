@@ -3,8 +3,10 @@
 // inside BaseLayout (port of Flux page.hbs + content-section.hbs;
 // contracts/page-dom.md). No share bar: that belongs to the Blog feature.
 import type { ImageMetadata } from "astro";
+import type { ComponentProps } from "astro/types";
 import BaseLayout from "./BaseLayout.astro";
 import DraftNotice from "../components/page/DraftNotice.astro";
+import HomeIntro from "../components/page/HomeIntro.astro";
 import FeatureImage from "../components/page/FeatureImage.astro";
 import type { NavigationItem } from "../config/navigation";
 
@@ -16,19 +18,27 @@ export interface Props {
   image?: string;
   imageAlt?: string;
   featureImage?: { src: ImageMetadata; alt: string; caption?: string };
+  /** Home introduction card; when set it replaces the title heading. */
+  intro?: ComponentProps<typeof HomeIntro>["intro"];
   draft?: boolean;
   /** The home page's document title is the site name alone. */
   home?: boolean;
 }
 
-const { title, description, navigation, image, imageAlt, featureImage, draft = false, home = false } = Astro.props;
+const { title, description, navigation, image, imageAlt, featureImage, intro, draft = false, home = false } = Astro.props;
 ---
 
 <BaseLayout title={home ? undefined : title} description={description} image={image} imageAlt={imageAlt} navigation={navigation}>
   <article class="mx-auto">
-    <section class="mx-auto mb-8 max-w-screen-lg">
-      <h1 class="my-4 text-5xl font-bold break-words text-dusk-900 dark:text-white">{title}</h1>
-    </section>
+    {
+      intro ? (
+        <HomeIntro intro={intro} />
+      ) : (
+        <section class="mx-auto mb-8 max-w-screen-lg">
+          <h1 class="my-4 text-5xl font-bold break-words text-dusk-900 dark:text-white">{title}</h1>
+        </section>
+      )
+    }
     {
       featureImage && (
         <section class="mx-auto mb-8 max-w-screen-lg">

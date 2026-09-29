@@ -1,0 +1,75 @@
+---
+// Home introduction card (port of Flux layout-author-hero.hbs; contracts/page-dom.md
+// "Home page"). The name is the page's `<h1>`; the photo is optimised by
+// `<Image />` from astro:assets (docs.astro.build/en/guides/images/#astro-components-for-images).
+// The social links are the footer's list (GitHub, LinkedIn) and the Subscribe
+// button is replaced by the call to action from the page file (FR-016, FR-017).
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import { socialNavigation } from "../../config/navigation";
+import GitHubIcon from "../../icons/github.svg";
+import LinkedInIcon from "../../icons/linkedin.svg";
+
+export interface Props {
+  intro: {
+    photo: { src: ImageMetadata; alt: string };
+    name: string;
+    tagline: string;
+    bio: string;
+    cta: { label: string; href: string };
+  };
+}
+
+const { intro } = Astro.props;
+const icons = { GitHub: GitHubIcon, LinkedIn: LinkedInIcon } as const;
+---
+
+<section class="mx-auto mb-8 max-w-screen-lg">
+  <div
+    class="rounded-xl bg-gradient-to-br from-rust-400 via-sage-400 to-lavender-400 p-[2px] shadow-lg motion-safe:transition-shadow motion-safe:duration-300 motion-safe:hover:shadow-xl"
+  >
+    <div class="flex flex-col overflow-hidden rounded-xl bg-white sm:flex-row dark:bg-dusk-800">
+      <Image
+        src={intro.photo.src}
+        alt={intro.photo.alt}
+        width={512}
+        format="webp"
+        loading="eager"
+        fetchpriority="high"
+        sizes="(min-width: 768px) 256px, (min-width: 640px) 192px, 100vw"
+        class="aspect-square w-full shrink-0 object-cover sm:aspect-auto sm:h-full sm:w-48 md:w-64"
+      />
+      <div class="flex flex-1 flex-col items-center justify-center p-6 text-center sm:items-start sm:text-left">
+        <h1 class="text-xl font-bold text-dusk-900 sm:text-2xl dark:text-white">{intro.name}</h1>
+        <p class="mt-1 text-xs text-mauve-600 italic sm:text-sm dark:text-mauve-400">{intro.tagline}</p>
+        <p class="mt-3 text-sm leading-relaxed text-dusk-600 sm:text-base dark:text-mist-400">{intro.bio}</p>
+        <div class="mt-4 flex w-full flex-col items-center gap-4 sm:w-auto sm:flex-row">
+          <ul class="flex items-center justify-center gap-3 sm:justify-start">
+            {
+              socialNavigation.map((item) => {
+                const Icon = icons[item.label as keyof typeof icons];
+                return (
+                  <li>
+                    <a
+                      href={item.href}
+                      class="inline-flex size-8 items-center justify-center text-dusk-400 hover:text-rust-500 motion-safe:transition-colors dark:text-dusk-500 dark:hover:text-rust-400"
+                    >
+                      <Icon class="size-6" aria-hidden="true" />
+                      <span class="sr-only">{item.label}</span>
+                    </a>
+                  </li>
+                );
+              })
+            }
+          </ul>
+          <a
+            href={intro.cta.href}
+            class="inline-flex items-center gap-2 rounded-lg bg-rust-600 px-4 py-2 text-sm font-medium text-white hover:bg-rust-700 motion-safe:transition-colors"
+          >
+            {intro.cta.label}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

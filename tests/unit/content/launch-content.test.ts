@@ -48,6 +48,21 @@ describe("launch page files", () => {
     expect(load("index.mdx").body).not.toContain("<CallToAction");
   });
 
+  it("home has an intro with photo, name, tagline, bio and a call to action to /services/", () => {
+    const { front } = load("index.mdx");
+    expect(front).toMatch(/^intro:/m);
+    for (const key of ["photo:", "name:", "tagline:", "bio:", "cta:"]) expect(front).toContain(key);
+    expect(front).toMatch(/photo:\s*\n\s+src: \.\/images\/don-coleman\.jpg/);
+    expect(front).toMatch(/alt: \S/);
+    expect(front).toMatch(/href: "?\/services\/"?/);
+  });
+
+  it("home body says who Don helps and what he does", () => {
+    const body = load("index.mdx").body.toLowerCase();
+    expect(body).toMatch(/helps?/);
+    expect(body).toMatch(/what (don|he) does|the work/);
+  });
+
   it("there is no cookie policy page", () => {
     expect(existsSync(`${dir}cookie-policy.mdx`)).toBe(false);
     expect(existsSync(`${dir}cookie-policy.md`)).toBe(false);
