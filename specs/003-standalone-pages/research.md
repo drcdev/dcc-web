@@ -110,7 +110,8 @@ trailing slash (FR-003).
 
 - Entry ids come from a custom `generateId` passed to `glob()` that uses the pure
   `addressFromPath()` function (`src/lib/content/address.ts`): strip the extension, drop a final
-  `/index`, keep lower-case path segments. `index.mdx` maps to the id `index` and the address `/`.
+  `/index`, and reject any path segment outside `[a-z0-9-]` with a `PageContentError` (spec
+  FR-003). `index.mdx` maps to the id `index` and the address `/`.
 
 **Rationale**: The content collections guide documents exactly this for static output, including
 the rest parameter for multi-segment ids; the routing reference documents `undefined` for the
@@ -130,7 +131,8 @@ docs.astro.build/en/reference/content-loader-reference/#generateid.
 `src/lib/content/address.ts` over the **file list** from
 `import.meta.glob("/src/content/pages/**/*.{md,mdx}")` (keys only, not the store), and over the
 addresses of every other route file found with `import.meta.glob("/src/pages/**/*.{astro,ts,js,md,mdx}")`
-(excluding `[...slug].astro`; dynamic segments reserve their static prefix). It throws a
+(excluding `[...slug].astro`; dynamic segments reserve their static prefix), and against the
+`futureDestinations` addresses reserved for later features (spec FR-008). It throws a
 `PageContentError` naming both files.
 
 **Rationale**: The content store keeps one entry per id, so two files that map to the same id

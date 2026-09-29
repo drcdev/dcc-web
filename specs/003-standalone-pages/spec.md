@@ -61,7 +61,8 @@ desktop widths, and confirm each returns a real page with the expected title and
 5. **Given** any launch page, **When** automated accessibility checks run on it, **Then** they
    report no violations.
 6. **Given** the navigation link for Services, Speaking or About, **When** the visitor is on
-   that page, **Then** that link is marked as the current page.
+   that page, **Then** that link is marked as the current page, visually and to assistive
+   technology (`aria-current="page"`, as in foundation FR-009; see FR-025b).
 
 ---
 
@@ -124,8 +125,9 @@ page-list entry; then change a word in an existing page file and confirm only th
    **Then** the page is reachable by its address but is not added to the header navigation.
 4. **Given** a page file that asks to appear in navigation, **When** the site is built, **Then**
    the header navigation includes it with the label and position the file gives.
-5. **Given** an edit to one page file, **When** the site is rebuilt, **Then** only that page's
-   output changes.
+5. **Given** an edit to one page file, **When** the site is rebuilt, **Then** comparing the two
+   builds, the only HTML file whose content differs is that page's own, unless the edit changes
+   the page's navigation label or position, which changes the header on every page.
 
 ---
 
@@ -155,7 +157,8 @@ accessibility checks.
    appears as a single prominent link that works with the keyboard and has a visible focus
    indicator.
 4. **Given** an image with a caption, **When** it renders, **Then** the image has alternative
-   text and the caption is associated with it.
+   text and the caption is programmatically associated with it (a figure and its caption), not
+   only placed next to it.
 5. **Given** a wide image, **When** it renders on a desktop screen, **Then** it extends beyond the
    text column; **given** a full-width image, **Then** it spans the full width of the window; and
    on a phone both fit the screen without horizontal scrolling.
@@ -229,13 +232,25 @@ site's versions and with how the new site actually behaves.
 ### Edge Cases
 
 - A page file sets a description longer than sharing previews show: the page still builds; the
-  full description is used as given (length guidance is documented for Don, not enforced).
+  full description is used as given. Length guidance (about 50 to 160 characters) is documented
+  for Don in the page guide (FR-012), not enforced.
 - A page's title is very long, or a narrow screen (320px): the title wraps and nothing overflows
-  horizontally.
+  horizontally, including long unbroken words or web addresses in the title or body.
 - A page has a feature image but no title shown: the page still has exactly one main heading for
   accessibility.
 - A page asks to appear in navigation but gives no label: its title is used as the label.
-- Two navigation pages ask for the same position: the build fails naming both files.
+- Two navigation entries ask for the same position (two page files, or a page file and one of
+  the fixed Writing, Projects or Contact entries): the build fails naming both sources.
+- A page file would produce /writing/, /projects/ or /contact/, which are reserved for later
+  features: the build fails naming the file and the reserved address.
+- A page file or folder name uses capitals, spaces, underscores or dots: the build fails naming
+  the file (FR-003).
+- A page address is requested without its trailing slash: the hosting platform's standard
+  handling sends the visitor to the address with the slash; the site adds no redirect rules of
+  its own.
+- Decorative images: a page file cannot add an image with empty alternative text; every image it
+  adds is content and needs alternative text. Decorative graphics (the card's gradient border,
+  social icons) belong to components and are hidden from assistive technology.
 - A page image file is missing or the path is wrong: the build fails naming the page and the
   image.
 - A wide or full-width image inside a list or narrow container: it does not cause horizontal
@@ -244,8 +259,9 @@ site's versions and with how the new site actually behaves.
   so no placeholder text is mistaken for Don's final words.
 - The Writing, Projects and Contact links: still show the not-found page until their features
   land, and the automated checks keep accepting that for those three addresses only.
-- A page file with no body content: the build fails, since a page with only a title is
-  almost certainly a mistake.
+- A page file with no body content, or a body of whitespace only: the build fails, since a page
+  with only a title is almost certainly a mistake. A body made only of sections counts as
+  content. The draft notice is added by the layout and does not count as body content.
 
 ## Requirements *(mandatory)*
 
@@ -257,72 +273,140 @@ site's versions and with how the new site actually behaves.
   containing the page's settings followed by its content in Markdown, optionally using the
   reusable sections (FR-010).
 - **FR-002**: Adding a page file MUST be the only change needed to publish a new page: no route,
-  list, configuration or code change.
-- **FR-003**: A page's address MUST be derived from its file's name (and folder, if nested), with
-  a trailing slash, matching the site's existing address style. The home page is the file that
-  maps to `/`.
+  list, configuration, image registry or code change. Image files the page uses are added beside
+  it (FR-003a) as part of the same change; nothing else lists them.
+- **FR-003**: A page's address MUST be derived from its file's path inside the pages folder: the
+  path without its extension, with a trailing slash, matching the site's existing address style.
+  A file named `index` stands for its folder: the top-level `index` file is the home page (`/`),
+  and `legal/index` maps to `/legal/`. Every folder and file name in the path (without the
+  extension) MUST use only lower-case letters, digits and hyphens; any other name (capitals,
+  spaces, underscores, dots) fails the build naming the file. A request for a page address
+  without its trailing slash is left to the hosting platform's standard handling, which sends it
+  to the address with the slash; the site adds no redirect rules of its own.
+- **FR-003a**: Images used by page files MUST live in the pages folder's image folder and be
+  referred to by a path relative to the page file (for example `./images/stage.jpg`), both in
+  settings and in content.
 - **FR-004**: Each page file MUST declare: a title (required), a description (required), a
   sharing image with alternative text (optional; both or neither), a feature image with
   alternative text (optional; both or neither), whether the page appears in the header
   navigation (optional, default no), a navigation label (optional, defaults to the title) and a
   navigation position (required only when the page appears in navigation), and whether the page
-  is a draft (optional, default no).
+  is a draft (optional, default no). The sharing image and the feature image follow the same
+  "both or neither" rule with the same build failure: an image without alternative text, or
+  alternative text without an image, fails the build naming the file and the missing part.
 - **FR-005**: Each page MUST use its settings for its document title, description, canonical
   address and sharing-preview metadata, falling back to the site-wide defaults from the
-  foundation for any optional value it does not set.
+  foundation for any optional value it does not set. The canonical address and the sharing
+  address are the same absolute address: the site's configured origin (foundation FR-017) plus
+  the page address with its trailing slash. The document title comes from the page title (the
+  home page keeps the site name, as in the foundation), and every page keeps the foundation's
+  declared page language (`lang="en"`).
 - **FR-006**: Every page built from a page file MUST appear in the search engines' page list,
-  including pages marked as drafts, and MUST be indexable (no "noindex" marker).
+  including pages marked as drafts; the not-found page and addresses with no page (such as
+  /cookie-policy/) are not in it. No page built from a page file may carry a page-level
+  "noindex" marker, and draft and non-draft pages MUST send identical search-engine signals. The
+  foundation's site-wide pre-launch no-index (foundation FR-019) still applies to every page,
+  drafts included, until the domain-switch follow-up removes it; this feature does not change
+  it.
 
 **Validation**
 
 - **FR-007**: The build MUST fail, with a plain-language message naming the file and the problem,
   when a page file: is missing a required setting; has a setting of the wrong kind or an unknown
   setting; has an image without alternative text; refers to an image that does not exist; has
-  no body content; uses a section that does not exist; or uses a section without its required
-  information.
+  no body content; has a level-1 heading in its body; uses a section that does not exist; or
+  uses a section without its required information.
+- **FR-007a**: Every build-failure message MUST name the page file by its path in the repository,
+  name the setting or section concerned, and say what is wrong in plain words; messages written
+  by this feature also say what to change (for example "use ## for headings"). Settings errors
+  come from Astro's own content check, which names the file and the setting. Each failure class
+  in FR-007 and FR-008 has one expected message shape, listed in the build-errors contract
+  (`contracts/build-errors.md`), which the validation tests follow one-to-one (SC-003). The one
+  exception to naming the file: a missing image in page content is reported by Astro with the
+  image path, which may not include the page file. Section errors name the file and the section;
+  a line number is not required. An unknown setting is named as written; suggesting the nearest
+  valid setting is not required. The build stops at the first error it finds; reporting every
+  error in one run is not required.
 - **FR-008**: The build MUST fail, naming the files involved, when two page files would produce
-  the same address, when a page's address is already produced by another part of the site, or
-  when two navigation pages ask for the same navigation position.
+  the same address; when a page's address is already produced by another part of the site (the
+  not-found page, any other route file including generated files such as the crawler
+  instructions, and routes added by later features, where a route with a variable part reserves
+  its fixed prefix); when a page's address is reserved for a later feature (the accepted
+  not-found addresses of FR-027: /writing/, /projects/, /contact/); or when two navigation entries
+  ask for the same navigation position, whether both come from page files or one is a fixed
+  entry.
 - **FR-009**: No page with invalid content may be published: a failing build blocks the merge
-  and the deployment, as for any other failed check.
+  and the deployment, as for any other failed check. Local builds, CI and preview builds run the
+  same build and fail on the same content with the same message.
 
 **Reusable sections**
 
 - **FR-010**: Page content MUST be able to use these named sections, in any order and any number
   of times, alongside ordinary text:
   - **Lead**: an emphasised introductory paragraph.
-  - **Text block**: a titled block of ordinary text, for grouping content under a heading.
+  - **Text block**: a titled block of ordinary text, for grouping content under a level-2
+    heading.
   - **Offerings list**: a list of items, each with a title, a short description and an optional
-    link.
+    link, with an optional list title. The list title is a level-2 heading; each item's title is
+    a level-3 heading when the list has a title and a level-2 heading when it does not, so
+    levels never skip.
   - **Call to action**: a short message with one prominent link (label and destination
     required).
-  - **Image with caption**: an image with required alternative text and an optional caption.
+  - **Image with caption**: an image with required alternative text and an optional caption,
+    programmatically associated with the image (a figure and its caption).
   - **Wide image** and **full-width image**: an image that extends beyond the text column, or
     across the full window width on larger screens, with required alternative text and an
     optional caption, fitting the screen on phones.
+
+  Every image a page file adds (sharing image, feature image, or an image in any image section)
+  MUST have non-empty alternative text that describes it. Page files cannot add decorative
+  images with empty alternative text; an image without alternative text fails the build
+  (FR-007).
 - **FR-011**: Each section MUST render consistently on every page, meet WCAG 2.2 AA in both
   themes, work without JavaScript, and cause no horizontal scrolling at widths of 320px and up.
-- **FR-012**: The set of sections MUST be documented for Don with a short example of each, in the
-  repository's documentation.
+  Grouped items (the offerings list, the introduction card's social links) are marked up as
+  lists.
+- **FR-012**: The set of sections MUST be documented for Don with a short example of each and its
+  required and optional information, in the page guide in the repository's documentation
+  (`docs/pages.md`), which also lists every page setting and gives description-length guidance.
 
 **Page layout**
 
 - **FR-013**: Standard pages MUST use one shared page layout carried over from the current site's
   page template: the page title as the main heading, an optional feature image, and body text in
-  the site's existing accent prose style, inside the foundation's header and footer.
-- **FR-014**: Every page MUST have exactly one main heading. Headings in page content MUST follow
-  the design system's heading colours.
-- **FR-015**: A page marked as a draft MUST show a visible notice near the top of its content
-  saying the text is a draft and subject to change; removing the draft setting removes the
-  notice. Drafts are still published and indexed like any other page (they are placeholders for
-  launch, not hidden pages); the visible notice is the only thing that marks them.
+  the site's existing accent prose style, inside the foundation's header and footer. The layout
+  keeps the foundation's landmarks unchanged (one banner, one navigation labelled "Main", one
+  main region, one contentinfo; foundation FR-020b); everything the layout, the card and the
+  sections add sits inside the main region.
+- **FR-014**: Every page MUST have exactly one level-1 heading: the page title on standard pages
+  (with or without a feature image), and Don's name in the introduction card on the home page. A
+  page body MUST NOT contain a level-1 heading (a Markdown `#` heading or an `<h1>`); content
+  headings start at level 2 and do not skip levels. Headings in page content MUST use the design
+  system's heading colours (H1 and H2 rust, H3 sage, H4 lavender, as in foundation FR-020a) in
+  both themes, at the foundation's contrast minimums.
+- **FR-015**: A page marked as a draft MUST show a visible notice at the top of its content
+  region, before the body, saying the text is a draft and subject to change. The notice is a
+  plain paragraph, not a heading and not a landmark, so each page keeps its one level-1 heading
+  and its heading order and landmarks are unchanged; it meets the contrast minimums in both
+  themes. Removing the draft setting removes the notice. The draft setting affects nothing else:
+  drafts are published, listed and treated by search engines exactly like any other page
+  (FR-006); they are placeholders for launch, not hidden pages, and the visible notice is the
+  only thing that marks them.
 
 **Home page**
 
 - **FR-016**: The home page MUST open with an introduction card carried over from the current
-  site's home page: Don's photo with alternative text, his name as the page's main heading, a
-  tagline, a short bio, and links to GitHub and LinkedIn using the same icons and accessible
-  names as the footer, framed by the current site's gradient border in both themes.
+  site's home page: Don's photo with alternative text, his name as the page's only level-1
+  heading, a tagline, a short bio, and links to GitHub and LinkedIn as a list, using the same
+  icons and accessible names as the footer ("GitHub" and "LinkedIn", foundation FR-008a), framed
+  by the current site's gradient border in both themes. The photo's alternative text MUST
+  identify Don and briefly say what the photo shows; it may not be empty, a file name, or a
+  generic word such as "photo". The gradient border, the social icons and any other decorative
+  card graphics are hidden from assistive technology and add nothing to any accessible name. The
+  border is decorative (the card's content does not depend on seeing its edge), so it carries no
+  contrast requirement. Reading and keyboard order follow the visual order: photo, name,
+  tagline, bio, social links (GitHub, then LinkedIn), call to action; only the links and the call
+  to action are focusable.
 - **FR-017**: The introduction card MUST NOT include a subscribe or sign-up button. In its place
   it MUST show a call to action linking to /services/ at launch; the Contact feature switches it
   to /contact/.
@@ -344,13 +428,44 @@ site's versions and with how the new site actually behaves.
 - **FR-022**: The Privacy policy MUST cover what the contact form collects, where submissions are
   stored (Canada), how long they are kept before automatic deletion, that the site sets no
   cookies, and how visitor statistics are collected. It MUST absorb the relevant content of the
-  current cookie policy. No page is published at /cookie-policy/.
+  current cookie policy. No page is published at /cookie-policy/. It makes only these claims,
+  each traced to its source:
+  - **Cookies and browser storage** (foundation): the site sets no cookies, including through
+    its visitor statistics; the only thing kept in the visitor's browser is their theme choice,
+    in local storage on their device, never sent to the site. This replaces the current cookie
+    policy's list of cookies and how to control them; anything about Ghost, member sign-in,
+    subscriptions, comments or payment cookies is dropped.
+  - **Visitor statistics** (foundation): Cloudflare Web Analytics, on the main site only (not
+    preview deployments), with no cookies and no tracking of individuals.
+  - **Hosting** (foundation): pages are served by Cloudflare, which processes standard request
+    information, such as the visitor's IP address, to deliver them.
+  - **Contact form** (constitution Principle VII; confirmed by the Contact feature): only what a
+    person types into the form is collected; submissions are stored on Fly.io in Toronto,
+    Canada, do not pass through any service that stores them outside Canada, and are deleted
+    automatically after a set retention period.
+  - **Spam protection** (constitution Principle X and Technology Constraints; confirmed by the
+    Contact feature): sending the contact form may run a spam-protection check by a third-party
+    service, which receives technical information about the visitor's browser to tell people
+    from automated submissions. The exact service and what it receives are confirmed by the
+    Contact feature.
+  - **Your choices**: people can ask what the site holds about them and ask for their contact
+    submission to be deleted.
+- **FR-022a**: In the Privacy policy, the contact form's field list, the retention period, the
+  spam-protection service and the route for privacy requests are unconfirmed placeholders. Each
+  MUST be visibly marked in the text with the words "to be confirmed", separately from the
+  page-level draft notice, so the Contact feature can find every one by searching the privacy
+  policy file for that phrase. The policy MUST NOT state a concrete retention duration until the
+  Contact feature confirms it. The policy shows a "Last updated" date. Its plain language does not
+  make claims vaguer: each claim names the service, place or period it refers to, or is marked
+  "to be confirmed". It may say that it replaces the former cookie policy but does not link to
+  /cookie-policy/.
 - **FR-023**: Terms of use and Technology MUST start from the current site's pages at the same
   addresses, with statements that no longer apply to the new site removed or corrected.
 - **FR-024**: Home, Services, Speaking, About and Privacy policy MUST launch with short, plain
   placeholder copy marked as drafts (FR-015). Terms of use and Technology are marked as drafts
-  until Don has reviewed the carried-over text. All copy follows the constitution's plain-language
-  rule: no hype or filler.
+  until Don has reviewed the carried-over text. The Privacy policy keeps its draft setting until
+  the Contact feature has confirmed every "to be confirmed" item (FR-022a) and Don has reviewed
+  the text. All copy follows the constitution's plain-language rule: no hype or filler.
 
 **Navigation and existing links**
 
@@ -358,17 +473,52 @@ site's versions and with how the new site actually behaves.
   (Home, Services, Speaking, Writing, Projects, About, Contact). Page files for Home, Services,
   Speaking and About control their own labels and positions, which launch with the current
   values, so the rendered navigation is unchanged. Writing, Projects and Contact remain fixed
-  entries until their features land.
-- **FR-026**: The footer MUST remain as the foundation defined it; its privacy, terms and
-  technology links now reach real pages.
+  entries until their features land. Launch values (position, label, source): 1 Home (home page
+  file), 2 Services (page file), 3 Speaking (page file), 4 Writing (fixed), 5 Projects (fixed),
+  6 About (page file), 7 Contact (fixed).
+- **FR-025a**: A navigation position is a whole number of 1 or more that orders the entries: the
+  header lists every entry, from page files and fixed entries together, in ascending position.
+  Gaps between positions are allowed and have no effect; two entries with the same position fail
+  the build (FR-008). The fixed entries' positions (4, 5, 7) are reserved, so a page file asking
+  for one fails the build naming the page file and the fixed entry. A page in navigation without
+  a label uses its title. When a later feature takes over a fixed entry's destination, it removes
+  that fixed entry and supplies its own entry at the same position, so the rendered order stays
+  the same unless that feature's spec says otherwise.
+- **FR-025b**: A navigation link is marked as the current page only on the page whose address
+  equals the link's address exactly (with or without the trailing slash): the Home link only on
+  `/`, and a nested page does not mark a parent page's link.
+- **FR-026**: The footer MUST remain as the foundation defined it; page files cannot add, remove
+  or change footer links. Its privacy, terms and technology links now reach real pages.
 - **FR-027**: The automated link checks MUST stop treating the six addresses built here (/services/, /speaking/, /about/,
   /privacy-policy/, /terms-of-use/, /technology/) as
   future destinations; only /writing/, /projects/ and /contact/ remain accepted as not-found.
+  That list is kept in one place (the navigation configuration's list of future destinations),
+  a later feature shrinks it by editing only that list, and its addresses are reserved against
+  page files (FR-008). /cookie-policy/ is not in the list: it is not linked from the site and
+  returns the not-found page because no page produces it (FR-022).
 
 **Quality**
 
-- **FR-028**: Every launch page MUST pass the automated accessibility checks in both themes, and
-  be readable with JavaScript turned off.
+- **FR-028**: Every launch page and the section test page MUST pass the automated accessibility
+  checks (axe-core with the WCAG 2.0, 2.1 and 2.2 level A and AA rules, as in the foundation) in
+  both themes, at phone and desktop widths, with JavaScript on and off, and be readable with
+  JavaScript turned off. Automated checks cannot judge alternative-text quality, reading order
+  or screen-reader announcements; those are covered by component tests for structure and by
+  Don's review of the preview.
+- **FR-028a**: Everything this feature adds MUST meet the foundation's contrast and focus rules
+  (foundation FR-020, FR-020a, FR-020b) in both themes: at least 4.5:1 for body text, links,
+  blockquotes, code, captions, the lead section, offerings, the draft notice and the card's
+  tagline and bio; at least 3:1 for large text, list markers, icons and focus indicators. This
+  covers the introduction card, the prose style and every section. Where a ported current-site
+  shade fails, the nearest passing shade of the same palette is used and recorded in the
+  design-source document. Links in page content are identified by more than colour (underlined).
+  Every link and call to action, including the card's social links and call to action, the
+  call-to-action sections and offering links, shows the foundation's focus indicator (solid
+  outline at least 2px, offset 2px, at least 3:1), is not hidden behind other content when
+  focused, and has a target at least 24 by 24 CSS pixels or meets the spacing exception of WCAG
+  2.5.8. Text in the card and the prose layout can be enlarged to 200% without loss of content,
+  and content reflows at 320 CSS pixels (400% zoom at 1280px) without scrolling in two
+  directions.
 - **FR-029**: The automated screenshot baselines MUST be extended to cover the home page and one
   standard page at phone (390px) and desktop (1280px) widths in both themes, and the existing
   shell baselines MUST continue to pass unchanged, or any difference MUST be explained and
@@ -403,7 +553,8 @@ site's versions and with how the new site actually behaves.
 - **SC-002**: A new page can be published by adding exactly one file; in a test, the change set
   for a new page is one file and the page appears after one build.
 - **SC-003**: 100% of the deliberately broken page files in the validation tests (one per rule in
-  FR-007 and FR-008) fail the build, and each failure message names the file and the problem.
+  FR-007 and FR-008, as listed in `contracts/build-errors.md`) fail the build, and each failure
+  message names the file and the problem (FR-007a).
 - **SC-004**: 0 accessibility violations on every launch page and on the section test page, in
   both themes.
 - **SC-005**: Every launch page renders with no horizontal scrolling at 320px, 390px and 1280px
@@ -423,8 +574,9 @@ site's versions and with how the new site actually behaves.
   Don in clarification).
 - **Contact data wording**: The contact form and its retention period are built in the Contact
   feature. The privacy policy describes them from the constitution (fields typed into the form
-  only, stored in Toronto, deleted after a set retention period), with the specific field list
-  and retention period as draft placeholders for the Contact feature to confirm.
+  only, stored in Toronto, deleted after a set retention period), with the specific field list,
+  retention period, spam-protection service and privacy-request route marked "to be confirmed"
+  for the Contact feature (FR-022a).
 - **Statistics**: Visitor statistics are Cloudflare Web Analytics on the main build only, as set
   up by the foundation, and set no cookies.
 - **No redirects**: Following the foundation's decision, /cookie-policy/ is not redirected; Don
@@ -448,7 +600,12 @@ site's versions and with how the new site actually behaves.
 
 - **Blog feature**: blog posts, listing and topics (Writing).
 - **Portfolio feature**: project pages and the Projects landing page.
-- **Contact feature**: the contact form, the /contact/ page, and confirming the privacy policy's
-  field list and retention period; switches the Home call to action to /contact/.
+- **Contact feature**: the contact form, the /contact/ page, and confirming every "to be
+  confirmed" item in the privacy policy file (field list, retention period, spam-protection
+  service and what it receives, route for privacy requests), found by searching that file for the
+  phrase; then Don removes the policy's draft setting. Switches the Home call to action to
+  /contact/, removes the fixed Contact entry and /contact/ from the accepted not-found list.
+- **Domain switch**: removing the foundation's site-wide pre-launch no-index, after which every
+  page, drafts included, becomes indexable (FR-006).
 - **Final copy**: Don replaces placeholder copy and removes draft settings page by page.
 - **Photo**: a new photo, if Don wants one.

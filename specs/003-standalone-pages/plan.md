@@ -55,7 +55,7 @@ script (FR-030); CSP unchanged (`img-src 'self' data:` covers `astro:assets` out
 `noindex`; no redirects; $0 added running cost.
 
 **Scale/Scope**: 7 launch pages, 1 route file, ~12 new components (layout, home intro, feature
-image, draft notice, 8 sections), 1 collection, ~16 build-failure fixtures, 8 new visual
+image, draft notice, 8 sections), 1 collection, ~17 build-failure fixtures, 8 new visual
 baselines per platform for launch pages plus the sections fixture baselines.
 
 ## Constitution Check
@@ -117,22 +117,27 @@ auto-merge is left off.
 Each is written, reviewed against the spec and seen failing before the implementation it covers.
 
 1. **Unit / schema** (`tests/unit/content/`): `pageSchema` accepts valid settings and rejects
-   each FR-007 settings mistake (with a stand-in `image` validator); `addressFromPath`;
-   `assertUniqueAddresses` (page/page, page/route, nested index); `validatePageBody` (empty body,
-   unknown section, empty alt, level-1 heading, code fences ignored); `mergeNavigation` (launch
-   order equals the foundation's seven links; duplicate position names both sources; label
-   defaults to title); section prop schemas; launch-content test (seven files, all `draft: true`,
-   home has `intro` and no `<CallToAction>` in its body, privacy policy mentions cookies,
-   Canada/Toronto, retention and statistics; terms/technology contain no "Ghost", "member",
-   "subscribe", "comment", "Drift", "Convergence", "News" category references);
-   `futureDestinations` is exactly `/writing/`, `/projects/`, `/contact/`; `docs/design-source.md`
-   documents the content structure (FR-031) and `docs/pages.md` has an example per section
-   (FR-012); `package.json`/`astro.config.mjs`/`playwright.config.ts` config assertions.
+   each FR-007 settings mistake (with a stand-in `image` validator); `addressFromPath` (including
+   rejecting names outside `[a-z0-9-]`); `assertUniqueAddresses` (page/page, page/route, nested
+   index, reserved `futureDestinations`); `validatePageBody` (empty body, unknown section, empty
+   alt, level-1 heading, code fences ignored); `mergeNavigation` (launch order equals the
+   foundation's seven links; duplicate position names both sources; label defaults to title);
+   section prop schemas; launch-content test (seven files, all `draft: true`, home has `intro`
+   and no `<CallToAction>` in its body; privacy policy mentions cookies, Canada/Toronto,
+   retention, statistics and spam protection, marks the field list, retention period,
+   spam-protection service and request route "to be confirmed", states no concrete retention
+   duration, and shows a "Last updated" date (spec FR-022, FR-022a); terms/technology contain no
+   "Ghost", "member", "subscribe", "comment", "Drift", "Convergence", "News" category
+   references); `futureDestinations` is exactly `/writing/`, `/projects/`, `/contact/`;
+   `docs/design-source.md` documents the content structure (FR-031) and `docs/pages.md` has an
+   example per section (FR-012); `package.json`/`astro.config.mjs`/`playwright.config.ts` config
+   assertions.
 2. **Component** (`tests/component/`, Container API): `PageLayout` (one `<h1>`, feature image
    present/absent with no empty wrapper, draft notice on/off, prose-accent wrapper classes);
    `HomeIntro` (gradient wrapper, `<h1>` name, photo alt, tagline, bio, GitHub/LinkedIn with the
    footer's accessible names, CTA href `/services/`, no Subscribe); `DraftNotice`; each section
-   (structure, list semantics, `figure`/`figcaption`, width classes, focusable CTA, and a thrown
+   (structure, list semantics, `figure`/`figcaption`, width classes, focusable CTA, offering
+   titles `<h3>` under a list title and `<h2>` without one, and a thrown
    error naming the section and missing prop); `SiteHeader`/`BaseLayout` with a passed
    `navigation`.
 3. **Build-level** (`tests/build/`): one broken fixture per row of
@@ -273,8 +278,8 @@ Tests first inside every step.
 - **Contrast of ported hero classes** (R13): some Flux shades will likely fail AA and be swapped;
   each swap is recorded for Don's review.
 - **Indexing**: drafts are not hidden, but the foundation's site-wide pre-launch `noindex` still
-  applies to every page until the domain switch (R11). This matches FR-006's intent; flag it if
-  Don expected pages to be indexable before the switch.
+  applies to every page until the domain switch (R11). Spec FR-006 now states this explicitly;
+  flag it if Don expected pages to be indexable before the switch.
 - **Carried-over copy**: fetched from the live site at implement time; if the site is unreachable,
   the copy falls back to short draft placeholders and the task notes it.
 

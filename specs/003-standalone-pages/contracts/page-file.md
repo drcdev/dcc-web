@@ -12,6 +12,10 @@ The interface Don (and Claude Code) use to publish a page. Schema:
 | `src/content/pages/legal/accessibility.mdx` | `/legal/accessibility/` |
 | `src/content/pages/legal/index.mdx` | `/legal/` |
 
+Every folder and file name (without the extension) uses only lower-case letters, digits and
+hyphens; anything else fails the build (spec FR-003). `/writing/`, `/projects/` and `/contact/`
+are reserved for later features and cannot be produced by a page file (spec FR-008).
+
 Images used by pages live in `src/content/pages/images/` and are referenced by relative path.
 Adding a file here is the only change needed to publish a page (FR-002). Nothing else in the
 repository lists pages.

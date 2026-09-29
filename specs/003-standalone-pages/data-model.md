@@ -27,7 +27,7 @@ fail the build).
 
 | Value | Derivation |
 |---|---|
-| `id` | `addressFromPath(file)` via the loader's `generateId`: path under `src/content/pages/` without extension, a trailing `/index` removed, lower-case. `index.mdx` → `index`. |
+| `id` | `addressFromPath(file)` via the loader's `generateId`: path under `src/content/pages/` without extension, a trailing `/index` removed. Every segment must match `[a-z0-9-]+` (otherwise `PageContentError`, spec FR-003). `index.mdx` → `index`. |
 | address | `/` for id `index`; otherwise `/${id}/` (FR-003). |
 | document title | Site name for `/`; `"{title} · Don Coleman"` otherwise (existing `Seo.astro`). |
 | canonical / `og:url` | Absolute address against Astro `site` (existing `Seo.astro`). |
@@ -38,12 +38,14 @@ fail the build).
 1. Schema valid (Astro's collection error names the entry and key).
 2. Body non-empty.
 3. No two page files share an address; no page address equals an address produced by another
-   route file in `src/pages/`.
+   route file in `src/pages/` or one of the reserved `futureDestinations` (`/writing/`,
+   `/projects/`, `/contact/`).
 4. Every capitalised JSX tag in the body is a registered section (outside code fences).
 5. Every Markdown image in the body has non-empty alt text.
 6. Section props valid (see Section).
 7. No two navigation entries share a position.
 8. The body has no level-1 Markdown heading (`# …`) or `<h1>`: the page title is the only main heading (FR-014).
+9. Every path segment of the file name uses only lower-case letters, digits and hyphens (FR-003).
 
 **Lifecycle**: `draft: true` (launch placeholder) → Don edits copy → removes `draft` → notice
 disappears. No other states.

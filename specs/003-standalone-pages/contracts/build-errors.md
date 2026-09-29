@@ -22,9 +22,14 @@ and the key. Each row has one broken fixture in `tests/fixtures/pages/broken/` a
 | 11 | Section missing required information (`<CallToAction label="x">`) | section prop check | file name, `CallToAction`, `href` |
 | 12 | Image section with no image inside | section prop check | file name, section name, "image" |
 | 13 | Two files, same address (`about.md` + `about.mdx`; `x.mdx` + `x/index.mdx`) | address check | both file names, the address |
-| 14 | Page address used by another route (`404.mdx`, `robots.txt` style conflicts) | address check | page file, route file, the address |
+| 14 | Page address used by another route (`404.mdx`, `robots.txt` style conflicts) or reserved for a later feature (`writing.mdx`, `projects.mdx`, `contact.mdx`: the `futureDestinations` list) | address check | page file, route file or "reserved", the address |
 | 15 | Two navigation entries with the same position (page vs page, page vs fixed entry) | navigation merge | both sources, the position |
 | 16 | Level-1 heading in the body (`# Heading`) | body check | file name, "use ##" |
+| 17 | File or folder name with characters other than lower-case letters, digits and hyphens (`About_Me.mdx`) | address check | file name, "lower-case letters, digits and hyphens" |
+
+The build stops at the first error it finds (spec FR-007a); tests use one broken file per
+fixture run. Section errors name the file and the section; no line number is required. Unknown
+settings are named as written, with no nearest-match suggestion.
 
 Row 7's message comes from Astro and may not include the page file; the test asserts only the
 image path for that row (noted, not a gap in FR-007: the build still fails and says which image).

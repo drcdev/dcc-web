@@ -50,7 +50,9 @@ Renders `<section aria-labelledby>` with an `<h2>` title and the Markdown body. 
 ```
 
 Renders an optional `<h2>` then a `<ul>` with one `<li>` per offering, in source order; each item
-has an `<h3>` title (a link when `href` is set) and its description (US4 scenario 2). Fails when
+has a title (a link when `href` is set) and its description (US4 scenario 2). The item title is
+an `<h3>` when `Offerings` has a `title` and an `<h2>` when it does not, so heading levels never
+skip (spec FR-010). Fails when
 an `Offering` has no `title` or description, or `Offerings` has no `Offering`.
 
 ## CallToAction
