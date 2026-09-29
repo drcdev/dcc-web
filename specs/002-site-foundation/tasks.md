@@ -667,7 +667,7 @@ set, and prepare the pull request for major-change review.
   actually written in Phases 1–9 and confirm every FR and SC listed has at least one passing
   assertion (or, for [PREVIEW-CHECK] items, a Phase 11 task); add any missing test, seen failing
   first, before continuing.
-- [ ] T095 Push the branch, open the pull request as the `drc-agents` machine account. The
+- [x] T095 Push the branch, open the pull request as the `drc-agents` machine account. The
   `verify` check's `playwright-output` failure artifact does not carry the 14 `-linux` images
   because `updateSnapshots: "none"` (FR-005b) stops Playwright writing actual images on a
   missing-baseline failure — so generate them with a dedicated workflow instead:
@@ -687,7 +687,7 @@ set, and prepare the pull request for major-change review.
   II — never mark done on a red suite).
   - Local half done 2026-09-29: `pnpm run verify` green (Vitest 670/670 in 54 files; Playwright
     196/196: e2e 138, a11y 36, budget 8, visual 14 darwin). CI half pending T095.
-- [ ] T097 Label the pull request `major-change` and write its description to include: the design
+- [x] T097 Label the pull request `major-change` and write its description to include: the design
   deviations recorded in `docs/design-source.md` (if any); the reconciliation note on Workers
   Builds vs. the feature input's original GitHub Actions deploy description (plan.md "Deployment
   reconciliation"); the placeholder-spec successors — which assertions carried forward and which
