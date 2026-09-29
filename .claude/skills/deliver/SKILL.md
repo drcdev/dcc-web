@@ -264,12 +264,31 @@ if the second implement pass still leaves gaps, stop and report them.
      enable `gh pr merge --auto --merge` after opening the PR.
    - **Not major — leave the PR open**: no auto-merge; Don merges by hand.
    This pause is mandatory — never open the PR without having asked.
-4. Push the branch and open a PR with `gh pr create`: summary of the slice,
+4. Push the branch and open the PR as `drc-agents` (sequence below). The PR
+   body covers: summary of the slice,
    the verify results, the `Closes #<n>` line when step 2 applies, the
    major-change verdict and criteria, whether Linux visual baselines are
    pending, the list of `[PREVIEW-CHECK]` items for Don to walk on the
    preview deployment, and any risks the phase agents flagged. Apply the
    label / auto-merge chosen in step 3.
+
+   **PR author account (required).** Don is the sole maintainer, so a PR
+   authored by `drcdev` can never pass the `major-change-approval` check.
+   Open every PR as `drc-agents`:
+   1. Push the branch (as `drcdev`).
+   2. `gh auth switch --user drc-agents`. If the command is denied, fails, or
+      `drc-agents` is not in the keyring, stop and ask Don with
+      `AskUserQuestion` (instruction in the question text). Never open the PR
+      as `drcdev`.
+   3. `gh pr create ...` (pass `--label major-change` here when step 3 chose
+      major).
+   4. `gh auth switch --user drcdev` immediately after `gh pr create`, whether
+      it succeeded or failed, so `gh` is never left on `drc-agents`.
+   5. `gh pr view <n> --json author`; confirm `author.login` is
+      `drc-agents`. If it is not `drc-agents`, stop and tell Don the PR must
+      be closed and reopened from `drc-agents`; do not work around the gate.
+   6. Apply the auto-merge choice (`gh pr merge --auto --merge`) and any label
+      not set at create time, as `drcdev`.
 5. If Linux baselines are still owed because Docker could not be started,
    run the CI-label fallback from the long-running-suites rules now, before
    watching the gate.
