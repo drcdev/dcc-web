@@ -75,6 +75,56 @@ describe(".github/workflows/ci.yml", () => {
   });
 });
 
+describe(".github/workflows/ci.yml change detection", () => {
+  const contents = read(".github/workflows/ci.yml");
+  const idx = (needle: string): number => {
+    const i = contents.indexOf(needle);
+    expect(i, `expected ci.yml to contain ${needle}`).toBeGreaterThan(-1);
+    return i;
+  };
+  const stepBlock = (needle: string): string => {
+    const i = idx(needle);
+    const start = contents.lastIndexOf("\n      - ", i);
+    const next = contents.indexOf("\n      - ", i);
+    return contents.slice(start, next === -1 ? undefined : next);
+  };
+
+  it("checks out two commits so HEAD^1 exists", () => {
+    expect(stepBlock("actions/checkout@")).toMatch(/fetch-depth:\s*2\b/);
+  });
+
+  it("detects changes after setup-node and before install", () => {
+    const step = stepBlock("node scripts/ci/changed-paths.ts");
+    expect(step).toMatch(/id:\s*changes/);
+    expect(idx("node scripts/ci/changed-paths.ts")).toBeGreaterThan(idx("actions/setup-node@"));
+    expect(idx("node scripts/ci/changed-paths.ts")).toBeLessThan(idx("pnpm install --frozen-lockfile"));
+  });
+
+  it("gates the Playwright install and the verify gate on full != 'false'", () => {
+    for (const needle of ["playwright install --with-deps chromium", "pnpm run verify"]) {
+      expect(stepBlock(needle)).toContain("if: steps.changes.outputs.full != 'false'");
+    }
+  });
+
+  it("runs secretlint on the skip path, after install", () => {
+    expect(stepBlock("pnpm run lint:secrets")).toContain("if: steps.changes.outputs.full == 'false'");
+    expect(idx("pnpm run lint:secrets")).toBeGreaterThan(idx("pnpm install --frozen-lockfile"));
+  });
+
+  it("installs unconditionally", () => {
+    expect(stepBlock("pnpm install --frozen-lockfile")).not.toMatch(/\bif:/);
+  });
+
+  it("has no job-level if:, so verify always reports", () => {
+    const job = contents.slice(idx("  verify:"), idx("    steps:"));
+    expect(job).not.toMatch(/^\s{4}if:/m);
+  });
+
+  it("does not use paths or paths-ignore filters", () => {
+    expect(contents).not.toMatch(/^\s*paths(-ignore)?:/m);
+  });
+});
+
 describe(".github/workflows/major-change.yml", () => {
   const contents = read(".github/workflows/major-change.yml");
 
