@@ -5,11 +5,13 @@
 | Check context | Workflow file | Job id / name | Events |
 |---|---|---|---|
 | `verify` | `.github/workflows/ci.yml` (name `CI`) | `verify` | `pull_request`, `push` to `main` |
-| `major-change-approval` | `.github/workflows/major-change.yml` (name `Major change`) | `major-change-approval` | `pull_request` (opened, synchronize, reopened, labeled, unlabeled, ready_for_review), `pull_request_review` (submitted, edited, dismissed) |
+| `major-change-approval` (commit status) | `.github/workflows/major-change.yml` (name `Major change`) | `gate` (publishes the status) | `pull_request` (opened, synchronize, reopened, labeled, unlabeled, ready_for_review), `pull_request_review` (submitted, edited, dismissed) |
 
-Job names are part of the contract: renaming a job breaks branch protection, so the
-`github-main-protection` check compares the ruleset contexts with the job names parsed from the
-workflow files (unit-tested).
+Ruleset contexts are part of the contract: the `verify` context is the `verify` job's check run,
+and `major-change-approval` is a commit status posted by the `gate` job. The gate job must not be
+named `major-change-approval`, or its check run would collide with the status context. A drift
+test compares the ruleset contexts with the `verify` job key and the gate script's
+`STATUS_CONTEXT`.
 
 ## `verify` job
 
@@ -17,12 +19,19 @@ workflow files (unit-tested).
 - Runs `pnpm install --frozen-lockfile`, `pnpm exec playwright install --with-deps chromium`,
   `pnpm run verify` — the same command Don and agents run locally (FR-015, FR-016).
 
-## `major-change-approval` job
+## `gate` job (publishes the `major-change-approval` status)
 
-- `permissions: pull-requests: read`; uses `GITHUB_TOKEN` only.
+- `permissions: pull-requests: read` and `statuses: write`; uses `GITHUB_TOKEN` only.
 - Fetches labels, author, head SHA and reviews with `gh api`, then runs
-  `node scripts/ci/major-change-gate.ts` which prints one plain-language line and exits 0 (pass)
-  or 1 (fail). Decision rules: see `MajorGateInput` in [data-model.md](../data-model.md).
+  `node scripts/ci/major-change-gate.ts`, which posts `success` (approved, or no label) or
+  `pending` (waiting for approval, or owner-authored PR) to status context `major-change-approval`
+  on the PR head SHA and exits 0. It exits non-zero only on error (missing env, failed API call).
+  Decision rules: see `MajorGateInput` in [data-model.md](../data-model.md).
+- Why a status: check runs from separate workflow runs on one SHA do not supersede each other, so
+  a failed push-run check run blocked the PR after a later review-run passed. The newest commit
+  status for a context wins.
+- Same-repo PRs only: a `pull_request_review` run from a fork gets a read-only token and could not
+  post the status.
 
 ## Marking a PR major
 

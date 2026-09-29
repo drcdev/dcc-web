@@ -78,8 +78,11 @@ describe(".github/workflows/ci.yml", () => {
 describe(".github/workflows/major-change.yml", () => {
   const contents = read(".github/workflows/major-change.yml");
 
-  it("has job major-change-approval", () => {
-    expect(contents).toMatch(/major-change-approval:/);
+  it("names the job `gate`, not the required status context, so its check run cannot collide with the status", () => {
+    expect(contents).toMatch(/^\s{2}gate:/m);
+    expect(contents).toMatch(/^\s{4}name:\s*gate\s*$/m);
+    expect(contents).not.toMatch(/^\s{2}major-change-approval:/m);
+    expect(contents).not.toMatch(/name:\s*major-change-approval\b/);
   });
 
   it("triggers on the documented pull_request and pull_request_review events", () => {
@@ -93,8 +96,23 @@ describe(".github/workflows/major-change.yml", () => {
     }
   });
 
-  it("sets permissions: pull-requests: read", () => {
-    expect(contents).toMatch(/permissions:\s*\n\s*pull-requests:\s*read/);
+  it("sets permissions to exactly pull-requests: read and statuses: write", () => {
+    const block = contents.match(/^permissions:\s*\n((?:\s{2}.+\n)+)/m);
+    expect(block, "expected a top-level permissions block").toBeTruthy();
+    const lines = block![1]!.split("\n").map((l) => l.trim()).filter(Boolean).sort();
+    expect(lines).toEqual(["pull-requests: read", "statuses: write"]);
+  });
+
+  it("passes GITHUB_TOKEN, GITHUB_REPOSITORY, PR_NUMBER and RUN_URL to the gate step", () => {
+    for (const name of ["GITHUB_TOKEN", "GITHUB_REPOSITORY", "PR_NUMBER", "RUN_URL"]) {
+      expect(contents).toMatch(new RegExp(`^\\s+${name}:`, "m"));
+    }
+  });
+
+  it("reports the verdict as a commit status, not through the script's exit code", () => {
+    const script = read("scripts/ci/major-change-gate.ts");
+    expect(script).toContain("/statuses/");
+    expect(script).not.toContain("process.exit(decision.pass ? 0 : 1)");
   });
 
   it("runs scripts/ci/major-change-gate.ts", () => {

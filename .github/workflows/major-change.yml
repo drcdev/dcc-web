@@ -8,14 +8,15 @@ on:
 
 permissions:
   pull-requests: read
+  statuses: write
 
 concurrency:
   group: major-change-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  major-change-approval:
-    name: major-change-approval
+  gate:
+    name: gate
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
@@ -35,4 +36,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: node scripts/ci/major-change-gate.ts

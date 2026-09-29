@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { setupItems } from "../../../scripts/setup-check/items.ts";
 import { secretManifest } from "../../../scripts/setup-check/secrets.ts";
+import { STATUS_CONTEXT } from "../../../scripts/ci/major-change-gate.ts";
 
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 
@@ -97,8 +98,8 @@ describe("secret/variable names <-> manifest drift", () => {
   });
 });
 
-describe("ruleset contexts <-> CI workflow job names", () => {
-  it("setup/github-ruleset.json required_status_checks contexts match the ci.yml and major-change.yml job names", () => {
+describe("ruleset contexts <-> CI job names and gate status context", () => {
+  it("setup/github-ruleset.json required_status_checks contexts match the ci.yml verify job and the gate's status context", () => {
     const ruleset = JSON.parse(read("setup/github-ruleset.json")) as {
       rules: Array<{ type: string; parameters?: { required_status_checks?: Array<{ context: string }> } }>;
     };
@@ -109,9 +110,11 @@ describe("ruleset contexts <-> CI workflow job names", () => {
     const ci = read(".github/workflows/ci.yml");
     const major = read(".github/workflows/major-change.yml");
     expect(contexts).toContain("verify");
-    expect(contexts).toContain("major-change-approval");
+    expect(contexts).toContain(STATUS_CONTEXT);
     expect(ci).toMatch(/^\s{2}verify:/m);
-    expect(major).toMatch(/^\s{2}major-change-approval:/m);
+    // The gate publishes a commit status; no job may share its name or the check runs collide.
+    expect(major).not.toMatch(/^\s{2}major-change-approval:/m);
+    expect(major).toMatch(/^\s{2}gate:/m);
   });
 });
 
