@@ -21,6 +21,15 @@ Because it introduces the shared page layout and the Home introduction card, and
 say in whether they appear in navigation, it touches site-wide layout and navigation and is
 treated as a major change under Constitution Principle III.
 
+## Clarifications
+
+### Session 2026-09-29
+
+- Q: Should page files be able to add themselves to the header navigation, with a label and position, or should the navigation stay a fixed list in code? → A: Page files opt in; their entries are merged with the fixed Writing, Projects and Contact entries, and the build fails on duplicate positions.
+- Q: On the home page, is the introduction card's call to action the page's one primary call to action, and where does it link at launch? → A: The card's call to action is the page's only primary call to action; it links to /services/ until the Contact feature switches it to /contact/.
+- Q: Can Don's photo be copied from the current doncoleman.ca site for the Home card and Speaking page? → A: Yes; copy it from the current site and commit it as a site image.
+- Q: Should draft (placeholder) pages be hidden from search engines until Don replaces the copy? → A: No; drafts are indexed and listed in the sitemap as normal, and the visible draft notice is the only marker.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Visitors can read the launch pages (Priority: P1)
@@ -77,9 +86,11 @@ links and the single call to action.
    page's main heading, a tagline, a short bio and links to his GitHub and LinkedIn profiles.
 2. **Given** the introduction card, **When** it is compared with the current site's home page,
    **Then** it matches its layout and gradient border, except that the current site's subscribe
-   button is replaced by a call to action linking to /services/ or /contact/.
+   button is replaced by a call to action linking to /services/ (the Contact feature later
+   switches it to /contact/).
 3. **Given** the home page, **When** a visitor reads past the card, **Then** they find who Don
-   helps, what he does, and exactly one primary call to action.
+   helps and what he does, and the card's call to action is the page's only primary call to
+   action (no second primary call to action below the card).
 4. **Given** a phone-width screen (320px and up), **When** the home page loads, **Then** the card
    and its contents fit without horizontal scrolling or overlapping text.
 
@@ -259,7 +270,8 @@ site's versions and with how the new site actually behaves.
 - **FR-005**: Each page MUST use its settings for its document title, description, canonical
   address and sharing-preview metadata, falling back to the site-wide defaults from the
   foundation for any optional value it does not set.
-- **FR-006**: Every page built from a page file MUST appear in the search engines' page list.
+- **FR-006**: Every page built from a page file MUST appear in the search engines' page list,
+  including pages marked as drafts, and MUST be indexable (no "noindex" marker).
 
 **Validation**
 
@@ -302,7 +314,8 @@ site's versions and with how the new site actually behaves.
   the design system's heading colours.
 - **FR-015**: A page marked as a draft MUST show a visible notice near the top of its content
   saying the text is a draft and subject to change; removing the draft setting removes the
-  notice. Drafts are still published (they are placeholders for launch, not hidden pages).
+  notice. Drafts are still published and indexed like any other page (they are placeholders for
+  launch, not hidden pages); the visible notice is the only thing that marks them.
 
 **Home page**
 
@@ -311,11 +324,13 @@ site's versions and with how the new site actually behaves.
   tagline, a short bio, and links to GitHub and LinkedIn using the same icons and accessible
   names as the footer, framed by the current site's gradient border in both themes.
 - **FR-017**: The introduction card MUST NOT include a subscribe or sign-up button. In its place
-  it MUST show a call to action linking to /services/ or /contact/.
+  it MUST show a call to action linking to /services/ at launch; the Contact feature switches it
+  to /contact/.
 - **FR-018**: The card's photo, name, tagline, bio and call to action MUST be editable as text in
   the home page's file, without code changes.
-- **FR-019**: Below the card, the home page MUST say who Don helps and what he does, and MUST
-  contain exactly one primary call to action.
+- **FR-019**: Below the card, the home page MUST say who Don helps and what he does. The card's
+  call to action MUST be the page's only primary call to action; the content below the card
+  MUST NOT add another.
 
 **Launch pages and content**
 
@@ -403,8 +418,9 @@ site's versions and with how the new site actually behaves.
 
 ## Assumptions
 
-- **Photo**: Don's photo is available from the current site and can be used for the Home card and
-  the Speaking page until he supplies a different one.
+- **Photo**: Don's photo is copied from the current site and committed as a site image, and is
+  used for the Home card and the Speaking page until he supplies a different one (confirmed by
+  Don in clarification).
 - **Contact data wording**: The contact form and its retention period are built in the Contact
   feature. The privacy policy describes them from the constitution (fields typed into the form
   only, stored in Toronto, deleted after a set retention period), with the specific field list
@@ -415,10 +431,11 @@ site's versions and with how the new site actually behaves.
   updates any external links himself.
 - **Navigation choice**: "Whether it appears in navigation" is interpreted as page files opting in
   to the header navigation with a label and position, while the rendered navigation at launch
-  stays exactly as the foundation defined it. The footer stays fixed. This was decided without
-  asking Don and can be revisited in clarification.
-- **Home call to action**: The introduction card links to /services/ at launch, because /contact/
-  does not exist until the Contact feature; the Contact feature may switch it.
+  stays exactly as the foundation defined it. The footer stays fixed. Confirmed by Don in
+  clarification.
+- **Home call to action**: The introduction card's call to action is the home page's only
+  primary call to action. It links to /services/ at launch, because /contact/ does not exist
+  until the Contact feature, which switches it to /contact/.
 - **Addresses from files**: Page addresses come from file names; a separate address setting is
   not needed for launch.
 - **Launch copy**: Placeholder copy is written by Claude Code and replaced by Don later; content
@@ -432,6 +449,6 @@ site's versions and with how the new site actually behaves.
 - **Blog feature**: blog posts, listing and topics (Writing).
 - **Portfolio feature**: project pages and the Projects landing page.
 - **Contact feature**: the contact form, the /contact/ page, and confirming the privacy policy's
-  field list and retention period; may switch the Home call to action to /contact/.
+  field list and retention period; switches the Home call to action to /contact/.
 - **Final copy**: Don replaces placeholder copy and removes draft settings page by page.
 - **Photo**: a new photo, if Don wants one.
