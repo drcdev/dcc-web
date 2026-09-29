@@ -1,4 +1,140 @@
 {
-  "originalNameservers": [],
-  "records": []
+  "originalNameservers": [
+    "ns-cloud-b1.googledomains.com",
+    "ns-cloud-b2.googledomains.com",
+    "ns-cloud-b3.googledomains.com",
+    "ns-cloud-b4.googledomains.com"
+  ],
+  "records": [
+    {
+      "type": "A",
+      "name": "doncoleman.ca",
+      "content": "49.13.201.194",
+      "priority": null,
+      "ttl": 14400,
+      "source": "squarespace",
+      "decision": "keep",
+      "reason": null
+    },
+    {
+      "type": "MX",
+      "name": "doncoleman.ca",
+      "content": "mx02.mail.icloud.com",
+      "priority": 0,
+      "ttl": 14400,
+      "source": "squarespace",
+      "decision": "keep",
+      "reason": null
+    },
+    {
+      "type": "MX",
+      "name": "doncoleman.ca",
+      "content": "mx01.mail.icloud.com",
+      "priority": 0,
+      "ttl": 14400,
+      "source": "squarespace",
+      "decision": "keep",
+      "reason": null
+    },
+    {
+      "type": "TXT",
+      "name": "doncoleman.ca",
+      "content": "apple-domain=9VwD5sulsuHIiPsJ",
+      "priority": null,
+      "ttl": 14400,
+      "source": "squarespace",
+      "decision": "keep",
+      "reason": null
+    },
+    {
+      "type": "TXT",
+      "name": "doncoleman.ca",
+      "content": "v=spf1 include:icloud.com ~all",
+      "priority": null,
+      "ttl": 14400,
+      "source": "squarespace",
+      "decision": "keep",
+      "reason": null
+    },
+    {
+      "type": "MX",
+      "name": "mail.doncoleman.ca",
+      "content": "mxb.eu.mailgun.org",
+      "priority": 10,
+      "ttl": 14400,
+      "source": "squarespace",
+      "decision": "keep",
+      "reason": null
+    },
+    {
+      "type": "MX",
+      "name": "mail.doncoleman.ca",
+      "content": "mxa.eu.mailgun.org",
+      "priority": 10,
+      "ttl": 14400,
+      "source": "squarespace",
+      "decision": "keep",
+      "reason": null
+    },
+    {
+      "type": "TXT",
+      "name": "mail.doncoleman.ca",
+      "content": "v=spf1 include:mailgun.org ~all",
+      "priority": null,
+      "ttl": 14400,
+      "source": "squarespace",
+      "decision": "keep",
+      "reason": null
+    },
+    {
+      "type": "CNAME",
+      "name": "www.doncoleman.ca",
+      "content": "drift-and-convergence.mymagic.page",
+      "priority": null,
+      "ttl": 14400,
+      "source": "squarespace",
+      "decision": "keep",
+      "reason": null
+    },
+    {
+      "type": "CNAME",
+      "name": "sig1._domainkey.doncoleman.ca",
+      "content": "sig1.dkim.doncoleman.ca.at.icloudmailadmin.com",
+      "priority": null,
+      "decision": "keep",
+      "reason": null,
+      "ttl": 14400,
+      "source": "squarespace"
+    },
+    {
+      "type": "TXT",
+      "name": "mta._domainkey.mail.doncoleman.ca",
+      "content": "k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCp1Cc84EdRYbMN/Xdy78yv65EdIZ0figIkM2QAE2FzYMBjdV6wBBA3yM9p9ZE3QCanMYyk2I3AtoCsOyRxbKLebcmmsxsMJ8RTk3HEW+YiriDGMyz/pEagjoLSA5q46twJped3sdRGSvT+YgndC6nyNFDX Q0B8wLeBxTLUvBo99QIDAQAB",
+      "priority": null,
+      "decision": "keep",
+      "reason": null,
+      "ttl": 14400,
+      "source": "squarespace"
+    },
+    {
+      "type": "CNAME",
+      "name": "email.mail.doncoleman.ca",
+      "content": "eu.mailgun.org",
+      "priority": null,
+      "decision": "keep",
+      "reason": null,
+      "ttl": 14400,
+      "source": "squarespace"
+    },
+    {
+      "type": "CNAME",
+      "name": "_domainconnect.doncoleman.ca",
+      "content": "_domainconnect.domains.squarespace.com",
+      "priority": null,
+      "decision": "drop",
+      "reason": "Squarespace Domain Connect helper; not needed once DNS is served by Cloudflare (Don, 2026-09-28)",
+      "ttl": 14400,
+      "source": "squarespace"
+    }
+  ]
 }
