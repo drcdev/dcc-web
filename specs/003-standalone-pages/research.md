@@ -307,7 +307,8 @@ programmatic `build()` (or `sync()` for frontmatter-only cases, which is faster)
   `tests/fixtures/pages/sections.mdx` (every section once, with test images) to
   `.cache/fixture-site/dist`. A new Playwright project, `sections`, runs a11y, no-horizontal-scroll
   (320/390/1100/1280 px), no-JS and visual checks against it, served by a second Playwright
-  `webServer` (`astro preview --root .cache/fixture-site --port 4322`). The fixture page is
+  `webServer` (`pnpm run build:fixtures && astro preview --root .cache/fixture-site --port 4322`, so
+  every Playwright run builds it first; its visual shots live in the `visual` project). The fixture page is
   never part of the real site, so no test page is published or indexed.
 
 **Rationale**: Proves the real Astro build fails, not just the schema; keeps test content out of

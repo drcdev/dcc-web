@@ -38,13 +38,13 @@ The title block is replaced by `HomeIntro` (port of `layout-author-hero.hbs`), p
 `<main>`:
 
 ```html
-<section class="mx-auto max-w-screen-lg mb-8" aria-labelledby="intro-name">
+<section class="mx-auto max-w-screen-lg mb-8"><!-- no accessible name: not a landmark (FR-013) -->
   <div class="p-[2px] rounded-xl bg-gradient-to-br from-rust-400 via-sage-400 to-lavender-400 shadow-lg …">
     <div class="flex flex-col sm:flex-row rounded-xl overflow-hidden bg-white dark:bg-dusk-800">
       <img class="w-full aspect-square sm:aspect-auto sm:h-full object-cover shrink-0 sm:w-48 md:w-64"
            alt="{intro.photo.alt}" loading="eager" fetchpriority="high" width height …>
       <div class="flex flex-col items-center sm:items-start justify-center text-center sm:text-left p-6 flex-1">
-        <h1 id="intro-name" class="text-xl sm:text-2xl font-bold text-dusk-900 dark:text-white">{intro.name}</h1>
+        <h1 class="text-xl sm:text-2xl font-bold text-dusk-900 dark:text-white">{intro.name}</h1>
         <p class="mt-1 text-xs sm:text-sm italic …">{intro.tagline}</p>
         <p class="mt-3 text-sm sm:text-base leading-relaxed …">{intro.bio}</p>
         <div class="flex flex-col sm:flex-row items-center gap-4 mt-4 w-full sm:w-auto">

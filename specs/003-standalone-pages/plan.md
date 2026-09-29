@@ -66,12 +66,12 @@ before research and after design. No violations; Complexity Tracking is empty.
 | Principle | How this plan complies |
 |---|---|
 | **I. Test-First** | All test layers are written and seen failing before the code they cover (see "Test layers the tasks phase must schedule first" below): unit/schema, component, build-level, E2E, accessibility, performance budget and visual baselines. The contact-API integration layer does not apply (no API). |
-| **II. Automated Release Gate** | `pnpm run verify` stays the local gate and the CI `verify` job runs it unchanged in `ci.yml`. `verify` gains `build:fixtures` before `test:e2e` (so the `sections` project has its site); build-failure tests run inside `pnpm run test`. Nothing is skipped or weakened: `futureDestinations` shrinks (stricter), existing baselines must stay unchanged. Invalid content fails `astro build`, so Workers Builds cannot deploy it and the merge is blocked (FR-009). |
+| **II. Automated Release Gate** | `pnpm run verify` stays the local gate and the CI `verify` job runs it unchanged in `ci.yml`. `verify` is unchanged: the fixture site's Playwright web server runs `build:fixtures` before serving it, so `verify`, the `update-baselines` job and the Linux baseline script all get the fixture site with no script or workflow change; build-failure tests run inside `pnpm run test`. Nothing is skipped or weakened: `futureDestinations` shrinks (stricter), existing baselines must stay unchanged. Invalid content fails `astro build`, so Workers Builds cannot deploy it and the merge is blocked (FR-009). |
 | **III. Human Review for Major Changes** | **Major change** — see the verdict below. PR carries the `major-change` label; auto-merge stays off until Don has reviewed the preview. |
 | **IV. First-Party Before Custom** | Every capability names its first-party option (table below). The Astro Docs MCP (`astro-docs`) was available and used; each Astro choice cites its doc page in research.md. The custom code is limited to what no first-party option does: address-conflict and navigation-position checks, body checks that name the file, section prop checks, and the fixture-site test harness. |
 | **V. Static by Default** | Every page is prerendered by `getStaticPaths()`; sections and the home card are Astro components with no client script; content is readable with JavaScript off (E2E + a11y no-JS runs). |
 | **VI. Content as Files** | Pages are MDX files in the repo, validated by a content collection schema; invalid content fails the build with a clear error (contracts/build-errors.md). No CMS, no database. |
-| **VII. Private Data** | No data collected. The privacy policy describes the future contact form from the constitution (fields typed only, stored in Toronto, deleted after a retention period) with the exact fields and period marked as draft placeholders. No secrets touched. |
+| **VII. Private Data** | No data collected. The privacy policy describes the future contact form from the constitution (fields typed only, stored in Toronto, deleted after a retention period) with the field list, retention period, spam-protection service and request route marked "to be confirmed" (FR-022a). No secrets touched. |
 | **VIII. Fly.io Best Practices** | Not applicable: no Fly.io service in this feature. |
 | **IX. Cost Ceiling** | `@astrojs/mdx` is a free, build-time package; images are built into static assets. **Expected additional monthly cost: $0.** |
 | **X. Accessible, Fast and Private** | axe on every launch page and the sections fixture in both themes and widths, JS on and off; budget test on every launch page; no third-party scripts or cookies added. Failing ported colour pairings are swapped for the nearest passing shade and recorded (R13). |
@@ -106,7 +106,7 @@ before research and after design. No violations; Complexity Tracking is empty.
 and navigation: a new shared page layout, the home introduction card, and a new source for the
 header navigation (page files merged with fixed entries), even though the rendered navigation is
 unchanged; (3) changes build and test configuration (`astro.config.mjs` integrations,
-`package.json` `verify` and new scripts, `playwright.config.ts` second web server and `sections`
+`package.json` new `build:fixtures` script, `playwright.config.ts` second web server and `sections`
 project, `vitest.config.ts` includes). Running cost does not increase. The spec reaches the same
 verdict. The PR needs the `major-change` label and Don's approval after the preview checks in
 [quickstart.md §7](./quickstart.md#7-preview-deployment-checks-for-don-sc-006-major-change);
@@ -145,8 +145,10 @@ Each is written, reviewed against the spec and seen failing before the implement
    message (SC-003); one-file page publishes with metadata and sitemap entry (SC-002).
 4. **E2E** (`tests/e2e/pages.spec.ts`, plus updates): every launch page returns 200 with its
    title as `<h1>`; old addresses resolve; current-page marker; `/cookie-policy/` and the three
-   future destinations are 404; per-page `<title>`, description, canonical, `og:image` (default
-   and custom); draft and non-draft pages have identical robots meta; no-JS readability;
+   future destinations are 404; per-page `<title>`, description, canonical, default `og:image`
+   (custom sharing image, feature image and draft vs non-draft robots meta are asserted on
+   fixtures, since every launch page is a draft with the default image); landmarks unchanged;
+   no-JS readability;
    no horizontal scroll at 320/390/1280. `tests/e2e/templates.ts`, `not-found.spec.ts`,
    `seo.spec.ts` and `no-js.spec.ts` extended to the launch pages.
 5. **Accessibility** (`tests/e2e/a11y.spec.ts`): TEMPLATES gains all seven launch pages; axe in
@@ -154,8 +156,9 @@ Each is written, reviewed against the spec and seen failing before the implement
    `sections` project.
 6. **Performance budget** (`tests/e2e/budget.spec.ts`): all seven launch pages (FR-030, SC-007).
 7. **Visual baselines** (`tests/e2e/visual.spec.ts`): home and about at 390 and 1280 px in dark
-   and light (8 new images per platform, FR-029), sections fixture page (phone/desktop, both
-   themes) in the `sections` project; existing header/footer/menu/not-found baselines must pass
+   and light (8 new images per platform, FR-029), plus the sections fixture page (phone/desktop,
+   both themes) loaded from the fixture server by absolute URL inside the `visual` project, so
+   `test:visual:update` refreshes every baseline; existing header/footer/menu/not-found baselines must pass
    unchanged. Both macOS and Linux sets are committed (CLAUDE.md).
 
 ## Content structure shared with later features (FR-031)
@@ -234,8 +237,8 @@ tests/
 ├── build/                          # NEW: fixture-site.ts, page-validation, one-file-page
 ├── fixtures/pages/                 # NEW: sections.mdx, workshops.mdx, broken/*, images/
 └── e2e/                            # pages.spec.ts NEW; a11y/budget/visual/seo/no-js/templates extended
-package.json                        # + @astrojs/mdx, build:fixtures; verify runs it before test:e2e
-playwright.config.ts                # + second webServer (4322) and `sections` project
+package.json                        # + @astrojs/mdx, build:fixtures (verify unchanged)
+playwright.config.ts                # + second webServer (4322, builds fixtures then previews), `sections` project, e2e testIgnore
 vitest.config.ts                    # include tests/build; longer timeout for that folder
 eslint.config.js / .gitignore       # ignore .cache/ (already gitignored)
 ```

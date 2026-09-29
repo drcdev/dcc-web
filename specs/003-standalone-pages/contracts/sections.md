@@ -29,7 +29,7 @@ Short engagements, written advice, and no lock-in.
 </TextBlock>
 ```
 
-Renders `<section aria-labelledby>` with an `<h2>` title and the Markdown body. Fails without
+Renders a `<section>` with no accessible name (so it adds no landmark, spec FR-013) holding an `<h2>` title and the Markdown body. Fails without
 `title` or body.
 
 ## Offerings and Offering

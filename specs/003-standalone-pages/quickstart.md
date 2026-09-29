@@ -18,8 +18,8 @@ pnpm run verify
 ```
 
 Expected: passes. It now includes the page schema/body/address/navigation unit tests, section
-and layout component tests, the build-failure tests (`tests/build/`), the fixture site build
-(`build:fixtures`), and the Playwright projects `e2e`, `a11y`, `budget`, `visual` and the new
+and layout component tests, the build-failure tests (`tests/build/`), and the Playwright projects (whose fixture web server
+runs `build:fixtures` first) `e2e`, `a11y`, `budget`, `visual` and the new
 `sections` project.
 
 ## 2. Launch pages exist (US1, SC-001)
@@ -64,13 +64,12 @@ By hand (optional): remove `description` from `src/content/pages/about.mdx`, run
 ## 5. Sections (US4, SC-004, SC-005)
 
 ```sh
-pnpm run build:fixtures
-pnpm exec playwright test --project=sections
+pnpm exec playwright test --project=sections   # builds the fixture site first
 ```
 
 Expected: the fixture page using every section passes axe in both themes at phone and desktop
 widths, has no horizontal scroll at 320, 390, 1100 and 1280 px, reads fully with JavaScript off,
-and matches its visual baselines; the wide image is wider than the text column at 1280 px and the
+and (in the `visual` project) matches its visual baselines; the wide image is wider than the text column at 1280 px and the
 full-width image equals the viewport's content width.
 
 ## 6. Accessibility, budget and visuals (FR-028–FR-030, SC-004, SC-007)
