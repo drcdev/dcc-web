@@ -109,7 +109,7 @@
     {
       "type": "TXT",
       "name": "mta._domainkey.mail.doncoleman.ca",
-      "content": "k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCp1Cc84EdRYbMN/Xdy78yv65EdIZ0figIkM2QAE2FzYMBjdV6wBBA3yM9p9ZE3QCanMYyk2I3AtoCsOyRxbKLebcmmsxsMJ8RTk3HEW+YiriDGMyz/pEagjoLSA5q46twJped3sdRGSvT+YgndC6nyNFDX Q0B8wLeBxTLUvBo99QIDAQAB",
+      "content": "k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCp1Cc84EdRYbMN/Xdy78yv65EdIZ0figIkM2QAE2FzYMBjdV6wBBA3yM9p9ZE3QCanMYyk2I3AtoCsOyRxbKLebcmmsxsMJ8RTk3HEW+YiriDGMyz/pEagjoLSA5q46twJped3sdRGSvT+YgndC6nyNFDXQ0B8wLeBxTLUvBo99QIDAQAB",
       "priority": null,
       "decision": "keep",
       "reason": null,

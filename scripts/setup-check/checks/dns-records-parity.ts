@@ -10,7 +10,7 @@
 // Cloudflare-only records not in the baseline are reported in `details` for
 // Don to add or delete, without blocking completion.
 import type { CheckResult, CloudflareDnsRecord, DnsBaseline, DnsBaselineRecord, ProviderContext } from "../types.ts";
-import { complete, couldNotCheck, fromProviderError, missing } from "./shared.ts";
+import { complete, couldNotCheck, fromProviderError, missing, normalizeTxtContent } from "./shared.ts";
 
 const ITEM = { id: "dns-records-parity", order: 4 };
 
@@ -24,7 +24,7 @@ function normContent(type: string, content: string): string {
     value = value.replace(/\.$/, "").toLowerCase();
   }
   if (type === "TXT") {
-    value = value.replace(/^"|"$/g, "");
+    value = normalizeTxtContent(value);
   }
   return value;
 }

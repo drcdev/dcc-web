@@ -113,3 +113,25 @@ export function fromProviderError(item: ItemLabel, summary: string, err: unknown
 export function missingEnvNames(names: string[], has: (name: string) => boolean): string[] {
   return names.filter((name) => !has(name));
 }
+
+/**
+ * Normalises TXT record content for comparison across providers. A TXT value longer than 255
+ * characters is stored as multiple character-strings; Cloudflare's API returns these as
+ * space-separated quoted chunks (e.g. `"k=rsa; p=AAAA" "BBBB"`), while public DNS (Node's
+ * resolver, via providers/dns.ts) and the baseline join the chunks with no separator. Every DNS
+ * comparison that touches TXT content (dns-records-parity, live-domain-ghost, ...) must use this
+ * so both sides normalise to the same canonical, joined form. Splits into quoted chunks when
+ * quotes are present and concatenates them with no separator; an unquoted value is used as-is
+ * after trimming, so a single chunk's own spaces (e.g. an SPF string) are preserved.
+ */
+export function normalizeTxtContent(content: string): string {
+  const trimmed = content.trim();
+  if (!trimmed.includes('"')) {
+    return trimmed;
+  }
+  const chunks = [...trimmed.matchAll(/"([^"]*)"/g)].map((m) => m[1]);
+  if (chunks.length === 0) {
+    return trimmed.replace(/^"|"$/g, "");
+  }
+  return chunks.join("");
+}

@@ -7,7 +7,7 @@
 // `complete`. The Ghost generator marker is an informational detail only and
 // never decides the status.
 import type { CheckResult, DnsAnswer, DnsBaseline, DnsBaselineRecord, DnsRecordType, ProviderContext, SetupConfig } from "../types.ts";
-import { complete, fromProviderError, missing } from "./shared.ts";
+import { complete, fromProviderError, missing, normalizeTxtContent } from "./shared.ts";
 
 const ITEM = { id: "live-domain-ghost", order: 6 };
 const APEX_TYPES: DnsRecordType[] = ["A", "AAAA", "CNAME"];
@@ -22,7 +22,7 @@ function normContent(type: DnsRecordType, content: string): string {
     value = value.replace(/\.$/, "").toLowerCase();
   }
   if (type === "TXT") {
-    value = value.replace(/^"|"$/g, "");
+    value = normalizeTxtContent(value);
   }
   return value;
 }

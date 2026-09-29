@@ -81,6 +81,32 @@ describe("checks/live-domain-ghost", () => {
     expect(result.docs).toBe("docs/setup.md#live-domain-ghost");
   });
 
+  it("is complete when a baseline TXT record holds Cloudflare's quoted chunked form and public DNS returns the joined value", async () => {
+    const baselineMap = loadFixture<NameTypeMap>("dns", "ghost-a-records-baseline");
+    const liveMap = loadFixture<NameTypeMap>("dns", "ghost-a-records-still-matching");
+    const emailBaselineMap = loadFixture<NameTypeMap>("dns", "mx-txt-match-baseline-chunked");
+    const emailLiveMap = loadFixture<NameTypeMap>("dns", "mx-txt-match-live-joined");
+    const baselineRecords = [...toBaselineRecords(baselineMap), ...toBaselineRecords(emailBaselineMap)];
+    const resolveGhost = toResolver(liveMap);
+    const resolveEmail = toResolver(emailLiveMap);
+
+    const ctx = fakeProviderContext({
+      env: envFrom({}),
+      fs: fsWith(baselineRecords),
+      dns: {
+        resolve: async (name, type) => {
+          const ghostAnswers = await resolveGhost(name, type);
+          if (ghostAnswers.length > 0) return ghostAnswers;
+          return resolveEmail(name, type);
+        },
+      },
+    });
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("complete");
+  });
+
   it("is missing with a 'Problem:' summary when the live domain no longer points at the Ghost baseline", async () => {
     const baselineMap = loadFixture<NameTypeMap>("dns", "ghost-a-records-baseline");
     const liveMap = loadFixture<NameTypeMap>("dns", "live-domain-switched-away-from-ghost");

@@ -200,6 +200,25 @@ describe("checks/dns-records-parity", () => {
     expect(details).not.toContain("mx01.mail.icloud.com");
   });
 
+  it("matches a TXT record when Cloudflare returns space-separated quoted chunks and the baseline holds the joined content", async () => {
+    const cf = loadFixture<CloudflareDnsRecord[]>("cloudflare", "dns-records-chunked-txt-dkim");
+    const records = [
+      keepRecord({
+        type: "TXT",
+        name: "mta._domainkey.mail.doncoleman.ca",
+        content: "k=rsa; p=AAAABBBBCCCCDDDDEEEE",
+        priority: null,
+        ttl: 14400,
+      }),
+    ];
+    const ctx = contextWith(baseline(records), cf);
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("complete");
+    expect(result.details).toEqual([]);
+  });
+
   it("is could-not-check when the Cloudflare DNS records call fails", async () => {
     const records = [keepRecord({})];
     const ctx = contextWith(baseline(records), () => {
