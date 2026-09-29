@@ -62,3 +62,6 @@ Thumbs.db
 
 # Spec Kit extension catalog cache
 .specify/extensions/.cache/
+
+# Read-only design reference (Flux theme), never committed
+.reference/
