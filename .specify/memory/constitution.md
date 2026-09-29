@@ -1,31 +1,47 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 1.0.0 → 1.1.0
-Bump rationale: MINOR. Principle IV (First-Party Before Custom) is materially
-expanded with a new rule that Astro development choices must be grounded in the
-official Astro documentation retrieved through the Astro Docs MCP server, and the
-Development Workflow gains a matching evidence requirement for plans. No principle
-was removed or redefined.
+Version change: 1.1.0 → 2.0.0
+Bump rationale: MAJOR. Principle VIII (Fly.io Best Practices) is removed and
+replaced by a new Principle VIII (Cloudflare Best Practices), and Principle VII is
+redefined: the contact API and its storage move from Fly.io in Toronto to
+Cloudflare Workers and D1, dropping the Canada residency requirement. Principle IV,
+Principle V and the Technology Constraints change accordingly. The amendment
+request named the previous version as 1.0.0; the file was at 1.1.0 (the Astro
+Docs MCP amendment), so the bump is applied from 1.1.0.
 
 Modified principles:
 - IV. First-Party Before Custom → IV. First-Party Before Custom (title unchanged;
-  added "Astro Docs MCP is the source of truth" rules)
+  the first-party rule now names Cloudflare only)
+- V. Static by Default → V. Static by Default (title unchanged; first bullet now
+  states that the contact API under /api/ is the only server-side code)
+- VII. Private Data: Minimal, Protected, in Canada → VII. Private Data: Minimal
+  and Protected (redefined: storage is Cloudflare D1 in the location recorded in
+  the contact feature's plan; IP addresses stored only as salted hashes; preview
+  submissions kept separate from production; secrets in Cloudflare and GitHub)
+- VIII. Fly.io Best Practices → VIII. Cloudflare Best Practices (replaced)
 
-Added sections: none (new rules were added inside existing sections)
-- Development Workflow: added the "Astro decisions cite the docs" rule
+Added sections: none
 
-Removed sections: none
+Removed sections:
+- VIII. Fly.io Best Practices (replaced by VIII. Cloudflare Best Practices)
+
+Other changes:
+- Technology Constraints: Hosting is now "Cloudflare Workers static assets";
+  Contact API is now TypeScript in the site's Worker with D1 and a Cron Trigger.
+- Every mention of Fly.io, fly.toml, Fly volumes, the Toronto region (yyz) and
+  storing data in Canada is removed.
 
 Templates reviewed (read at runtime, not modified by this command):
-- .specify/templates/plan-template.md — Constitution Check should now confirm
-  that Astro-related choices were verified against the Astro Docs MCP; the
-  existing free-form Constitution Check section accommodates this without a
+- .specify/templates/plan-template.md — the free-form Constitution Check
+  accommodates the renamed Principle VII and the new Principle VIII without a
   structural change.
 - .specify/templates/spec-template.md — no change required.
 - .specify/templates/tasks-template.md — no change required.
 
-Follow-up TODOs: none. No placeholders deferred.
+Follow-up TODOs: none. No placeholders deferred. Earlier feature specs, plans and
+docs/setup.md still describe Fly.io/Toronto storage and are out of scope for this
+command (see the amendment's Next Actions).
 -->
 
 # doncoleman.ca Constitution
@@ -92,15 +108,15 @@ the change as major.
   building or adding an alternative. Examples: content collections with schemas, the built-in
   image handling, view transitions, official integrations for MDX, sitemap and RSS, and typed
   environment variables.
-- The same rule applies to Cloudflare and Fly.io: use the platform's own feature before a
-  third-party package or custom code.
+- The same rule applies to Cloudflare: use the platform's own feature before a third-party
+  package or custom code.
 - Custom code is allowed only when no first-party option meets the requirement. The plan must
   name the first-party option considered and say why it falls short.
 
 ### V. Static by Default
 
 - Every public page is prerendered at build time. There is no server-side rendering for public
-  content.
+  content. The only server-side code is the contact API under `/api/`.
 - Pages ship no client-side JavaScript unless a component genuinely needs interactivity.
   Interactive pieces are isolated islands loaded as late as possible.
 - Core content (pages, posts, project stories) must be readable with JavaScript turned off.
@@ -113,27 +129,31 @@ the change as major.
   CMS and no database for public content.
 - Invalid content fails the build with a clear error rather than rendering incorrectly.
 
-### VII. Private Data: Minimal, Protected, in Canada
+### VII. Private Data: Minimal and Protected
 
 - The only personal information the site collects is what a person types into the contact
   form.
 - Collect only the fields that are needed. Never log message contents or personal details.
-- Contact submissions are stored only on Fly.io in the Toronto region (yyz). They do not pass
-  through any service that stores them outside Canada.
+  Store only a salted hash of a sender's IP address, never the address itself.
+- Contact submissions are stored only in Cloudflare D1, in the location recorded in the
+  contact feature's plan. The privacy policy states where they are stored.
+- Messages sent from preview deployments are stored separately from production messages.
 - Stored submissions are deleted automatically after a set retention period.
-- Secrets live in Fly.io and Cloudflare secret stores and in gitignored local files. They are
+- Secrets live in Cloudflare and GitHub secret stores and in gitignored local files. They are
   never committed, logged or included in client code.
 
-### VIII. Fly.io Best Practices
+### VIII. Cloudflare Best Practices
 
-- Follow Fly.io's documented guidance for deployment, security and performance, including its
-  production checklist.
-- The contact API is configured in a committed `fly.toml`, pinned to the Toronto region, and
-  scales to zero when idle, starting automatically on request.
-- The container image is minimal, runs as a non-root user, and exposes a health check.
-- The API accepts requests only from the site's own origins, verifies spam protection
+- Follow Cloudflare's documented best practices for Workers, D1 and Turnstile, covering
+  deployment, security and performance.
+- The site and the contact API run in one Worker. Only `/api/*` invokes Worker code; every
+  other request is served as a static asset.
+- Worker configuration, D1 migrations and Cron Triggers are committed and applied through CI,
+  never by hand in the dashboard.
+- The contact API accepts requests only from the site's own origin, verifies Turnstile
   server-side, rate-limits submissions, and serves HTTPS only.
-- Stored data is on a Fly volume with automatic snapshots enabled.
+- Usage stays within Cloudflare's free plan limits. D1 queries are indexed so they stay well
+  under the free plan's daily row limits.
 
 ### IX. Cost Ceiling
 
@@ -162,9 +182,10 @@ the change as major.
 - **Site:** Astro (current stable), TypeScript in strict mode, Tailwind CSS.
 - **Design baseline:** the existing Tailwind theme from Don's current site is ported as the
   starting design system. Deviations from it are major changes.
-- **Hosting:** Cloudflare, serving the static build, with a preview deployment per branch.
-- **Contact API:** a small TypeScript service on Fly.io (yyz) with a single SQLite database on
-  a Fly volume.
+- **Hosting:** Cloudflare Workers static assets, serving the static build, with a preview
+  deployment per branch.
+- **Contact API:** TypeScript in the site's Worker, handling `/api/*`, with Cloudflare D1 for
+  storage and a Cron Trigger for retention.
 - **Spam protection:** Cloudflare Turnstile, verified by the contact API.
 - **Analytics:** Cloudflare Web Analytics or none.
 - **CI:** GitHub Actions.
@@ -195,4 +216,4 @@ the change as major.
   - PATCH for wording and clarifications.
 - Every pull request review checks compliance with this document.
 
-**Version**: 1.1.0 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-09-28
+**Version**: 2.0.0 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-09-29
