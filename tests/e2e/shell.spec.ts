@@ -273,8 +273,18 @@ test.describe("footer on every template", () => {
       await page.goto(template.path);
       await page.locator("main#main").focus();
 
-      const forward: string[] = [];
-      for (let i = 0; i < FOOTER_ORDER.length; i += 1) {
+      // Skip past any focusable elements inside main's own content (for
+      // example the not-found page's link to the home page, T071): this test
+      // covers only the footer's tab order.
+      let stop = await footerStop(page);
+      while (stop.startsWith("outside:")) {
+        await page.keyboard.press("Tab");
+        stop = await footerStop(page);
+      }
+      await expectVisibleFocusRing(page.locator(":focus"));
+
+      const forward: string[] = [stop];
+      for (let i = 1; i < FOOTER_ORDER.length; i += 1) {
         await page.keyboard.press("Tab");
         forward.push(await footerStop(page));
         await expectVisibleFocusRing(page.locator(":focus"));

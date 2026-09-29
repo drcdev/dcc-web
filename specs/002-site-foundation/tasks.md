@@ -516,22 +516,22 @@ and independently testable per their spec.md acceptance scenarios.
 
 **Purpose**: Deliver a helpful, correctly-statused not-found page inside the full shell. [US5]
 
-- [ ] T069 [P] [US5] Write a failing component test `tests/component/NotFound.test.ts` (Container
+- [X] T069 [P] [US5] Write a failing component test `tests/component/NotFound.test.ts` (Container
   API) for `src/pages/404.astro`: renders the full shell (skip link, header, footer), exactly one
   `<h1>` "Page not found", a plain-language explanation that mentions older blog addresses have
   moved, a link to the home page and the main navigation, a title, description, sharing title,
   description and image, `noindex`, and no `canonical`/`og:url` (FR-016, FR-017c). Run it and
   confirm it fails.
-- [ ] T070 [P] [US5] Write a failing E2E test `tests/e2e/not-found.spec.ts` with separate tests
+- [X] T070 [P] [US5] Write a failing E2E test `tests/e2e/not-found.spec.ts` with separate tests
   for status and content: requesting `/drift/2025/x/`, `/convergence/`, `/news/`, `/topic/x/`,
   `/author/x/`, and each entry of `futureDestinations` (for example `/services/`,
   `/privacy-policy/`) returns HTTP 404; separately, each shows the not-found page body with the
   header and footer, in the visitor's currently-chosen theme (set a stored `light` choice and
   confirm the 404 renders light); and built addresses (`/`, `/robots.txt` once it exists) return
   200 (FR-006, FR-016). Run it and confirm it fails.
-- [ ] T071 [US5] Implement `src/pages/404.astro` using `BaseLayout`, `Seo` with `canonical={false}`
+- [X] T071 [US5] Implement `src/pages/404.astro` using `BaseLayout`, `Seo` with `canonical={false}`
   to pass T069 and T070 (research R7).
-- [ ] T072 Run `pnpm run build`, then `pnpm exec vitest run tests/component/NotFound.test.ts` and
+- [X] T072 Run `pnpm run build`, then `pnpm exec vitest run tests/component/NotFound.test.ts` and
   `pnpm exec playwright test tests/e2e/not-found.spec.ts --project=e2e`; also set the not-found
   entry's `built` flag to `true` in `tests/e2e/templates.ts` (Phase 5 marked the not-found cases
   of `shell.spec.ts` and `no-js.spec.ts` as `fixme` until the page exists) and run
