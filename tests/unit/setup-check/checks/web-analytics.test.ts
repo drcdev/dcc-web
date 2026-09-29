@@ -42,8 +42,15 @@ function fsWith(overrides: Record<string, unknown> = {}) {
 // CloudflareReader.listWebAnalyticsSites returns the already-mapped
 // CloudflareWebAnalyticsSite shape (camelCase); the fixture records the raw
 // SDK response (snake_case), so tests map it the same way the real provider does.
-function toWebAnalyticsSites(raw: Array<{ site_tag?: string; host?: string; auto_install?: boolean }>) {
-  return raw.map((s) => ({ siteTag: s.site_tag ?? "", host: s.host ?? null, autoInstall: Boolean(s.auto_install) }));
+function toWebAnalyticsSites(
+  raw: Array<{ site_tag?: string; host?: string; auto_install?: boolean; ruleset?: { zone_name?: string } }>,
+) {
+  return raw.map((s) => ({
+    siteTag: s.site_tag ?? "",
+    host: s.host ?? null,
+    autoInstall: Boolean(s.auto_install),
+    zoneName: s.ruleset?.zone_name ?? null,
+  }));
 }
 
 async function reviewAddressCompleteContext(overrides: Parameters<typeof fakeProviderContext>[0] = {}) {
@@ -98,6 +105,45 @@ describe("checks/web-analytics", () => {
     expect(result.summary).toMatch(/no web analytics site/i);
   });
 
+  it("is missing when the only site belongs to another zone", async () => {
+    const ctx = await reviewAddressCompleteContext({
+      cloudflare: {
+        listWebAnalyticsSites: async () => [{ siteTag: "other", host: null, autoInstall: true, zoneName: "example.com" }],
+      },
+    });
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("missing");
+    expect(result.summary).toMatch(/no web analytics site/i);
+  });
+
+  it("is missing when the zone-level site has automatic setup off", async () => {
+    const ctx = await reviewAddressCompleteContext({
+      cloudflare: {
+        listWebAnalyticsSites: async () => [{ siteTag: "zone456", host: null, autoInstall: false, zoneName: "doncoleman.ca" }],
+      },
+    });
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("missing");
+    expect(result.summary).toMatch(/automatic setup is off/i);
+  });
+
+  it("is complete when a zone-level automatic-setup site covers the review host", async () => {
+    const ctx = await reviewAddressCompleteContext({
+      cloudflare: {
+        listWebAnalyticsSites: async () =>
+          toWebAnalyticsSites(loadFixture("cloudflare", "web-analytics-site-zone-automatic")),
+      },
+    });
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("complete");
+  });
+
   it("is missing when the served page does not reference the Cloudflare beacon", async () => {
     const ctx = await reviewAddressCompleteContext({
       http: { get: async () => loadFixture("http", "review-host-200-noindex") },
@@ -123,7 +169,7 @@ describe("checks/web-analytics", () => {
     const ctx = await reviewAddressCompleteContext({
       cloudflare: {
         listWebAnalyticsSites: async () => {
-          throw new ProviderAccessError("Cloudflare token lacks Web Analytics Read access (403)");
+          throw new ProviderAccessError("Cloudflare token lacks Account Settings Read access (403)");
         },
       },
     });

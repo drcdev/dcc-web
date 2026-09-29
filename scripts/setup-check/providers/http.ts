@@ -3,6 +3,11 @@
 import { ProviderAccessError, type HttpReader, type HttpResponseSummary } from "../types.ts";
 
 const HTTP_TIMEOUT_MS = 10_000;
+// Ask for pages the way a browser does. Node's fetch defaults to `Accept: */*`,
+// and Cloudflare only injects the Web Analytics beacon (setup item 18) into
+// responses whose request accepts HTML, so a `*/*` probe would report the
+// beacon missing on a page every visitor actually receives with it.
+const HEADERS = { accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" };
 
 async function request(url: string, method: "GET" | "HEAD"): Promise<HttpResponseSummary> {
   const controller = new AbortController();
@@ -10,8 +15,8 @@ async function request(url: string, method: "GET" | "HEAD"): Promise<HttpRespons
   try {
     const response =
       method === "HEAD"
-        ? await fetch(url, { method: "HEAD", redirect: "follow", signal: controller.signal })
-        : await fetch(url, { method: "GET", redirect: "follow", signal: controller.signal });
+        ? await fetch(url, { method: "HEAD", headers: HEADERS, redirect: "follow", signal: controller.signal })
+        : await fetch(url, { method: "GET", headers: HEADERS, redirect: "follow", signal: controller.signal });
     const body = method === "HEAD" ? "" : await response.text();
     const headers: Record<string, string> = {};
     response.headers.forEach((value, key) => {

@@ -1,7 +1,10 @@
 // checks/web-analytics.ts (setup item 18, data-model.md "web-analytics"): a
-// Web Analytics site for new.doncoleman.ca exists with automatic setup on,
-// and the served page references the Cloudflare beacon (FR-022). Stays
-// missing while review-address is not complete.
+// Web Analytics site covers new.doncoleman.ca with automatic setup on, and
+// the served page references the Cloudflare beacon (FR-022). The dashboard's
+// automatic setup registers the zone (ruleset.zone_name, host empty), not a
+// hostname, so a zone-level automatic site for the configured zone counts as
+// covering the review host; a JS-snippet site records the hostname instead.
+// Stays missing while review-address is not complete.
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { check as checkReviewAddress } from "./review-address.ts";
 import { complete, couldNotCheck, fromProviderError, missing } from "./shared.ts";
@@ -39,16 +42,19 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
 
   const config = ctx.fs.readJson<SetupConfig>("setup/config.json");
   const reviewHost = config?.reviewHost ?? "new.doncoleman.ca";
+  const zoneName = config?.zone ?? "doncoleman.ca";
 
   try {
     const sites = await ctx.cloudflare.listWebAnalyticsSites(accountId);
-    const site = sites.find((s) => s.host === reviewHost);
+    const site =
+      sites.find((s) => s.host === reviewHost) ??
+      sites.find((s) => s.host === null && s.zoneName === zoneName);
 
     if (!site) {
       return missing(
         ITEM,
-        `No Web Analytics site exists for ${reviewHost} yet.`,
-        `Add a site for ${reviewHost} with automatic setup: Cloudflare dashboard → Analytics & Logs → Web Analytics → Add a site → Enable.`,
+        `No Web Analytics site exists for ${reviewHost} (or the ${zoneName} zone) yet.`,
+        `Add a site with automatic setup: Cloudflare dashboard → Analytics & Logs → Web Analytics → Add a site → select ${zoneName} → Enable.`,
       );
     }
     if (!site.autoInstall) {
@@ -77,7 +83,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       ITEM,
       `Could not confirm Web Analytics for ${reviewHost}.`,
       err,
-      "Check the Cloudflare API token in .env is valid and has Web Analytics: Read access, then try again.",
+      "Check the Cloudflare API token in .env is valid and has Account Settings: Read access, then try again.",
     );
   }
 }

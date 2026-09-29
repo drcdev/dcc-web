@@ -220,8 +220,11 @@ export interface CloudflareWorkerDomain {
 
 export interface CloudflareWebAnalyticsSite {
   siteTag: string;
+  /** Hostname for a site added by JS snippet; null for a zone-level automatic-setup site. */
   host: string | null;
   autoInstall: boolean;
+  /** Zone an automatic-setup site injects the beacon into (ruleset.zone_name); null when absent. */
+  zoneName: string | null;
 }
 
 export interface CloudflareReader {

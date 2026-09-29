@@ -10,7 +10,7 @@ export const secretManifest: SecretRef[] = [
     kind: "secret",
     store: "local-env",
     purpose: "Read-only token the setup check uses for Cloudflare reads",
-    permissions: "Cloudflare: Zone Read, DNS Read, Workers Scripts Read, Web Analytics Read",
+    permissions: "Cloudflare: Zone Read, DNS Read, Workers Scripts Read, Account Settings Read",
     usedBy: ["local-credentials", "cloudflare-zone", "dns-records-parity", "dns-nameservers", "cloudflare-worker", "review-address", "web-analytics"],
   },
   {

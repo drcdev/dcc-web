@@ -448,7 +448,7 @@ const scenarios: Scenario[] = [
     missing: () =>
       dependenciesSatisfiedContext({
         cloudflare: {
-          listWebAnalyticsSites: async () => [{ siteTag: "t1", host: CONFIG.reviewHost, autoInstall: false }],
+          listWebAnalyticsSites: async () => [{ siteTag: "t1", host: CONFIG.reviewHost, autoInstall: false, zoneName: null }],
         },
       }).then((ctx) => checkWebAnalytics(ctx)),
   },
