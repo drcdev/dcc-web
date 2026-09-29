@@ -135,6 +135,69 @@ describe("checks/dns-records-parity", () => {
     expect(result.reason).toMatch(/CLOUDFLARE_API_TOKEN/);
   });
 
+  it("matches two MX records with the same name by content instead of comparing both against the first candidate", async () => {
+    const cf = loadFixture<CloudflareDnsRecord[]>("cloudflare", "dns-records-duplicate-mx-apex");
+    const records = [
+      keepRecord({ type: "MX", name: "doncoleman.ca", content: "mx01.mail.icloud.com", priority: 10, ttl: 3600 }),
+      keepRecord({ type: "MX", name: "doncoleman.ca", content: "mx02.mail.icloud.com", priority: 10, ttl: 3600 }),
+    ];
+    const ctx = contextWith(baseline(records), cf);
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("complete");
+    expect(result.details).toEqual([]);
+  });
+
+  it("matches two TXT records with the same name by content instead of comparing both against the first candidate", async () => {
+    const cf = loadFixture<CloudflareDnsRecord[]>("cloudflare", "dns-records-duplicate-txt-apex");
+    const records = [
+      keepRecord({
+        type: "TXT",
+        name: "doncoleman.ca",
+        content: "v=spf1 include:_spf.mail.icloud.com include:_spf.example.net -all",
+        priority: null,
+        ttl: 3600,
+      }),
+      keepRecord({ type: "TXT", name: "doncoleman.ca", content: "apple-domain=abcdefghijklmnop", priority: null, ttl: 3600 }),
+    ];
+    const ctx = contextWith(baseline(records), cf);
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("complete");
+    expect(result.details).toEqual([]);
+  });
+
+  it("reports 'no Cloudflare record with this content' when one of two same-name records is missing from Cloudflare", async () => {
+    const cf = loadFixture<CloudflareDnsRecord[]>("cloudflare", "dns-records-duplicate-mx-subdomain-one-missing");
+    const records = [
+      keepRecord({ type: "MX", name: "mail.doncoleman.ca", content: "mx01.mail.icloud.com", priority: 10, ttl: 3600 }),
+      keepRecord({ type: "MX", name: "mail.doncoleman.ca", content: "mx02.mail.icloud.com", priority: 20, ttl: 3600 }),
+    ];
+    const ctx = contextWith(baseline(records), cf);
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("missing");
+    const details = result.details.join(" ");
+    expect(details).toContain("mx02.mail.icloud.com: no Cloudflare record with this content (found: mx01.mail.icloud.com)");
+    expect(details).not.toContain('content is "mx01.mail.icloud.com", expected "mx02.mail.icloud.com"');
+  });
+
+  it("excludes a Cloudflare record already claimed by a baseline record from the Cloudflare-only list", async () => {
+    const cf = loadFixture<CloudflareDnsRecord[]>("cloudflare", "dns-records-duplicate-mx-apex");
+    const records = [keepRecord({ type: "MX", name: "doncoleman.ca", content: "mx01.mail.icloud.com", priority: 10, ttl: 3600 })];
+    const ctx = contextWith(baseline(records), cf);
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("complete");
+    const details = result.details.join(" ");
+    expect(details).toContain("Cloudflare-only, not in baseline: MX doncoleman.ca mx02.mail.icloud.com");
+    expect(details).not.toContain("mx01.mail.icloud.com");
+  });
+
   it("is could-not-check when the Cloudflare DNS records call fails", async () => {
     const records = [keepRecord({})];
     const ctx = contextWith(baseline(records), () => {

@@ -34,11 +34,9 @@ function sameNameAndType(baseline: DnsBaselineRecord, cf: CloudflareDnsRecord): 
   return baseline.type === cf.type && normName(baseline.name) === normName(cf.name);
 }
 
-function describeMismatch(baseline: DnsBaselineRecord, cf: CloudflareDnsRecord): string | null {
+/** Compares everything except content: content is used to select the candidate before this runs. */
+function describeNonContentMismatch(baseline: DnsBaselineRecord, cf: CloudflareDnsRecord): string | null {
   const problems: string[] = [];
-  if (normContent(baseline.type, baseline.content) !== normContent(cf.type, cf.content)) {
-    problems.push(`content is "${cf.content}", expected "${baseline.content}"`);
-  }
   if (baseline.ttl !== cf.ttl) {
     problems.push(`TTL is ${cf.ttl}${cf.ttl === 1 ? " (automatic)" : ""}, expected ${baseline.ttl}`);
   }
@@ -67,33 +65,43 @@ export function evaluateDnsParity(baseline: DnsBaseline, cfRecords: CloudflareDn
 
   const undecided = baseline.records.filter((r) => r.decision === null);
   const keepRecords = baseline.records.filter((r) => r.decision === "keep");
+  const otherRecords = baseline.records.filter((r) => r.decision !== "keep");
 
   const problems: string[] = [];
   const matchedCf = new Set<CloudflareDnsRecord>();
 
   for (const record of keepRecords) {
-    const candidates = cfRecords.filter((cf) => sameNameAndType(record, cf));
-    let matched: CloudflareDnsRecord | null = null;
-    let bestMismatch: string | null = null;
-    for (const candidate of candidates) {
-      const mismatch = describeMismatch(record, candidate);
-      if (mismatch === null) {
-        matched = candidate;
-        break;
+    const sameTypeName = cfRecords.filter((cf) => sameNameAndType(record, cf));
+    const available = sameTypeName.filter((cf) => !matchedCf.has(cf));
+    const contentMatch = available.find(
+      (cf) => normContent(record.type, record.content) === normContent(cf.type, cf.content),
+    );
+    if (contentMatch) {
+      matchedCf.add(contentMatch);
+      const mismatch = describeNonContentMismatch(record, contentMatch);
+      if (mismatch) {
+        problems.push(`${recordLabel(record)}: ${mismatch}`);
       }
-      bestMismatch ??= mismatch;
-    }
-    if (matched) {
-      matchedCf.add(matched);
-    } else if (candidates.length > 0) {
-      problems.push(`${recordLabel(record)}: ${bestMismatch}`);
+    } else if (sameTypeName.length > 0) {
+      const found = sameTypeName.map((cf) => cf.content).join(", ");
+      problems.push(`${recordLabel(record)}: no Cloudflare record with this content (found: ${found})`);
     } else {
       problems.push(`${recordLabel(record)}: not found in Cloudflare`);
     }
   }
 
+  // Records covered by a "drop" (or undecided) baseline entry aren't content-verified, but a
+  // matching type+name record is still accounted for in the baseline, so it shouldn't also be
+  // reported as Cloudflare-only.
+  for (const record of otherRecords) {
+    const candidate = cfRecords.find((cf) => sameNameAndType(record, cf) && !matchedCf.has(cf));
+    if (candidate) {
+      matchedCf.add(candidate);
+    }
+  }
+
   const cloudflareOnly = cfRecords
-    .filter((cf) => !baseline.records.some((r) => sameNameAndType(r, cf)))
+    .filter((cf) => !matchedCf.has(cf))
     .map((cf) => `${cf.type} ${cf.name} ${cf.content}`);
 
   return {

@@ -1,0 +1,4 @@
+[
+  { "type": "TXT", "name": "doncoleman.ca", "content": "v=spf1 include:_spf.mail.icloud.com include:_spf.example.net -all", "priority": null, "ttl": 3600, "proxied": false },
+  { "type": "TXT", "name": "doncoleman.ca", "content": "apple-domain=abcdefghijklmnop", "priority": null, "ttl": 3600, "proxied": false }
+]
