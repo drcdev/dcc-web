@@ -11,10 +11,23 @@
 // show the button before first paint, with no layout shift when the bundled
 // script below arrives (docs.astro.build/en/guides/client-side-scripts/).
 import { site } from "../config/site";
-import { primaryNavigation } from "../config/navigation";
+import type { NavigationItem } from "../config/navigation";
 import { isCurrent } from "../lib/nav";
 import MenuIcon from "../icons/menu.svg";
 
+// Interim: the header takes its items from the `navigation` prop (built by
+// mergeNavigation() from the page files). Until the page route passes it
+// (specs/003-standalone-pages/tasks.md T038), the launch items are used.
+const launchNavigation: NavigationItem[] = [
+  { label: "Home", href: "/", kind: "primary" },
+  { label: "Services", href: "/services/", kind: "primary" },
+  { label: "Speaking", href: "/speaking/", kind: "primary" },
+  { label: "Writing", href: "/writing/", kind: "primary" },
+  { label: "Projects", href: "/projects/", kind: "primary" },
+  { label: "About", href: "/about/", kind: "primary" },
+  { label: "Contact", href: "/contact/", kind: "primary" },
+];
+const { navigation = launchNavigation } = Astro.props as { navigation?: NavigationItem[] };
 const pathname = Astro.url.pathname;
 ---
 
@@ -40,7 +53,7 @@ const pathname = Astro.url.pathname;
           class="flex flex-wrap items-center gap-x-8 gap-y-2 js:max-md:hidden js:max-md:data-open:flex js:max-md:w-full js:max-md:flex-col js:max-md:items-start js:max-md:gap-y-4 js:max-md:border-t js:max-md:border-dusk-200 js:max-md:pt-4 dark:js:max-md:border-dusk-600"
         >
           {
-            primaryNavigation.map((item) => {
+            navigation.map((item) => {
               const current = isCurrent(pathname, item.href);
               return (
                 <li>
