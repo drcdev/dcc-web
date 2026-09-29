@@ -115,6 +115,37 @@ for (const template of TEMPLATES) {
       await context.close();
     });
 
+    // A colour transition that runs while the page loads leaves axe sampling a
+    // half-faded colour (the home call to action once read 4.23:1 mid-fade).
+    // Chromium started one from the browser's default link style for every
+    // transitioned element inside a size container (container-type), so no
+    // transition may run during load, in either theme or at either width.
+    for (const size of WIDTHS) {
+      for (const theme of THEMES) {
+        test(`runs no CSS transitions while loading at ${size.name} width in the ${theme} theme`, async ({ page }) => {
+          await page.setViewportSize({ width: size.width, height: size.height });
+          await setTheme(page, theme);
+          await page.addInitScript(() => {
+            const started: string[] = [];
+            (window as unknown as { __transitions: string[] }).__transitions = started;
+            document.addEventListener(
+              "transitionrun",
+              (event) => {
+                const target = event.target as Element;
+                started.push(`${target.tagName.toLowerCase()}.${String(target.className)} ${event.propertyName}`);
+              },
+              true,
+            );
+          });
+          await page.goto(template.path);
+          // Longer than any transition on the site (300 ms), so a late one is caught.
+          await page.waitForTimeout(500);
+          const started = await page.evaluate(() => (window as unknown as { __transitions: string[] }).__transitions);
+          expect(started).toEqual([]);
+        });
+      }
+    }
+
     test("has exactly one main landmark", async ({ page }) => {
       await page.goto(template.path);
       await expect(page.locator("main")).toHaveCount(1);

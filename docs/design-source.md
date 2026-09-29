@@ -78,8 +78,11 @@ Test support for this structure:
   image goes a little past the text column and never past the page.
 - `.kg-width-full` and the wide cap measure `cqw`, the width of the page without the scrollbar,
   because `100vw` would scroll sideways on desktop. `cqw` needs a size container, so
-  `BaseLayout` wraps `<main>` in `.page-container` (`container-type: inline-size`). Putting the
-  container on `<body>` stopped the dark background reaching the whole window.
+  `BaseLayout` wraps `<main>` in `.page-container`, which becomes a container
+  (`container-type: inline-size`) only when the page holds a wide or full image
+  (`:has(.kg-width-wide, .kg-width-full)`). Putting the container on `<body>` stopped the dark
+  background reaching the whole window, and an always-on container made Chromium run every
+  colour transition in `<main>` on load, which axe caught mid-fade on the home call to action.
 - `.prose-accent` has `overflow-wrap: anywhere` so a long unbroken address wraps instead of
   scrolling sideways.
 

@@ -14,7 +14,13 @@ function rule(selector: string): string {
 
 describe("global.css section styles", () => {
   it("makes the full-width page wrapper an inline-size container so cqw excludes the scrollbar", () => {
-    expect(rule(".page-container")).toMatch(/container-type:\s*inline-size/);
+    expect(rule(".page-container:has(.kg-width-wide, .kg-width-full)")).toMatch(/container-type:\s*inline-size/);
+  });
+
+  it("only makes the page wrapper a container when the page has a wide or full image", () => {
+    // An always-on size container makes Chromium run colour transitions on load
+    // (tests/e2e/a11y.spec.ts "runs no CSS transitions while loading").
+    expect(css).not.toMatch(/(^|\n)\.page-container\s*\{[^}]*container-type/);
   });
 
   it("does not put containment on the body, which would stop its background covering the window", () => {
