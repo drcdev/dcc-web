@@ -22,10 +22,11 @@ configuration or site content changes.
 
 **Storage**: N/A. The edited text describes Cloudflare D1 storage; nothing is provisioned.
 
-**Testing**: The spec's grep search (FR-005) and a `git diff --name-only` scope check
-(SC-003), run as described in [quickstart.md](./quickstart.md). The existing `pnpm run verify`
+**Testing**: `tests/unit/content/launch-content.test.ts` covers the two pages' copy (updated
+before the copy, seen failing, then passing). The spec's grep search (FR-005) and a
+`git diff --name-only` scope check (SC-003), run as described in [quickstart.md](./quickstart.md). The existing `pnpm run verify`
 gate still runs in CI because `docs/setup.md` is not a skip-safe path. No new automated test
-(see Principle I below).
+(see Principle I below) for the specs and setup guide.
 
 **Target Platform**: Repository documentation read by agents and Don; not built into the site.
 
@@ -37,7 +38,7 @@ gate still runs in CI because `docs/setup.md` is not a skip-safe path. No new au
 and `.specify/feature.json`). Leave `specs/003-standalone-pages/tasks.md`, the constitution,
 site content and tests untouched. Plain-language wording (Development Workflow).
 
-**Scale/Scope**: Eight files, about a dozen passages:
+**Scale/Scope**: Eight spec and doc files, about a dozen passages, plus two site pages and one unit test:
 
 | File | Passages |
 |---|---|
@@ -49,6 +50,9 @@ site content and tests untouched. Plain-language wording (Development Workflow).
 | `specs/003-standalone-pages/spec.md` | Privacy story scenario 2 (221), FR-022 (429) and its contact-form bullet (443-444), contact-data assumption (577) |
 | `specs/003-standalone-pages/checklists/privacy.md` | CHK004 (line 14) |
 | `docs/setup.md` | Principle VII citations (lines 58 and 258) |
+| `src/content/pages/privacy-policy.mdx` | Contact form storage paragraph (line 25), description |
+| `src/content/pages/technology.mdx` | Contact form paragraph (25), data table row (36), description |
+| `tests/unit/content/launch-content.test.ts` | Privacy and Technology assertions (updated first) |
 
 Line numbers are from commit `88481bf` and are a guide only; the implementer finds each passage
 by content.
@@ -63,7 +67,7 @@ Assumptions name v2.0.0 as the governing text. This branch does not modify the c
 
 | Principle | Result | Notes |
 |---|---|---|
-| **I. Test-First** | PASS (no new automated test; see below) | Principle I lists the artifacts it covers: content schemas, components, pages, the contact API, redirects, build configuration and deployment scripts. Specs and the setup guide are not among them, and this change alters no behaviour a test could describe. Verification is the spec's grep search (FR-005 / SC-001), the citation check (SC-002) and the diff-scope check (SC-003), run before the edits (to see the current matches) and after (to see none outside the allowed locations). The existing suite must still pass unchanged (SC-004). Rejected alternative recorded below. |
+| **I. Test-First** | PASS (the launch-content unit test covers the page copy and was updated first; no new test for specs and docs, see below) | Principle I lists the artifacts it covers: content schemas, components, pages, the contact API, redirects, build configuration and deployment scripts. Specs and the setup guide are not among them, and this change alters no behaviour a test could describe. Verification is the spec's grep search (FR-005 / SC-001), the citation check (SC-002) and the diff-scope check (SC-003), run before the edits (to see the current matches) and after (to see none outside the allowed locations). The existing suite must still pass unchanged (SC-004). Rejected alternative recorded below. |
 | **II. Automated Release Gate** | PASS | No check is skipped or weakened. `docs/setup.md` is not skip-safe in `scripts/ci/changed-paths.ts`, so the full `verify` job runs on this PR. |
 | **III. Human Review for Major Changes** | PASS: **not a major change** | No criterion fires: no dependency, integration or service is added, removed or replaced; no contact data handling changes (only documentation describing a future feature); no design, layout, navigation or visual change; no cost change; no CI, deployment or infrastructure configuration change; the constitution is not amended on this branch. |
 | **IV. First-Party Before Custom** | PASS (n/a) | No Astro or Cloudflare choice is made, so no Astro Docs MCP citation is needed. No custom code. |
@@ -73,7 +77,7 @@ Assumptions name v2.0.0 as the governing text. This branch does not modify the c
 | **VIII. Cloudflare Best Practices** | PASS (n/a) | No Worker code, D1 database or Cron Trigger is involved. This change makes earlier plans cite this principle by its v2.0.0 title. |
 | **IX. Cost Ceiling** | PASS | Expected additional monthly cost: $0. |
 | **X. Accessible, Fast and Private** | PASS (n/a) | Files under `specs/` and `docs/` are not built into the site; no page, performance budget or visual baseline changes. |
-| **XI. Spec Kit Workflow** | PASS | Spec Kit branch and directory naming; one feature per branch in its own worktree. Out-of-scope work (site copy and its test) stays in the spec's Follow-up list. Parallel work: PR #13 edits only `.specify/memory/constitution.md`, which this branch does not touch, so the two do not conflict. |
+| **XI. Spec Kit Workflow** | PASS | Spec Kit branch and directory naming; one feature per branch in its own worktree. Replacing the "to be confirmed" location wording stays in the spec's Follow-up list. Parallel work: PR #13 edits only `.specify/memory/constitution.md`, which this branch does not touch, so the two do not conflict. |
 | **Technology Constraints** | PASS | No new tools, services or libraries. |
 | **Development Workflow** | PASS | Changes stay inside the spec's file list; wording is plain language. No Astro decision to cite. |
 
@@ -95,9 +99,9 @@ artifact is `quickstart.md` (verification commands); it adds no service, cost or
   the same assurance for this one-off correction.
 - **Rewriting `specs/003-standalone-pages/tasks.md`.** Rejected per the spec's edge case: those
   lines record work already done.
-- **Also updating the shipped privacy policy, technology page and `launch-content.test.ts`.**
-  Rejected: out of scope (spec Follow-up); that belongs with the contact feature once the D1
-  location is recorded in its plan.
+- **Leaving the shipped privacy policy, technology page and `launch-content.test.ts` for the
+  contact feature.** Rejected at Don's request: they are in scope (FR-006), worded without a
+  location because the D1 location is not recorded yet.
 - **Phase 0/1 artifacts beyond quickstart.md** (`research.md`, `data-model.md`, `contracts/`).
   Not produced: there are no unknowns to research, no entities and no interfaces.
 

@@ -5,7 +5,7 @@ Run every command from the repository root on branch `004-drop-fly-refs`.
 ## 1. Search for stale wording (FR-005, SC-001)
 
 ```sh
-grep -rn -i -E "fly\.io|fly\.toml|fly volume|\byyz\b|canada|toronto" specs docs \
+grep -rn -i -E "fly\.io|fly\.toml|fly volume|\byyz\b|canada|toronto" specs docs src/content/pages/privacy-policy.mdx src/content/pages/technology.mdx \
   | grep -v -E "^specs/004-drop-fly-refs/|^specs/003-standalone-pages/tasks\.md:"
 ```
 
@@ -29,9 +29,9 @@ Principle VII row does not name a city, country or region.
 git diff --name-only main...HEAD
 ```
 
-Expected: only the eight files in `plan.md`, files under `specs/004-drop-fly-refs/`, and
+Expected: only the files in `plan.md` (specs, `docs/setup.md`, the two pages and the launch-content test), files under `specs/004-drop-fly-refs/`, and
 `.specify/feature.json`. In particular, not `specs/003-standalone-pages/tasks.md`,
-`.specify/memory/constitution.md`, or anything under `src/` or `tests/`.
+`.specify/memory/constitution.md`, or anything else under `src/` or `tests/`.
 
 ## 4. Confirm nothing else changed (SC-004)
 

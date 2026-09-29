@@ -19,7 +19,9 @@ privacy policy states it.
 
 The earlier feature artifacts (specs 001-003) and the setup guide (`docs/setup.md`) still
 describe the old arrangement. This change brings their wording into line with v2.0.0. It is a
-documentation change only: no code, test, configuration or site content changes.
+documentation change plus the two shipped pages that repeat the old storage claim (the privacy
+policy and the technology page) and the unit test that checks them. No other code,
+configuration or site content changes.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -58,9 +60,9 @@ Canada and Toronto. The only matches left are the exceptions listed in FR-005.
 - Historical task records: `specs/003-standalone-pages/tasks.md` records work already done
   (the privacy policy and technology page copy that says Toronto, Canada). Rewriting completed
   tasks would misstate what was built, so those task lines stay as they are.
-- The shipped privacy policy and technology page, and the unit test that checks them for
-  "Canada or Toronto", still describe Toronto storage. They are out of scope here (see
-  Follow-up), so the 003 spec will differ from the live copy until the contact feature updates it.
+- The storage location is not known yet (the contact feature's plan records it). The two pages
+  therefore name Cloudflare D1 and say where the database is located is "to be confirmed",
+  matching their existing hedging. They assert no country, city or region.
 - This spec names Fly.io, Canada and Toronto to describe the change, so its own directory is
   excluded from the search.
 
@@ -85,21 +87,27 @@ Canada and Toronto. The only matches left are the exceptions listed in FR-005.
   submissions are stored in Cloudflare D1 and that the privacy policy states the location
   recorded in the contact feature's plan. They MUST NOT assert a storage country, city or region,
   and MUST NOT mention Fly.io.
-- **FR-004**: The change MUST NOT alter anything outside the files named in FR-001 to FR-003,
-  apart from this feature's own directory and `.specify/feature.json`. It leaves the
-  constitution, site content, tests, code, configuration and
+- **FR-004**: The change MUST NOT alter anything outside the files named in FR-001 to FR-003 and
+  FR-006, apart from this feature's own directory and `.specify/feature.json`. It leaves the
+  constitution, other site content, other tests, code, configuration and
   `specs/003-standalone-pages/tasks.md` unchanged, and keeps each edited passage's meaning apart
   from the hosting and storage facts.
 - **FR-005**: After the change,
-  `grep -rn -i -E "fly\.io|fly\.toml|fly volume|\byyz\b|canada|toronto" specs docs` MUST return
-  matches only in `specs/004-drop-fly-refs/` and `specs/003-standalone-pages/tasks.md`.
+  `grep -rn -i -E "fly\.io|fly\.toml|fly volume|\byyz\b|canada|toronto" specs docs src/content/pages/privacy-policy.mdx src/content/pages/technology.mdx`
+  MUST return matches only in `specs/004-drop-fly-refs/` and `specs/003-standalone-pages/tasks.md`.
+- **FR-006**: `src/content/pages/privacy-policy.mdx` and `src/content/pages/technology.mdx` MUST
+  say submissions are stored in a Cloudflare D1 database and that where it is located is to be
+  confirmed, and MUST NOT name a country, city or region or Fly.io. The technology page's data
+  table lists "Cloudflare D1" with location "To be confirmed". `tests/unit/content/launch-content.test.ts`
+  MUST assert this wording (updated before the copy) and that neither page mentions Canada or
+  Toronto. `terms-of-use.mdx` (British Columbia governing law) is unchanged.
 
 ### Accessibility and appearance
 
 - Accessibility: every page must meet WCAG 2.2 AA (Principle X). This change edits only
   Markdown files under `specs/` and `docs/`, which are not built into the site, so no page's
   accessibility changes.
-- Appearance: no rendered page changes appearance. No visual baselines need refreshing.
+- Appearance: the two pages change wording only, not layout or styling. No visual baselines need refreshing.
 
 ## Success Criteria *(mandatory)*
 
@@ -108,9 +116,9 @@ Canada and Toronto. The only matches left are the exceptions listed in FR-005.
 - **SC-001**: The search in FR-005 returns zero matches outside the two allowed locations.
 - **SC-002**: All six principle citations named in FR-001 (three plan rows for VIII, the 003
   plan row for VII, and two `docs/setup.md` lines) match v2.0.0.
-- **SC-003**: The diff touches only the files named in FR-001 to FR-003, plus
+- **SC-003**: The diff touches only the files named in FR-001 to FR-003 and FR-006, plus
   `specs/004-drop-fly-refs/` and `.specify/feature.json`.
-- **SC-004**: The built site is unchanged: no page, test or visual baseline differs.
+- **SC-004**: Apart from the two pages' wording, the built site is unchanged and the full suite passes.
 
 ## Assumptions
 
@@ -122,9 +130,6 @@ Canada and Toronto. The only matches left are the exceptions listed in FR-005.
 
 ## Follow-up (out of scope)
 
-- `src/content/pages/privacy-policy.mdx` and `src/content/pages/technology.mdx` still say
-  submissions are stored in Toronto, Canada, and do not pass through any service outside
-  Canada. `tests/unit/content/launch-content.test.ts` checks that copy for "Canada or Toronto".
-  Don scoped this change to specs and `docs/setup.md`; the copy and its test should change with
-  the contact feature, once the D1 location is recorded in its plan.
+- When the contact feature's plan records the D1 location, replace the "to be confirmed" location
+  wording in the privacy policy and technology page.
 - If PR #13 changes before it merges, re-check the principle titles used here.
