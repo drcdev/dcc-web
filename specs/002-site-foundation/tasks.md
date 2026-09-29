@@ -658,12 +658,12 @@ still need its Linux baselines reviewed and committed once uploaded (handled in 
 **Purpose**: Close out remaining requirement coverage, get CI green including its own baseline
 set, and prepare the pull request for major-change review.
 
-- [ ] T092 [P] Run `pnpm run typecheck` and `pnpm run lint` across the whole repository; fix any
+- [X] T092 [P] Run `pnpm run typecheck` and `pnpm run lint` across the whole repository; fix any
   remaining strict-mode or lint error introduced by this feature.
-- [ ] T093 Re-read `docs/design-source.md`'s "Accessibility adjustments" section against every
+- [X] T093 Re-read `docs/design-source.md`'s "Accessibility adjustments" section against every
   shade change made in Phase 9 (T087) and confirm each entry names the pairing,
   its failing ratio and the replacement shade (FR-001a).
-- [ ] T094 Walk the "Requirement coverage" table at the end of this file against the tests
+- [X] T094 Walk the "Requirement coverage" table at the end of this file against the tests
   actually written in Phases 1–9 and confirm every FR and SC listed has at least one passing
   assertion (or, for [PREVIEW-CHECK] items, a Phase 11 task); add any missing test, seen failing
   first, before continuing.
@@ -674,6 +674,8 @@ set, and prepare the pull request for major-change review.
 - [ ] T096 Run `pnpm run verify` one more time locally, and confirm the pushed branch's `verify`
   check is green on GitHub Actions, before treating any task in this feature as done (Principle
   II — never mark done on a red suite).
+  - Local half done 2026-09-29: `pnpm run verify` green (Vitest 670/670 in 54 files; Playwright
+    196/196: e2e 138, a11y 36, budget 8, visual 14 darwin). CI half pending T095.
 - [ ] T097 Label the pull request `major-change` and write its description to include: the design
   deviations recorded in `docs/design-source.md` (if any); the reconciliation note on Workers
   Builds vs. the feature input's original GitHub Actions deploy description (plan.md "Deployment
@@ -681,7 +683,7 @@ set, and prepare the pull request for major-change review.
   were dropped, with reasons (T039, T040; FR-030a); and a checklist of the [PREVIEW-CHECK] items
   in Phase 11 that still need Don's confirmation before merge (Principle III, plan "Major-change
   verdict").
-- [ ] T098 Follow steps 1–3 of [quickstart.md](../specs/002-site-foundation/quickstart.md)
+- [X] T098 Follow steps 1–3 of [quickstart.md](../specs/002-site-foundation/quickstart.md)
   locally one final time (full local gate, look at it locally, compare with the reference
   screenshots) as a last self-check before asking Don to review the preview.
 
