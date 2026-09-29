@@ -45,8 +45,9 @@ account/zone IDs live in a local file the check reads, never in the repository.
 **Where to do it**
 Create a read-only Cloudflare API token first (Cloudflare dashboard → My Profile → API Tokens →
 Create Token), scoped to Don's account and the `doncoleman.ca` zone only, with permissions Zone →
-Zone: Read, Zone → DNS: Read, Account → Workers Scripts: Read, Account → Web Analytics: Read.
-Then copy `.env.example` to `.env` in the repository root and fill in the values in your own
+Zone: Read, Zone → DNS: Read, Account → Workers Scripts: Read, Account → Account Settings: Read
+(the permission Cloudflare's API requires to list Web Analytics sites; there is no "Web
+Analytics" token permission). Then copy `.env.example` to `.env` in the repository root and fill in the values in your own
 editor.
 
 **How it will be confirmed**
@@ -454,13 +455,18 @@ Gives Don basic, privacy-focused visitor statistics for the review address (and 
 site) with no cookies and no personal data collected.
 
 **Where to do it**
-Cloudflare dashboard → Analytics & Logs → Web Analytics → Add a site → select
-`new.doncoleman.ca` → Enable (automatic setup).
+Cloudflare dashboard → Analytics & Logs → Web Analytics → Add a site → select `doncoleman.ca`
+→ Enable (automatic setup). The dashboard offers the zone, not an individual hostname, and
+records the site against the zone; that still only reaches `new.doncoleman.ca`, because
+automatic setup injects the beacon only into responses Cloudflare proxies for the zone. The
+live `doncoleman.ca` records are DNS-only (step 4) and branch previews live on `workers.dev`,
+outside the zone, so neither gets the beacon. Injection starts up to half an hour after
+enabling, and only for requests that accept HTML (as every browser's page request does).
 
 **How it will be confirmed**
-`pnpm setup:check --item web-analytics` reports complete when a Web Analytics site for
-`new.doncoleman.ca` exists with automatic setup on, and the served page references the Cloudflare
-beacon.
+`pnpm setup:check --item web-analytics` reports complete when a Web Analytics site with
+automatic setup on exists for `new.doncoleman.ca` or for the `doncoleman.ca` zone, and the served
+page references the Cloudflare beacon.
 
 **Constitution principle**
 X (Accessible, Fast and Private) — Cloudflare Web Analytics is the constitution's named

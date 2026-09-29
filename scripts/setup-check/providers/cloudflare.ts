@@ -145,12 +145,22 @@ export function createCloudflareReader(options: CloudflareReaderOptions): Cloudf
     },
 
     async listWebAnalyticsSites(accountId: string) {
-      return guarded("Web Analytics Read", async () => {
-        const sites: Array<{ site_tag?: string; host?: string; auto_install?: boolean }> = [];
+      return guarded("Account Settings Read", async () => {
+        const sites: Array<{
+          site_tag?: string;
+          host?: string;
+          auto_install?: boolean;
+          ruleset?: { zone_name?: string };
+        }> = [];
         for await (const site of client.rum.siteInfo.list({ account_id: accountId })) {
           sites.push(site as never);
         }
-        return sites.map((s) => ({ siteTag: s.site_tag ?? "", host: s.host ?? null, autoInstall: Boolean(s.auto_install) }));
+        return sites.map((s) => ({
+          siteTag: s.site_tag ?? "",
+          host: s.host ?? null,
+          autoInstall: Boolean(s.auto_install),
+          zoneName: s.ruleset?.zone_name ?? null,
+        }));
       });
     },
   };

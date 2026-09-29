@@ -1,0 +1,7 @@
+[
+  {
+    "site_tag": "zone456",
+    "auto_install": true,
+    "ruleset": { "zone_tag": "zone-123", "zone_name": "doncoleman.ca", "enabled": true, "lite": true }
+  }
+]
