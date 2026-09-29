@@ -18,7 +18,13 @@ beforeAll(async () => {
   const container = await AstroContainer.create({ astroConfig: { site: "https://example.test" } });
   html = await container.renderToString(BaseLayout, {
     partial: false,
-    props: { title: "Test page" },
+    props: {
+      title: "Test page",
+      navigation: [
+        { label: "Alpha", href: "/alpha/", kind: "primary" },
+        { label: "Beta", href: "/beta/", kind: "primary" },
+      ],
+    },
     request: new Request("https://example.test/test-page/"),
     slots: { default: "<h1>Test page</h1><h2>Section</h2><p>Body text.</p>" },
   });
@@ -134,5 +140,27 @@ describe("BaseLayout head", () => {
     expect(head()).toContain("<title>Test page · Don Coleman</title>");
     const robots = byName(head(), "meta").find((m) => m.attrs.name === "robots");
     expect(robots?.attrs.content).toContain("noindex");
+  });
+});
+
+describe("BaseLayout navigation prop (FR-025)", () => {
+  it("passes navigation to the header and leaves footer and social links unchanged", () => {
+    const list = /<ul[^>]+id="primary-nav-list"[\s\S]*?<\/ul>/.exec(html)?.[0] ?? "";
+    expect(list).toContain('href="/alpha/"');
+    expect(list).toContain('href="/beta/"');
+    expect(list).not.toContain("Services");
+    const footer = /<footer[\s\S]*<\/footer>/.exec(html)?.[0] ?? "";
+    for (const href of ["/privacy-policy/", "/terms-of-use/", "/technology/", "https://github.com/drcdev", "https://www.linkedin.com/in/drcdev"]) {
+      expect(footer).toContain(`href="${href}"`);
+    }
+  });
+});
+
+describe("BaseLayout page container", () => {
+  it("wraps main in the full-width container that wide and full-width images measure against", () => {
+    const wrapper = tags(html).find((t) => classList(t).includes("page-container"));
+    expect(wrapper).toBeDefined();
+    expect(html.indexOf('class="page-container"')).toBeLessThan(html.indexOf("<main"));
+    expect(html.indexOf("</main>")).toBeLessThan(html.indexOf("<footer"));
   });
 });

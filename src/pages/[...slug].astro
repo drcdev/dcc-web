@@ -1,0 +1,66 @@
+---
+// The one route for every page file in src/content/pages/ (spec FR-002,
+// FR-003). getStaticPaths() checks the whole set of page files, then makes one
+// path per entry (docs.astro.build/en/guides/content-collections/#generating-routes-from-content).
+// The body is rendered with render() from astro:content, and the section
+// components are handed to <Content /> so MDX needs no imports
+// (docs.astro.build/en/guides/integrations-guide/mdx/#passing-components-to-mdx-content).
+import { getCollection, render } from "astro:content";
+import { getImage } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import type { ComponentProps } from "astro/types";
+import PageLayout from "../layouts/PageLayout.astro";
+import { futureDestinations } from "../config/navigation";
+import { sectionComponents } from "../components/sections/index";
+import { assertUniqueAddresses } from "../lib/content/address";
+import { validatePageBody } from "../lib/content/body";
+import { addressOf, fileOf, getNavigation } from "../lib/pages";
+
+export async function getStaticPaths() {
+  // File lists come from the file system, not the collection, so two files that
+  // make the same address are both seen (the collection keeps only one).
+  const pageFiles = Object.keys(import.meta.glob("/src/content/pages/**/*.{md,mdx}", { query: "?url" })).map(
+    (path) => path.slice("/src/content/pages/".length),
+  );
+  const routeFiles = Object.keys(import.meta.glob("./**/*.{astro,md,mdx,ts,js}"))
+    .map((path) => path.slice(2))
+    .filter((path) => path !== "[...slug].astro");
+  assertUniqueAddresses({ pageFiles, routeFiles, reserved: futureDestinations });
+
+  const entries = await getCollection("pages");
+  for (const entry of entries) validatePageBody(fileOf(entry), entry.body ?? "");
+  return entries.map((entry) => ({
+    params: { slug: entry.id === "index" ? undefined : entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+// Section components name this file in their errors (src/components/sections/validate.ts).
+Astro.locals.pageFile = fileOf(entry);
+const { data } = entry;
+// The schema's image() helper yields ImageMetadata; the shared schema pieces
+// type it loosely so they can be tested with a stand-in.
+const imageSrc = data.image?.src as ImageMetadata | undefined;
+const featureImage = data.featureImage as { src: ImageMetadata; alt: string; caption?: string } | undefined;
+const { Content } = await render(entry);
+const navigation = await getNavigation();
+
+// A custom sharing image is resized to the Open Graph size; Seo.astro falls
+// back to the site default when there is none.
+const share = imageSrc ? await getImage({ src: imageSrc, width: 1200, format: "png" }) : undefined;
+---
+
+<PageLayout
+  title={data.title}
+  description={data.description}
+  navigation={navigation}
+  image={share?.src}
+  imageAlt={data.image?.alt}
+  featureImage={featureImage}
+  intro={data.intro as ComponentProps<typeof PageLayout>["intro"]}
+  draft={data.draft}
+  home={addressOf(entry) === "/"}
+>
+  <Content components={sectionComponents} />
+</PageLayout>

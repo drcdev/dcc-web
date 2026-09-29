@@ -31,19 +31,60 @@ owns porting it.
 | `--gh-font-body` / `--gh-font-heading` | System font stack now; follow-up for the real Ghost fonts, self-hosted later via Astro's built-in font support | Foundation (follow-up: fonts) |
 | `@custom-variant dark`, `.prose-accent`, heading colours (H1/H2 rust, H3 sage, H4 lavender), `.table-wrapper`, focus rings | Global styles, as-is | Foundation |
 | Prism token colours + `kg-code-card` | Shiki light/dark themes + code block component (note Astro CSP + Shiki inline styles, research R8) | Blog |
-| `kg-width-wide` / `kg-width-full` + `content-feature-image.hbs` | MDX image components | Pages |
+| `kg-width-wide` / `kg-width-full` + `content-feature-image.hbs` | `WideImage` and `FullImage` sections, `FeatureImage` page component, and `.kg-width-*` rules in `src/styles/global.css` (done) | Pages |
 | `table-wrapper.js` | CSS or build-time Markdown plugin; no client script | Blog |
 | `theme-toggle.js` + `ui-theme-toggle.hbs` | Inline head script + toggle component | Foundation |
 | `navigation-toggle.js` | Native HTML if accessible, else tiny script; progressive enhancement per spec (tiny script chosen, research R6) | Foundation |
 | `default.hbs`, `layout-header.hbs`, `layout-footer.hbs`, `navigation.hbs` | Base layout, header, footer, navigation | Foundation |
 | `partials/Icons/*` | SVG components via Astro's built-in SVG imports; each feature ports what it uses | Each feature |
-| `layout-author-hero.hbs` | Home introduction card | Pages |
-| `page.hbs` + `content-section.hbs` | Page layout | Pages |
+| `layout-author-hero.hbs` | `HomeIntro` card in `src/components/page/` (done) | Pages |
+| `page.hbs` + `content-section.hbs` | `src/layouts/PageLayout.astro` (done) | Pages |
 | `ui-share.hbs` | Share component with Web Share API + plain links fallback | Blog |
 | `post.hbs`, `content-post-list.hbs` (timeline), `content-post-list-featured.hbs` (bento grid), `content-post-meta.hbs`, `ui-tag-pill.hbs` | Reference patterns only; blog and portfolio designed fresh | Blog / Portfolio |
 | `ui-contact-form.hbs`, `contact-form.js`, `supabase/functions/contact/index.ts`, `supabase/migrations/*contact*` | Contact form and API | Contact |
 | `error.hbs` | Not-found page | Foundation |
 | CSP meta tag in `default.hbs` | Cloudflare `_headers` security headers (plus Astro's CSP meta for hashes), tightened: remove Web3Forms, jsDelivr, Supabase; allow the Cloudflare Web Analytics beacon | Foundation |
+
+## Content structure
+
+Feature 003 set up one shared layout for content. The blog, portfolio and contact features add
+siblings to these paths instead of new conventions.
+
+| Path | Holds | Later features add |
+|---|---|---|
+| `src/content.config.ts` | Every collection definition (`pages` now) | `posts`, `projects` collections |
+| `src/content/schemas/shared.ts` | Reusable Zod pieces: `imageWithAlt`, `seoFields`, `navField` | Nothing; reuse |
+| `src/content/schemas/page.ts` | `pageSchema({ image })` | `post.ts`, `project.ts` beside it |
+| `src/content/pages/` (+ `images/`) | Page files and their images | `src/content/posts/`, `src/content/projects/` |
+| `src/components/sections/` | Sections usable in any MDX body: one `.astro` file each, `index.ts` (the registry, a closed list of names) and `schemas.ts` (prop rules) | New sections register in `index.ts` and `schemas.ts` |
+| `src/components/page/` | `HomeIntro`, `FeatureImage`, `DraftNotice` | Post and project furniture in `src/components/post/` and similar |
+| `src/layouts/PageLayout.astro` | Standard page layout inside `BaseLayout` | `PostLayout`, `ProjectLayout` |
+| `src/lib/content/` | `address.ts`, `body.ts`, `navigation.ts`, `images.ts`, `errors.ts`: build-time checks that raise `PageContentError` | Reused for posts and projects |
+| `src/pages/[...slug].astro` | The one route that renders every page file | `src/pages/writing/` and `src/pages/projects/` routes; the address check reserves their addresses |
+| `docs/pages.md` | Don's authoring guide | Guides for posts and projects |
+
+Test support for this structure:
+
+- `tests/build/` holds the fixture-site harness (`fixture-site.ts`, `run-astro.ts`) and the
+  build-level tests (`page-validation.test.ts`, `one-file-page.test.ts`). The harness copies the
+  site into `.cache/`, adds fixture page files and runs an Astro build or sync.
+- `tests/fixtures/pages/` holds the fixture pages: `sections.mdx`, `workshops.mdx`, and
+  `broken/` with one file per build error. `pnpm run build:fixtures` builds the site with the
+  sections fixture for the `sections` Playwright project.
+
+### Flux deviations
+
+- `.kg-width-wide` caps its margin at `max(calc(-12vw + 2rem), calc(50% - 50cqw))` so a wide
+  image goes a little past the text column and never past the page.
+- `.kg-width-full` and the wide cap measure `cqw`, the width of the page without the scrollbar,
+  because `100vw` would scroll sideways on desktop. `cqw` needs a size container, so
+  `BaseLayout` wraps `<main>` in `.page-container`, which becomes a container
+  (`container-type: inline-size`) only when the page holds a wide or full image
+  (`:has(.kg-width-wide, .kg-width-full)`). Putting the container on `<body>` stopped the dark
+  background reaching the whole window, and an always-on container made Chromium run every
+  colour transition in `<main>` on load, which axe caught mid-fade on the home call to action.
+- `.prose-accent` has `overflow-wrap: anywhere` so a long unbroken address wraps instead of
+  scrolling sideways.
 
 ## What doesn't carry over
 
@@ -88,6 +129,10 @@ Ratios are measured against the background the text sits on, as reported by axe-
 | Pairing | Where used | Failing ratio | Replacement | New ratio |
 |---|---|---|---|---|
 | `text-mauve-500` (#857788) on `bg-white` (#ffffff), light theme, 14px normal text | Footer copyright line (`src/components/SiteFooter.astro`; Flux `layout-footer.hbs`) | 4.19:1 (needs 4.5:1) | `text-mauve-600` (#6b606c) | 6.01:1 |
+| `text-mauve-400` (#9e939f) on `bg-white`, light theme | Home card tagline (`src/components/page/HomeIntro.astro`; Flux `layout-author-hero.hbs`) | 2.94:1 | `text-mauve-600` (#6b606c) | 6.01:1 |
+| `dark:text-mauve-500` (#857788) on `dusk-800` (#2b283e), dark theme | Home card tagline (`HomeIntro.astro`) | 3.38:1 | `dark:text-mauve-400` (#9e939f) | 4.83:1 |
+| `bg-rust-500` (#d17a2e) with white text, both themes | Home card call to action (`HomeIntro.astro`) | 3.21:1 | `bg-rust-600` (#a76225), hover `bg-rust-700` | 4.75:1 (hover 7.39:1) |
+| `.dark .prose-accent h4` `lavender-400` (#8b6ac8) on `dusk-800` (#2b283e) | Level-4 headings in page content (`src/styles/global.css`) | 3.38:1 | `lavender-300` (#a88fd6) | 5.13:1 |
 
 The dark-theme half of the same line (`dark:text-mauve-400` on `dusk-900`) passes and is
 unchanged.
@@ -97,3 +142,4 @@ text colour, so in the dark theme it showed black on `dusk-BASE` (1.22:1). Flux 
 page content in its `content-section.hbs` classes (`prose dark:prose-invert prose-accent`,
 `dark:bg-dusk-800`), which supply the body, link and heading colours; the home and not-found
 pages now use that wrapper, as Flux does.
+

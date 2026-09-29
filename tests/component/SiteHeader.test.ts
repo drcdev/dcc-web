@@ -4,6 +4,7 @@
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, it } from "vitest";
 import SiteHeader from "../../src/components/SiteHeader.astro";
+import type { NavigationItem } from "../../src/config/navigation.ts";
 import { byName, classList, tags, type Tag } from "./html.ts";
 
 const PRIMARY = [
@@ -18,8 +19,11 @@ const PRIMARY = [
 
 let container: AstroContainer;
 
-async function render(pathname: string): Promise<string> {
+const NAVIGATION: NavigationItem[] = PRIMARY.map(([label, href]) => ({ label, href, kind: "primary" }));
+
+async function render(pathname: string, navigation: NavigationItem[] = NAVIGATION): Promise<string> {
   return container.renderToString(SiteHeader, {
+    props: { navigation },
     request: new Request(`https://example.test${pathname}`),
   });
 }
@@ -173,5 +177,27 @@ describe("SiteHeader leaves out Ghost-only pieces", () => {
     for (const t of tags(home)) {
       expect(Object.keys(t.attrs).filter((a) => a.startsWith("on"))).toEqual([]);
     }
+  });
+});
+
+describe("SiteHeader navigation prop (FR-025, FR-025b)", () => {
+  const custom: NavigationItem[] = [
+    { label: "Alpha", href: "/alpha/", kind: "primary" },
+    { label: "Beta", href: "/alpha/beta/", kind: "primary" },
+  ];
+
+  it("renders exactly the items it is given, in order", async () => {
+    const html = await render("/", custom);
+    const { links } = navList(html);
+    expect(links.map((a) => [innerText(html, a), a.attrs.href])).toEqual([
+      ["Alpha", "/alpha/"],
+      ["Beta", "/alpha/beta/"],
+    ]);
+  });
+
+  it("marks the current page only on the exact address", async () => {
+    const html = await render("/alpha/beta/", custom);
+    const { links } = navList(html);
+    expect(links.filter((a) => a.attrs["aria-current"] === "page").map((a) => a.attrs.href)).toEqual(["/alpha/beta/"]);
   });
 });

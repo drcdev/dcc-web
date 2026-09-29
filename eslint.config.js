@@ -11,6 +11,8 @@ export default tseslint.config(
       ".astro/**",
       ".wrangler/**",
       "node_modules/**",
+      // Fixture-site builds write here (tests/build, scripts/build-fixture-site.ts).
+      ".cache/**",
       "test-results/**",
       "playwright-report/**",
       // Read-only design reference (Flux theme), gitignored and never

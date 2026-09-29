@@ -10,13 +10,26 @@ export default defineConfig({
   fullyParallel: true,
   reporter: "list",
   retries: 0,
-  webServer: {
-    command: "pnpm exec wrangler dev --ip 127.0.0.1 --port 4321",
-    url: "http://127.0.0.1:4321",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-    env: { WRANGLER_SEND_METRICS: "false" },
-  },
+  webServer: [
+    {
+      command: "pnpm exec wrangler dev --ip 127.0.0.1 --port 4321",
+      url: "http://127.0.0.1:4321",
+      reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
+      env: { WRANGLER_SEND_METRICS: "false" },
+    },
+    // Fixture site for the section-component tests (tests/e2e/sections.spec.ts):
+    // the repository's site plus tests/fixtures/pages/sections.mdx, built by
+    // scripts/build-fixture-site.ts and served with `astro preview`, so every
+    // Playwright run has it without any other script or workflow change.
+    {
+      command:
+        "pnpm run build:fixtures && pnpm exec astro preview --root .cache/fixture-site --port 4322",
+      url: "http://localhost:4322",
+      reuseExistingServer: !process.env.CI,
+      timeout: 300 * 1000,
+    },
+  ],
   use: {
     baseURL: "http://127.0.0.1:4321",
   },
@@ -46,8 +59,13 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
     {
+      name: "sections",
+      testMatch: /sections\.spec\.ts$/,
+      use: { ...devices["Desktop Chrome"], baseURL: "http://localhost:4322" },
+    },
+    {
       name: "e2e",
-      testIgnore: [/a11y\.spec\.ts$/, /budget\.spec\.ts$/, /visual\.spec\.ts$/],
+      testIgnore: [/a11y\.spec\.ts$/, /budget\.spec\.ts$/, /visual\.spec\.ts$/, /sections\.spec\.ts$/],
       use: { ...devices["Desktop Chrome"] },
     },
   ],

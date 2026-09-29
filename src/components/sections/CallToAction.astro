@@ -1,0 +1,25 @@
+---
+// An optional message and one prominent link styled as a button. The colours
+// are the nearest passing shades (rust-600 with white text, both themes), the
+// same swap the home introduction made for its call to action.
+import { checkSection } from "./validate.ts";
+
+export interface Props {
+  label: string;
+  href: string;
+}
+
+const html = (await Astro.slots.render("default")) ?? "";
+checkSection("CallToAction", Astro.props, html, Astro.locals);
+const { label, href } = Astro.props;
+---
+
+<div class="not-prose my-8 text-center">
+  {html.trim() !== "" && <div class="prose-message mb-4 text-lg text-dusk-700 dark:text-mist-300" set:html={html} />}
+  <a
+    href={href}
+    class="inline-block min-h-6 rounded-lg bg-rust-600 px-6 py-3 text-lg font-semibold text-white underline underline-offset-4 hover:bg-rust-700"
+  >
+    {label}
+  </a>
+</div>

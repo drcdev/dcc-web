@@ -6,6 +6,7 @@ import { defineConfig } from "astro/config";
 
 import tailwindcss from "@tailwindcss/vite";
 import sitemap from "@astrojs/sitemap";
+import mdx from "@astrojs/mdx";
 
 import { resolveSiteOrigin } from "./src/lib/site-origin.ts";
 
@@ -63,5 +64,5 @@ export default defineConfig({
   },
 
   // The not-found page is not a public page (FR-017c, FR-018; research R9).
-  integrations: [sitemap({ filter: (page) => !new URL(page).pathname.startsWith("/404") })],
+  integrations: [sitemap({ filter: (page) => !new URL(page).pathname.startsWith("/404") }), mdx()],
 });

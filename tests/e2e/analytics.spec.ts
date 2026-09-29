@@ -93,8 +93,8 @@ test("with the beacon blocked, pages, navigation and the theme switch still work
   await expect(html).not.toHaveClass(/(^|\s)dark(\s|$)/);
   await expect(page.locator(SWITCH)).toHaveAccessibleName("Theme: Light");
 
-  await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Services" }).click();
-  await expect(page).toHaveURL(/\/services\/$/);
+  await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Writing" }).click();
+  await expect(page).toHaveURL(/\/writing\/$/);
   await expect(page.getByRole("heading", { level: 1, name: "Page not found" })).toBeVisible();
   await page.getByRole("banner").getByRole("link", { name: "Don Coleman" }).click();
   await expect(page).toHaveURL(/\/$/);
@@ -105,7 +105,7 @@ test("with the beacon blocked, pages, navigation and the theme switch still work
 });
 
 test("browsing several pages sets no cookie (SC-009, FR-025)", async ({ page, context }) => {
-  for (const path of ["/", "/nope/", "/robots.txt", "/sitemap-index.xml", "/"]) {
+  for (const path of ["/", "/services/", "/nope/", "/robots.txt", "/sitemap-index.xml", "/"]) {
     await page.goto(path);
   }
   await page.locator(SWITCH).click();

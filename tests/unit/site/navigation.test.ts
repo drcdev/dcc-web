@@ -2,29 +2,30 @@
 // current-page helper (src/lib/nav.ts) (data-model.md NavigationItem; research
 // R4; FR-006, FR-009).
 import { describe, expect, it } from "vitest";
+import * as navigationModule from "../../../src/config/navigation.ts";
 import {
+  fixedPrimaryNavigation,
   footerNavigation,
   futureDestinations,
-  primaryNavigation,
   socialNavigation,
 } from "../../../src/config/navigation.ts";
 import { isCurrent } from "../../../src/lib/nav.ts";
 
-describe("primaryNavigation", () => {
-  it("lists the seven primary items in order with their final addresses", () => {
-    expect(primaryNavigation.map(({ label, href }) => [label, href])).toEqual([
-      ["Home", "/"],
-      ["Services", "/services/"],
-      ["Speaking", "/speaking/"],
-      ["Writing", "/writing/"],
-      ["Projects", "/projects/"],
-      ["About", "/about/"],
-      ["Contact", "/contact/"],
+describe("fixedPrimaryNavigation", () => {
+  it("is exactly Writing 4, Projects 5 and Contact 7, sourced from the config file", () => {
+    expect(fixedPrimaryNavigation.map(({ label, href, position, source }) => [label, href, position, source])).toEqual([
+      ["Writing", "/writing/", 4, "src/config/navigation.ts"],
+      ["Projects", "/projects/", 5, "src/config/navigation.ts"],
+      ["Contact", "/contact/", 7, "src/config/navigation.ts"],
     ]);
   });
 
   it("marks every item as primary", () => {
-    expect(primaryNavigation.every((item) => item.kind === "primary")).toBe(true);
+    expect(fixedPrimaryNavigation.every((item) => item.kind === "primary")).toBe(true);
+  });
+
+  it("no longer exports the seven-item primaryNavigation", () => {
+    expect("primaryNavigation" in navigationModule).toBe(false);
   });
 });
 
@@ -48,7 +49,7 @@ describe("socialNavigation", () => {
 });
 
 describe("every navigation item", () => {
-  const all = [...primaryNavigation, ...footerNavigation, ...socialNavigation];
+  const all = [...fixedPrimaryNavigation, ...footerNavigation, ...socialNavigation];
 
   it("has a non-empty label", () => {
     for (const item of all) expect(item.label.trim()).not.toBe("");
@@ -63,24 +64,13 @@ describe("every navigation item", () => {
 });
 
 describe("futureDestinations", () => {
-  it("lists every internal navigation address that no page builds yet", () => {
-    expect([...futureDestinations].sort()).toEqual(
-      [
-        "/services/",
-        "/speaking/",
-        "/writing/",
-        "/projects/",
-        "/about/",
-        "/contact/",
-        "/privacy-policy/",
-        "/terms-of-use/",
-        "/technology/",
-      ].sort(),
-    );
+  it("lists exactly the addresses reserved for later features", () => {
+    expect([...futureDestinations]).toEqual(["/writing/", "/projects/", "/contact/"]);
   });
 
-  it("does not include the home page, which is built", () => {
+  it("does not include any address a page builds", () => {
     expect(futureDestinations).not.toContain("/");
+    expect(futureDestinations).not.toContain("/about/");
   });
 });
 

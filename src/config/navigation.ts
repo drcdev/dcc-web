@@ -8,16 +8,24 @@ export interface NavigationItem {
   /** Internal addresses start and end with `/`; external ones use `https://`. */
   href: string;
   kind: "primary" | "footer" | "social";
+  /** Primary items only: the place in the header list, from 1. Unique across pages and fixed entries. */
+  position?: number;
+  /** Primary items only: where the entry is defined, for error messages. */
+  source?: string;
 }
 
-export const primaryNavigation: readonly NavigationItem[] = [
-  { label: "Home", href: "/", kind: "primary" },
-  { label: "Services", href: "/services/", kind: "primary" },
-  { label: "Speaking", href: "/speaking/", kind: "primary" },
-  { label: "Writing", href: "/writing/", kind: "primary" },
-  { label: "Projects", href: "/projects/", kind: "primary" },
-  { label: "About", href: "/about/", kind: "primary" },
-  { label: "Contact", href: "/contact/", kind: "primary" },
+/** The navigation config file, named in error messages about fixed entries. */
+export const navigationSource = "src/config/navigation.ts";
+
+/**
+ * Primary entries that stay fixed until their features arrive. Pages add the
+ * rest through `nav` in their settings; `mergeNavigation()`
+ * (src/lib/content/navigation.ts) puts them in order (FR-025).
+ */
+export const fixedPrimaryNavigation: readonly NavigationItem[] = [
+  { label: "Writing", href: "/writing/", kind: "primary", position: 4, source: navigationSource },
+  { label: "Projects", href: "/projects/", kind: "primary", position: 5, source: navigationSource },
+  { label: "Contact", href: "/contact/", kind: "primary", position: 7, source: navigationSource },
 ];
 
 export const footerNavigation: readonly NavigationItem[] = [
@@ -32,18 +40,8 @@ export const socialNavigation: readonly NavigationItem[] = [
 ];
 
 /**
- * Internal navigation addresses that no page builds yet. Link checks accept a
- * not-found response only for these, so a typo in any other link still fails.
- * Remove an entry when the feature that builds that page lands.
+ * Internal addresses reserved for later features. No page file may use them, and
+ * link checks accept a not-found response only for these, so a typo in any other
+ * link still fails. Remove an entry when the feature that builds that page lands.
  */
-export const futureDestinations: readonly string[] = [
-  "/services/",
-  "/speaking/",
-  "/writing/",
-  "/projects/",
-  "/about/",
-  "/contact/",
-  "/privacy-policy/",
-  "/terms-of-use/",
-  "/technology/",
-];
+export const futureDestinations: readonly string[] = ["/writing/", "/projects/", "/contact/"];

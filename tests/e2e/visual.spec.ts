@@ -45,6 +45,21 @@ for (const size of WIDTHS) {
   }
 }
 
+// The new pages: home (with the introduction card) and about, full page.
+for (const size of WIDTHS) {
+  for (const theme of THEMES) {
+    for (const [name, path] of [
+      ["home", "/"],
+      ["about", "/about/"],
+    ] as const) {
+      test(`${name} page — ${size.name} — ${theme}`, async ({ page }) => {
+        await open(page, path, size.width, size.height, theme);
+        await expect(page).toHaveScreenshot(`${name}-${size.name}-${theme}.png`, { fullPage: true });
+      });
+    }
+  }
+}
+
 for (const theme of THEMES) {
   test(`mobile menu open — phone — ${theme}`, async ({ page }) => {
     await open(page, "/", 390, 844, theme);
@@ -53,4 +68,15 @@ for (const theme of THEMES) {
     await expect(button).toHaveAttribute("aria-expanded", "true");
     await expect(page.locator("header").first()).toHaveScreenshot(`menu-open-phone-${theme}.png`);
   });
+}
+
+// The sections fixture page (built into the fixture site on port 4322 by the
+// Playwright config's second web server), full page, both sizes and themes.
+for (const size of WIDTHS) {
+  for (const theme of THEMES) {
+    test(`sections fixture — ${size.name} — ${theme}`, async ({ page }) => {
+      await open(page, "http://localhost:4322/sections/", size.width, size.height, theme);
+      await expect(page).toHaveScreenshot(`sections-${size.name}-${theme}.png`, { fullPage: true });
+    });
+  }
 }

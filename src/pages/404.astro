@@ -9,14 +9,18 @@
 // is false because a not-found page has no address of its own to point
 // search engines or sharers at (FR-017c).
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getNavigation } from "../lib/pages";
+
+const navigation = await getNavigation();
 ---
 
 <BaseLayout
   title="Page not found"
   description="This page could not be found. Older blog addresses have moved; the rest of the site is still here."
   canonical={false}
+  navigation={navigation}
 >
-  {/* Flux content-section.hbs wrapper (see index.astro). */}
+  {/* Flux content-section.hbs wrapper (see PageLayout.astro). */}
   <section class="mx-auto mb-8 max-w-screen-lg prose lg:prose-lg dark:prose-invert prose-accent dark:rounded-2xl dark:bg-dusk-800 dark:p-6">
     <h1>Page not found</h1>
     <p>
