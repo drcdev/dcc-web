@@ -151,12 +151,12 @@
 
 **Independent test**: `pnpm exec vitest run tests/build/page-validation.test.ts` passes all 17 rows.
 
-- [ ] T068 [US5] Run `tests/build/page-validation.test.ts` now and record which of the 17 rows are still red (the tests were written in T014 and must already exist; do not weaken any assertion). Each red row is a work item for T069 to T072.
-- [ ] T069 [US5] Fix schema-derived rows 1 to 6: make sure Astro's collection error, or a wrapped `PageContentError`, names the file and key (for the `image()` helper of row 6, also the image path). Adjust `src/content.config.ts` or `src/content/schemas/*.ts`, not the tests.
-- [ ] T070 [US5] Fix body-derived rows 8 to 10 and 16: confirm `validatePageBody`, already wired into `src/pages/[...slug].astro` by T039, runs before rendering (move it to a loader step only if needed) so the message names the file, the section (with the list of valid sections) or "use ##".
-- [ ] T071 [US5] Fix section-prop rows 11 and 12 in `src/components/sections/*.astro` and address rows 13, 14 and 17 in `src/lib/content/address.ts`, and navigation row 15 in `src/lib/content/navigation.ts`, so the message names the file(s), the section or the address as the contract states.
-- [ ] T072 [US5] Confirm row 7 (missing body image) fails with Astro's own message containing the image path; no code change unless it does not fail.
-- [ ] T073 [US5] Run `pnpm run test` fully; all 17 rows and the one-file-page test must pass, along with every unit, component and build test so far.
+- [x] T068 [US5] Run `tests/build/page-validation.test.ts` now and record which of the 17 rows are still red (the tests were written in T014 and must already exist; do not weaken any assertion). Each red row is a work item for T069 to T072.
+- [x] T069 [US5] Fix schema-derived rows 1 to 6: make sure Astro's collection error, or a wrapped `PageContentError`, names the file and key (for the `image()` helper of row 6, also the image path). Adjust `src/content.config.ts` or `src/content/schemas/*.ts`, not the tests.
+- [x] T070 [US5] Fix body-derived rows 8 to 10 and 16: confirm `validatePageBody`, already wired into `src/pages/[...slug].astro` by T039, runs before rendering (move it to a loader step only if needed) so the message names the file, the section (with the list of valid sections) or "use ##".
+- [x] T071 [US5] Fix section-prop rows 11 and 12 in `src/components/sections/*.astro` and address rows 13, 14 and 17 in `src/lib/content/address.ts`, and navigation row 15 in `src/lib/content/navigation.ts`, so the message names the file(s), the section or the address as the contract states.
+- [x] T072 [US5] Confirm row 7 (missing body image) fails with Astro's own message containing the image path; no code change unless it does not fail.
+- [x] T073 [US5] Run `pnpm run test` fully; all 17 rows and the one-file-page test must pass, along with every unit, component and build test so far.
 
 **Checkpoint**: invalid content cannot build; a failing build blocks the merge (FR-009).
 
