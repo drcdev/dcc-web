@@ -41,7 +41,7 @@ a docs section.
 | 5 | `dns-nameservers` | Public NS for `doncoleman.ca` equal the zone's assigned nameservers and zone `status: active`; `pending` while delegation propagates | before | FR-019 |
 | 6 | `live-domain-ghost` | Deciding signal: public A/AAAA/CNAME answers for the apex and `www` equal the Ghost target records for those names in the baseline; every `keep` MX and email TXT record resolves as in the baseline. The Ghost generator meta is reported in `details` only | before | FR-019, FR-038, SC-005 |
 | 7 | `cloudflare-worker` | Worker `dcc-web` exists; `workers.dev` and preview URLs enabled | before | FR-017 |
-| 8 | `github-machine-account` | `dcc-bot` collaborator permission is `write` (or `maintain`), not `admin` | before | FR-013 |
+| 8 | `github-machine-account` | `drc-agents` collaborator permission is `write` (or `maintain`), not `admin` | before | FR-013 |
 | 9 | `github-secret-scanning` | `security_and_analysis.secret_scanning` and `…secret_scanning_push_protection` are `enabled` | before | FR-024 |
 | 10 | `workers-builds` | Latest commit on `main` has a successful Workers Builds check run; latest open PR head has one with a preview URL (when a PR exists) | after | FR-017, FR-018 |
 | 11 | `github-ci-workflow` | `.github/workflows/ci.yml` and `major-change.yml` exist on `main`; latest `verify` run on `main` succeeded | after | FR-015, FR-016 |
@@ -153,6 +153,6 @@ Each reader exposes read methods only. Tests inject fakes backed by recorded JSO
 
 - Input: `{ labels: string[], author: string, headSha: string, reviews: { user: string, state: string, commitId: string, submittedAt: string }[], owner: 'drcdev' }`.
 - Output: `{ pass: boolean, message: string }`.
-- Rules: no `major-change` label → pass; label and author is owner → fail ("reopen from dcc-bot");
+- Rules: no `major-change` label → pass; label and author is owner → fail ("reopen from drc-agents");
   label and owner's latest review is `APPROVED` with `commitId === headSha` → pass; otherwise fail
   ("waiting for Don's approval after he views the preview").

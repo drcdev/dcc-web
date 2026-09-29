@@ -16,7 +16,7 @@ describe("configSchema (setup/config.json)", () => {
   const valid = {
     owner: "drcdev",
     repo: "dcc-web",
-    machineAccount: "dcc-bot",
+    machineAccount: "drc-agents",
     workerName: "dcc-web",
     zone: "doncoleman.ca",
     reviewHost: "new.doncoleman.ca",

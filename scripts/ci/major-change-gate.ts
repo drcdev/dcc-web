@@ -20,6 +20,8 @@ export interface MajorGateInput {
   headSha: string;
   reviews: MajorGateReview[];
   owner: "drcdev";
+  /** The dedicated GitHub machine account name, read from setup/config.json's `machineAccount`. */
+  machineAccount: string;
 }
 
 export interface MajorGateDecision {
@@ -37,8 +39,7 @@ export function decide(input: MajorGateInput): MajorGateDecision {
   if (input.author === input.owner) {
     return {
       pass: false,
-      message:
-        "Don's approval will not count on his own pull request; reopen this change from dcc-bot so his review can approve it.",
+      message: `Don's approval will not count on his own pull request; reopen this change from ${input.machineAccount} so his review can approve it.`,
     };
   }
 
@@ -76,9 +77,15 @@ interface GhApiReview {
   submitted_at: string;
 }
 
+interface SetupConfig {
+  machineAccount: string;
+}
+
 async function main(): Promise<void> {
   const { execFile } = await import("node:child_process");
   const { promisify } = await import("node:util");
+  const { readFileSync } = await import("node:fs");
+  const { fileURLToPath } = await import("node:url");
   const execFileAsync = promisify(execFile);
 
   const repo = process.env.GITHUB_REPOSITORY;
@@ -87,6 +94,9 @@ async function main(): Promise<void> {
     console.error("GITHUB_REPOSITORY and PR_NUMBER environment variables are required.");
     process.exit(2);
   }
+
+  const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
+  const config = JSON.parse(readFileSync(`${repoRoot}setup/config.json`, "utf-8")) as SetupConfig;
 
   const [{ stdout: prJson }, { stdout: reviewsJson }] = await Promise.all([
     execFileAsync("gh", ["api", `repos/${repo}/pulls/${prNumber}`]),
@@ -101,6 +111,7 @@ async function main(): Promise<void> {
     author: pr.user.login,
     headSha: pr.head.sha,
     owner: "drcdev",
+    machineAccount: config.machineAccount,
     reviews: reviews.map((review) => ({
       user: review.user.login,
       state: review.state,

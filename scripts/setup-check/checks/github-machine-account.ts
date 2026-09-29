@@ -1,6 +1,6 @@
 // checks/github-machine-account.ts (setup item 8, data-model.md
 // "github-machine-account"): the machine account (setup/config.json's
-// machineAccount, "dcc-bot") is a repository collaborator with write or
+// machineAccount, "drc-agents") is a repository collaborator with write or
 // maintain permission, never admin (FR-013).
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { ProviderAccessError } from "../types.ts";
@@ -17,7 +17,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
   const config = ctx.fs.readJson<SetupConfig>("setup/config.json");
   const owner = config?.owner ?? "drcdev";
   const repo = config?.repo ?? "dcc-web";
-  const account = config?.machineAccount ?? "dcc-bot";
+  const account = config?.machineAccount ?? "drc-agents";
 
   try {
     const result = await ctx.github.api<CollaboratorPermission>(

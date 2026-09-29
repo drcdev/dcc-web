@@ -175,8 +175,8 @@ const seeds: ItemSeed[] = [
     title: "GitHub machine account",
     purpose: "Agents open pull requests as a dedicated machine account, separate from Don's own account.",
     where:
-      "Create GitHub account dcc-bot, add it as a drcdev/dcc-web collaborator with write permission, sign it into the local gh keyring, then switch back to Don's account.",
-    confirmedBy: "dcc-bot collaborator permission is write (or maintain), not admin",
+      "Create GitHub account drc-agents, add it as a drcdev/dcc-web collaborator with write permission, sign it into the local gh keyring, then switch back to Don's account.",
+    confirmedBy: "drc-agents collaborator permission is write (or maintain), not admin",
     needsDon: true,
     principles: ["III", "VII"],
     requirements: ["FR-013"],

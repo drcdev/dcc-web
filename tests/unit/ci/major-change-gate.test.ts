@@ -4,10 +4,11 @@ import { decide, type MajorGateInput } from "../../../scripts/ci/major-change-ga
 function baseInput(overrides: Partial<MajorGateInput> = {}): MajorGateInput {
   return {
     labels: [],
-    author: "dcc-bot",
+    author: "drc-agents",
     headSha: "a".repeat(40),
     reviews: [],
     owner: "drcdev",
+    machineAccount: "drc-agents",
     ...overrides,
   };
 }
@@ -24,7 +25,16 @@ describe("major-change-gate decide()", () => {
     );
     expect(result.pass).toBe(false);
     expect(result.message).toMatch(/reopen/i);
-    expect(result.message).toMatch(/dcc-bot/i);
+    expect(result.message).toMatch(/drc-agents/i);
+  });
+
+  it("uses the configured machine account name in the reopen message", () => {
+    const result = decide(
+      baseInput({ labels: ["major-change"], author: "drcdev", machineAccount: "some-other-bot" }),
+    );
+    expect(result.pass).toBe(false);
+    expect(result.message).toMatch(/some-other-bot/);
+    expect(result.message).not.toMatch(/drc-agents/);
   });
 
   it("passes when the label is present and the owner's latest review is APPROVED on the head commit", () => {
@@ -32,7 +42,7 @@ describe("major-change-gate decide()", () => {
     const result = decide(
       baseInput({
         labels: ["major-change"],
-        author: "dcc-bot",
+        author: "drc-agents",
         headSha,
         reviews: [
           {

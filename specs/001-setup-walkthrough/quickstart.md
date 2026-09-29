@@ -76,11 +76,11 @@ In Claude Code: `/setup-walkthrough`.
 
 ## 7. Branch protection works (SC-006) — after the ruleset is imported
 
-1. As `dcc-bot`, open a PR that breaks a unit test → `verify` fails → merge button blocked.
-2. As `dcc-bot`, open a PR labelled `major-change` (or touching `package.json`) with green checks →
+1. As `drc-agents`, open a PR that breaks a unit test → `verify` fails → merge button blocked.
+2. As `drc-agents`, open a PR labelled `major-change` (or touching `package.json`) with green checks →
    merge blocked until Don approves; after Don's approval on the latest commit it becomes
    mergeable.
-3. As `dcc-bot`, open a non-major PR with green checks → mergeable (auto-merge allowed) without Don.
+3. As `drc-agents`, open a non-major PR with green checks → mergeable (auto-merge allowed) without Don.
 
 ## 8. Hosting, preview, review address, analytics, live site
 

@@ -144,6 +144,8 @@ export interface MajorGateInput {
   headSha: string;
   reviews: MajorGateReview[];
   owner: string;
+  /** The dedicated GitHub machine account name, read from setup/config.json's `machineAccount`. */
+  machineAccount: string;
 }
 
 export interface MajorGateDecision {

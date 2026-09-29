@@ -198,7 +198,7 @@ the Astro Cloudflare deploy guide. Package versions were read from the npm regis
      has no `major-change` label; when it has the label, it passes only if `@drcdev`'s latest
      review is `APPROVED` on the current head commit, and it fails with a plain explanation if
      the PR author is `drcdev` ("Don's approval will not count on his own PR; reopen from
-     dcc-bot"). It runs on `pull_request` (opened, synchronize, reopened, labeled, unlabeled,
+     drc-agents"). It runs on `pull_request` (opened, synchronize, reopened, labeled, unlabeled,
      ready_for_review) and `pull_request_review` (submitted, edited, dismissed), with
      `permissions: pull-requests: read`. The decision logic is a pure function in
      `scripts/ci/major-change-gate.ts` with unit tests; the workflow feeds it `gh api` output.
@@ -210,13 +210,13 @@ the Astro Cloudflare deploy guide. Package versions were read from the npm regis
 - **Alternatives**: label only (misses unlabeled infra changes); CODEOWNERS `*` (forces Don to
   review every PR, contradicting Principle III's auto-merge for non-major work); a third-party
   "required labels/approvals" Action (third-party, rejected).
-- **Machine account**: `dcc-bot` (name confirmed by Don during the walkthrough and stored in
+- **Machine account**: `drc-agents` (name confirmed by Don during the walkthrough and stored in
   `setup/config.json` as a non-secret) is a repository collaborator with **write** permission.
-  Its credential lives only in the agent's `gh` keyring (`gh auth login` as dcc-bot, switched
+  Its credential lives only in the agent's `gh` keyring (`gh auth login` as drc-agents, switched
   with `gh auth switch`). The check confirms access via
-  `GET /repos/drcdev/dcc-web/collaborators/dcc-bot/permission`. The repository must also allow
+  `GET /repos/drcdev/dcc-web/collaborators/drc-agents/permission`. The repository must also allow
   auto-merge (`allow_auto_merge: true`) because `/deliver` enables it for non-major PRs.
-- **Bootstrap exception**: this slice's own PR is opened before `dcc-bot` and the ruleset exist,
+- **Bootstrap exception**: this slice's own PR is opened before `drc-agents` and the ruleset exist,
   so Don merges it by hand after viewing the preview; every later PR follows the rules above.
 
 ## R10. CI workflow
@@ -321,7 +321,7 @@ the Astro Cloudflare deploy guide. Package versions were read from the npm regis
 | Item | Plan | Monthly cost |
 |---|---|---|
 | GitHub repository, Actions (public repo), rulesets, secret scanning, push protection | Free | $0 |
-| `dcc-bot` machine account | Free (one per person under GitHub terms) | $0 |
+| `drc-agents` machine account | Free (one per person under GitHub terms) | $0 |
 | Cloudflare zone + DNS | Free plan | $0 |
 | Workers static assets, Workers Builds, preview URLs, Custom Domain + certificate | Workers Free (static asset requests are free; builds within the free build-minute allowance) | $0 |
 | Cloudflare Web Analytics | Free | $0 |

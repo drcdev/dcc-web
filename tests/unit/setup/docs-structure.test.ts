@@ -87,12 +87,12 @@ describe("docs/setup.md structure", () => {
 // spec.md Edge Cases: "Sole maintainer approval" and "Temporary address
 // exposed to search engines" (T140, FR-028 partial).
 describe("docs/setup.md edge-case content", () => {
-  it("github-machine-account explains that Don's approval does not count on a pull request he authored, and that it must be reopened from dcc-bot", () => {
+  it("github-machine-account explains that Don's approval does not count on a pull request he authored, and that it must be reopened from drc-agents", () => {
     const section = extractSection(contents, "github-machine-account").toLowerCase();
     expect(section).toMatch(/does not count/);
     expect(section).toContain("authored");
     expect(section).toMatch(/reopen/);
-    expect(section).toContain("dcc-bot");
+    expect(section).toContain("drc-agents");
   });
 
   it("review-address-noindex tells Don how to ask search engines to remove already-indexed pages, and never to block crawling with robots.txt", () => {

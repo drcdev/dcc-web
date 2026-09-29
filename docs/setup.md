@@ -217,7 +217,7 @@ Agents open pull requests as a dedicated machine account, separate from Don's ow
 Don's review always counts as an independent approval.
 
 **Where to do it**
-Create a GitHub account named `dcc-bot` (the name recorded in `setup/config.json`), add it as a
+Create a GitHub account named `drc-agents` (the name recorded in `setup/config.json`), add it as a
 `drcdev/dcc-web` collaborator with write permission (not admin), and sign it into the local `gh`
 keyring (`gh auth login`). Switch the active `gh` account back to Don afterwards (`gh auth
 switch`) — the check reads as Don.
@@ -225,7 +225,7 @@ switch`) — the check reads as Don.
 Don is the sole maintainer, so his approval does not count as an independent review on a pull
 request he authored himself — GitHub does not let an author approve their own pull request, and
 this setup does not try to work around that. If an agent ever opens a pull request under Don's
-own account by mistake, it must be closed and reopened from `dcc-bot` before Don can approve it;
+own account by mistake, it must be closed and reopened from `drc-agents` before Don can approve it;
 a pull request authored by Don cannot be merged through the normal review gate.
 
 **How it will be confirmed**

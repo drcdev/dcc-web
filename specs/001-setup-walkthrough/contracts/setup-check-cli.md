@@ -18,7 +18,7 @@ pnpm setup:check [--json] [--item <id> ...] [--no-network]
 ## Inputs (read-only)
 
 - `setup/config.json` — non-secret settings: `owner` (`drcdev`), `repo` (`dcc-web`),
-  `machineAccount` (`dcc-bot`), `workerName` (`dcc-web`), `zone` (`doncoleman.ca`),
+  `machineAccount` (`drc-agents`), `workerName` (`dcc-web`), `zone` (`doncoleman.ca`),
   `reviewHost` (`new.doncoleman.ca`), `ghostMarker` (`Ghost`).
 - `setup/dns-baseline.json`, `setup/github-ruleset.json` — committed expectations.
 - `.env` (gitignored) — `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ZONE_ID`.

@@ -82,7 +82,7 @@ const CONFIG = {
   zone: "doncoleman.ca",
   workerName: "dcc-web",
   reviewHost: "new.doncoleman.ca",
-  machineAccount: "dcc-bot",
+  machineAccount: "drc-agents",
 };
 
 const COMPLETE_BASELINE = {
