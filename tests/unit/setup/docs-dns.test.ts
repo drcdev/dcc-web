@@ -40,6 +40,13 @@ describe("docs/setup.md DNS content", () => {
     expect(section.toLowerCase()).toMatch(/delegat.*subdomain|subdomain.*ns/);
   });
 
+  it("contains a DNSSEC pre-check before the nameserver switch", () => {
+    const section = extractSection(readDocs(), "dns-nameservers").toLowerCase();
+    expect(section).toContain("dnssec");
+    expect(section).toContain("disabled");
+    expect(section).toContain("squarespace");
+  });
+
   it("lists the same original nameservers as setup/dns-baseline.json once it is filled in", () => {
     let baseline: { originalNameservers: string[] };
     try {

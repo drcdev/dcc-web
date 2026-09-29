@@ -72,6 +72,10 @@ describe(".claude/skills/setup-walkthrough/SKILL.md", () => {
     expect(contents.toLowerCase()).toContain("dns-nameservers");
   });
 
+  it("reminds Don to confirm DNSSEC is disabled at Squarespace before the nameserver switch", () => {
+    expect(contents.toLowerCase()).toContain("dnssec");
+  });
+
   it('every mutating command example lies inside a fenced code block introduced as "shown for Don to run himself" (FR-009, FR-012, partial)', () => {
     // Stricter than "never invokes a mutating command outside a 'show Don
     // this command' block" above: that test only confirms the phrase

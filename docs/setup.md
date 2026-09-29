@@ -127,6 +127,16 @@ At Squarespace's domain settings for `doncoleman.ca`, change the nameservers to 
 Cloudflare assigns for the zone. Do this only after `pnpm setup:check --item dns-records-parity`
 reports complete, and only after reading the rollback procedure below.
 
+**Before the switch: DNSSEC**
+If Squarespace shows the generic error "We were not able to add the nameservers," the usual
+cause for a domain that came from Google Domains on `ns-cloud-*.googledomains.com` is DNSSEC
+still being enabled at Squarespace; it must be disabled — Domains → `doncoleman.ca` → DNS → DNS
+Settings → DNSSEC — with the DS record cleared from the registry (up to 24 hours) before
+Squarespace will accept the nameserver change. Make the switch itself at Domains →
+`doncoleman.ca` → DNS → Nameservers → "Use custom nameservers" — never "Transfer domain", which
+is a different, unwanted action. Cloudflare DNSSEC can be turned on later, from the Cloudflare
+dashboard, once the zone is active.
+
 **How it will be confirmed**
 `pnpm setup:check --item dns-nameservers` reports complete when the public NS records for
 `doncoleman.ca` equal the zone's assigned Cloudflare nameservers and Cloudflare reports the zone

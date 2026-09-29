@@ -43,7 +43,9 @@ confirmation logic (FR-010): every "is this step done?" question is answered by 
      state is recomputed from a fresh check run next time (FR-011).
 4. Before showing the `dns-nameservers` step as actionable, refuse to continue unless
    `dns-records-parity` is complete, and show the rollback procedure from
-   `docs/setup.md#dns-nameservers` before Don makes the nameserver switch (FR-039).
+   `docs/setup.md#dns-nameservers` before Don makes the nameserver switch (FR-039). Also remind
+   Don to confirm DNSSEC is disabled at Squarespace (see the "Before the switch: DNSSEC" note in
+   `docs/setup.md#dns-nameservers`) before he makes the switch.
 5. Before any step whose `phase` is `after-merge`, tell Don this slice's pull request must be
    merged first, and give the PR link.
 6. End with the full report (`pnpm setup:check`) and its summary line ("`N` of 18 complete").
