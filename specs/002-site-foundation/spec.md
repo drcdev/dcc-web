@@ -27,6 +27,8 @@ major change under Constitution Principle III.
 - Q: Should the main build on the temporary address also tell search engines not to index it until the domain switch, or only branch previews? → A: Every deployment, main build included, asks search engines not to index it until the domain switch; removing that is part of the domain-switch follow-up.
 - Q: Which address should canonical links, sharing previews and the search-engine page list use while the site is on the temporary address? → A: Whatever address each deployment is served from, so previews point to themselves; https://doncoleman.ca is the fallback when the build cannot determine its address.
 - Q: With JavaScript turned off on a phone-width screen, how should the navigation behave? → A: Progressive enhancement: without script the links show as a plain wrapping list; with script they collapse behind a menu button that reports its open/closed state, closes on Escape and returns focus to the button.
+- Q: How should the check that the new site matches the current site be done: by Don looking at it, by automated screenshot tests, or both? → A: Both. Don compares the preview against the Ghost reference screenshots by eye, and automated screenshot baselines of the new shell (header, footer, mobile menu, not-found page; phone and desktop widths; both themes) are committed so later features cannot quietly change the layout, using the browser test tool's built-in screenshot comparison (no new dependency).
+- Q: Which deployments should record visitor statistics, and should the site's code contain the statistics script? → A: Only the main build records statistics, through the Cloudflare Web Analytics automatic setup already configured (setup item 18); the repository contains no analytics code or token, and preview traffic is not counted. Tests check that the content security policy allows the statistics beacon and that the site works when it is blocked.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -67,6 +69,9 @@ screenshots of the current site.
    compared at the same width and theme, **Then** colours, typography, spacing, header and footer
    match closely, and no Ghost-only elements (subscribe, sign-in/account, member portal, search
    buttons) appear.
+7. **Given** the committed screenshot baselines of the new shell, **When** the checks run,
+   **Then** the header, footer, open mobile menu and not-found page at phone and desktop widths
+   in both themes match their baselines, and any unapproved difference fails the run.
 
 ---
 
@@ -190,15 +195,15 @@ without tracking cookies or personal profiles.
 
 **Why this priority**: Useful to Don but not needed for the site to work.
 
-**Independent Test**: Visit a preview or the main build and confirm visits appear in the
-statistics view, and that no cookies are set by the site.
+**Independent Test**: Visit the main build and confirm visits appear in the statistics view, that
+no cookies are set by the site, and that visits to a branch preview are not counted.
 
 **Acceptance Scenarios**:
 
 1. **Given** a visitor loads a page, **When** the visit is recorded, **Then** no cookie or other
    persistent identifier is set for tracking.
 2. **Given** statistics are collected, **When** Don opens the statistics view, **Then** he sees
-   page views for the main site.
+   page views for the main build only; branch preview visits are not counted.
 3. **Given** a visitor who blocks the statistics script, **When** they browse, **Then** the site
    works exactly the same.
 
@@ -277,7 +282,13 @@ contact form, code blocks and author card come from and which feature ports each
   sign-in or account buttons, the member portal, Ghost search, or comments.
 - **FR-005**: Before any styling work, reference screenshots of the current live site (home page,
   one post, and /about/) MUST be captured at a mobile width and a desktop width in both the dark
-  and light themes, stored in the repository, and used to compare the new site against.
+  and light themes, stored in the repository, and used by Don to compare the new site against
+  by eye when he reviews the preview.
+- **FR-005a**: The repository MUST contain automated screenshot baselines of the new site's shell
+  (header, footer, open mobile menu and not-found page) at a phone width and a desktop width in
+  both themes, checked on every run so that an unapproved layout change fails the checks. The
+  baselines use the end-to-end browser test tool's built-in screenshot comparison; no new
+  dependency is added.
 
 **Site shell**
 
@@ -349,13 +360,17 @@ contact form, code blocks and author card come from and which feature ports each
 - **FR-024**: The site MUST send security headers on every response, including a content security
   policy based on Flux's, tightened to remove the sources that no longer apply (the old form
   service, the public script CDN and the old database service) and allowing only the site itself
-  and the privacy-respecting statistics service.
+  and the privacy-respecting statistics service (including the Cloudflare Web Analytics beacon
+  that is injected into the main build).
 
 **Visitor statistics**
 
 - **FR-025**: The site MUST collect privacy-respecting visitor statistics (page views, referrers,
   countries, device types) that set no tracking cookies and build no personal profiles, using the
-  statistics service permitted by the constitution.
+  statistics service permitted by the constitution. Statistics MUST be recorded only for the main
+  build, through the Cloudflare Web Analytics automatic setup already configured (setup item 18);
+  the repository MUST NOT contain analytics code or an analytics token, and branch preview visits
+  MUST NOT be counted.
 - **FR-026**: If the statistics script is blocked or fails, the site MUST work exactly as before.
 
 **Release pipeline**
@@ -402,7 +417,9 @@ contact form, code blocks and author card come from and which feature ports each
 ### Measurable Outcomes
 
 - **SC-001**: The preview deployment matches the reference screenshots closely in both themes at
-  mobile and desktop widths, as confirmed by Don when he reviews the preview.
+  mobile and desktop widths, as confirmed by Don when he reviews the preview, and 100% of the
+  committed shell screenshot baselines (header, footer, mobile menu, not-found page; phone and
+  desktop; both themes) pass on every run.
 - **SC-002**: 100% of page templates pass the automated accessibility checks with zero WCAG 2.2 AA
   violations in both themes.
 - **SC-003**: In repeated automated loads with each stored theme choice, the first painted frame
@@ -443,8 +460,9 @@ contact form, code blocks and author card come from and which feature ports each
   through an environment variable), so metadata and the page list can point at it; the plan
   confirms the mechanism. Because addresses follow the serving deployment, the domain switch needs
   no metadata change beyond serving the site at doncoleman.ca.
-- Statistics use Cloudflare Web Analytics, the only analytics option the constitution allows;
-  expected additional monthly cost is zero (free tier).
+- Statistics use Cloudflare Web Analytics, the only analytics option the constitution allows,
+  with automatic setup on the main build's address (setup item 18), which injects the beacon at
+  Cloudflare's edge; expected additional monthly cost is zero (free tier).
 - Setup documentation lives in `docs/setup.md` (the feature input refers to `docs/setup/`).
 
 ## Out of Scope and Follow-up Work
