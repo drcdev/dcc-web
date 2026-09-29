@@ -80,5 +80,20 @@ external links himself where a URL changes.
 
 ## Accessibility adjustments
 
-None. No accessibility deviations from the ported Flux design have been identified yet; this
-section will be updated if a later phase finds one needed.
+Where a ported Flux colour pairing fails the WCAG 2.2 AA contrast minimums (FR-020a), the
+failing utility is replaced with the nearest passing shade of the same palette. The palette
+tokens in `src/styles/global.css` are unchanged; only the class on the element changes (FR-001a).
+Ratios are measured against the background the text sits on, as reported by axe-core.
+
+| Pairing | Where used | Failing ratio | Replacement | New ratio |
+|---|---|---|---|---|
+| `text-mauve-500` (#857788) on `bg-white` (#ffffff), light theme, 14px normal text | Footer copyright line (`src/components/SiteFooter.astro`; Flux `layout-footer.hbs`) | 4.19:1 (needs 4.5:1) | `text-mauve-600` (#6b606c) | 6.01:1 |
+
+The dark-theme half of the same line (`dark:text-mauve-400` on `dusk-900`) passes and is
+unchanged.
+
+Not a colour change, but found by the same check: the first port rendered page content with no
+text colour, so in the dark theme it showed black on `dusk-BASE` (1.22:1). Flux always wraps
+page content in its `content-section.hbs` classes (`prose dark:prose-invert prose-accent`,
+`dark:bg-dusk-800`), which supply the body, link and heading colours; the home and not-found
+pages now use that wrapper, as Flux does.

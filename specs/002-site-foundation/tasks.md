@@ -631,20 +631,20 @@ against the finished templates, and get `pnpm run verify` fully green. This phas
 acceptance scenario 7. No assertion written in T039–T041 may be loosened here; a genuinely wrong
 assertion is fixed only with a matching spec change (FR-030a).
 
-- [ ] T087 Run `pnpm run build && pnpm exec playwright test --project=a11y`; fix any violation
+- [X] T087 Run `pnpm run build && pnpm exec playwright test --project=a11y`; fix any violation
   (contrast, landmark, heading, reflow, forced colours or motion) in the source until every run is
   green, recording every Flux colour-pairing change in `docs/design-source.md`'s
   "Accessibility adjustments" section with the pairing, its failing ratio and the replacement
   shade — replacing only the failing utility with the nearest passing shade of the same palette
   and leaving the palette tokens unchanged (FR-001a, SC-002).
-- [ ] T088 Run `pnpm exec playwright test --project=budget`; trim inline script size or ported
+- [X] T088 Run `pnpm exec playwright test --project=budget`; trim inline script size or ported
   CSS/assets until both templates pass every threshold (SC-004).
-- [ ] T089 Run `pnpm run test:visual:update` on macOS to generate the 14 `-darwin` baseline images
+- [X] T089 Run `pnpm run test:visual:update` on macOS to generate the 14 `-darwin` baseline images
   under `tests/e2e/visual.spec.ts-snapshots/`; review each image by eye against
   `tests/reference/ghost/` and commit them (FR-005a, FR-005b).
-- [ ] T090 Run `pnpm exec playwright test --project=visual` to confirm the freshly-committed darwin
+- [X] T090 Run `pnpm exec playwright test --project=visual` to confirm the freshly-committed darwin
   baselines now pass with zero diff.
-- [ ] T091 Run `pnpm run verify` end to end on a clean tree; fix anything red. CI's `-linux`
+- [X] T091 Run `pnpm run verify` end to end on a clean tree; fix anything red. CI's `-linux`
   visual baselines will be missing on the first CI run by design (FR-005b); they are handled in
   T095.
 

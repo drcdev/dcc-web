@@ -30,7 +30,9 @@ const WIDTHS = [
 const THEMES = ["dark", "light"] as const;
 
 const MENU_BUTTON = 'button[aria-controls="primary-nav-list"]';
-const THEME_SWITCH = 'footer button[aria-label^="Theme:"]';
+// The switch is named by its own visually hidden text ("Theme: Dark"), never
+// aria-label (contracts/theme.md "Toggle"; tests/component/ThemeToggle.test.ts).
+const THEME_SWITCH = "footer button[data-theme-toggle]";
 
 async function setTheme(page: Page, theme: "dark" | "light") {
   await page.addInitScript((value) => {
@@ -85,12 +87,31 @@ for (const template of TEMPLATES) {
     }
 
     test("has zero axe violations with JavaScript disabled at phone width", async ({ browser }) => {
-      const context = await browser.newContext({
-        javaScriptEnabled: false,
-        viewport: { width: 390, height: 844 },
-      });
+      const viewport = { width: 390, height: 844 };
+      const stripScripts = (html: string) => html.replace(/<script\b[\s\S]*?<\/script>/gi, "");
+
+      // 1. The genuine no-JavaScript render.
+      const noJs = await browser.newContext({ javaScriptEnabled: false, viewport });
+      const noJsPage = await noJs.newPage();
+      await noJsPage.goto(template.path);
+      await expect(noJsPage.locator(MENU_BUTTON)).toBeHidden();
+      await expect(noJsPage.locator("#primary-nav-list")).toBeVisible();
+      const noJsDom = stripScripts(await noJsPage.evaluate(() => document.documentElement.outerHTML));
+      await noJs.close();
+
+      // 2. axe-core schedules its checks with timers, which never fire while
+      // script execution is disabled, so it cannot run in that context. Serve
+      // the same response with its <script> elements removed instead: none of
+      // the page's own code runs, the resulting DOM is checked to be identical
+      // to the no-JavaScript render, and axe audits that.
+      const context = await browser.newContext({ viewport });
       const page = await context.newPage();
+      await page.route(`**${template.path}`, async (route) => {
+        const response = await route.fetch();
+        await route.fulfill({ response, body: stripScripts(await response.text()) });
+      });
       await page.goto(template.path);
+      expect(stripScripts(await page.evaluate(() => document.documentElement.outerHTML))).toBe(noJsDom);
       await expect(page.locator(MENU_BUTTON)).toBeHidden();
       await expect(page.locator("#primary-nav-list")).toBeVisible();
       await expectNoAxeViolations(page);
@@ -228,13 +249,18 @@ for (const template of TEMPLATES) {
     }) => {
       await page.setViewportSize({ width: 320, height: 640 });
       await page.goto(template.path);
-      await page.addStyleTag({
-        content: `* {
+      // The page's CSP (FR-024a) blocks the inline <style> that addStyleTag
+      // injects, so the WCAG 1.4.12 overrides go in through a constructed
+      // stylesheet instead, which applies the same rules without weakening CSP.
+      await page.evaluate(() => {
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(`* {
           line-height: 1.5 !important;
           letter-spacing: 0.12em !important;
           word-spacing: 0.16em !important;
         }
-        p { margin-bottom: 2em !important; }`,
+        p { margin-bottom: 2em !important; }`);
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
       });
       await expectNoHorizontalScroll(page);
 

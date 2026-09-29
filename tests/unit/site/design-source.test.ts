@@ -196,6 +196,38 @@ describe("docs/design-source.md", () => {
     expect(match).not.toBeNull();
     expect(match![1].trim().length).toBeGreaterThan(0);
   });
+  // Phase 9 (T087) found failing Flux pairings, so the section must now record
+  // each one: pairing, where used, failing ratio, replacement shade and its
+  // ratio (FR-001a).
+  function getAdjustmentRows(): string[] {
+    const section = doc.match(/#{1,6}\s*Accessibility adjustments\s*\n+([\s\S]*)$/)?.[1] ?? "";
+    return section
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l.startsWith("|") && !/^\|[\s|:-]+\|$/.test(l))
+      .slice(1);
+  }
+
+  it("Accessibility adjustments: has a table naming pairing, where used, failing ratio and replacement", () => {
+    expect(doc).toMatch(
+      /\|\s*Pairing\s*\|\s*Where used\s*\|\s*Failing ratio\s*\|\s*Replacement\s*\|\s*New ratio\s*\|/,
+    );
+  });
+
+  it("Accessibility adjustments: records the footer copyright mauve-500 → mauve-600 change", () => {
+    const rows = getAdjustmentRows();
+    expect(rows.length).toBeGreaterThan(0);
+    const row = rows.find((r) => r.includes("mauve-500") && r.includes("mauve-600"));
+    expect(row, "mauve-500 → mauve-600 row").toBeDefined();
+    expect(row).toMatch(/4\.19:1/);
+    expect(row).toMatch(/6\.01:1/);
+  });
+
+  it("Accessibility adjustments: every row states two ratios in N.NN:1 form", () => {
+    for (const row of getAdjustmentRows()) {
+      expect((row.match(/\d+\.\d{2}:1/g) ?? []).length, row).toBeGreaterThanOrEqual(2);
+    }
+  });
 });
 
 describe(".gitignore and src/ have no .reference leakage", () => {
