@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { decide, type MajorGateInput } from "../../../scripts/ci/major-change-gate.ts";
+import {
+  decide,
+  statusApiArgs,
+  STATUS_CONTEXT,
+  toCommitStatus,
+  type MajorGateInput,
+} from "../../../scripts/ci/major-change-gate.ts";
 
 function baseInput(overrides: Partial<MajorGateInput> = {}): MajorGateInput {
   return {
@@ -143,5 +149,70 @@ describe("major-change-gate decide()", () => {
       }),
     );
     expect(result.pass).toBe(false);
+  });
+});
+
+describe("major-change-gate toCommitStatus()", () => {
+  it("uses the required status context", () => {
+    expect(STATUS_CONTEXT).toBe("major-change-approval");
+  });
+
+  it("is success when there is no label", () => {
+    const status = toCommitStatus(decide(baseInput()));
+    expect(status.state).toBe("success");
+    expect(status.context).toBe("major-change-approval");
+  });
+
+  it("is success when the owner approved the head commit", () => {
+    const sha = "b".repeat(40);
+    const decision = decide(
+      baseInput({
+        labels: ["major-change"],
+        headSha: sha,
+        reviews: [{ user: "drcdev", state: "APPROVED", commitId: sha, submittedAt: "2026-01-01T00:00:00Z" }],
+      }),
+    );
+    expect(toCommitStatus(decision).state).toBe("success");
+  });
+
+  it("is pending while waiting for approval", () => {
+    const status = toCommitStatus(decide(baseInput({ labels: ["major-change"] })));
+    expect(status.state).toBe("pending");
+    expect(status.context).toBe("major-change-approval");
+  });
+
+  it("is pending for an owner-authored PR", () => {
+    const status = toCommitStatus(decide(baseInput({ labels: ["major-change"], author: "drcdev" })));
+    expect(status.state).toBe("pending");
+    expect(status.description).toMatch(/reopen/i);
+  });
+
+  it("truncates the description to 140 characters", () => {
+    const status = toCommitStatus({ pass: false, message: "x".repeat(500) });
+    expect(status.description.length).toBeLessThanOrEqual(140);
+  });
+
+  it("passes target_url through, and omits it when absent", () => {
+    expect(toCommitStatus({ pass: true, message: "ok" }, "https://example.test/run/1").target_url).toBe(
+      "https://example.test/run/1",
+    );
+    expect(toCommitStatus({ pass: true, message: "ok" })).not.toHaveProperty("target_url");
+  });
+});
+
+describe("major-change-gate statusApiArgs()", () => {
+  it("builds a POST to the statuses endpoint for the sha", () => {
+    const status = toCommitStatus({ pass: false, message: "Waiting" });
+    const args = statusApiArgs("drcdev/dcc-web", "c".repeat(40), status);
+    expect(args.slice(0, 4)).toEqual(["api", "-X", "POST", `repos/drcdev/dcc-web/statuses/${"c".repeat(40)}`]);
+    expect(args).toContain("state=pending");
+    expect(args).toContain("context=major-change-approval");
+    expect(args).toContain("description=Waiting");
+    expect(args.some((a) => a.startsWith("target_url="))).toBe(false);
+  });
+
+  it("adds target_url when set", () => {
+    const status = toCommitStatus({ pass: true, message: "ok" }, "https://example.test/run/1");
+    expect(statusApiArgs("o/r", "abc", status)).toContain("target_url=https://example.test/run/1");
   });
 });

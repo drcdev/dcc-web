@@ -3,8 +3,10 @@
  * label rule (constitution Principle III, spec FR-014, plan research R9).
  *
  * `decide` is a pure function so it can be unit-tested without a network
- * call; the CLI below wires it to `gh api`-shaped JSON so the
- * `major-change-approval` GitHub Actions job can call it directly.
+ * call; the CLI below wires it to `gh api`-shaped JSON. The verdict is published
+ * as a commit status (context `major-change-approval`) on the PR head SHA, not as
+ * the job result: statuses are keyed by (sha, context), so a later approval
+ * supersedes the earlier pending status instead of leaving a stale failed check run.
  */
 
 export interface MajorGateReview {
@@ -64,6 +66,49 @@ export function decide(input: MajorGateInput): MajorGateDecision {
   };
 }
 
+/** The commit status context that the `main` ruleset requires. */
+export const STATUS_CONTEXT = "major-change-approval";
+
+const STATUS_DESCRIPTION_LIMIT = 140;
+
+export interface CommitStatus {
+  state: "success" | "pending";
+  context: typeof STATUS_CONTEXT;
+  description: string;
+  target_url?: string;
+}
+
+export function toCommitStatus(decision: MajorGateDecision, targetUrl?: string): CommitStatus {
+  const status: CommitStatus = {
+    state: decision.pass ? "success" : "pending",
+    context: STATUS_CONTEXT,
+    description: decision.message.slice(0, STATUS_DESCRIPTION_LIMIT),
+  };
+  if (targetUrl) {
+    status.target_url = targetUrl;
+  }
+  return status;
+}
+
+export function statusApiArgs(repo: string, sha: string, status: CommitStatus): string[] {
+  const args = [
+    "api",
+    "-X",
+    "POST",
+    `repos/${repo}/statuses/${sha}`,
+    "-f",
+    `state=${status.state}`,
+    "-f",
+    `context=${status.context}`,
+    "-f",
+    `description=${status.description}`,
+  ];
+  if (status.target_url) {
+    args.push("-f", `target_url=${status.target_url}`);
+  }
+  return args;
+}
+
 interface GhApiPullRequest {
   labels: { name: string }[];
   user: { login: string };
@@ -120,8 +165,10 @@ async function main(): Promise<void> {
     })),
   });
 
-  console.log(decision.message);
-  process.exit(decision.pass ? 0 : 1);
+  const status = toCommitStatus(decision, process.env.RUN_URL || undefined);
+  await execFileAsync("gh", statusApiArgs(repo, pr.head.sha, status));
+
+  console.log(`${status.state}: ${decision.message}`);
 }
 
 const isMainModule = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
