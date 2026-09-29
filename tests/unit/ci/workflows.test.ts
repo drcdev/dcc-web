@@ -111,6 +111,73 @@ describe(".github/workflows/major-change.yml", () => {
   });
 });
 
+describe(".github/workflows/visual-baselines.yml", () => {
+  const contents = read(".github/workflows/visual-baselines.yml");
+
+  it("is triggered only by workflow_dispatch", () => {
+    expect(contents).toMatch(/^on:\s*\n\s*workflow_dispatch:/m);
+    expect(contents).not.toMatch(/pull_request:/);
+    expect(contents).not.toMatch(/^\s*push:/m);
+    expect(contents).not.toMatch(/schedule:/);
+  });
+
+  it("runs on ubuntu with minimal permissions: contents: read", () => {
+    expect(contents).toMatch(/runs-on:\s*ubuntu-latest/);
+    expect(contents).toMatch(/permissions:\s*\n\s*contents:\s*read/);
+  });
+
+  it("pins every third-party action to a 40-character SHA", () => {
+    const uses = [...contents.matchAll(USES_PATTERN)];
+    expect(uses.length).toBeGreaterThan(0);
+    for (const [, action, ref] of uses) {
+      expect(ref, `${action} must be pinned to a 40-character commit SHA`).toMatch(/^[0-9a-f]{40}$/);
+    }
+  });
+
+  it("installs with --frozen-lockfile and installs Playwright's Chromium browser", () => {
+    expect(contents).toMatch(/--frozen-lockfile/);
+    expect(contents).toMatch(/playwright install --with-deps chromium/);
+  });
+
+  it("builds the site before updating snapshots", () => {
+    const buildIndex = contents.indexOf("pnpm run build");
+    const updateIndex = contents.indexOf("pnpm run test:visual:update");
+    expect(buildIndex, "expected a step running pnpm run build").toBeGreaterThan(0);
+    expect(updateIndex, "expected a step running pnpm run test:visual:update").toBeGreaterThan(0);
+    expect(buildIndex).toBeLessThan(updateIndex);
+  });
+
+  it("runs the visual project only, with --update-snapshots", () => {
+    expect(contents).toMatch(/pnpm run test:visual:update/);
+  });
+
+  it("uploads the visual snapshot directory as visual-baselines-linux with 7 day retention", () => {
+    const uploadMatch = contents.match(
+      /uses:\s*actions\/upload-artifact@([0-9a-f]{40})/,
+    );
+    expect(uploadMatch, "expected a SHA-pinned actions/upload-artifact step").toBeTruthy();
+    expect(contents).toMatch(/name:\s*visual-baselines-linux/);
+    expect(contents).toMatch(/tests\/e2e\/visual\.spec\.ts-snapshots\//);
+    expect(contents).toMatch(/retention-days:\s*7/);
+  });
+
+  it("never commits or pushes anything itself", () => {
+    expect(contents).not.toMatch(/git\s+commit/);
+    expect(contents).not.toMatch(/git\s+push/);
+    expect(contents).not.toMatch(/git-auto-commit-action/);
+    expect(contents).not.toMatch(/stefanzweifel/);
+  });
+
+  it("has no continue-on-error, no always-false if:, and no secrets other than GITHUB_TOKEN", () => {
+    expect(contents).not.toMatch(/continue-on-error/);
+    expect(contents).not.toMatch(/if:\s*false/);
+    const secretRefs = [...contents.matchAll(/secrets\.([A-Z0-9_]+)/g)].map((m) => m[1]);
+    for (const name of secretRefs) {
+      expect(name).toBe("GITHUB_TOKEN");
+    }
+  });
+});
+
 describe(".github/CODEOWNERS", () => {
   const contents = read(".github/CODEOWNERS");
   const majorPaths = [

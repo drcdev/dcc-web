@@ -58,9 +58,16 @@ footer should match closely; no Subscribe, Account or search buttons.
    build command (`pnpm run build`) and production deploy command (`pnpm exec wrangler deploy`)
    unchanged. No token or secret is involved.
 2. Confirm `setup/config.json` has `workersSubdomain` (public value from any preview URL).
-3. Push; the `verify` check runs. On the first run the `visual` project fails until the Linux
-   baselines are committed: download them with `gh run download <run-id>`, review the images,
-   commit, push.
+3. Push; the `verify` check runs. On the first run the `visual` project fails because the 14
+   `-linux` baselines don't exist yet — and because `playwright.config.ts` sets
+   `updateSnapshots: "none"` (FR-005b), the check's own failure artifact never contains actual
+   images to commit. Generate them instead with the manually-triggered
+   `.github/workflows/visual-baselines.yml` workflow: `gh workflow run visual-baselines.yml --ref
+   <branch>`, wait for it to finish, then `gh run download <run-id>` its
+   `visual-baselines-linux` artifact, review the 14 images by eye, commit them under
+   `tests/e2e/visual.spec.ts-snapshots/`, and push. That workflow only builds and regenerates
+   snapshots — it never commits or pushes anything itself, so the images are always reviewed by a
+   human or agent before they land (FR-005b).
 4. When Workers Builds finishes, open the preview at
    `https://br-002-site-foundation-dcc-web.<workersSubdomain>.workers.dev/`. View source: the
    `canonical`, `og:url` and `/robots.txt` `Sitemap:` line all use that same address.
