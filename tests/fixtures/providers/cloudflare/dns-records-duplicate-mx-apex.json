@@ -1,0 +1,4 @@
+[
+  { "type": "MX", "name": "doncoleman.ca", "content": "mx01.mail.icloud.com", "priority": 10, "ttl": 3600, "proxied": false },
+  { "type": "MX", "name": "doncoleman.ca", "content": "mx02.mail.icloud.com", "priority": 10, "ttl": 3600, "proxied": false }
+]

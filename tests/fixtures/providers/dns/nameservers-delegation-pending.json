@@ -1,0 +1,4 @@
+{
+  "note": "one authoritative server already answers with Cloudflare's nameservers, another still answers with Squarespace's — delegation is propagating",
+  "answers": ["ada.ns.cloudflare.com", "ns2.squarespacedns.com"]
+}

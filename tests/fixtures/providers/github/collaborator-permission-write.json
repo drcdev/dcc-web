@@ -1,0 +1,8 @@
+{
+  "permission": "write",
+  "role_name": "write",
+  "user": {
+    "login": "drc-agents",
+    "permissions": { "admin": false, "maintain": false, "push": true, "triage": true, "pull": true }
+  }
+}

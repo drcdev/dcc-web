@@ -1,0 +1,10 @@
+[
+  {
+    "type": "TXT",
+    "name": "mta._domainkey.mail.doncoleman.ca",
+    "content": "\"k=rsa; p=AAAABBBBCCCC\" \"DDDDEEEE\"",
+    "priority": null,
+    "ttl": 14400,
+    "proxied": false
+  }
+]

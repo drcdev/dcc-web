@@ -1,0 +1,13 @@
+{
+  "note": "a baseline record with decision 'keep' that has no matching record in the Cloudflare zone yet — Cloudflare's dns.records.list fixture for this scenario is cloudflare/dns-records-none.json",
+  "baselineRecord": {
+    "type": "TXT",
+    "name": "doncoleman.ca",
+    "content": "v=spf1 include:_spf.example.net -all",
+    "priority": null,
+    "ttl": 3600,
+    "source": "squarespace",
+    "decision": "keep",
+    "reason": null
+  }
+}

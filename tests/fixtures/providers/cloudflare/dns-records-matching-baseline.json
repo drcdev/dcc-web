@@ -1,0 +1,6 @@
+[
+  { "type": "A", "name": "doncoleman.ca", "content": "192.0.2.10", "ttl": 3600, "proxied": false },
+  { "type": "CNAME", "name": "www.doncoleman.ca", "content": "doncoleman.ca", "ttl": 3600, "proxied": false },
+  { "type": "MX", "name": "doncoleman.ca", "content": "mx1.example.net", "priority": 10, "ttl": 3600, "proxied": false },
+  { "type": "TXT", "name": "doncoleman.ca", "content": "v=spf1 include:_spf.example.net -all", "ttl": 3600, "proxied": false }
+]

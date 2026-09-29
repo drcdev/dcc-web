@@ -1,0 +1,8 @@
+{
+  "status": 200,
+  "headers": {
+    "x-robots-tag": "noindex",
+    "content-type": "text/html; charset=utf-8"
+  },
+  "body": "<!doctype html><html lang=\"en\"><head><title>doncoleman.ca — coming soon</title><meta name=\"robots\" content=\"noindex\"></head><body><main><h1>doncoleman.ca is moving</h1><a href=\"https://doncoleman.ca/\">Visit the current site</a></main></body></html>"
+}

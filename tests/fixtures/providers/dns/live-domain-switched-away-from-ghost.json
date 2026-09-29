@@ -1,0 +1,4 @@
+{
+  "doncoleman.ca": { "A": ["203.0.113.55"] },
+  "www.doncoleman.ca": { "CNAME": ["dcc-web.new-worker.workers.dev"] }
+}

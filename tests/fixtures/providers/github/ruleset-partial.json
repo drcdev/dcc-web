@@ -1,0 +1,20 @@
+{
+  "id": 1,
+  "name": "main-protection",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": { "ref_name": { "include": ["refs/heads/main"], "exclude": [] } },
+  "rules": [
+    { "type": "deletion" },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 0,
+        "require_code_owner_review": false,
+        "dismiss_stale_reviews_on_push": true,
+        "required_review_thread_resolution": false
+      }
+    }
+  ],
+  "bypass_actors": [{ "actor_type": "OrganizationAdmin", "actor_id": 1 }]
+}

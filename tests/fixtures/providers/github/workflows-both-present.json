@@ -1,0 +1,4 @@
+[
+  { "path": ".github/workflows/ci.yml", "name": "CI" },
+  { "path": ".github/workflows/major-change.yml", "name": "Major change" }
+]

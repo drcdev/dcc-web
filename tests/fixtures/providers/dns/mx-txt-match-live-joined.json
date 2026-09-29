@@ -1,0 +1,5 @@
+{
+  "mta._domainkey.mail.doncoleman.ca": {
+    "TXT": ["k=rsa; p=AAAABBBBCCCCDDDDEEEE"]
+  }
+}

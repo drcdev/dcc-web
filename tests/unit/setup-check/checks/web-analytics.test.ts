@@ -1,0 +1,135 @@
+import { describe, expect, it, vi } from "vitest";
+import { check } from "../../../../scripts/setup-check/checks/web-analytics.ts";
+import { ProviderAccessError } from "../../../../scripts/setup-check/types.ts";
+import { fakeProviderContext, envFrom, loadFixture, toCloudflareZone } from "./test-helpers.ts";
+
+const ENV = {
+  CLOUDFLARE_API_TOKEN: "cf-token-value",
+  CLOUDFLARE_ZONE_ID: "zone-123",
+  CLOUDFLARE_ACCOUNT_ID: "account-123",
+};
+const CONFIG = {
+  owner: "drcdev",
+  repo: "dcc-web",
+  zone: "doncoleman.ca",
+  workerName: "dcc-web",
+  reviewHost: "new.doncoleman.ca",
+};
+const BASELINE = {
+  originalNameservers: ["ns1.squarespacedns.com", "ns2.squarespacedns.com"],
+  records: [
+    {
+      type: "A",
+      name: "doncoleman.ca",
+      content: "192.0.2.10",
+      priority: null,
+      ttl: 3600,
+      source: "squarespace",
+      decision: "keep",
+      reason: null,
+    },
+  ],
+};
+
+function fsWith(overrides: Record<string, unknown> = {}) {
+  return ((path: string) => {
+    if (path === "setup/config.json") return CONFIG;
+    if (path === "setup/dns-baseline.json") return overrides.baseline ?? BASELINE;
+    return null;
+  }) as never;
+}
+
+// CloudflareReader.listWebAnalyticsSites returns the already-mapped
+// CloudflareWebAnalyticsSite shape (camelCase); the fixture records the raw
+// SDK response (snake_case), so tests map it the same way the real provider does.
+function toWebAnalyticsSites(raw: Array<{ site_tag?: string; host?: string; auto_install?: boolean }>) {
+  return raw.map((s) => ({ siteTag: s.site_tag ?? "", host: s.host ?? null, autoInstall: Boolean(s.auto_install) }));
+}
+
+async function reviewAddressCompleteContext(overrides: Parameters<typeof fakeProviderContext>[0] = {}) {
+  const zoneRaw = loadFixture<Parameters<typeof toCloudflareZone>[0]>("cloudflare", "zone-active-free-plan");
+  const { answers } = loadFixture<{ answers: string[] }>("dns", "nameservers-cloudflare-delegated");
+  return fakeProviderContext({
+    env: overrides.env ?? envFrom(ENV),
+    fs: overrides.fs ?? { readJson: fsWith() },
+    dns: { resolveNameservers: async () => answers, ...overrides.dns },
+    cloudflare: {
+      getZone: async () => toCloudflareZone(zoneRaw),
+      listDnsRecords: async () => [
+        { type: "A", name: "doncoleman.ca", content: "192.0.2.10", priority: null, ttl: 3600, proxied: false },
+      ],
+      listWorkerDomains: async () => loadFixture("cloudflare", "worker-domains-review-host"),
+      listWebAnalyticsSites: async () =>
+        toWebAnalyticsSites(loadFixture("cloudflare", "web-analytics-site-present")),
+      ...overrides.cloudflare,
+    },
+    http: overrides.http ?? { get: async () => loadFixture("http", "analytics-beacon-referenced") },
+    github: overrides.github ?? {
+      api: vi.fn(async (path: string) => {
+        if (path.includes("/commits/main/check-runs")) return loadFixture("github", "check-runs-workers-builds-success");
+        if (path.startsWith("repos/drcdev/dcc-web/pulls")) return [];
+        throw new Error(`unexpected path: ${path}`);
+      }) as never,
+    },
+  });
+}
+
+describe("checks/web-analytics", () => {
+  it("is missing naming the review address when that prerequisite is not complete", async () => {
+    const ctx = fakeProviderContext({
+      env: envFrom(ENV),
+      fs: { readJson: fsWith({ baseline: { originalNameservers: [], records: [] } }) },
+    });
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("missing");
+    expect(result.nextAction?.toLowerCase()).toContain("review address");
+  });
+
+  it("is missing when no Web Analytics site exists for new.doncoleman.ca", async () => {
+    const ctx = await reviewAddressCompleteContext({
+      cloudflare: { listWebAnalyticsSites: async () => loadFixture("cloudflare", "web-analytics-site-absent") },
+    });
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("missing");
+    expect(result.summary).toMatch(/no web analytics site/i);
+  });
+
+  it("is missing when the served page does not reference the Cloudflare beacon", async () => {
+    const ctx = await reviewAddressCompleteContext({
+      http: { get: async () => loadFixture("http", "review-host-200-noindex") },
+    });
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("missing");
+    expect(result.summary).toMatch(/beacon/i);
+  });
+
+  it("is complete when Web Analytics is on and the beacon is referenced", async () => {
+    const ctx = await reviewAddressCompleteContext();
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("complete");
+    expect(result.step).toBe("Step 18 of 18");
+    expect(result.docs).toBe("docs/setup.md#web-analytics");
+  });
+
+  it("is could-not-check when the Cloudflare provider fails", async () => {
+    const ctx = await reviewAddressCompleteContext({
+      cloudflare: {
+        listWebAnalyticsSites: async () => {
+          throw new ProviderAccessError("Cloudflare token lacks Web Analytics Read access (403)");
+        },
+      },
+    });
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("could-not-check");
+  });
+});

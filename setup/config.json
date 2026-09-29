@@ -1,0 +1,9 @@
+{
+  "owner": "drcdev",
+  "repo": "dcc-web",
+  "machineAccount": "drc-agents",
+  "workerName": "dcc-web",
+  "zone": "doncoleman.ca",
+  "reviewHost": "new.doncoleman.ca",
+  "ghostMarker": "Ghost"
+}

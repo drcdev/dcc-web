@@ -1,0 +1,8 @@
+{
+  "full_name": "drcdev/dcc-web",
+  "allow_auto_merge": false,
+  "security_and_analysis": {
+    "secret_scanning": { "status": "enabled" },
+    "secret_scanning_push_protection": { "status": "enabled" }
+  }
+}

@@ -1,0 +1,4 @@
+[
+  { "type": "A", "name": "doncoleman.ca", "content": "192.0.2.10", "ttl": 3600, "proxied": false },
+  { "type": "TXT", "name": "unexpected.doncoleman.ca", "content": "not in the baseline", "ttl": 3600, "proxied": false }
+]

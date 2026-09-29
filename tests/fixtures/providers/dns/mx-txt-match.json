@@ -1,0 +1,6 @@
+{
+  "doncoleman.ca": {
+    "MX": [{ "priority": 10, "value": "mx1.example.net" }],
+    "TXT": ["v=spf1 include:_spf.example.net -all"]
+  }
+}

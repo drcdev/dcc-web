@@ -1,0 +1,9 @@
+[
+  {
+    "id": 123456,
+    "invitee": { "login": "drc-agents" },
+    "inviter": { "login": "drcdev" },
+    "permissions": "write",
+    "created_at": "2026-09-20T12:00:00Z"
+  }
+]
