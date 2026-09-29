@@ -145,13 +145,24 @@ test.describe("activation", () => {
   test.use({ viewport: DESKTOP });
 
   test("each header link activates with Enter", async ({ page }) => {
-    await page.goto("/");
+    // A marker query string means the link's target (Home, "/") is never
+    // already the current URL when the wait starts: `waitForURL`'s predicate
+    // checks the page's current state immediately, so for a same-page link it
+    // would otherwise resolve before Enter's navigation actually happens,
+    // leaving it in flight to collide with the next iteration's `page.goto`.
+    await page.goto("/?before-header-name");
     await page.getByRole("link", { name: "Don Coleman", exact: true }).first().focus();
-    await Promise.all([page.waitForURL((url) => url.pathname === "/"), page.keyboard.press("Enter")]);
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === "/" && url.search === ""),
+      page.keyboard.press("Enter"),
+    ]);
     for (const [, href] of PRIMARY) {
-      await page.goto("/");
+      await page.goto("/?before-header-link");
       await page.locator(`${NAV_LIST} a[href="${href}"]`).focus();
-      await Promise.all([page.waitForURL((url) => url.pathname === href), page.keyboard.press("Enter")]);
+      await Promise.all([
+        page.waitForURL((url) => url.pathname === href && url.search === ""),
+        page.keyboard.press("Enter"),
+      ]);
     }
   });
 
