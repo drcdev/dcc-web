@@ -78,15 +78,17 @@ describe("checks/dns-records-parity", () => {
     expect(result.details.join(" ")).toContain("doncoleman.ca");
   });
 
-  it("is missing when a keep record's TTL is automatic (1) instead of the exact baseline value", async () => {
+  it("is complete, with an informational TTL note, when a keep record differs from Cloudflare only by TTL (Cloudflare auto vs. baseline value)", async () => {
     const cf = loadFixture<CloudflareDnsRecord[]>("cloudflare", "dns-records-automatic-ttl-mismatch");
     const records = [keepRecord({ ttl: 3600 })];
     const ctx = contextWith(baseline(records), cf);
 
     const result = await check(ctx);
 
-    expect(result.status).toBe("missing");
-    expect(result.details.join(" ")).toMatch(/ttl/i);
+    expect(result.status).toBe("complete");
+    const details = result.details.join(" ");
+    expect(details).toMatch(/ttl/i);
+    expect(details).toContain("TTL differs (informational): Cloudflare auto, baseline 3600");
   });
 
   it("is missing when a keep record is proxied on instead of DNS only", async () => {

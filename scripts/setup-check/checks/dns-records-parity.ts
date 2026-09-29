@@ -1,11 +1,14 @@
 // checks/dns-records-parity.ts (setup item 4, data-model.md "dns-records-parity"):
 // every `keep` record in setup/dns-baseline.json matches the Cloudflare zone
-// exactly (type, name, content, TTL and — for MX/SRV — priority, with the
-// proxy off), and no record is left without a decision (FR-035, FR-036,
-// FR-037). Stays `missing` while the baseline has no records or no original
-// nameservers, so parity can never pass vacuously before the nameserver
-// switch. Cloudflare-only records not in the baseline are reported in
-// `details` for Don to add or delete, without blocking completion.
+// (type, name, content and — for MX/SRV — priority, with the proxy off), and
+// no record is left without a decision (FR-035, FR-036, FR-037). TTL is not
+// part of the match: Cloudflare's dashboard only offers TTL presets (no
+// custom value), so Cloudflare records stay on "Auto" and a TTL difference
+// is reported as an informational detail only, never a mismatch. Stays
+// `missing` while the baseline has no records or no original nameservers, so
+// parity can never pass vacuously before the nameserver switch.
+// Cloudflare-only records not in the baseline are reported in `details` for
+// Don to add or delete, without blocking completion.
 import type { CheckResult, CloudflareDnsRecord, DnsBaseline, DnsBaselineRecord, ProviderContext } from "../types.ts";
 import { complete, couldNotCheck, fromProviderError, missing } from "./shared.ts";
 
@@ -34,12 +37,13 @@ function sameNameAndType(baseline: DnsBaselineRecord, cf: CloudflareDnsRecord): 
   return baseline.type === cf.type && normName(baseline.name) === normName(cf.name);
 }
 
-/** Compares everything except content: content is used to select the candidate before this runs. */
+/**
+ * Compares everything except content and TTL: content is used to select the candidate before
+ * this runs, and TTL is informational only (Cloudflare's dashboard offers presets, not a custom
+ * value, so records stay on "Auto" — see `describeTtlInformational`).
+ */
 function describeNonContentMismatch(baseline: DnsBaselineRecord, cf: CloudflareDnsRecord): string | null {
   const problems: string[] = [];
-  if (baseline.ttl !== cf.ttl) {
-    problems.push(`TTL is ${cf.ttl}${cf.ttl === 1 ? " (automatic)" : ""}, expected ${baseline.ttl}`);
-  }
   if ((baseline.type === "MX" || baseline.type === "SRV") && (baseline.priority ?? null) !== (cf.priority ?? null)) {
     problems.push(`priority is ${cf.priority ?? "none"}, expected ${baseline.priority ?? "none"}`);
   }
@@ -49,18 +53,26 @@ function describeNonContentMismatch(baseline: DnsBaselineRecord, cf: CloudflareD
   return problems.length > 0 ? problems.join("; ") : null;
 }
 
+/** Informational only (never a mismatch): Cloudflare's dashboard has TTL presets, not a custom value. */
+function describeTtlInformational(baseline: DnsBaselineRecord, cf: CloudflareDnsRecord): string | null {
+  if (baseline.ttl === cf.ttl) return null;
+  const cfTtl = cf.ttl === 1 ? "auto" : String(cf.ttl);
+  return `TTL differs (informational): Cloudflare ${cfTtl}, baseline ${baseline.ttl}`;
+}
+
 export interface DnsParityEvaluation {
   ok: boolean;
   missingBaseline: boolean;
   undecided: DnsBaselineRecord[];
   problems: string[];
+  ttlInformational: string[];
   cloudflareOnly: string[];
 }
 
 /** Pure comparison, exported for direct testing of the matching rules. */
 export function evaluateDnsParity(baseline: DnsBaseline, cfRecords: CloudflareDnsRecord[]): DnsParityEvaluation {
   if (baseline.records.length === 0 || baseline.originalNameservers.length === 0) {
-    return { ok: false, missingBaseline: true, undecided: [], problems: [], cloudflareOnly: [] };
+    return { ok: false, missingBaseline: true, undecided: [], problems: [], ttlInformational: [], cloudflareOnly: [] };
   }
 
   const undecided = baseline.records.filter((r) => r.decision === null);
@@ -68,6 +80,7 @@ export function evaluateDnsParity(baseline: DnsBaseline, cfRecords: CloudflareDn
   const otherRecords = baseline.records.filter((r) => r.decision !== "keep");
 
   const problems: string[] = [];
+  const ttlInformational: string[] = [];
   const matchedCf = new Set<CloudflareDnsRecord>();
 
   for (const record of keepRecords) {
@@ -78,6 +91,10 @@ export function evaluateDnsParity(baseline: DnsBaseline, cfRecords: CloudflareDn
     );
     if (contentMatch) {
       matchedCf.add(contentMatch);
+      const ttlNote = describeTtlInformational(record, contentMatch);
+      if (ttlNote) {
+        ttlInformational.push(`${recordLabel(record)}: ${ttlNote}`);
+      }
       const mismatch = describeNonContentMismatch(record, contentMatch);
       if (mismatch) {
         problems.push(`${recordLabel(record)}: ${mismatch}`);
@@ -109,6 +126,7 @@ export function evaluateDnsParity(baseline: DnsBaseline, cfRecords: CloudflareDn
     missingBaseline: false,
     undecided,
     problems,
+    ttlInformational,
     cloudflareOnly,
   };
 }
@@ -170,14 +188,18 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     return missing(
       ITEM,
       `${evaluation.problems.length} keep record(s) do not match the Cloudflare zone.`,
-      "Add or fix these records in Cloudflare → DNS → Records (DNS only, exact Squarespace TTL), or mark them \"drop\" in setup/dns-baseline.json with a reason.",
-      [...evaluation.problems, ...evaluation.cloudflareOnly.map((r) => `Cloudflare-only, not in baseline: ${r}`)],
+      "Add or fix these records in Cloudflare → DNS → Records (DNS only), or mark them \"drop\" in setup/dns-baseline.json with a reason.",
+      [
+        ...evaluation.problems,
+        ...evaluation.ttlInformational,
+        ...evaluation.cloudflareOnly.map((r) => `Cloudflare-only, not in baseline: ${r}`),
+      ],
     );
   }
 
   return complete(
     ITEM,
     "Every keep record in the baseline matches the Cloudflare zone.",
-    evaluation.cloudflareOnly.map((r) => `Cloudflare-only, not in baseline: ${r}`),
+    [...evaluation.ttlInformational, ...evaluation.cloudflareOnly.map((r) => `Cloudflare-only, not in baseline: ${r}`)],
   );
 }

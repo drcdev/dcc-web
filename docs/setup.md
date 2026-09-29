@@ -94,16 +94,19 @@ type (A, AAAA, CNAME, MX, TXT, SRV, CAA, and NS for any delegated subdomain) —
 domain's own apex nameservers are not copied as records (Cloudflare supplies them), but the
 original nameservers must be recorded in `originalNameservers` for rollback — see "DNS
 nameservers" below. Then create or import the matching `keep` records in the Cloudflare zone as
-DNS only (grey cloud), and set each record's TTL to the exact Squarespace value: Cloudflare's
-"automatic" TTL does not count as a match, because the comparison requires the same TTL number.
+DNS only (grey cloud). Leave each record's TTL on Cloudflare's "Auto" preset: the Cloudflare
+dashboard offers only TTL presets, not a custom value, so an exact TTL match isn't possible. The
+baseline still records each record's Squarespace TTL for the audit trail; the check reports a
+difference between it and Cloudflare's TTL as an informational detail only, never a mismatch.
 Run `pnpm setup:dns-snapshot` to see any name in public DNS that is not yet in the baseline.
 
 **How it will be confirmed**
 `pnpm setup:check --item dns-records-parity` reports complete only when every `keep` record in
-the baseline matches the Cloudflare zone exactly (type, name, content, TTL, and priority for
-MX/SRV, proxy off) and no record is left without a decision. It stays `missing` with "record the
-Squarespace baseline first" while the baseline has no records or no original nameservers, so
-parity can never pass vacuously before the nameserver switch.
+the baseline matches the Cloudflare zone (type, name, content, and priority for MX/SRV, proxy
+off) and no record is left without a decision. A TTL difference is shown as an informational
+detail and does not block completion. It stays `missing` with "record the Squarespace baseline
+first" while the baseline has no records or no original nameservers, so parity can never pass
+vacuously before the nameserver switch.
 
 **Constitution principle**
 VI (Content as Files) and X (Accessible, Fast and Private) — the baseline is a committed,
@@ -144,7 +147,12 @@ original nameservers recorded below. This is the same rollback the `/setup-walkt
 shows before Don makes the switch.
 
 Original Squarespace nameservers (recorded from `setup/dns-baseline.json`'s
-`originalNameservers` when Don fills in the baseline — see step 4): _not yet recorded_.
+`originalNameservers`, filled in at step 4):
+
+- `ns-cloud-b1.googledomains.com`
+- `ns-cloud-b2.googledomains.com`
+- `ns-cloud-b3.googledomains.com`
+- `ns-cloud-b4.googledomains.com`
 
 ## 6. Live domain still Ghost {#live-domain-ghost}
 

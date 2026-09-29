@@ -37,7 +37,7 @@ a docs section.
 | 1 | `local-tools` | Node >= 24, pnpm version matches `packageManager`, `gh` signed in as Don | before | FR-025 |
 | 2 | `local-credentials` | `.env` has every required name non-empty; Cloudflare token-verify says `active` | before | FR-025 |
 | 3 | `cloudflare-zone` | Zone `doncoleman.ca` exists on Free plan (id matches `CLOUDFLARE_ZONE_ID`) | before | FR-019 |
-| 4 | `dns-records-parity` | Every `keep` record in `setup/dns-baseline.json` exists in the Cloudflare zone with identical type/name/content/TTL/priority and `proxied: false` (normalisation per spec FR-035); every record without a decision is flagged and keeps the item `missing` | before | FR-019, FR-034–FR-037 |
+| 4 | `dns-records-parity` | Every `keep` record in `setup/dns-baseline.json` exists in the Cloudflare zone with identical type/name/content/priority and `proxied: false` (normalisation per spec FR-035; TTL is informational only, not compared); every record without a decision is flagged and keeps the item `missing` | before | FR-019, FR-034–FR-037 |
 | 5 | `dns-nameservers` | Public NS for `doncoleman.ca` equal the zone's assigned nameservers and zone `status: active`; `pending` while delegation propagates | before | FR-019 |
 | 6 | `live-domain-ghost` | Deciding signal: public A/AAAA/CNAME answers for the apex and `www` equal the Ghost target records for those names in the baseline; every `keep` MX and email TXT record resolves as in the baseline. The Ghost generator meta is reported in `details` only | before | FR-019, FR-038, SC-005 |
 | 7 | `cloudflare-worker` | Worker `dcc-web` exists; `workers.dev` and preview URLs enabled | before | FR-017 |
@@ -133,7 +133,7 @@ while either list is empty, so parity can never pass vacuously.
 | `name` | FQDN | Lower-case, ends in `doncoleman.ca`. |
 | `content` | string | Exact value (TXT unquoted-normalised). |
 | `priority` | integer \| null | MX/SRV only. |
-| `ttl` | integer | Compared exactly with the Cloudflare record's TTL (spec FR-035); Cloudflare "automatic" TTL does not match. |
+| `ttl` | integer | The Squarespace value, kept for the audit trail. Not part of the match (spec FR-035): Cloudflare's dashboard offers only TTL presets, so records stay on "Auto"; a difference is reported as an informational detail only. |
 | `source` | `'squarespace'` | |
 | `decision` | `'keep' \| 'drop' \| null` | `null` = undecided → reported by `dns-records-parity`. |
 | `reason` | string \| null | Required when `decision === 'drop'`. |

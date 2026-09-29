@@ -111,9 +111,9 @@ const seeds: ItemSeed[] = [
     purpose:
       "Every DNS record Squarespace serves today (the Ghost site, mail records, verification records) must exist in Cloudflare with identical values before the nameservers move.",
     where:
-      "List every record from Squarespace's DNS screen into setup/dns-baseline.json with a keep/drop decision, then create or import the keep records in Cloudflare as DNS only, with the exact Squarespace TTL.",
+      "List every record from Squarespace's DNS screen into setup/dns-baseline.json (with its Squarespace TTL, for the audit trail) with a keep/drop decision, then create or import the keep records in Cloudflare as DNS only, leaving TTL on Cloudflare's Auto preset (the dashboard has no custom TTL option).",
     confirmedBy:
-      "Every keep record in setup/dns-baseline.json exists in the Cloudflare zone with identical type/name/content/TTL/priority and proxied: false; every record without a decision keeps the item missing",
+      "Every keep record in setup/dns-baseline.json exists in the Cloudflare zone with identical type/name/content/priority and proxied: false (TTL is informational only); every record without a decision keeps the item missing",
     needsDon: true,
     principles: ["VI", "X"],
     requirements: ["FR-019", "FR-034", "FR-035", "FR-036", "FR-037"],

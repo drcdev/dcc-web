@@ -27,10 +27,11 @@ describe("docs/setup.md DNS content", () => {
     expect(section.toLowerCase()).toContain("original");
   });
 
-  it("contains the TTL-replacement instruction for imported records", () => {
+  it("contains the TTL-is-informational-only instruction for imported records", () => {
     const section = extractSection(readDocs(), "dns-records-parity");
     expect(section.toLowerCase()).toContain("ttl");
-    expect(section.toLowerCase()).toMatch(/automatic/);
+    expect(section.toLowerCase()).toMatch(/informational/);
+    expect(section.toLowerCase()).toMatch(/auto/);
   });
 
   it("contains the baseline-nameserver / delegated-subdomain-NS recording note", () => {
