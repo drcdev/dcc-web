@@ -37,6 +37,10 @@ separate decision documents and separate prototypes and must not overwrite each 
 - Q: Are there portfolios or case-study pages Don likes that should shape the directions? → A: None; the directions draw only on the site's current design and the Flux starting points.
 - Q: How many design directions should be built? → A: Three.
 - Q: Should the other projects on the index be the real drc.dev projects or invented placeholders? → A: The real drc.dev projects, as short index entries only with no story pages; only Focus Pocus links to a story.
+- Q: Where do the Focus Pocus visuals, diagrams and demo clips come from? → A: Claude draws simple diagrams (the architecture and the option comparison) from the repository; screenshots and clips are clearly labelled placeholder frames with a text description, and Don swaps in real media later.
+- Q: Is correcting the draft story content part of this feature? → A: No. The "draft for review" marking stays for the whole feature, content accuracy is not a merge condition, and corrections carry over to the real portfolio feature.
+- Q: Which widths do the decision document's screenshots cover? → A: Phone and desktop: 3 directions × 2 pages × 2 themes × 2 widths = 24 images.
+- Q: What do the decision document's preview addresses point to once the prototypes are removed? → A: The preview of the last commit that still had the prototypes, so the links keep working after removal; the document says each address is pinned to that commit.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -157,7 +161,7 @@ empty.
 
 1. **Given** the decision document, **When** Don reads a direction's section, **Then** it states
    the direction's preview address, shows screenshots of its story page and its index in both
-   the light and dark themes, explains how it handles story stages, option comparison, demo
+   the light and dark themes at phone and desktop widths, explains how it handles story stages, option comparison, demo
    embeds and scroll reveals, and lists its trade-offs.
 2. **Given** a direction needs a colour, typeface or other visual resource that the site does
    not already use, **When** Don reads its section, **Then** the document says so plainly.
@@ -201,7 +205,8 @@ empty.
   directions can be compared like for like. The sample project is Focus Pocus, the MCP server
   that connects Claude Desktop with OmniFocus. Its content for each stage is drafted from its
   drc.dev project page and its public repository, and every stage MUST be visibly marked as a
-  draft for Don's review until he has corrected it on the preview deployment.
+  draft for Don's review for as long as the prototypes exist. The accuracy of this content is not
+  a merge condition; Don's corrections carry over to the real portfolio feature.
 - **FR-004**: The directions MUST draw only on the site's current design baseline and the Flux
   theme starting points; no outside portfolios or case-study pages are used as references.
 - **FR-005**: Each direction MUST use only the colours, palettes and typefaces the site already
@@ -222,7 +227,10 @@ empty.
 - **FR-011**: Each story page MUST let the reader look at every option the project weighed, not
   only the one chosen, and MUST make clear which option was chosen and why.
 - **FR-012**: Each story page MUST place each visual, diagram or short demo clip next to the
-  part of the story it explains.
+  part of the story it explains. Claude draws simple diagrams (at least the architecture and the
+  option comparison) from the project's repository. Screenshots and demo clips are placeholder
+  frames, each clearly labelled as a placeholder and carrying a text description of what the
+  real media will show, so Don can swap in real media later.
 - **FR-013**: Each story page MUST reveal the story progressively as the reader scrolls.
 - **FR-014**: Each story page MUST let the reader open the sample project's demo on its own
   site, and MAY also show it embedded in the page; each direction MUST state which it does. If
@@ -264,7 +272,8 @@ empty.
 
 - **FR-040**: The feature MUST produce one decision document for the portfolio design that, for
   each direction, gives: a short summary; its preview address; screenshots of its story page
-  and its index in both the light and dark themes; how it handles story stages, option
+  and its index in both the light and dark themes at both phone and desktop widths (24 images in
+  all); how it handles story stages, option
   comparison, demo embeds and scroll reveals; its trade-offs; and any new visual resources it
   would need.
 - **FR-041**: The decision document MUST end with a Decision section that is left empty for Don.
@@ -278,6 +287,9 @@ empty.
   approval of the preview deployment.
 - **FR-045**: The feature MUST NOT alter or remove work belonging to the parallel blog design
   directions feature or any other feature, including their decision documents and prototypes.
+- **FR-046**: Each preview address in the decision document MUST point to the preview
+  deployment of the last commit that still contains the prototypes, so the link keeps working
+  after they are removed, and the document MUST say that the address is pinned to that commit.
 
 ### Key Entities
 
@@ -324,8 +336,9 @@ empty.
 - Live demos stay hosted on drc.dev; this feature does not host or change them. If Focus Pocus
   has no live demo, the directions show how a demo would be presented using a still image and a
   link to its public page or repository, and the decision document says so.
-- Visuals and demo clips for the sample project come from material Don provides or that is
-  already public on drc.dev; creating new production-quality media is out of scope.
+- The sample project's diagrams are drawn by Claude from its repository; its screenshots and
+  demo clips are labelled placeholder frames with text descriptions. Creating production-quality
+  media is out of scope.
 - "Phone width" and "desktop width" mean the same representative widths the site's existing
   visual tests use.
 - The prototypes are internal review material, not public pages, so they are kept out of
