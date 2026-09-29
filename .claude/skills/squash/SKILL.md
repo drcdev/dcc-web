@@ -65,6 +65,9 @@ Tell every subagent that runs `pnpm`, `astro` or `playwright`:
   state between calls).
 - macOS has no `timeout` binary. Bound long runs with
   `perl -e 'alarm N; exec @ARGV' <cmd>` (N in seconds).
+- Docker Desktop is normally off. It is needed only for
+  `pnpm run test:visual:update:linux`; if `docker info` fails, ask Don to
+  start it (see the visual-baselines step) rather than skipping to CI.
 
 ## Preflight
 
@@ -111,7 +114,7 @@ phase:
 | --- | ------- | -------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | explore | — (no skill)         | sonnet | **Read-only.** Locate the code paths implicated by the report: grep error strings, symbols, component names, routes, test IDs; read the candidate files; run (don't write) any existing vitest or Playwright specs that exercise them. Return: candidate files/lines with one-line justifications, a root-cause hunch with confidence, and any reproduction evidence. Cap the final message at ~25 lines — it is pasted into the assess prompt. |
 | 2   | assess  | `speckit-bug-assess` | opus   | Pass the bug report (and source URL if any), `slug=<slug>`, and the exploration notes verbatim as leads to verify — trust the codebase over the notes where they disagree. Commit with event `after_bug_assess`. Return: verdict, severity, and any `[NEEDS CLARIFICATION]` items verbatim.                                                                                                                                                                                       |
-| 3   | fix     | `speckit-bug-fix`    | sonnet | Pass `slug=<slug>`. First add a failing test that reproduces the symptom (unit, component or E2E — whichever layer the bug lives in), see it fail, then apply the preferred remediation minimally until it passes. Run the targeted vitest files or Playwright specs for the changed paths. If the assessment turns out wrong, stop per the skill and say so plainly — that triggers the failure loop, not a stall. If the fix changes what a snapshotted page looks like, update the macOS visual baselines (`pnpm run test:visual:update`) and say so. Commit with event `after_bug_fix`. Return: status, files changed, tests added, and whether any page's appearance changed. |
+| 3   | fix     | `speckit-bug-fix`    | sonnet | Pass `slug=<slug>`. First add a failing test that reproduces the symptom (unit, component or E2E — whichever layer the bug lives in), see it fail, then apply the preferred remediation minimally until it passes. Run the targeted vitest files or Playwright specs for the changed paths. If the assessment turns out wrong, stop per the skill and say so plainly — that triggers the failure loop, not a stall. If the fix changes what a snapshotted page looks like, update the macOS visual baselines (`pnpm run test:visual:update`) and say so; the orchestrator regenerates the Linux ones in Verify. Commit with event `after_bug_fix`. Return: status, files changed, tests added, and whether any page's appearance changed. |
 | 4   | test    | `speckit-bug-test`   | sonnet | Pass `slug=<slug>`. Exercise the original reproduction, the new tests, and the regression suite for the changed modules. Commit with event `after_bug_test`. Return: result (verified / partial / failed) and any residual risks.                                                                                                                                                                                                                                                  |
 
 ### Verdict gate (after assess)
@@ -167,13 +170,19 @@ again.
    against committed per-platform images. A bug fix usually changes no
    appearance, so a visual diff is a regression to look at, not a baseline
    to refresh. If the fix phase reported an intended appearance change, it
-   updated the macOS baselines; the **Linux** baselines can only be
-   regenerated in CI. After the PR is open (Finish step 5), add the
-   `visual-baselines` label, wait for the `update-baselines` job, download
-   its `visual-baselines-linux` artifact with `gh run download`, review the
-   diff, commit the images to the branch and push. Until that lands, the
-   `verify` check on the PR is expected to be red on visual only — say so
-   in the PR body.
+   updated the macOS baselines; the **Linux** baselines are what CI
+   compares against and are regenerated with `pnpm run test:visual:update:linux`
+   (the same steps as the
+   `update-baselines` CI job, run in the matching Playwright Docker image;
+   needs Docker Desktop). If `docker info` fails, ask Don to start Docker
+   Desktop with an `AskUserQuestion` whose question text carries the
+   instruction, then run it, review the diff, commit the images and push —
+   before opening the PR, so `verify` is green. Fallback only if Docker
+   cannot be started: after the PR is open, add the `visual-baselines`
+   label, wait for the `update-baselines` job, download its
+   `visual-baselines-linux` artifact with `gh run download`, review, commit
+   and push; until that lands the `verify` check on the PR is expected to
+   be red on visual only — say so in the PR body.
 
 ## Finish
 
@@ -205,8 +214,9 @@ again.
    major-change verdict and criteria, whether Linux visual baselines are
    pending, and any follow-ups noticed but deliberately left out. Apply the
    label / auto-merge chosen in step 3.
-5. If Linux baselines are owed, run the visual-baselines step from Verify
-   step 3 now, before watching the gate.
+5. If Linux baselines are still owed because Docker could not be started,
+   run the CI-label fallback from Verify step 3 now, before watching the
+   gate.
 6. **Watch the release gate.** Run `gh pr checks --watch` with a time limit
    (20 minutes). Red → dispatch a fix subagent on the branch, which fixes
    the cause (never the check), commits and pushes; watch again. Record the

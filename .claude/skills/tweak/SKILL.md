@@ -114,6 +114,9 @@ Tell every subagent that runs `pnpm`, `astro` or `playwright`:
   state between calls).
 - macOS has no `timeout` binary. Bound long runs with
   `perl -e 'alarm N; exec @ARGV' <cmd>` (N in seconds).
+- Docker Desktop is normally off. It is needed only for
+  `pnpm run test:visual:update:linux`; if `docker info` fails, ask Don to
+  start it (see the visual-baselines step) rather than skipping to CI.
 
 ## Preflight
 
@@ -150,7 +153,7 @@ phase:
 | 1   | specify   | `speckit-specify`   | opus   | Pass the change description as args. The `before_specify` hook (`speckit-git-feature`) must run and create the branch. Keep it to five or fewer functional requirements — if it will not fit, say so rather than padding. However small the change: state the accessibility expectation (WCAG 2.2 AA, Principle X) and whether any rendered page changes appearance (that decides the visual-baseline step in Finish). Copy is plain language, no hype. Return the created branch and spec dir. |
 | 2   | clarify   | `speckit-clarify`   | opus   | **One round only, two steps — see below.**                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | 3   | plan      | `speckit-plan`      | opus   | The Constitution Check is not optional here; address every principle, briefly. Every Astro choice cites its docs page via the Astro Docs MCP (Principle IV). Confirm in the plan that no Principle III criterion fires — if one does, say so plainly so the orchestrator can promote to `/deliver`. If the plan rules out a plausible alternative (say, a CSS-only fix vs. a component change), record the decision and the rejected option in plan.md. Skip `research.md`, `data-model.md` and `contracts/` unless the change genuinely needs them. |
-| 4   | tasks     | `speckit-tasks`     | sonnet | Tests are **mandatory**, not optional, and ordered before the implementation they cover: unit/component tests for the changed code, an E2E or accessibility case where the change is visible in the browser. If the change alters what a snapshotted page looks like, include a task to update the macOS visual baselines (`pnpm run test:visual:update`) after the implementation. Tasks a subagent cannot verify locally (needs the preview deployment or Don's eyes) get the suffix `[PREVIEW-CHECK]`. |
+| 4   | tasks     | `speckit-tasks`     | sonnet | Tests are **mandatory**, not optional, and ordered before the implementation they cover: unit/component tests for the changed code, an E2E or accessibility case where the change is visible in the browser. If the change alters what a snapshotted page looks like, include a task to update the macOS and Linux visual baselines (`pnpm run test:visual:update`, then `pnpm run test:visual:update:linux`, which needs Docker Desktop) after the implementation. Tasks a subagent cannot verify locally (needs the preview deployment or Don's eyes) get the suffix `[PREVIEW-CHECK]`. |
 | 5   | implement | `speckit-implement` | sonnet | Execute the whole task list unless it has more than one `## Phase` heading, in which case take one phase per subagent as `/deliver` does. Work test-first: write the tests, run them and see them fail, then implement until they pass. Never mark a task done on a red suite. Follow the Astro docs and prefer first-party features over custom code. Leave `[PREVIEW-CHECK]` tasks unchecked and list them in your summary. Commit via `speckit-git-commit` (event `after_implement`). |
 
 ### Phase 2: clarify (the one mid-pipeline user pause)
@@ -199,11 +202,17 @@ again.
 3. **Visual baselines.** The visual project compares each snapshotted page
    against committed per-platform images. If the change altered a page's
    appearance on purpose, the implement phase updated the macOS baselines;
-   the **Linux** baselines can only be regenerated in CI. After the PR is
-   open (Finish step 5), add the `visual-baselines` label, wait for the
-   `update-baselines` job, download its `visual-baselines-linux` artifact
-   with `gh run download`, review the diff, commit the images to the branch
-   and push. Until that lands, the `verify` check on the PR is expected to
+   the **Linux** baselines are what CI compares against and are regenerated
+   with `pnpm run test:visual:update:linux` (the same steps as the
+   `update-baselines` CI job, run in the matching Playwright Docker image;
+   needs Docker Desktop). If `docker info` fails, ask Don to start Docker
+   Desktop with an `AskUserQuestion` whose question text carries the
+   instruction, then run it, review the diff, commit the images and push —
+   before opening the PR, so `verify` is green. Fallback only if Docker
+   cannot be started: after the PR is open, add the `visual-baselines`
+   label, wait for the `update-baselines` job, download its
+   `visual-baselines-linux` artifact with `gh run download`, review, commit
+   and push; until that lands the `verify` check on the PR is expected to
    be red on visual only — say so in the PR body. A visual diff the spec
    did not predict is a regression, not a baseline to refresh.
 
@@ -232,8 +241,9 @@ again.
    pending, the list of `[PREVIEW-CHECK]` items for Don to walk on the
    preview deployment, and any risks the phase agents flagged. Apply the
    label / auto-merge chosen in step 3.
-5. If Linux baselines are owed, run the visual-baselines step from Verify
-   step 3 now, before watching the gate.
+5. If Linux baselines are still owed because Docker could not be started,
+   run the CI-label fallback from Verify step 3 now, before watching the
+   gate.
 6. **Watch the release gate.** Run `gh pr checks --watch` with a time limit
    (20 minutes). Red → dispatch a fix subagent on the branch, which fixes
    the cause (never the check), commits and pushes; watch again. Record the
