@@ -95,7 +95,9 @@ describe("vitest.config.ts", () => {
   it("includes unit and component tests", async () => {
     const configFn = (await import("../../../vitest.config.ts")).default;
     const resolved = await configFn({ command: "serve", mode: "test" });
-    expect(resolved.test?.include).toEqual(
+    const projects = (resolved.test?.projects ?? []) as { test?: { include?: string[] } }[];
+    const include = projects.flatMap((project) => project.test?.include ?? []);
+    expect(include).toEqual(
       expect.arrayContaining(["tests/unit/**/*.test.ts", "tests/component/**/*.test.ts"]),
     );
   });
@@ -110,7 +112,7 @@ interface TestPlaywrightProject {
 
 interface TestPlaywrightConfig {
   retries: number;
-  webServer: { command: string; url: string; env?: Record<string, string> };
+  webServer: { command: string; url: string; env?: Record<string, string> }[];
   use?: { baseURL?: string };
   updateSnapshots?: string;
   expect?: { toHaveScreenshot?: Record<string, unknown> };
@@ -146,10 +148,11 @@ describe("playwright.config.ts", () => {
 
   it("runs the webServer through wrangler dev on 127.0.0.1:4321 with metrics off", async () => {
     const config = await loadConfig();
-    expect(config.webServer?.command).toBe("pnpm exec wrangler dev --ip 127.0.0.1 --port 4321");
-    expect(config.webServer?.env?.WRANGLER_SEND_METRICS).toBe("false");
-    expect(config.webServer?.env?.ASTRO_PREVIEW_BACKGROUND).toBeUndefined();
-    expect(config.webServer?.url).toBe("http://127.0.0.1:4321");
+    const server = config.webServer[0];
+    expect(server?.command).toBe("pnpm exec wrangler dev --ip 127.0.0.1 --port 4321");
+    expect(server?.env?.WRANGLER_SEND_METRICS).toBe("false");
+    expect(server?.env?.ASTRO_PREVIEW_BACKGROUND).toBeUndefined();
+    expect(server?.url).toBe("http://127.0.0.1:4321");
   });
 
   it("uses baseURL http://127.0.0.1:4321", async () => {
@@ -157,10 +160,10 @@ describe("playwright.config.ts", () => {
     expect(config.use?.baseURL).toBe("http://127.0.0.1:4321");
   });
 
-  it("has exactly the projects e2e, a11y, budget, visual, each using Chromium", async () => {
+  it("has exactly the projects e2e, a11y, budget, visual, sections, each using Chromium", async () => {
     const config = await loadConfig();
     const names = config.projects.map((p) => p.name).sort();
-    expect(names).toEqual(["a11y", "budget", "e2e", "visual"]);
+    expect(names).toEqual(["a11y", "budget", "e2e", "sections", "visual"]);
     for (const project of config.projects) {
       expect(project.use?.defaultBrowserType).toBe("chromium");
     }
