@@ -37,8 +37,20 @@ A visual diff the spec did not predict is a regression to fix, not a baseline to
 
 ## Merging
 
-The repository allows **merge commits only**; squash and rebase merges are disabled. Auto-merge
-is `gh pr merge --auto --merge`. Any other `--squash` or `--rebase` form fails.
+- The repository allows **merge commits only**; squash and rebase merges are disabled. Any
+  `--squash` or `--rebase` form of `gh pr merge` fails.
+- **Enable auto-merge by default.** When the work is done and nothing is left that needs Don's
+  input beyond approving the PR (no open `[PREVIEW-CHECK]` items, no unresolved questions, no
+  pending baselines), run `gh pr merge --auto --merge` right after the final push. Branch
+  protection still requires Don's review, so the merge waits for his approval and a green
+  `verify` check, then lands on its own.
+- Leave auto-merge off only when the PR is a **major change** under Constitution Principle III,
+  or when Don must check something on the preview deployment before it can merge. Say which in
+  the PR body.
+- **Clean up after the merge.** Once the PR has merged, switch to `main`, pull, and delete the
+  local feature branch (`git branch -d <branch>`; the remote branch is removed by GitHub's
+  delete-on-merge setting, or remove it with `git push origin --delete <branch>` if it
+  lingers). Do not leave merged branches behind.
 
 ## Orchestration skills
 
