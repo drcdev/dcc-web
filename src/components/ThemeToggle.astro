@@ -1,0 +1,103 @@
+---
+// Theme switch (port of Flux ui-theme-toggle.hbs + theme-toggle.js;
+// contracts/theme.md "Toggle"; research R5, R15; FR-011–FR-015, FR-012a).
+//
+// One native button cycles dark → light → system. Its name comes from its own
+// visually hidden text ("Theme: Dark"), which the script below rewrites in
+// place, so the button is updated, never replaced, and keeps focus. The server
+// renders the dark state; without JavaScript the whole switch stays hidden
+// (the `js` class is added by the pre-paint head script), so no-JS visitors
+// get the default dark theme with no control that cannot work (FR-013).
+import { themeLabel } from "../lib/theme";
+import MoonIcon from "../icons/moon.svg";
+import SunIcon from "../icons/sun.svg";
+---
+
+<div class="hidden js:flex flex-row items-center text-dusk-500 dark:text-dusk-400" data-theme-switch>
+  <span aria-hidden="true">Theme:</span>
+  <button
+    type="button"
+    class="mx-1 inline-flex items-center hover:text-dusk-900 dark:hover:text-white motion-safe:transition-colors"
+    data-theme-toggle
+  >
+    <span class="sr-only" data-theme-name>Theme: {themeLabel("dark")}</span>
+    <span aria-hidden="true" data-theme-state="dark"><MoonIcon class="size-6" aria-hidden="true" /></span>
+    <span aria-hidden="true" class="hidden" data-theme-state="light"><SunIcon class="size-6" aria-hidden="true" /></span>
+    <span aria-hidden="true" class="hidden" data-theme-state="system">System</span>
+  </button>
+  <span class="sr-only" aria-live="polite" data-theme-status></span>
+</div>
+
+<script>
+  // Listeners only, no inline handlers, so the page's CSP needs no allowance
+  // beyond Astro's bundled module (FR-022, FR-024a).
+  import { THEME_STORAGE_KEY, isDark, nextTheme, parseTheme, themeLabel, type ThemeChoice } from "../lib/theme";
+
+  const button = document.querySelector<HTMLButtonElement>("[data-theme-toggle]");
+  const nameText = button?.querySelector<HTMLElement>("[data-theme-name]");
+  const status = document.querySelector<HTMLElement>("[data-theme-status]");
+
+  function readStored(): ThemeChoice {
+    try {
+      return parseTheme(localStorage.getItem(THEME_STORAGE_KEY));
+    } catch {
+      return "dark";
+    }
+  }
+
+  // Storage that cannot be written (private modes, blocked site data) must not
+  // stop the switch changing this page (FR-015).
+  function store(choice: ThemeChoice) {
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, choice);
+    } catch {
+      // The choice applies to this page only.
+    }
+  }
+
+  const device = window.matchMedia("(prefers-color-scheme: dark)");
+
+  // The choice in force on this page. Kept in memory so a failed write does not
+  // break the cycle.
+  let choice: ThemeChoice = readStored();
+
+  function apply() {
+    document.documentElement.classList.toggle("dark", isDark(choice, device.matches));
+  }
+
+  function render() {
+    if (!button || !nameText) return;
+    nameText.textContent = `Theme: ${themeLabel(choice)}`;
+    for (const state of button.querySelectorAll<HTMLElement>("[data-theme-state]")) {
+      state.classList.toggle("hidden", state.dataset.themeState !== choice);
+    }
+  }
+
+  render();
+
+  button?.addEventListener("click", () => {
+    choice = nextTheme(choice);
+    apply();
+    store(choice);
+    render();
+    if (status) status.textContent = `Theme: ${themeLabel(choice)}`;
+  });
+
+  // "Match device" follows the device while the page is open (FR-014). A tab
+  // in the background catches up when it is shown again.
+  device.addEventListener("change", () => {
+    if (choice === "system") apply();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && choice === "system") apply();
+  });
+
+  // A page restored from the back/forward cache does not rerun the head
+  // script, so pick up any choice made on another page since it was left.
+  window.addEventListener("pageshow", (event) => {
+    if (!event.persisted) return;
+    choice = readStored();
+    apply();
+    render();
+  });
+</script>

@@ -263,11 +263,19 @@ None.
 
 **What it is for**
 Confirms that Workers Builds is actually building and deploying this repository — production
-from `main`, and a preview for every other branch — once this slice's files are on `main`.
+from `main`, and a preview for every other branch — once this slice's files are on `main`. A
+preview build needs to know its own served address (for its canonical link, `og:url` and
+`robots.txt`), and Cloudflare does not hand a non-aliased preview upload a predictable URL, so the
+non-production deploy command uploads an aliased preview instead of a plain one.
 
 **Where to do it**
-Nothing new to do here beyond step 7; this item confirms the pipeline that step 7 connected, once
-this slice's pull request has merged.
+Beyond step 7, one dashboard change: Cloudflare dashboard → Workers & Pages → `dcc-web` →
+Settings → Build → set the **non-production branch deploy command** to `pnpm run deploy:preview`.
+The **build command stays `pnpm run build`, unchanged**, and the **production deploy command stays
+`pnpm exec wrangler deploy`, unchanged** — only the non-production branch command changes. No
+secret or token is involved: `pnpm run deploy:preview` runs `scripts/deploy/preview.ts`, which
+derives a stable alias from the branch name (the same function `astro.config.mjs` uses to resolve
+the build's own address) and calls `wrangler versions upload --preview-alias <alias>`.
 
 **How it will be confirmed**
 `pnpm setup:check --item workers-builds` reports complete when the latest commit on `main` has a
@@ -290,7 +298,11 @@ and on `main`, not just locally.
 **Where to do it**
 Nothing new to do here; `.github/workflows/ci.yml` and `.github/workflows/major-change.yml` are
 part of this slice's pull request. This item confirms they exist on `main` and that the latest
-run succeeded, after the merge.
+run succeeded, after the merge. `.github/workflows/visual-baselines.yml` is a separate workflow
+that regenerates the Linux visual baselines for a human or agent to review and commit — it is not
+part of the `verify` gate and never runs on push; before it exists on `main` it can only be
+triggered by adding the `visual-baselines` label to a pull request (`workflow_dispatch` isn't
+registered until the file is on the default branch), and afterwards `gh workflow run` works too.
 
 **How it will be confirmed**
 `pnpm setup:check --item github-ci-workflow` reports complete when both workflow files exist on

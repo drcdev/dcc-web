@@ -1,0 +1,28 @@
+---
+// Not-found page (port of Flux error.hbs; contracts/shell-dom.md; FR-016,
+// FR-017c). The HTTP 404 status itself comes from Cloudflare's static asset
+// handling, not from this page: wrangler.jsonc sets
+// `assets.not_found_handling: "404-page"`, so any request that doesn't match
+// a built route or asset — retired blog addresses, category/topic/author
+// pages, and nav destinations no feature has built yet — is served this
+// page's build output (dist/404.html) with a genuine 404 status. `canonical`
+// is false because a not-found page has no address of its own to point
+// search engines or sharers at (FR-017c).
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Page not found"
+  description="This page could not be found. Older blog addresses have moved; the rest of the site is still here."
+  canonical={false}
+>
+  {/* Flux content-section.hbs wrapper (see index.astro). */}
+  <section class="mx-auto mb-8 max-w-screen-lg prose lg:prose-lg dark:prose-invert prose-accent dark:rounded-2xl dark:bg-dusk-800 dark:p-6">
+    <h1>Page not found</h1>
+    <p>
+      Sorry, there's nothing here. Older blog addresses have moved and are not carried over to this
+      site, or the link you followed may be out of date.
+    </p>
+    <p><a href="/">Go to the home page</a></p>
+  </section>
+</BaseLayout>

@@ -17,18 +17,28 @@
     "typecheck": "astro check",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:a11y": "playwright test --project=a11y",
+    "test:budget": "playwright test --project=budget",
+    "test:visual": "playwright test --project=visual",
+    "test:visual:update": "playwright test --project=visual --update-snapshots",
+    "reference:capture": "playwright test --config tests/reference/playwright.config.ts",
+    "deploy:preview": "node scripts/deploy/preview.ts",
     "verify": "pnpm run lint:secrets && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build && pnpm run test:e2e",
     "setup:check": "node scripts/setup-check/cli.ts",
     "setup:dns-snapshot": "node scripts/setup-check/dns-snapshot.ts"
   },
   "dependencies": {
-    "astro": "7.3.5"
+    "@astrojs/sitemap": "3.7.4",
+    "@tailwindcss/vite": "4.3.3",
+    "astro": "7.3.5",
+    "tailwindcss": "4.3.3"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
     "@axe-core/playwright": "4.13.0",
     "@playwright/test": "1.63.0",
     "@secretlint/secretlint-rule-preset-recommend": "13.0.6",
+    "@tailwindcss/typography": "0.5.20",
     "@types/node": "24.19.0",
     "cloudflare": "7.2.0",
     "eslint": "10.11.0",

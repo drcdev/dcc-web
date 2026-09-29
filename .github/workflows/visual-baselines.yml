@@ -1,0 +1,52 @@
+name: Visual baselines (Linux)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: read
+
+jobs:
+  update-baselines:
+    name: update-baselines
+    runs-on: ubuntu-latest
+    # workflow_dispatch only registers once this file exists on the default branch, so a PR
+    # branch is triggered instead by adding the `visual-baselines` label (remove and re-add to
+    # run again). Once this file is on main, `gh workflow run` also works.
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'visual-baselines'
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright's Chromium browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build the site
+        run: pnpm run build
+
+      - name: Regenerate the Linux visual baselines
+        run: pnpm run test:visual:update
+
+      - name: Upload the Linux visual baselines
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: visual-baselines-linux
+          path: tests/e2e/visual.spec.ts-snapshots/
+          retention-days: 7
+          if-no-files-found: error

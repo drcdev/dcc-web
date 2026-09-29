@@ -1,0 +1,15 @@
+// Current-page matching for navigation links (data-model.md NavigationItem;
+// FR-009).
+
+function normalise(path: string): string {
+  return path.endsWith("/") ? path : `${path}/`;
+}
+
+/**
+ * Whether `href` is the page at `pathname`. Both sides are compared with a
+ * trailing slash, so `/services` and `/services/` match; `/` matches only the
+ * home page, never every address.
+ */
+export function isCurrent(pathname: string, href: string): boolean {
+  return normalise(pathname) === normalise(href);
+}

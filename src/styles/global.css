@@ -1,0 +1,284 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  /* Accent - fixed, derived from the rust brand colour (#d68844) */
+  --color-accent-BASE: #d68844;
+  --color-accent-50: hsl(from var(--color-accent-BASE) h s 95%);
+  --color-accent-100: hsl(from var(--color-accent-BASE) h s 90%);
+  --color-accent-200: hsl(from var(--color-accent-BASE) h s 80%);
+  --color-accent-300: hsl(from var(--color-accent-BASE) h s 70%);
+  --color-accent-400: hsl(from var(--color-accent-BASE) h s 60%);
+  --color-accent-500: hsl(from var(--color-accent-BASE) h s 50%);
+  --color-accent-600: hsl(from var(--color-accent-BASE) h s 40%);
+  --color-accent-700: hsl(from var(--color-accent-BASE) h s 30%);
+  --color-accent-800: hsl(from var(--color-accent-BASE) h s 20%);
+  --color-accent-900: hsl(from var(--color-accent-BASE) h s 10%);
+  --color-accent-950: hsl(from var(--color-accent-BASE) h s 5%);
+
+  /* ===== BRAND COLOR PALETTES ===== */
+  /* Copy this block to other projects */
+  /* Change BASE values to update entire palettes */
+
+  /* Dusk - Dark purple background */
+  --color-dusk-BASE: #1c1a29;
+  --color-dusk-50: hsl(from var(--color-dusk-BASE) h s 95%);
+  --color-dusk-100: hsl(from var(--color-dusk-BASE) h s 90%);
+  --color-dusk-200: hsl(from var(--color-dusk-BASE) h s 80%);
+  --color-dusk-300: hsl(from var(--color-dusk-BASE) h s 70%);
+  --color-dusk-400: hsl(from var(--color-dusk-BASE) h s 60%);
+  --color-dusk-500: hsl(from var(--color-dusk-BASE) h s 50%);
+  --color-dusk-600: hsl(from var(--color-dusk-BASE) h s 40%);
+  --color-dusk-700: hsl(from var(--color-dusk-BASE) h s 30%);
+  --color-dusk-800: hsl(from var(--color-dusk-BASE) h s 20%);
+  --color-dusk-900: hsl(from var(--color-dusk-BASE) h s 10%);
+  --color-dusk-950: hsl(from var(--color-dusk-BASE) h s 5%);
+
+  /* Rust - Warm orange accent for primary headers and accents */
+  --color-rust-BASE: #d68844;
+  --color-rust-50: hsl(from var(--color-rust-BASE) h s 95%);
+  --color-rust-100: hsl(from var(--color-rust-BASE) h s 90%);
+  --color-rust-200: hsl(from var(--color-rust-BASE) h s 80%);
+  --color-rust-300: hsl(from var(--color-rust-BASE) h s 70%);
+  --color-rust-400: hsl(from var(--color-rust-BASE) h s 60%);
+  --color-rust-500: hsl(from var(--color-rust-BASE) h s 50%);
+  --color-rust-600: hsl(from var(--color-rust-BASE) h s 40%);
+  --color-rust-700: hsl(from var(--color-rust-BASE) h s 30%);
+  --color-rust-800: hsl(from var(--color-rust-BASE) h s 20%);
+  --color-rust-900: hsl(from var(--color-rust-BASE) h s 10%);
+  --color-rust-950: hsl(from var(--color-rust-BASE) h s 5%);
+
+  /* Sage - Muted green for secondary headers and accents */
+  --color-sage-BASE: #c9d198;
+  --color-sage-50: hsl(from var(--color-sage-BASE) h s 95%);
+  --color-sage-100: hsl(from var(--color-sage-BASE) h s 90%);
+  --color-sage-200: hsl(from var(--color-sage-BASE) h s 80%);
+  --color-sage-300: hsl(from var(--color-sage-BASE) h s 70%);
+  --color-sage-400: hsl(from var(--color-sage-BASE) h s 60%);
+  --color-sage-500: hsl(from var(--color-sage-BASE) h s 50%);
+  --color-sage-600: hsl(from var(--color-sage-BASE) h s 40%);
+  --color-sage-700: hsl(from var(--color-sage-BASE) h s 30%);
+  --color-sage-800: hsl(from var(--color-sage-BASE) h s 20%);
+  --color-sage-900: hsl(from var(--color-sage-BASE) h s 10%);
+  --color-sage-950: hsl(from var(--color-sage-BASE) h s 5%);
+
+  /* Lavender - Soft purple for special emphasis only */
+  --color-lavender-BASE: #b39ddb;
+  --color-lavender-50: hsl(from var(--color-lavender-BASE) h s 95%);
+  --color-lavender-100: hsl(from var(--color-lavender-BASE) h s 90%);
+  --color-lavender-200: hsl(from var(--color-lavender-BASE) h s 80%);
+  --color-lavender-300: hsl(from var(--color-lavender-BASE) h s 70%);
+  --color-lavender-400: hsl(from var(--color-lavender-BASE) h s 60%);
+  --color-lavender-500: hsl(from var(--color-lavender-BASE) h s 50%);
+  --color-lavender-600: hsl(from var(--color-lavender-BASE) h s 40%);
+  --color-lavender-700: hsl(from var(--color-lavender-BASE) h s 30%);
+  --color-lavender-800: hsl(from var(--color-lavender-BASE) h s 20%);
+  --color-lavender-900: hsl(from var(--color-lavender-BASE) h s 10%);
+  --color-lavender-950: hsl(from var(--color-lavender-BASE) h s 5%);
+
+  /* Mist - Off-white text */
+  --color-mist-BASE: #e2e3e6;
+  --color-mist-50: hsl(from var(--color-mist-BASE) h s 98%);
+  --color-mist-100: hsl(from var(--color-mist-BASE) h s 95%);
+  --color-mist-200: hsl(from var(--color-mist-BASE) h s 90%);
+  --color-mist-300: hsl(from var(--color-mist-BASE) h s 80%);
+  --color-mist-400: hsl(from var(--color-mist-BASE) h s 70%);
+  --color-mist-500: hsl(from var(--color-mist-BASE) h s 60%);
+  --color-mist-600: hsl(from var(--color-mist-BASE) h s 50%);
+  --color-mist-700: hsl(from var(--color-mist-BASE) h s 40%);
+  --color-mist-800: hsl(from var(--color-mist-BASE) h s 30%);
+  --color-mist-900: hsl(from var(--color-mist-BASE) h s 20%);
+  --color-mist-950: hsl(from var(--color-mist-BASE) h s 10%);
+
+  /* Sand - Beige structure */
+  --color-sand-BASE: #998977;
+  --color-sand-50: hsl(from var(--color-sand-BASE) h s 95%);
+  --color-sand-100: hsl(from var(--color-sand-BASE) h s 90%);
+  --color-sand-200: hsl(from var(--color-sand-BASE) h s 80%);
+  --color-sand-300: hsl(from var(--color-sand-BASE) h s 70%);
+  --color-sand-400: hsl(from var(--color-sand-BASE) h s 60%);
+  --color-sand-500: hsl(from var(--color-sand-BASE) h s 50%);
+  --color-sand-600: hsl(from var(--color-sand-BASE) h s 40%);
+  --color-sand-700: hsl(from var(--color-sand-BASE) h s 30%);
+  --color-sand-800: hsl(from var(--color-sand-BASE) h s 20%);
+  --color-sand-900: hsl(from var(--color-sand-BASE) h s 10%);
+  --color-sand-950: hsl(from var(--color-sand-BASE) h s 5%);
+
+  /* Mauve - Gray-purple captions */
+  --color-mauve-BASE: #736775;
+  --color-mauve-50: hsl(from var(--color-mauve-BASE) h s 95%);
+  --color-mauve-100: hsl(from var(--color-mauve-BASE) h s 90%);
+  --color-mauve-200: hsl(from var(--color-mauve-BASE) h s 80%);
+  --color-mauve-300: hsl(from var(--color-mauve-BASE) h s 70%);
+  --color-mauve-400: hsl(from var(--color-mauve-BASE) h s 60%);
+  --color-mauve-500: hsl(from var(--color-mauve-BASE) h s 50%);
+  --color-mauve-600: hsl(from var(--color-mauve-BASE) h s 40%);
+  --color-mauve-700: hsl(from var(--color-mauve-BASE) h s 30%);
+  --color-mauve-800: hsl(from var(--color-mauve-BASE) h s 20%);
+  --color-mauve-900: hsl(from var(--color-mauve-BASE) h s 10%);
+  --color-mauve-950: hsl(from var(--color-mauve-BASE) h s 5%);
+
+  /* ===== END BRAND COLORS ===== */
+
+  /* Fonts - system stacks only; no web fonts, no font service (FR-003) */
+  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-heading: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant js (&:where(.js, .js *));
+
+.table-wrapper {
+  @apply relative overflow-x-auto my-8 rounded-xl border border-dusk-200/60 dark:border-dusk-700/60 bg-white/50 dark:bg-dusk-800/50 backdrop-blur-sm;
+}
+
+.table-wrapper table {
+  @apply w-full text-base text-dusk-700 dark:text-mist-200 border-collapse;
+  margin: 0;
+}
+
+.table-wrapper table thead {
+  @apply sticky top-0 z-10 bg-dusk-50/80 dark:bg-dusk-800/80 backdrop-blur-sm;
+}
+
+.table-wrapper table thead th {
+  @apply px-4 py-2 text-sm font-semibold tracking-wider text-dusk-700 dark:text-mist-200 border-b border-dusk-200 dark:border-dusk-700;
+}
+
+.table-wrapper table tbody tr {
+  @apply border-b border-dusk-100 dark:border-dusk-700/50;
+}
+
+.table-wrapper table tbody td {
+  @apply px-4 py-2 text-dusk-700 dark:text-mist-200;
+}
+
+.table-wrapper table tbody tr:last-child {
+  @apply border-b-0;
+}
+
+.prose-accent {
+  --tw-prose-body: var(--color-dusk-700);
+  --tw-prose-headings: var(--color-dusk-900);
+  --tw-prose-lead: var(--color-dusk-600);
+  --tw-prose-links: var(--color-accent-600);
+  --tw-prose-bold: var(--color-dusk-900);
+  --tw-prose-counters: var(--color-mauve-500);
+  --tw-prose-bullets: var(--color-dusk-300);
+  --tw-prose-hr: var(--color-dusk-200);
+  --tw-prose-quotes: var(--color-dusk-900);
+  --tw-prose-quote-borders: var(--color-accent-300);
+  --tw-prose-captions: var(--color-mauve-600);
+  --tw-prose-kbd: var(--color-dusk-900);
+  --tw-prose-kbd-shadows: 28 26 41; /* dusk-BASE RGB */
+  --tw-prose-code: var(--color-accent-700);
+  --tw-prose-pre-code: var(--color-mist-200);
+  --tw-prose-pre-bg: var(--color-dusk-800);
+  --tw-prose-th-borders: var(--color-dusk-300);
+  --tw-prose-td-borders: var(--color-dusk-200);
+}
+
+.dark .prose-accent {
+  --tw-prose-body: var(--color-mist-400);
+  --tw-prose-headings: var(--color-mist-200);
+  --tw-prose-lead: var(--color-mist-300);
+  --tw-prose-links: var(--color-accent-400);
+  --tw-prose-bold: var(--color-mist-200);
+  --tw-prose-counters: var(--color-dusk-400);
+  --tw-prose-bullets: var(--color-dusk-600);
+  --tw-prose-hr: var(--color-dusk-700);
+  --tw-prose-quotes: var(--color-mist-100);
+  --tw-prose-quote-borders: var(--color-accent-700);
+  --tw-prose-captions: var(--color-mauve-400);
+  --tw-prose-kbd: var(--color-mist-200);
+  --tw-prose-kbd-shadows: 255 255 255;
+  --tw-prose-code: var(--color-accent-300);
+  --tw-prose-pre-code: var(--color-mist-200);
+  --tw-prose-pre-bg: var(--color-dusk-800);
+  --tw-prose-th-borders: var(--color-dusk-600);
+  --tw-prose-td-borders: var(--color-dusk-700);
+}
+
+/* Prose heading color hierarchy */
+.prose-accent h1,
+.prose-accent h2 {
+  color: var(--color-rust-600);
+}
+.prose-accent h3 {
+  color: var(--color-sage-700);
+}
+.prose-accent h4 {
+  color: var(--color-lavender-600);
+  font-weight: bolder;
+}
+
+.dark .prose-accent h1,
+.dark .prose-accent h2 {
+  color: var(--color-rust-400);
+}
+.dark .prose-accent h3 {
+  color: var(--color-sage-400);
+}
+.dark .prose-accent h4 {
+  color: var(--color-lavender-400);
+  font-weight: bolder;
+}
+
+/* h5/h6 not styled by Typography plugin - add explicit styles */
+.prose-accent h5 {
+  color: var(--color-dusk-900);
+}
+.prose-accent h6 {
+  color: var(--color-dusk-900);
+  font-style: italic;
+}
+.dark .prose-accent h5 {
+  color: var(--color-mist-200);
+}
+.dark .prose-accent h6 {
+  color: var(--color-mist-200);
+}
+
+body,
+p,
+a,
+span,
+div,
+li,
+blockquote,
+pre,
+code,
+input,
+textarea,
+button,
+label,
+figcaption {
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+}
+
+/* ===== ACCESSIBILITY: Focus States ===== */
+/* Visible focus rings for keyboard navigation */
+a:focus-visible,
+button:focus-visible {
+  @apply outline-2 outline-offset-2 outline-accent-500 dark:outline-accent-400;
+}
+
+/* High-contrast/forced-colors mode: use the system's own focus colour instead
+   of the accent tokens, which forced-colors mode overrides anyway (FR-020a). */
+@media (forced-colors: active) {
+  a:focus-visible,
+  button:focus-visible {
+    outline-color: CanvasText;
+  }
+}

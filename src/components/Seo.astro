@@ -1,0 +1,58 @@
+---
+// Per-page search and sharing metadata (contracts/head-metadata.md;
+// data-model.md PageMetadata; FR-017, FR-017b, FR-017c, FR-019). Every field
+// falls back to the site defaults in src/config/site.ts on its own, and every
+// absolute address is built against Astro's `site`, which astro.config.mjs
+// resolves from the build environment (contracts/site-origin.md).
+import { site } from "../config/site.ts";
+
+export interface Props {
+  /** Page title without the site-name suffix; omit on the home page. */
+  title?: string;
+  description?: string;
+  /** Site path or absolute URL of the sharing image. */
+  image?: string;
+  imageAlt?: string;
+  type?: "website" | "article";
+  /** False on the not-found page: no canonical link and no og:url. */
+  canonical?: boolean;
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = site.defaultDescription,
+  image = site.defaultImage,
+  imageAlt = image === site.defaultImage ? site.defaultImageAlt : undefined,
+  type = "website",
+  canonical = true,
+  noindex = !site.indexable,
+} = Astro.props;
+
+if (!Astro.site) {
+  throw new Error("Seo.astro needs Astro's `site` to build absolute addresses (astro.config.mjs).");
+}
+if (!imageAlt) {
+  throw new Error(`Seo.astro: the sharing image "${image}" needs alt text (imageAlt).`);
+}
+
+const documentTitle = title ? `${title} · ${site.name}` : site.name;
+const shareTitle = title ?? site.name;
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
+const imageUrl = new URL(image, Astro.site).href;
+---
+
+<title>{documentTitle}</title>
+<meta name="description" content={description} />
+{canonical && <link rel="canonical" href={pageUrl} />}
+{noindex && <meta name="robots" content="noindex" />}
+<link rel="sitemap" href="/sitemap-index.xml" />
+<meta property="og:title" content={shareTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content={type} />
+{canonical && <meta property="og:url" content={pageUrl} />}
+<meta property="og:site_name" content={site.name} />
+<meta property="og:image" content={imageUrl} />
+<meta property="og:image:alt" content={imageAlt} />
+<meta property="og:locale" content={site.locale} />
+<meta name="twitter:card" content="summary_large_image" />
