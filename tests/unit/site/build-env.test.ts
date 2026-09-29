@@ -124,7 +124,11 @@ describe.each(environments)("astro build with the $label environment", ({ env })
     const entries = [...readFileSync(join(outDir, "sitemap-0.xml"), "utf-8").matchAll(/<loc>([^<]+)<\/loc>/g)].map(
       (m) => m[1]!,
     );
-    expect(entries).toEqual([`${expectedOrigin}/`]);
+    expect([...entries].sort()).toEqual(
+      ["/", "/about/", "/privacy-policy/", "/services/", "/speaking/", "/technology/", "/terms-of-use/"].map(
+        (path) => `${expectedOrigin}${path}`,
+      ),
+    );
   });
 
   it("places the pre-paint theme script before the stylesheet in the built home page", () => {

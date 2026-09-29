@@ -1,0 +1,13 @@
+---
+// Visible notice at the top of a draft page's content (FR-015;
+// contracts/page-dom.md). A plain paragraph: no role, heading or landmark, so
+// the page's structure is unchanged. `not-prose` keeps it out of the article
+// typography; colours pass AA in both themes.
+---
+
+<p
+  data-draft-notice
+  class="not-prose mb-6 rounded-lg border border-rust-700 bg-rust-50 px-4 py-3 text-sm text-dusk-900 dark:border-rust-400 dark:bg-dusk-900 dark:text-white"
+>
+  <strong>Draft.</strong> This page is a placeholder and will change.
+</p>

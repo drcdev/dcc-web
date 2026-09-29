@@ -14,13 +14,10 @@
 // link to the current site".
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { TEMPLATES } from "./templates.ts";
 
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"];
 
-const TEMPLATES = [
-  { name: "home", path: "/" },
-  { name: "not-found", path: "/nope/" },
-] as const;
 
 const WIDTHS = [
   { name: "phone", width: 390, height: 844 },

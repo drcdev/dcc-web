@@ -609,3 +609,6 @@ site's versions and with how the new site actually behaves.
   page, drafts included, becomes indexable (FR-006).
 - **Final copy**: Don replaces placeholder copy and removes draft settings page by page.
 - **Photo**: a new photo, if Don wants one.
+- **Footer year in visual baselines**: the footer shows the build year, so the footer visual baselines
+  fail whenever the year changes. Freeze or mask the year in the visual spec (found in Phase 3; the
+  current baselines show 2025).

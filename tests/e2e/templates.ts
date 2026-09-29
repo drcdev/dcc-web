@@ -6,6 +6,12 @@
 export const TEMPLATES = [
   { name: "home", path: "/", built: true },
   { name: "not-found", path: "/nope/", built: true },
+  { name: "services", path: "/services/", built: true },
+  { name: "speaking", path: "/speaking/", built: true },
+  { name: "about", path: "/about/", built: true },
+  { name: "privacy-policy", path: "/privacy-policy/", built: true },
+  { name: "terms-of-use", path: "/terms-of-use/", built: true },
+  { name: "technology", path: "/technology/", built: true },
 ] as const;
 
 export const NOT_FOUND_PENDING = "not-found page is built in Phase 7 (T071); T072 enables this";

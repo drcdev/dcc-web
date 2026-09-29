@@ -15,19 +15,13 @@ import type { NavigationItem } from "../config/navigation";
 import { isCurrent } from "../lib/nav";
 import MenuIcon from "../icons/menu.svg";
 
-// Interim: the header takes its items from the `navigation` prop (built by
-// mergeNavigation() from the page files). Until the page route passes it
-// (specs/003-standalone-pages/tasks.md T038), the launch items are used.
-const launchNavigation: NavigationItem[] = [
-  { label: "Home", href: "/", kind: "primary" },
-  { label: "Services", href: "/services/", kind: "primary" },
-  { label: "Speaking", href: "/speaking/", kind: "primary" },
-  { label: "Writing", href: "/writing/", kind: "primary" },
-  { label: "Projects", href: "/projects/", kind: "primary" },
-  { label: "About", href: "/about/", kind: "primary" },
-  { label: "Contact", href: "/contact/", kind: "primary" },
-];
-const { navigation = launchNavigation } = Astro.props as { navigation?: NavigationItem[] };
+// The items come from the `navigation` prop, built by mergeNavigation() from
+// the page files (src/lib/pages.ts; FR-025). The current page is marked only
+// on its exact address (FR-025b).
+export interface Props {
+  navigation: NavigationItem[];
+}
+const { navigation } = Astro.props;
 const pathname = Astro.url.pathname;
 ---
 

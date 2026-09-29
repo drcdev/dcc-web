@@ -9,11 +9,7 @@
 // description, T097): "zero <script> elements", "CLS exactly 0" and
 // "total under 30 KB".
 import { test, expect, type Browser } from "@playwright/test";
-
-const TEMPLATES = [
-  { name: "home", path: "/" },
-  { name: "not-found", path: "/nope/" },
-] as const;
+import { TEMPLATES } from "./templates.ts";
 
 const BUDGET = {
   lcpMs: 2500,

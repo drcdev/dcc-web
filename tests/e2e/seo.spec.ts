@@ -57,10 +57,14 @@ async function expectSharedMetadata(page: Page, origin: string) {
   expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1200, 630]);
 }
 
-test("the sitemap lists exactly the built public pages: the home page, never /404", async ({ request }) => {
+test("the sitemap lists exactly the built public pages, never /404", async ({ request }) => {
   const origin = await robotsOrigin(request);
   const entries = await sitemapEntries(request);
-  expect(entries).toEqual([`${origin}/`]);
+  expect([...entries].sort()).toEqual(
+    ["/", "/about/", "/privacy-policy/", "/services/", "/speaking/", "/technology/", "/terms-of-use/"].map(
+      (path) => `${origin}${path}`,
+    ),
+  );
   for (const entry of entries) expect(new URL(entry).pathname.startsWith("/404")).toBe(false);
 });
 

@@ -14,3 +14,11 @@ export const sectionNames = [
 ] as const;
 
 export type SectionName = (typeof sectionNames)[number];
+
+/**
+ * The components an MDX page body can use without importing them, keyed by
+ * section name. The page route passes this to `<Content components={...} />`
+ * (docs.astro.build/en/guides/integrations-guide/mdx/#passing-components-to-mdx-content).
+ * Empty until the section components are built.
+ */
+export const sectionComponents: Partial<Record<SectionName, unknown>> = {};

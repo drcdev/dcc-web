@@ -11,7 +11,10 @@ afterEach(() => {
 
 const robotsMeta = (html: string) => /<meta[^>]+name="robots"[^>]*>/.exec(html)?.[0] ?? "";
 const navList = (html: string) => /<ul[^>]+id="primary-nav-list"[\s\S]*?<\/ul>/.exec(html)?.[0] ?? "";
-const withoutCurrent = (html: string) => html.replace(/\s+aria-current="page"/g, "");
+// The current-page marker is `aria-current` plus underline styling; strip both so
+// only the list of items is compared.
+const withoutCurrent = (html: string) =>
+  html.replace(/\s+aria-current="page"/g, "").replace(/<a href="([^"]*)" class="[^"]*"/g, '<a href="$1"');
 
 describe("a page that is one file", () => {
   it("publishes /workshops/ with its metadata, a sitemap entry and unchanged navigation", async () => {

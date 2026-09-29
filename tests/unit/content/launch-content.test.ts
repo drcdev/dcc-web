@@ -1,0 +1,122 @@
+// The seven launch page files (data-model.md "Launch content"; FR-020 to
+// FR-024). Reads the files directly, so a missing page or a wrong claim fails
+// here before any build.
+import { existsSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "vitest";
+
+const dir = fileURLToPath(new URL("../../../src/content/pages/", import.meta.url));
+
+function load(name: string) {
+  const path = `${dir}${name}`;
+  expect(existsSync(path), `${name} exists`).toBe(true);
+  const source = readFileSync(path, "utf-8");
+  const match = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/.exec(source);
+  expect(match, `${name} has frontmatter`).not.toBeNull();
+  return { front: match![1]!, body: match![2]!, all: source, text: source.toLowerCase() };
+}
+
+const LAUNCH = [
+  ["index.mdx", 1],
+  ["services.mdx", 2],
+  ["speaking.mdx", 3],
+  ["about.mdx", 6],
+  ["privacy-policy.mdx", undefined],
+  ["terms-of-use.mdx", undefined],
+  ["technology.mdx", undefined],
+] as const;
+
+describe("launch page files", () => {
+  for (const [name, position] of LAUNCH) {
+    it(`${name} is a draft with the expected nav position`, () => {
+      const { front } = load(name);
+      expect(front).toMatch(/^draft: true$/m);
+      if (position === undefined) {
+        expect(front).not.toMatch(/^nav:/m);
+      } else {
+        expect(front).toMatch(/^nav:/m);
+        expect(front).toMatch(new RegExp(`position: ${position}\\b`));
+      }
+    });
+  }
+
+  it("home is labelled Home in the navigation", () => {
+    expect(load("index.mdx").front).toMatch(/label: "?Home"?/);
+  });
+
+  it("home has no CallToAction in its body (the intro card owns the call to action)", () => {
+    expect(load("index.mdx").body).not.toContain("<CallToAction");
+  });
+
+  it("there is no cookie policy page", () => {
+    expect(existsSync(`${dir}cookie-policy.mdx`)).toBe(false);
+    expect(existsSync(`${dir}cookie-policy.md`)).toBe(false);
+  });
+});
+
+describe("Services (FR-021)", () => {
+  const { text } = load("services.mdx");
+  it("covers kinds of work, how Don works and what he does not do", () => {
+    expect(text).toMatch(/kinds of work|the work/);
+    expect(text).toMatch(/how i work/);
+    expect(text).toMatch(/what i do not do|what i don't do|what i do not take on/);
+  });
+});
+
+describe("Speaking (FR-021)", () => {
+  const { text, body } = load("speaking.mdx");
+  it("covers talk topics, past talks and an organiser bio with a photo", () => {
+    expect(text).toMatch(/topics/);
+    expect(text).toMatch(/past talks/);
+    expect(text).toMatch(/organiser/);
+    expect(body).toMatch(/!\[[^\]]+\]\(\.\/images\/don-coleman\.jpg\)/);
+  });
+});
+
+describe("About (FR-021)", () => {
+  const { text } = load("about.mdx");
+  it("covers background, credentials and how the practice fits alongside his full-time role", () => {
+    expect(text).toMatch(/background/);
+    expect(text).toMatch(/credentials/);
+    expect(text).toMatch(/full-time/);
+  });
+});
+
+describe("Privacy policy (FR-022, FR-022a)", () => {
+  const { text, all } = load("privacy-policy.mdx");
+
+  it("says the site sets no cookies and where the theme choice is kept", () => {
+    expect(text).toMatch(/no cookies|does not set (any )?cookies/);
+    expect(text).toContain("local storage");
+    expect(text).toContain("theme");
+  });
+
+  it("names Cloudflare Web Analytics and Cloudflare hosting with request information", () => {
+    expect(text).toContain("cloudflare web analytics");
+    expect(text).toContain("cloudflare");
+    expect(text).toContain("ip address");
+  });
+
+  it("covers Canada or Toronto, retention, spam protection and how to ask about or delete data", () => {
+    expect(text).toMatch(/canada|toronto/);
+    expect(text).toContain("retention");
+    expect(text).toContain("spam");
+    expect(text).toMatch(/delet/);
+    expect(text).toMatch(/ask (what|for)/);
+  });
+
+  it('marks the four unconfirmed items "to be confirmed"', () => {
+    const count = (text.match(/to be confirmed/g) ?? []).length;
+    expect(count).toBeGreaterThanOrEqual(4);
+  });
+
+  it("states no concrete retention duration and does not name the spam-protection service", () => {
+    expect(text).not.toMatch(/\b\d+\s*(day|week|month|year)s?\b/);
+    expect(text).not.toContain("turnstile");
+  });
+
+  it("does not link to the old cookie policy and shows a Last updated date", () => {
+    expect(all).not.toContain("/cookie-policy/");
+    expect(all).toMatch(/Last updated:?\*{0,2}\s*\d{1,2} \w+ \d{4}|Last updated:?\*{0,2}\s*\d{4}-\d{2}-\d{2}/);
+  });
+});

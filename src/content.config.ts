@@ -4,14 +4,22 @@
 // becomes its address (specs/003-standalone-pages/research.md R5).
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
+import { fileURLToPath } from "node:url";
 import { idFromPath } from "./lib/content/address.ts";
+import { assertFrontmatterImagesExist } from "./lib/content/images.ts";
 import { pageSchema } from "./content/schemas/page.ts";
 
 const pages = defineCollection({
   loader: glob({
     pattern: "**/*.{md,mdx}",
     base: "./src/content/pages",
-    generateId: ({ entry }) => idFromPath(entry),
+    // Runs for every file before its content is bundled: the id check names
+    // bad file names, and the image check names the page of a missing image.
+    generateId: ({ entry, base, data }) => {
+      const id = idFromPath(entry);
+      assertFrontmatterImagesExist(fileURLToPath(base), entry, data);
+      return id;
+    },
   }),
   schema: ({ image }) => pageSchema({ image }),
 });

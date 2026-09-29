@@ -180,8 +180,8 @@ test.describe("activation", () => {
   test("a future destination is an ordinary link that serves the not-found status", async ({ page }) => {
     await page.goto("/");
     const [response] = await Promise.all([
-      page.waitForResponse((r) => new URL(r.url()).pathname === "/services/"),
-      page.locator(`${NAV_LIST} a[href="/services/"]`).click(),
+      page.waitForResponse((r) => new URL(r.url()).pathname === "/writing/"),
+      page.locator(`${NAV_LIST} a[href="/writing/"]`).click(),
     ]);
     expect(response.status()).toBe(404);
   });
@@ -189,7 +189,7 @@ test.describe("activation", () => {
   test("a future destination loads the not-found page", async ({ page }) => {
     test.fixme(!TEMPLATES[1].built, NOT_FOUND_PENDING);
     await page.goto("/");
-    await page.locator(`${NAV_LIST} a[href="/services/"]`).click();
+    await page.locator(`${NAV_LIST} a[href="/writing/"]`).click();
     await expect(page.getByRole("heading", { level: 1, name: "Page not found" })).toBeVisible();
   });
 });
