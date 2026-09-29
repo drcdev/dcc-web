@@ -69,3 +69,14 @@ for (const theme of THEMES) {
     await expect(page.locator("header").first()).toHaveScreenshot(`menu-open-phone-${theme}.png`);
   });
 }
+
+// The sections fixture page (built into the fixture site on port 4322 by the
+// Playwright config's second web server), full page, both sizes and themes.
+for (const size of WIDTHS) {
+  for (const theme of THEMES) {
+    test(`sections fixture — ${size.name} — ${theme}`, async ({ page }) => {
+      await open(page, "http://localhost:4322/sections/", size.width, size.height, theme);
+      await expect(page).toHaveScreenshot(`sections-${size.name}-${theme}.png`, { fullPage: true });
+    });
+  }
+}

@@ -201,6 +201,12 @@
   --tw-prose-td-borders: var(--color-dusk-700);
 }
 
+/* A long unbroken address or word wraps inside the column instead of scrolling
+   the page sideways (spec edge case; FR-010). */
+.prose-accent {
+  overflow-wrap: anywhere;
+}
+
 /* Prose heading color hierarchy */
 .prose-accent h1,
 .prose-accent h2 {
@@ -222,7 +228,8 @@
   color: var(--color-sage-400);
 }
 .dark .prose-accent h4 {
-  color: var(--color-lavender-400);
+  /* lavender-400 is 3.38:1 on dusk-800; lavender-300 passes AA. */
+  color: var(--color-lavender-300);
   font-weight: bolder;
 }
 
@@ -281,4 +288,36 @@ button:focus-visible {
   button:focus-visible {
     outline-color: CanvasText;
   }
+}
+
+/* ===== Sections: wide and full-width images (port of Flux kg-width-*) ===== */
+/* The full-width wrapper around <main> is an inline-size container, so 100cqw
+   is the width of the page without the scrollbar. 100vw includes the scrollbar
+   and would scroll sideways on desktop (research R9). The wrapper is not the
+   body: containment on the body stops its background reaching the whole
+   window. */
+.page-container {
+  container-type: inline-size;
+}
+
+/* Wide: a little beyond the text column from md up, never beyond the page. */
+.kg-width-wide {
+  @media (min-width: 48rem) {
+    margin-inline: max(calc(-12vw + 2rem), calc(50% - 50cqw));
+  }
+}
+
+.kg-width-wide figcaption {
+  text-align: center;
+}
+
+/* Full: the whole page width, centred on the column. */
+.kg-width-full {
+  width: 100cqw;
+  max-width: 100cqw;
+  margin-inline: calc(50% - 50cqw);
+}
+
+.kg-width-full figcaption {
+  text-align: center;
 }

@@ -155,3 +155,12 @@ describe("BaseLayout navigation prop (FR-025)", () => {
     }
   });
 });
+
+describe("BaseLayout page container", () => {
+  it("wraps main in the full-width container that wide and full-width images measure against", () => {
+    const wrapper = tags(html).find((t) => classList(t).includes("page-container"));
+    expect(wrapper).toBeDefined();
+    expect(html.indexOf('class="page-container"')).toBeLessThan(html.indexOf("<main"));
+    expect(html.indexOf("</main>")).toBeLessThan(html.indexOf("<footer"));
+  });
+});

@@ -1,0 +1,19 @@
+---
+// <Figure>: one Markdown image, optimised by Astro, in a <figure> with an
+// optional caption (contracts/sections.md; research R8, R9).
+import { checkSection } from "./validate.ts";
+
+export interface Props {
+  caption?: string;
+}
+
+const html = (await Astro.slots.render("default")) ?? "";
+checkSection("Figure", Astro.props, html, Astro.locals);
+const image = (html.match(/<img\b[^>]*>/i) ?? [""])[0];
+const { caption } = Astro.props;
+---
+
+<figure class="my-8 [&_img]:mx-auto [&_img]:h-auto [&_img]:max-w-full">
+  <Fragment set:html={image} />
+  {caption && <figcaption class="mt-2 text-center text-sm">{caption}</figcaption>}
+</figure>

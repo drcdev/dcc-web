@@ -33,9 +33,11 @@ const { navigation, ...seo } = Astro.props;
   <body class="bg-white dark:bg-dusk-BASE antialiased">
     <SkipLink />
     <SiteHeader navigation={navigation} />
-    <main id="main" tabindex="-1" class="container mx-auto p-4 mt-4">
-      <slot />
-    </main>
+    <div class="page-container">
+      <main id="main" tabindex="-1" class="container mx-auto p-4 mt-4">
+        <slot />
+      </main>
+    </div>
     <SiteFooter />
   </body>
 </html>

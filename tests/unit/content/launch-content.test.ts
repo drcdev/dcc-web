@@ -135,3 +135,29 @@ describe("Privacy policy (FR-022, FR-022a)", () => {
     expect(all).toMatch(/Last updated:?\*{0,2}\s*\d{1,2} \w+ \d{4}|Last updated:?\*{0,2}\s*\d{4}-\d{2}-\d{2}/);
   });
 });
+
+describe("sections in Services and Speaking (US4)", () => {
+  const registered = new Set([
+    "Lead",
+    "TextBlock",
+    "Offerings",
+    "Offering",
+    "CallToAction",
+    "Figure",
+    "WideImage",
+    "FullImage",
+  ]);
+  const used = (body: string) => [...body.matchAll(/<([A-Z][A-Za-z0-9]*)/g)].map((m) => m[1]!);
+
+  for (const name of ["services.mdx", "speaking.mdx"]) {
+    it(`${name} uses at least one section and only registered ones`, () => {
+      const tags = used(load(name).body);
+      expect(tags.length).toBeGreaterThan(0);
+      for (const tag of tags) expect(registered.has(tag), `${tag} is registered`).toBe(true);
+    });
+  }
+
+  it("Speaking shows the organiser photo through Figure", () => {
+    expect(load("speaking.mdx").body).toMatch(/<Figure[^>]*>\s*!\[[^\]]+\]\(\.\/images\/don-coleman\.jpg\)\s*<\/Figure>/);
+  });
+});

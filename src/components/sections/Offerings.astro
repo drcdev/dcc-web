@@ -1,0 +1,21 @@
+---
+// A list of offerings with an optional title (contracts/sections.md). Item
+// titles are <h3> under a list title and <h2> without one.
+import { checkSection } from "./validate.ts";
+
+export interface Props {
+  title?: string;
+}
+
+const html = (await Astro.slots.render("default")) ?? "";
+checkSection("Offerings", Astro.props, html, Astro.locals);
+const { title } = Astro.props;
+const items = title
+  ? html
+  : html.replace(/<h3 data-offering-title([^>]*)>([\s\S]*?)<\/h3>/g, "<h2 data-offering-title$1>$2</h2>");
+---
+
+<section>
+  {title && <h2>{title}</h2>}
+  <ul class="list-none pl-0 [&>li]:pl-0" set:html={items} />
+</section>

@@ -1,0 +1,20 @@
+---
+// One offering in an Offerings list. The title is an <h3>; Offerings turns it
+// into an <h2> when the list has no title, so heading levels never skip. The
+// data attributes let Offerings find them; they carry no meaning for readers.
+import { checkSection } from "./validate.ts";
+
+export interface Props {
+  title: string;
+  href?: string;
+}
+
+const html = (await Astro.slots.render("default")) ?? "";
+checkSection("Offering", Astro.props, html, Astro.locals);
+const { title, href } = Astro.props;
+---
+
+<li data-offering>
+  <h3 data-offering-title>{href ? <a href={href} class="underline">{title}</a> : title}</h3>
+  <Fragment set:html={html} />
+</li>

@@ -36,6 +36,8 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
+// Section components name this file in their errors (src/components/sections/validate.ts).
+Astro.locals.pageFile = fileOf(entry);
 const { data } = entry;
 // The schema's image() helper yields ImageMetadata; the shared schema pieces
 // type it loosely so they can be tested with a stand-in.

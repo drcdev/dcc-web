@@ -1,0 +1,9 @@
+---
+// Lead paragraph: Tailwind Typography's lead style (contracts/sections.md).
+import { checkSection, unwrapParagraph } from "./validate.ts";
+
+const html = (await Astro.slots.render("default")) ?? "";
+checkSection("Lead", Astro.props, html, Astro.locals);
+---
+
+<p class="lead"><Fragment set:html={unwrapParagraph(html).trim()} /></p>
