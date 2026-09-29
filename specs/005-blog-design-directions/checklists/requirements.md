@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -31,9 +31,9 @@
 
 ## Notes
 
-- Two [NEEDS CLARIFICATION] markers remain by design (Q1 reference sites, Q2 blog name). They
-  come from the feature brief's "Questions for clarification" and must be raised first in
-  `/speckit-clarify`. FR-022 depends on Q2.
+- The two [NEEDS CLARIFICATION] markers (Q1 reference sites, Q2 blog name) were resolved in the
+  clarify session of 2026-09-29, along with the number of directions, how posts are featured and
+  topic introductions.
 - Technical direction from the brief (prototype location, Flux patterns, decision document path,
   tests, rebase procedure) is kept out of the requirements and referenced in "Notes for later
   phases".

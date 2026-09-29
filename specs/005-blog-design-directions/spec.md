@@ -16,7 +16,7 @@ the blog. The current doncoleman.ca blog groups posts under three categories (Dr
 Convergence, News); those categories and their addresses are being retired, not migrated.
 
 This feature does not build the blog. It produces the material Don needs to choose how the blog
-will look and be organized: two or three working prototypes of the blog's three key screens, and
+will look and be organized: three working prototypes of the blog's three key screens, and
 a decision document comparing them. The chosen direction then becomes the input for a later
 feature that builds the real blog.
 
@@ -26,10 +26,13 @@ Constitution Principle III: the pull request waits for Don's review of the previ
 
 ## Clarifications
 
-Open questions for the first clarify round (to be asked of Don before any others):
+### Session 2026-09-29
 
-- Q1: [NEEDS CLARIFICATION: Are there blogs or sites whose writing pages Don likes, to inform the directions? If so, which ones, and what does he like about each?]
-- Q2: [NEEDS CLARIFICATION: Should "Drift & Convergence" stay as the blog's name, or should the directions propose a name for the Writing section?]
+- Q: Are there blogs or sites whose writing pages Don likes, to inform the directions? → A: No. Design fresh from the site's current look and the Flux theme patterns; no reference sites.
+- Q: Should "Drift & Convergence" stay as the blog's name, or should the directions propose a name for the Writing section? → A: Keep the name. Every direction presents the blog as "Drift & Convergence".
+- Q: Should the feature deliver two design directions or three? → A: Three directions.
+- Q: How does a post become one of Don's "most important" posts? → A: A hand-picked featured flag that Don sets on individual posts in their files.
+- Q: Should a topic's page open with its own introduction, or only list that topic's posts? → A: A short introduction (a sentence or two describing the topic) above the topic's posts.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -38,7 +41,7 @@ the user each prototype is judged against.
 
 ### User Story 1 - Don compares the directions side by side (Priority: P1)
 
-Don opens the preview deployment and, for each of two or three directions, looks at the Writing
+Don opens the preview deployment and, for each of the three directions, looks at the Writing
 landing page, a post listing and a post page, filled with realistic sample posts. He can move
 between the three screens of a direction and between directions without guessing addresses, and
 the directions are clearly different in how they organize the writing, not just in colour or
@@ -86,7 +89,8 @@ three screens and confirm each one is demonstrated.
 2. **Given** a direction's listing page, **When** a reader views it, **Then** posts appear newest
    first, and the page shows how a reader would move to older and newer pages of posts.
 3. **Given** a direction's listing page, **When** it is shown for a single topic, **Then** the
-   page makes clear which topic is being shown and how to reach the other topics and all posts.
+   page makes clear which topic is being shown, opens with a short introduction to that topic,
+   and shows how to reach the other topics and all posts.
 4. **Given** any post shown in a list or on a post page, **When** a reader looks at it, **Then**
    its title, date, reading time, topics and summary are shown.
 5. **Given** a direction's post page, **When** a reader reads it, **Then** it contains at least
@@ -177,7 +181,8 @@ the listed parts and that the Decision section is present and unfilled.
 
 **Directions**
 
-- **FR-001**: The feature MUST provide at least two and at most three design directions.
+- **FR-001**: The feature MUST provide exactly three design directions. They draw on the site's
+  current look and the Flux theme patterns only; no outside blogs or sites are used as references.
 - **FR-002**: Each direction MUST include three screens: a Writing landing page, a post listing
   (shown for all posts and for a single topic) and a post page.
 - **FR-003**: The directions MUST differ from each other in structure (how posts are grouped,
@@ -192,11 +197,13 @@ the listed parts and that the Decision section is present and unfilled.
 **Reader needs each direction demonstrates**
 
 - **FR-006**: Each landing page MUST show the newest writing near the top and MUST set apart the
-  posts Don considers most important.
+  posts Don considers most important. A post is most important when Don has marked it as
+  featured; the directions differ in how featured posts are shown, not in how they are chosen.
 - **FR-007**: Each listing MUST show posts newest first and MUST show how a reader moves between
   pages of posts.
 - **FR-008**: Each direction MUST show how a reader browses posts by topic and moves between
-  topics and back to all posts.
+  topics and back to all posts. Each topic's listing MUST open with a short introduction (one or
+  two sentences describing the topic) above its posts.
 - **FR-009**: Wherever a post is presented, each direction MUST show its title, date, reading
   time, topics and summary.
 - **FR-010**: Each post page MUST include at least one image with a caption, one code sample and
@@ -231,8 +238,8 @@ the listed parts and that the Decision section is present and unfilled.
 
 **Blog name**
 
-- **FR-022**: Each direction MUST present the blog under the name settled by clarification Q2:
-  either "Drift & Convergence" or a name the direction proposes for the Writing section.
+- **FR-022**: Each direction MUST present the blog under the name "Drift & Convergence". The
+  directions do not propose other names.
 
 ### Key Entities
 
@@ -240,10 +247,10 @@ the listed parts and that the Decision section is present and unfilled.
   summary, three screens, a topic presentation, proposed addresses, any new colours or fonts it
   needs, and trade-offs.
 - **Sample post**: realistic placeholder writing used by the prototypes. Has a title, date,
-  reading time, one or more topics, a summary, an optional feature image, whether Don marks it as
-  most important, and (for the post page) a body with an image and caption, code sample and table.
+  reading time, one or more topics, a summary, an optional feature image, a featured flag (set by
+  Don to mark it as most important), and (for the post page) a body with an image and caption, code sample and table.
 - **Topic**: a subject grouping for posts, starting with the four named topics. A post may have
-  several. Topics may be renamed or reorganized later without changing post addresses.
+  several, and each has a short introduction of one or two sentences. Topics may be renamed or reorganized later without changing post addresses.
 - **Decision document**: the single document comparing the directions, with an empty Decision
   section.
 
@@ -251,7 +258,7 @@ the listed parts and that the Decision section is present and unfilled.
 
 ### Measurable Outcomes
 
-- **SC-001**: Two or three directions are available on the preview deployment, each with all
+- **SC-001**: Three directions are available on the preview deployment, each with all
   three screens (landing, listing, post), viewable in every combination of 2 themes and 2 widths.
 - **SC-002**: For every direction, each reader need in FR-006 to FR-012 can be pointed to on its
   screens.
