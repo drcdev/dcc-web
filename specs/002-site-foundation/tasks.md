@@ -72,7 +72,7 @@ comes first and changes no code or configuration; the Ghost
 reference screenshots (FR-005) must exist before any styling task so Don has something to compare
 against later. [US7] [US1]
 
-- [ ] T001 [P] [US7] Write a failing unit test `tests/unit/site/design-source.test.ts` asserting
+- [X] T001 [P] [US7] Write a failing unit test `tests/unit/site/design-source.test.ts` asserting
   every requirement in
   [contracts/design-source-doc.md](../specs/002-site-foundation/contracts/design-source-doc.md):
   the five required headings, the `gh repo clone drcdev/flux .reference/flux -- --depth 1` command
@@ -82,32 +82,32 @@ against later. [US7] [US1]
   redirects"; plus that `.gitignore` contains `.reference/` and no file under `src/` contains the
   string `.reference` (FR-032, FR-033, SC-010). Run it and confirm it fails (the document does not
   exist yet).
-- [ ] T002 [US7] Write `docs/design-source.md` to satisfy T001: "How to get Flux", "Mapping"
+- [X] T002 [US7] Write `docs/design-source.md` to satisfy T001: "How to get Flux", "Mapping"
   (18-row table, columns `Flux part | Becomes | Owner`, content from plan.md "Design source
   document (first task)", checked against `.reference/flux` — clone it first if missing, per the
   Execution environment section), "What doesn't carry over", "Current live URLs", and
   "Accessibility adjustments" (initially "None").
-- [ ] T003 Run `pnpm exec vitest run tests/unit/site/design-source.test.ts` and confirm it passes.
-- [ ] T004 [P] [US1] Write a failing unit test `tests/unit/site/reference-screenshots.test.ts`
+- [X] T003 Run `pnpm exec vitest run tests/unit/site/design-source.test.ts` and confirm it passes.
+- [X] T004 [P] [US1] Write a failing unit test `tests/unit/site/reference-screenshots.test.ts`
   asserting `tests/reference/ghost/` holds exactly the 12 files
   `{home|post|about}-{phone|desktop}-{dark|light}.png`, each a valid PNG (signature check) whose
   IHDR width is 390 for `phone` and 1280 for `desktop`, and a `README.md` naming the capture date
   and the post URL used (FR-005). Run it and confirm it fails.
-- [ ] T005 [P] [US1] Write `tests/reference/playwright.config.ts`, a standalone Playwright config
+- [X] T005 [P] [US1] Write `tests/reference/playwright.config.ts`, a standalone Playwright config
   (not part of the `e2e`/`a11y`/`budget`/`visual` projects or `verify`) targeting
   `https://www.doncoleman.ca` (research R13).
-- [ ] T006 [US1] Write `tests/reference/capture-ghost.spec.ts`: for pages home (`/`), the first
+- [X] T006 [US1] Write `tests/reference/capture-ghost.spec.ts`: for pages home (`/`), the first
   post linked from home (matched by `/(drift|convergence|news)/\d{4}/`), and `/about/`, at widths
   phone 390×844 and desktop 1280×800, in themes dark and light (set via
   `addInitScript(() => localStorage.setItem("color-theme", …))`), save full-page PNGs to
   `tests/reference/ghost/{page}-{phone|desktop}-{theme}.png` (12 files) (FR-005, research R13).
   If the live site is unreachable, the spec fails loudly rather than guessing (spec Assumptions).
-- [ ] T007 [US1] Run `pnpm exec playwright test --config tests/reference/playwright.config.ts`
+- [X] T007 [US1] Run `pnpm exec playwright test --config tests/reference/playwright.config.ts`
   against the live site (the `reference:capture` package script that wraps this is added in
   Phase 2); write
   `tests/reference/ghost/README.md` recording the capture date and the post URL used; commit all
   12 PNGs plus the README (FR-005).
-- [ ] T008 Run `pnpm exec vitest run tests/unit/site/design-source.test.ts
+- [X] T008 Run `pnpm exec vitest run tests/unit/site/design-source.test.ts
   tests/unit/site/reference-screenshots.test.ts` and confirm both pass before moving to Phase 2.
 
 **Checkpoint**: `docs/design-source.md` is committed and content-tested; the 12 Ghost reference
