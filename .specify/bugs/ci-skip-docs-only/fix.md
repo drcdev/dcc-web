@@ -44,3 +44,10 @@ None. The CLI additionally wraps `main()` in a try/catch that logs and exits 0 s
 
 - Major change (CI config): label the PR `major-change`, leave auto-merge off.
 - After merge, confirm on a docs-only PR that `verify` is green with the heavy steps skipped.
+
+## Post-merge adjustment
+
+2026-09-29: merging `main` (PR #11) brought `tests/unit/setup/pipeline-pr-author.test.ts`, which reads the deliver, tweak and squash skill files. The drift guard caught it, as designed: those files are now read by a check, so they must run the full gate.
+
+- `READ_BY_CHECKS` now lists `.claude/skills/deliver/SKILL.md`, `.claude/skills/squash/SKILL.md` and `.claude/skills/tweak/SKILL.md`; new unit cases assert each is not skip-safe (seen failing first).
+- The drift guard now expands literals holding `${...}`, `%s` or `%d` against the repository files under the literal's fixed directory. A matched file counts as read only when the values the placeholders took also appear as quoted strings in the reading file, so the guard flags exactly the three skills and not every skill. A placeholder literal that matches nothing is reported as an offender.

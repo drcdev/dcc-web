@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { decide, isSkipSafe, toOutput } from "../../../scripts/ci/changed-paths.ts";
 
@@ -8,8 +8,7 @@ const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 
 const SAFE = [
   "CLAUDE.md",
-  ".claude/skills/tweak/SKILL.md",
-  ".claude/skills/squash/SKILL.md",
+  ".claude/skills/other/SKILL.md",
   ".specify/bugs/x/assessment.md",
   ".specify/extensions/git/git-config.yml",
   ".specify/scripts/bash/common.sh",
@@ -21,6 +20,9 @@ const SAFE = [
 
 const UNSAFE = [
   ".claude/skills/setup-walkthrough/SKILL.md",
+  ".claude/skills/deliver/SKILL.md",
+  ".claude/skills/tweak/SKILL.md",
+  ".claude/skills/squash/SKILL.md",
   ".specify/memory/constitution.md",
   "docs/setup.md",
   "docs/pages.md",
@@ -59,7 +61,7 @@ describe("isSkipSafe()", () => {
 
 describe("decide()", () => {
   it("skips when every changed file is skip-safe on a pull_request", () => {
-    const d = decide({ event: "pull_request", files: ["CLAUDE.md", ".claude/skills/tweak/SKILL.md"] });
+    const d = decide({ event: "pull_request", files: ["CLAUDE.md", ".claude/skills/other/SKILL.md"] });
     expect(d.full).toBe(false);
   });
   it("runs everything and names the first unsafe file", () => {
@@ -73,6 +75,9 @@ describe("decide()", () => {
   it.each(["push", "workflow_dispatch", "pull_request_target"])("always runs everything for %s", (event) => {
     expect(decide({ event, files: ["CLAUDE.md"] }).full).toBe(true);
   });
+  it.each(["deliver", "tweak", "squash"])("runs everything when the %s skill changes", (name) => {
+    expect(decide({ event: "pull_request", files: [`.claude/skills/${name}/SKILL.md`] }).full).toBe(true);
+  });
   it("runs everything when a deny-listed file changes", () => {
     expect(decide({ event: "pull_request", files: [".specify/memory/constitution.md"] }).full).toBe(true);
   });
@@ -85,14 +90,47 @@ describe("toOutput()", () => {
   });
 });
 
-function walk(dir: string, out: string[] = []): string[] {
+function walk(dir: string, out: string[] = [], anyExt = false): string[] {
   for (const name of readdirSync(dir)) {
     if (name === "node_modules" || name === "dist" || name === ".astro") continue;
     const full = join(dir, name);
-    if (statSync(full).isDirectory()) walk(full, out);
-    else if (/\.(ts|mjs|js|astro|json|md|mdx)$/.test(name)) out.push(full);
+    if (statSync(full).isDirectory()) walk(full, out, anyExt);
+    else if (anyExt || /\.(ts|mjs|js|astro|json|md|mdx)$/.test(name)) out.push(full);
   }
   return out;
+}
+
+const PLACEHOLDER = /\$\{[^}]*\}|%[sd]/g;
+
+/**
+ * Expands a literal holding `${...}`, `%s` or `%d` into the repository files it
+ * can name. A literal without a placeholder is returned as is. A file matching
+ * the pattern counts as read only when every value the placeholders took also
+ * appears as a quoted string in the reading file (its list of names), so a
+ * check that reads three skills does not deny-list every skill.
+ */
+function expandPlaceholders(literal: string, text: string): string[] {
+  const first = literal.search(PLACEHOLDER);
+  if (first === -1) return [literal];
+  const fixedDir = literal.slice(0, first).replace(/[^/]*$/, "");
+  let candidates: string[] = [];
+  try {
+    candidates = walk(join(repoRoot, fixedDir), [], true).map((f) =>
+      f.slice(repoRoot.length).split(sep).join("/"),
+    );
+  } catch {
+    // a missing directory matches nothing
+  }
+  const source = literal
+    .split(PLACEHOLDER)
+    .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("([^/]+)");
+  const re = new RegExp(`^${source}$`);
+  return candidates.filter((c) => {
+    const m = re.exec(c);
+    if (!m) return false;
+    return m.slice(1).every((v) => text.includes(`"${v}"`) || text.includes(`'${v}'`));
+  });
 }
 
 describe("drift guard", () => {
@@ -109,7 +147,12 @@ describe("drift guard", () => {
       const text = readFileSync(file, "utf-8");
       for (const m of text.matchAll(pattern)) {
         const p = m[1]!.replace(/^(\.\.\/)+/, "").replace(/^\//, "");
-        if (isSkipSafe(p)) offenders.push(`${file}: ${p}`);
+        const expanded = expandPlaceholders(p, text);
+        if (expanded.length === 0) {
+          offenders.push(`${file}: ${p} (placeholder path matches no file in the repository)`);
+          continue;
+        }
+        for (const path of expanded) if (isSkipSafe(path)) offenders.push(`${file}: ${path}`);
       }
     }
     expect(offenders, "add these paths to READ_BY_CHECKS").toEqual([]);

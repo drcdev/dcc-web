@@ -20,7 +20,10 @@ export const SKIP_SAFE_EXTENSIONS: readonly string[] = [
 ];
 /** Files under a skip-safe prefix that a test or check reads. */
 export const READ_BY_CHECKS: readonly string[] = [
+  ".claude/skills/deliver/SKILL.md",
   ".claude/skills/setup-walkthrough/SKILL.md",
+  ".claude/skills/squash/SKILL.md",
+  ".claude/skills/tweak/SKILL.md",
   ".specify/memory/constitution.md",
 ];
 
