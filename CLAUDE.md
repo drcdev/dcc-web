@@ -37,6 +37,13 @@ A visual diff the spec did not predict is a regression to fix, not a baseline to
 
 ## Merging
 
+- **Open every PR from the `drc-agents` account.** Don is the sole maintainer and GitHub does
+  not count an author's approval on their own PR, so the `major-change-approval` check rejects
+  any PR authored by `drcdev`. Both accounts are in the local `gh` keyring. Run
+  `gh auth switch --user drc-agents` immediately before `gh pr create`, and
+  `gh auth switch --user drcdev` straight after (the setup check reads as Don). A PR opened
+  under `drcdev` by mistake must be closed and reopened from `drc-agents`; do not work around
+  the gate.
 - The repository allows **merge commits only**; squash and rebase merges are disabled. Any
   `--squash` or `--rebase` form of `gh pr merge` fails.
 - **Enable auto-merge by default.** When the work is done and nothing is left that needs Don's
