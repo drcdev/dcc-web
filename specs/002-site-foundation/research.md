@@ -288,10 +288,10 @@ theme was read from a local, read-only clone at `.reference/flux` (gitignored; n
 
 | Layer | Tool | Location | What it proves |
 |---|---|---|---|
-| Unit | Vitest via `getViteConfig()`, `node` env (existing `vitest.config.ts`) | `tests/unit/site/*.test.ts` | `resolveSiteOrigin`, `previewAlias`, theme helpers, navigation data and current-page logic, `_headers` content, CSP config (hash matches `theme-init.js`, forbidden hosts absent), sitemap filter, `docs/design-source.md` required content, `theme-init.js` behaviour in a stubbed `document`/`localStorage` |
+| Unit | Vitest via `getViteConfig()`, `node` env (existing `vitest.config.ts`) | `tests/unit/site/*.test.ts` (+ `tests/unit/ci/workflows.test.ts`, `tests/unit/setup/schemas.test.ts`) | config files (`wrangler.jsonc`, `playwright.config.ts`, `vitest.config.ts`, `package.json` scripts, `ci.yml`), `astro.config.mjs` `site` per environment, `deploy:preview` arguments, a build with the main-branch and preview environments (noindex, one origin), design tokens, the committed reference-screenshot set, `resolveSiteOrigin`, `previewAlias`, theme helpers, navigation data and current-page logic, `_headers` content, CSP config (hash matches `theme-init.js`, forbidden hosts absent), sitemap filter, `docs/design-source.md` required content, `theme-init.js` behaviour in a stubbed `document`/`localStorage` |
 | Component | Astro Container API (`experimental_AstroContainer`, `renderToString`) in Vitest `node` env | `tests/component/*.test.ts` | Header, Footer, SkipLink, ThemeToggle, Seo, BaseLayout and 404 markup contracts |
 | E2E | Playwright (Chromium) against `wrangler dev` serving `dist/` | `tests/e2e/*.spec.ts` | Shell journeys, mobile menu, theme first paint, not-found status, metadata, sitemap/robots, headers, statistics resilience, cookies, no-JS |
-| Accessibility | `@axe-core/playwright` (already installed), WCAG 2.0/2.1/2.2 A+AA tags | `tests/e2e/a11y.spec.ts` | Every template (home, not-found) × phone/desktop × dark/light, plus menu-open state; zero violations |
+| Accessibility | `@axe-core/playwright` (already installed), WCAG 2.0/2.1/2.2 A+AA tags | `tests/e2e/a11y.spec.ts` | Every template (home, not-found) × phone/desktop × dark/light, plus menu-open state and JavaScript disabled at phone width; zero violations; plus forced-colours, reduced-motion, reflow (320 px, 200 % zoom) and text-spacing checks. Written before any template so it is seen failing first |
 | Performance budget | Playwright + Chrome DevTools Protocol throttling (no new dependency) | `tests/e2e/budget.spec.ts` | LCP, CLS, JS bytes, total bytes, long tasks per template on simulated mobile |
 | Visual | Playwright `toHaveScreenshot` (built-in) | `tests/e2e/visual.spec.ts` + committed baselines | Header, footer, open mobile menu (phone), not-found page × phone/desktop × dark/light |
 
@@ -346,8 +346,8 @@ theme was read from a local, read-only clone at `.reference/flux` (gitignored; n
   1280, in dark and light (14 images). Animations disabled, caret hidden. Baselines are committed
   under Playwright's default `*-snapshots/` folders **per platform** (`-darwin`, `-linux`), since
   system fonts differ by OS: local `verify` on macOS uses the darwin set, CI uses the linux set.
-  Linux baselines are produced by CI itself: a missing baseline makes Playwright write the image
-  and fail; the CI job uploads `tests/e2e/**/*-snapshots/**` and `test-results/` as an artifact on
+  Linux baselines are produced by CI itself: with `updateSnapshots: "none"` a missing baseline
+  fails the test and Playwright writes the rendered image (`*-actual.png`) under `test-results/`; the CI job uploads `tests/e2e/**/*-snapshots/**` and `test-results/` as an artifact on
   failure (`actions/upload-artifact`, pinned SHA); the agent downloads them with
   `gh run download`, reviews and commits. No run can pass without baselines for its platform.
 - **Docs**: Playwright visual comparisons (built into `@playwright/test`, already installed).

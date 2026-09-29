@@ -575,7 +575,9 @@ contact form, code blocks and author card come from and which feature ports each
   reviewed change.
 - **FR-028**: Every branch MUST get its own preview address showing that branch's build.
 - **FR-029**: The main site build MUST update automatically when changes reach the main branch,
-  and only after the full check suite passes there.
+  and only after the full check suite passes there. With the deployment setup in place (FR-031), this is met by
+  branch protection (FR-030a): only a merge whose head passed the required check while up to date
+  with main can land, so the build deployed from main is the tree that passed.
 - **FR-030**: A failing check MUST block the merge and the release. Checks may not be skipped or
   weakened to get a change through.
 - **FR-030a**: Branch protection on main MUST require the `verify` check to pass on the latest

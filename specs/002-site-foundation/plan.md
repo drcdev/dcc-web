@@ -29,7 +29,13 @@ workflow's `verify` job as the required check, and adds no deploy secrets. Produ
 because `main` only accepts strict, up-to-date merges that passed `verify` and
 `major-change-approval`. The one change on the Cloudflare side is the non-production deploy
 command (`pnpm run deploy:preview`, which uploads with a branch-derived preview alias) so that a
-preview build can know its own address (R1, R2).
+preview build can know its own address (R1, R2). FR-029 ("only after the full check suite passes"
+there) is met by this gate rather than by a deploy job waiting on CI: Workers Builds builds `main`
+as soon as the merge lands, but branch protection only admits a merge whose head passed the
+required `verify` check while up to date with `main` (FR-030a), so the tree Workers Builds deploys
+is exactly the tree that passed. `verify` also re-runs on the `main` push, and a red result there
+is treated as a release incident; no deploy secret is added to make deployment wait on it
+(FR-031).
 
 ## Technical Context
 
@@ -50,7 +56,8 @@ secretlint.
 `forcedColors: "active"` (FR-020a) and `reducedMotion: "reduce"` (FR-021a), Playwright + CDP
 performance budget, Playwright `toHaveScreenshot` visual baselines with
 `maxDiffPixelRatio: 0.001` at the default per-pixel `threshold` and `animations: "disabled"`
-(FR-005a). No Playwright retries (FR-027a).
+(FR-005a); `updateSnapshots: "none"` so a missing baseline fails (FR-005b). No Playwright
+retries (FR-027a).
 
 **Target Platform**: Cloudflare Workers static assets (`wrangler.jsonc`, `assets.directory
 ./dist`), built and deployed by Workers Builds; modern evergreen browsers; works without
@@ -78,7 +85,7 @@ baseline images per platform.
 
 | Principle | How this plan complies |
 |---|---|
-| **I. Test-First** | Every task's tests are written and seen failing first. Explicit layers (R11): **unit** (`tests/unit/site/`: origin resolver, preview alias, theme logic, nav data, `_headers`, CSP config, sitemap filter, design-source doc content, theme-init script), **component** (`tests/component/`: Astro Container API for SkipLink, SiteHeader, SiteFooter, ThemeToggle, Seo, BaseLayout, 404), **E2E** (`tests/e2e/`: shell, mobile menu, theme first paint, not-found, SEO/sitemap/robots, headers/CSP, statistics resilience, cookies, no-JS), **accessibility** (axe on every template × both themes × both widths + menu open), **performance budget**, **visual baselines**. The contact-API integration layer does not apply (no API in this feature). Test tasks precede their implementation tasks; `docs/design-source.md` has a content test written before the document. |
+| **I. Test-First** | Every task's tests are written and seen failing first. Explicit layers (R11): **unit** (`tests/unit/site/`: origin resolver, preview alias, `astro.config.mjs` site/integrations, `deploy:preview` arguments, theme logic, nav data, `_headers`, CSP config and no analytics code, sitemap filter, design-source doc content, reference-screenshot set, design tokens, theme-init script, config files (`wrangler.jsonc`, `playwright.config.ts`, `vitest.config.ts`, `package.json` scripts), and a build-environment test that builds with the main-branch and preview environments; plus `tests/unit/ci/workflows.test.ts` and `tests/unit/setup/schemas.test.ts` extended), **component** (`tests/component/`: Astro Container API for SkipLink, SiteHeader, SiteFooter, ThemeToggle, Seo, BaseLayout, 404), **E2E** (`tests/e2e/`: shell, mobile menu, theme first paint, not-found, SEO/sitemap/robots, headers/CSP, statistics resilience, cookies, no-JS), **accessibility** (axe on every template × both themes × both widths + menu open), **performance budget**, **visual baselines**. The contact-API integration layer does not apply (no API in this feature). Test tasks precede their implementation tasks, including configuration (Playwright, Vitest, `package.json`, `ci.yml`, setup schema) and the accessibility, budget and visual specs, which are written before any page template; `docs/design-source.md` has a content test written before the document. |
 | **II. Automated Release Gate** | `verify` (CI job name unchanged) runs lint:secrets, lint, typecheck, unit+component tests, build, and all Playwright projects (e2e, a11y, budget, visual); `pnpm run verify` is the identical local mirror. Production deploys only from `main` via Workers Builds after strict required checks. Every branch gets a Workers Builds preview. Placeholder tests are replaced by stricter-or-equal successors, as a reviewed part of this change; nothing is skipped or disabled. |
 | **III. Human Review for Major Changes** | **This slice is a major change** (see "Major-change verdict" below). The PR must carry the `major-change` label and Don's approval after viewing the preview. |
 | **IV. First-Party Before Custom** | Each capability names its first-party option (table below). All Astro choices were verified through the Astro Docs MCP (`astro-docs`), which was available; the doc pages are cited in research.md. |
@@ -187,16 +194,19 @@ Tests come first inside every step.
 1. **Design source**: content test → `docs/design-source.md`; `.gitignore`/no-import test.
 2. **Ghost reference screenshots** (before any styling): capture spec + config → run once →
    commit `tests/reference/ghost/*.png` + README.
-3. **Tooling**: add Tailwind (+ typography) and sitemap via `astro add`; switch Playwright to
-   `wrangler dev`; add Playwright projects and `verify` scripts; `wrangler.jsonc`
-   `not_found_handling`; CI artifact step.
-4. **Site origin**: unit tests → `src/lib/site-origin.ts`, `previewAlias`, `astro.config.mjs`
-   `site`, `scripts/deploy/preview.ts`, `deploy:preview` script, `workersSubdomain` in
-   `setup/config.json`, `docs/setup.md` item 10 update.
+3. **Tooling**: config tests first (`config-files`, `workflows`, `schemas`, `astro-config`,
+   `site-origin`, `deploy-preview`) → add Tailwind (+ typography) and sitemap via `astro add`;
+   switch Playwright to `wrangler dev`; add Playwright projects and `verify` scripts;
+   `wrangler.jsonc` `not_found_handling`; CI artifact step.
+4. **Site origin** (same phase as tooling): `src/lib/site-origin.ts`, `previewAlias`,
+   `astro.config.mjs` `site`, `scripts/deploy/preview.ts`, `deploy:preview` script,
+   `workersSubdomain` in `setup/config.json` (+ schema/type), `docs/setup.md` item 10 update.
 5. **Design tokens and global styles**: unit test on tokens (every palette has BASE + 11 shades
    derived from BASE; accent BASE `#d68844`) → `src/styles/global.css`.
-6. **Shell** (US1): component + E2E + a11y tests → BaseLayout, SkipLink, SiteHeader (menu),
-   SiteFooter, icons, navigation config, placeholder home.
+6. **Shell** (US1): first the gate specs — `a11y.spec.ts`, `budget.spec.ts` (successors of the
+   placeholder specs, carrying forward every still-valid assertion) and `visual.spec.ts` — plus
+   the build-environment test, all seen failing; then component + E2E tests → BaseLayout,
+   SkipLink, SiteHeader (menu), SiteFooter, icons, navigation config, placeholder home.
 7. **Themes** (US2): unit + component + E2E first-paint tests → `theme-init.js`, `theme.ts`,
    ThemeToggle.
 8. **Not-found** (US5): component + E2E tests → `404.astro`.
@@ -204,8 +214,8 @@ Tests come first inside every step.
    default OG image.
 10. **Security + statistics** (FR-024–026): unit + E2E tests → `astro.config.mjs` CSP,
     `public/_headers`.
-11. **Budget + visual** (FR-005a, FR-027): budget spec; visual spec → baselines (darwin locally,
-    linux from CI artifact).
+11. **Gate green** (FR-005a, FR-027): make the a11y, budget and visual specs from step 6 pass;
+    generate baselines (darwin locally, linux from CI artifact).
 12. **Release pipeline check** (US3): quickstart walk-through on the PR preview. Release-gate
     preconditions, each a `[PREVIEW-CHECK]` task that must be confirmed before merge: (a) Don
     changes the Workers Builds non-production deploy command to `pnpm run deploy:preview`
@@ -235,8 +245,7 @@ specs/002-site-foundation/
 │   ├── http-responses.md
 │   ├── verify-gate.md
 │   └── design-source-doc.md
-├── checklists/
-│   └── requirements.md  # From /speckit-specify
+├── checklists/         # requirements, accessibility, theme, seo, security, release-gate
 └── tasks.md             # Phase 2 output (/speckit-tasks — not created here)
 ```
 
@@ -251,6 +260,8 @@ vitest.config.ts                 # include tests/unit/** and tests/component/**
 .gitignore                       # + .reference/ (done during planning)
 .github/workflows/ci.yml         # + upload Playwright artifacts on failure
 setup/config.json                # + workersSubdomain
+scripts/setup-check/schemas.ts   # + optional workersSubdomain (schema)
+scripts/setup-check/types.ts     # + optional workersSubdomain (SetupConfig type)
 docs/
 ├── design-source.md             # NEW — first task
 └── setup.md                     # item 10: non-production deploy command → pnpm run deploy:preview
@@ -284,13 +295,16 @@ src/
     ├── 404.astro
     └── robots.txt.ts
 tests/
-├── unit/site/                   # origin, alias, theme, nav, headers, csp, sitemap, tokens, design-source, theme-init
-├── component/                   # Container API tests per component/layout/page
+├── unit/site/                   # site-origin, astro-config, deploy-preview, config-files, build-env, theme, theme-init,
+│                                # navigation, headers, csp, sitemap, design-tokens, design-source, reference-screenshots
+├── unit/ci/workflows.test.ts     # + on-failure artifact upload step
+├── unit/setup/schemas.test.ts    # + workersSubdomain
+├── component/                   # Container API: BaseLayout, SkipLink, Seo, SiteHeader, SiteFooter, ThemeToggle, NotFound (.test.ts)
 ├── e2e/
 │   ├── shell.spec.ts  menu.spec.ts  theme.spec.ts  not-found.spec.ts
 │   ├── seo.spec.ts  headers.spec.ts  analytics.spec.ts  no-js.spec.ts
 │   ├── a11y.spec.ts  budget.spec.ts  visual.spec.ts (+ *-snapshots/ per platform)
-│   └── (placeholder.a11y.spec.ts, placeholder.budget.spec.ts removed — superseded)
+│   └── (placeholder.a11y.spec.ts, placeholder.budget.spec.ts removed — superseded by a11y/budget)
 └── reference/
     ├── playwright.config.ts     # not part of verify
     ├── capture-ghost.spec.ts
