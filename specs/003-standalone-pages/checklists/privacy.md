@@ -11,7 +11,7 @@
 - [x] CHK001 - Is each policy claim (no cookies, contact fields, Canadian storage, retention, statistics) traced to a source of truth (constitution, foundation, current cookie policy)? [Traceability, Spec §FR-022]
 - [x] CHK002 - Is "the site sets no cookies" stated with scope covering analytics and the contact form's spam protection, or is any exception a gap? [Clarity, Spec §US6-1]
 - [x] CHK003 - Is the description of visitor statistics specific (Cloudflare Web Analytics, main build only, no cookies, no personal tracking) and consistent with the foundation? [Consistency, Spec §Assumptions]
-- [x] CHK004 - Is storage location stated consistently with Principle VII (Fly.io, Toronto, no processing outside Canada)? [Consistency, Spec §FR-022]
+- [x] CHK004 - Is storage location stated consistently with Principle VII (Cloudflare D1, in the location recorded in the contact feature's plan)? [Consistency, Spec §FR-022]
 - [x] CHK005 - Is it specified whether the spam-protection service's handling of visitor data is disclosed, given it is a third party? [Gap, Spec §FR-022]
 
 ## Draft Marking

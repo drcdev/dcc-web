@@ -233,7 +233,7 @@ A step's prerequisites are the earlier steps it needs (for example step 5 needs 
 
 ## Out of Scope and Follow-up Work
 
-- Contact service setup (Fly.io app, volume, secrets, Turnstile keys): done in the contact feature. The check is designed so that feature can add its own items.
+- Contact service setup (TypeScript in the site's Cloudflare Worker under `/api/`, with Cloudflare D1 storage; the D1 database, Worker secrets and Turnstile keys): done in the contact feature. The check is designed so that feature can add its own items.
 - Switching the live domain from Ghost to the new site: done at launch, including removing the temporary address's no-index rule.
 - Scaffolding the real Astro site, Tailwind theme and content collections: a later feature; this slice ships only a placeholder page.
 - Extending the `verify` gate beyond this slice's checks (end-to-end journeys for real pages, site-wide accessibility scans and the full performance budget): added by the features that introduce what they check.

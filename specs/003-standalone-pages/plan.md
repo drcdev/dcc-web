@@ -71,8 +71,8 @@ before research and after design. No violations; Complexity Tracking is empty.
 | **IV. First-Party Before Custom** | Every capability names its first-party option (table below). The Astro Docs MCP (`astro-docs`) was available and used; each Astro choice cites its doc page in research.md. The custom code is limited to what no first-party option does: address-conflict and navigation-position checks, body checks that name the file, section prop checks, and the fixture-site test harness. |
 | **V. Static by Default** | Every page is prerendered by `getStaticPaths()`; sections and the home card are Astro components with no client script; content is readable with JavaScript off (E2E + a11y no-JS runs). |
 | **VI. Content as Files** | Pages are MDX files in the repo, validated by a content collection schema; invalid content fails the build with a clear error (contracts/build-errors.md). No CMS, no database. |
-| **VII. Private Data** | No data collected. The privacy policy describes the future contact form from the constitution (fields typed only, stored in Toronto, deleted after a retention period) with the field list, retention period, spam-protection service and request route marked "to be confirmed" (FR-022a). No secrets touched. |
-| **VIII. Fly.io Best Practices** | Not applicable: no Fly.io service in this feature. |
+| **VII. Private Data: Minimal and Protected** | No data collected. The privacy policy describes the future contact form from the constitution (fields typed only, stored in Cloudflare D1, deleted after a retention period) with the field list, retention period, spam-protection service and request route marked "to be confirmed" (FR-022a). No secrets touched. |
+| **VIII. Cloudflare Best Practices** | Not applicable: no Cloudflare Worker code, D1 database or Cron Trigger is involved in this feature. |
 | **IX. Cost Ceiling** | `@astrojs/mdx` is a free, build-time package; images are built into static assets. **Expected additional monthly cost: $0.** |
 | **X. Accessible, Fast and Private** | axe on every launch page and the sections fixture in both themes and widths, JS on and off; budget test on every launch page; no third-party scripts or cookies added. Failing ported colour pairings are swapped for the nearest passing shade and recorded (R13). |
 | **XI. Spec Kit Workflow** | Spec Kit branch and directory; one feature on this branch. Out-of-scope items stay in the spec's follow-up list (blog, portfolio, contact, final copy, new photo). |
@@ -123,8 +123,8 @@ Each is written, reviewed against the spec and seen failing before the implement
    alt, level-1 heading, code fences ignored); `mergeNavigation` (launch order equals the
    foundation's seven links; duplicate position names both sources; label defaults to title);
    section prop schemas; launch-content test (seven files, all `draft: true`, home has `intro`
-   and no `<CallToAction>` in its body; privacy policy mentions cookies, Canada/Toronto,
-   retention, statistics and spam protection, marks the field list, retention period,
+   and no `<CallToAction>` in its body; privacy policy mentions cookies, Cloudflare D1 storage and
+   the location recorded in the contact feature's plan, retention, statistics and spam protection, marks the field list, retention period,
    spam-protection service and request route "to be confirmed", states no concrete retention
    duration, and shows a "Last updated" date (spec FR-022, FR-022a); terms/technology contain no
    "Ghost", "member", "subscribe", "comment", "Drift", "Convergence", "News" category

@@ -92,7 +92,7 @@ baseline images per platform.
 | **V. Static by Default** | `output` stays static; every page prerendered (`robots.txt` is a prerendered endpoint). Client JS limited to the inline theme-init script (~0.5 KB), the theme toggle and the menu (bundled, small). Content readable with JS off (E2E no-JS tests). |
 | **VI. Content as Files** | No content collections are needed yet (placeholder home and 404 are Astro pages). Navigation and site defaults are typed TypeScript modules in the repo; invalid config fails `astro check`/unit tests. No CMS or database. |
 | **VII. Private Data** | No personal data collected; theme choice stays in the visitor's browser; no cookies (tested). No new secrets anywhere; `workersSubdomain` is public. `.env*` untouched. |
-| **VIII. Fly.io Best Practices** | Not applicable: no Fly.io service in this feature (contact API is a later feature). |
+| **VIII. Cloudflare Best Practices** | Not applicable: no Cloudflare Worker code, D1 database or Cron Trigger is involved in this feature (the contact API is a later feature). |
 | **IX. Cost Ceiling** | New items (Tailwind packages, sitemap integration, `actions/upload-artifact`) are free; no new services. **Expected additional monthly cost: $0.** |
 | **X. Accessible, Fast and Private** | WCAG 2.2 AA enforced by axe on every template in both themes plus keyboard/focus E2E; performance budget enforced in CI; only third-party script is Cloudflare Web Analytics (privacy-focused, injected at the edge, main build only). |
 | **XI. Spec Kit Workflow** | Spec Kit branch/dir naming; one feature on this branch. Out-of-scope items stay in the spec's follow-up list. |

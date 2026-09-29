@@ -218,8 +218,8 @@ site's versions and with how the new site actually behaves.
 1. **Given** the privacy policy, **When** it is read, **Then** it states that the site sets no
    cookies, and includes the relevant content from the current cookie policy.
 2. **Given** the privacy policy, **When** it is read, **Then** it states which fields the contact
-   form collects, that submissions are stored in Canada, how long they are kept before automatic
-   deletion, and that visitor statistics are collected without cookies or personal tracking.
+   form collects, that submissions are stored in Cloudflare D1 (with the location recorded in the contact
+   feature's plan), how long they are kept before automatic deletion, and that visitor statistics are collected without cookies or personal tracking.
 3. **Given** the terms of use and technology pages, **When** they are compared with the current
    site's pages at the same addresses, **Then** their content starts from those versions, with
    anything that no longer applies to the new site (Ghost, member accounts, comments, the old
@@ -426,7 +426,7 @@ site's versions and with how the new site actually behaves.
   organisers. About MUST cover Don's background, credentials, and how the practice fits
   alongside his full-time role.
 - **FR-022**: The Privacy policy MUST cover what the contact form collects, where submissions are
-  stored (Canada), how long they are kept before automatic deletion, that the site sets no
+  stored (Cloudflare D1, in the location recorded in the contact feature's plan), how long they are kept before automatic deletion, that the site sets no
   cookies, and how visitor statistics are collected. It MUST absorb the relevant content of the
   current cookie policy. No page is published at /cookie-policy/. It makes only these claims,
   each traced to its source:
@@ -440,8 +440,8 @@ site's versions and with how the new site actually behaves.
   - **Hosting** (foundation): pages are served by Cloudflare, which processes standard request
     information, such as the visitor's IP address, to deliver them.
   - **Contact form** (constitution Principle VII; confirmed by the Contact feature): only what a
-    person types into the form is collected; submissions are stored on Fly.io in Toronto,
-    Canada, do not pass through any service that stores them outside Canada, and are deleted
+    person types into the form is collected; submissions are stored in Cloudflare D1, in the
+    location the privacy policy states (recorded in the contact feature's plan), and are deleted
     automatically after a set retention period.
   - **Spam protection** (constitution Principle X and Technology Constraints; confirmed by the
     Contact feature): sending the contact form may run a spam-protection check by a third-party
@@ -574,7 +574,7 @@ site's versions and with how the new site actually behaves.
   Don in clarification).
 - **Contact data wording**: The contact form and its retention period are built in the Contact
   feature. The privacy policy describes them from the constitution (fields typed into the form
-  only, stored in Toronto, deleted after a set retention period), with the specific field list,
+  only, stored in Cloudflare D1, deleted after a set retention period), with the specific field list,
   retention period, spam-protection service and privacy-request route marked "to be confirmed"
   for the Contact feature (FR-022a).
 - **Statistics**: Visitor statistics are Cloudflare Web Analytics on the main build only, as set

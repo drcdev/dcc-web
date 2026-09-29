@@ -112,8 +112,9 @@ describe("Privacy policy (FR-022, FR-022a)", () => {
     expect(text).toContain("ip address");
   });
 
-  it("covers Canada or Toronto, retention, spam protection and how to ask about or delete data", () => {
-    expect(text).toMatch(/canada|toronto/);
+  it("names Cloudflare D1 for storage, retention, spam protection and how to ask about or delete data", () => {
+    expect(text).toContain("cloudflare d1");
+    expect(text).toMatch(/where (that|the) database is located is to be confirmed/);
     expect(text).toContain("retention");
     expect(text).toContain("spam");
     expect(text).toMatch(/delet/);
@@ -123,6 +124,10 @@ describe("Privacy policy (FR-022, FR-022a)", () => {
   it('marks the four unconfirmed items "to be confirmed"', () => {
     const count = (text.match(/to be confirmed/g) ?? []).length;
     expect(count).toBeGreaterThanOrEqual(4);
+  });
+
+  it("does not assert a storage location", () => {
+    expect(text).not.toMatch(/canada|toronto/);
   });
 
   it("states no concrete retention duration and does not name the spam-protection service", () => {
@@ -152,7 +157,11 @@ describe("Terms of use and Technology (FR-023, FR-024)", () => {
 
   it("Technology describes the actual stack", () => {
     const { text } = load("technology.mdx");
-    for (const word of ["astro", "cloudflare", "tailwind", "toronto"]) expect(text).toContain(word);
+    for (const word of ["astro", "cloudflare", "tailwind", "d1"]) expect(text).toContain(word);
+  });
+
+  it("Technology does not assert a storage location", () => {
+    expect(load("technology.mdx").text).not.toMatch(/canada|toronto/);
   });
 
   it("Terms of use covers acceptable use, ownership, liability and governing law", () => {

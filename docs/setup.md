@@ -55,7 +55,7 @@ editor.
 for every required name and Cloudflare's token-verify endpoint reports the token active.
 
 **Constitution principle**
-VII (Private Data: Minimal, Protected, in Canada) — secrets live only in a gitignored local file,
+VII (Private Data: Minimal and Protected) — secrets live only in a gitignored local file,
 never committed.
 
 **Secrets**
@@ -255,7 +255,7 @@ Repository Settings → Code security → turn on Secret scanning and Push prote
 `security_and_analysis.secret_scanning` and `…secret_scanning_push_protection` are enabled.
 
 **Constitution principle**
-VII (Private Data: Minimal, Protected, in Canada).
+VII (Private Data: Minimal and Protected).
 
 **Secrets**
 None.

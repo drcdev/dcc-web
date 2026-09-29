@@ -718,7 +718,7 @@ Recorded per the constitution's Development Workflow rule; none of this is done 
   R8) and clears the warning.
 - **Portfolio feature**: project stories and listing (designed fresh; Flux list patterns are
   reference only).
-- **Contact feature**: contact form and contact API (Fly.io, Toronto), spam protection.
+- **Contact feature**: contact form and contact API (TypeScript in the site's Cloudflare Worker under `/api/`, with Cloudflare D1 storage), spam protection.
 - **Icons**: each later feature ports the Flux icons it uses.
 - **Domain switch**: pointing doncoleman.ca at the new site, and removing the site-wide
   "do not index" instruction (FR-019) for the live domain at that time.

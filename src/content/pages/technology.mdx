@@ -1,6 +1,6 @@
 ---
 title: Technology
-description: How doncoleman.ca is built and hosted, and where any information you send through it is kept.
+description: How doncoleman.ca is built and hosted, and how any information you send through it is kept.
 draft: true
 ---
 
@@ -22,7 +22,7 @@ The design is a custom theme, ported from the previous version of this site and 
 
 ## Contact form
 
-When it is available, the contact form sends messages to a small service running in Toronto, Canada. Submissions are stored there, in a single database, and deleted automatically after a retention period. They do not pass through any service that stores them outside Canada. The [privacy policy](/privacy-policy/) has the details, including what is still to be confirmed.
+When it is available, the contact form sends messages to a small API that runs in the same Cloudflare Worker as the site. Submissions are stored in a single Cloudflare D1 database and deleted automatically after a retention period. Where the database is located is to be confirmed. The [privacy policy](/privacy-policy/) has the details, including what is still to be confirmed.
 
 ## Analytics
 
@@ -33,7 +33,7 @@ The main site uses Cloudflare Web Analytics, which sets no cookies and does not 
 | Service | Purpose | Location |
 | --- | --- | --- |
 | Cloudflare | Serves the pages and visitor statistics | Global network |
-| Contact form service | Stores contact submissions | Toronto, Canada |
+| Cloudflare D1 | Stores contact submissions | To be confirmed |
 
 ## Questions
 
