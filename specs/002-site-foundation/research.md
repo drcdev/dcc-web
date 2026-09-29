@@ -243,6 +243,11 @@ theme was read from a local, read-only clone at `.reference/flux` (gitignored; n
 - **Docs**: [Configuration reference — `security.csp`](https://docs.astro.build/en/reference/configuration-reference/#securitycsp);
   [@astrojs/cloudflare — Cloudflare Platform: Headers](https://docs.astro.build/en/guides/integrations-guide/cloudflare/#cloudflare-platform);
   Cloudflare [Static assets headers](https://developers.cloudflare.com/workers/static-assets/headers/).
+- **Meta placement (observed in the Phase 8 build)**: Astro injects the policy `<meta>` where it
+  injects head content, just before the stylesheet, so the pre-paint theme script (which must run
+  before the stylesheet, FR-013) is the one script ahead of it. Its hash stays in `script-src` so
+  it remains valid wherever the tag lands; every other script follows the policy. Only static,
+  escaped build output precedes it. `tests/e2e/headers.spec.ts` pins this ordering.
 - **Verified locally**: `wrangler dev` (already a devDependency) serves `dist/` offline and applies
   `_headers` (`x-robots-tag: noindex` observed on `/` and on a 404 during planning).
 

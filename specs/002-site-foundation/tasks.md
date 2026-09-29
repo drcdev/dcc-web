@@ -549,7 +549,7 @@ destinations, serves a 404 with the not-found page in the site's design (US5 ind
 headers, CSP and statistics resilience (US6, and the FR-024 series with no dedicated story). Tests
 T073–T079 are written and seen failing before implementation tasks T080–T085.
 
-- [ ] T073 [P] Write a failing unit test `tests/unit/site/csp.test.ts` asserting the
+- [x] T073 [P] Write a failing unit test `tests/unit/site/csp.test.ts` asserting the
   `astro.config.mjs` `security.csp` configuration matches
   [contracts/http-responses.md](../specs/002-site-foundation/contracts/http-responses.md)'s "Meta
   CSP on every HTML page" table: required directives present, the `theme-init.js` SHA-256 hash
@@ -559,7 +559,7 @@ T073–T079 are written and seen failing before implementation tasks T080–T085
   source (FR-024a, FR-024b, FR-024c). In the same file, assert no file under `src/` or `public/`
   contains Web Analytics code or a token (`beacon.min.js`, `data-cf-beacon`,
   `cloudflareinsights.com/cdn-cgi`) (FR-025). Run it and confirm it fails.
-- [ ] T074 [P] Extend `tests/unit/site/headers.test.ts` (existing file) asserting the `/*` rule in
+- [x] T074 [P] Extend `tests/unit/site/headers.test.ts` (existing file) asserting the `/*` rule in
   `public/_headers` carries the full FR-024 header set — `Content-Security-Policy:
   frame-ancestors 'none'; object-src 'none'; base-uri 'self'`, `X-Content-Type-Options: nosniff`,
   `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(),
@@ -567,10 +567,10 @@ T073–T079 are written and seen failing before implementation tasks T080–T085
   `Cross-Origin-Opener-Policy: same-origin`, `Strict-Transport-Security: max-age=31536000` —
   alongside the existing `X-Robots-Tag: noindex`, and that no rule ever sets `Set-Cookie`
   (FR-019, FR-024). Run it and confirm it fails.
-- [ ] T075 [P] Write a failing unit test `tests/unit/site/sitemap.test.ts` asserting the
+- [x] T075 [P] Write a failing unit test `tests/unit/site/sitemap.test.ts` asserting the
   `@astrojs/sitemap` `filter` excludes any page whose pathname starts with `/404`, and that the
   configured `site` is used for its entries (FR-018). Run it and confirm it fails.
-- [ ] T076 [P] [US4] Write a failing E2E test `tests/e2e/seo.spec.ts`: every built public HTML
+- [x] T076 [P] [US4] Write a failing E2E test `tests/e2e/seo.spec.ts`: every built public HTML
   page has a unique `<title>`, non-empty description, `noindex` robots meta, correct
   canonical/OG/twitter tags per contracts/head-metadata.md with `og:type` `website`; page
   addresses end with `/` and appear identically in canonical, `og:url` and sitemap entries;
@@ -580,39 +580,39 @@ T073–T079 are written and seen failing before implementation tasks T080–T085
   `Sitemap:` line using the same resolved origin as the page canonicals; the not-found page has
   a title, description, sharing image and `noindex`, but no canonical and no `og:url` (FR-017,
   FR-017a, FR-017b, FR-017c, FR-018, FR-019, SC-006). Run it and confirm it fails.
-- [ ] T077 [P] [US4] Extend `tests/unit/site/build-env.test.ts` (T038) so both builds also assert
+- [x] T077 [P] [US4] Extend `tests/unit/site/build-env.test.ts` (T038) so both builds also assert
   that `robots.txt`'s `Sitemap:` line and every sitemap entry use that build's resolved origin
   (FR-017a, FR-018). Run it and confirm it fails.
-- [ ] T078 [P] Write a failing E2E test `tests/e2e/headers.spec.ts` asserting every response
+- [x] T078 [P] Write a failing E2E test `tests/e2e/headers.spec.ts` asserting every response
   served by `wrangler dev` — home, a 404 address, `/robots.txt`, `/sitemap-index.xml`, and a
   static asset — carries the full FR-024 header set including `X-Robots-Tag: noindex` and no
   `Set-Cookie`, with the correct status code (200 or 404), and that every HTML page carries the
   meta CSP from contracts/http-responses.md (FR-019, FR-024, FR-024a, FR-024c). Run it and
   confirm it fails.
-- [ ] T079 [P] [US6] Write a failing E2E test `tests/e2e/analytics.spec.ts` asserting: (a) the
+- [x] T079 [P] [US6] Write a failing E2E test `tests/e2e/analytics.spec.ts` asserting: (a) the
   built CSP allows both Cloudflare Web Analytics hosts in `script-src`/`connect-src`, and a
   served page with a simulated beacon `<script src="https://static.cloudflareinsights.com/…">`
   injected (response fulfilled by `page.route`) loads with no CSP violation (FR-024b); (b) with
   the beacon request aborted via `page.route`, pages load, navigation and the theme switch still
   work, and there are no page errors (FR-026); (c) after browsing several pages,
   `context.cookies()` is empty (SC-009, FR-025). Run it and confirm it fails.
-- [ ] T080 Configure `security.csp` in `astro.config.mjs` (research R8: computed hash of
+- [x] T080 Configure `security.csp` in `astro.config.mjs` (research R8: computed hash of
   `src/scripts/theme-init.js`, `scriptDirective`/`styleDirective` resources, the fixed
   `directives` list) to pass T073.
-- [ ] T081 Extend `public/_headers` `/*` rule with the full FR-024 header set (keeping
+- [x] T081 Extend `public/_headers` `/*` rule with the full FR-024 header set (keeping
   `X-Robots-Tag: noindex`) to pass T074 (research R8).
-- [ ] T082 Configure the sitemap `filter` in `astro.config.mjs` to pass T075 (research R9).
-- [ ] T083 [US4] Implement `src/pages/robots.txt.ts` as a prerendered static endpoint per
+- [x] T082 Configure the sitemap `filter` in `astro.config.mjs` to pass T075 (research R9).
+- [x] T083 [US4] Implement `src/pages/robots.txt.ts` as a prerendered static endpoint per
   [contracts/head-metadata.md](../specs/002-site-foundation/contracts/head-metadata.md):
   `User-agent: *`, `Allow: /`, blank line, `Sitemap: {origin}/sitemap-index.xml`, no `Disallow`
   line (FR-018, FR-019).
-- [ ] T084 [US4] Write `scripts/og-image/render.ts` (a one-off Playwright render of a small HTML
+- [x] T084 [US4] Write `scripts/og-image/render.ts` (a one-off Playwright render of a small HTML
   template in the Flux colours: dusk background, rust name) and run it once to produce
   `public/og-default.png` (1200×630); commit the PNG (FR-017b, research R9).
-- [ ] T085 [US4] Set `defaultImage: "/og-default.png"` and `defaultImageAlt: "Don Coleman"` in
+- [x] T085 [US4] Set `defaultImage: "/og-default.png"` and `defaultImageAlt: "Don Coleman"` in
   `src/config/site.ts` (already scaffolded in Phase 4) and fix any mismatch in
   `Seo.astro`/`index.astro`/`404.astro` until T076 and T077 pass.
-- [ ] T086 Run `pnpm run build` then `pnpm exec vitest run tests/unit/site/csp.test.ts
+- [x] T086 Run `pnpm run build` then `pnpm exec vitest run tests/unit/site/csp.test.ts
   tests/unit/site/headers.test.ts tests/unit/site/sitemap.test.ts
   tests/unit/site/build-env.test.ts` and `pnpm exec playwright test tests/e2e/seo.spec.ts
   tests/e2e/headers.spec.ts tests/e2e/analytics.spec.ts tests/e2e/not-found.spec.ts

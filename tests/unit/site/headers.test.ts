@@ -5,6 +5,22 @@ import { fileURLToPath } from "node:url";
 const headersPath = fileURLToPath(new URL("../../../public/_headers", import.meta.url));
 const robotsPath = fileURLToPath(new URL("../../../public/robots.txt", import.meta.url));
 
+
+/** Header name (lowercase) → value for the `/*` rule. */
+function starRule(): Map<string, string> {
+  const lines = readFileSync(headersPath, "utf-8").split("\n");
+  const start = lines.findIndex((line) => line.trim() === "/*");
+  expect(start).toBeGreaterThanOrEqual(0);
+  const rule = new Map<string, string>();
+  for (const line of lines.slice(start + 1)) {
+    if (line.trim() === "" || line.trim().startsWith("#")) continue;
+    if (!/^\s/.test(line)) break;
+    const colon = line.indexOf(":");
+    rule.set(line.slice(0, colon).trim().toLowerCase(), line.slice(colon + 1).trim());
+  }
+  return rule;
+}
+
 describe("public/_headers", () => {
   it("sets X-Robots-Tag: noindex on /*", () => {
     const contents = readFileSync(headersPath, "utf-8");
@@ -18,6 +34,33 @@ describe("public/_headers", () => {
     );
     expect(robotsLine).toBeDefined();
     expect(robotsLine?.toLowerCase()).toContain("noindex");
+  });
+
+  // The full FR-024 header set on every path (contracts/http-responses.md
+  // "Headers on every response"; research R8; FR-019, FR-024, FR-024c).
+  it.each([
+    ["X-Robots-Tag", "noindex"],
+    ["Content-Security-Policy", "frame-ancestors 'none'; object-src 'none'; base-uri 'self'"],
+    ["X-Content-Type-Options", "nosniff"],
+    ["Referrer-Policy", "strict-origin-when-cross-origin"],
+    ["Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()"],
+    ["X-Frame-Options", "DENY"],
+    ["Cross-Origin-Opener-Policy", "same-origin"],
+    ["Strict-Transport-Security", "max-age=31536000"],
+  ])("sets %s: %s on /*", (name, value) => {
+    expect(starRule().get(name.toLowerCase())).toBe(value);
+  });
+
+  it("never sets a cookie", () => {
+    const contents = readFileSync(headersPath, "utf-8");
+    expect(contents.toLowerCase()).not.toContain("set-cookie");
+  });
+
+  it("keeps the header-only CSP free of script and style sources", () => {
+    // A header default-src/script-src would be enforced alongside the page's
+    // meta policy and block the hashed inline scripts (research R8).
+    const csp = starRule().get("content-security-policy") ?? "";
+    expect(csp).not.toMatch(/default-src|script-src|style-src|unsafe-/);
   });
 
   it("never sets no-transform", () => {

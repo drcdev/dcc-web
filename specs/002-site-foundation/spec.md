@@ -711,6 +711,11 @@ Recorded per the constitution's Development Workflow rule; none of this is done 
 - **Blog feature**: posts, listing, topics, code highlighting with light and dark themes and code
   block component, table wrapping without client script, share component, and the kg-* and code
   colour rules from Flux.
+- **Shiki under the page policy**: with `security.csp` enabled, every build logs Astro's warning
+  that Shiki's inline styles are incompatible with the page policy. No page uses Markdown code
+  blocks yet, so nothing is affected; the Blog feature chooses class-based Shiki output, Prism,
+  or `styleDirective.resources` `{ resource: "'unsafe-inline'", kind: "attribute" }` (research
+  R8) and clears the warning.
 - **Portfolio feature**: project stories and listing (designed fresh; Flux list patterns are
   reference only).
 - **Contact feature**: contact form and contact API (Fly.io, Toronto), spam protection.

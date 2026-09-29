@@ -12,9 +12,8 @@ const RETIRED_ADDRESSES = ["/drift/2025/x/", "/convergence/", "/news/", "/topic/
 
 const NOT_FOUND_ADDRESSES = [...RETIRED_ADDRESSES, ...futureDestinations] as const;
 
-// Addresses that are built and must keep returning 200. robots.txt is built in
-// Phase 8 (T083); add "/robots.txt" here once it exists.
-const BUILT_ADDRESSES = ["/"] as const;
+// Addresses that are built and must keep returning 200 (robots.txt: T083).
+const BUILT_ADDRESSES = ["/", "/robots.txt"] as const;
 
 test.describe("not-found status", () => {
   for (const path of NOT_FOUND_ADDRESSES) {

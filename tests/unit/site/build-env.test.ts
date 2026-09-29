@@ -109,6 +109,24 @@ describe.each(environments)("astro build with the $label environment", ({ env })
     expect(checked).toBeGreaterThan(0);
   });
 
+  it("points robots.txt's Sitemap line at the resolved origin (FR-018)", () => {
+    const robots = readFileSync(join(outDir, "robots.txt"), "utf-8");
+    expect(robots).toMatch(/^User-agent: \*$/m);
+    expect(robots).toMatch(/^Allow: \/$/m);
+    expect(robots).not.toMatch(/^Disallow:/im);
+    expect(robots.match(/^Sitemap: (.+)$/m)?.[1]).toBe(`${expectedOrigin}/sitemap-index.xml`);
+  });
+
+  it("uses the resolved origin for every sitemap entry and excludes the not-found page (FR-017a, FR-018)", () => {
+    const index = readFileSync(join(outDir, "sitemap-index.xml"), "utf-8");
+    const sitemaps = [...index.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]!);
+    expect(sitemaps).toEqual([`${expectedOrigin}/sitemap-0.xml`]);
+    const entries = [...readFileSync(join(outDir, "sitemap-0.xml"), "utf-8").matchAll(/<loc>([^<]+)<\/loc>/g)].map(
+      (m) => m[1]!,
+    );
+    expect(entries).toEqual([`${expectedOrigin}/`]);
+  });
+
   it("places the pre-paint theme script before the stylesheet in the built home page", () => {
     const html = readFileSync(join(outDir, "index.html"), "utf-8");
     const head = html.slice(0, html.indexOf("</head>"));
