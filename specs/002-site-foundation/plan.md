@@ -45,8 +45,12 @@ secretlint.
 (`color-theme`).
 
 **Testing**: Vitest (unit; component tests through the Astro Container API), Playwright
-(Chromium) E2E against `wrangler dev` serving `dist/`, `@axe-core/playwright` accessibility,
-Playwright + CDP performance budget, Playwright `toHaveScreenshot` visual baselines.
+(Chromium) E2E against `wrangler dev` serving `dist/`, `@axe-core/playwright` accessibility
+(also with JavaScript disabled at phone width, FR-022a), Playwright emulation of
+`forcedColors: "active"` (FR-020a) and `reducedMotion: "reduce"` (FR-021a), Playwright + CDP
+performance budget, Playwright `toHaveScreenshot` visual baselines with
+`maxDiffPixelRatio: 0.001` at the default per-pixel `threshold` and `animations: "disabled"`
+(FR-005a). No Playwright retries (FR-027a).
 
 **Target Platform**: Cloudflare Workers static assets (`wrangler.jsonc`, `assets.directory
 ./dist`), built and deployed by Workers Builds; modern evergreen browsers; works without
@@ -58,7 +62,8 @@ JavaScript.
 long tasks ≤ 200 ms total, JS ≤ 10 KB, total transfer ≤ 100 KB (R12).
 
 **Constraints**: WCAG 2.2 AA in both themes; no horizontal scroll 320 px → wide; reduced motion
-respected; no web fonts; script only for theme-before-paint, theme switch and menu collapse; no
+respected (Flux's `scroll-smooth` on `<html>` becomes `motion-safe:scroll-smooth`,
+menu transitions are `motion-safe:` only); no web fonts; script only for theme-before-paint, theme switch and menu collapse; no
 cookies; every page prerendered; CSP allows only self and the Cloudflare Web Analytics beacon;
 every deployment `noindex`; monthly cost unchanged ($0 added).
 
@@ -95,10 +100,10 @@ baseline images per platform.
 | Fonts | Astro fonts API | Not needed now (system stack, FR-003); used by the font follow-up |
 | Icons | Astro SVG components | Used |
 | Layout / components | Astro layouts and components | Used |
-| Theme before paint | Astro `is:inline` script | Used (processed scripts are deferred and run after paint) |
+| Theme before paint (FR-013) | Astro `is:inline` script | Used: FR-013 requires the theme before first paint, and processed scripts are deferred and run after paint |
 | Theme switch / menu | Astro processed `<script>` | Used; native `<details>`/popover rejected because they collapse links without JS (R6) |
 | 404 page | `src/pages/404.astro` + Workers `not_found_handling: "404-page"` | Used |
-| Sitemap | `@astrojs/sitemap` | Used |
+| Sitemap (FR-018) | `@astrojs/sitemap` | Used |
 | robots.txt | Astro static endpoint (sitemap guide pattern) | Used |
 | SEO metadata | No official Astro SEO integration | Small in-repo `Seo.astro`; a third-party package is not clearly better |
 | Site address | Astro `site` config | Used; value computed from Workers Builds env (R2) |
@@ -201,8 +206,16 @@ Tests come first inside every step.
     `public/_headers`.
 11. **Budget + visual** (FR-005a, FR-027): budget spec; visual spec → baselines (darwin locally,
     linux from CI artifact).
-12. **Release pipeline check** (US3): quickstart walk-through on the PR preview; Don changes the
-    non-production deploy command; confirm canonical = preview address.
+12. **Release pipeline check** (US3): quickstart walk-through on the PR preview. Release-gate
+    preconditions, each a `[PREVIEW-CHECK]` task that must be confirmed before merge: (a) Don
+    changes the Workers Builds non-production deploy command to `pnpm run deploy:preview`
+    (docs/setup.md item 10), and the PR preview's canonical equals its served address
+    (FR-017a); (b) `pnpm run setup:check` reports
+    `github-main-protection` and `workers-builds` complete, confirming strict, up-to-date
+    required `verify` on `main` with no bypass (FR-030a); (c) the preview sends `X-Robots-Tag:
+    noindex` (FR-019). After merge: (d) the main build at `https://new.doncoleman.ca` sends
+    `noindex`, loads the edge-injected Web Analytics beacon with no CSP violation in the
+    console, and the visit appears in Web Analytics (FR-024b).
 
 ## Project Structure
 

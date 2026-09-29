@@ -7,7 +7,7 @@ Tests: `tests/component/*.test.ts` (Container API) and `tests/e2e/shell.spec.ts`
 
 - `<html lang="en" class="dark …">` server-rendered; the head init script may remove `dark` and
   always adds `js` when script runs.
-- Exactly one `<header>` (banner), one `<nav aria-label="Main">`, one `<main id="main">`, one
+- Exactly one `<header>` (banner), one `<nav aria-label="Main">`, one `<main id="main" tabindex="-1">`, one
   `<footer>` (contentinfo). Exactly one `<h1>` per page; no skipped heading levels.
 - First focusable element: skip link `<a href="#main">Skip to main content</a>`, visually hidden
   until focused.
@@ -33,7 +33,8 @@ Tests: `tests/component/*.test.ts` (Container API) and `tests/e2e/shell.spec.ts`
 | Escape while open | Hidden, `false`, focus on button |
 | Choose a link | Hidden, `false` |
 | Click outside / focus leaves nav | Hidden, `false` |
-| Resize to ≥ 48rem | Desktop list visible; state reset to closed |
+| Resize to ≥ 48rem | Desktop list visible; state reset to closed; focus unchanged, or moved to the first nav link if it was on the (now hidden) button |
+| Tab past the last link | Hidden, `false`; focus moves on normally (no focus trap) |
 
 JS off: list visible and wrapping at every width, no button rendered visible. No horizontal
 scroll at 320 px.

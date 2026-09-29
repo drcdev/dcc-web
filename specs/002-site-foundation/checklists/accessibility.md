@@ -8,71 +8,71 @@
 
 ## Keyboard Navigation Requirements
 
-- [ ] CHK001 Is the required Tab order across skip link, header, main content and footer fully specified rather than only exemplified? [Completeness, Spec §US1 Acceptance Scenario 3]
-- [ ] CHK002 Are keyboard operability requirements stated for every interactive control (nav links, menu button, theme switch, footer social links), not only the menu and toggle? [Coverage, Spec §FR-007, FR-008, FR-012]
-- [ ] CHK003 Is "clearly visible focus ring" quantified (e.g., contrast ratio, minimum thickness/offset) rather than left as a subjective description? [Clarity, Ambiguity, Spec §US1 Acceptance Scenario 3, FR-020]
-- [ ] CHK004 Are keyboard requirements for forced-colours/high-contrast mode (focus rings, links, theme switch remaining visible) specified with a testable condition? [Clarity, Spec §Edge Cases]
-- [ ] CHK005 Does the spec define keyboard behaviour when a nav link points to a not-yet-built destination (FR-006), so keyboard testing of that link isn't ambiguous? [Consistency, Spec §FR-006, FR-009]
+- [x] CHK001 Is the required Tab order across skip link, header, main content and footer fully specified rather than only exemplified? [Completeness, Spec §US1 Acceptance Scenario 3]
+- [x] CHK002 Are keyboard operability requirements stated for every interactive control (nav links, menu button, theme switch, footer social links), not only the menu and toggle? [Coverage, Spec §FR-007, FR-008, FR-012]
+- [x] CHK003 Is "clearly visible focus ring" quantified (e.g., contrast ratio, minimum thickness/offset) rather than left as a subjective description? [Clarity, Ambiguity, Spec §US1 Acceptance Scenario 3, FR-020]
+- [x] CHK004 Are keyboard requirements for forced-colours/high-contrast mode (focus rings, links, theme switch remaining visible) specified with a testable condition? [Clarity, Spec §Edge Cases]
+- [x] CHK005 Does the spec define keyboard behaviour when a nav link points to a not-yet-built destination (FR-006), so keyboard testing of that link isn't ambiguous? [Consistency, Spec §FR-006, FR-009]
 
 ## Focus Management — Mobile Menu & Theme Toggle
 
-- [ ] CHK006 Is focus-return behaviour specified for every way the mobile menu can close (Escape, choosing a link, activating the button again, resizing to desktop), not only the Escape case? [Completeness, Spec §FR-007, Edge Cases]
-- [ ] CHK007 Is the expected focus destination defined when the menu closes because a link was chosen (stays vs. moves to the new page's main content)? [Gap, Spec §FR-007]
-- [ ] CHK008 Is focus-trap behaviour (or its explicit absence) inside the open mobile menu specified, so tabbing past the last link has one defined outcome? [Ambiguity, Spec §Edge Cases]
-- [ ] CHK009 Is the theme toggle's focus behaviour after activation specified (retains focus, no unexpected DOM move) given it cycles through three states without navigation? [Gap, Spec §FR-012]
-- [ ] CHK010 Are requirements for what happens to menu open/closed state and focus when the viewport is resized from phone to desktop width while the menu is open fully specified (not just "does not remain stuck")? [Clarity, Spec §Edge Cases]
-- [ ] CHK011 Is the mechanism for exposing open/closed state to assistive technology named precisely enough to be verified objectively (e.g., a specific ARIA attribute/pattern) rather than only "exposes its open/closed state"? [Measurability, Spec §FR-007]
+- [x] CHK006 Is focus-return behaviour specified for every way the mobile menu can close (Escape, choosing a link, activating the button again, resizing to desktop), not only the Escape case? [Completeness, Spec §FR-007, Edge Cases]
+- [x] CHK007 Is the expected focus destination defined when the menu closes because a link was chosen (stays vs. moves to the new page's main content)? [Gap, Spec §FR-007]
+- [x] CHK008 Is focus-trap behaviour (or its explicit absence) inside the open mobile menu specified, so tabbing past the last link has one defined outcome? [Ambiguity, Spec §Edge Cases]
+- [x] CHK009 Is the theme toggle's focus behaviour after activation specified (retains focus, no unexpected DOM move) given it cycles through three states without navigation? [Gap, Spec §FR-012]
+- [x] CHK010 Are requirements for what happens to menu open/closed state and focus when the viewport is resized from phone to desktop width while the menu is open fully specified (not just "does not remain stuck")? [Clarity, Spec §Edge Cases]
+- [x] CHK011 Is the mechanism for exposing open/closed state to assistive technology named precisely enough to be verified objectively (e.g., a specific ARIA attribute/pattern) rather than only "exposes its open/closed state"? [Measurability, Spec §FR-007]
 
 ## Skip Link Requirements
 
-- [ ] CHK012 Is "first focusable element" defined precisely enough to rule out any element (including inline theme-init markup) preceding the skip link in focus order? [Clarity, Spec §FR-010]
-- [ ] CHK013 Is the skip link's visible/hidden behaviour on focus vs. blur specified, including its appearance in both themes? [Gap, Spec §FR-010]
-- [ ] CHK014 Is the skip link's destination and the target's requirements (e.g., programmatic focusability of "main content") specified so the link is verifiable end to end? [Completeness, Spec §FR-010]
-- [ ] CHK015 Are skip-link requirements consistent between the shell (US1) and the not-found page (US5), i.e., does the not-found page inherit the same skip-link requirement explicitly? [Consistency, Spec §FR-010, FR-016]
+- [x] CHK012 Is "first focusable element" defined precisely enough to rule out any element (including inline theme-init markup) preceding the skip link in focus order? [Clarity, Spec §FR-010]
+- [x] CHK013 Is the skip link's visible/hidden behaviour on focus vs. blur specified, including its appearance in both themes? [Gap, Spec §FR-010]
+- [x] CHK014 Is the skip link's destination and the target's requirements (e.g., programmatic focusability of "main content") specified so the link is verifiable end to end? [Completeness, Spec §FR-010]
+- [x] CHK015 Are skip-link requirements consistent between the shell (US1) and the not-found page (US5), i.e., does the not-found page inherit the same skip-link requirement explicitly? [Consistency, Spec §FR-010, FR-016]
 
 ## Colour Contrast — Ported Flux Palettes
 
-- [ ] CHK016 Does the spec define a minimum contrast standard (e.g., WCAG 2.2 AA ratios for text and non-text) that ported Flux palette pairings must meet, beyond "match the reference screenshots"? [Clarity, Spec §FR-001, FR-020]
-- [ ] CHK017 Is there a defined process/requirement for handling a ported colour pairing that fails contrast (adjust vs. keep and document), and is it consistent with the plan's "record any shade change in docs/design-source.md" approach? [Consistency, Spec §FR-001 vs. Plan §Design source document item 5]
-- [ ] CHK018 Are contrast requirements stated separately for dark and light themes, including for heading colours (H1/H2 rust, H3 sage, H4 lavender) against their respective backgrounds? [Coverage, Spec §FR-001]
-- [ ] CHK019 Are contrast requirements defined for non-text UI (focus rings, icon-only control glyphs, borders) in addition to text, per WCAG 2.2 AA 1.4.11? [Gap, Spec §FR-020]
-- [ ] CHK020 Is it specified who reviews and approves a contrast-driven shade deviation from Flux (Don, per Principle III major-change review) and how that approval is recorded? [Gap, Spec §Constitution Principle III]
+- [x] CHK016 Does the spec define a minimum contrast standard (e.g., WCAG 2.2 AA ratios for text and non-text) that ported Flux palette pairings must meet, beyond "match the reference screenshots"? [Clarity, Spec §FR-001, FR-020]
+- [x] CHK017 Is there a defined process/requirement for handling a ported colour pairing that fails contrast (adjust vs. keep and document), and is it consistent with the plan's "record any shade change in docs/design-source.md" approach? [Consistency, Spec §FR-001 vs. Plan §Design source document item 5]
+- [x] CHK018 Are contrast requirements stated separately for dark and light themes, including for heading colours (H1/H2 rust, H3 sage, H4 lavender) against their respective backgrounds? [Coverage, Spec §FR-001]
+- [x] CHK019 Are contrast requirements defined for non-text UI (focus rings, icon-only control glyphs, borders) in addition to text, per WCAG 2.2 AA 1.4.11? [Gap, Spec §FR-020]
+- [x] CHK020 Is it specified who reviews and approves a contrast-driven shade deviation from Flux (Don, per Principle III major-change review) and how that approval is recorded? [Gap, Spec §Constitution Principle III]
 
 ## Reduced Motion Requirements
 
-- [ ] CHK021 Is "respect reduced motion preferences" specified with the exact effect (disable, shorten, or replace with instant state change) for each animated element (menu open/close, theme transition)? [Clarity, Spec §FR-021, Edge Cases]
-- [ ] CHK022 Are reduced-motion requirements stated for both the mobile menu and the theme switch, or only implied generally? [Completeness, Spec §Edge Cases]
-- [ ] CHK023 Is there a measurable acceptance criterion for verifying "no motion" under `prefers-reduced-motion: reduce` (e.g., zero transition duration), or is it left to implementation judgement? [Measurability, Gap]
+- [x] CHK021 Is "respect reduced motion preferences" specified with the exact effect (disable, shorten, or replace with instant state change) for each animated element (menu open/close, theme transition)? [Clarity, Spec §FR-021, Edge Cases]
+- [x] CHK022 Are reduced-motion requirements stated for both the mobile menu and the theme switch, or only implied generally? [Completeness, Spec §Edge Cases]
+- [x] CHK023 Is there a measurable acceptance criterion for verifying "no motion" under `prefers-reduced-motion: reduce` (e.g., zero transition duration), or is it left to implementation judgement? [Measurability, Gap]
 
 ## Screen-Reader Naming of Icon-Only Controls
 
-- [ ] CHK024 Are accessible-name requirements specified for every icon-only control individually (menu button, theme switch, GitHub icon link, LinkedIn icon link), rather than one general statement? [Completeness, Spec §FR-007, FR-008, FR-012]
-- [ ] CHK025 Is the theme switch's announced content specified precisely — what it does AND its current state — with an example of acceptable wording, or left fully to implementation? [Clarity, Spec §FR-012, US2 Acceptance Scenario 5]
-- [ ] CHK026 Are current-page indication requirements (FR-009) specified for how they are announced to assistive technology (e.g., `aria-current`), not just "identified... to assistive technology"? [Clarity, Spec §FR-009]
-- [ ] CHK027 Is there a requirement that social/footer icon links have accessible names distinct from generic link text (e.g., not just "GitHub" vs. an unlabelled icon), consistent across footer instances? [Consistency, Spec §FR-008]
+- [x] CHK024 Are accessible-name requirements specified for every icon-only control individually (menu button, theme switch, GitHub icon link, LinkedIn icon link), rather than one general statement? [Completeness, Spec §FR-007, FR-008, FR-012]
+- [x] CHK025 Is the theme switch's announced content specified precisely — what it does AND its current state — with an example of acceptable wording, or left fully to implementation? [Clarity, Spec §FR-012, US2 Acceptance Scenario 5]
+- [x] CHK026 Are current-page indication requirements (FR-009) specified for how they are announced to assistive technology (e.g., `aria-current`), not just "identified... to assistive technology"? [Clarity, Spec §FR-009]
+- [x] CHK027 Is there a requirement that social/footer icon links have accessible names distinct from generic link text (e.g., not just "GitHub" vs. an unlabelled icon), consistent across footer instances? [Consistency, Spec §FR-008]
 
 ## No-JavaScript Behaviour Requirements
 
-- [ ] CHK028 Are the accessibility requirements (focus order, skip link, current-page indication) explicitly restated as applying when JavaScript is disabled, or only implied by the general no-JS requirement? [Consistency, Spec §FR-022, Edge Cases]
-- [ ] CHK029 Is the no-JS navigation fallback (plain wrapping list, no menu button) specified with its own accessibility acceptance criteria (e.g., still keyboard-operable, still has landmarks), not just a visual description? [Completeness, Spec §FR-007, Edge Cases]
-- [ ] CHK030 Is it specified whether the theme is still switchable without JavaScript, or explicitly out of scope, avoiding an implicit contradiction with FR-022's "only theme switch... may use script"? [Ambiguity, Spec §FR-022]
+- [x] CHK028 Are the accessibility requirements (focus order, skip link, current-page indication) explicitly restated as applying when JavaScript is disabled, or only implied by the general no-JS requirement? [Consistency, Spec §FR-022, Edge Cases]
+- [x] CHK029 Is the no-JS navigation fallback (plain wrapping list, no menu button) specified with its own accessibility acceptance criteria (e.g., still keyboard-operable, still has landmarks), not just a visual description? [Completeness, Spec §FR-007, Edge Cases]
+- [x] CHK030 Is it specified whether the theme is still switchable without JavaScript, or explicitly out of scope, avoiding an implicit contradiction with FR-022's "only theme switch... may use script"? [Ambiguity, Spec §FR-022]
 
 ## Cross-Cutting WCAG 2.2 AA Coverage
 
-- [ ] CHK031 Do the requirements enumerate the specific WCAG 2.2 AA success criteria in scope (contrast, focus visible, keyboard, landmarks/headings, language), or only name the conformance level generally, leaving coverage open to interpretation? [Clarity, Spec §FR-020]
-- [ ] CHK032 Is "correct landmarks and headings" defined with the expected landmark roles/heading structure for the shell and not-found page, or left unspecified? [Gap, Spec §FR-020]
-- [ ] CHK033 Is the declared page-language requirement tied to a specific value/mechanism, and is it consistent across the shell, placeholder home and not-found page? [Consistency, Spec §FR-020]
-- [ ] CHK034 Are the automated accessibility check's pass/fail criteria (zero violations at which axe severity levels, which WCAG tags) stated precisely enough to be non-ambiguous? [Measurability, Spec §SC-002, Plan §Constitution Check Principle I]
+- [x] CHK031 Do the requirements enumerate the specific WCAG 2.2 AA success criteria in scope (contrast, focus visible, keyboard, landmarks/headings, language), or only name the conformance level generally, leaving coverage open to interpretation? [Clarity, Spec §FR-020]
+- [x] CHK032 Is "correct landmarks and headings" defined with the expected landmark roles/heading structure for the shell and not-found page, or left unspecified? [Gap, Spec §FR-020]
+- [x] CHK033 Is the declared page-language requirement tied to a specific value/mechanism, and is it consistent across the shell, placeholder home and not-found page? [Consistency, Spec §FR-020]
+- [x] CHK034 Are the automated accessibility check's pass/fail criteria (zero violations at which axe severity levels, which WCAG tags) stated precisely enough to be non-ambiguous? [Measurability, Spec §SC-002, Plan §Constitution Check Principle I]
 
 ## Dependencies & Assumptions
 
-- [ ] CHK035 Is the assumption that Playwright + `@axe-core/playwright` fully covers WCAG 2.2 AA (vs. only automatable subset) stated, with a note on what remains manually reviewed? [Assumption, Plan §Constitution Check]
-- [ ] CHK036 Is the dependency on the end-to-end browser test tool's built-in screenshot comparison for verifying contrast/visual accessibility baselines documented as a dependency rather than an implicit choice? [Dependency, Spec §FR-005a]
+- [x] CHK035 Is the assumption that Playwright + `@axe-core/playwright` fully covers WCAG 2.2 AA (vs. only automatable subset) stated, with a note on what remains manually reviewed? [Assumption, Plan §Constitution Check]
+- [x] CHK036 Is the dependency on the end-to-end browser test tool's built-in screenshot comparison for verifying contrast/visual accessibility baselines documented as a dependency rather than an implicit choice? [Dependency, Spec §FR-005a]
 
 ## Ambiguities & Conflicts
 
-- [ ] CHK037 Does "closely enough that the new site matches the reference screenshots" (FR-001) conflict with or supplement the objective WCAG 2.2 AA contrast requirement (FR-020) when the two pull in different directions? [Conflict, Spec §FR-001 vs. FR-020]
-- [ ] CHK038 Is there any unresolved ambiguity between "system font stack" (FR-003) and accessibility requirements for font sizing/scaling (e.g., user text-resize to 200%)? [Gap, Spec §FR-003]
+- [x] CHK037 Does "closely enough that the new site matches the reference screenshots" (FR-001) conflict with or supplement the objective WCAG 2.2 AA contrast requirement (FR-020) when the two pull in different directions? [Conflict, Spec §FR-001 vs. FR-020]
+- [x] CHK038 Is there any unresolved ambiguity between "system font stack" (FR-003) and accessibility requirements for font sizing/scaling (e.g., user text-resize to 200%)? [Gap, Spec §FR-003]
 
 ## Notes
 

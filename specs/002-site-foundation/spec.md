@@ -70,8 +70,9 @@ screenshots of the current site.
    match closely, and no Ghost-only elements (subscribe, sign-in/account, member portal, search
    buttons) appear.
 7. **Given** the committed screenshot baselines of the new shell, **When** the checks run,
-   **Then** the header, footer, open mobile menu and not-found page at phone and desktop widths
-   in both themes match their baselines, and any unapproved difference fails the run.
+   **Then** the header, footer and not-found page at phone and desktop widths, and the open
+   mobile menu at phone width, in both themes, match their baselines, and any difference beyond
+   the threshold in FR-005a fails the run.
 
 ---
 
@@ -145,8 +146,10 @@ description and image. Search engines can discover every public page.
 **Why this priority**: Important for Don's consulting reach, but the site is useful before this is
 perfect, and there are few pages until later features add content.
 
-**Independent Test**: Run a built page through a sharing-preview inspector and check the site's
-page list for search engines against the set of built public pages.
+**Independent Test**: Automated checks read the head tags of every built page and compare the
+site's page list for search engines against the set of built public pages. In addition, running
+the preview's home page through LinkedIn's Post Inspector and seeing the right title, description
+and image is a [PREVIEW-CHECK].
 
 **Acceptance Scenarios**:
 
@@ -250,8 +253,8 @@ contact form, code blocks and author card come from and which feature ports each
   current page without errors.
 - Mobile menu open when the window is resized to desktop width: the layout shows the desktop
   navigation and the menu does not remain stuck open over content.
-- Mobile menu open and the visitor presses Escape or tabs past the last link: the menu closes or
-  focus behaves predictably, and focus returns to the menu button when closed with Escape.
+- Mobile menu open and the visitor presses Escape or tabs past the last link: the menu closes;
+  focus returns to the menu button after Escape and moves on normally after Tab (FR-007a).
 - Very long page titles and narrow screens (320px wide): header, navigation and footer do not
   overflow horizontally.
 - Reduced motion preference: theme and menu transitions respect it.
@@ -273,6 +276,13 @@ contact form, code blocks and author card come from and which feature ports each
   seven named colour palettes (dusk, rust, sage, lavender, mist, sand, mauve, shades 50–950), the
   dark variant, heading colours (H1/H2 rust, H3 sage, H4 lavender), accent prose styling, table
   styling and focus rings, closely enough that the new site matches the reference screenshots.
+- **FR-001a**: Where a ported Flux colour pairing fails the contrast minimums in FR-020a,
+  accessibility wins over matching the reference screenshots: the implementer uses the nearest
+  shade of the same palette that passes, leaves the palette tokens themselves unchanged, and
+  records the pairing, its failing ratio and the replacement shade in the "Accessibility
+  adjustments" section of the design source document (FR-032). Don reviews and approves each
+  adjustment as part of his approval of this major-change pull request; no separate approval
+  step is needed.
 - **FR-002**: Each palette MUST remain adjustable by changing a single base value, as in Flux.
 - **FR-003**: The site MUST use the fixed accent colour rust #d68844 (the current site's Ghost
   admin value) and a system font stack for both headings and body text, loading no web fonts and
@@ -284,52 +294,121 @@ contact form, code blocks and author card come from and which feature ports each
   one post, and /about/) MUST be captured at a mobile width and a desktop width in both the dark
   and light themes, stored in the repository, and used by Don to compare the new site against
   by eye when he reviews the preview.
-- **FR-005a**: The repository MUST contain automated screenshot baselines of the new site's shell
-  (header, footer, open mobile menu and not-found page) at a phone width and a desktop width in
-  both themes, checked on every run so that an unapproved layout change fails the checks. The
-  baselines use the end-to-end browser test tool's built-in screenshot comparison; no new
-  dependency is added.
+- **FR-005a**: The repository MUST contain automated screenshot baselines of the new site's shell,
+  checked on every run so that an unapproved layout change fails the checks. The set is closed:
+  header, footer and not-found page at a phone width (390px) and a desktop width (1280px), and the
+  open mobile menu at phone width only (it does not exist at desktop width), each in both themes
+  — 14 images per operating system. A screenshot fails when more than 0.1% of its pixels differ
+  from its baseline (each pixel compared with the tool's default colour tolerance), with
+  animations and the text caret disabled. The baselines use the end-to-end browser test tool's
+  built-in screenshot comparison; no new dependency is added. These automated baselines are a
+  separate mechanism from the Ghost reference screenshots in FR-005, which are only compared by
+  eye and never fail a run.
+- **FR-005b**: Baselines are kept per operating system, because system fonts render differently;
+  this is the only difference between local and CI runs (FR-027a). A missing baseline fails the
+  run rather than passing vacuously; the CI run uploads the images it produced, and they are
+  reviewed and committed in the same pull request before it can pass. An intentional change to
+  any shell baseline is made by regenerating the baselines with the documented update command
+  and committing them in the pull request that causes the change, where the image diff is
+  visible; because it changes the site-wide layout or visual identity, that pull request is a
+  major change needing Don's approval.
 
 **Site shell**
 
 - **FR-006**: Every page MUST share one header containing the site name (linking home) and the
   navigation links Home, Services, Speaking, Writing, Projects, About, Contact, in that order.
   Navigation and footer links to pages that later features will create MUST point at their final
-  addresses; until those pages exist, requests for them show the not-found page, and the
-  automated checks MUST NOT fail because of these known future destinations.
+  addresses; until those pages exist, requests for them show the not-found page with a 404
+  status (no placeholder pages are built for them), and the automated checks MUST NOT fail
+  because of these known future destinations. Each such link is an ordinary link: it is
+  focusable and activated with Enter like any other, and following it loads the not-found page.
 - **FR-007**: On small screens the navigation MUST use progressive enhancement. Without JavaScript,
   the navigation links MUST be shown as a plain wrapping list with no menu button. With
   JavaScript, they MUST collapse behind a menu button that exposes its open/closed state to
   assistive technology, can be operated by keyboard, closes on Escape (returning focus to the
   button) and closes when a link is chosen.
+- **FR-007a**: The menu button MUST follow the disclosure pattern: a native button named "Menu"
+  with `aria-expanded` reflecting the open/closed state and `aria-controls` pointing at the link
+  list. The open menu is not modal and does not trap focus. Focus after each way of closing:
+  Escape → the menu button; activating the button again → stays on the button; choosing a link →
+  the browser navigates and the new page starts with focus at the top of the document, as on any
+  load; Tab or Shift+Tab out of the navigation → the menu closes and focus moves on to the next
+  or previous element as normal; a click or tap outside → the menu closes and focus goes where
+  the visitor clicked; the viewport widening to desktop width (48rem) → the menu resets to
+  closed, the desktop link list is shown, focus stays where it was, and if it was on the menu
+  button (now hidden) it moves to the first navigation link.
 - **FR-008**: Every page MUST share one footer containing links to /privacy-policy/,
   /terms-of-use/, /technology/, https://github.com/drcdev and
   https://www.linkedin.com/in/drcdev, a copyright line with Don's name and the current year, and
-  the theme switch. Social links MUST use recognisable icons with accessible names.
+  the theme switch. Social links MUST use recognisable icons with accessible names; the icons
+  are decorative and hidden from assistive technology.
+- **FR-008a**: Controls shown only as an icon, or whose state is shown by an icon, MUST have these
+  accessible names: menu button "Menu"; theme switch "Theme: Dark", "Theme: Light" or "Theme:
+  Match device" for the current choice (FR-012a); GitHub link "GitHub"; LinkedIn link
+  "LinkedIn". The footer appears once per page, so each name is unique on the page.
 - **FR-009**: The navigation link for the current page MUST be identified as current, visually and
-  to assistive technology.
-- **FR-010**: Every page MUST provide a "skip to main content" link as the first focusable
-  element.
+  to assistive technology: `aria-current="page"` on that link, plus a visible style difference
+  that does not rely on colour alone (for example an underline).
+- **FR-010**: Every page, including the not-found page, MUST provide a "Skip to main content" link
+  as the first element in sequential focus order: no focusable element precedes it, and no
+  element on the page uses a positive `tabindex`. It is visually hidden until it receives
+  keyboard focus, then appears at the top of the page with the focus indicator and contrast of
+  FR-020a in both themes, and hides again when focus leaves. Its destination is the page's main
+  content region, which is programmatically focusable (`tabindex="-1"`); activating the link
+  moves focus there, so the next Tab reaches the first focusable element after the header.
+- **FR-010a**: Sequential focus order on every page MUST match the visual order: skip link; site
+  name link; menu button (phone width with JavaScript only); the seven navigation links in
+  order; focusable content in the main region in source order; then the footer's links and the
+  theme switch (JavaScript only) in the footer's visual order. Every link and button MUST be
+  reachable with Tab and Shift+Tab and operable with the keyboard (links with Enter; buttons with
+  Enter and Space), with no keyboard trap. This includes the navigation links, the menu button,
+  the theme switch, the footer links and the social links.
 
 **Themes**
 
 - **FR-011**: The site MUST offer dark and light themes, with dark as the default for visitors who
-  have not made a choice.
+  have not made a choice: with no stored choice every page, including the not-found page, is
+  dark whatever the device setting. "Default" means only the absence of a stored choice; a stored
+  "match my device" choice is the visitor's choice, not the default, and is honoured on later
+  loads.
 - **FR-012**: A theme switch MUST cycle dark → light → match my device → dark, and MUST announce
-  its purpose and current state to assistive technology.
+  its purpose and current state to assistive technology. The switch is a single native button;
+  each activation (click, tap, Enter or Space) advances exactly one step. After activation the
+  button keeps keyboard focus and stays in the same place in the page (it is updated, not
+  replaced).
+- **FR-012a**: The three choices are named to visitors "Dark", "Light" and "Match device". The
+  switch's accessible name states its purpose and the current choice ("Theme: Dark", "Theme:
+  Light", "Theme: Match device"), and each change is announced politely to screen readers (for
+  example "Theme: Light"). On every load the switch shows the stored choice, including "Match
+  device", not only the theme currently applied.
 - **FR-013**: The visitor's theme choice MUST be remembered in their own browser across pages and
   visits, without cookies, and MUST be applied before the page is first painted so the wrong theme
-  never flashes.
+  never flashes. This covers every way a page is entered: first load, reload, following an
+  in-site link, and back/forward navigation. With JavaScript turned off the page is always dark
+  as sent by the server, so no flash is possible; the switch is not shown and switching theme
+  without JavaScript is not provided (FR-022a).
 - **FR-014**: In "match my device" mode the site MUST follow the device's light/dark setting,
-  including changes made while the page is open.
-- **FR-015**: If the stored choice is missing, invalid or cannot be read or written, the site MUST
-  fall back to dark without errors.
+  including changes made while the page is open: the new theme is applied as soon as the device
+  reports the change (within 500 ms in the automated test), without a reload. A page in a
+  background tab MUST show the current device setting when it is next visible. When the visitor
+  has chosen dark or light, device setting changes MUST NOT change the theme.
+- **FR-015**: If there is no stored choice, the stored value is not one of the three choices
+  (corrupted or unrecognised), or storage cannot be read, the site MUST use dark without errors.
+  If storage can be read but not written, a stored choice still applies on load, and a choice
+  made with the switch applies to the current page only; the next load uses whatever is stored,
+  or dark if nothing is. Storage failures MUST never show an error or stop the switch from
+  changing the current page.
 
 **Not-found page**
 
-- **FR-016**: Requests for addresses that do not exist MUST return a not-found status and a
-  not-found page in the site's design that explains the problem in plain language and links to
-  the home page and main navigation.
+- **FR-016**: Requests for addresses that do not exist — including the old blog addresses listed
+  in Edge Cases and the future destinations in FR-006 — MUST return HTTP status 404 and a
+  not-found page in the site's design (the full shell, including the skip link, header, footer
+  and theme) that explains the problem in plain language and links to the home page and main
+  navigation. Addresses that are built MUST return 200. The 404 status comes from the hosting
+  platform's static not-found handling serving the prerendered not-found page, so no page is
+  rendered per request (FR-023). The status code and the page content are verified as separate
+  checks.
 
 **Search and sharing**
 
@@ -338,20 +417,85 @@ contact form, code blocks and author card come from and which feature ports each
   site-wide defaults for any value a page does not set. Canonical and sharing-preview addresses
   MUST use the address of the deployment the page is served from, determined at build time, with
   https://doncoleman.ca as the fallback when the build cannot determine it.
+- **FR-017a**: The deployment address MUST come from the build environment, never from the
+  request. For a build of the main branch by the hosting platform's build service it is the
+  temporary main build address, https://new.doncoleman.ca (until the domain switch). For a build
+  of any other branch by that service it is the branch's preview address, derived only from the
+  branch name, so it stays the same across every rebuild of the same branch. In every other case
+  — local builds, the CI check build, a branch name that cannot form a valid preview address, or
+  missing or invalid address configuration — it is the fallback https://doncoleman.ca. Every
+  absolute address in one build uses the same origin. Page addresses end with a trailing slash
+  (for example https://new.doncoleman.ca/) and appear in exactly the same form in canonical
+  links, sharing addresses and page-list entries. Per-deployment canonical addresses are a
+  deliberate choice (Clarifications): a preview's canonical points at the preview rather than at
+  one site-wide origin. This is harmless because no deployment is indexed (FR-019), and it MUST
+  NOT be "corrected" to a single origin before the domain switch.
+- **FR-017b**: Each metadata value can be overridden per page, field by field; a page that
+  overrides only its image still inherits the default description, and so on. Page type is
+  "website" for every page in this feature ("article" is reserved for the Blog feature). The
+  site-wide default sharing image is a 1200×630 pixel PNG served from the site itself, referenced
+  by an absolute address, with alt text.
+- **FR-017c**: The not-found page is not a public page for search purposes. It has a title, a
+  description, sharing title, description and image, and the no-index instruction, but no
+  canonical link and no sharing address, and it is not in the page list.
 - **FR-018**: The site MUST publish a machine-readable list of every public page for search
   engines, referenced from its crawler instructions, excluding the not-found page. Its entries and
   the crawler instructions' reference to it MUST use the same deployment address as FR-017.
+  A public page is every prerendered HTML page except the not-found page; in this feature that
+  is the home page only. The crawler instructions are served at `/robots.txt`, allow all
+  crawling (no `Disallow` rule, which would hide the no-index signal) and contain the line
+  `Sitemap: {origin}/sitemap-index.xml`. The page list and crawler instructions are regenerated
+  on every build. Publishing a page list on a deployment that is not indexed is intentional: it
+  keeps the page list tested now and ready for the domain switch.
 - **FR-019**: Every deployment, including branch previews and the main build on the temporary
-  address, MUST ask search engines not to index it on every path until the domain switch.
+  address, MUST ask search engines not to index it on every path until the domain switch. Both
+  mechanisms are required on every deployment: an `X-Robots-Tag: noindex` header on every
+  response and a `noindex` robots meta tag on every HTML page. Both are driven by committed
+  settings (the site configuration's "indexable" setting, currently off, and the headers file),
+  which the domain-switch follow-up changes. Automated checks assert their current values in the
+  build and in served responses, and a build made with the main-branch environment is checked in
+  the same way as a preview build. That the live main build and a live preview both send the
+  no-index header is a [PREVIEW-CHECK].
 
 **Quality and accessibility**
 
 - **FR-020**: Every page MUST meet WCAG 2.2 AA in both themes, including colour contrast, visible
-  focus, keyboard operability, correct landmarks and headings, and a declared page language.
+  focus, keyboard operability, correct landmarks and headings, and a declared page language. In
+  scope are at least these WCAG 2.2 success criteria: 1.1.1 Non-text Content, 1.3.1 Info and
+  Relationships, 1.4.3 Contrast (Minimum), 1.4.4 Resize Text, 1.4.10 Reflow, 1.4.11 Non-text
+  Contrast, 1.4.12 Text Spacing, 2.1.1 Keyboard, 2.1.2 No Keyboard Trap, 2.4.1 Bypass Blocks,
+  2.4.2 Page Titled, 2.4.3 Focus Order, 2.4.4 Link Purpose (In Context), 2.4.7 Focus Visible,
+  2.4.11 Focus Not Obscured (Minimum), 2.5.8 Target Size (Minimum), 3.1.1 Language of Page,
+  4.1.2 Name, Role, Value and 4.1.3 Status Messages.
+- **FR-020a**: In each theme, measured against the background it sits on: body text and links at
+  least 4.5:1; large text (at least 24px, or at least 18.66px bold) at least 3:1, including
+  headings in their Flux colours (H1/H2 rust, H3 sage, H4 lavender), and 4.5:1 for any heading
+  smaller than large text; icons, control boundaries and focus indicators at least 3:1. The
+  focus indicator on every link and button is a solid outline at least 2px thick, offset 2px, in
+  the accent colour, with at least 3:1 contrast against the adjacent background in both themes.
+  In forced-colours (high contrast) mode, focus outlines use a system colour and stay visible
+  (outline style not `none`, at least 2px wide), and links, the menu button and the theme switch
+  stay visible and identifiable; an automated test checks this with forced colours emulated.
+- **FR-020b**: Every page, including the not-found page, MUST declare `lang="en"` on its root
+  element and have one banner (header), a navigation landmark labelled "Main", one main
+  landmark and one contentinfo (footer), exactly one level-1 heading and no skipped heading
+  levels. Text sizes use relative units, so text can be enlarged to 200% without loss of content
+  or function.
 - **FR-021**: The layout MUST work without horizontal scrolling from 320px wide to large desktop
   widths, and MUST respect reduced-motion preferences.
+- **FR-021a**: When the device asks for reduced motion, the mobile menu MUST open and close, the
+  theme MUST change, and the skip link MUST move to the main content instantly, with no
+  transition, animation or smooth scrolling: computed transition and animation durations of 0 on
+  the menu, the theme-affected elements and the switch, and scroll behaviour `auto`. An automated
+  test checks this with reduced motion emulated.
 - **FR-022**: Pages MUST be readable and navigable with JavaScript turned off; only the theme
   switch, the theme-before-paint step and the collapsing of the mobile menu may use script.
+- **FR-022a**: With JavaScript turned off, the skip link, focus order (without the menu button
+  and theme switch, which are not shown), current-page indication, landmarks, headings and
+  visible focus MUST still meet FR-009, FR-010, FR-010a, FR-020a and FR-020b, and the navigation
+  links shown as a plain wrapping list MUST be keyboard-operable inside the "Main" navigation
+  landmark. The automated accessibility check covers each template with JavaScript disabled at
+  phone width. Without JavaScript the theme is dark and cannot be switched; this is intended.
 - **FR-023**: Every public page MUST be generated ahead of time; no public page is rendered per
   request.
 
@@ -361,7 +505,43 @@ contact form, code blocks and author card come from and which feature ports each
   policy based on Flux's, tightened to remove the sources that no longer apply (the old form
   service, the public script CDN and the old database service) and allowing only the site itself
   and the privacy-respecting statistics service (including the Cloudflare Web Analytics beacon
-  that is injected into the main build).
+  that is injected into the main build). "Every response" means every response of every
+  deployment (branch previews and the main build), including the not-found page, `/robots.txt`,
+  the page list and static files. The headers are: `Content-Security-Policy` carrying the
+  directives only a header can carry (`frame-ancestors 'none'; object-src 'none'; base-uri
+  'self'`), `X-Content-Type-Options: nosniff`, `Referrer-Policy:
+  strict-origin-when-cross-origin`, `Permissions-Policy` denying camera, microphone,
+  geolocation, payment and USB, `X-Frame-Options: DENY`, `Cross-Origin-Opener-Policy:
+  same-origin`, `Strict-Transport-Security: max-age=31536000`, and `X-Robots-Tag: noindex`
+  (FR-019). No response sets a cookie.
+- **FR-024a**: Every HTML page MUST also carry the page content security policy, whose complete
+  allow-list is: `default-src 'self'`; `script-src 'self' https://static.cloudflareinsights.com`
+  plus build-time hashes of the site's own inline scripts (including the theme-before-paint
+  script, FR-013); `style-src 'self'` plus build-time hashes; `img-src 'self' data:`; `font-src
+  'self'`; `connect-src 'self' https://cloudflareinsights.com`; `object-src 'none'`; `base-uri
+  'self'`; `form-action 'self'`. It MUST NOT contain `'unsafe-inline'`, `'unsafe-eval'`, a bare
+  `https:` source, or any Flux-era origin: the old form service (`https://web3forms.com`,
+  `https://api.web3forms.com`), the public script CDN (`https://cdn.jsdelivr.net`) or the old
+  database service (any `supabase.co` host). No other origin is allowed (system fonts and
+  in-repo icons need none); this closed list is how Constitution Principle X ("no third-party
+  scripts, except privacy-focused analytics and the contact form's spam protection") is applied
+  to this site. Development-server needs, such as live-reload connections, are not part of the
+  built site and MUST NOT be added to its policy.
+- **FR-024b**: The two Cloudflare Web Analytics origins in FR-024a (beacon script
+  `https://static.cloudflareinsights.com`, reporting `https://cloudflareinsights.com`) are
+  allowed in the same policy on every deployment, so previews run exactly the production policy;
+  previews simply never receive the beacon. Because Cloudflare injects the beacon at its edge and
+  it never appears in the repository or in any local or CI build, the automated checks verify
+  what the build controls: the built policy lists these origins in `script-src` and
+  `connect-src`, and a served page with a simulated beacon tag loads with no policy violation.
+  That the real injected beacon loads on the live main build with no policy violation in the
+  browser console, and that the visit appears in Web Analytics, is a [PREVIEW-CHECK] on the main
+  build after merge.
+- **FR-024c**: Automated checks MUST assert both the presence of every required header and
+  directive and the absence of every forbidden source, on the built files and on responses
+  served by the hosting platform's local runtime. A later feature that needs another origin (for
+  example the Contact feature's API or spam protection) MUST name the origin and directive in
+  its own spec, and adding it is a major change.
 
 **Visitor statistics**
 
@@ -372,20 +552,45 @@ contact form, code blocks and author card come from and which feature ports each
   the repository MUST NOT contain analytics code or an analytics token, and branch preview visits
   MUST NOT be counted.
 - **FR-026**: If the statistics script is blocked or fails, the site MUST work exactly as before.
+  This is a functional check (the beacon request is blocked and pages, navigation and the theme
+  switch still work with no errors), separate from the policy checks in FR-024b.
 
 **Release pipeline**
 
 - **FR-027**: Every push MUST run an automated check suite covering linting, type checks, unit and
   component tests, end-to-end tests in a real browser, automated accessibility checks on every
-  page template in both themes, a production build, and a performance budget.
+  page template in both themes, a production build, and a performance budget. The suite also
+  includes secret scanning, the security header and policy checks (FR-024c) and the shell
+  screenshot baselines (FR-005a). "Every page template" means the placeholder home page and the
+  not-found page, each at phone and desktop width in both themes, plus the open mobile menu and
+  the no-JavaScript state (FR-022a). The constitution's contact-API integration test layer does
+  not apply to this feature, which has no API; it starts with the Contact feature. End-to-end,
+  accessibility, budget and screenshot checks run against the production build served by the
+  hosting platform's local runtime, never a development server.
+- **FR-027a**: One local command (`pnpm run verify`) MUST run exactly the checks of the required
+  CI check, and the CI check MUST invoke that same command with the same browser (Chromium), so
+  local and CI results mean the same thing. The only permitted difference is the per-OS
+  screenshot baseline set (FR-005b). Checks run with no automatic retries: any failure,
+  including an intermittent one, fails the run, and an intermittent test is fixed as its own
+  reviewed change.
 - **FR-028**: Every branch MUST get its own preview address showing that branch's build.
 - **FR-029**: The main site build MUST update automatically when changes reach the main branch,
   and only after the full check suite passes there.
 - **FR-030**: A failing check MUST block the merge and the release. Checks may not be skipped or
   weakened to get a change through.
+- **FR-030a**: Branch protection on main MUST require the `verify` check to pass on the latest
+  commit of an up-to-date branch, with no bypass, so a failed check cannot be overridden; this is
+  confirmed by the existing setup check for main-branch protection before the pull request
+  merges. Replacing a test with a successor is allowed only when the successor keeps every
+  assertion that still applies and any dropped assertion is named, with its reason, in the pull
+  request; loosening a threshold or removing a check without a matching spec change is a
+  forbidden weakening.
 - **FR-031**: The pipeline MUST build on the setup already completed (the existing hosting
   project, stored credentials, branch protection, the major-change label and the temporary main
-  build address) rather than recreate it.
+  build address) rather than recreate it. Where the feature input's deployment description
+  differs from the setup in place (Wrangler run from GitHub Actions with stored Cloudflare
+  secrets, versus Cloudflare Workers Builds with no deploy secrets in GitHub), the setup in place
+  wins.
 
 **Design source record**
 
@@ -418,29 +623,43 @@ contact form, code blocks and author card come from and which feature ports each
 
 - **SC-001**: The preview deployment matches the reference screenshots closely in both themes at
   mobile and desktop widths, as confirmed by Don when he reviews the preview, and 100% of the
-  committed shell screenshot baselines (header, footer, mobile menu, not-found page; phone and
-  desktop; both themes) pass on every run.
-- **SC-002**: 100% of page templates pass the automated accessibility checks with zero WCAG 2.2 AA
-  violations in both themes.
-- **SC-003**: In repeated automated loads with each stored theme choice, the first painted frame
-  shows the correct theme every time (zero flashes of the wrong theme).
-- **SC-004**: Every page template meets the "good" Core Web Vitals thresholds on a simulated mobile
-  device (largest content shown within 2.5 seconds, layout shift below 0.1), and the check fails
-  the run if a budget is exceeded.
+  committed shell screenshot baselines (the closed set of 14 per operating system in FR-005a)
+  pass on every run within the FR-005a threshold.
+- **SC-002**: 100% of page templates pass the automated accessibility checks with zero violations
+  of any impact level, running the checker's WCAG 2.0, 2.1 and 2.2 level A and AA rules, in both
+  themes, at phone and desktop widths, with the mobile menu open, and with JavaScript disabled at
+  phone width (FR-027).
+- **SC-003**: For each stored choice (dark, light, match device with the device set to light and
+  to dark, none, and an invalid value), across first load, reload, following an in-site link and
+  back/forward navigation, with at least 5 loads each, the theme applied when the page body is
+  first inserted equals the expected theme in 100% of loads (zero frames of the wrong theme).
+- **SC-004**: Every page template individually (home and not-found) meets the "good" Core Web
+  Vitals thresholds and the page budget on a simulated mobile device — 390×844 viewport, 4× CPU
+  slowdown, network of 150 ms round trip, 1.6 Mbps down and 750 kbps up: largest content shown
+  within 2.5 seconds, layout shift below 0.1, total long-task time at most 200 ms, at most 10 KB
+  of JavaScript and at most 100 KB in total transferred per page load. Any template breaching
+  any limit fails the run; results are never averaged across templates. The check runs against
+  the production build (FR-027).
 - **SC-005**: A keyboard-only user can reach and operate every link and control in the header,
   mobile menu, footer and theme switch, with visible focus at every step.
-- **SC-006**: Every public page appears in the search engine page list and has complete sharing
-  metadata; zero public pages are missing either.
+- **SC-006**: Every public page (FR-018; in this feature, the home page) appears in the search
+  engine page list and has complete sharing metadata; zero public pages are missing either.
 - **SC-007**: A branch preview is available within 10 minutes of a push whose checks pass, and the
-  main build updates within 10 minutes of a passing merge, with no manual step.
-- **SC-008**: A deliberately failing check blocks the merge and prevents any release, every time.
+  main build updates within 10 minutes of a passing merge, with no manual step. Time is measured
+  from the push to the branch (for a preview) or from the merge commit landing on main (for the
+  main build) to the new version being served at its address.
+- **SC-008**: A deliberately failing check (a deterministic failing test, run with no automatic
+  retries per FR-027a) blocks the merge and prevents any release, every time.
 - **SC-009**: Loading any page sets zero tracking cookies.
 - **SC-010**: A reader of the design source document can identify, for every Flux part listed in
   this feature's input, what it becomes and which feature ports it, without opening Flux.
-- **SC-011**: The feature is done when all checks pass in CI, the preview matches the reference
-  screenshots closely in both themes, the design source document is committed, the main branch
-  build is live on the temporary address, and Don has approved the pull request labelled as a
-  major change.
+- **SC-011**: The feature is done only when every one of these separately verifiable conditions
+  holds: (a) the `verify` check passes in CI on the pull request's final commit; (b) Don confirms
+  the preview matches the reference screenshots closely in both themes; (c) the design source
+  document is committed; (d) the pull request carries the major-change label and Don's approval;
+  (e) after merge, the main branch build is live on the temporary address,
+  https://new.doncoleman.ca; and (f) every [PREVIEW-CHECK] item in this spec is confirmed.
+  Partial satisfaction is not done.
 
 ## Assumptions
 
@@ -456,10 +675,24 @@ contact form, code blocks and author card come from and which feature ports each
   can be supplied later without a spec change.
 - The live domain doncoleman.ca is not switched over in this feature; the main build is served on
   the temporary address set up earlier and, like every preview, is not indexed.
-- The build platform makes the deployment's own address available at build time (for example
-  through an environment variable), so metadata and the page list can point at it; the plan
-  confirms the mechanism. Because addresses follow the serving deployment, the domain switch needs
-  no metadata change beyond serving the site at doncoleman.ca.
+- The build platform makes enough information available at build time to know the deployment's
+  own address. The plan found that Workers Builds provides the branch name but not the address,
+  so the preview address is derived from the branch name (FR-017a) and the preview deploy step
+  publishes to exactly that address. This needs a one-time setting change by Don in the
+  Cloudflare dashboard; until it is made, a preview's metadata names its branch address but the
+  preview is not served there, so confirming that the first preview's
+  canonical equals its served address is a [PREVIEW-CHECK] and a precondition for merge. Because
+  addresses follow the serving deployment, the domain switch needs only the main build address
+  and no-index settings changed alongside serving the site at doncoleman.ca.
+- The automated accessibility checker covers only the automatable part of WCAG 2.2 AA. Keyboard,
+  focus, naming and announcement behaviour (FR-007a, FR-008a, FR-010, FR-010a, FR-012a, FR-020a,
+  FR-021a) is covered by end-to-end tests, and the rest by Don's review of the preview with a
+  keyboard.
+- Current evergreen browsers report changes to the device's light/dark setting to an open page.
+  If a browser does not, the theme catches up on the next load; this is acceptable.
+- Cloudflare Web Analytics keeps its beacon origins stable. If Cloudflare changes them, the
+  main-build [PREVIEW-CHECK] in FR-024b catches it, and the policy is updated as its own reviewed
+  change.
 - Statistics use Cloudflare Web Analytics, the only analytics option the constitution allows,
   with automatic setup on the main build's address (setup item 18), which injects the beacon at
   Cloudflare's edge; expected additional monthly cost is zero (free tier).

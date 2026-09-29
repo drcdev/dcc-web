@@ -8,44 +8,44 @@
 
 ## Security Header Completeness
 
-- [ ] CHK001 Does the spec enumerate which security headers beyond CSP are required (e.g., frame-ancestors/X-Frame-Options equivalent, referrer policy, permissions policy), or does FR-024 name only CSP explicitly, leaving the rest implicit? [Completeness, Gap, Spec §FR-024]
-- [ ] CHK002 Is "every response" in FR-024 specified to include the not-found page and the sitemap/robots.txt endpoints, or only "pages" in the narrower sense? [Coverage, Spec §FR-024, FR-016, FR-018]
-- [ ] CHK003 Is there a requirement stating headers must be present on branch previews as well as the main build, consistent with the noindex requirement's "every deployment" language, or is scope only implied by analogy? [Consistency, Spec §FR-024 vs. FR-019]
+- [x] CHK001 Does the spec enumerate which security headers beyond CSP are required (e.g., frame-ancestors/X-Frame-Options equivalent, referrer policy, permissions policy), or does FR-024 name only CSP explicitly, leaving the rest implicit? [Completeness, Gap, Spec §FR-024]
+- [x] CHK002 Is "every response" in FR-024 specified to include the not-found page and the sitemap/robots.txt endpoints, or only "pages" in the narrower sense? [Coverage, Spec §FR-024, FR-016, FR-018]
+- [x] CHK003 Is there a requirement stating headers must be present on branch previews as well as the main build, consistent with the noindex requirement's "every deployment" language, or is scope only implied by analogy? [Consistency, Spec §FR-024 vs. FR-019]
 
 ## CSP Tightening Requirements
 
-- [ ] CHK004 Are the specific sources to be removed named precisely enough to verify removal (old form service, public script CDN, old database service) with their actual origins documented somewhere the checklist/tests can reference, rather than only descriptive labels? [Clarity, Spec §FR-024]
-- [ ] CHK005 Is "based on Flux's [CSP]" reconciled with "tightened to remove..." — i.e., is there a definitive expected end-state policy (allow-list) the requirement points to, or is the result open to interpretation? [Ambiguity, Spec §FR-024]
-- [ ] CHK006 Is it specified whether the tightened CSP must be verified by an automated test asserting the *absence* of the removed origins (not just the presence of allowed ones), so a future addition of the old form service would be caught? [Measurability, Gap, Spec §FR-024]
-- [ ] CHK007 Are CSP requirements for inline scripts (the pre-paint theme script, per FR-013) reconciled with the tightened CSP — is a nonce/hash-based allowance for that specific inline script called out as a requirement rather than left to implementation to discover a conflict? [Consistency, Spec §FR-024 vs. FR-013, Plan §First-party option table CSP row]
-- [ ] CHK008 Does the requirement address style sources (inline styles from Tailwind/Shiki-adjacent tooling) with the same rigor as script sources, or is CSP tightening only discussed in terms of scripts/connect sources? [Completeness, Gap, Spec §FR-024]
+- [x] CHK004 Are the specific sources to be removed named precisely enough to verify removal (old form service, public script CDN, old database service) with their actual origins documented somewhere the checklist/tests can reference, rather than only descriptive labels? [Clarity, Spec §FR-024]
+- [x] CHK005 Is "based on Flux's [CSP]" reconciled with "tightened to remove..." — i.e., is there a definitive expected end-state policy (allow-list) the requirement points to, or is the result open to interpretation? [Ambiguity, Spec §FR-024]
+- [x] CHK006 Is it specified whether the tightened CSP must be verified by an automated test asserting the *absence* of the removed origins (not just the presence of allowed ones), so a future addition of the old form service would be caught? [Measurability, Gap, Spec §FR-024]
+- [x] CHK007 Are CSP requirements for inline scripts (the pre-paint theme script, per FR-013) reconciled with the tightened CSP — is a nonce/hash-based allowance for that specific inline script called out as a requirement rather than left to implementation to discover a conflict? [Consistency, Spec §FR-024 vs. FR-013, Plan §First-party option table CSP row]
+- [x] CHK008 Does the requirement address style sources (inline styles from Tailwind/Shiki-adjacent tooling) with the same rigor as script sources, or is CSP tightening only discussed in terms of scripts/connect sources? [Completeness, Gap, Spec §FR-024]
 
 ## Web Analytics Beacon Allowance
 
-- [ ] CHK009 Is the Cloudflare Web Analytics beacon's required CSP directive(s) (e.g., script-src, connect-src) and its expected origin specified precisely enough to be independently verifiable, rather than only "allowing... the beacon"? [Clarity, Spec §FR-024]
-- [ ] CHK010 Is it specified that the beacon allowance applies to the main build only, consistent with FR-025's "recorded only for the main build," and that branch previews' CSP need not (or must not) allow it — avoiding an unstated inconsistency between the two requirements? [Consistency, Spec §FR-024 vs. FR-025]
-- [ ] CHK011 Since the beacon is "injected into the main build" by Cloudflare (edge-injected, not in-repo code per FR-025), is there a requirement describing how the CSP can allow a script the repository never declares, without the test suite needing prior knowledge of Cloudflare's injection origin? [Gap, Dependency, Spec §FR-024, FR-025]
-- [ ] CHK012 Is the acceptance criterion for "the CSP allows the statistics beacon" (per Clarifications) testable against a static built artifact, given the beacon itself is only injected at Cloudflare's edge and not present in the local/CI build? [Measurability, Ambiguity, Spec §Clarifications]
+- [x] CHK009 Is the Cloudflare Web Analytics beacon's required CSP directive(s) (e.g., script-src, connect-src) and its expected origin specified precisely enough to be independently verifiable, rather than only "allowing... the beacon"? [Clarity, Spec §FR-024]
+- [x] CHK010 Is it specified that the beacon allowance applies to the main build only, consistent with FR-025's "recorded only for the main build," and that branch previews' CSP need not (or must not) allow it — avoiding an unstated inconsistency between the two requirements? [Consistency, Spec §FR-024 vs. FR-025]
+- [x] CHK011 Since the beacon is "injected into the main build" by Cloudflare (edge-injected, not in-repo code per FR-025), is there a requirement describing how the CSP can allow a script the repository never declares, without the test suite needing prior knowledge of Cloudflare's injection origin? [Gap, Dependency, Spec §FR-024, FR-025]
+- [x] CHK012 Is the acceptance criterion for "the CSP allows the statistics beacon" (per Clarifications) testable against a static built artifact, given the beacon itself is only injected at Cloudflare's edge and not present in the local/CI build? [Measurability, Ambiguity, Spec §Clarifications]
 
 ## No Leftover Third-Party Origins
 
-- [ ] CHK013 Is there a requirement to audit and remove ALL Flux-era third-party origins (not just the three explicitly named), including any font, icon, or CDN origins the design-source mapping surfaces, so "tightened" isn't scoped only to the three called out? [Completeness, Spec §FR-024, Plan §Design source document item 2]
-- [ ] CHK014 Is there an explicit requirement (or test) verifying no third-party origins are reintroduced when later features (Blog's Shiki, Contact's form/API) are added, or is that left entirely to those features' own specs with no cross-reference here? [Gap, Dependency, Spec §Out of Scope, Plan §Risks "Shiki vs Astro CSP"]
-- [ ] CHK015 Is the constitutional constraint ("no advertising, tracking cookies or third-party scripts, except privacy-focused analytics and... spam protection") explicitly cross-referenced by FR-024 so the CSP requirement and the constitution can't drift independently? [Consistency, Spec §FR-024 vs. Constitution Principle X]
+- [x] CHK013 Is there a requirement to audit and remove ALL Flux-era third-party origins (not just the three explicitly named), including any font, icon, or CDN origins the design-source mapping surfaces, so "tightened" isn't scoped only to the three called out? [Completeness, Spec §FR-024, Plan §Design source document item 2]
+- [x] CHK014 Is there an explicit requirement (or test) verifying no third-party origins are reintroduced when later features (Blog's Shiki, Contact's form/API) are added, or is that left entirely to those features' own specs with no cross-reference here? [Gap, Dependency, Spec §Out of Scope, Plan §Risks "Shiki vs Astro CSP"]
+- [x] CHK015 Is the constitutional constraint ("no advertising, tracking cookies or third-party scripts, except privacy-focused analytics and... spam protection") explicitly cross-referenced by FR-024 so the CSP requirement and the constitution can't drift independently? [Consistency, Spec §FR-024 vs. Constitution Principle X]
 
 ## Acceptance Criteria Quality
 
-- [ ] CHK016 Can "the site works when it is blocked" (statistics beacon blocked, per Clarifications and FR-026) be objectively verified as a CSP/headers requirement distinct from a functional requirement, or does it overlap ambiguously with FR-026? [Consistency, Spec §Clarifications vs. FR-026]
-- [ ] CHK017 Is there a measurable pass/fail criterion for the CSP requirement in the automated check suite (FR-027's "linting, type checks... performance budget") — i.e., is a CSP/headers check explicitly named as part of the release gate, or only implied? [Gap, Spec §FR-027 vs. FR-024]
+- [x] CHK016 Can "the site works when it is blocked" (statistics beacon blocked, per Clarifications and FR-026) be objectively verified as a CSP/headers requirement distinct from a functional requirement, or does it overlap ambiguously with FR-026? [Consistency, Spec §Clarifications vs. FR-026]
+- [x] CHK017 Is there a measurable pass/fail criterion for the CSP requirement in the automated check suite (FR-027's "linting, type checks... performance budget") — i.e., is a CSP/headers check explicitly named as part of the release gate, or only implied? [Gap, Spec §FR-027 vs. FR-024]
 
 ## Dependencies & Assumptions
 
-- [ ] CHK018 Is the dependency on `public/_headers` (Cloudflare Pages/Workers headers file) plus Astro's `security.csp` meta-tag mechanism documented as two cooperating first-party mechanisms, with the requirement clarifying which header (meta vs. HTTP) is authoritative for which directive (e.g., `frame-ancestors` cannot be set via meta)? [Dependency, Clarity, Plan §First-party option table "Other security headers"]
-- [ ] CHK019 Is the assumption that Cloudflare Web Analytics' beacon origin is stable (won't change without notice, breaking CSP) documented anywhere as a risk or assumption? [Assumption, Gap]
+- [x] CHK018 Is the dependency on `public/_headers` (Cloudflare Pages/Workers headers file) plus Astro's `security.csp` meta-tag mechanism documented as two cooperating first-party mechanisms, with the requirement clarifying which header (meta vs. HTTP) is authoritative for which directive (e.g., `frame-ancestors` cannot be set via meta)? [Dependency, Clarity, Plan §First-party option table "Other security headers"]
+- [x] CHK019 Is the assumption that Cloudflare Web Analytics' beacon origin is stable (won't change without notice, breaking CSP) documented anywhere as a risk or assumption? [Assumption, Gap]
 
 ## Ambiguities & Conflicts
 
-- [ ] CHK020 Does "the site itself and the privacy-respecting statistics service" (FR-024, i.e., a two-origin allow-list) fully account for `wss:`/dev-only or third-party font/icon needs introduced by Tailwind or other tooling, or could implementation choices silently require loosening this closed list, contradicting "tightened"? [Conflict, Ambiguity, Spec §FR-024]
+- [x] CHK020 Does "the site itself and the privacy-respecting statistics service" (FR-024, i.e., a two-origin allow-list) fully account for `wss:`/dev-only or third-party font/icon needs introduced by Tailwind or other tooling, or could implementation choices silently require loosening this closed list, contradicting "tightened"? [Conflict, Ambiguity, Spec §FR-024]
 
 ## Notes
 
