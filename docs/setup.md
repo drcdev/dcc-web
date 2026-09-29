@@ -304,6 +304,8 @@ that regenerates the Linux visual baselines for a human or agent to review and c
 part of the `verify` gate and never runs on push; before it exists on `main` it can only be
 triggered by adding the `visual-baselines` label to a pull request (`workflow_dispatch` isn't
 registered until the file is on the default branch), and afterwards `gh workflow run` works too.
+The same baselines can be regenerated locally with `pnpm run test:visual:update:linux`, which
+runs the job's steps in the matching Playwright Docker image and needs Docker Desktop running.
 
 **How it will be confirmed**
 `pnpm setup:check --item github-ci-workflow` reports complete when both workflow files exist on

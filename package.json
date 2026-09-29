@@ -21,6 +21,7 @@
     "test:budget": "playwright test --project=budget",
     "test:visual": "playwright test --project=visual",
     "test:visual:update": "playwright test --project=visual --update-snapshots",
+    "test:visual:update:linux": "bash scripts/visual-baselines-linux.sh",
     "reference:capture": "playwright test --config tests/reference/playwright.config.ts",
     "deploy:preview": "node scripts/deploy/preview.ts",
     "verify": "pnpm run lint:secrets && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build && pnpm run test:e2e",

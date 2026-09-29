@@ -66,6 +66,9 @@ Tell every subagent that runs `pnpm`, `astro` or `playwright`:
   state between calls).
 - macOS has no `timeout` binary. Bound long runs with
   `perl -e 'alarm N; exec @ARGV' <cmd>` (N in seconds).
+- Docker Desktop is normally off. It is needed only for
+  `pnpm run test:visual:update:linux`; if `docker info` fails, ask Don to
+  start it (see the visual-baselines step) rather than skipping to CI.
 
 ## Preflight
 
@@ -107,7 +110,7 @@ phase:
 | 3   | plan      | `speckit-plan`      | opus   | The Constitution Check must address every principle. For each capability, name the Astro / Cloudflare / Fly.io first-party option and use it, or say why it falls short (Principle IV). State the expected monthly cost of anything new (Principle IX). Flag whether the slice is a **major change** under Principle III and why. If `package.json` has no `verify` script yet, the plan must add one that runs the whole local gate.                          |
 | 4   | checklist | `speckit-checklist` | sonnet | Generate the checklist(s) the spec's risk areas call for; always include accessibility (WCAG 2.2 AA) and, if the slice touches the contact form or API, privacy/security. **Generation only — do not evaluate or check off items.**                                                                                                                                                                                       |
 | 4b  | resolve   | — (no skill)        | opus   | **Resolve every checklist item — see below.**                                                                                                                                                                                                                                                                                                                                                                              |
-| 5   | tasks     | `speckit-tasks`     | sonnet | Tests are **mandatory**, not optional: every story gets unit/schema, component, E2E and accessibility test tasks as the plan's test layers require, ordered before the implementation they cover. If the slice alters what a snapshotted page looks like, include a task to update the macOS visual baselines (`pnpm run test:visual:update`) after the implementation. Tasks a subagent cannot verify locally (needs the preview deployment or Don's eyes) get the suffix `[PREVIEW-CHECK]`.                                                                                                     |
+| 5   | tasks     | `speckit-tasks`     | sonnet | Tests are **mandatory**, not optional: every story gets unit/schema, component, E2E and accessibility test tasks as the plan's test layers require, ordered before the implementation they cover. If the slice alters what a snapshotted page looks like, include a task to update the macOS and Linux visual baselines (`pnpm run test:visual:update`, then `pnpm run test:visual:update:linux`, which needs Docker Desktop) after the implementation. Tasks a subagent cannot verify locally (needs the preview deployment or Don's eyes) get the suffix `[PREVIEW-CHECK]`.                                                                                                     |
 | 6   | analyze   | `speckit-analyze`   | opus   | The skill is read-only and ends by offering remediation and telling you not to apply it. **Override for this pipeline: apply the concrete remediation edits yourself, re-run the consistency check on the edited artifacts, and commit.** Your summary must account for **every** finding as fixed or deferred-with-reason (CRITICAL findings, which include every constitution violation, may never be deferred).           |
 | 7   | implement | `speckit-implement` | sonnet | **Chunked per task phase — see below.**                                                                                                                                                                                                                                                                                                                                                                                   |
 | 8   | converge  | `speckit-converge`  | opus   | **One pass — see below.**                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -219,14 +222,20 @@ if the second implement pass still leaves gaps, stop and report them.
 - **Visual baselines.** The visual project compares each snapshotted page
   against committed per-platform images. If the slice altered a page's
   appearance on purpose, the implement phase updates the macOS baselines
-  (`pnpm run test:visual:update`); the **Linux** baselines can only be
-  regenerated in CI. After the PR is open, add the `visual-baselines`
+  (`pnpm run test:visual:update`); the **Linux** baselines are what CI
+  compares against and are regenerated with `pnpm run test:visual:update:linux`
+  (the same steps as the
+  `update-baselines` CI job, run in the matching Playwright Docker image;
+  needs Docker Desktop). If `docker info` fails, ask Don to start Docker
+  Desktop with an `AskUserQuestion` whose question text carries the
+  instruction, then run it, review the diff, commit the images and push —
+  before opening the PR, so `verify` is green. Fallback only if Docker
+  cannot be started: after the PR is open, add the `visual-baselines`
   label, wait for the `update-baselines` job, download its
-  `visual-baselines-linux` artifact with `gh run download`, review the
-  diff, commit the images to the branch and push. Until that lands, the
-  `verify` check on the PR is expected to be red on visual only — say so in
-  the PR body. A visual diff the spec did not predict is a regression, not
-  a baseline to refresh.
+  `visual-baselines-linux` artifact with `gh run download`, review, commit
+  and push; until that lands the `verify` check on the PR is expected to
+  be red on visual only — say so in the PR body. A visual diff
+  the spec did not predict is a regression, not a baseline to refresh.
 
 ## Finish
 
@@ -261,8 +270,9 @@ if the second implement pass still leaves gaps, stop and report them.
    pending, the list of `[PREVIEW-CHECK]` items for Don to walk on the
    preview deployment, and any risks the phase agents flagged. Apply the
    label / auto-merge chosen in step 3.
-5. If Linux baselines are owed, run the visual-baselines step from the
-   long-running-suites rules now, before watching the gate.
+5. If Linux baselines are still owed because Docker could not be started,
+   run the CI-label fallback from the long-running-suites rules now, before
+   watching the gate.
 6. **Watch the release gate.** Run `gh pr checks --watch` with a timeout
    (20 minutes). Red → dispatch a fix subagent on the branch, which fixes
    the cause (never the check), commits and pushes; watch again. Record the
