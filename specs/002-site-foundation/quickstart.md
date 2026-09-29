@@ -62,8 +62,11 @@ footer should match closely; no Subscribe, Account or search buttons.
    `-linux` baselines don't exist yet — and because `playwright.config.ts` sets
    `updateSnapshots: "none"` (FR-005b), the check's own failure artifact never contains actual
    images to commit. Generate them instead with the manually-triggered
-   `.github/workflows/visual-baselines.yml` workflow: `gh workflow run visual-baselines.yml --ref
-   <branch>`, wait for it to finish, then `gh run download <run-id>` its
+   `.github/workflows/visual-baselines.yml` workflow. Before this file is on `main`,
+   `workflow_dispatch` isn't registered yet, so trigger it on the PR branch by adding the
+   `visual-baselines` label to the pull request (remove and re-add the label to run it again);
+   once the file is on `main`, `gh workflow run visual-baselines.yml --ref <branch>` also works.
+   Either way, wait for the run to finish, then `gh run download <run-id>` its
    `visual-baselines-linux` artifact, review the 14 images by eye, commit them under
    `tests/e2e/visual.spec.ts-snapshots/`, and push. That workflow only builds and regenerates
    snapshots — it never commits or pushes anything itself, so the images are always reviewed by a

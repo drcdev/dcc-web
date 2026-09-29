@@ -670,14 +670,18 @@ set, and prepare the pull request for major-change review.
 - [ ] T095 Push the branch, open the pull request as the `drc-agents` machine account. The
   `verify` check's `playwright-output` failure artifact does not carry the 14 `-linux` images
   because `updateSnapshots: "none"` (FR-005b) stops Playwright writing actual images on a
-  missing-baseline failure — so generate them with a dedicated, manually-triggered workflow
-  instead: `.github/workflows/visual-baselines.yml` (`workflow_dispatch` only, same
-  checkout/pnpm/Node/Playwright setup as `ci.yml`, SHA-pinned actions). Dispatch it on the branch
-  with `gh workflow run visual-baselines.yml --ref <branch>`, wait for the run, download its
-  `visual-baselines-linux` artifact with `gh run download <run-id>`, review the 14 `-linux`
-  images by eye, and commit them so CI's `visual` project passes on this branch (FR-005b,
-  research R13). The workflow only builds and regenerates snapshots; it never commits or pushes
-  itself — committing stays a reviewed, human-approved step.
+  missing-baseline failure — so generate them with a dedicated workflow instead:
+  `.github/workflows/visual-baselines.yml` (`workflow_dispatch` plus a labeled `pull_request`
+  trigger, job-guarded to only run on dispatch or the `visual-baselines` label, same
+  checkout/pnpm/Node/Playwright setup as `ci.yml`, SHA-pinned actions). `workflow_dispatch` only
+  registers once the workflow file exists on the default branch, so on this PR branch trigger it
+  by adding the `visual-baselines` label to the pull request instead (remove and re-add to run
+  again); once the file is on `main`, `gh workflow run visual-baselines.yml --ref <branch>` also
+  works. Either way, wait for the run, download its `visual-baselines-linux` artifact with
+  `gh run download <run-id>`, review the 14 `-linux` images by eye, and commit them so CI's
+  `visual` project passes on this branch (FR-005b, research R13). The workflow only builds and
+  regenerates snapshots; it never commits or pushes itself — committing stays a reviewed,
+  human-approved step.
 - [ ] T096 Run `pnpm run verify` one more time locally, and confirm the pushed branch's `verify`
   check is green on GitHub Actions, before treating any task in this feature as done (Principle
   II — never mark done on a red suite).

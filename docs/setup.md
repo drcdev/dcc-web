@@ -298,10 +298,11 @@ and on `main`, not just locally.
 **Where to do it**
 Nothing new to do here; `.github/workflows/ci.yml` and `.github/workflows/major-change.yml` are
 part of this slice's pull request. This item confirms they exist on `main` and that the latest
-run succeeded, after the merge. `.github/workflows/visual-baselines.yml` is a separate,
-manually-triggered (`workflow_dispatch`) workflow that regenerates the Linux visual baselines for
-a human or agent to review and commit — it is not part of the `verify` gate and never runs on a
-pull request or push.
+run succeeded, after the merge. `.github/workflows/visual-baselines.yml` is a separate workflow
+that regenerates the Linux visual baselines for a human or agent to review and commit — it is not
+part of the `verify` gate and never runs on push; before it exists on `main` it can only be
+triggered by adding the `visual-baselines` label to a pull request (`workflow_dispatch` isn't
+registered until the file is on the default branch), and afterwards `gh workflow run` works too.
 
 **How it will be confirmed**
 `pnpm setup:check --item github-ci-workflow` reports complete when both workflow files exist on

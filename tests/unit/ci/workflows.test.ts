@@ -114,11 +114,23 @@ describe(".github/workflows/major-change.yml", () => {
 describe(".github/workflows/visual-baselines.yml", () => {
   const contents = read(".github/workflows/visual-baselines.yml");
 
-  it("is triggered only by workflow_dispatch", () => {
+  it("is triggered only by workflow_dispatch and a labeled pull_request, never push or schedule", () => {
     expect(contents).toMatch(/^on:\s*\n\s*workflow_dispatch:/m);
-    expect(contents).not.toMatch(/pull_request:/);
+    expect(contents).toMatch(/pull_request:\s*\n\s*types:\s*\[labeled\]/);
     expect(contents).not.toMatch(/^\s*push:/m);
     expect(contents).not.toMatch(/schedule:/);
+  });
+
+  it("guards the job to only run on dispatch or the visual-baselines label", () => {
+    expect(contents).toMatch(
+      /if:\s*github\.event_name == 'workflow_dispatch' \|\| github\.event\.label\.name == 'visual-baselines'/,
+    );
+  });
+
+  it("checks out the PR head SHA for the pull_request event, default otherwise", () => {
+    expect(contents).toMatch(
+      /ref:\s*\$\{\{\s*github\.event_name == 'pull_request' && github\.event\.pull_request\.head\.sha \|\| github\.sha\s*\}\}/,
+    );
   });
 
   it("runs on ubuntu with minimal permissions: contents: read", () => {
