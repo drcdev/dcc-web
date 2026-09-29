@@ -239,7 +239,7 @@ Playwright projects are configured and unit-tested, `resolveSiteOrigin` is teste
 
 **Purpose**: Port Flux's design system into Tailwind tokens before any component uses them. [US1]
 
-- [ ] T027 [P] [US1] Write a failing unit test `tests/unit/site/design-tokens.test.ts` reading
+- [X] T027 [P] [US1] Write a failing unit test `tests/unit/site/design-tokens.test.ts` reading
   `src/styles/global.css` as text and asserting: for each of `dusk`, `rust`, `sage`, `lavender`,
   `mist`, `sand`, `mauve`, a `BASE` custom property plus all eleven shades (50–950) derived from
   it with `hsl(from var(--color-X-BASE) …)` (FR-001, FR-002); `--color-accent-BASE` equals
@@ -250,22 +250,22 @@ Playwright projects are configured and unit-tested, `resolveSiteOrigin` is teste
   `@media (forced-colors: active)` fallback using a system colour (FR-020a); `--font-body` and
   `--font-heading` are system font stacks, and the file has no `@font-face` and no `@import` or
   `url(` pointing at another host (FR-003). Run it and confirm it fails.
-- [ ] T028 [US1] Port the seven Flux `@theme` palettes from `.reference/flux/assets/css/screen.css`
+- [X] T028 [US1] Port the seven Flux `@theme` palettes from `.reference/flux/assets/css/screen.css`
   into `src/styles/global.css` by hand (never imported), keeping the
   `hsl(from var(--color-X-BASE) h s N%)` derivation so changing one `BASE` value updates the whole
   palette (FR-001, FR-002); add the fixed `accent-*` palette derived from `#d68844` (FR-003).
-- [ ] T029 [US1] Add `@custom-variant dark (&:where(.dark, .dark *));` and
+- [X] T029 [US1] Add `@custom-variant dark (&:where(.dark, .dark *));` and
   `@custom-variant js (&:where(.js, .js *));` to `src/styles/global.css` (research R3, R6).
-- [ ] T030 [US1] Port `.prose-accent` (with `@tailwindcss/typography` registered), heading colours
+- [X] T030 [US1] Port `.prose-accent` (with `@tailwindcss/typography` registered), heading colours
   (H1/H2 rust, H3 sage, H4 lavender, H5/H6), `.table-wrapper` rules, and the
   `a:focus-visible, button:focus-visible` focus ring — including the `forced-colors` fallback
   (`outline-color: CanvasText`) — into `src/styles/global.css`, as-is from Flux (FR-001,
   FR-020a). Port colour pairings unchanged here; any
   contrast adjustment is made in T087, driven by the failing accessibility spec (FR-001a).
-- [ ] T031 [US1] Add `--font-body` / `--font-heading` tokens set to Tailwind's default system font
+- [X] T031 [US1] Add `--font-body` / `--font-heading` tokens set to Tailwind's default system font
   stack (no web fonts, no font service) and apply them to body and heading elements as Flux's two
   font rules do (FR-003).
-- [ ] T032 Run `pnpm exec vitest run tests/unit/site/design-tokens.test.ts` and
+- [X] T032 Run `pnpm exec vitest run tests/unit/site/design-tokens.test.ts` and
   `pnpm run typecheck`; fix anything red before moving to Phase 4.
 
 **Checkpoint**: every palette is ported and unit-tested; global styles are ready for components to
