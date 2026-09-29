@@ -12,7 +12,7 @@
 
 The site has its foundation (feature 002) and standalone pages (feature 003). The header already
 links to Projects, which has no page yet. Before the real portfolio is built, Don wants to see
-two or three concrete, working design directions for it and pick one. This feature produces
+three concrete, working design directions for it and pick one. This feature produces
 those directions as throwaway prototypes and a decision document; it does not build the
 portfolio itself.
 
@@ -27,6 +27,16 @@ waits for Don's review of the preview deployment and his approval.
 
 A blog design directions feature is being prepared in parallel. The two features produce
 separate decision documents and separate prototypes and must not overwrite each other's work.
+
+## Clarifications
+
+### Session 2026-09-29
+
+- Q: Which project from drc.dev should be the sample story used in every design direction? → A: Focus Pocus (the MCP server connecting Claude Desktop with OmniFocus). Whether it has a live demo on drc.dev is unconfirmed; treat the demo as "if one exists", otherwise use the project's public page or repository as the demo target and say so.
+- Q: What is the story content for the sample project at each stage? → A: Claude drafts each stage from the project's drc.dev page and repository, marked "draft for review"; Don corrects it on the preview deployment.
+- Q: Are there portfolios or case-study pages Don likes that should shape the directions? → A: None; the directions draw only on the site's current design and the Flux starting points.
+- Q: How many design directions should be built? → A: Three.
+- Q: Should the other projects on the index be the real drc.dev projects or invented placeholders? → A: The real drc.dev projects, as short index entries only with no story pages; only Focus Pocus links to a story.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -72,8 +82,9 @@ stages, every option, the visuals, the demo and the invitation) is present and u
 
 ### User Story 2 - Don compares the directions for the projects index (Priority: P2)
 
-Don opens each direction's version of the projects index. Each shows the sample project (and
-enough placeholder entries to show how a list of projects looks) with its title, a one-line
+Don opens each direction's version of the projects index. Each shows the sample project (Focus
+Pocus) and Don's other real drc.dev projects (Tempo, Flux, drc.dev and Plunge Buddy) as short
+entries, with its title, a one-line
 problem statement, a visual, its themes and its status. He filters the index by theme and
 follows an entry to that direction's story page.
 
@@ -166,6 +177,8 @@ empty.
   not broken.
 - A short demo clip cannot play, or the reader has reduced motion requested: the clip does not
   play automatically, and a still frame or description stands in for it.
+- The reader selects an index entry other than Focus Pocus: it has no story page, so the entry
+  is not presented as a link to one (or links only to the project's existing public page).
 - The theme filter matches no entries: the index says plainly that no projects match and offers
   a way to clear the filter.
 - A project has more options than fit side by side on a phone: all options remain reachable at
@@ -181,15 +194,16 @@ empty.
 
 **Directions**
 
-- **FR-001**: The feature MUST deliver at least two and at most three design directions that are
-  visibly distinct from one another in how they present the project story and the projects
+- **FR-001**: The feature MUST deliver exactly three design directions that are visibly distinct from one another in how they present the project story and the projects
   index.
 - **FR-002**: Each direction MUST include a project story page and a projects index.
 - **FR-003**: Every direction MUST use the same real sample project as its story content, so the
-  directions can be compared like for like. The sample project and its story content are
-  [NEEDS CLARIFICATION: Which of Don's projects (for example, one listed on his current portfolio at https://drc.dev) is the sample story, and what is its content for each stage: the problem and who had it, the constraints, the options considered and why one was chosen, what was built, what happened, and what he would do differently?]
-- **FR-004**: The directions MUST take account of
-  [NEEDS CLARIFICATION: Are there portfolios or case-study pages Don likes that should inform the directions? If none are given, the directions draw only on the site's existing design baseline.]
+  directions can be compared like for like. The sample project is Focus Pocus, the MCP server
+  that connects Claude Desktop with OmniFocus. Its content for each stage is drafted from its
+  drc.dev project page and its public repository, and every stage MUST be visibly marked as a
+  draft for Don's review until he has corrected it on the preview deployment.
+- **FR-004**: The directions MUST draw only on the site's current design baseline and the Flux
+  theme starting points; no outside portfolios or case-study pages are used as references.
 - **FR-005**: Each direction MUST use only the colours, palettes and typefaces the site already
   uses. A direction that needs anything new MUST say so in the decision document rather than
   adding it silently.
@@ -210,9 +224,10 @@ empty.
 - **FR-012**: Each story page MUST place each visual, diagram or short demo clip next to the
   part of the story it explains.
 - **FR-013**: Each story page MUST reveal the story progressively as the reader scrolls.
-- **FR-014**: Where the sample project has a live demo, each story page MUST let the reader open
-  it on its own site, and MAY also show it embedded in the page; each direction MUST state which
-  it does.
+- **FR-014**: Each story page MUST let the reader open the sample project's demo on its own
+  site, and MAY also show it embedded in the page; each direction MUST state which it does. If
+  Focus Pocus has no live demo on drc.dev, the demo target is its public project page or
+  repository, and the story page and decision document MUST say that it stands in for a demo.
 - **FR-015**: The invitation MUST lead to the site's contact form address with the sample
   project identified, so the contact form can note which project the enquiry is about. Whether
   the contact form is live yet does not affect this requirement.
@@ -225,8 +240,10 @@ empty.
 
 - **FR-020**: Each index MUST show, for each entry, its title, a one-line problem statement, a
   visual, its themes, and a status of shipped, experiment or in progress.
-- **FR-021**: Each index MUST include the sample project and enough clearly labelled placeholder
-  entries to show how the index looks with several projects, several themes and every status.
+- **FR-021**: Each index MUST include the sample project and Don's other real drc.dev projects
+  (Tempo, Flux, drc.dev and Plunge Buddy) as short entries with no story pages, so the index
+  shows several projects, several themes and every status. Only the sample project links to a
+  story page.
 - **FR-022**: Each index MUST let the visitor filter entries by theme and clear the filter, and
   MUST say plainly when no entries match.
 - **FR-023**: With JavaScript turned off, each index MUST show every entry in full.
@@ -272,9 +289,8 @@ empty.
   one-line problem statement, a visual, themes, a status, content for each of the seven story
   stages, a set of options considered (one marked as chosen, with the reason), supporting
   visuals and clips, and optionally a live demo address.
-- **Placeholder project entry**: A clearly labelled stand-in shown only on the index, with a
-  title, problem statement, visual, themes and status, used to show how the index looks with
-  several projects.
+- **Other project entry**: One of Don's other real drc.dev projects, shown only on the index as
+  a short entry with a title, problem statement, visual, themes and status, and no story page.
 - **Decision document**: The lasting output of the feature. Summarises every direction with its
   screenshots and trade-offs and holds an empty Decision section for Don.
 
@@ -282,7 +298,7 @@ empty.
 
 ### Measurable Outcomes
 
-- **SC-001**: Two or three directions are available on the preview deployment, each with a story
+- **SC-001**: Three directions are available on the preview deployment, each with a story
   page and an index, and each page can be viewed in 2 themes at 2 widths (8 views per
   direction) with no content cut off and no horizontal page scrolling.
 - **SC-002**: In every direction, a reader can reach all seven story stages and every one of the
@@ -299,14 +315,15 @@ empty.
 
 ## Assumptions
 
-- Placeholder entries on the index are acceptable because only one real project is needed as
-  sample content; they are labelled as placeholders so they cannot be mistaken for real work.
+- The short entries for Don's other drc.dev projects take their title, one-line description and
+  visual from drc.dev; their themes and statuses are Claude's best reading of that page and are
+  corrected by Don on review.
 - The invitation points at the site's planned contact address. The contact form is being built
   in a separate feature; if it is not live on the preview deployment, the invitation still
   carries the project reference even if the link leads to the not-found page there.
-- Live demos stay hosted on drc.dev; this feature does not host or change them. If the sample
-  project has no live demo, the directions show how a demo would be presented using a still
-  image and a link, and the decision document says so.
+- Live demos stay hosted on drc.dev; this feature does not host or change them. If Focus Pocus
+  has no live demo, the directions show how a demo would be presented using a still image and a
+  link to its public page or repository, and the decision document says so.
 - Visuals and demo clips for the sample project come from material Don provides or that is
   already public on drc.dev; creating new production-quality media is out of scope.
 - "Phone width" and "desktop width" mean the same representative widths the site's existing
