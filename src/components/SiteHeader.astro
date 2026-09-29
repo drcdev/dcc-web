@@ -1,9 +1,133 @@
 ---
-// Placeholder header landmark so BaseLayout can compose the shell now.
-// Phase 5 replaces its contents with the site name, navigation and menu
-// (contracts/shell-dom.md "Header").
+// Site header: site name, the seven primary links and the mobile menu
+// (port of Flux layout-header.hbs + navigation.hbs + navigation-toggle.js;
+// contracts/shell-dom.md "Header"; research R4, R6, R15; FR-006, FR-007,
+// FR-007a, FR-009). Flux's search, Subscribe/Account and logo image are left
+// out (FR-004).
+//
+// Progressive enhancement: there is one link list. Without script it is a
+// plain wrapping list and the menu button stays hidden. The pre-paint head
+// script adds `js` to <html>, so the `js:max-md:` classes collapse the list and
+// show the button before first paint, with no layout shift when the bundled
+// script below arrives (docs.astro.build/en/guides/client-side-scripts/).
+import { site } from "../config/site";
+import { primaryNavigation } from "../config/navigation";
+import { isCurrent } from "../lib/nav";
+import MenuIcon from "../icons/menu.svg";
+
+const pathname = Astro.url.pathname;
 ---
 
 <header>
-  <nav aria-label="Main"></nav>
+  <nav aria-label="Main" class="w-full border-b border-dusk-200 dark:border-dusk-600 dark:bg-dusk-900">
+    <div class="mx-auto max-w-5xl px-4 py-4">
+      <div class="flex flex-wrap items-center justify-between gap-x-8 gap-y-4">
+        <a href="/" class="text-2xl font-semibold text-dusk-900 dark:text-white">{site.name}</a>
+
+        <button
+          type="button"
+          aria-controls="primary-nav-list"
+          aria-expanded="false"
+          class="hidden js:max-md:inline-flex items-center gap-2 p-2 text-dusk-600 hover:text-dusk-900 dark:text-dusk-400 dark:hover:text-white motion-safe:transition-colors"
+          data-menu-button
+        >
+          <MenuIcon class="size-5" aria-hidden="true" />
+          <span class="sr-only">Menu</span>
+        </button>
+
+        <ul
+          id="primary-nav-list"
+          class="flex flex-wrap items-center gap-x-8 gap-y-2 js:max-md:hidden js:max-md:data-open:flex js:max-md:w-full js:max-md:flex-col js:max-md:items-start js:max-md:gap-y-4 js:max-md:border-t js:max-md:border-dusk-200 js:max-md:pt-4 dark:js:max-md:border-dusk-600"
+        >
+          {
+            primaryNavigation.map((item) => {
+              const current = isCurrent(pathname, item.href);
+              return (
+                <li>
+                  <a
+                    href={item.href}
+                    aria-current={current ? "page" : undefined}
+                    class:list={[
+                      "font-medium motion-safe:transition-colors",
+                      current
+                        ? "underline decoration-2 underline-offset-4 text-rust-700 dark:text-rust-400"
+                        : "text-dusk-900 hover:text-rust-700 dark:text-white dark:hover:text-rust-400",
+                    ]}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              );
+            })
+          }
+        </ul>
+      </div>
+    </div>
+  </nav>
 </header>
+
+<script>
+  // Mobile menu disclosure (FR-007, FR-007a; research R6). Not modal: no focus
+  // trap. Listeners only, no inline handlers, so the page's CSP needs no
+  // allowance beyond Astro's bundled module (FR-022, FR-024a).
+  const button = document.querySelector<HTMLButtonElement>("[data-menu-button]");
+  const list = document.getElementById("primary-nav-list");
+
+  if (button && list) {
+    const isOpen = () => button.getAttribute("aria-expanded") === "true";
+    const setOpen = (open: boolean) => {
+      button.setAttribute("aria-expanded", String(open));
+      list.toggleAttribute("data-open", open);
+    };
+    const inMenu = (node: EventTarget | null) =>
+      node instanceof Node && (node === button || button.contains(node) || list.contains(node));
+
+    button.addEventListener("click", () => setOpen(!isOpen()));
+
+    // Escape closes and returns focus to the button.
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && isOpen()) {
+        setOpen(false);
+        button.focus();
+      }
+    });
+
+    // Choosing a link closes the menu before the browser navigates.
+    list.addEventListener("click", (event) => {
+      if (event.target instanceof Element && event.target.closest("a")) setOpen(false);
+    });
+
+    // A click or tap outside closes it; focus goes where the visitor clicked.
+    document.addEventListener("click", (event) => {
+      if (isOpen() && !inMenu(event.target)) setOpen(false);
+    });
+
+    // Tab or Shift+Tab out of the button and list closes it; focus moves on as
+    // normal, including past the last element on the page (relatedTarget is
+    // then null). A pointer press inside the menu that moves focus to <body>
+    // (a click on the list's padding) is not "leaving" it.
+    let pointerInMenu = false;
+    document.addEventListener("pointerdown", (event) => (pointerInMenu = inMenu(event.target)), { capture: true });
+    document.addEventListener("keydown", () => (pointerInMenu = false), { capture: true });
+    for (const element of [button, list]) {
+      element.addEventListener("focusout", (event) => {
+        if (isOpen() && !pointerInMenu && !inMenu(event.relatedTarget)) setOpen(false);
+      });
+    }
+
+    // Crossing the md breakpoint resets to closed. If focus was on the button,
+    // which is hidden at desktop width, it moves to the first navigation link.
+    // The browser may already have dropped focus to <body> when the button was
+    // hidden (that fires no focusin), so the last element to take focus is tracked.
+    let lastFocused: EventTarget | null = null;
+    document.addEventListener("focusin", (event) => (lastFocused = event.target));
+    const desktop = window.matchMedia("(min-width: 48rem)");
+    desktop.addEventListener("change", (event) => {
+      const active = document.activeElement;
+      const focusWasOnButton =
+        active === button || (lastFocused === button && (active === null || active === document.body));
+      setOpen(false);
+      if (event.matches && focusWasOnButton) list.querySelector("a")?.focus();
+    });
+  }
+</script>

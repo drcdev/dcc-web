@@ -391,12 +391,12 @@ baselines exist and fail.
 **Purpose**: Replace the header placeholder with the real site name, seven-link navigation and
 progressively-enhanced mobile menu. [US1]
 
-- [ ] T050 [P] [US1] Write a failing unit test `tests/unit/site/navigation.test.ts` for
+- [X] T050 [P] [US1] Write a failing unit test `tests/unit/site/navigation.test.ts` for
   `src/config/navigation.ts` (primary items Home/Services/Speaking/Writing/Projects/About/Contact
   in order, footer items, social items, `futureDestinations`) and `src/lib/nav.ts`
   `isCurrent(pathname, href)` (trailing-slash normalised, `/` matches only `/`) per data-model.md
   `NavigationItem` (FR-006, FR-009). Run it and confirm it fails.
-- [ ] T051 [P] [US1] Write a failing component test `tests/component/SiteHeader.test.ts` per
+- [X] T051 [P] [US1] Write a failing component test `tests/component/SiteHeader.test.ts` per
   [contracts/shell-dom.md](../specs/002-site-foundation/contracts/shell-dom.md): site name link
   text `Don Coleman` / `href="/"`; the seven primary links in order inside one `<ul
   id="primary-nav-list">` within `<nav aria-label="Main">`; current-page link has
@@ -405,7 +405,7 @@ progressively-enhanced mobile menu. [US1]
   aria-expanded="false">` named `Menu` with a decorative (`aria-hidden="true"`) icon; no
   search/Subscribe/Sign-in/Account/portal markup (FR-004, FR-006, FR-007a, FR-008a, FR-009). Run
   it and confirm it fails.
-- [ ] T052 [P] [US1] Write a failing E2E test `tests/e2e/menu.spec.ts` covering every row of the
+- [X] T052 [P] [US1] Write a failing E2E test `tests/e2e/menu.spec.ts` covering every row of the
   mobile-menu behaviour table in contracts/shell-dom.md (page load, activate, activate again
   keeps focus on the button, Escape returns focus to the button, choosing a link closes it, click
   outside closes it, Tab or Shift+Tab out of the nav closes it, resizing to ≥ 48rem resets to
@@ -417,7 +417,7 @@ progressively-enhanced mobile menu. [US1]
   header, main content and footer are readable; and the served HTML's `<script>` elements are
   only the inline theme-init script and Astro-bundled same-origin module scripts, none with a
   third-party `src` (FR-007, FR-007a, FR-013, FR-022, FR-022a). Run both and confirm they fail.
-- [ ] T053 [P] [US1] Write a failing E2E test `tests/e2e/shell.spec.ts` (header part) asserting on
+- [X] T053 [P] [US1] Write a failing E2E test `tests/e2e/shell.spec.ts` (header part) asserting on
   home and not-found: the header (site name, seven links in order) appears identically;
   current-page marking on `/`; the skip link is the first Tab stop, becomes visible when focused
   and hides again on blur, and activating it moves focus to `<main>` so the next Tab reaches the
@@ -427,21 +427,21 @@ progressively-enhanced mobile menu. [US1]
   a known future destination (for example `/services/`) is an ordinary link that loads the
   not-found page; no horizontal scroll at 320 px, including with a very long page title (FR-006,
   FR-009, FR-010, FR-010a, FR-021, SC-005). Run it and confirm it fails.
-- [ ] T054 [US1] Implement `src/config/navigation.ts` to pass T050 (research R4): primary `Home /`,
+- [X] T054 [US1] Implement `src/config/navigation.ts` to pass T050 (research R4): primary `Home /`,
   `Services /services/`, `Speaking /speaking/`, `Writing /writing/`, `Projects /projects/`, `About
   /about/`, `Contact /contact/`; footer `/privacy-policy/`, `/terms-of-use/`, `/technology/`;
   social `https://github.com/drcdev`, `https://www.linkedin.com/in/drcdev`; `futureDestinations`
   exporting every internal href no page builds yet.
-- [ ] T055 [US1] Implement `src/lib/nav.ts` (`isCurrent`) to pass T050.
-- [ ] T056 [P] [US1] Port `src/icons/menu.svg` from `.reference/flux/partials/Icons/*` as an Astro
+- [X] T055 [US1] Implement `src/lib/nav.ts` (`isCurrent`) to pass T050.
+- [X] T056 [P] [US1] Port `src/icons/menu.svg` from `.reference/flux/partials/Icons/*` as an Astro
   SVG component, decorative (`aria-hidden="true"`) (research R15); covered by T051.
-- [ ] T057 [US1] Implement `src/components/SiteHeader.astro` markup (no script yet) to pass T051.
-- [ ] T058 [US1] Add the bundled menu script to `src/components/SiteHeader.astro`: toggles
+- [X] T057 [US1] Implement `src/components/SiteHeader.astro` markup (no script yet) to pass T051.
+- [X] T058 [US1] Add the bundled menu script to `src/components/SiteHeader.astro`: toggles
   `aria-expanded`/visibility, closes on Escape (focus returns to the button), on choosing a link,
   on outside click, and on focus leaving the nav; a `matchMedia('(min-width: 48rem)')` listener
   resets state to closed on crossing the breakpoint; all transitions wrapped in `motion-safe:`
   (research R6) — to pass T052 and the header part of T053.
-- [ ] T059 Run `pnpm exec vitest run tests/unit/site/navigation.test.ts
+- [X] T059 Run `pnpm exec vitest run tests/unit/site/navigation.test.ts
   tests/component/SiteHeader.test.ts`, then `pnpm run build && pnpm exec playwright test
   tests/e2e/menu.spec.ts tests/e2e/no-js.spec.ts tests/e2e/shell.spec.ts --project=e2e`; fix
   anything red before moving to Phase 6.
@@ -532,8 +532,11 @@ and independently testable per their spec.md acceptance scenarios.
 - [ ] T071 [US5] Implement `src/pages/404.astro` using `BaseLayout`, `Seo` with `canonical={false}`
   to pass T069 and T070 (research R7).
 - [ ] T072 Run `pnpm run build`, then `pnpm exec vitest run tests/component/NotFound.test.ts` and
-  `pnpm exec playwright test tests/e2e/not-found.spec.ts --project=e2e`; fix anything red before
-  moving to Phase 8.
+  `pnpm exec playwright test tests/e2e/not-found.spec.ts --project=e2e`; also set the not-found
+  entry's `built` flag to `true` in `tests/e2e/templates.ts` (Phase 5 marked the not-found cases
+  of `shell.spec.ts` and `no-js.spec.ts` as `fixme` until the page exists) and run
+  `pnpm exec playwright test tests/e2e/shell.spec.ts tests/e2e/no-js.spec.ts --project=e2e`;
+  fix anything red before moving to Phase 8.
 
 **Checkpoint**: every unknown address, including retired blog addresses and not-yet-built nav
 destinations, serves a 404 with the not-found page in the site's design (US5 independent test).
