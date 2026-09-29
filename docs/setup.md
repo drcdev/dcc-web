@@ -263,11 +263,19 @@ None.
 
 **What it is for**
 Confirms that Workers Builds is actually building and deploying this repository — production
-from `main`, and a preview for every other branch — once this slice's files are on `main`.
+from `main`, and a preview for every other branch — once this slice's files are on `main`. A
+preview build needs to know its own served address (for its canonical link, `og:url` and
+`robots.txt`), and Cloudflare does not hand a non-aliased preview upload a predictable URL, so the
+non-production deploy command uploads an aliased preview instead of a plain one.
 
 **Where to do it**
-Nothing new to do here beyond step 7; this item confirms the pipeline that step 7 connected, once
-this slice's pull request has merged.
+Beyond step 7, one dashboard change: Cloudflare dashboard → Workers & Pages → `dcc-web` →
+Settings → Build → set the **non-production branch deploy command** to `pnpm run deploy:preview`.
+The **build command stays `pnpm run build`, unchanged**, and the **production deploy command stays
+`pnpm exec wrangler deploy`, unchanged** — only the non-production branch command changes. No
+secret or token is involved: `pnpm run deploy:preview` runs `scripts/deploy/preview.ts`, which
+derives a stable alias from the branch name (the same function `astro.config.mjs` uses to resolve
+the build's own address) and calls `wrangler versions upload --preview-alias <alias>`.
 
 **How it will be confirmed**
 `pnpm setup:check --item workers-builds` reports complete when the latest commit on `main` has a

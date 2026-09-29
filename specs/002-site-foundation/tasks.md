@@ -122,7 +122,7 @@ gate's configuration, and give every later phase a working `resolveSiteOrigin` s
 `astro.config.mjs`'s `site` value is correct before any page is built. Tests T009–T014 are
 written and seen failing before any implementation task T015–T025.
 
-- [ ] T009 [P] Extend `tests/unit/site/config-files.test.ts` with failing assertions (read each
+- [X] T009 [P] Extend `tests/unit/site/config-files.test.ts` with failing assertions (read each
   file as text or import it; do not start a server): `wrangler.jsonc` has
   `assets.not_found_handling === "404-page"` and still no `main` (FR-016, FR-023);
   `astro.config.mjs` sets no `adapter` and no `output: "server"` (FR-023); `playwright.config.ts`
@@ -143,18 +143,18 @@ written and seen failing before any implementation task T015–T025.
   `tests/reference/playwright.config.ts`, and `deploy:preview` runs `scripts/deploy/preview.ts`;
   and `package.json` lists `tailwindcss`, `@tailwindcss/vite`, `@tailwindcss/typography` and
   `@astrojs/sitemap` (FR-027, FR-027a). Run it and confirm it fails.
-- [ ] T010 [P] Extend `tests/unit/ci/workflows.test.ts` with failing assertions that
+- [X] T010 [P] Extend `tests/unit/ci/workflows.test.ts` with failing assertions that
   `.github/workflows/ci.yml` job `verify` still runs `pnpm run verify` after installing only
   Chromium, and has a step after it with `if: failure()` using `actions/upload-artifact` pinned to
   a 40-character SHA that uploads `playwright-report/`, `test-results/` and
   `tests/e2e/**/*-snapshots/**`; the existing "no secrets other than GITHUB_TOKEN" and "no
   continue-on-error" assertions stay (FR-005b, FR-027a, FR-031). Run it and confirm it fails.
-- [ ] T011 [P] Write a failing unit test `tests/unit/site/site-origin.test.ts` for
+- [X] T011 [P] Write a failing unit test `tests/unit/site/site-origin.test.ts` for
   `resolveSiteOrigin(env, config)` and `previewAlias(branch)` per
   [contracts/site-origin.md](../specs/002-site-foundation/contracts/site-origin.md) (every row of
   the resolution table, plus the `previewAlias` examples) (FR-017, FR-017a). Run it and confirm it
   fails (module does not exist yet).
-- [ ] T012 [P] Write a failing unit test `tests/unit/site/astro-config.test.ts` that sets
+- [X] T012 [P] Write a failing unit test `tests/unit/site/astro-config.test.ts` that sets
   `process.env` and re-imports `astro.config.mjs` (`vi.resetModules()` + dynamic import) and
   asserts: with no `WORKERS_CI`, `site` is `https://doncoleman.ca`; with `WORKERS_CI=1` and
   `WORKERS_CI_BRANCH=main`, `site` is `https://new.doncoleman.ca`; with `WORKERS_CI=1` and
@@ -162,11 +162,11 @@ written and seen failing before any implementation task T015–T025.
   `resolveSiteOrigin(env, <setup/config.json>)`; `trailingSlash` is `"always"`; the
   `@astrojs/sitemap` integration is registered; the Tailwind Vite plugin is registered (FR-017,
   FR-017a, FR-018). Run it and confirm it fails.
-- [ ] T013 [P] Extend `tests/unit/setup/schemas.test.ts` with failing assertions that the
+- [X] T013 [P] Extend `tests/unit/setup/schemas.test.ts` with failing assertions that the
   setup-config schema in `scripts/setup-check/schemas.ts` accepts a config with no
   `workersSubdomain` and one with a valid lowercase DNS label, and rejects an empty or invalid
   one; the existing assertions stay (FR-017a, research R2). Run it and confirm it fails.
-- [ ] T014 [P] Write a failing unit test `tests/unit/site/deploy-preview.test.ts` for
+- [X] T014 [P] Write a failing unit test `tests/unit/site/deploy-preview.test.ts` for
   `scripts/deploy/preview.ts`: its exported `previewUploadArgs(env)` returns
   `["versions", "upload", "--preview-alias", "br-002-site-foundation"]` for
   `WORKERS_CI_BRANCH=002-site-foundation`, and throws an error with a plain-language message when
@@ -175,14 +175,14 @@ written and seen failing before any implementation task T015–T025.
   Also assert that `docs/setup.md` section `{#workers-builds}` names `pnpm run deploy:preview` as
   the non-production branch deploy command and says the build and production deploy commands are
   unchanged (FR-017a, FR-028, FR-031). Run it and confirm it fails.
-- [ ] T015 Add Tailwind v4 with `pnpm astro add tailwind` (installs `tailwindcss` +
+- [X] T015 Add Tailwind v4 with `pnpm astro add tailwind` (installs `tailwindcss` +
   `@tailwindcss/vite`, creates `src/styles/global.css`); add `@tailwindcss/typography` as a
   devDependency (research R3).
-- [ ] T016 Add the official sitemap integration with `pnpm astro add sitemap` (installs
+- [X] T016 Add the official sitemap integration with `pnpm astro add sitemap` (installs
   `@astrojs/sitemap`, registers it in `astro.config.mjs`) (FR-018, research R9).
-- [ ] T017 [P] Update `wrangler.jsonc` to add `"not_found_handling": "404-page"` inside the
+- [X] T017 [P] Update `wrangler.jsonc` to add `"not_found_handling": "404-page"` inside the
   existing `assets` block (research R7) to pass T009's wrangler assertions.
-- [ ] T018 Update `playwright.config.ts` to pass T009: `webServer.command`
+- [X] T018 Update `playwright.config.ts` to pass T009: `webServer.command`
   `pnpm exec wrangler dev --ip 127.0.0.1 --port 4321`, `url`/`baseURL`
   `http://127.0.0.1:4321`, `env: { WRANGLER_SEND_METRICS: "false" }`, drop the
   `ASTRO_PREVIEW_BACKGROUND` workaround, `retries: 0`, `updateSnapshots: "none"`,
@@ -192,39 +192,39 @@ written and seen failing before any implementation task T015–T025.
   `tests/e2e/*.spec.ts`, via `testIgnore` of the other three patterns) — so the two placeholder
   specs keep running in `a11y`/`budget` until their successors replace them in T039/T040
   (research R11, R14).
-- [ ] T019 [P] Update `vitest.config.ts` `test.include` to add `"tests/component/**/*.test.ts"`
+- [X] T019 [P] Update `vitest.config.ts` `test.include` to add `"tests/component/**/*.test.ts"`
   alongside `"tests/unit/**/*.test.ts"` (research R11).
-- [ ] T020 Extend `package.json` `scripts` per contracts/verify-gate.md to pass T009 (FR-027,
+- [X] T020 Extend `package.json` `scripts` per contracts/verify-gate.md to pass T009 (FR-027,
   FR-027a): `test` runs
   Vitest over unit + component tests, `test:e2e` runs all four Playwright projects, add
   `test:a11y`, `test:budget`, `test:visual`, `test:visual:update`, `reference:capture`,
   `deploy:preview`; `verify` stays
   `pnpm run lint:secrets && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build && pnpm run test:e2e`.
-- [ ] T021 [P] Update `.github/workflows/ci.yml` to pass T010: add a step after "Run the verify
+- [X] T021 [P] Update `.github/workflows/ci.yml` to pass T010: add a step after "Run the verify
   gate" with `if: failure()` that uploads `playwright-report/`, `test-results/` and
   `tests/e2e/**/*-snapshots/**` via a pinned-SHA `actions/upload-artifact` (research R14, R16; no
   new GitHub secrets or variables).
-- [ ] T022 Implement `src/lib/site-origin.ts` (`FALLBACK_ORIGIN`, `previewAlias`,
+- [X] T022 Implement `src/lib/site-origin.ts` (`FALLBACK_ORIGIN`, `previewAlias`,
   `resolveSiteOrigin`) to pass T011 (research R2).
-- [ ] T023 Add the optional `workersSubdomain` field to the setup-config schema in
+- [X] T023 Add the optional `workersSubdomain` field to the setup-config schema in
   `scripts/setup-check/schemas.ts` and the `SetupConfig` type in `scripts/setup-check/types.ts`
   to pass T013. Set its value in `setup/config.json` from the account's public `workers.dev`
   subdomain, read with the local read-only Cloudflare credentials (`docs/setup.md` item 2) or
   from any existing preview URL; never print the credential. If neither source is available,
   leave the field out (previews then use the fallback origin) and note it in the task's commit
   message so T099 has Don supply it (research R2).
-- [ ] T024 Update `astro.config.mjs` to pass T012: compute `site` with
+- [X] T024 Update `astro.config.mjs` to pass T012: compute `site` with
   `resolveSiteOrigin(process.env, setupConfigJson)` (reading `setup/config.json` at build time),
   set `trailingSlash: "always"`, keep the `sitemap()` integration from T016 and the Tailwind Vite
   plugin from T015 (FR-017, FR-017a).
-- [ ] T025 Implement `scripts/deploy/preview.ts` (exports `previewUploadArgs`; when run, calls
+- [X] T025 Implement `scripts/deploy/preview.ts` (exports `previewUploadArgs`; when run, calls
   `pnpm exec wrangler` with those arguments, exiting non-zero with a plain message when the
   branch is missing, `main`, or its alias is `null`) and update `docs/setup.md` item 10 (Workers
   Builds) to document the one-time dashboard change — the non-production branch deploy command
   becomes `pnpm run deploy:preview` — leaving the build command and production deploy command
   unchanged and keeping the item's existing labelled parts so `tests/unit/setup/` stays green;
   pass T014 (research R2, quickstart step 4.1).
-- [ ] T026 Run `pnpm exec vitest run tests/unit/site tests/unit/setup tests/unit/ci`,
+- [X] T026 Run `pnpm exec vitest run tests/unit/site tests/unit/setup tests/unit/ci`,
   `pnpm run lint` and `pnpm run typecheck`; then `pnpm run build && pnpm exec playwright test` to
   confirm the placeholder specs still pass under the new `wrangler dev` runner. Fix anything red
   before moving to Phase 3.

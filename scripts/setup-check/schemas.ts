@@ -2,6 +2,11 @@
 // shape (Principle IV: no separate Zod dependency — this re-exports Astro's).
 import { z } from "astro/zod";
 
+// Lowercase DNS label: letters/digits, dashes allowed in the middle only.
+// Public (it appears in every preview URL) — never a secret (002-site-foundation
+// research R2, contracts/site-origin.md).
+const dnsLabelSchema = z.string().regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/);
+
 export const configSchema = z.object({
   owner: z.string().min(1),
   repo: z.string().min(1),
@@ -10,6 +15,7 @@ export const configSchema = z.object({
   zone: z.string().min(1),
   reviewHost: z.string().min(1),
   ghostMarker: z.string().min(1),
+  workersSubdomain: dnsLabelSchema.optional(),
 });
 
 const dnsRecordTypeSchema = z.enum(["A", "AAAA", "CNAME", "MX", "TXT", "SRV", "CAA", "NS"]);

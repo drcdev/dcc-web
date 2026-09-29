@@ -40,6 +40,26 @@ describe("configSchema (setup/config.json)", () => {
     const result = configSchema.safeParse({ ...valid, owner: "" });
     expect(result.success).toBe(false);
   });
+
+  it("accepts a config with no workersSubdomain (previews fall back to the default origin)", () => {
+    const result = configSchema.safeParse(valid);
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a config with a valid lowercase DNS-label workersSubdomain", () => {
+    const result = configSchema.safeParse({ ...valid, workersSubdomain: "drc-agents" });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an empty workersSubdomain", () => {
+    const result = configSchema.safeParse({ ...valid, workersSubdomain: "" });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects an invalid workersSubdomain", () => {
+    const result = configSchema.safeParse({ ...valid, workersSubdomain: "Not A Label!" });
+    expect(result.success).toBe(false);
+  });
 });
 
 describe("dnsBaselineSchema (setup/dns-baseline.json)", () => {

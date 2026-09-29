@@ -129,6 +129,11 @@ export interface SetupConfig {
   zone: string;
   reviewHost: string;
   ghostMarker: string;
+  /** The account's public workers.dev subdomain, used to compute preview
+   * origins (002-site-foundation contracts/site-origin.md). Public, never a
+   * secret. Absent until it is read from the account (T023); previews then
+   * fall back to the production origin. */
+  workersSubdomain?: string;
 }
 
 export interface MajorGateReview {

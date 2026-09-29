@@ -56,6 +56,23 @@ describe(".github/workflows/ci.yml", () => {
       expect(name).toBe("GITHUB_TOKEN");
     }
   });
+
+  it("uploads Playwright output on failure, after the verify step, pinned to a full SHA (FR-005b, FR-027a, FR-031)", () => {
+    const verifyStepIndex = contents.indexOf("pnpm run verify");
+    expect(verifyStepIndex).toBeGreaterThan(0);
+
+    const afterVerify = contents.slice(verifyStepIndex);
+    const uploadMatch = afterVerify.match(
+      /if:\s*failure\(\)[\s\S]*?uses:\s*actions\/upload-artifact@([0-9a-f]{40})/,
+    );
+    expect(uploadMatch, "expected an if: failure() step using a SHA-pinned actions/upload-artifact after the verify step").toBeTruthy();
+
+    const uploadStepIndex = afterVerify.search(/if:\s*failure\(\)/);
+    const uploadStep = afterVerify.slice(uploadStepIndex, uploadStepIndex + 600);
+    expect(uploadStep).toContain("playwright-report/");
+    expect(uploadStep).toContain("test-results/");
+    expect(uploadStep).toContain("tests/e2e/**/*-snapshots/**");
+  });
 });
 
 describe(".github/workflows/major-change.yml", () => {
