@@ -1,7 +1,40 @@
 ---
 title: Technology
-description: How this site is built and hosted.
+description: How doncoleman.ca is built and hosted, and where any information you send through it is kept.
 draft: true
 ---
 
-This is a stub. The technology notes carried over from the current site will replace this line.
+This page explains the technology behind this site.
+
+## Site
+
+The site is built with [Astro](https://astro.build/), a framework that turns the pages into plain static files ahead of time. Pages are readable with JavaScript turned off, and the small amount of script the site uses is limited to features that need it, such as the light and dark theme switch.
+
+All public content is written as Markdown and MDX files that live in the site's source repository. Content is checked against a schema when the site is built, so a page with missing or invalid details fails the build instead of publishing incorrectly.
+
+## Hosting
+
+[Cloudflare](https://www.cloudflare.com/) serves the static pages. Every change to the site gets its own preview version, so it can be reviewed before it goes live.
+
+## Design
+
+The design is a custom theme, ported from the previous version of this site and styled with [Tailwind CSS](https://tailwindcss.com/), a utility-first CSS framework. It supports light and dark themes and is checked against WCAG 2.2 AA accessibility guidelines.
+
+## Contact form
+
+When it is available, the contact form sends messages to a small service running in Toronto, Canada. Submissions are stored there, in a single database, and deleted automatically after a retention period. They do not pass through any service that stores them outside Canada. The [privacy policy](/privacy-policy/) has the details, including what is still to be confirmed.
+
+## Analytics
+
+The main site uses Cloudflare Web Analytics, which sets no cookies and does not track individuals. Preview versions do not use it.
+
+## Data locations
+
+| Service | Purpose | Location |
+| --- | --- | --- |
+| Cloudflare | Serves the pages and visitor statistics | Global network |
+| Contact form service | Stores contact submissions | Toronto, Canada |
+
+## Questions
+
+Curious about how something works? Get in touch through the contact page and I am happy to explain.

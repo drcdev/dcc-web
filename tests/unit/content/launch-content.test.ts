@@ -136,6 +136,31 @@ describe("Privacy policy (FR-022, FR-022a)", () => {
   });
 });
 
+describe("Terms of use and Technology (FR-023, FR-024)", () => {
+  const FORBIDDEN = ["ghost", "member", "subscribe", "comment", "drift", "convergence", "news"];
+  for (const name of ["terms-of-use.mdx", "technology.mdx"]) {
+    it(`${name} carries real draft copy for the new site`, () => {
+      const { front, body, text } = load(name);
+      expect(front).toMatch(/^draft: true$/m);
+      const paragraphs = body.split(/\n\s*\n/).filter((block) => /^[A-Za-z]/.test(block.trim()));
+      expect(paragraphs.length).toBeGreaterThanOrEqual(5);
+      expect(text).not.toContain("this is a stub");
+      for (const word of FORBIDDEN) expect(text, `${name} mentions "${word}"`).not.toContain(word);
+      expect(text).not.toContain("cookie policy");
+    });
+  }
+
+  it("Technology describes the actual stack", () => {
+    const { text } = load("technology.mdx");
+    for (const word of ["astro", "cloudflare", "tailwind", "toronto"]) expect(text).toContain(word);
+  });
+
+  it("Terms of use covers acceptable use, ownership, liability and governing law", () => {
+    const { text } = load("terms-of-use.mdx");
+    for (const word of ["intellectual property", "liability", "governing law"]) expect(text).toContain(word);
+  });
+});
+
 describe("sections in Services and Speaking (US4)", () => {
   const registered = new Set([
     "Lead",

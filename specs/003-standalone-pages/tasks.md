@@ -168,12 +168,12 @@
 
 ### Tests first (write, run, and see fail before T077 onward)
 
-- [ ] T074 [US6] Extend `tests/unit/content/launch-content.test.ts` for `terms-of-use.mdx` and `technology.mdx`: real copy (more than the T043 stubs, e.g. at least several paragraphs), `draft: true`, no case-insensitive match for "Ghost", "member", "subscribe", "comment", "Drift", "Convergence" or "News" category references; both pass `pageSchema`. Run and confirm it fails against the stubs.
+- [x] T074 [US6] Extend `tests/unit/content/launch-content.test.ts` for `terms-of-use.mdx` and `technology.mdx`: real copy (more than the T043 stubs, e.g. at least several paragraphs), `draft: true`, no case-insensitive match for "Ghost", "member", "subscribe", "comment", "Drift", "Convergence" or "News" category references; both pass `pageSchema`. Run and confirm it fails against the stubs.
 
 ### Implementation
 
-- [ ] T075 [US6] Fetch the current site's Terms of use (https://www.doncoleman.ca/terms-of-use/) and Technology (https://www.doncoleman.ca/technology/) pages as the starting copy (curl or WebFetch; save raw text in the scratchpad, not the repo). If the site is unreachable, fall back to short draft placeholders and say so in the task notes.
-- [ ] T076 [US6] Rewrite `src/content/pages/terms-of-use.mdx` and `src/content/pages/technology.mdx` from that copy: plain language, corrected for the new site (remove the removed features listed in T074, describe the actual stack: Astro, Cloudflare, Tailwind, the contact form's storage in Toronto as planned), keep the same addresses, `draft: true`. Run T074 and confirm it passes.
+- [x] T075 [US6] Fetch the current site's Terms of use (https://www.doncoleman.ca/terms-of-use/) and Technology (https://www.doncoleman.ca/technology/) pages as the starting copy (curl or WebFetch; save raw text in the scratchpad, not the repo). If the site is unreachable, fall back to short draft placeholders and say so in the task notes. *(Note: both live pages were fetched with curl; raw HTML stayed in the scratchpad.)*
+- [x] T076 [US6] Rewrite `src/content/pages/terms-of-use.mdx` and `src/content/pages/technology.mdx` from that copy: plain language, corrected for the new site (remove the removed features listed in T074, describe the actual stack: Astro, Cloudflare, Tailwind, the contact form's storage in Toronto as planned), keep the same addresses, `draft: true`. Run T074 and confirm it passes.
 - [ ] T077 [P] [US6] [PREVIEW-CHECK] Don reads the Privacy policy, Terms of use and Technology pages on the preview deployment for accuracy against the new site and reviews the placeholder copy on Home, Services, Speaking and About.
 
 **Checkpoint**: all seven pages carry real draft copy.
