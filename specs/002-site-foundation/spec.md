@@ -19,6 +19,15 @@ It does not deliver page content, the blog, the portfolio or the contact form.
 Because it changes the design system, site-wide layout, navigation, CI and deployment, this is a
 major change under Constitution Principle III.
 
+## Clarifications
+
+### Session 2026-09-28
+
+- Q: What accent colour and heading and body fonts are set in Ghost admin (Settings, Design)? → A: The accent colour is rust #d68844 (confirmed Ghost admin value). Headings and body use a system font stack for now; the real Ghost heading and body fonts are a follow-up to confirm.
+- Q: Should the main build on the temporary address also tell search engines not to index it until the domain switch, or only branch previews? → A: Every deployment, main build included, asks search engines not to index it until the domain switch; removing that is part of the domain-switch follow-up.
+- Q: Which address should canonical links, sharing previews and the search-engine page list use while the site is on the temporary address? → A: Whatever address each deployment is served from, so previews point to themselves; https://doncoleman.ca is the fallback when the build cannot determine its address.
+- Q: With JavaScript turned off on a phone-width screen, how should the navigation behave? → A: Progressive enhancement: without script the links show as a plain wrapping list; with script they collapse behind a menu button that reports its open/closed state, closes on Escape and returns focus to the button.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Recognisable site shell on every page (Priority: P1)
@@ -42,9 +51,10 @@ screenshots of the current site.
 1. **Given** a visitor on a desktop-width screen, **When** any page loads, **Then** the header
    shows the site name (linking to the home page) and all seven navigation links in the order
    Home, Services, Speaking, Writing, Projects, About, Contact.
-2. **Given** a visitor on a phone-width screen, **When** the page loads, **Then** the navigation
-   links are hidden behind a menu button, and activating the button reveals them; activating it
-   again, pressing Escape, or choosing a link closes the menu.
+2. **Given** a visitor on a phone-width screen with JavaScript available, **When** the page loads,
+   **Then** the navigation links are hidden behind a menu button, and activating the button
+   reveals them; activating it again, pressing Escape, or choosing a link closes the menu. With
+   JavaScript turned off, the links are shown as a plain wrapping list and no menu button appears.
 3. **Given** a keyboard-only visitor, **When** they press Tab from the top of the page, **Then**
    focus first reaches a "skip to content" link, then moves through the header, main content and
    footer in visual order, with a clearly visible focus ring at every step.
@@ -143,8 +153,11 @@ page list for search engines against the set of built public pages.
 3. **Given** the built site, **When** a search engine reads it, **Then** a machine-readable list
    of every public page is available and referenced from the site's crawler instructions, and the
    not-found page is not in it.
-4. **Given** a preview (non-main) deployment, **When** a search engine reaches it, **Then** it is
-   told not to index that preview.
+4. **Given** any deployment (branch preview or the main build on the temporary address), **When**
+   a search engine reaches it before the domain switch, **Then** it is told not to index it.
+5. **Given** a page served from a given deployment's address, **When** its canonical address,
+   sharing-preview address and page-list entries are inspected, **Then** they use that
+   deployment's own address (a preview points to itself).
 
 ---
 
@@ -224,9 +237,8 @@ contact form, code blocks and author card come from and which feature ports each
 ### Edge Cases
 
 - JavaScript disabled: the header, footer, navigation links, not-found page and core content still
-  render and work; the site shows the dark theme; on small screens the navigation remains
-  reachable (the menu must not depend on script to be usable, or its links must be otherwise
-  reachable).
+  render and work; the site shows the dark theme; on small screens the navigation links are shown
+  as a plain wrapping list with no menu button, so every link is reachable without script.
 - Stored theme value is missing, corrupted or unrecognised: the site treats it as no choice and
   uses dark.
 - Browser storage unavailable (private mode, blocked site data): theme switching works for the
@@ -257,11 +269,10 @@ contact form, code blocks and author card come from and which feature ports each
   dark variant, heading colours (H1/H2 rust, H3 sage, H4 lavender), accent prose styling, table
   styling and focus rings, closely enough that the new site matches the reference screenshots.
 - **FR-002**: Each palette MUST remain adjustable by changing a single base value, as in Flux.
-- **FR-003**: The site MUST use a fixed accent colour and a fixed heading font and body font
-  matching the current site's settings, with fonts served from the site itself (no third-party
-  font service). [NEEDS CLARIFICATION: What accent colour and heading and body fonts are set in
-  Ghost admin (Settings → Design)? If unknown, use the rust base (#d68844) and a system font
-  stack, and record a follow-up to confirm them.]
+- **FR-003**: The site MUST use the fixed accent colour rust #d68844 (the current site's Ghost
+  admin value) and a system font stack for both headings and body text, loading no web fonts and
+  using no third-party font service. Confirming the current site's real heading and body fonts is
+  recorded as follow-up work.
 - **FR-004**: The site MUST NOT include any Ghost-only elements: member sign-up, subscribe,
   sign-in or account buttons, the member portal, Ghost search, or comments.
 - **FR-005**: Before any styling work, reference screenshots of the current live site (home page,
@@ -275,9 +286,11 @@ contact form, code blocks and author card come from and which feature ports each
   Navigation and footer links to pages that later features will create MUST point at their final
   addresses; until those pages exist, requests for them show the not-found page, and the
   automated checks MUST NOT fail because of these known future destinations.
-- **FR-007**: On small screens the navigation MUST collapse behind a menu button that exposes its
-  open/closed state to assistive technology, can be operated by keyboard, closes on Escape
-  (returning focus to the button) and closes when a link is chosen.
+- **FR-007**: On small screens the navigation MUST use progressive enhancement. Without JavaScript,
+  the navigation links MUST be shown as a plain wrapping list with no menu button. With
+  JavaScript, they MUST collapse behind a menu button that exposes its open/closed state to
+  assistive technology, can be operated by keyboard, closes on Escape (returning focus to the
+  button) and closes when a link is chosen.
 - **FR-008**: Every page MUST share one footer containing links to /privacy-policy/,
   /terms-of-use/, /technology/, https://github.com/drcdev and
   https://www.linkedin.com/in/drcdev, a copyright line with Don's name and the current year, and
@@ -311,10 +324,14 @@ contact form, code blocks and author card come from and which feature ports each
 
 - **FR-017**: Every public page MUST have a unique title, a description, a canonical address, and
   sharing-preview metadata (title, description, image with alt text, page type, site name), with
-  site-wide defaults for any value a page does not set.
+  site-wide defaults for any value a page does not set. Canonical and sharing-preview addresses
+  MUST use the address of the deployment the page is served from, determined at build time, with
+  https://doncoleman.ca as the fallback when the build cannot determine it.
 - **FR-018**: The site MUST publish a machine-readable list of every public page for search
-  engines, referenced from its crawler instructions, excluding the not-found page.
-- **FR-019**: Preview (non-main) deployments MUST ask search engines not to index them.
+  engines, referenced from its crawler instructions, excluding the not-found page. Its entries and
+  the crawler instructions' reference to it MUST use the same deployment address as FR-017.
+- **FR-019**: Every deployment, including branch previews and the main build on the temporary
+  address, MUST ask search engines not to index it on every path until the domain switch.
 
 **Quality and accessibility**
 
@@ -323,7 +340,7 @@ contact form, code blocks and author card come from and which feature ports each
 - **FR-021**: The layout MUST work without horizontal scrolling from 320px wide to large desktop
   widths, and MUST respect reduced-motion preferences.
 - **FR-022**: Pages MUST be readable and navigable with JavaScript turned off; only the theme
-  switch, the theme-before-paint step and (if needed) the mobile menu may use script.
+  switch, the theme-before-paint step and the collapsing of the mobile menu may use script.
 - **FR-023**: Every public page MUST be generated ahead of time; no public page is rendered per
   request.
 
@@ -373,7 +390,8 @@ contact form, code blocks and author card come from and which feature ports each
 - **Navigation item**: A label and destination address in the header or footer, with a flag for
   whether it is the current page.
 - **Page metadata**: Title, description, canonical address, sharing image and alt text, page type
-  and whether the page should be indexed; each page may override site-wide defaults.
+  and whether the page should be indexed; each page may override site-wide defaults. Absolute
+  addresses are built from the serving deployment's address (fallback https://doncoleman.ca).
 - **Reference screenshot**: An image of the current live site for a given page, screen width and
   theme, used as the visual target for comparison.
 - **Design source mapping entry**: A Flux source part, what it becomes in the new site, and the
@@ -420,7 +438,11 @@ contact form, code blocks and author card come from and which feature ports each
 - The site-wide default sharing image is derived from the current site's branding; a better image
   can be supplied later without a spec change.
 - The live domain doncoleman.ca is not switched over in this feature; the main build is served on
-  the temporary address set up earlier.
+  the temporary address set up earlier and, like every preview, is not indexed.
+- The build platform makes the deployment's own address available at build time (for example
+  through an environment variable), so metadata and the page list can point at it; the plan
+  confirms the mechanism. Because addresses follow the serving deployment, the domain switch needs
+  no metadata change beyond serving the site at doncoleman.ca.
 - Statistics use Cloudflare Web Analytics, the only analytics option the constitution allows;
   expected additional monthly cost is zero (free tier).
 - Setup documentation lives in `docs/setup.md` (the feature input refers to `docs/setup/`).
@@ -440,9 +462,11 @@ Recorded per the constitution's Development Workflow rule; none of this is done 
   reference only).
 - **Contact feature**: contact form and contact API (Fly.io, Toronto), spam protection.
 - **Icons**: each later feature ports the Flux icons it uses.
-- **Domain switch**: pointing doncoleman.ca at the new site.
-- **Font and accent confirmation**: if clarification falls back to the defaults, confirm the real
-  accent colour and fonts from Ghost admin and update the design system.
+- **Domain switch**: pointing doncoleman.ca at the new site, and removing the site-wide
+  "do not index" instruction (FR-019) for the live domain at that time.
+- **Font confirmation**: confirm the current site's real heading and body fonts from Ghost admin
+  and, if they differ from the system font stack, update the design system (the accent colour,
+  rust #d68844, is already confirmed).
 - **External links**: Don updates the few external links to old blog addresses himself; no
   redirects are built.
 
