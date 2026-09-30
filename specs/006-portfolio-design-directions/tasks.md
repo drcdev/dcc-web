@@ -175,12 +175,12 @@
 
 ### Tests first
 
-- [ ] T075 [US4] Write `tests/unit/prototypes/portfolio/capture-config.test.ts` † asserting `tests/design/portfolio/capture.config.ts` exists, is a standalone Playwright config (not referenced by `playwright.config.ts` projects, so `verify` never runs it), and that the capture spec enumerates exactly 24 combinations (3 directions × index/story × phone 390 / desktop 1280 × light/dark) with names `<a|b|c>-<index|story>-<phone|desktop>-<light|dark>.webp`. See it fail.
+- [X] T075 [US4] Write `tests/unit/prototypes/portfolio/capture-config.test.ts` † asserting `tests/design/portfolio/capture.config.ts` exists, is a standalone Playwright config (not referenced by `playwright.config.ts` projects, so `verify` never runs it), and that the capture spec enumerates exactly 24 combinations (3 directions × index/story × phone 390 / desktop 1280 × light/dark) with names `<a|b|c>-<index|story>-<phone|desktop>-<light|dark>.webp`. See it fail.
 
 ### Implementation
 
-- [ ] T076 [US4] Create `tests/design/portfolio/capture.config.ts` † (standalone, serves the production build on port 4321 through `wrangler dev` or the existing preview mechanism, reduced motion emulated, dark and light via `colorScheme`) and `tests/design/portfolio/capture.spec.ts` † (full-page PNG buffer, converted to WebP with `sharp`, each under 600 KB, written to `docs/design/portfolio/`). Run T075 until it passes.
-- [ ] T077 [US4] Build, serve, and run the capture: `ASTRO_PREVIEW_BACKGROUND=1 corepack pnpm exec playwright test --config tests/design/portfolio/capture.config.ts`. Confirm `ls docs/design/portfolio/*.webp | wc -l` prints 24 and every file is under 600 KB.
+- [X] T076 [US4] Create `tests/design/portfolio/capture.config.ts` † (standalone, serves the production build on port 4321 through `wrangler dev` or the existing preview mechanism, reduced motion emulated, dark and light via `colorScheme`) and `tests/design/portfolio/capture.spec.ts` † (full-page PNG buffer, converted to WebP with `sharp`, each under 600 KB, written to `docs/design/portfolio/`). Run T075 until it passes.
+- [X] T077 [US4] Build, serve, and run the capture: `ASTRO_PREVIEW_BACKGROUND=1 corepack pnpm exec playwright test --config tests/design/portfolio/capture.config.ts`. Confirm `ls docs/design/portfolio/*.webp | wc -l` prints 24 and every file is under 600 KB.
 - [ ] T078 [US4] [PREVIEW-CHECK] Don looks at the 24 images (for example in the finished document) and confirms each shows the whole page in its final state with nothing cut off or blank.
 
 **Checkpoint**: 24 screenshots committed under `docs/design/portfolio/`.
