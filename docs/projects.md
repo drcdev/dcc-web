@@ -199,7 +199,7 @@ project like this. It goes once, inside the `invitation` chapter, and every proj
 
 These page sections also work inside a chapter (see [pages.md](pages.md) for how each is
 written): `Lead`, `TextBlock`, `Figure`, `WideImage`, `FullImage`, `CallToAction`, `Offerings`,
-`Offering` and `ContactForm`.
+`Offering`, `ContactForm` and `RecentWriting` (the three newest posts, as on the home page).
 
 ## Drafts and placeholders
 

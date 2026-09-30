@@ -51,8 +51,6 @@ export interface FixtureSiteOptions {
   env?: Record<string, string>;
   /** Fixture project files from tests/fixtures/projects/, copied to src/content/projects/ with their images. */
   projects?: readonly (string | FixtureFile)[];
-  /** Environment variables for the build (added to this process's environment), for example a production `WORKERS_CI`. */
-  env?: Readonly<Record<string, string>>;
   /** Extra files to write into the site, keyed by path relative to the site root (for example an oversized clip). */
   write?: Readonly<Record<string, string | Uint8Array>>;
 }
