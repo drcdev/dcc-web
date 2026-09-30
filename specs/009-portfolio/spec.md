@@ -18,9 +18,9 @@ decision, recorded at the end of `docs/design/portfolio.md`, is:
   page, options compared in a table of constraints against options, chapter headings that uncover
   as they scroll in, and a page transition between the index and a story.
 - **Index page: Direction C, using Direction A's content layout.** The index keeps Direction C's
-  look and its page transition, but lays its projects out in two columns, showing Direction A's
-  per-project content (title, one-line problem, visual, themes, status), rather than Direction
-  C's three-column chapter-contents layout.
+  look (one project per full-width ruled row) and its page transition, but each row uses Direction
+  A's two-column split (title, one-line problem, status and themes on the left; the visual on the
+  right) instead of Direction C's three columns within the row.
 
 The site foundation already shows a "Projects" entry in the header navigation that points at
 `/projects/`, which is currently reserved as a future address and shows the not-found page. The
@@ -33,6 +33,22 @@ visual treatment, and adds page transitions, it is a **major change** under Cons
 Principle III: the pull request is labelled as such and waits for Don's approval after he has
 looked at the preview deployment.
 
+## Clarifications
+
+### Session 2026-09-29
+
+- Q: How should the projects index lay out each project? → A: One project per full-width row in
+  Direction C's ruled style; inside each row, Direction A's two-column split (title, problem,
+  status and themes on the left; visual on the right). Not a grid of cards.
+- Q: Should the comparison table also show each option's points for and against? → A: Optional.
+  Each option may list points for and against; those rows appear only when at least one option
+  has them, and a missing list never fails the build.
+- Q: Should each story page have an "In this story" list of the seven chapters? → A: Yes. A plain
+  list of chapter links, with no script, placed after the title and problem line.
+- Q: Apart from a live demo, should a project be able to link out to other places? → A: One
+  optional source-code link (any HTTPS address), shown in the "What I built" chapter beside the
+  demo or stand-in link. Index entries link only to their story.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - A visitor reads a project as a story (Priority: P1)
@@ -40,7 +56,8 @@ looked at the preview deployment.
 A visitor opens a project and reads it as a story in seven chapters, in a fixed order: the
 problem and who had it; what made it hard (the constraints); the options Don considered and why
 he chose one; what he built; what happened; what he would do differently; and an invitation,
-"Have a problem like this?". A thin bar at the top of the page shows how far through the story
+"Have a problem like this?". After the title and problem line, a short "In this story" list links
+to each chapter. A thin bar at the top of the page shows how far through the story
 they are. On a wide screen, each chapter's visual (screenshot, diagram or short clip) stays in
 view beside the text it explains; on a phone it sits after that text. Chapter headings uncover as
 they scroll into view.
@@ -73,6 +90,9 @@ story screenshots in `docs/design/portfolio.md`.
    alternative, and every diagram has a text description a reader can reach.
 7. **Given** the story page, **When** automated accessibility checks run on it in both themes,
    **Then** they report no violations.
+8. **Given** a story page, **When** it renders, **Then** an "In this story" list follows the title
+   and problem line, with one link per chapter in order, each leading to that chapter's heading,
+   and it works with JavaScript off.
 
 ---
 
@@ -80,7 +100,8 @@ story screenshots in `docs/design/portfolio.md`.
 
 In the options chapter, a visitor sees every option Don considered, not only the one he picked,
 laid out in one table of the project's constraints against the options, with how well each option
-met each constraint. The chosen option is marked and the reason for choosing it is stated. On a
+met each constraint. Where Don has listed points for and against an option, those appear in the
+table too. The chosen option is marked and the reason for choosing it is stated. On a
 phone the table scrolls sideways inside its own labelled region, not the whole page.
 
 **Why this priority**: Showing the options and the reasoning is what distinguishes these stories
@@ -103,6 +124,10 @@ its reason, and on a phone the table scrolls within its region.
    keyboard, and it has an accessible name.
 4. **Given** the comparison, **When** it is read by a screen reader, **Then** it is announced as
    a table with row and column headers, so each fit is read with its option and constraint.
+5. **Given** at least one option lists points for or against, **When** the comparison renders,
+   **Then** it has an "In its favour" row and an "Against it" row, and an option with no list
+   shows an empty cell there; **given** no option lists any, **Then** neither row appears and the
+   build still succeeds.
 
 ---
 
@@ -135,18 +160,18 @@ with that project noted on the form.
 
 ### User Story 4 - A visitor browses and filters the projects index (Priority: P1)
 
-A visitor follows "Projects" in the header and reaches the projects index. Projects are laid out
-in two columns on wide screens and one column on a phone. Each project shows its title, a
-one-line problem statement, a visual, its themes and a status (shipped, experiment or in
-progress). The visitor can narrow the list to one theme and clear the filter again. Choosing a
+A visitor follows "Projects" in the header and reaches the projects index. Projects are listed one
+per full-width ruled row. On wide screens each row is split in two: the title, one-line problem
+statement, status (shipped, experiment or in progress) and themes on the left, and the project's
+visual on the right; on a phone the visual follows the text. The visitor can narrow the list to one theme and clear the filter again. Choosing a
 project opens its story, with a page transition that carries the project's title across.
 
 **Why this priority**: The index is the entry point from the navigation and the only way to find
 more than one project. It also fills a navigation link that currently leads to the not-found
 page.
 
-**Independent Test**: On a preview deployment, follow "Projects" in the header, confirm the
-two-column layout at desktop width and one column on a phone, filter by a theme, clear it, and
+**Independent Test**: On a preview deployment, follow "Projects" in the header, confirm one
+project per row with text left and visual right at desktop width and stacked on a phone, filter by a theme, clear it, and
 open a story; compare the page by eye with the chosen direction.
 
 **Acceptance Scenarios**:
@@ -154,12 +179,14 @@ open a story; compare the page by eye with the chosen direction.
 1. **Given** the site is built, **When** a visitor requests `/projects/`, **Then** the index loads
    with a success status and the Projects navigation entry is marked as the current page, visually
    and to assistive technology.
-2. **Given** the index on a wide screen, **When** it renders, **Then** projects are laid out in two
-   columns; **given** a phone-width screen (320 px and up), **Then** they are in one column with no
-   horizontal page scrolling.
+2. **Given** the index on a wide screen, **When** it renders, **Then** each project takes one
+   full-width ruled row, with its title, problem, status and themes in the left column and its
+   visual in the right column; **given** a phone-width screen (320 px and up), **Then** the visual
+   follows the text in a single column with no horizontal page scrolling.
 3. **Given** each project on the index, **When** it renders, **Then** it shows the title, a
    one-line problem statement, a visual with a text alternative, one or more themes, and one
-   status, with the status conveyed in text and not by colour alone.
+   status, with the status conveyed in text and not by colour alone. Its only link is to its
+   story.
 4. **Given** the index, **When** a visitor chooses a theme, **Then** only projects with that theme
    are shown, the chosen theme is indicated to sight and to assistive technology, and the number of
    projects shown is announced.
@@ -234,6 +261,10 @@ demo shows a link and no embed.
 6. **Given** a project with no live demo, **When** its story renders, **Then** no demo link or
    embed placeholder is shown, unless the project names a stand-in page, which is then linked with
    a note saying it is not a live demo.
+7. **Given** a project that names a source-code address, **When** its story renders, **Then** a
+   link to the source code appears in the "What I built" chapter beside any demo or stand-in link,
+   and nowhere on the index; **given** that address is not HTTPS, **When** the site is built,
+   **Then** the build fails naming the file and the address.
 
 ---
 
@@ -341,8 +372,8 @@ demo stand-in link and the invitation.
 - **Only one project, or none**: with one project the index shows it without looking broken; with
   no published projects the index shows a short plain-language message rather than an empty page,
   and the Projects navigation entry still works.
-- **Odd number of projects**: the last project sits in the first column with no empty placeholder
-  card.
+- **Tall or narrow index visuals**: every index row has its required visual; the right column never
+  shows an empty placeholder, and a tall visual never makes a row overlap the next.
 - **A theme filter with no matches**: a theme in the address that matches no project (for example
   from an old link) shows a plain message saying no projects match, with a way to clear the filter.
 - **Many themes**: theme choices wrap onto more lines rather than overflowing the page.
@@ -374,9 +405,10 @@ demo stand-in link and the invitation.
   top of the page, a visual that stays in view beside its chapter text on wide screens, a table of
   constraints against options, chapter headings that uncover as they scroll in, and a page
   transition between the index and a story.
-- **FR-002**: The projects index MUST follow Direction C's visual treatment and page transition
-  while using Direction A's content layout, with projects in two columns on wide screens and one
-  column on narrow screens.
+- **FR-002**: The projects index MUST follow Direction C's visual treatment and page transition,
+  listing one project per full-width ruled row, while using Direction A's content layout within each
+  row: on wide screens a two-column split with title, one-line problem, status and themes on the left
+  and the visual on the right; on narrow screens a single column with the visual after the text.
 - **FR-003**: Both pages MUST use the site's existing design tokens, typography, header, footer and
   themes, and MUST work in the light and dark themes. Any new colour or typeface is a design-system
   change and MUST be called out in the plan.
@@ -390,7 +422,8 @@ demo stand-in link and the invitation.
   with a text alternative, one to four themes and exactly one status from: shipped, experiment,
   in progress. Status MUST be conveyed in text, not by colour alone.
 - **FR-012**: Each project on the index MUST link to its story page; that link MUST have the
-  project's title as its accessible name and be reachable with the keyboard.
+  project's title as its accessible name and be reachable with the keyboard. Index entries MUST NOT
+  carry any other link (no demo, stand-in or source-code link).
 - **FR-013**: Visitors MUST be able to filter the index by one theme at a time and clear the filter.
   The list of themes MUST be derived from the published projects, with no duplicates, in a stable
   order.
@@ -426,12 +459,18 @@ demo stand-in link and the invitation.
   visible.
 - **FR-026**: Moving between the index and a story MUST use a page transition that carries the
   project's title across, where the browser supports it.
+- **FR-027**: After the title and problem line, the story page MUST show an "In this story" list
+  of links to the seven chapters in order, each leading to its chapter's heading, working without
+  script.
 
 **Option comparison**
 
 - **FR-030**: The options chapter MUST present every option Don considered in one comparison of the
   project's constraints against its options, with each option's name and short summary and a stated
   fit for every constraint (meets, partly meets, does not meet), conveyed in text as well as visually.
+  Each option MAY also list points in its favour and points against it; when at least one option has
+  such a list, the comparison MUST show an "In its favour" row and an "Against it" row, and when none
+  does, those rows MUST NOT appear. A missing list MUST NOT fail the build.
 - **FR-031**: Exactly one option MUST be marked as chosen, in text as well as visually, with the
   reason it was chosen shown without interaction.
 - **FR-032**: The comparison MUST be a data table with row and column headers. When wider than its
@@ -453,6 +492,9 @@ demo stand-in link and the invitation.
   a live demo. With neither, no demo link or placeholder is shown.
 - **FR-044**: Short demo clips MUST have visible controls, no sound playing by itself, a text
   description of what they show, and MUST NOT play by themselves when reduced motion is requested.
+- **FR-045**: A project MAY name one source-code address, which MUST be HTTPS (any host); any other
+  address MUST fail the build naming the file. When named, the story MUST link to it in the "What I
+  built" chapter beside any demo or stand-in link, with link text saying it opens the source code.
 
 **Contact invitation**
 
@@ -485,7 +527,7 @@ demo stand-in link and the invitation.
 - **FR-071**: Project settings MUST include: title, one-line problem statement (one sentence, at most
   140 characters), one to four themes, status, index visual with alternative text, and a sharing
   description. They MAY include: an order, a date, a live demo address (and whether to embed it), a
-  stand-in page, a sharing image, and a draft flag.
+  stand-in page, a source-code address, a sharing image, and a draft flag.
 - **FR-072**: The story building blocks (chapter with optional visual, visual, option comparison,
   demo, invitation) MUST be usable in any project, and the site's existing page sections MUST also
   be usable inside chapters.
@@ -494,7 +536,7 @@ demo stand-in link and the invitation.
   an unknown setting, an unknown status, a problem statement over the limit, a missing, repeated or
   out-of-order chapter, an option comparison without exactly one chosen option or without a reason,
   a missing fit, a missing image or alternative text, a clip without a description, a demo address
-  not on drc.dev, an unknown building block, and a duplicate or clashing slug.
+  not on drc.dev, a source-code address that is not HTTPS, an unknown building block, and a duplicate or clashing slug.
 - **FR-074**: Draft projects MUST be excluded from production builds (no index entry, no story page,
   not in the sitemap).
 - **FR-075**: An authoring guide for projects MUST sit beside the existing guide for pages
@@ -517,7 +559,8 @@ demo stand-in link and the invitation.
 
 - **Project**: one piece of Don's work told as a story. Has a slug (from its file name), title,
   one-line problem statement, themes, status, index visual, optional order and date, optional live
-  demo or stand-in page, optional sharing image, draft flag, and a story body.
+  demo or stand-in page, optional source-code address, optional sharing image, draft flag, and a
+  story body.
 - **Status**: one of shipped, experiment, in progress; shown as a labelled pill.
 - **Theme**: a short label shared across projects; the set of themes on the index is derived from
   the published projects.
@@ -527,7 +570,8 @@ demo stand-in link and the invitation.
   each with a text alternative.
 - **Constraint**: something that made the problem hard; a row of the option comparison.
 - **Option**: an approach Don considered; has a name, short summary, a fit for every constraint,
-  and whether it was chosen, with the reason when chosen.
+  optional points in its favour and against it, and whether it was chosen, with the reason when
+  chosen.
 - **Demo**: a live demo address on drc.dev, optionally embedded, or a stand-in page labelled as not
   a live demo.
 - **Contact invitation**: the final chapter, linking to the contact form with the project's slug.
@@ -562,9 +606,9 @@ demo stand-in link and the invitation.
 ## Assumptions
 
 - The design decision in `docs/design/portfolio.md` is final for this feature. "Direction A's content
-  layout (two columns instead of three)" is read as: the index shows Direction A's per-project
-  content (title, one-line problem, visual, themes, status) in a grid of two columns on wide screens
-  instead of Direction C's three, keeping Direction C's visual treatment and page transition.
+  layout (two columns instead of three)" means (confirmed in Clarifications): one project per
+  Direction C ruled row, with Direction A's two-column split inside the row (text left, visual right)
+  instead of Direction C's three columns, keeping Direction C's visual treatment and page transition.
 - The chapter headings follow the prototype wording ("The problem", "What made it hard", "Options
   considered", "What I built", "How it turned out", "What I'd do differently", "Have a problem like
   this?"); Don can change the wording later without a spec change.
@@ -581,7 +625,7 @@ demo stand-in link and the invitation.
   captures.
 - The four other sample index entries from the design slice (Tempo, Flux, drc.dev, Plunge Buddy) are
   not published at launch, because they have no stories; Don adds them as project files later. With
-  only Focus Pocus published at launch, the filter and two-column layout are also exercised by test
+  only Focus Pocus published at launch, the filter and the multi-row index are also exercised by test
   fixture projects.
 - Demos are hosted by Don on drc.dev and allow being embedded from this site; the site only links to
   or embeds them. Allowing drc.dev as an embed source is a security-header change and is covered by
