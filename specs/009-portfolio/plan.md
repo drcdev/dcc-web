@@ -142,7 +142,8 @@ it names. Test file names are indicative.
    body, code fences ignored), `themes.test.ts` (normalise, dedupe variants, label choice, stable
    order, `?theme=` parse including unknown), `project-order.test.ts`, `build-mode.test.ts`
    (production only for Workers Builds on `main`), `project-address.test.ts` (slug from file
-   name, duplicates, `.md`/`.mdx` clash, nested files), `contact-link.test.ts`,
+   name, duplicates, `.md`/`.mdx` clash, nested files), `contact-link.test.ts`, `projects-guide.test.ts` (every setting and block name appears in
+   `docs/projects.md`, FR-075),
    `tests/unit/site/navigation.test.ts` (updated: `/projects/` no longer reserved; section-level
    current for `/projects/<slug>/`).
 2. **Component** (`tests/component/project/`, Container API): `Pill`, `StatusPill`,
@@ -162,8 +163,8 @@ it names. Test file names are indicative.
    (`tests/fixtures/projects/broken/NN-*.mdx`) and asserts the build fails with the file name
    and the expected phrase; `one-file-project.test.ts` (adding one file plus images publishes the
    project on the index and at `/projects/<slug>/`, SC-004); `project-drafts.test.ts` (draft
-   absent from index, routes and sitemap with the production environment; present and marked
-   with a preview environment); `project-csp.test.ts` (embed page gets `frame-src
+   absent from index, routes, sitemap and sharing metadata, and no draft-only image or clip file in
+   `dist/`, with the production environment; present and marked with a preview environment); `project-csp.test.ts` (embed page gets `frame-src
    https://drc.dev https://*.drc.dev`, other pages do not).
 4. **E2E** (`tests/e2e/`, against `wrangler dev`): `projects.spec.ts` (index status 200 and nav
    current; row layout at 1280 and 390 px; no horizontal scroll from 320 px; story chapters in

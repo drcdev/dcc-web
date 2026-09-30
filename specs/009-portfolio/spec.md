@@ -29,8 +29,8 @@ index and the story pages, the way Don adds projects, and the reusable story bui
 makes the existing Projects navigation entry lead to a real page.
 
 Because it makes a navigation entry live, adds a new site-wide page type with its own layout and
-visual treatment, and adds page transitions, it is a **major change** under Constitution
-Principle III: the pull request is labelled as such and waits for Don's approval after he has
+visual treatment, adds page transitions, and changes the security policy (story pages that embed
+a demo allow frames from drc.dev), it is a **major change** under Constitution Principle III: the pull request is labelled as such and waits for Don's approval after he has
 looked at the preview deployment.
 
 ## Clarifications
@@ -396,17 +396,23 @@ demo stand-in link and the invitation.
 - **Wide comparison**: a comparison with many options or constraints stays inside its scroll region
   at every width and never makes the whole page scroll sideways.
 - **Tall visual beside short text**: the sticky visual stops at the end of its chapter and never
-  overlaps the next chapter.
+  overlaps the next chapter; a chapter whose text is shorter than its visual is as tall as the
+  visual, so nothing overlaps and no gap is left below the visual.
 - **Keyboard focus behind the sticky visual or the progress bar**: focused content is never hidden
   beneath them.
 - **Forced colours / high contrast mode**: the chosen-option mark, status, progress bar and focus
   indicators remain visible.
 - **Page transitions and the back button**: returning from a story to the index lands the visitor
-  back on the index with the filter they had, and a transition never blocks navigation.
-- **Contact page reached with a project that no longer exists**: the contact form's own rules
-  apply (feature 007); this feature only builds the link.
+  back on the index with the filter they had, and a transition never blocks navigation. Following
+  the header's Projects link always opens the unfiltered index. Opening a story directly (typed
+  address, bookmark or a link from elsewhere) loads it normally, with no transition.
+- **Contact page reached with a project that no longer exists, or with an edited, malformed or
+  overlong `project` value**: the contact form's own rules apply (feature 007: the value is
+  untrusted plain text, shown as text, cut to its limit and never run as code); this feature only
+  builds the link.
 - **Printing a story**: printing shows every chapter and the full comparison, without the progress
-  bar.
+  bar. Browser reader modes and text-only readers get the whole story because every chapter,
+  visual text alternative and the comparison are in the page's HTML.
 
 ## Requirements *(mandatory)*
 
@@ -438,62 +444,128 @@ demo stand-in link and the invitation.
 - **FR-012**: Each project on the index MUST link to its story page; that link MUST have the
   project's title as its accessible name and be reachable with the keyboard. Index entries MUST NOT
   carry any other link (no demo, stand-in or source-code link).
-- **FR-013**: Visitors MUST be able to filter the index by one theme at a time and clear the filter.
+- **FR-013**: With JavaScript on (see FR-062), visitors MUST be able to filter the index by one
+  theme at a time and clear the filter.
   Themes are free text in each project file. The list of themes MUST be derived from the published
   projects, matching themes ignoring case and spacing so that variants show as one choice under one
   label, with no duplicates, in a stable order.
 - **FR-014**: The chosen theme MUST be reflected in the page address as `?theme=<theme>` on
   `/projects/` (no separate per-theme pages are built) so the filtered view can be shared and
   reloaded; an unknown theme in the address MUST show a no-match message with a way to
-  clear it.
+  clear it. The `theme` value is compared, after the same normalising as FR-013, only against the
+  known themes; it MUST NOT be written into the page as markup, and the no-match message MUST NOT
+  repeat it. Changing or clearing the filter replaces the address without adding a history entry,
+  so the browser's Back button leaves the index rather than stepping through filter choices. The
+  filter state stays in the browser: it is never sent to any service, stored in a cookie or
+  counted.
 - **FR-015**: Filtering MUST announce the number of projects shown to assistive technology and MUST
-  indicate the chosen theme visually and programmatically.
+  indicate the chosen theme visually and programmatically. The controls are buttons in a group
+  named "Filter by theme": one "All projects" button and one button per theme labelled with the
+  theme, each exposing a pressed state (exactly one pressed at a time). A polite status message,
+  updated once per change, says "Showing all N projects.", "Showing K projects about <theme>."
+  ("project" when K is 1) or, when nothing matches, "No projects match this theme." Choosing a
+  theme or "All projects" leaves focus on the button that was pressed; the no-match message's
+  "Show all projects" button, which disappears once used, moves focus to the "All projects"
+  button. Filtering never moves focus into the list, and hidden projects are removed from the
+  reading and focus order.
 - **FR-016**: Projects MUST be ordered on the index by an order Don sets in each project file,
-  falling back to most recent first.
+  falling back to most recent first. The order is a whole number of 1 or more (lower first);
+  gaps are allowed, and zero, negative or non-whole values fail the build. Projects with an order
+  come before those without; ties and projects without an order fall back to date (most recent
+  first, projects with a date before those without) and then title, so the order is always the
+  same for the same files.
 - **FR-017**: Theme and status labels MUST use one shared visual label style ("pill") across the
   index and story pages. If the blog feature has already delivered a pill on the main branch, the
-  portfolio MUST reuse it rather than add a second one.
+  portfolio MUST reuse it rather than add a second one. A pill always shows its text; any colour
+  or tone is additional and never the only way its meaning (theme or status) is conveyed. On the
+  portfolio pages pills are labels, not links or controls.
+- **FR-018**: The theme filter buttons MUST each have a target of at least 24 by 24 CSS pixels
+  (WCAG 2.2 2.5.8), a visible focus indicator (2.4.7) that is never hidden by other content
+  (2.4.11), and MUST wrap onto more lines rather than overflow when there are many themes.
 
 **Story pages**
 
 - **FR-020**: Each published project MUST have a story page at `/projects/<slug>/`, where the slug
-  comes from the project file's name.
+  comes from the project file's name without its extension. A slug MUST be 1 to 64 characters of
+  lower-case letters `a`–`z`, digits and hyphens, so it needs no escaping in an address; any other
+  file name fails the build naming the file. Every address under `/projects/` belongs to the
+  portfolio, so no other page can claim one.
 - **FR-021**: Each story MUST contain exactly seven chapters in this order: the problem and who had
   it; what made it hard; the options considered; what was built; what happened; what I would do
   differently; and the invitation. Each chapter MUST have its own heading, and the headings MUST
-  form a correct outline under the page's main heading.
+  form a correct outline under the page's main heading: the project title is the only level-1
+  heading, each chapter heading is level 2, and any heading Don writes inside a chapter (or a
+  building block renders) is level 3 or lower, with no level skipped. The index's main heading is
+  "Projects" (level 1) and each project title on it is level 2. Don writes each chapter as a
+  chapter block naming its stage; the chapter headings, their numbers and the invitation link
+  come from the site, and Don writes only the chapters' text (including the invitation's short
+  lead-in).
 - **FR-022**: The story page MUST show the project's title, its one-line problem, its themes and its
   status near the top of the page.
 - **FR-023**: Any chapter MAY have one visual (image, diagram or short clip). On wide screens with
   motion allowed, it MUST stay in view beside its chapter's text while that chapter is on screen and
   MUST NOT extend into the next chapter; otherwise it MUST appear after its chapter's text. A chapter
-  without a visual MUST leave no empty space.
-- **FR-024**: A reading-progress bar MUST show how far through the story page the reader is. It is
-  decorative and MUST be hidden from assistive technology.
+  without a visual MUST leave no empty space. A "wide screen" for the story layout is a viewport at
+  least 80rem wide (1280 CSS pixels at the default text size); the index's two-column rows start at
+  64rem (1024 CSS pixels). In every layout the reading and focus order is the chapter's text first,
+  then its visual. At 400% zoom (a 320 CSS pixel viewport) and with WCAG 1.4.12 text-spacing
+  overrides, the narrow layout applies and no text is clipped, overlapped or hidden.
+- **FR-024**: A reading-progress bar MUST show how far through the story page the reader is,
+  measured over the whole page's scroll (empty at the top, full at the bottom, footer included).
+  It is decorative, since the browser already conveys scroll position, and MUST be hidden from
+  assistive technology. It uses no script: when reduced motion is requested, when scroll-linked
+  effects are unsupported or when printing, it is not shown at all rather than shown frozen. When
+  shown, it has at least 3:1 contrast against the page background in both themes and stays
+  visible in forced-colours mode.
 - **FR-025**: Chapter headings MUST uncover as they scroll into view. Content MUST never start
   hidden in a way that depends on the effect running: if the effect does not run, the content is
-  visible.
+  visible. Headings and visuals MUST be visible from the first paint (no hidden-until-script
+  state, so nothing flashes missing and then appears). A heading that is already in or above the
+  viewport when the page opens (after following a chapter link, or reloading part-way down) MUST
+  show fully uncovered.
 - **FR-026**: Moving between the index and a story MUST use a page transition that carries the
-  project's title across, where the browser supports it.
+  project's title across, where the browser supports it. "Carries the title" means the title text
+  in the project's index row and the story's main heading are paired, so one appears to move into
+  the other; the rest of the page changes as a plain cross-fade. The transition applies between
+  portfolio pages only, including Back and Forward between them where the browser supports it;
+  opening a story directly loads it normally. It is a normal page load underneath: the new page's
+  title is announced as for any load, focus starts at the top of the new page, and an interrupted
+  or skipped transition still completes the navigation.
 - **FR-027**: After the title and problem line, the story page MUST show an "In this story" list
   of links to the seven chapters in order, each leading to its chapter's heading, working without
-  script.
+  script. The list is a navigation landmark named "In this story", placed after the story header
+  and before the first chapter in reading order. It is a static list: it does not track or mark
+  the chapter being read. Following a link moves to that chapter so its heading is fully visible,
+  never beneath the header or the progress bar, and the next Tab continues from that chapter.
 
 **Option comparison**
 
 - **FR-030**: The options chapter MUST present every option Don considered in one comparison of the
   project's constraints against its options, with each option's name and short summary and a stated
   fit for every constraint (meets, partly meets, does not meet), conveyed in text as well as visually.
+  Each fit shows its word ("Meets", "Partly meets", "Does not meet"); any icon or colour is
+  additional and hidden from assistive technology.
   Each option MAY also list points in its favour and points against it; when at least one option has
   such a list, the comparison MUST show an "In its favour" row and an "Against it" row, and when none
-  does, those rows MUST NOT appear. A missing list MUST NOT fail the build.
+  does, those rows MUST NOT appear. A missing list MUST NOT fail the build; an empty list counts as
+  missing, and an option with only one of the two lists shows an empty cell in the other row. When
+  shown, the two rows come after the summary row and before the constraint rows, each with its own
+  row header.
 - **FR-031**: Exactly one option MUST be marked as chosen, in text as well as visually, with the
   reason it was chosen shown without interaction.
 - **FR-032**: The comparison MUST be a data table with row and column headers. When wider than its
   space it MUST scroll inside its own region, which MUST be keyboard-focusable and have an
-  accessible name; the page itself MUST NOT scroll sideways.
+  accessible name; the page itself MUST NOT scroll sideways. Specifically: the table has a caption
+  naming it; each option's name is a column header (`scope="col"`) with the chosen option's header
+  also saying "Chosen"; the summary, "In its favour", "Against it" and each constraint are row
+  headers (`scope="row"`). The scroll region is a named region whose name is the table's caption,
+  is one Tab stop in reading order after the options chapter's text that precedes it, shows a
+  visible focus indicator, and scrolls with the arrow keys once focused. This holds at every width
+  from 320 px, however many options or constraints there are.
 - **FR-033**: Every option MUST be readable without interaction and without JavaScript. Any
-  interactive enhancement of the comparison MUST leave the full comparison in the page's HTML.
+  interactive enhancement of the comparison MUST leave the full comparison in the page's HTML. At
+  launch the comparison has no enhancement and no script; the only keyboard interaction is
+  scrolling its focused region.
 
 **Demos**
 
@@ -501,16 +573,46 @@ demo stand-in link and the invitation.
   link that opens the demo, with link text saying what it opens.
 - **FR-041**: A demo MAY be marked for embedding. An embedded demo MUST appear beside the chapter it
   illustrates, have a title naming it, not load until the reader reaches it or asks for it, never
-  play sound by itself, and keep the "open" link available.
+  play sound by itself, and keep the "open" link available. In detail:
+  - "Not load" means no request is made to the demo address until the frame is near the viewport
+    (the browser's own lazy loading, which also works with JavaScript off), or until the reader
+    follows the "open" link.
+  - The frame is sandboxed, allowing only scripts, same-origin access and forms; it is granted no
+    camera, microphone, location, autoplay or other permission, and sends no more than the site's
+    origin as its referrer.
+  - Its title (its accessible name) names the demo. Keyboard users can Tab into the frame and out
+    of it again (no keyboard trap).
+  - The "open" link sits outside the frame, so a frame that is blocked, fails to load or shows an
+    error from drc.dev never hides it; the site does not try to detect a failed frame.
+  - With JavaScript off, the frame and the "open" link are both present.
 - **FR-042**: Demo addresses MUST be on drc.dev (or a subdomain of it) over HTTPS; any other address
-  MUST fail the build naming the file.
+  MUST fail the build naming the file. The scheme is exactly `https`; the host is exactly `drc.dev`
+  or ends in `.drc.dev`; there is no user name or password part and no port. Look-alikes such as
+  `drc.dev.example.com`, `evildrc.dev` or `https://drc.dev@example.com/` fail.
 - **FR-043**: A project without a live demo MAY name a stand-in page, which MUST be labelled as not
-  a live demo. With neither, no demo link or placeholder is shown.
+  a live demo, in text that assistive technology reads with the link. The stand-in address MUST be
+  HTTPS (any host), or the build fails naming the file and the address. A project MUST NOT name
+  both a demo and a stand-in. With neither, no demo link or placeholder is shown.
 - **FR-044**: Short demo clips MUST have visible controls, no sound playing by itself, a text
   description of what they show, and MUST NOT play by themselves when reduced motion is requested.
+  Clips never play by themselves under any motion setting, do not loop, and download nothing but
+  their still poster image until the reader presses play (which also serves readers saving data).
+  A clip file larger than 5 MB fails the build naming the file and the clip. Clips are served from
+  this site, never from another host.
 - **FR-045**: A project MAY name one source-code address, which MUST be HTTPS (any host); any other
   address MUST fail the build naming the file. When named, the story MUST link to it in the "What I
   built" chapter beside any demo or stand-in link, with link text saying it opens the source code.
+  Any host is allowed (unlike demos) because source code usually lives on a code-hosting service
+  and is only linked, never embedded.
+- **FR-046**: Demo, stand-in and source-code links MUST open in the same tab (no new window, so no
+  opener relationship), and send no more than the site's origin as the referrer (the site's
+  existing referrer policy). They carry no tracking parameters.
+- **FR-047**: Only story pages that embed a demo MAY allow frames, and only from `https://drc.dev`
+  and its HTTPS subdomains, matching FR-042. The index, stories without an embed and every other
+  page keep the site's default security policy unchanged. The same rule applies in production,
+  preview and local builds. Any inline style or script the portfolio adds MUST be allowed by the
+  site's policy through a hash, never by allowing inline code in general, and no element uses an
+  inline `style` attribute.
 
 **Contact invitation**
 
@@ -519,65 +621,157 @@ demo stand-in link and the invitation.
 - **FR-051**: The invitation link's accessible name MUST include the project's title.
 - **FR-052**: The link MUST work without JavaScript. Following it MUST open the contact page with the
   project noted on the form (behaviour provided by the contact feature).
+- **FR-053**: Following the invitation MUST NOT set a cookie, send an analytics event, or add any
+  tracking or other parameter to the link. What happens to the `project` value on the contact
+  page is the contact feature's (feature 007, FR-004 and FR-015): it is treated as untrusted plain
+  text and stored with the message under that feature's retention rule. This feature adds no new
+  stored field and collects no personal data.
 
 **Reduced motion, no JavaScript, and browser support**
 
 - **FR-060**: When reduced motion is requested, the progress bar, heading uncover, sticky visuals and
   page transitions MUST be off, clips MUST NOT play by themselves, and every chapter MUST show in its
-  final state.
-- **FR-061**: With JavaScript turned off, every story MUST be fully readable (all chapters, visuals'
-  text alternatives, the full comparison with the chosen option and reason, demo links and the
-  invitation), and the index MUST list every project with all its details.
+  final state. "Reduced motion is requested" means one signal, the reader's system or browser
+  reduced-motion preference (`prefers-reduced-motion: reduce`), applied identically to all five
+  effects. The "final state" is: every heading and visual fully visible (not clipped, transparent
+  or offset), no visual pinned in place, and each visual in normal flow after its chapter's text.
+  Changing the preference while a page is open takes effect without reloading. The option
+  comparison and the theme filter have no animation under any setting: filtering shows and hides
+  rows at once.
+- **FR-061**: With JavaScript turned off, every story MUST be fully readable (the title, problem,
+  status and themes; the "In this story" list; all chapters; visuals with their text alternatives
+  and descriptions; the full comparison with the chosen option and reason; demo, stand-in and
+  source-code links; any "Draft" or placeholder marks; and the invitation), and the index MUST list
+  every project with all its details (title and story link, problem, visual with its text
+  alternative, status and themes).
 - **FR-062**: The theme filter is a script enhancement. With JavaScript turned off, the index MUST NOT
-  show the filter controls, and MUST list every project.
+  show the filter controls, and MUST list every project. The same holds when the filter's script is
+  blocked, fails to load or fails before it has finished setting up: the controls, status line and
+  no-match message stay hidden until the filter is working, so no control is ever shown that does
+  nothing.
 - **FR-063**: Browsers without scroll-linked effects or page transitions MUST get the full content in
-  its final state and normal page loads.
+  its final state and normal page loads. The baseline is the static page (no script, no
+  scroll-linked effects, no transitions); each effect is added on top only when the browser
+  reports support for it and motion is allowed. Support is decided by feature detection, not by a
+  list of browsers.
 - **FR-064**: A story page MUST NOT need any script to be read. Script is allowed only for
   interactive pieces (the index filter and any comparison or demo enhancement), each loaded no
-  earlier than it is needed.
+  earlier than it is needed. The visual effects (progress bar, heading uncover, sticky visual and
+  page transition) are not interactive pieces and use no script. At launch the only portfolio
+  script is the index filter, loaded as a deferred module that runs after the page's HTML has been
+  read and never blocks the first paint; story pages ship no script beyond the site's shared one.
 
 **Authoring**
 
 - **FR-070**: Don MUST be able to add a project by adding one text file plus its images, with no
-  other change. The file holds the project's settings followed by its story.
+  other change. The file holds the project's settings followed by its story. The file sits in the
+  projects content folder and is named after the slug; its images, diagrams, clips and posters sit
+  in that folder's `images/<slug>/` folder and are referred to from the file by relative path. No
+  other file (code, configuration, navigation or list of projects) changes.
 - **FR-071**: Project settings MUST include: title, one-line problem statement (one sentence, at most
-  140 characters), one to four themes, status, index visual with alternative text, and a sharing
-  description. They MAY include: an order, a date, a live demo address (and whether to embed it), a
-  stand-in page, a source-code address, a sharing image, and a draft flag.
+  140 characters), one to four themes, status, index visual with alternative text, a sharing
+  description, and the option comparison (its constraints and options). They MAY include: an order,
+  a date, a live demo address (and whether to embed it), a stand-in page, a source-code address, a
+  sharing image, named visuals for use in the story, and a draft flag.
+  - The problem statement is counted in characters as written, including spaces and punctuation,
+    after trimming spaces at either end. "One sentence" means it ends with `.`, `?` or `!` and has
+    no sentence-ending punctuation followed by a space inside it.
+  - The date is a calendar date written `YYYY-MM-DD`. It is used only to order projects (FR-016)
+    and is not shown on the pages.
+  - Status is a closed list (shipped, experiment, in progress); adding a status is a spec change.
+    Themes are deliberately open (clarification): Don adds a new theme by writing it in a project
+    file, with no list to update.
 - **FR-072**: The story building blocks (chapter with optional visual, visual, option comparison,
   demo, invitation) MUST be usable in any project, and the site's existing page sections MUST also
-  be usable inside chapters.
+  be usable inside chapters. Chapters sit at the top level of the story, one after another, never
+  inside each other or inside a page section. Every other block and page section sits inside a
+  chapter: a visual in any chapter, the option comparison once in the options chapter, the demo
+  block at most once in the "What I built" chapter (and required there when the project names a
+  demo, stand-in or source-code address), and the invitation once in the invitation chapter. The
+  inputs each block takes are listed in the authoring guide (FR-075).
 - **FR-073**: Invalid project content MUST fail the build with a plain-language message naming the
-  file and the problem, covering at least: a missing required setting, a setting of the wrong kind,
-  an unknown setting, an unknown status, a problem statement over the limit, a missing, repeated or
-  out-of-order chapter, an option comparison without exactly one chosen option or without a reason,
-  a missing fit, a missing image or alternative text, a clip without a description, a demo address
-  not on drc.dev, a source-code address that is not HTTPS, an unknown building block, and a duplicate or clashing slug.
+  file and the problem. Each message contains the file's path, the setting or block concerned, and
+  what was expected, plus the value found where there is one (for example the bad address). It
+  contains nothing from outside the project file (no environment values or secrets). The checked
+  classes are exactly these; any check added later follows the same message rule and is added to
+  this list and to the authoring guide:
+  - settings: a missing required setting; a setting of the wrong kind (for example text where a
+    number is expected); an unknown setting; an unknown status; no themes, more than four, or the
+    same theme twice after normalising; a problem statement that is not one sentence or is over
+    the limit; an order that is not a whole number of 1 or more;
+  - chapters: a missing, repeated or out-of-order chapter; a level-1 or level-2 heading in the
+    story text;
+  - comparison: no options or no constraints; not exactly one chosen option; a chosen option with
+    no reason; a missing fit for some option and constraint;
+  - blocks: an unknown building block; a comparison, demo or invitation block that is missing
+    where required or placed outside its chapter; a visual name that the settings do not define;
+    an embedded-demo visual on a project whose demo is not marked for embedding;
+  - media: a missing, unreadable or unsupported image or clip file; an image (in the settings or
+    the story text) with no alternative text; a diagram or clip with no description; a clip over
+    5 MB;
+  - addresses: a demo address not on drc.dev over HTTPS; a stand-in or source-code address that is
+    not HTTPS; both a demo and a stand-in;
+  - files: a file name that is not a valid slug (FR-020); a duplicate slug (two files with the same
+    name and different extensions, or a file in a sub-folder); a page elsewhere on the site that
+    claims an address under `/projects/`.
+
+  The build stops at the first invalid project it meets and may report only that one; fixing it
+  and building again shows the next. The same checks run, with the same messages, in local, CI,
+  preview and production builds, and on draft projects as well as published ones.
 - **FR-074**: Draft projects MUST be excluded from production builds (no index entry, no story page,
   not in the sitemap). On preview deployments and in local development they MUST appear on the index
   and have their story page, each visibly marked "Draft".
+  - A production build is the build the host runs for the main branch; every other build (preview
+    branches, local development, local and CI test builds) is non-production. The build decides
+    this from the host's build settings, with no setting for Don to change.
+  - In production, nothing from a draft reaches the output: no index row, story page, sitemap
+    entry, sharing metadata, link-check entry, or image, clip or sharing image used only by that
+    draft. (The site has no search or feed.) If every project is a draft, the production index
+    shows the empty-index message.
+  - Outside production, a draft keeps its place in the index order and its invitation link, like a
+    published project.
+  - The "Draft" mark is text that assistive technology reads, not only a visual style.
 - **FR-075**: An authoring guide for projects MUST sit beside the existing guide for pages
-  (`docs/pages.md`), covering the settings, the building blocks, and the build error messages.
+  (`docs/pages.md`), covering the settings, the building blocks, and the build error messages. It
+  lists every setting, every building block with its inputs, and every error class in FR-073. A
+  test fails when a setting or block name exists in the code but not in the guide, and any change
+  that adds or changes a setting, block or error updates the guide in the same change. The guide
+  also tells Don to remove location and camera details from photos before adding them.
+- **FR-076**: All wording the portfolio adds (labels, marks, status and empty messages, build
+  errors, and placeholder copy) MUST be plain language with no hype or filler, as the constitution
+  requires.
 
 **Site integration**
 
 - **FR-080**: `/projects/` and each story page MUST have their own title, description and sharing
-  metadata, and MUST be listed in the sitemap.
+  metadata, and MUST be listed in the sitemap. A story without its own sharing image uses the
+  site's default sharing image.
 - **FR-081**: `/projects/` MUST no longer be treated as a reserved future address; link checks MUST
   then require it and every story page to respond successfully.
 - **FR-082**: Focus Pocus MUST be published as the first project, built only from a project file and
   the building blocks, with any draft or placeholder text or media visibly marked for Don's review.
+  "Built only from a project file" means its file and images are the only Focus Pocus-specific
+  files: no component, style, route or setting names it. Review marks are separate from the
+  project-level draft flag (FR-074): a chapter can carry a "Draft for review" mark and a visual a
+  "Placeholder" mark, and both show in every build, production included, until Don removes them
+  from the file; Focus Pocus itself is not a draft. Both marks are text that assistive technology
+  reads.
 - **FR-083**: Every portfolio page MUST meet WCAG 2.2 AA and the site's performance budget, in both
-  themes, at phone and desktop widths.
+  themes, at phone and desktop widths. This includes text and non-text contrast in both themes for
+  the chosen-option mark, fits, pills, the progress bar and focus indicators.
 - **FR-084**: Visual regression baselines MUST cover the index and the Focus Pocus story in both
   themes, captured with reduced motion requested so every chapter is in its final state.
+- **FR-085**: The privacy policy needs no change for this feature: it collects no personal data,
+  adds no cookie or tracking, and the project note on the contact form is already covered by the
+  contact feature. No demo is embedded at launch; publishing the first embedded demo needs a
+  privacy-policy review, since the reader's browser then contacts drc.dev (follow-up below).
 
 ### Key Entities
 
 - **Project**: one piece of Don's work told as a story. Has a slug (from its file name), title,
-  one-line problem statement, themes, status, index visual, optional order and date, optional live
-  demo or stand-in page, optional source-code address, optional sharing image, draft flag, and a
-  story body.
+  one-line problem statement, sharing description, themes, status, index visual, option
+  comparison, optional order and date, optional live demo or stand-in page, optional source-code
+  address, optional sharing image, optional named visuals, draft flag, and a story body.
 - **Status**: one of shipped, experiment, in progress; shown as a labelled pill.
 - **Theme**: a short free-text label shared across projects; themes that differ only in case or
   spacing are the same theme. The set of themes on the index is derived from the published projects.
@@ -603,7 +797,9 @@ demo stand-in link and the invitation.
   option comparison and the invitation, in each of four conditions: default, reduced motion
   requested, JavaScript off, and a browser without scroll-linked effects or page transitions.
 - **SC-003**: Automated accessibility checks report zero violations on the index and on every story
-  page, in both themes, at phone (390 px) and desktop (1280 px) widths.
+  page, in both themes, at phone (390 px) and desktop (1280 px) widths. "Every story page" means
+  every story in the built site (Focus Pocus at launch) plus the test project that uses every
+  building block.
 - **SC-004**: Don can add a new project by adding exactly one text file plus its images; comparing
   the repository before and after, no other file changes, and the project appears on the index and at
   its own address after the next build.
@@ -650,7 +846,9 @@ demo stand-in link and the invitation.
   fixture projects.
 - Demos are hosted by Don on drc.dev and allow being embedded from this site; the site only links to
   or embeds them. Allowing drc.dev as an embed source is a security-header change and is covered by
-  the major-change review.
+  the major-change review. An embedded demo is Don's own site shown in a sandboxed frame, not a
+  script running in this site's pages, so it does not breach the constitution's no-third-party-
+  script rule; what drc.dev itself loads is Don's responsibility there.
 - The blog feature may be built in parallel and may add a pill and change shared navigation or
   content-configuration files; the plan says how overlaps in shared files are merged.
 - No new dependency, service or recurring cost is added; running cost stays within the
@@ -666,3 +864,4 @@ demo stand-in link and the invitation.
 - Multi-select theme filtering, search, pagination, or grouping the index by year or status.
 - Optional or reorderable story chapters.
 - A feed (RSS) of projects, and cross-links between blog posts and projects.
+- A privacy-policy review when the first embedded demo is published (FR-085).

@@ -109,9 +109,10 @@ Every Astro choice names the Astro docs page that supports it, found through the
 ## R6. Theme filter island
 
 - **Decision**: `<project-filter>` custom element defined in a processed `<script>` in
-  `ProjectFilter.astro`. The server renders every project row and the controls; the controls use
-  the existing `js:` Tailwind variant (`.js` is set by `theme-init.js`) so they are hidden without
-  JavaScript (FR-062). Buttons use `aria-pressed`; a `role="status"` line announces "Showing N
+  `ProjectFilter.astro`. The server renders every project row and the controls; the controls stay
+  `hidden` until the island has finished setting up and marks itself ready, so they are hidden
+  without JavaScript and when the filter script is blocked or fails (FR-062); the site-wide `js:`
+  variant alone is not enough, because `theme-init.js` can run while the island fails. Buttons use `aria-pressed`; a `role="status"` line announces "Showing N
   projects about <theme>." (FR-015). The chosen theme is written to `?theme=<key>` with
   `history.replaceState`, and read on load (FR-014, SC-007). An unknown theme shows "No projects
   match this theme." with a "Show all projects" button. The island's logic lives in

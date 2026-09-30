@@ -12,12 +12,12 @@ the test hooks; class names are free.
     <p>…one plain-language line…</p>
   </header>
   <project-filter data-total="N">
-    <!-- hidden without JS via the js: variant -->
-    <div role="group" aria-labelledby="filter-label" class="hidden js:flex">
+    <!-- hidden until the island is ready (data-ready), so hidden without JS or if the script fails -->
+    <div role="group" aria-labelledby="filter-label" hidden>
       <button aria-pressed="true" data-filter-all>All projects</button>
       <button aria-pressed="false" data-theme="ai-integration">AI integration</button> …
     </div>
-    <p role="status" aria-live="polite" data-filter-status class="hidden js:block">Showing all N projects.</p>
+    <p role="status" aria-live="polite" data-filter-status hidden>Showing all N projects.</p>
     <ul data-project-list>
       <li data-project="focus-pocus" data-themes="ai-integration|automation|macos">
         <div data-project-text>

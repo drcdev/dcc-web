@@ -8,42 +8,42 @@
 
 ## Content-Security-Policy and Embeds
 
-- [ ] CHK001 Is the scope of the per-page `frame-src` allowance stated (only story pages with an embedded demo, never site-wide, never the index)? [Clarity, Spec §FR-041, Gap]
-- [ ] CHK002 Is the allowed origin defined exactly (the demo's own origin versus all of drc.dev and subdomains), and are the two consistent? [Consistency, Spec §FR-042]
-- [ ] CHK003 Is it specified that pages without an embed keep the site default policy unchanged? [Completeness, Gap]
-- [ ] CHK004 Are requirements defined for what a reader sees when the frame is blocked, fails to load or the demo host is down? [Edge Case, Gap, Spec §FR-041]
-- [ ] CHK005 Are sandbox, referrer and permission (camera, microphone, autoplay) constraints for embedded frames specified? [Gap, Spec §FR-041]
-- [ ] CHK006 Is the constitution's third-party-script rule reconciled with embedding drc.dev content, including that the demo is first-party owned? [Consistency, Assumption]
-- [ ] CHK007 Is it specified that the embed does not load before the reader asks or arrives, and what "not load" means for network requests? [Measurability, Spec §FR-041]
-- [ ] CHK008 Are requirements defined for inline styles or scripts the new components add and their coverage by the site's CSP hashes? [Completeness, Gap]
-- [ ] CHK009 Is the policy requirement stated for all deployment targets (production, preview, local) or only some? [Coverage, Gap]
+- [x] CHK001 Is the scope of the per-page `frame-src` allowance stated (only story pages with an embedded demo, never site-wide, never the index)? [Clarity, Spec §FR-041, Gap]
+- [x] CHK002 Is the allowed origin defined exactly (the demo's own origin versus all of drc.dev and subdomains), and are the two consistent? [Consistency, Spec §FR-042]
+- [x] CHK003 Is it specified that pages without an embed keep the site default policy unchanged? [Completeness, Gap]
+- [x] CHK004 Are requirements defined for what a reader sees when the frame is blocked, fails to load or the demo host is down? [Edge Case, Gap, Spec §FR-041]
+- [x] CHK005 Are sandbox, referrer and permission (camera, microphone, autoplay) constraints for embedded frames specified? [Gap, Spec §FR-041]
+- [x] CHK006 Is the constitution's third-party-script rule reconciled with embedding drc.dev content, including that the demo is first-party owned? [Consistency, Assumption]
+- [x] CHK007 Is it specified that the embed does not load before the reader asks or arrives, and what "not load" means for network requests? [Measurability, Spec §FR-041]
+- [x] CHK008 Are requirements defined for inline styles or scripts the new components add and their coverage by the site's CSP hashes? [Completeness, Gap]
+- [x] CHK009 Is the policy requirement stated for all deployment targets (production, preview, local) or only some? [Coverage, Gap]
 
 ## Address Validation
 
-- [ ] CHK010 Is "on drc.dev or a subdomain" defined to exclude look-alike hosts, userinfo tricks, non-default ports and other schemes? [Clarity, Spec §FR-042]
-- [ ] CHK011 Is the HTTPS-only rule for demos and source-code addresses stated consistently, and is the different host policy for source code (any host) justified? [Consistency, Spec §FR-042, Spec §FR-045]
-- [ ] CHK012 Are stand-in page addresses constrained (internal path or external), and is that constraint validated? [Gap, Spec §FR-043]
-- [ ] CHK013 Are external links required to carry a referrer and opener policy, and is it stated whether they open in a new context? [Gap, Spec §FR-040, Spec §FR-045]
-- [ ] CHK014 Is the build-time failure for a bad address required to avoid echoing anything sensitive beyond the file and the field? [Completeness, Spec §FR-073]
+- [x] CHK010 Is "on drc.dev or a subdomain" defined to exclude look-alike hosts, userinfo tricks, non-default ports and other schemes? [Clarity, Spec §FR-042]
+- [x] CHK011 Is the HTTPS-only rule for demos and source-code addresses stated consistently, and is the different host policy for source code (any host) justified? [Consistency, Spec §FR-042, Spec §FR-045]
+- [x] CHK012 Are stand-in page addresses constrained (internal path or external), and is that constraint validated? [Gap, Spec §FR-043]
+- [x] CHK013 Are external links required to carry a referrer and opener policy, and is it stated whether they open in a new context? [Gap, Spec §FR-040, Spec §FR-045]
+- [x] CHK014 Is the build-time failure for a bad address required to avoid echoing anything sensitive beyond the file and the field? [Completeness, Spec §FR-073]
 
 ## Contact Link and Query Parameter
 
-- [ ] CHK015 Is the slug the only data carried on the contact link, and is that limit stated as a requirement rather than an example? [Clarity, Spec §FR-050]
-- [ ] CHK016 Is the slug's allowed character set defined so the link value needs no escaping and cannot inject into the contact page? [Gap, Spec §FR-020]
-- [ ] CHK017 Are the receiving side's requirements for an unknown, malformed or overlong `project` value documented as a dependency on the contact feature? [Dependency, Spec §FR-052]
-- [ ] CHK018 Is it specified that the `project` value is treated as untrusted input by the contact feature, and whether it is stored? [Assumption, Gap]
-- [ ] CHK019 Does storing the project note align with the constitution's collect-only-what-is-needed and retention rules? [Consistency, Gap]
-- [ ] CHK020 Is it stated that the portfolio adds no tracking, analytics event or cookie when the invitation is followed? [Completeness, Gap]
+- [x] CHK015 Is the slug the only data carried on the contact link, and is that limit stated as a requirement rather than an example? [Clarity, Spec §FR-050]
+- [x] CHK016 Is the slug's allowed character set defined so the link value needs no escaping and cannot inject into the contact page? [Gap, Spec §FR-020]
+- [x] CHK017 Are the receiving side's requirements for an unknown, malformed or overlong `project` value documented as a dependency on the contact feature? [Dependency, Spec §FR-052]
+- [x] CHK018 Is it specified that the `project` value is treated as untrusted input by the contact feature, and whether it is stored? [Assumption, Gap]
+- [x] CHK019 Does storing the project note align with the constitution's collect-only-what-is-needed and retention rules? [Consistency, Gap]
+- [x] CHK020 Is it stated that the portfolio adds no tracking, analytics event or cookie when the invitation is followed? [Completeness, Gap]
 
 ## Theme Filter Query Parameter
 
-- [ ] CHK021 Are requirements defined for an unrecognised or hostile `?theme=` value (ignored, not reflected into the page unescaped)? [Edge Case, Spec §FR-014]
-- [ ] CHK022 Is it specified that the filter state stays client-side and is never sent to any service? [Gap, Spec §FR-014]
+- [x] CHK021 Are requirements defined for an unrecognised or hostile `?theme=` value (ignored, not reflected into the page unescaped)? [Edge Case, Spec §FR-014]
+- [x] CHK022 Is it specified that the filter state stays client-side and is never sent to any service? [Gap, Spec §FR-014]
 
 ## Privacy and Drafts
 
-- [ ] CHK023 Are requirements defined that draft project content and its images never appear in production output (pages, sitemap, feeds, image files, sharing metadata)? [Completeness, Spec §FR-074]
-- [ ] CHK024 Is it specified that clips and embeds set no cookies of their own and load no third-party hosts beyond drc.dev? [Gap, Spec §FR-041, Spec §FR-044]
-- [ ] CHK025 Are image metadata (location, camera data) handling expectations for project images documented? [Gap, Spec §FR-071]
-- [ ] CHK026 Is the privacy policy's need for an update (or confirmation of none) addressed given the embed and the project note? [Dependency, Gap]
-- [ ] CHK027 Is the classification of this slice under the constitution's major-change criteria (external service, CSP configuration) stated? [Traceability, Gap]
+- [x] CHK023 Are requirements defined that draft project content and its images never appear in production output (pages, sitemap, feeds, image files, sharing metadata)? [Completeness, Spec §FR-074]
+- [x] CHK024 Is it specified that clips and embeds set no cookies of their own and load no third-party hosts beyond drc.dev? [Gap, Spec §FR-041, Spec §FR-044]
+- [x] CHK025 Are image metadata (location, camera data) handling expectations for project images documented? [Gap, Spec §FR-071]
+- [x] CHK026 Is the privacy policy's need for an update (or confirmation of none) addressed given the embed and the project note? [Dependency, Gap]
+- [x] CHK027 Is the classification of this slice under the constitution's major-change criteria (external service, CSP configuration) stated? [Traceability, Gap]

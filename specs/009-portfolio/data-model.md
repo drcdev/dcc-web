@@ -11,7 +11,7 @@ strict so an unknown setting fails). Derived values are computed at build time i
 
 | Field | Type | Required | Rules |
 |---|---|---|---|
-| *slug* (entry id) | string | derived | File name without `.mdx`; `^[a-z0-9-]+$`; unique across the collection; one level only. Address `/projects/<slug>/`. |
+| *slug* (entry id) | string | derived | File name without `.mdx`; `^[a-z0-9-]{1,64}$`; unique across the collection; one level only. Address `/projects/<slug>/`. |
 | `title` | string | yes | Trimmed, non-empty. Main heading, row title, link name. |
 | `problem` | string | yes | One sentence: ends with `.`, `?` or `!`, no sentence break inside, ≤ 140 characters. |
 | `description` | string | yes | Sharing / meta description. |

@@ -21,10 +21,13 @@ deferred module). Pure logic in `src/lib/content/themes.ts` (`themeKey`, `themes
 | Click "All projects" or "Show all projects" | All rows; `?theme` removed |
 | Back from a story | The index loads with its `?theme=` and reapplies it (bfcache or reload) |
 
-Status text updates are announced once per change (polite). Focus stays on the pressed button.
+Status text updates are announced once per change (polite). Focus stays on the pressed button;
+"Show all projects" (which then hides) moves focus to "All projects". The group is named "Filter
+by theme". The `?theme=` value is never written into the page as markup.
 Buttons wrap onto more lines (no overflow). Targets ≥ 24×24 px (WCAG 2.2 2.5.8).
 
 ## Without JavaScript
 
-Controls, status line and empty message stay hidden (`hidden` / `js:` variant); every project is
+Controls, status line and empty message stay `hidden` until the island has finished setting up
+(`data-ready` on `<project-filter>`), so the same holds when the script is blocked or fails; every project is
 listed; no control is shown that does nothing (FR-062, US5 AS4).
