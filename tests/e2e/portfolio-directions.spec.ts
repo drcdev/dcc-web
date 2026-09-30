@@ -971,3 +971,463 @@ test.describe("Direction B Cards: reduced motion, no JavaScript, forced colours,
     await context.close();
   });
 });
+
+const C_INDEX = "/design/portfolio/c/";
+const C_STORY = "/design/portfolio/c/focus-pocus/";
+const region = (page: Page) => page.locator("[role=region][tabindex='0']");
+
+test.describe("Direction C Chapters: story", () => {
+  test("shows the seven chapters in order with headings and draft marks", async ({ page }) => {
+    await page.goto(C_STORY);
+    const ids = await page.locator("main section[aria-labelledby]").evaluateAll((els) => els.map((e) => e.id));
+    expect(ids).toEqual([...STAGE_ORDER]);
+    for (const stage of focusPocus.stages) {
+      await expect(page.locator(`#${stage.id} h2`)).toHaveText(stage.heading);
+      await expect(page.locator(`#${stage.id} [data-draft-mark]`)).toBeVisible();
+    }
+    await expect(page.locator("h1")).toHaveText("Focus Pocus");
+    await expect(page.locator("[data-prototype-notice]")).toBeVisible();
+  });
+
+  test("shows the options as a table with a caption, headers and a Chosen column", async ({ page }) => {
+    await page.goto(C_STORY);
+    const table = page.locator("#options table");
+    await expect(table.locator("caption")).toBeVisible();
+    await expect(table.locator("thead th[scope=col]").first()).toBeVisible();
+    const chosen = focusPocus.options.find((o) => o.chosen)!;
+    for (const o of focusPocus.options) await expect(table.locator("thead")).toContainText(o.name);
+    await expect(table.locator("thead")).toContainText("Chosen");
+    await expect(page.locator("#options")).toContainText(chosen.reason!);
+    for (const c of focusPocus.constraints) await expect(table.locator("tbody th[scope=row]", { hasText: c.label })).toBeVisible();
+    // Every cell is readable: nothing is clipped.
+    const clipped = await table
+      .locator("td, th")
+      .evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth + 1).map((e) => (e.textContent ?? "").trim().slice(0, 30)));
+    expect(clipped).toEqual([]);
+    for (const option of focusPocus.options) {
+      for (const line of [...option.pros, ...option.cons]) await expect(table).toContainText(line);
+    }
+  });
+
+  test("scrolls the table inside its own region at 320 and 390 px, not the page", async ({ page }) => {
+    for (const width of [320, 390]) {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto(C_STORY);
+      await noHorizontalScroll(page);
+      const r = region(page);
+      await expect(r).toHaveCount(1);
+      const m = await r.evaluate((e) => ({ sw: e.scrollWidth, cw: e.clientWidth, ox: getComputedStyle(e).overflowX }));
+      expect(m.sw).toBeGreaterThan(m.cw);
+      expect(["auto", "scroll"]).toContain(m.ox);
+    }
+  });
+
+  test("reaches the table region by keyboard, named by its heading", async ({ page }) => {
+    await page.goto(C_STORY);
+    const r = region(page);
+    await expect(r).toHaveAttribute("aria-labelledby", /.+/);
+    let reached = false;
+    for (let i = 0; i < 40 && !reached; i += 1) {
+      await page.keyboard.press("Tab");
+      reached = await r.evaluate((e) => e === document.activeElement);
+    }
+    expect(reached).toBe(true);
+    const width = await r.evaluate((e) => getComputedStyle(e).outlineWidth);
+    expect(parseFloat(width)).toBeGreaterThanOrEqual(2);
+  });
+
+  test("never covers a focused element with the panel or the progress rail", async ({ page }) => {
+    for (const width of [1280, 390]) {
+      await page.setViewportSize({ width, height: width === 1280 ? 800 : 700 });
+      await page.goto(C_STORY);
+      let visited = 0;
+      for (let i = 0; i < 60; i += 1) {
+        await page.keyboard.press("Tab");
+        await settleScroll(page);
+        const info = await page.evaluate(() => {
+          const el = document.activeElement as HTMLElement;
+          if (!el.closest("main")) return null;
+          const rect = el.getBoundingClientRect();
+          const x = rect.left + Math.min(rect.width / 2, 20);
+          const y = Math.min(Math.max(rect.top + Math.min(rect.height / 2, 8), 0), window.innerHeight - 1);
+          const top = document.elementFromPoint(x, y);
+          return {
+            partlyInView: rect.bottom > 0 && rect.top < window.innerHeight,
+            covered: !(top === el || el.contains(top) || Boolean(top?.contains(el))),
+          };
+        });
+        if (!info) continue;
+        visited += 1;
+        expect(info.partlyInView).toBe(true);
+        expect(info.covered).toBe(false);
+      }
+      expect(visited).toBeGreaterThan(3);
+    }
+  });
+
+  test("keeps visuals inside their own chapter", async ({ page }) => {
+    for (const width of [1280, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(C_STORY);
+      for (const stage of focusPocus.stages.filter((s) => s.visual)) {
+        const section = page.locator(`#${stage.id}`);
+        const visual = await section.locator("[data-stage-visual]").boundingBox();
+        const box = await section.boundingBox();
+        expect(visual && box, stage.id).toBeTruthy();
+        expect(visual!.y).toBeGreaterThanOrEqual(box!.y - 1);
+        expect(visual!.y + visual!.height).toBeLessThanOrEqual(box!.y + box!.height + 1);
+      }
+    }
+  });
+
+  test("does not scroll sideways at 320, 390 and 1280 px or at 200% zoom", async ({ page }) => {
+    for (const width of [320, 390, 1280]) {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto(C_STORY);
+      await noHorizontalScroll(page);
+    }
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto(C_STORY);
+    const client = await page.context().newCDPSession(page);
+    await client.send("Emulation.setDeviceMetricsOverride", { width: 640, height: 360, deviceScaleFactor: 2, mobile: false });
+    await noHorizontalScroll(page);
+  });
+
+  test("links the invitation, the demo and the repository", async ({ page }) => {
+    await page.goto(C_STORY);
+    await expect(page.locator("#invitation a[href='/contact/?project=focus-pocus']")).toBeVisible();
+    await expect(page.locator("#invitation h2")).toHaveText("Have a problem like this?");
+    const built = page.locator("#built");
+    await expect(built.locator("a[href='https://drc.dev/projects/focus-pocus']")).toBeVisible();
+    await expect(built.locator(`a[href='${focusPocus.demo.secondaryHref}']`)).toBeVisible();
+    await expect(built).toContainText(focusPocus.demo.standInNote);
+  });
+
+  test("is noindex and absent from the header and footer", async ({ page }) => {
+    for (const path of [C_STORY, C_INDEX]) {
+      await page.goto(path);
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+      await expect(page.locator("header a[href^='/design/'], footer a[href^='/design/']")).toHaveCount(0);
+    }
+  });
+
+  test("keeps scroll position and focus on the theme toggle mid-story, and does not replay reveals", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(C_STORY);
+    await page.locator("#built").scrollIntoViewIfNeeded();
+    const toggle = page.locator(THEME_SWITCH);
+    await toggle.evaluate((el) => (el as HTMLElement).focus({ preventScroll: true }));
+    const state = () => page.locator("[data-reveal]").evaluateAll((els) => els.map((e) => getComputedStyle(e).clipPath));
+    const before = await state();
+    const y = await page.evaluate(() => window.scrollY);
+    const wasDark = await page.evaluate(() => document.documentElement.classList.contains("dark"));
+    await page.keyboard.press("Enter");
+    await expect.poll(() => page.evaluate(() => document.documentElement.classList.contains("dark"))).toBe(!wasDark);
+    expect(await page.evaluate(() => window.scrollY)).toBe(y);
+    await expect(toggle).toBeFocused();
+    expect(await state()).toEqual(before);
+  });
+
+  test("#options puts the heading at the top with the chapter fully shown", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(`${C_STORY}#options`);
+    await expect(page.locator("#options-heading")).toBeInViewport();
+    await expect.poll(async () => (await page.locator("#options-heading").boundingBox())!.y).toBeLessThan(250);
+    const clip = await page.locator("#options [data-reveal]").first().evaluate((e) => getComputedStyle(e).clipPath);
+    expect(clip === "none" || /inset\(0(px)?( 0(px)?){0,3}\)/.test(clip)).toBe(true);
+  });
+
+  test("makes every control at least 24 by 24 CSS pixels", async ({ page }) => {
+    for (const path of [C_STORY, C_INDEX]) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(path);
+      const small = await page.locator("main a, main button").evaluateAll((els) =>
+        els
+          .map((e) => ({ text: (e.textContent ?? "").trim().slice(0, 30), rect: e.getBoundingClientRect() }))
+          .filter((e) => e.rect.width > 0 && (e.rect.width < 24 || e.rect.height < 24))
+          .map((e) => e.text),
+      );
+      expect(small).toEqual([]);
+    }
+  });
+});
+
+test.describe("Direction C Chapters: index", () => {
+  const status = (page: Page) => page.locator("[data-filter-status]");
+
+  test("shows five chapter entries with title, problem, visual, themes and status", async ({ page }) => {
+    await page.goto(C_INDEX);
+    await expect(page.locator("h1")).toHaveText("Projects");
+    await expect(page.locator("[data-entry]")).toHaveCount(5);
+    for (const entry of allEntries) {
+      const card = page.locator(`[data-entry="${entry.slug}"]`);
+      await expect(card).toContainText(entry.title);
+      await expect(card).toContainText(entry.problem);
+      await expect(card).toContainText(entry.visual.label);
+      for (const theme of entry.themes) await expect(card).toContainText(theme);
+      await expect(card.locator("[data-status]")).toBeVisible();
+    }
+  });
+
+  test("filters by theme, clears, and reads ?theme= known and unknown", async ({ page }) => {
+    await page.goto(C_INDEX);
+    await expect(status(page)).toHaveText("Showing all 5 projects.");
+    await page.getByRole("button", { name: "Mobile", exact: true }).click();
+    await expect(page.locator("[data-entry]:visible")).toHaveCount(2);
+    await expect(status(page)).toHaveText("Showing 2 projects about Mobile.");
+    await expect(page).toHaveURL(/\?theme=Mobile/);
+    await page.getByRole("button", { name: "All projects" }).click();
+    await expect(page.locator("[data-entry]:visible")).toHaveCount(5);
+    await expect(page).not.toHaveURL(/theme=/);
+
+    await page.goto(`${C_INDEX}?theme=Web`);
+    await expect(page.locator("[data-entry]:visible")).toHaveCount(2);
+    await expect(page.getByRole("button", { name: "Web", exact: true })).toHaveAttribute("aria-pressed", "true");
+
+    await page.goto(`${C_INDEX}?theme=Nonsense`);
+    await expect(page.locator("[data-entry]:visible")).toHaveCount(0);
+    await expect(status(page)).toHaveText("No projects match this theme.");
+    await page.getByRole("button", { name: "Show all projects" }).click();
+    await expect(page.locator("[data-entry]:visible")).toHaveCount(5);
+  });
+
+  test("announces every result change in the live region, including no match", async ({ page }) => {
+    await page.goto(C_INDEX);
+    const live = status(page);
+    await expect(live).toHaveAttribute("role", "status");
+    await expect(live).toHaveAttribute("aria-live", "polite");
+    await page.getByRole("button", { name: "Productivity", exact: true }).click();
+    await expect(live).toHaveText("Showing 2 projects about Productivity.");
+    await page.getByRole("button", { name: "Developer tools", exact: true }).click();
+    await expect(live).toHaveText("Showing 1 project about Developer tools.");
+    await page.goto(`${C_INDEX}?theme=Nothing`);
+    await expect(status(page)).toHaveText("No projects match this theme.");
+  });
+
+  test("links Focus Pocus to the C story and no other card to a story", async ({ page }) => {
+    await page.goto(C_INDEX);
+    for (const entry of allEntries.filter((e) => !e.storyPath)) {
+      const hrefs = await page.locator(`[data-entry="${entry.slug}"] a`).evaluateAll((els) => els.map((e) => e.getAttribute("href")));
+      expect(hrefs).toEqual([entry.externalHref]);
+    }
+    await page.locator(`[data-entry="focus-pocus"]`).getByRole("link", { name: "Focus Pocus", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`${C_STORY}$`));
+    await expect(page.locator("h1")).toHaveText("Focus Pocus");
+  });
+});
+
+
+
+test.describe("Direction C Chapters: reduced motion, no JavaScript, forced colours, axe", () => {
+  const sticky = (page: Page) => page.locator("[data-sticky-visual]").first().evaluate((e) => getComputedStyle(e).position);
+
+  test("pins the visual panel at 1280 px with motion allowed, and lays it in the flow otherwise", async ({ browser }) => {
+    const wide = await browser.newContext({ reducedMotion: "no-preference", viewport: { width: 1280, height: 800 } });
+    let page = await wide.newPage();
+    await page.goto(C_STORY);
+    expect(await sticky(page)).toBe("sticky");
+    await wide.close();
+
+    const narrow = await browser.newContext({ reducedMotion: "no-preference", viewport: { width: 390, height: 800 } });
+    page = await narrow.newPage();
+    await page.goto(C_STORY);
+    expect(await sticky(page)).toBe("static");
+    await narrow.close();
+
+    const reduced = await browser.newContext({ reducedMotion: "reduce", viewport: { width: 1280, height: 800 } });
+    page = await reduced.newPage();
+    await page.goto(C_STORY);
+    expect(await sticky(page)).toBe("static");
+    await reduced.close();
+  });
+
+  test("turns reveals, the progress fill and the view transition off with reduced motion", async ({ browser }) => {
+    const context = await browser.newContext({ reducedMotion: "reduce", viewport: { width: 1280, height: 800 } });
+    const page = await context.newPage();
+    await page.goto(C_STORY);
+    const reveals = page.locator("[data-reveal]");
+    expect(await reveals.count()).toBeGreaterThan(0);
+    for (const el of await reveals.all()) {
+      const css = await el.evaluate((e) => ({ name: getComputedStyle(e).animationName, opacity: getComputedStyle(e).opacity, clip: getComputedStyle(e).clipPath }));
+      expect(css.name).toBe("none");
+      expect(css.opacity).toBe("1");
+      expect(css.clip).toBe("none");
+    }
+    expect(await page.locator("[data-progress]").evaluate((e) => getComputedStyle(e).animationName)).toBe("none");
+    expect(await hasViewTransitionRule(page)).toBe(false);
+    await page.goto(C_INDEX);
+    expect(await hasViewTransitionRule(page)).toBe(false);
+    await context.close();
+  });
+
+  test("opts in to the view transition, with title names, when motion is allowed", async ({ browser }) => {
+    const context = await browser.newContext({ reducedMotion: "no-preference", viewport: { width: 1280, height: 800 } });
+    const page = await context.newPage();
+    for (const path of [C_INDEX, C_STORY]) {
+      await page.goto(path);
+      expect(await hasViewTransitionRule(page), path).toBe(true);
+      const name = await page.locator("[data-vt-title]").evaluate((e) => getComputedStyle(e).viewTransitionName);
+      expect(name, path).not.toBe("none");
+    }
+    await context.close();
+  });
+
+  test("stops reveals, pinning and the transition when reduced motion is switched on mid-visit", async ({ browser }) => {
+    const context = await browser.newContext({ reducedMotion: "no-preference", viewport: { width: 1280, height: 800 } });
+    const page = await context.newPage();
+    await page.goto(C_STORY);
+    expect(await sticky(page)).toBe("sticky");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    for (const el of await page.locator("[data-reveal]").all()) {
+      const css = await el.evaluate((e) => ({ name: getComputedStyle(e).animationName, clip: getComputedStyle(e).clipPath }));
+      expect(css.name).toBe("none");
+      expect(css.clip).toBe("none");
+    }
+    expect(await sticky(page)).toBe("static");
+    expect(await hasViewTransitionRule(page)).toBe(false);
+    await context.close();
+  });
+
+  for (const motion of ["reduce", "no-preference"] as const) {
+    test(`has no transition or animation on filter changes (${motion})`, async ({ browser }) => {
+      const context = await browser.newContext({ reducedMotion: motion, viewport: { width: 1280, height: 800 } });
+      const page = await context.newPage();
+      await page.goto(C_INDEX);
+      const durations = await page.locator("portfolio-filter button").evaluateAll((els) =>
+        els.flatMap((e) => {
+          const s = getComputedStyle(e);
+          return [s.transitionDuration, s.animationDuration].flatMap((v) => v.split(",").map((d) => parseFloat(d)));
+        }),
+      );
+      expect(durations.length).toBeGreaterThan(0);
+      for (const d of durations) expect(d).toBe(0);
+      await context.close();
+    });
+  }
+
+  test("shows all content, the whole table and no visible button with JavaScript off", async ({ browser }) => {
+    const context = await noJsContext(browser);
+    const page = await context.newPage();
+    await page.goto(C_STORY);
+    for (const stage of focusPocus.stages) {
+      await expect(page.locator(`#${stage.id} h2`)).toBeVisible();
+      for (const paragraph of stage.body) await expect(page.locator(`#${stage.id}`)).toContainText(paragraph);
+      if (stage.visual) await expect(page.locator(`#${stage.id}`)).toContainText(stage.visual.label);
+    }
+    const table = page.locator("#options table");
+    for (const option of focusPocus.options) {
+      await expect(table).toContainText(option.summary);
+      for (const line of [...option.pros, ...option.cons]) await expect(table).toContainText(line);
+    }
+    await expect(page.locator("#options")).toContainText(focusPocus.options.find((o) => o.chosen)!.reason!);
+    await expect(page.locator("#invitation a[href='/contact/?project=focus-pocus']")).toBeVisible();
+    for (const el of await page.locator("[data-reveal]").all()) {
+      expect(await el.evaluate((e) => getComputedStyle(e).opacity)).toBe("1");
+    }
+    await expect(page.locator("button:visible")).toHaveCount(0);
+
+    await page.goto(C_INDEX);
+    await expect(page.locator("[data-entry]:visible")).toHaveCount(5);
+    await expect(page.locator("button:visible")).toHaveCount(0);
+    await expect(page.locator("[data-filter-status]")).toBeHidden();
+    await context.close();
+  });
+
+  test("keeps text, borders, the table and status labels visible in forced colours", async ({ browser }) => {
+    const context = await browser.newContext({ forcedColors: "active", viewport: { width: 390, height: 844 } });
+    const page = await context.newPage();
+    for (const path of [C_STORY, C_INDEX]) {
+      await page.goto(path);
+      const problems = await page
+        .locator("main [data-draft-mark], main [data-status], main [data-placeholder], main table, main th, main td, main [data-entry], main [data-stage], main h1, main h2, main p")
+        .evaluateAll((els) =>
+          els.flatMap((e) => {
+            const s = getComputedStyle(e);
+            const found: string[] = [];
+            const label = `${e.tagName.toLowerCase()} ${(e.textContent ?? "").trim().slice(0, 20)}`;
+            if (s.color === "rgba(0, 0, 0, 0)") found.push(`${label}: text transparent`);
+            const hasBorder = parseFloat(s.borderTopWidth) > 0 && s.borderTopStyle !== "none";
+            if (hasBorder && s.borderTopColor === "rgba(0, 0, 0, 0)") found.push(`${label}: border transparent`);
+            return found;
+          }),
+      );
+      expect(problems).toEqual([]);
+      for (const svg of await page.locator("main [data-diagram] svg").all()) {
+        const stroke = await svg.evaluate((e) => getComputedStyle(e).stroke);
+        expect(stroke === "rgba(0, 0, 0, 0)" || stroke === "transparent").toBe(false);
+      }
+    }
+    await page.goto(C_STORY);
+    // The table has visible cell borders, and the chosen column says "Chosen" in text.
+    const cellBorder = await page.locator("#options td").first().evaluate((e) => parseFloat(getComputedStyle(e).borderTopWidth));
+    expect(cellBorder).toBeGreaterThan(0);
+    await expect(page.locator("#options thead")).toContainText("Chosen");
+    for (const target of [region(page), page.locator("#invitation a").first()]) {
+      await target.focus();
+      const style = await target.evaluate((el) => ({ w: parseFloat(getComputedStyle(el).outlineWidth), s: getComputedStyle(el).outlineStyle }));
+      expect(style.s).not.toBe("none");
+      expect(style.w).toBeGreaterThanOrEqual(2);
+    }
+    await context.close();
+  });
+
+  for (const [name, path] of [
+    ["story", C_STORY],
+    ["index", C_INDEX],
+  ] as const) {
+    test(`has zero axe violations on the ${name} with reduced motion`, async ({ browser }) => {
+      const context = await browser.newContext({ reducedMotion: "reduce", viewport: { width: 1280, height: 800 } });
+      const page = await context.newPage();
+      await page.goto(path);
+      await axeClean(page);
+      await context.close();
+    });
+
+    test(`has zero axe violations on the ${name} with JavaScript off at 1280 px`, async ({ browser }) => {
+      const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+      const page = await context.newPage();
+      const strip = (html: string) => html.replace(/<script\b[\s\S]*?<\/script>/gi, "");
+      await page.route(`**${path}`, async (route) => {
+        const response = await route.fetch();
+        await route.fulfill({ response, body: strip(await response.text()) });
+      });
+      await page.goto(path);
+      await axeClean(page);
+      await context.close();
+    });
+
+    test(`has zero axe violations on the ${name} in forced colours`, async ({ browser }) => {
+      const context = await browser.newContext({ forcedColors: "active", viewport: { width: 1280, height: 800 } });
+      const page = await context.newPage();
+      // Light theme: see the note in the Direction A forced-colours test.
+      await page.addInitScript(() => localStorage.setItem("color-theme", "light"));
+      await page.goto(path);
+      await axeClean(page);
+      await context.close();
+    });
+
+    test(`has zero axe violations on the ${name} at 320 px and at 200% zoom`, async ({ page }) => {
+      await page.setViewportSize({ width: 320, height: 640 });
+      await page.goto(path);
+      await axeClean(page);
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.goto(path);
+      const client = await page.context().newCDPSession(page);
+      await client.send("Emulation.setDeviceMetricsOverride", { width: 640, height: 360, deviceScaleFactor: 2, mobile: false });
+      await axeClean(page);
+    });
+  }
+
+  test("has zero axe violations with the table region focused and with a filter applied", async ({ browser }) => {
+    const context = await browser.newContext({ reducedMotion: "reduce", viewport: { width: 1280, height: 800 } });
+    const page = await context.newPage();
+    await page.goto(C_STORY);
+    await region(page).focus();
+    await axeClean(page);
+    await page.goto(`${C_INDEX}?theme=Mobile`);
+    await axeClean(page);
+    await page.goto(`${C_INDEX}?theme=Nonsense`);
+    await axeClean(page);
+    await context.close();
+  });
+});

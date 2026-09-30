@@ -26,6 +26,11 @@ import StageCard from "../../../../src/prototypes/portfolio/b/StageCard.astro";
 import DemoPanel from "../../../../src/prototypes/portfolio/b/DemoPanel.astro";
 import CardStory from "../../../../src/prototypes/portfolio/b/CardStory.astro";
 import BentoIndex from "../../../../src/prototypes/portfolio/b/BentoIndex.astro";
+import OptionTable from "../../../../src/prototypes/portfolio/c/OptionTable.astro";
+import StickyVisual from "../../../../src/prototypes/portfolio/c/StickyVisual.astro";
+import Chapter from "../../../../src/prototypes/portfolio/c/Chapter.astro";
+import ChapterStory from "../../../../src/prototypes/portfolio/c/ChapterStory.astro";
+import ChapterIndex from "../../../../src/prototypes/portfolio/c/ChapterIndex.astro";
 import { allEntries, focusPocus } from "../../../../src/prototypes/portfolio/sample.ts";
 
 interface Entry {
@@ -60,6 +65,11 @@ const COMPONENTS: Entry[] = [
   { name: "B DemoPanel", component: DemoPanel, props: { demo: focusPocus.demo } },
   { name: "B CardStory", component: CardStory, props: { story: focusPocus } },
   { name: "B BentoIndex", component: BentoIndex, props: { entries: allEntries } },
+  { name: "C OptionTable", component: OptionTable, props: { options: focusPocus.options, constraints: focusPocus.constraints } },
+  { name: "C StickyVisual", component: StickyVisual, props: { visual: focusPocus.stages[0]!.visual ?? focusPocus.stages[1]!.visual, idPrefix: "v" } },
+  { name: "C Chapter", component: Chapter, props: { stage: focusPocus.stages[0], number: 1 } },
+  { name: "C ChapterStory", component: ChapterStory, props: { story: focusPocus } },
+  { name: "C ChapterIndex", component: ChapterIndex, props: { entries: allEntries } },
   ...focusPocus.stages.map((stage) => ({
     name: `StageSection ${stage.id}`,
     component: StageSection as AstroComponentFactory,

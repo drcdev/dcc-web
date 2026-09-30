@@ -1,0 +1,16 @@
+---
+// Direction C "Chapters": the projects index (prototype; removed before merge).
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getNavigation } from "../../../../lib/pages";
+import ChapterIndex from "../../../../prototypes/portfolio/c/ChapterIndex.astro";
+import { allEntries } from "../../../../prototypes/portfolio/sample";
+---
+
+<BaseLayout
+  title="Chapters – Projects"
+  description="Design prototype: the projects index as a contents page."
+  navigation={await getNavigation()}
+  noindex
+>
+  <ChapterIndex entries={allEntries} />
+</BaseLayout>

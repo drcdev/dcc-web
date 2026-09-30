@@ -130,21 +130,21 @@
 
 ### Tests first
 
-- [ ] T053 [P] [US1] Component test `tests/component/prototypes/portfolio/c-story.test.ts` †: story assertions as T025, plus the option table has a `<caption>`, column headers `scope="col"` for options, row headers `scope="row"` for constraints, sits in `<div role="region" aria-labelledby tabindex="0">`, the chosen option column is labelled "Chosen" in text with its reason nearby. Extend T013's component list with C's components. See it fail.
-- [ ] T054 [P] [US2] Component test `tests/component/prototypes/portfolio/c-index.test.ts` † (chapter index: five entries with all fields, Focus Pocus-only story link, filter markup). See it fail.
-- [ ] T055 [US1] E2E (`portfolio-directions.spec.ts`, C section): T027 assertions adapted; the sticky visual panel and progress rail never cover a focused element (Tab through the whole story and assert each focused element is at least partly in the unobscured viewport, FR-035); table scrolls inside its own region at 320 and 390 px while the page does not; region reachable by keyboard; every cell readable. See it fail.
-- [ ] T056 [US2] E2E (C section): index and filter as in T028. See it fail.
-- [ ] T057 [US3] E2E (C section): reduced motion, JS off, forced colours as in T029; sticky panel falls back to in-flow placement when reduced motion or narrow width demands it; mid-visit reduced-motion change, instant filter changes and the extra-state axe runs as in T029. See it fail.
-- [ ] T063 [US1] Add the C index and story routes to `tests/e2e/portfolio-prototypes.ts` † now, before the pages exist, so the shared a11y, no-JS and budget suites fail on them first.
+- [X] T053 [P] [US1] Component test `tests/component/prototypes/portfolio/c-story.test.ts` †: story assertions as T025, plus the option table has a `<caption>`, column headers `scope="col"` for options, row headers `scope="row"` for constraints, sits in `<div role="region" aria-labelledby tabindex="0">`, the chosen option column is labelled "Chosen" in text with its reason nearby. Extend T013's component list with C's components. See it fail.
+- [X] T054 [P] [US2] Component test `tests/component/prototypes/portfolio/c-index.test.ts` † (chapter index: five entries with all fields, Focus Pocus-only story link, filter markup). See it fail.
+- [X] T055 [US1] E2E (`portfolio-directions.spec.ts`, C section): T027 assertions adapted; the sticky visual panel and progress rail never cover a focused element (Tab through the whole story and assert each focused element is at least partly in the unobscured viewport, FR-035); table scrolls inside its own region at 320 and 390 px while the page does not; region reachable by keyboard; every cell readable. See it fail.
+- [X] T056 [US2] E2E (C section): index and filter as in T028. See it fail.
+- [X] T057 [US3] E2E (C section): reduced motion, JS off, forced colours as in T029; sticky panel falls back to in-flow placement when reduced motion or narrow width demands it; mid-visit reduced-motion change, instant filter changes and the extra-state axe runs as in T029. See it fail.
+- [X] T063 [US1] Add the C index and story routes to `tests/e2e/portfolio-prototypes.ts` † now, before the pages exist, so the shared a11y, no-JS and budget suites fail on them first.
 
 ### Implementation
 
-- [ ] T058 [P] [US1] Create `src/prototypes/portfolio/c/c.css` † (sticky panel at 1280 px only, progress rail, `timeline-scope` reveals in the no-preference guard, view transitions in the same guard, forced-colours borders, `scroll-margin-top` above sticky parts, reflow).
-- [ ] T059 [P] [US1] Create `src/prototypes/portfolio/c/OptionTable.astro` †, `c/StickyVisual.astro` † and `c/Chapter.astro` †.
-- [ ] T060 [US1] Create `src/prototypes/portfolio/c/ChapterStory.astro` †.
-- [ ] T061 [P] [US2] Create `src/prototypes/portfolio/c/ChapterIndex.astro` †.
-- [ ] T062 [US1] Create pages `src/pages/design/portfolio/c/focus-pocus.astro` † and `src/pages/design/portfolio/c/index.astro` † with `noindex` and titles "Chapters – …". Run T053 and T054 until they pass.
-- [ ] T064 [US1] Build and run T055 to T057 plus the existing suites for C. Fix until green.
+- [X] T058 [P] [US1] Create `src/prototypes/portfolio/c/c.css` † (sticky panel at 1280 px only, progress rail, `timeline-scope` reveals in the no-preference guard, view transitions in the same guard, forced-colours borders, `scroll-margin-top` above sticky parts, reflow).
+- [X] T059 [P] [US1] Create `src/prototypes/portfolio/c/OptionTable.astro` †, `c/StickyVisual.astro` † and `c/Chapter.astro` †.
+- [X] T060 [US1] Create `src/prototypes/portfolio/c/ChapterStory.astro` †.
+- [X] T061 [P] [US2] Create `src/prototypes/portfolio/c/ChapterIndex.astro` †.
+- [X] T062 [US1] Create pages `src/pages/design/portfolio/c/focus-pocus.astro` † and `src/pages/design/portfolio/c/index.astro` † with `noindex` and titles "Chapters – …". Run T053 and T054 until they pass.
+- [X] T064 [US1] Build and run T055 to T057 plus the existing suites for C. Fix until green.
 - [ ] T065 [US3] [PREVIEW-CHECK] Direction C manual checks for FR-039 (table and region by keyboard, sticky panel and rail do not hide focus, reading order matches story order with the sticky visual, text alternatives, announcements), recorded in the PR description.
 
 **Checkpoint**: all three directions are built and pass their own tests.
