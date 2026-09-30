@@ -127,3 +127,28 @@ describe("no Web Analytics code or token in the repository (FR-025)", () => {
     },
   );
 });
+
+describe("contact page CSP additions (contracts/contact-page.md 'CSP')", () => {
+  const source = (path: string) => readFileSync(join(root, path), "utf-8");
+
+  it("adds the Turnstile script and frame sources through Astro.csp", () => {
+    const helper = source("src/components/sections/contact-csp.ts");
+    expect(helper).toContain('insertScriptResource("https://challenges.cloudflare.com")');
+    expect(helper).toContain('insertDirective("frame-src https://challenges.cloudflare.com")');
+  });
+
+  it("asks for them from the form and from the page route when the body holds the form", () => {
+    expect(source("src/components/sections/ContactForm.astro")).toContain("allowTurnstile(Astro.csp)");
+    expect(source("src/pages/[...slug].astro")).toMatch(/<ContactForm[\s\S]*allowTurnstile\(Astro\.csp\)/);
+  });
+
+  it("only the contact form and its helper name the Turnstile host, so other pages keep the site-wide policy", () => {
+    const users = walk(join(root, "src")).filter(
+      (file) => /\.(astro|ts|js|mdx?)$/.test(file) && readFileSync(file, "utf-8").includes("challenges.cloudflare.com"),
+    );
+    expect(users.map((file) => file.slice(root.length)).sort()).toEqual([
+      "src/components/sections/ContactForm.astro",
+      "src/components/sections/contact-csp.ts",
+    ]);
+  });
+});

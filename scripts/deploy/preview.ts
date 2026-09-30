@@ -1,59 +1,56 @@
 #!/usr/bin/env node
-// scripts/deploy/preview.ts — `pnpm run deploy:preview`, the non-production
-// branch deploy command Cloudflare Workers Builds runs for every branch other
-// than `main` (docs/setup.md item 10). Uploads a Worker Versions preview
-// aliased with the same function astro.config.mjs uses to compute the build's
-// `site`, so a preview build is always reachable at the address its own
-// metadata (canonical, og:url, sitemap) points to
-// (specs/002-site-foundation/contracts/site-origin.md).
-import { spawnSync } from "node:child_process";
+// scripts/deploy/preview.ts — `pnpm run deploy:preview`, the deploy command of the
+// `dcc-web-preview` Workers Builds project (docs/setup.md item 10). Applies D1 migrations to
+// the preview database, deploys the preview Worker, and on non-main branches uploads a Worker
+// Version aliased with the same function astro.config.mjs uses to compute the build's `site`,
+// so a preview build is reachable at the address its own metadata points to
+// (specs/007-contact-form/contracts/worker-config.md, specs/002-site-foundation/contracts/site-origin.md).
 import { previewAlias } from "../../src/lib/site-origin.ts";
+import { assertWorkerName, runSteps } from "./run.ts";
 
 export interface DeployPreviewEnv {
   WORKERS_CI_BRANCH?: string;
+  WRANGLER_CI_OVERRIDE_NAME?: string;
 }
 
+const WORKER_NAME = "dcc-web-preview";
+
 /**
- * Builds the `wrangler` arguments for the aliased preview upload. Throws a
- * plain-language error — never prints an environment value — when the branch
- * is missing, is `main` (production deploys with `wrangler deploy` instead),
- * or cannot produce a usable alias.
+ * The ordered Wrangler steps for a preview deploy. Throws a plain-language error, never
+ * printing an environment value, when the Worker override is wrong, the branch is missing or
+ * no alias can be derived from it.
  */
-export function previewUploadArgs(env: DeployPreviewEnv): string[] {
+export function previewDeploySteps(env: DeployPreviewEnv): string[][] {
+  assertWorkerName(env, WORKER_NAME);
   const branch = env.WORKERS_CI_BRANCH;
   if (!branch) {
     throw new Error(
-      "WORKERS_CI_BRANCH is not set. deploy:preview only runs as Cloudflare Workers Builds' " +
-        "non-production branch deploy command.",
+      "WORKERS_CI_BRANCH is not set. deploy:preview only runs as Cloudflare Workers Builds' deploy command.",
     );
   }
-  if (branch === "main") {
-    throw new Error(
-      "deploy:preview is for non-production branches only; main deploys with `wrangler deploy`.",
-    );
+  const steps = [
+    ["d1", "migrations", "apply", "contact-preview", "--remote", "--env", "preview"],
+    ["deploy", "--env", "preview"],
+  ];
+  if (branch !== "main") {
+    const alias = previewAlias(branch);
+    if (!alias) {
+      throw new Error("Could not derive a preview alias from the current branch name.");
+    }
+    steps.push(["versions", "upload", "--env", "preview", "--preview-alias", alias]);
   }
-  const alias = previewAlias(branch);
-  if (!alias) {
-    throw new Error(`Could not derive a preview alias from the current branch name.`);
-  }
-  return ["versions", "upload", "--preview-alias", alias];
+  return steps;
 }
 
 function main(): number {
-  let args: string[];
+  let steps: string[][];
   try {
-    args = previewUploadArgs(process.env);
+    steps = previewDeploySteps(process.env);
   } catch (err) {
     process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);
     return 1;
   }
-
-  const result = spawnSync("pnpm", ["exec", "wrangler", ...args], { stdio: "inherit" });
-  if (result.error) {
-    process.stderr.write(`${result.error.message}\n`);
-    return 1;
-  }
-  return result.status ?? 1;
+  return runSteps(steps);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

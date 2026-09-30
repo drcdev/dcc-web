@@ -1,3 +1,4 @@
+// Non-main branches are served by the preview Worker (007-contact-form contracts/worker-config.md).
 // Pure resolver for the address a build is served from (contracts/site-origin.md,
 // specs/002-site-foundation/research.md R2). Called from astro.config.mjs (which
 // reads process.env, not import.meta.env — Astro's config file runs before
@@ -15,12 +16,16 @@ export interface SiteOriginEnv {
 export interface SiteOriginConfig {
   reviewHost: string;
   workerName: string;
+  /** The preview Worker (`dcc-web-preview`); non-main branch builds are served from it. */
+  previewWorkerName?: string;
   workersSubdomain?: string;
 }
 
 const DNS_LABEL_PATTERN = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
+/** Preview Worker whose name bounds the alias when the caller gives none. */
+export const PREVIEW_WORKER_NAME = "dcc-web-preview";
 /** Cloudflare alias rule: alias + "-" + worker name must be <= 63 characters. */
-const MAX_ALIAS_LENGTH = 63 - "-dcc-web".length;
+const MAX_ALIAS_LENGTH = 63 - `-${PREVIEW_WORKER_NAME}`.length;
 
 /**
  * Derives a Cloudflare Workers preview alias from a branch name: lowercase,
@@ -68,6 +73,8 @@ export function resolveSiteOrigin(env: SiteOriginEnv, config: SiteOriginConfig):
     return `https://${config.reviewHost}`;
   }
 
+  if (!isValidHost(config.previewWorkerName)) return FALLBACK_ORIGIN;
+
   if (!isValidHost(config.workersSubdomain) || !DNS_LABEL_PATTERN.test(config.workersSubdomain)) {
     return FALLBACK_ORIGIN;
   }
@@ -75,5 +82,5 @@ export function resolveSiteOrigin(env: SiteOriginEnv, config: SiteOriginConfig):
   const alias = previewAlias(branch);
   if (!alias) return FALLBACK_ORIGIN;
 
-  return `https://${alias}-${config.workerName}.${config.workersSubdomain}.workers.dev`;
+  return `https://${alias}-${config.previewWorkerName}.${config.workersSubdomain}.workers.dev`;
 }

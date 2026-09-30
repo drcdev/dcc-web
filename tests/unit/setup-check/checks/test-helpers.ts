@@ -79,6 +79,13 @@ export function fakeProviderContext(overrides: FakeProviderOverrides = {}): Prov
     getWorkersSubdomain: notConfigured("cloudflare.getWorkersSubdomain"),
     listWorkerDomains: notConfigured("cloudflare.listWorkerDomains"),
     listWebAnalyticsSites: notConfigured("cloudflare.listWebAnalyticsSites"),
+    listD1Databases: notConfigured("cloudflare.listD1Databases"),
+    listD1AppliedMigrations: notConfigured("cloudflare.listD1AppliedMigrations"),
+    listWorkerSecretNames: notConfigured("cloudflare.listWorkerSecretNames"),
+    listWorkerCrons: notConfigured("cloudflare.listWorkerCrons"),
+    listBuildTriggers: notConfigured("cloudflare.listBuildTriggers"),
+    listBuildVariableNames: notConfigured("cloudflare.listBuildVariableNames"),
+    listTurnstileWidgets: notConfigured("cloudflare.listTurnstileWidgets"),
     ...overrides.cloudflare,
   };
   const dns: DnsReader = {
@@ -100,6 +107,7 @@ export function fakeProviderContext(overrides: FakeProviderOverrides = {}): Prov
     readText: vi.fn(() => null),
     readJson: vi.fn(() => null),
     exists: vi.fn(() => false),
+    listFiles: vi.fn(() => []),
     ...overrides.fs,
   };
   return {

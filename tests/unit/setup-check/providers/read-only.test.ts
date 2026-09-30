@@ -41,8 +41,23 @@ describe("providers/cloudflare.ts exposes only read (list/get/verify) SDK method
     const calls = [...source.matchAll(/client\.[a-zA-Z0-9_.]+\.(\w+)\(/g)].map((m) => m[1]);
     expect(calls.length).toBeGreaterThan(0);
     for (const method of calls) {
-      expect(["list", "get", "verify"], `unexpected SDK method .${method}(...)`).toContain(method);
+      // `query` is only the D1 read endpoint; its SQL is the one fixed SELECT constant (see below).
+      expect(["list", "get", "verify", "query"], `unexpected SDK method .${method}(...)`).toContain(method);
     }
+  });
+
+  it("only sends the one fixed SELECT to the D1 query endpoint", () => {
+    const queries = [...source.matchAll(/database\.query\(([^)]*)\)/g)];
+    expect(queries).toHaveLength(1);
+    expect(queries[0]![1]).toContain("sql: APPLIED_MIGRATIONS_SQL");
+    expect(source).toMatch(/APPLIED_MIGRATIONS_SQL\s*=\s*"SELECT [^"]*"/);
+    expect(source).not.toMatch(/"(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE) /);
+  });
+
+  it("only uses the generic client.get for raw reads", () => {
+    const raw = [...source.matchAll(/client\.(\w+)</g)].map((m) => m[1]);
+    for (const verb of raw) expect(verb).toBe("get");
+    expect(source).not.toMatch(/client\.(post|put|patch|delete)\b/);
   });
 });
 

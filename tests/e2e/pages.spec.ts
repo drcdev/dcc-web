@@ -13,7 +13,7 @@ const PAGES = [
   ["/technology/", "Technology"],
 ] as const;
 
-const NOT_BUILT = ["/cookie-policy/", "/writing/", "/projects/", "/contact/"] as const;
+const NOT_BUILT = ["/cookie-policy/", "/writing/", "/projects/"] as const;
 
 for (const [path, title] of PAGES) {
   test.describe(`${path}`, () => {
@@ -102,12 +102,12 @@ for (const path of NOT_BUILT) {
   });
 }
 
-test("the sitemap lists the seven pages and neither the not-found page nor the cookie policy", async ({ request }) => {
+test("the sitemap lists the eight pages and neither the not-found page nor the cookie policy", async ({ request }) => {
   const index = await (await request.get("/sitemap-index.xml")).text();
   const first = /<loc>[^<]*(\/sitemap-[^<]+\.xml)<\/loc>/.exec(index)?.[1];
   const sitemap = await (await request.get(first!)).text();
   const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]!).pathname).sort();
-  expect(paths).toEqual(["/", "/about/", "/privacy-policy/", "/services/", "/speaking/", "/technology/", "/terms-of-use/"]);
+  expect(paths).toEqual(["/", "/about/", "/contact/", "/privacy-policy/", "/services/", "/speaking/", "/technology/", "/terms-of-use/"]);
   expect(paths.some((p) => p.startsWith("/404") || p === "/cookie-policy/")).toBe(false);
 });
 

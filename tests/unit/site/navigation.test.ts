@@ -65,12 +65,13 @@ describe("every navigation item", () => {
 
 describe("futureDestinations", () => {
   it("lists exactly the addresses reserved for later features", () => {
-    expect([...futureDestinations]).toEqual(["/writing/", "/projects/", "/contact/"]);
+    expect([...futureDestinations]).toEqual(["/writing/", "/projects/"]);
   });
 
   it("does not include any address a page builds", () => {
     expect(futureDestinations).not.toContain("/");
     expect(futureDestinations).not.toContain("/about/");
+    expect(futureDestinations).not.toContain("/contact/");
   });
 });
 

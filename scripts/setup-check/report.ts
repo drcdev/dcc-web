@@ -65,7 +65,14 @@ export function buildReport(results: CheckResult[], items: SetupItem[], options:
   const entries: ReportResultEntry[] = results.map((result) => {
     const item = items.find((i) => i.id === result.id);
     const redacted = redactResult(result, secretValues);
-    return { ...redacted, title: item?.title ?? result.id, needsDon: item?.needsDon ?? false };
+    const afterMergeNote =
+      item?.deferredUntilMerge && result.status !== "complete" ? "After merge (does not fail the check before the merge): " : "";
+    return {
+      ...redacted,
+      summary: `${afterMergeNote}${redacted.summary}`,
+      title: item?.title ?? result.id,
+      needsDon: item?.needsDon ?? false,
+    };
   });
 
   const counts: CheckReportCounts = {
@@ -78,7 +85,10 @@ export function buildReport(results: CheckResult[], items: SetupItem[], options:
 
   return {
     generatedAt: options.generatedAt ?? new Date().toISOString(),
-    ok: counts.complete === counts.total,
+    // A deferred-until-merge item (FR-028a) is reported but does not fail the check before the merge.
+    ok: entries.every(
+      (e) => e.status === "complete" || items.find((i) => i.id === e.id)?.deferredUntilMerge === true,
+    ),
     counts,
     results: entries,
   };

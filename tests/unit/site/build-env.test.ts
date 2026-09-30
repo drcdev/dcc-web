@@ -38,8 +38,8 @@ function walk(dir: string): string[] {
 }
 
 const environments = [
-  { label: "main branch", env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" } },
-  { label: "preview branch", env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "002-site-foundation" } },
+  { label: "main branch", env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main", PUBLIC_TURNSTILE_SITE_KEY: "1x00000000000000000000AA" } },
+  { label: "preview branch", env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "002-site-foundation", PUBLIC_TURNSTILE_SITE_KEY: "1x00000000000000000000AA" } },
 ] as const;
 
 describe.each(environments)("astro build with the $label environment", ({ env }) => {
@@ -125,7 +125,7 @@ describe.each(environments)("astro build with the $label environment", ({ env })
       (m) => m[1]!,
     );
     expect([...entries].sort()).toEqual(
-      ["/", "/about/", "/privacy-policy/", "/services/", "/speaking/", "/technology/", "/terms-of-use/"].map(
+      ["/", "/about/", "/contact/", "/privacy-policy/", "/services/", "/speaking/", "/technology/", "/terms-of-use/"].map(
         (path) => `${expectedOrigin}${path}`,
       ),
     );

@@ -1,3 +1,4 @@
+import { setupItems } from "../../../../scripts/setup-check/items.ts";
 import { describe, expect, it } from "vitest";
 import { check } from "../../../../scripts/setup-check/checks/dns-records-parity.ts";
 import { ProviderAccessError } from "../../../../scripts/setup-check/types.ts";
@@ -45,7 +46,7 @@ describe("checks/dns-records-parity", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("complete");
-    expect(result.step).toBe("Step 4 of 18");
+    expect(result.step).toBe(`Step 4 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#dns-records-parity");
   });
 

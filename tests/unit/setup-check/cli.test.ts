@@ -27,7 +27,7 @@ function fakeCtx(overrides: Partial<ProviderContext> = {}): ProviderContext {
     dns: { resolve: vi.fn(), resolveNameservers: vi.fn() } as never,
     http: { get: vi.fn(), head: vi.fn() } as never,
     env: { get: vi.fn(() => undefined), has: vi.fn(() => false) },
-    fs: { readText: vi.fn(() => null), readJson: vi.fn(() => null), exists: vi.fn(() => false) },
+    fs: { readText: vi.fn(() => null), readJson: vi.fn(() => null), exists: vi.fn(() => false), listFiles: vi.fn(() => []) },
     now: () => new Date("2026-09-28T12:00:00.000Z"),
     ...overrides,
   };
@@ -283,6 +283,7 @@ describe("setup-check/cli main", () => {
         readText: vi.fn(() => null),
         readJson: vi.fn((path: string) => (path === "setup/config.json" ? { owner: "" } : null)) as never,
         exists: vi.fn(() => false),
+        listFiles: vi.fn(() => []),
       },
     });
     const code = await main([], options(items, ctx));
@@ -357,5 +358,24 @@ describe("setup-check/cli per-call timeout", () => {
 
     expect(results[0]!.status).toBe("could-not-check");
     expect(results[0]!.reason).toMatch(/timed out/);
+  });
+});
+
+describe("setup-check/cli exit code with a deferred-until-merge item (FR-028a)", () => {
+  it("exits 0 when every item is complete except an after-merge deferred one", async () => {
+    const items = [
+      fakeItem("one", 1, async () => completeResult("one", 1)),
+      { ...fakeItem("two", 2, async () => missingResult("two", 2)), phase: "after-merge" as const, deferredUntilMerge: true },
+    ];
+    let out = "";
+    const code = await main(["--json"], { items, ctx: fakeCtx(), stdout: (t) => (out += t), stderr: () => {} });
+    expect(code).toBe(0);
+    expect(out).toContain('"id":"two"');
+  });
+
+  it("exits 1 when a before-merge item is missing", async () => {
+    const items = [fakeItem("one", 1, async () => missingResult("one", 1))];
+    const code = await main(["--json"], { items, ctx: fakeCtx(), stdout: () => {}, stderr: () => {} });
+    expect(code).toBe(1);
   });
 });

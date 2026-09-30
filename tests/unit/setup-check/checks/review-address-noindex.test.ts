@@ -1,3 +1,4 @@
+import { setupItems } from "../../../../scripts/setup-check/items.ts";
 import { describe, expect, it, vi } from "vitest";
 import { check } from "../../../../scripts/setup-check/checks/review-address-noindex.ts";
 import { ProviderAccessError } from "../../../../scripts/setup-check/types.ts";
@@ -83,7 +84,7 @@ describe("checks/review-address-noindex", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("complete");
-    expect(result.step).toBe("Step 17 of 18");
+    expect(result.step).toBe(`Step 17 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#review-address-noindex");
   });
 

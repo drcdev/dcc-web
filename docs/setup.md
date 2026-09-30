@@ -4,10 +4,11 @@ This is the plain-language record of every account-side setup item this reposito
 what each item is for, where Don does it, how it is confirmed, which constitution principle it
 serves, and the names (never values) of any secrets involved. It is the no-agent fallback for
 the `/setup-walkthrough` Claude Code skill, and the two must never disagree — both read the same
-18-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
+25-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
 
-Run `pnpm setup:check` at any time to see which of the 18 items below are complete. Each item's
-step number and anchor match the setup item table in `specs/001-setup-walkthrough/spec.md`.
+Run `pnpm setup:check` at any time to see which of the 25 items below are complete. Each item's
+step number and anchor match the setup item table in `specs/001-setup-walkthrough/spec.md` (the first eighteen items) and
+`specs/007-contact-form/contracts/setup-items.md` (the last seven, the "Contact form" part at the end).
 
 A few terms used below: a **nameserver** is the server that answers "where is doncoleman.ca's
 DNS?" — moving it to Cloudflare is what puts Cloudflare in charge of the domain's DNS records. A
@@ -47,7 +48,9 @@ Create a read-only Cloudflare API token first (Cloudflare dashboard → My Profi
 Create Token), scoped to Don's account and the `doncoleman.ca` zone only, with permissions Zone →
 Zone: Read, Zone → DNS: Read, Account → Workers Scripts: Read, Account → Account Settings: Read
 (the permission Cloudflare's API requires to list Web Analytics sites; there is no "Web
-Analytics" token permission). Then copy `.env.example` to `.env` in the repository root and fill in the values in your own
+Analytics" token permission), and, for the contact form (items 19 to 25), Account → D1: Read,
+Account → Workers Builds Configuration: Read and Account → Turnstile Sites: Read. If you made
+the token before the contact form, edit it and add those three. Then copy `.env.example` to `.env` in the repository root and fill in the values in your own
 editor.
 
 **How it will be confirmed**
@@ -264,24 +267,30 @@ None.
 
 **What it is for**
 Confirms that Workers Builds is actually building and deploying this repository — production
-from `main`, and a preview for every other branch — once this slice's files are on `main`. A
-preview build needs to know its own served address (for its canonical link, `og:url` and
-`robots.txt`), and Cloudflare does not hand a non-aliased preview upload a predictable URL, so the
-non-production deploy command uploads an aliased preview instead of a plain one.
+from `main` on the `dcc-web` Worker, and a preview for every other branch on the separate
+`dcc-web-preview` Worker — once this slice's files are on `main`. A preview build needs to know
+its own served address (for its canonical link, `og:url` and `robots.txt`), and Cloudflare does
+not hand a non-aliased preview upload a predictable URL, so the preview deploy command uploads an
+aliased preview instead of a plain one. Previews live on their own Worker so they use the preview
+database and the preview secrets, never production's (see step 22).
 
 **Where to do it**
-Beyond step 7, one dashboard change: Cloudflare dashboard → Workers & Pages → `dcc-web` →
-Settings → Build → set the **non-production branch deploy command** to `pnpm run deploy:preview`.
-The **build command stays `pnpm run build`, unchanged**, and the **production deploy command stays
-`pnpm exec wrangler deploy`, unchanged** — only the non-production branch command changes. No
-secret or token is involved: `pnpm run deploy:preview` runs `scripts/deploy/preview.ts`, which
-derives a stable alias from the branch name (the same function `astro.config.mjs` uses to resolve
-the build's own address) and calls `wrangler versions upload --preview-alias <alias>`.
+Nothing new beyond step 7 for the `dcc-web` Worker, and the preview Worker is connected in step 22.
+On `dcc-web`, the **build command stays `pnpm run build`, unchanged**. Its production deploy command
+is `pnpm run deploy:production` once this feature has merged (step 25); until then it stays
+`pnpm exec wrangler deploy`. Non-production branch builds are turned **off** on `dcc-web` (step 22)
+— they now belong to `dcc-web-preview`, whose Workers Builds connection uses `pnpm run build` and
+`pnpm run deploy:preview` for every branch. No secret or token is involved in the deploy command:
+`pnpm run deploy:preview` runs `scripts/deploy/preview.ts`, which derives a stable alias from the
+branch name (the same function `astro.config.mjs` uses to resolve the build's own address) and
+calls `wrangler versions upload --env preview --preview-alias <alias>` after applying the preview
+database migrations.
 
 **How it will be confirmed**
 `pnpm setup:check --item workers-builds` reports complete when the latest commit on `main` has a
 successful Workers Builds run, and the latest open pull request (if any) has one with a preview
-URL. It reports `pending` while a build is queued or running.
+URL. It matches check runs by the "Workers Builds" prefix, which covers both Workers. It reports
+`pending` while a build is queued or running.
 
 **Constitution principle**
 II (Automated Release Gate) — production only ever deploys code that passed the required checks
@@ -476,6 +485,234 @@ page references the Cloudflare beacon.
 **Constitution principle**
 X (Accessible, Fast and Private) — Cloudflare Web Analytics is the constitution's named
 privacy-focused analytics option.
+
+**Secrets**
+None.
+
+# Contact form
+
+Items 19 to 25 set up the contact form's storage, spam protection, secrets and deployments. They
+are done in the order shown. Two rules apply to every step:
+
+- **You never paste a secret into the chat or into a repository file.** Type or pipe secrets straight
+  into `wrangler secret put`, or paste them into a Cloudflare dashboard field yourself. The setup
+  check only ever confirms a secret by name; it cannot read a value.
+- **Every step can be repeated safely.** The check names what is still missing, per database, per
+  Worker or per trigger, so a half-done step shows exactly what is left. A check that cannot reach
+  Cloudflare, or whose token lacks a permission, says "could not check" with the permission to add;
+  it is never shown as complete.
+
+## 19. Contact databases {#contact-d1-databases}
+
+**What it is for**
+Contact messages are stored in Cloudflare D1, with production (`contact`) and preview
+(`contact-preview`) in separate databases so a test message never lands in the real one.
+
+**Where to do it**
+Read this first. Both databases will be created in Western North America (`wnam`). D1 cannot keep
+data only in Canada, and the location **cannot be changed** after the databases are created. If you
+do not confirm this, stop here: nothing is created until you do, and a different region needs a
+reviewed change to the spec, plan and privacy policy first.
+
+Then, in a terminal in the repository, run these yourself (Wrangler asks you to sign in first if
+needed):
+
+```sh
+pnpm exec wrangler login
+pnpm exec wrangler d1 create contact --location wnam --env-file /dev/null
+pnpm exec wrangler d1 create contact-preview --location wnam --env-file /dev/null
+```
+
+Choose **no** if Wrangler offers to add the binding to the config. The database IDs are not secret;
+once you confirm, the agent runs `pnpm exec wrangler d1 list --json`, copies the two IDs into
+`wrangler.jsonc` (`contact` at the top level, `contact-preview` under `env.preview`), commits and
+pushes. If a database was created with the wrong name or location and is still empty, remove it and
+create it again:
+
+```sh
+pnpm exec wrangler d1 delete contact --env-file /dev/null
+```
+
+**How it will be confirmed**
+`pnpm setup:check --item contact-d1-databases` reports complete when both databases exist by name,
+their IDs equal the `database_id` values in `wrangler.jsonc`, and each reports region `WNAM`. If
+Cloudflare does not report a region, the check says "region could not be confirmed" and stays
+missing.
+
+**Constitution principle**
+VII (Private Data: Minimal and Protected), VIII (Secure by Default) and IX (Free-Tier First).
+
+**Secrets**
+None.
+
+## 20. Spam-protection widget {#contact-turnstile-widget}
+
+**What it is for**
+A Cloudflare Turnstile widget keeps bots from filling the contact form, without a visible puzzle for
+real visitors.
+
+**Where to do it**
+Cloudflare dashboard → Turnstile → Add widget. Name it `dcc-web contact`; hostnames `doncoleman.ca`
+(this covers `new.doncoleman.ca`) and `drc-dev.workers.dev` (this covers preview addresses); mode
+**Managed**; no pre-clearance. Keep the page open, because steps 21 and 23 need the secret key and
+the site key. If the dashboard refuses `drc-dev.workers.dev`, use Turnstile's always-pass test keys
+for **preview only** (research R6 in `specs/007-contact-form/research.md`).
+
+**How it will be confirmed**
+`pnpm setup:check --item contact-turnstile-widget` reports complete when a widget named
+`dcc-web contact` exists in managed mode and its domains include `doncoleman.ca`, plus either
+`drc-dev.workers.dev` or the preview fallback. It needs the Account → Turnstile Sites: Read
+permission (step 2), and reads only the widget's name, domains and mode, never its keys.
+
+**Constitution principle**
+VIII (Secure by Default) and X (Accessible, Fast and Private).
+
+**Secrets**
+None read. The widget's secret key is used in step 21.
+
+## 21. Contact secrets {#contact-worker-secrets}
+
+**What it is for**
+The contact form's Workers need three secrets, stored as Worker secrets and never in the repository:
+the Turnstile secret key, a read token for the scheduled assistant that fetches new messages, and a
+salt used to hash visitor addresses for rate limiting.
+
+**Where to do it**
+In a terminal in the repository, run these yourself and type or paste each value at the prompt.
+Never paste a value into the chat. For the read token, generate a new random value in your password
+manager first. The repository's `.env` holds the read-only token from step 2, and Wrangler would use
+it instead of your dashboard login, so every command passes `--env-file /dev/null`. Production
+(`dcc-web`, `--env ""` selects the top-level environment):
+
+```sh
+pnpm exec wrangler secret put TURNSTILE_SECRET_KEY --env "" --env-file /dev/null
+pnpm exec wrangler secret put CONTACT_READ_TOKEN --env "" --env-file /dev/null
+openssl rand -hex 32 | pnpm exec wrangler secret put IP_HASH_SALT --env "" --env-file /dev/null
+```
+
+Preview (`dcc-web-preview`): the same three commands with `--env preview` in place of `--env ""`,
+using a **different** read token and salt. The first preview command offers to create the Worker
+`dcc-web-preview`; answer yes. "No access to the specified resource" means the read-only token was
+used: check that `--env-file /dev/null` is on the command.
+Give each read token only to the scheduled assistant for that environment.
+
+**Replacing a secret.** If a read token, salt or Turnstile secret leaks, run the same
+`wrangler secret put` command again with a new value. On `dcc-web` it takes effect on the next
+request with no redeploy. On `dcc-web-preview`, plain `secret put` refuses once a branch build has
+uploaded a preview-alias version ("the latest version of your Worker isn't currently deployed"), so
+use the versions form, deploy it, then rebuild the branch so its alias inherits the new value:
+
+```sh
+pnpm exec wrangler versions secret put CONTACT_READ_TOKEN --env preview --env-file /dev/null
+pnpm exec wrangler versions deploy --env preview --env-file /dev/null
+```
+
+then choose **Retry build** on the latest `dcc-web-preview` build (or push a commit). After replacing
+a read token, give the new value to the scheduled assistant. A value from `openssl rand -hex 32`
+avoids shell-quoting trouble when the assistant sends it as a bearer token.
+
+**How it will be confirmed**
+`pnpm setup:check --item contact-worker-secrets` reports complete when `TURNSTILE_SECRET_KEY`,
+`CONTACT_READ_TOKEN` and `IP_HASH_SALT` exist on both `dcc-web` and `dcc-web-preview`. It reads the
+secret **names** only and lists any missing name per Worker.
+
+**Constitution principle**
+VII (Private Data: Minimal and Protected) and VIII (Secure by Default).
+
+**Secrets**
+`TURNSTILE_SECRET_KEY`, `CONTACT_READ_TOKEN` and `IP_HASH_SALT` (Worker secrets, on both Workers).
+
+## 22. Preview Worker builds {#contact-preview-builds}
+
+**What it is for**
+Branch previews are built and deployed by their own Worker, `dcc-web-preview`, so a preview uses the
+preview database and preview secrets and never touches production's.
+
+**Where to do it**
+Cloudflare dashboard → Workers & Pages → `dcc-web-preview` → Settings → Build → Connect →
+`drcdev/dcc-web`. Build command `pnpm run build`. Production branch `main`, with deploy command
+`pnpm run deploy:preview`. Turn **on** non-production branch builds, also with deploy command
+`pnpm run deploy:preview`. Then Settings → Domains & Routes: turn on the `workers.dev` address and
+preview URLs. Finally open `dcc-web` → Settings → Build → Branch control and turn **off**
+non-production branch builds. The first build of `main` on `dcc-web-preview` fails until this feature
+merges; that failure is expected.
+
+**How it will be confirmed**
+`pnpm setup:check --item contact-preview-builds` reports complete when `dcc-web-preview` exists, its
+Workers Builds triggers use `pnpm run deploy:preview` for both branch kinds, and `dcc-web` has no
+non-production trigger. It needs the Account → Workers Builds Configuration: Read permission (step 2).
+
+**Constitution principle**
+II (Automated Release Gate), VII (Private Data: Minimal and Protected) and VIII (Secure by Default).
+
+**Secrets**
+None.
+
+## 23. Site key build variable {#contact-turnstile-site-key}
+
+**What it is for**
+The page needs the widget's public site key at build time. It is public, but it is set in the build
+settings rather than committed, so preview and production can differ under the Turnstile preview
+fallback.
+
+**Where to do it**
+For each of `dcc-web` and `dcc-web-preview`: Settings → Build → Variables and secrets → add a
+**build** variable named `PUBLIC_TURNSTILE_SITE_KEY` (plain text) with the widget's site key from
+step 20.
+
+**How it will be confirmed**
+`pnpm setup:check --item contact-turnstile-site-key` reports complete when the name
+`PUBLIC_TURNSTILE_SITE_KEY` exists on every build trigger of both Workers. Only names are read.
+
+**Constitution principle**
+VIII (Secure by Default) and X (Accessible, Fast and Private).
+
+**Secrets**
+`PUBLIC_TURNSTILE_SITE_KEY` (a public build variable, not a secret).
+
+## 24. Preview migrations and clean-up schedule {#contact-preview-deploy}
+
+**What it is for**
+The preview deployment applies the database migrations to `contact-preview` and registers the daily
+clean-up schedule, so a test submission on the preview address works end to end.
+
+**Where to do it**
+Cloudflare dashboard → My Profile → API Tokens → the token Workers Builds uses (named in each
+Worker's Settings → Build → API token) → Edit → add Account → **D1: Edit**. Then push the branch
+(the agent does this) or choose Retry build on `dcc-web-preview`.
+
+**How it will be confirmed**
+`pnpm setup:check --item contact-preview-deploy` reports complete when `contact-preview` has applied
+every file in `migrations/` and `dcc-web-preview` has the cron `17 3 * * *`. That is also how the
+Workers Builds token's D1 permission is confirmed, indirectly. It reports `pending` while a
+`dcc-web-preview` build is running.
+
+**Constitution principle**
+II (Automated Release Gate), VII (Private Data: Minimal and Protected) and VIII (Secure by Default).
+
+**Secrets**
+None.
+
+## 25. Production migrations and clean-up schedule {#contact-production-deploy}
+
+**What it is for**
+After the merge, production applies its migrations and registers the clean-up schedule, so the live
+contact form has a table to write to.
+
+**Where to do it**
+Right after this feature's pull request merges (this is an after-merge step): `dcc-web` → Settings →
+Build → production deploy command → `pnpm run deploy:production`, then Retry the latest `main`
+build. Until this is done, production's contact form answers "service unavailable". Production
+traffic is still only the review address.
+
+**How it will be confirmed**
+`pnpm setup:check --item contact-production-deploy` reports complete when `dcc-web`'s production
+trigger uses `pnpm run deploy:production`, `contact` has applied every file in `migrations/`, and
+`dcc-web` has the cron `17 3 * * *`. Before the merge it is shown as an after-merge item and does not
+fail the check.
+
+**Constitution principle**
+II (Automated Release Gate), VII (Private Data: Minimal and Protected) and VIII (Secure by Default).
 
 **Secrets**
 None.

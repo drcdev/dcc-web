@@ -26,6 +26,13 @@ const ITEM_IDS = [
   "review-address",
   "review-address-noindex",
   "web-analytics",
+  "contact-d1-databases",
+  "contact-turnstile-widget",
+  "contact-worker-secrets",
+  "contact-preview-builds",
+  "contact-turnstile-site-key",
+  "contact-preview-deploy",
+  "contact-production-deploy",
 ];
 
 // Single-section extractor (distinct from extractSections below), matching
@@ -52,7 +59,7 @@ function extractSections(markdown: string): { id: string; body: string }[] {
 }
 
 describe("docs/setup.md structure", () => {
-  it("has exactly 18 item sections whose anchors are the spec's fixed item IDs in step order", () => {
+  it("has exactly 25 item sections whose anchors are the spec's fixed item IDs in step order", () => {
     const sections = extractSections(contents);
     expect(sections.map((s) => s.id)).toEqual(ITEM_IDS);
   });
@@ -100,5 +107,69 @@ describe("docs/setup.md edge-case content", () => {
     expect(section).toMatch(/search console|removal tool|request.*removal|remove.*already indexed/);
     expect(section).toContain("robots.txt");
     expect(section).toMatch(/never block crawling|must not.*block crawling|do not block crawling/);
+  });
+});
+
+describe("docs/setup.md contact-form part (items 19 to 25)", () => {
+  const registryLength = ITEM_IDS.length;
+
+  it("the intro counts items from the registry length (25) and no longer says 18", () => {
+    const intro = contents.slice(0, contents.indexOf("## 1."));
+    expect(intro).toContain(`${registryLength}-item registry`);
+    expect(intro).toContain(`of the ${registryLength} items`);
+    expect(intro).not.toMatch(/\b18\b/);
+  });
+
+  it("has a Contact form part heading before section 19", () => {
+    const part = contents.indexOf("# Contact form");
+    expect(part).toBeGreaterThan(contents.indexOf("{#web-analytics}"));
+    expect(part).toBeLessThan(contents.indexOf("{#contact-d1-databases}"));
+  });
+
+  it("item 2 lists the D1, Workers Builds Configuration and Turnstile Sites read permissions", () => {
+    const s = extractSection(contents, "local-credentials");
+    expect(s).toMatch(/D1: Read/);
+    expect(s).toMatch(/Workers Builds Configuration: Read/);
+    expect(s).toMatch(/Turnstile Sites: Read/);
+  });
+
+  it("item 10 describes the dcc-web-preview Worker's own Workers Builds connection", () => {
+    const s = extractSection(contents, "workers-builds");
+    expect(s).toContain("dcc-web-preview");
+    expect(s).toContain("pnpm run deploy:preview");
+    expect(s).toContain("pnpm run deploy:production");
+    expect(s).not.toContain("only the non-production branch command changes");
+  });
+
+  it("item 19 restates the region, says it cannot be changed, and shows the exact commands", () => {
+    const s = extractSection(contents, "contact-d1-databases");
+    expect(s).toContain("Western North America");
+    expect(s).toContain("`wnam`");
+    expect(s).toMatch(/cannot be changed/i);
+    expect(s).toContain("pnpm exec wrangler d1 create contact --location wnam");
+    expect(s).toContain("pnpm exec wrangler d1 create contact-preview --location wnam");
+    expect(s).toContain("pnpm exec wrangler d1 delete");
+  });
+
+  it("item 21 gives secret put commands and the replacement rule, and never asks for a value in chat", () => {
+    const s = extractSection(contents, "contact-worker-secrets");
+    for (const name of ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"]) {
+      expect(s).toContain(name);
+    }
+    expect(s).toContain("wrangler secret put TURNSTILE_SECRET_KEY");
+    expect(s).toContain("wrangler secret put CONTACT_READ_TOKEN");
+    expect(s).toContain("wrangler secret put IP_HASH_SALT");
+    expect(s).toContain("--env preview");
+    expect(s).toMatch(/replac/i);
+    expect(s).toMatch(/never[^.]*chat/i);
+  });
+
+  it("items 22 to 25 name the deploy commands, the site-key variable and the D1 Edit permission", () => {
+    expect(extractSection(contents, "contact-preview-builds")).toContain("pnpm run deploy:preview");
+    expect(extractSection(contents, "contact-turnstile-site-key")).toContain("PUBLIC_TURNSTILE_SITE_KEY");
+    expect(extractSection(contents, "contact-preview-deploy")).toContain("D1: Edit");
+    const last = extractSection(contents, "contact-production-deploy");
+    expect(last).toContain("pnpm run deploy:production");
+    expect(last.toLowerCase()).toContain("after");
   });
 });

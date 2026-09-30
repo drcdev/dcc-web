@@ -1,0 +1,266 @@
+// The static markup of the contact form (contracts/contact-page.md "Static
+// markup"; FR-008a to FR-008p). The island script is not run here; the
+// browser behaviour is covered in tests/e2e/contact.spec.ts.
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "vitest";
+import ContactForm from "../../../src/components/sections/ContactForm.astro";
+import { EMAIL_MAX, MESSAGE_MAX, NAME_MAX, ORGANIZATION_MAX } from "../../../worker/src/contact/rules.ts";
+import { byName, tags } from "../html.ts";
+import { render } from "./helpers.ts";
+
+const html = await render(ContactForm);
+const byId = (id: string) => tags(html).find((t) => t.attrs.id === id);
+const labelFor = (id: string) => byName(html, "label").find((t) => t.attrs.for === id);
+/** The visible text of the label element that points at this control. */
+function labelText(id: string): string {
+  const match = new RegExp(`<label[^>]*\\bfor="${id}"[^>]*>([\\s\\S]*?)</label>`).exec(html);
+  return (match?.[1] ?? "")
+    .replace(/<svg[\s\S]*?<\/svg>/g, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/ ([.,])/g, "$1")
+    .trim();
+}
+const submitButton = () => byName(html, "button").find((b) => b.attrs.type === "submit")!;
+
+describe("ContactForm form and heading", () => {
+  it("names the form from a visible heading and posts to the API", () => {
+    const form = byId("contact-form")!;
+    expect(form.name).toBe("form");
+    expect(form.attrs.action).toBe("/api/contact");
+    expect(form.attrs.method).toBe("post");
+    expect(form.attrs.novalidate).toBeDefined();
+    expect(form.attrs["aria-labelledby"]).toBe("contact-form-heading");
+    expect(byId("contact-form-heading")!.name).toBe("h2");
+    expect(html).toMatch(/<h2[^>]*id="contact-form-heading"[^>]*>\s*Send a message\s*<\/h2>/);
+  });
+
+  it("adds no level-1 heading (the page layout owns it)", () => {
+    expect(byName(html, "h1")).toHaveLength(0);
+  });
+});
+
+describe("ContactForm fields", () => {
+  it.each([
+    ["contact-name", "name", "text", NAME_MAX, "name", "Name"],
+    ["contact-email", "email", "email", EMAIL_MAX, "email", "Email"],
+    ["contact-organization", "organization", "text", ORGANIZATION_MAX, "organization", "Organization (optional)"],
+  ])("%s is labelled, limited and declares its input purpose", (id, name, type, max, autocomplete, label) => {
+    const input = byId(id)!;
+    expect(input.name).toBe("input");
+    expect(input.attrs.name).toBe(name);
+    expect(input.attrs.type ?? "text").toBe(type);
+    expect(input.attrs.maxlength).toBe(String(max));
+    expect(input.attrs.autocomplete).toBe(autocomplete);
+    expect(labelFor(id)).toBeDefined();
+    expect(labelText(id)).toBe(label);
+  });
+
+  it("marks name and email required and organization not required", () => {
+    expect(byId("contact-name")!.attrs.required).toBeDefined();
+    expect(byId("contact-email")!.attrs.required).toBeDefined();
+    expect(byId("contact-organization")!.attrs.required).toBeUndefined();
+  });
+
+  it("has a labelled, required message box with the shared limit", () => {
+    const message = byId("contact-message")!;
+    expect(message.name).toBe("textarea");
+    expect(message.attrs.name).toBe("message");
+    expect(message.attrs.required).toBeDefined();
+    expect(message.attrs.maxlength).toBe(String(MESSAGE_MAX));
+    expect(message.attrs.rows).toBe("6");
+    expect(labelText("contact-message")).toBe("Message");
+  });
+
+  it("says all fields are required unless marked optional, before the fields", () => {
+    const note = byId("contact-required-note")!;
+    expect(note.name).toBe("p");
+    expect(html).toContain("All fields are required unless marked optional.");
+    expect(note.index).toBeLessThan(byId("contact-name")!.index);
+  });
+
+  it("keeps the email icon but hides it from assistive technology", () => {
+    expect(html).toMatch(/<svg[^>]*aria-hidden="true"/);
+  });
+
+  it("gives each field an empty, hidden error paragraph", () => {
+    for (const field of ["name", "email", "organization", "message", "consent"]) {
+      const error = byId(`contact-${field}-error`);
+      expect(error, field).toBeDefined();
+      expect(error!.name).toBe("p");
+      expect(error!.attrs.hidden).toBeDefined();
+    }
+  });
+});
+
+describe("ContactForm consent", () => {
+  it("uses the whole sentence as the checkbox label, with the privacy link inside it", () => {
+    const box = byId("contact-consent")!;
+    expect(box.attrs.type).toBe("checkbox");
+    expect(box.attrs.name).toBe("consent");
+    expect(box.attrs.required).toBeDefined();
+    expect(labelText("contact-consent")).toBe(
+      "I agree that Don Coleman may keep what I enter in this form and use it to reply to me, as described in the privacy policy (opens in a new tab).",
+    );
+    const label = /<label[^>]*for="contact-consent"[^>]*>([\s\S]*?)<\/label>/.exec(html)![1]!;
+    const link = byName(label, "a")[0]!;
+    expect(link.attrs.href).toBe("/privacy-policy/");
+    expect(link.attrs.target).toBe("_blank");
+    expect(link.attrs.rel).toContain("noopener");
+  });
+
+  it("makes the checkbox at least 24 by 24 CSS pixels", () => {
+    expect(byId("contact-consent")!.attrs.class).toMatch(/\bsize-6\b/);
+  });
+});
+
+describe("ContactForm honeypot, project line and human check", () => {
+  it("hides the trap field from everyone (display none, out of tab order, no autofill)", () => {
+    const trap = tags(html).find((t) => t.attrs.name === "website")!;
+    expect(trap.attrs.tabindex).toBe("-1");
+    expect(trap.attrs.autocomplete).toBe("off");
+    const wrapper = /<div([^>]*)>\s*<input[^>]*name="website"/.exec(html)!;
+    expect(wrapper[1]).toContain('aria-hidden="true"');
+    expect(wrapper[1]).toMatch(/class="[^"]*\bhidden\b/);
+  });
+
+  it("has a hidden project line that is plain text and a hidden project input", () => {
+    const line = byId("contact-project")!;
+    expect(line.name).toBe("p");
+    expect(line.attrs.hidden).toBeDefined();
+    expect(line.attrs.tabindex).toBeUndefined();
+    expect(tags(html).find((t) => t.attrs.name === "project")!.attrs.type).toBe("hidden");
+  });
+
+  it("renders no project text on the server: the line is empty and the value comes from the island as text", () => {
+    expect(html).toMatch(/<p[^>]*id="contact-project"[^>]*><\/p>/);
+    expect(tags(html).find((t) => t.attrs.name === "project")!.attrs.value).toBe("");
+    const source = readFileSync(fileURLToPath(new URL("../../../src/components/sections/ContactForm.astro", import.meta.url)), "utf-8");
+    expect(source).toContain("line.textContent");
+    expect(source).not.toMatch(/innerHTML|set:html/);
+    expect(source).toContain(".slice(0, 100)");
+  });
+
+  it("has an empty human-check slot carrying the public site key", () => {
+    const slot = byId("contact-turnstile")!;
+    expect(slot.name).toBe("div");
+    expect(slot.attrs["data-sitekey"]).toMatch(/^[0-9A-Za-z_-]{10,}$/);
+    expect(html).toMatch(/<div[^>]*id="contact-turnstile"[^>]*><\/div>/);
+  });
+});
+
+describe("ContactForm status, submit and success", () => {
+  it("has a polite status region directly above a disabled Send", () => {
+    const status = byId("contact-status")!;
+    expect(status.attrs.role).toBe("status");
+    expect(status.attrs["aria-live"]).toBe("polite");
+    const submit = submitButton();
+    expect(submit.attrs.disabled).toBeDefined();
+    expect(html).toMatch(/<button[^>]*type="submit"[^>]*>[\s\S]*?Send[\s\S]*?<\/button>/);
+    expect(status.index).toBeLessThan(submit.index);
+    expect(html.slice(status.index, submit.index)).not.toMatch(/<(input|textarea|select|a)\b/);
+  });
+
+  it("has a hidden success panel with a heading that can take focus", () => {
+    const panel = byId("contact-success")!;
+    expect(panel.attrs.hidden).toBeDefined();
+    expect(panel.attrs.tabindex).toBe("-1");
+    expect(html).toMatch(/id="contact-success"[\s\S]*<h2[^>]*id="contact-success-heading"[^>]*tabindex="-1"/);
+  });
+});
+
+describe("ContactForm without JavaScript", () => {
+  it("shows the JavaScript notice first, as ordinary text", () => {
+    const notice = byId("contact-js-required")!;
+    expect(notice.attrs.hidden).toBeUndefined();
+    expect(notice.attrs["aria-hidden"]).toBeUndefined();
+    expect(html).toContain("Sending this form needs JavaScript.");
+    expect(html).toContain("privacy policy");
+    expect(byId("contact-form")!.index).toBeLessThan(notice.index);
+    expect(notice.index).toBeLessThan(byId("contact-name")!.index);
+  });
+
+  it("leaves every field enabled", () => {
+    for (const t of tags(html).filter((x) => ["input", "textarea"].includes(x.name))) {
+      expect(t.attrs.disabled, t.raw).toBeUndefined();
+    }
+  });
+});
+
+describe("ContactForm tab order (FR-008o)", () => {
+  it("puts Name, Email, Organization, Message, consent, privacy link, human check, status, Send in DOM order", () => {
+    const consent = byId("contact-consent")!.index;
+    const order = [
+      byId("contact-name")!.index,
+      byId("contact-email")!.index,
+      byId("contact-organization")!.index,
+      byId("contact-message")!.index,
+      consent,
+      html.indexOf('href="/privacy-policy/"', consent),
+      byId("contact-turnstile")!.index,
+      byId("contact-status")!.index,
+      submitButton().index,
+    ];
+    expect(order.every((n) => n >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+  });
+
+  it("has no positive tabindex", () => {
+    for (const t of tags(html)) {
+      if (t.attrs.tabindex !== undefined) expect(Number(t.attrs.tabindex)).toBeLessThanOrEqual(0);
+    }
+  });
+});
+
+describe("ContactForm error containers (FR-008e to FR-008i)", () => {
+  const errorFor = (field: string) =>
+    new RegExp(`<p[^>]*id="contact-${field}-error"[^>]*>([\\s\\S]*?)</p>`).exec(html)![1]!;
+  const fields = ["name", "email", "organization", "message", "consent"];
+
+  it("gives each field error an icon, so an error is never colour alone, and a text slot for the island", () => {
+    for (const field of fields) {
+      const inner = errorFor(field);
+      expect(inner, field).toMatch(/<svg[^>]*aria-hidden="true"/);
+      expect(inner, field).toMatch(/<span data-text[^>]*><\/span>/);
+    }
+  });
+
+  it("puts each error after its control so the description sits next to the field", () => {
+    for (const field of fields) {
+      expect(byId(`contact-${field}-error`)!.index, field).toBeGreaterThan(byId(`contact-${field}`)!.index);
+    }
+  });
+
+  it("starts with no invalid state and no description on any control (the island sets them)", () => {
+    for (const field of fields) {
+      const control = byId(`contact-${field}`)!;
+      expect(control.attrs["aria-invalid"], field).toBeUndefined();
+      expect(control.attrs["aria-describedby"], field).toBeUndefined();
+    }
+  });
+
+  it("styles the invalid state with a thicker border, not colour alone", () => {
+    for (const field of ["name", "email", "organization", "message"]) {
+      expect(byId(`contact-${field}`)!.attrs.class, field).toMatch(/aria-\[invalid=true\]:border-2/);
+    }
+  });
+
+  it("keeps the form-level status region empty, polite and above Send, with a label the island can swap for Sending", () => {
+    const status = byId("contact-status")!;
+    expect(status.attrs["aria-live"]).toBe("polite");
+    expect(html).toMatch(/<div[^>]*id="contact-status"[^>]*><\/div>/);
+    expect(html).toMatch(/<span[^>]*data-send-label[^>]*>Send<\/span>/);
+    expect(status.index).toBeLessThan(submitButton().index);
+  });
+});
+
+describe("Contact page privacy note (FR-007)", () => {
+  const page = readFileSync(fileURLToPath(new URL("../../../src/content/pages/contact.mdx", import.meta.url)), "utf-8");
+
+  it("sits above the form and links the privacy policy in a new tab", () => {
+    const link = /<a href="\/privacy-policy\/" target="_blank" rel="noopener">privacy policy \(opens in a new tab\)<\/a>/.exec(page);
+    expect(link).not.toBeNull();
+    expect(link!.index).toBeLessThan(page.indexOf("<ContactForm"));
+  });
+});

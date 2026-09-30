@@ -12,6 +12,7 @@ import type { ComponentProps } from "astro/types";
 import PageLayout from "../layouts/PageLayout.astro";
 import { futureDestinations } from "../config/navigation";
 import { sectionComponents } from "../components/sections/index";
+import { allowTurnstile } from "../components/sections/contact-csp";
 import { assertUniqueAddresses } from "../lib/content/address";
 import { validatePageBody } from "../lib/content/body";
 import { addressOf, fileOf, getNavigation } from "../lib/pages";
@@ -38,6 +39,9 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 // Section components name this file in their errors (src/components/sections/validate.ts).
 Astro.locals.pageFile = fileOf(entry);
+// The policy <meta> is written before the body renders, so a page that holds the
+// contact form asks for the Turnstile sources here (contracts/contact-page.md "CSP").
+if (/<ContactForm\b/.test(entry.body ?? "")) allowTurnstile(Astro.csp);
 const { data } = entry;
 // The schema's image() helper yields ImageMetadata; the shared schema pieces
 // type it loosely so they can be tested with a stand-in.

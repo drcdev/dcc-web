@@ -8,6 +8,32 @@ import Cloudflare from "cloudflare";
 import { ProviderAccessError, type CloudflareReader } from "../types.ts";
 import { redact } from "../redact.ts";
 
+/**
+ * The only SQL this module ever sends. `listD1AppliedMigrations` has no parameter that can
+ * carry SQL, so the D1 query endpoint is used strictly as a read of the migrations table.
+ */
+export const APPLIED_MIGRATIONS_SQL = "SELECT name FROM d1_migrations ORDER BY id";
+
+function isNotFound(err: unknown): boolean {
+  return (err as { status?: number } | undefined)?.status === 404;
+}
+
+/** Unwraps Cloudflare's `{ result }` envelope when the raw client returns it; otherwise the body itself. */
+function unwrapResult(body: unknown): unknown {
+  if (body && typeof body === "object" && !Array.isArray(body) && "result" in body) {
+    return (body as { result: unknown }).result;
+  }
+  return body;
+}
+
+function stringList(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
+}
+
+function stringOrNull(value: unknown): string | null {
+  return typeof value === "string" && value.length > 0 ? value : null;
+}
+
 export interface CloudflareReaderOptions {
   token: string;
   /** Injectable for tests; defaults to a real `cloudflare` SDK client using `token`. */
@@ -160,6 +186,140 @@ export function createCloudflareReader(options: CloudflareReaderOptions): Cloudf
           host: s.host ?? null,
           autoInstall: Boolean(s.auto_install),
           zoneName: s.ruleset?.zone_name ?? null,
+        }));
+      });
+    },
+
+    async listD1Databases(accountId: string, name?: string) {
+      return guarded("D1: Read", async () => {
+        type Raw = { uuid?: string; name?: string; running_in_region?: string };
+        const databases: Raw[] = [];
+        for await (const database of client.d1.database.list({ account_id: accountId, ...(name ? { name } : {}) })) {
+          databases.push(database as never);
+        }
+        const result = [];
+        for (const d of databases) {
+          const uuid = d.uuid ?? "";
+          let region = d.running_in_region;
+          if (region === undefined && uuid) {
+            // The list response may omit the (undocumented) region; ask for the single database.
+            const detail = (await client.d1.database.get(uuid, { account_id: accountId })) as unknown as Raw;
+            region = detail?.running_in_region;
+          }
+          result.push({
+            uuid,
+            name: d.name ?? "",
+            runningInRegion: typeof region === "string" ? region : undefined,
+          });
+        }
+        return result;
+      });
+    },
+
+    async listD1AppliedMigrations(accountId: string, databaseUuid: string) {
+      return guarded("D1: Read", async () => {
+        const names: string[] = [];
+        try {
+          for await (const page of client.d1.database.query(databaseUuid, {
+            account_id: accountId,
+            sql: APPLIED_MIGRATIONS_SQL,
+          })) {
+            for (const row of (page as unknown as { results?: Array<{ name?: unknown }> }).results ?? []) {
+              if (typeof row.name === "string") names.push(row.name);
+            }
+          }
+        } catch (err) {
+          // A database nobody has migrated yet has no d1_migrations table: nothing applied.
+          if (/no such table/i.test(err instanceof Error ? err.message : String(err))) return [];
+          throw err;
+        }
+        return names;
+      });
+    },
+
+    async listWorkerSecretNames(accountId: string, scriptName: string) {
+      return guarded("Workers Scripts: Read", async () => {
+        const names: string[] = [];
+        try {
+          for await (const secret of client.workers.scripts.secrets.list(scriptName, { account_id: accountId })) {
+            const name = (secret as { name?: unknown }).name;
+            if (typeof name === "string") names.push(name);
+          }
+        } catch (err) {
+          if (isNotFound(err)) return [];
+          throw err;
+        }
+        return names;
+      });
+    },
+
+    async listWorkerCrons(accountId: string, scriptName: string) {
+      return guarded("Workers Scripts: Read", async () => {
+        try {
+          const result = await client.workers.scripts.schedules.get(scriptName, { account_id: accountId });
+          return ((result as { schedules?: Array<{ cron?: unknown }> }).schedules ?? [])
+            .map((s) => s.cron)
+            .filter((c): c is string => typeof c === "string");
+        } catch (err) {
+          if (isNotFound(err)) return [];
+          throw err;
+        }
+      });
+    },
+
+    async listBuildTriggers(accountId: string, scriptName: string) {
+      return guarded("Workers Builds Configuration: Read", async () => {
+        let tag: string | undefined;
+        for await (const script of client.workers.scripts.list({ account_id: accountId })) {
+          const s = script as { id?: string; tag?: string };
+          if (s.id === scriptName) {
+            tag = s.tag;
+            break;
+          }
+        }
+        if (!tag) return [];
+        const body = await client.get<unknown>(`/accounts/${accountId}/builds/workers/${tag}/triggers`);
+        const triggers = unwrapResult(body);
+        if (!Array.isArray(triggers)) return [];
+        return triggers.map((t: Record<string, unknown>) => ({
+          uuid: typeof t.trigger_uuid === "string" ? t.trigger_uuid : "",
+          name: typeof t.trigger_name === "string" ? t.trigger_name : "",
+          branchIncludes: stringList(t.branch_includes),
+          branchExcludes: stringList(t.branch_excludes),
+          buildCommand: stringOrNull(t.build_command),
+          deployCommand: stringOrNull(t.deploy_command),
+        }));
+      });
+    },
+
+    async listBuildVariableNames(accountId: string, triggerUuid: string) {
+      return guarded("Workers Builds Configuration: Read", async () => {
+        const body = await client.get<unknown>(
+          `/accounts/${accountId}/builds/triggers/${triggerUuid}/environment_variables`,
+        );
+        const variables = unwrapResult(body);
+        // Keys only: the value of a variable is never read out of the response.
+        if (Array.isArray(variables)) {
+          return variables
+            .map((v: Record<string, unknown>) => v.key ?? v.name)
+            .filter((k): k is string => typeof k === "string");
+        }
+        if (variables && typeof variables === "object") return Object.keys(variables);
+        return [];
+      });
+    },
+
+    async listTurnstileWidgets(accountId: string) {
+      return guarded("Turnstile Sites: Read", async () => {
+        const widgets: Array<{ name?: string; domains?: unknown; mode?: string }> = [];
+        for await (const widget of client.turnstile.widgets.list({ account_id: accountId })) {
+          widgets.push(widget as never);
+        }
+        // Only name, domains and mode: `sitekey` and `secret` are dropped here.
+        return widgets.map((w) => ({
+          name: w.name ?? "",
+          domains: stringList(w.domains),
+          mode: w.mode ?? "",
         }));
       });
     },

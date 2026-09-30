@@ -1,3 +1,4 @@
+import { setupItems } from "../../../../scripts/setup-check/items.ts";
 import { describe, expect, it } from "vitest";
 import { check } from "../../../../scripts/setup-check/checks/github-secret-scanning.ts";
 import { ProviderAccessError } from "../../../../scripts/setup-check/types.ts";
@@ -23,7 +24,7 @@ describe("checks/github-secret-scanning", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("complete");
-    expect(result.step).toBe("Step 9 of 18");
+    expect(result.step).toBe(`Step 9 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#github-secret-scanning");
   });
 

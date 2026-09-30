@@ -1,6 +1,6 @@
 // Read-only repository-file provider: reads setup/*.json and docs/setup.md
 // relative to the repository root. No write capability exists here.
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { RepoReader } from "../types.ts";
 
@@ -22,6 +22,14 @@ export function createRepoReader(root: string = REPO_ROOT): RepoReader {
     },
     exists(relativePath: string): boolean {
       return existsSync(resolve(relativePath));
+    },
+    listFiles(relativeDir: string): string[] {
+      const path = resolve(relativeDir);
+      if (!existsSync(path)) return [];
+      return readdirSync(path, { withFileTypes: true })
+        .filter((entry) => entry.isFile())
+        .map((entry) => entry.name)
+        .sort();
     },
   };
 }

@@ -3,12 +3,14 @@
 // consistent across items, per data-model.md "CheckResult" and FR-027/FR-028/FR-030.
 import { ProviderAccessError } from "../types.ts";
 import { redact } from "../redact.ts";
+import { setupItems } from "../items.ts";
 import type { CheckResult } from "../types.ts";
 
-export const TOTAL_ITEMS = 18;
-
+// The item count comes from the registry, so adding an item never leaves a stale "of N" label.
+// items.ts imports the checks, which import this module; the registry is only read when a label
+// is built (long after both modules have loaded), so the import cycle is safe.
 export function stepLabel(order: number): string {
-  return `Step ${order} of ${TOTAL_ITEMS}`;
+  return `Step ${order} of ${setupItems.length}`;
 }
 
 export function docsLink(id: string): string {

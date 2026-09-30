@@ -116,4 +116,72 @@ describe(".claude/skills/setup-walkthrough/SKILL.md", () => {
     expect(lower).toContain("prepares nothing");
     expect(lower).toMatch(/until don answers/);
   });
+
+  it("counts steps from the registry length instead of a fixed number", () => {
+    expect(contents).not.toMatch(/of 18\b/);
+    expect(contents.toLowerCase()).toContain("registry length");
+  });
+
+  it("restates the D1 region inside the item 19 AskUserQuestion text and stops before creating anything if not confirmed (FR-027a, FR-027b)", () => {
+    expect(contents).toContain("contact-d1-databases");
+    expect(contents).toContain("Western North America");
+    expect(contents).toContain("`wnam`");
+    expect(contents).toMatch(/cannot be changed/i);
+    expect(contents.toLowerCase()).toMatch(/does not confirm[^.]*stop[^.]*before/);
+  });
+
+  it("shows the d1 create, d1 delete and secret put commands only in blocks introduced as shown for Don to run himself", () => {
+    const fenceRegex = /```[a-z]*\n[\s\S]*?```/g;
+    let lastEnd = 0;
+    const blocks: { start: number; end: number; ok: boolean }[] = [];
+    let m: RegExpExecArray | null;
+    while ((m = fenceRegex.exec(contents))) {
+      const preceding = contents.slice(lastEnd, m.index);
+      blocks.push({ start: m.index, end: m.index + m[0].length, ok: /shown for don to run himself/i.test(preceding) });
+      lastEnd = m.index + m[0].length;
+    }
+    for (const source of ["wrangler d1 create", "wrangler d1 delete", "wrangler secret put"]) {
+      const pattern = new RegExp(source, "g");
+      let o: RegExpExecArray | null;
+      let found = 0;
+      while ((o = pattern.exec(contents))) {
+        const index = o.index;
+        const block = blocks.find((b) => index >= b.start && index < b.end);
+        // Prose mentions (for example the forbidden `wrangler secret` reads) are allowed; examples must be fenced.
+        if (!block) continue;
+        found++;
+        expect(block.ok, `${source} block is not introduced as shown for Don to run himself`).toBe(true);
+      }
+      expect(found, `${source} example missing`).toBeGreaterThan(0);
+    }
+  });
+
+  it("allows exactly one non-check command after Don confirms item 19: wrangler d1 list --json, then editing wrangler.jsonc", () => {
+    expect(contents).toContain("pnpm exec wrangler d1 list --json");
+    expect(contents).toContain("wrangler.jsonc");
+  });
+
+  it("orders the contact items databases, token permission, widget, secrets, build variable, preview builds, deploy", () => {
+    const order = [
+      "contact-d1-databases",
+      "local-credentials",
+      "contact-turnstile-widget",
+      "contact-worker-secrets",
+      "contact-preview-builds",
+      "contact-turnstile-site-key",
+      "contact-preview-deploy",
+    ];
+    const start = contents.indexOf("## Contact form order");
+    expect(start).toBeGreaterThanOrEqual(0);
+    const section = contents.slice(start);
+    const indexes = order.map((id) => section.indexOf(id));
+    expect(indexes.every((i) => i >= 0)).toBe(true);
+    expect([...indexes].sort((a, b) => a - b)).toEqual(indexes);
+  });
+
+  it("applies the after-merge rule to contact-production-deploy and confirms secrets by name only", () => {
+    expect(contents).toContain("contact-production-deploy");
+    expect(contents.toLowerCase()).toContain("after-merge");
+    expect(contents.toLowerCase()).toMatch(/by name only|names only/);
+  });
 });

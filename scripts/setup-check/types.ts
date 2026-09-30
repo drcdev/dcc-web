@@ -85,6 +85,8 @@ export interface SetupItem {
   secrets: string[];
   dependsOn: string[];
   phase: ItemPhase;
+  /** True for an after-merge item that is reported but must not fail the check before the merge (FR-028a). */
+  deferredUntilMerge?: boolean;
   check: (ctx: ProviderContext) => Promise<CheckResult>;
 }
 
@@ -126,6 +128,8 @@ export interface SetupConfig {
   repo: string;
   machineAccount: string;
   workerName: string;
+  /** The preview Worker (`dcc-web-preview`) that serves non-main branch builds. */
+  previewWorkerName?: string;
   zone: string;
   reviewHost: string;
   ghostMarker: string;
@@ -227,6 +231,29 @@ export interface CloudflareWebAnalyticsSite {
   zoneName: string | null;
 }
 
+export interface CloudflareD1Database {
+  uuid: string;
+  name: string;
+  /** The `running_in_region` value (e.g. "WNAM"). Undocumented in the API schema, so it is
+   * `undefined` when Cloudflare does not return it (research R2); checks then fail closed. */
+  runningInRegion?: string;
+}
+
+export interface CloudflareBuildTrigger {
+  uuid: string;
+  name: string;
+  branchIncludes: string[];
+  branchExcludes: string[];
+  buildCommand: string | null;
+  deployCommand: string | null;
+}
+
+export interface CloudflareTurnstileWidget {
+  name: string;
+  domains: string[];
+  mode: string;
+}
+
 export interface CloudflareReader {
   /** Confirms the configured API token is active (does not read its permission list). */
   verifyToken(): Promise<{ status: string }>;
@@ -237,6 +264,20 @@ export interface CloudflareReader {
   getWorkersSubdomain(accountId: string): Promise<CloudflareWorkersSubdomain>;
   listWorkerDomains(accountId: string, hostname?: string): Promise<CloudflareWorkerDomain[]>;
   listWebAnalyticsSites(accountId: string): Promise<CloudflareWebAnalyticsSite[]>;
+  /** D1 databases, optionally filtered by name. Drops everything except uuid, name and region. */
+  listD1Databases(accountId: string, name?: string): Promise<CloudflareD1Database[]>;
+  /** File names recorded in the database's `d1_migrations` table (`[]` when the table does not exist yet). Runs one fixed read-only SELECT. */
+  listD1AppliedMigrations(accountId: string, databaseUuid: string): Promise<string[]>;
+  /** Secret NAMES bound to a Worker (`[]` when the Worker does not exist). Values are never read. */
+  listWorkerSecretNames(accountId: string, scriptName: string): Promise<string[]>;
+  /** Cron expressions registered on a Worker (`[]` when the Worker does not exist). */
+  listWorkerCrons(accountId: string, scriptName: string): Promise<string[]>;
+  /** Workers Builds triggers of a Worker (`[]` when the Worker does not exist). */
+  listBuildTriggers(accountId: string, scriptName: string): Promise<CloudflareBuildTrigger[]>;
+  /** Build variable NAMES on one Workers Builds trigger. Values are never returned. */
+  listBuildVariableNames(accountId: string, triggerUuid: string): Promise<string[]>;
+  /** Turnstile widgets by name, domains and mode. `sitekey` and `secret` are dropped. */
+  listTurnstileWidgets(accountId: string): Promise<CloudflareTurnstileWidget[]>;
 }
 
 export interface DnsAnswer {
@@ -274,4 +315,6 @@ export interface RepoReader {
   readText(relativePath: string): string | null;
   readJson<T = unknown>(relativePath: string): T | null;
   exists(relativePath: string): boolean;
+  /** File names (not paths) directly inside a directory; `[]` when it does not exist. */
+  listFiles(relativeDir: string): string[];
 }

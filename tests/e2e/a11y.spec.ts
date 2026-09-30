@@ -319,3 +319,66 @@ for (const template of TEMPLATES) {
     });
   });
 }
+
+// The contact form's interactive states (SC-009): field errors, a form-level
+// error above Send, and the success panel, in both themes and at both widths.
+test.describe("contact form states", () => {
+  const fill = async (page: Page) => {
+    await page.getByLabel("Name", { exact: true }).fill("Ada Lovelace");
+    await page.getByLabel("Email", { exact: true }).fill("ada@example.com");
+    await page.getByLabel("Message", { exact: true }).fill("Hello, I would like to talk about a project.");
+    await page.getByLabel(/I agree that Don Coleman/).check();
+  };
+
+  for (const size of WIDTHS) {
+    for (const theme of THEMES) {
+      test(`has zero axe violations with field errors at ${size.name} width in the ${theme} theme`, async ({ page }) => {
+        await page.setViewportSize({ width: size.width, height: size.height });
+        await setTheme(page, theme);
+        await page.goto("/contact/");
+        await page.getByLabel("Email", { exact: true }).fill("not-an-email");
+        await page.getByRole("button", { name: "Send" }).click();
+        await expect(page.locator("#contact-name-error")).toBeVisible();
+        await expect(page.locator("#contact-email-error")).toBeVisible();
+        await expect(page.locator("#contact-message-error")).toBeVisible();
+        await expect(page.locator("#contact-consent-error")).toBeVisible();
+        await expect(page.locator("#contact-status")).toHaveText("4 fields need attention.");
+        await expectNoAxeViolations(page);
+      });
+
+      test(`has zero axe violations with a form-level error at ${size.name} width in the ${theme} theme`, async ({
+        page,
+      }) => {
+        await page.setViewportSize({ width: size.width, height: size.height });
+        await setTheme(page, theme);
+        await page.route("**/api/contact", (route) =>
+          route.fulfill({
+            status: 503,
+            contentType: "application/json",
+            body: JSON.stringify({ ok: false, error: "unavailable" }),
+          }),
+        );
+        await page.goto("/contact/");
+        await fill(page);
+        await page.getByRole("button", { name: "Send" }).click();
+        await expect(page.locator("#contact-status")).toContainText("the service is unavailable");
+        await expectNoAxeViolations(page);
+      });
+
+      test(`has zero axe violations with the success panel at ${size.name} width in the ${theme} theme`, async ({
+        page,
+      }) => {
+        await page.setViewportSize({ width: size.width, height: size.height });
+        await setTheme(page, theme);
+        await page.route("**/api/contact", (route) =>
+          route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) }),
+        );
+        await page.goto("/contact/");
+        await fill(page);
+        await page.getByRole("button", { name: "Send" }).click();
+        await expect(page.locator("#contact-success")).toBeVisible({ timeout: 5000 });
+        await expectNoAxeViolations(page);
+      });
+    }
+  }
+});

@@ -96,6 +96,27 @@ export function noNetworkContext(base: ProviderContext): ProviderContext {
     listWebAnalyticsSites: async () => {
       throw networkDisabledError();
     },
+    listD1Databases: async () => {
+      throw networkDisabledError();
+    },
+    listD1AppliedMigrations: async () => {
+      throw networkDisabledError();
+    },
+    listWorkerSecretNames: async () => {
+      throw networkDisabledError();
+    },
+    listWorkerCrons: async () => {
+      throw networkDisabledError();
+    },
+    listBuildTriggers: async () => {
+      throw networkDisabledError();
+    },
+    listBuildVariableNames: async () => {
+      throw networkDisabledError();
+    },
+    listTurnstileWidgets: async () => {
+      throw networkDisabledError();
+    },
   };
   return { ...base, github, cloudflare };
 }

@@ -78,3 +78,34 @@ describe("astro.config.mjs site resolution", () => {
     expect(hasTailwindPlugin).toBe(true);
   });
 });
+
+describe("astro.config.mjs PUBLIC_TURNSTILE_SITE_KEY (research R6)", () => {
+  beforeEach(() => {
+    delete process.env.WORKERS_CI;
+    delete process.env.WORKERS_CI_BRANCH;
+  });
+
+  afterEach(() => {
+    process.env = { ...ORIGINAL_ENV };
+  });
+
+  type Field = { context: string; access: string; type: string; default?: string; optional?: boolean };
+  const field = async () =>
+    ((await importFreshConfig()).env?.schema as unknown as Record<string, Field> | undefined)?.PUBLIC_TURNSTILE_SITE_KEY;
+
+  it("is a public client string", async () => {
+    expect(await field()).toMatchObject({ context: "client", access: "public", type: "string" });
+  });
+
+  it("defaults to Cloudflare's always-pass test key outside Workers Builds", async () => {
+    expect((await field())?.default).toBe("1x00000000000000000000AA");
+  });
+
+  it("has no default under Workers Builds, so a missing variable fails the build", async () => {
+    process.env.WORKERS_CI = "1";
+    process.env.WORKERS_CI_BRANCH = "main";
+    const key = await field();
+    expect(key?.default).toBeUndefined();
+    expect(key?.optional).not.toBe(true);
+  });
+});

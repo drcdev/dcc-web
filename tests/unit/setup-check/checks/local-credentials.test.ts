@@ -1,3 +1,4 @@
+import { setupItems } from "../../../../scripts/setup-check/items.ts";
 import { describe, expect, it } from "vitest";
 import { check } from "../../../../scripts/setup-check/checks/local-credentials.ts";
 import { ProviderAccessError } from "../../../../scripts/setup-check/types.ts";
@@ -20,7 +21,7 @@ describe("checks/local-credentials", () => {
 
     expect(result.status).toBe("complete");
     expect(result.nextAction).toBeNull();
-    expect(result.step).toBe("Step 2 of 18");
+    expect(result.step).toBe(`Step 2 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#local-credentials");
   });
 

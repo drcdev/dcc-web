@@ -1,3 +1,4 @@
+import { setupItems } from "../../../../scripts/setup-check/items.ts";
 import { describe, expect, it, vi } from "vitest";
 import { check } from "../../../../scripts/setup-check/checks/web-analytics.ts";
 import { ProviderAccessError } from "../../../../scripts/setup-check/types.ts";
@@ -161,7 +162,7 @@ describe("checks/web-analytics", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("complete");
-    expect(result.step).toBe("Step 18 of 18");
+    expect(result.step).toBe(`Step 18 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#web-analytics");
   });
 

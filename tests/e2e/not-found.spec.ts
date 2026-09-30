@@ -13,7 +13,7 @@ const RETIRED_ADDRESSES = ["/drift/2025/x/", "/convergence/", "/news/", "/topic/
 const NOT_FOUND_ADDRESSES = [...RETIRED_ADDRESSES, ...futureDestinations, "/cookie-policy/"] as const;
 
 // Addresses that are built and must keep returning 200 (robots.txt: T083).
-const BUILT_ADDRESSES = ["/", "/services/", "/speaking/", "/about/", "/privacy-policy/", "/terms-of-use/", "/technology/", "/robots.txt"] as const;
+const BUILT_ADDRESSES = ["/", "/services/", "/speaking/", "/about/", "/privacy-policy/", "/terms-of-use/", "/technology/", "/contact/", "/robots.txt"] as const;
 
 test.describe("not-found status", () => {
   for (const path of NOT_FOUND_ADDRESSES) {

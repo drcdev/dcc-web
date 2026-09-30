@@ -61,7 +61,7 @@ test("the sitemap lists exactly the built public pages, never /404", async ({ re
   const origin = await robotsOrigin(request);
   const entries = await sitemapEntries(request);
   expect([...entries].sort()).toEqual(
-    ["/", "/about/", "/privacy-policy/", "/services/", "/speaking/", "/technology/", "/terms-of-use/"].map(
+    ["/", "/about/", "/contact/", "/privacy-policy/", "/services/", "/speaking/", "/technology/", "/terms-of-use/"].map(
       (path) => `${origin}${path}`,
     ),
   );
