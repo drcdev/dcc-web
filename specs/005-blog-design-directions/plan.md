@@ -133,9 +133,10 @@ with `_`-prefixed private folders, so removal is a directory delete and nothing 
 
 ## Phase outline for tasks
 
-1. **Tests first**: sample-data unit test; prototype a11y/structure spec listing the 22 pages
-   from `contracts/prototype-routes.md`; sitemap-exclusion and navigation assertions. Run; see
-   them fail.
+1. **Tests first**: sample-data and no-new-design-tokens unit tests; prototype a11y/structure
+   spec listing the 22 pages from `contracts/prototype-routes.md`, including the directions
+   index and the US1, US2 and US3 checks for the direction pages (all written before any
+   direction page exists); sitemap-exclusion and navigation assertions. Run; see them fail.
 2. **Foundation**: `samples.ts` (topics, posts, directions, helpers, proposed addresses);
    SVG images; shared prototype components (`PrototypeNotice`, `SampleBody` with figure, code
    region and table region, `PostMeta`, `TopicPill`, `Pagination`); sitemap filter; directions

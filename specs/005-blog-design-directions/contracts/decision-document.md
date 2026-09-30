@@ -23,7 +23,10 @@ prototypes were removed.
 
 ## How to compare
 Preview index URL (branch preview), what each direction's three screens are, and a one-table
-overview (idea, featured posts, topic presentation, post address) of all three directions.
+overview of all three directions (FR-003): one row per structural axis (how posts are grouped,
+landing-page order, how featured posts are set apart, page layout of the three screens, how
+topics are presented and browsed) and one column per direction, plus rows for the idea and the
+post address.
 
 ## Direction A: Front page
 ### Summary
@@ -39,8 +42,9 @@ so renaming, merging or splitting topics changes no post address.
 ### New colours or fonts
 "None" or the named addition.
 ### Trade-offs
-Bulleted strengths and costs (reading experience, how it ages as the post count grows, effort
-to build, dependence on feature images, phone behaviour).
+Bulleted strengths and costs on the six FR-019 dimensions, the same for every direction:
+reading experience, how it copes as the number of posts grows, effort to build, the cost of
+renaming, merging or splitting topics later, dependence on feature images, phone behaviour.
 
 ## Direction B: Timeline
 (same sub-sections)

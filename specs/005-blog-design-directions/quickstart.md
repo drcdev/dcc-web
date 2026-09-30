@@ -55,7 +55,11 @@ corepack pnpm run build && corepack pnpm exec wrangler dev --ip 127.0.0.1 --port
 
 Open `http://127.0.0.1:4321/design/blog/`. For each direction, reach landing, listing and a
 post in at most two clicks from the index; switch theme with the footer toggle; narrow the
-window to phone width. Walk the reader needs in spec User Story 2 on each direction.
+window to phone width. Walk the reader needs in spec User Story 2 on each direction. Then do the FR-031 keyboard
+and zoom walk-through: Tab through each screen (focus order follows the visual order, focus
+is visible in both themes, link text names its target), check alt text is meaningful, resize
+text to 200 percent and zoom to 400 percent with no loss of content, turn on reduced motion,
+and confirm nothing is available only on hover. Note the results for the pull request.
 
 ## 5. Capture the pictures
 
