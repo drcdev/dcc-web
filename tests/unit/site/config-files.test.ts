@@ -263,3 +263,70 @@ describe(".env.example", () => {
     );
   });
 });
+
+describe("worker workspace and tooling wiring (007 contact form)", () => {
+  const root = fileURLToPath(new URL("../../../", import.meta.url));
+  const read = (path: string) => readFileSync(`${root}${path}`, "utf-8");
+  const pkg = JSON.parse(read("package.json")) as {
+    scripts: Record<string, string>;
+    devDependencies: Record<string, string>;
+  };
+
+  it("lists worker in pnpm-workspace.yaml packages", () => {
+    expect(read("pnpm-workspace.yaml")).toMatch(/^packages:\s*\n\s*-\s*['"]?worker['"]?\s*$/m);
+  });
+
+  it("has a private worker package with the Vitest 4 and plugin devDeps", () => {
+    const worker = JSON.parse(read("worker/package.json")) as {
+      name: string;
+      private: boolean;
+      scripts: Record<string, string>;
+      devDependencies: Record<string, string>;
+    };
+    expect(worker.name).toBe("@dcc-web/worker");
+    expect(worker.private).toBe(true);
+    expect(worker.scripts.test).toContain("vitest run");
+    expect(worker.devDependencies.vitest).toMatch(/^4\.1\./);
+    expect(worker.devDependencies["@cloudflare/vitest-plugin"]).toMatch(/^1\.3\./);
+  });
+
+  it("keeps Vitest 5 at the root and runs wrangler 4.144.0", () => {
+    expect(pkg.devDependencies.vitest).toMatch(/^5\./);
+    expect(pkg.devDependencies.wrangler).toBe("4.144.0");
+  });
+
+  it("gives worker its own strict tsconfig and excludes it from the root one", () => {
+    const workerTsconfig = JSON.parse(stripJsonComments(read("worker/tsconfig.json")));
+    expect(workerTsconfig.compilerOptions.strict).toBe(true);
+    expect(workerTsconfig.compilerOptions.types).toEqual(
+      expect.arrayContaining(["./worker-configuration.d.ts"]),
+    );
+    const rootTsconfig = JSON.parse(stripJsonComments(read("tsconfig.json")));
+    expect(rootTsconfig.exclude).toContain("worker");
+  });
+
+  it("covers worker/** in ESLint with no-floating-promises on", async () => {
+    const configs = (await import("../../../eslint.config.js")).default as unknown as {
+      files?: string[];
+      rules?: Record<string, unknown>;
+      languageOptions?: { parserOptions?: Record<string, unknown> };
+    }[];
+    const entry = configs.find(
+      (c) =>
+        c.files?.some((f) => f.startsWith("worker/")) &&
+        c.rules?.["@typescript-eslint/no-floating-promises"],
+    );
+    expect(entry).toBeDefined();
+    expect(entry?.rules?.["@typescript-eslint/no-floating-promises"]).toBe("error");
+    expect(entry?.languageOptions?.parserOptions?.projectService).toBeTruthy();
+  });
+
+  it("wires typecheck, test, types:worker and deploy:production scripts", () => {
+    expect(pkg.scripts.typecheck).toBe(
+      "astro check && tsc -p worker && wrangler types worker/worker-configuration.d.ts --check",
+    );
+    expect(pkg.scripts.test).toBe("vitest run && pnpm --filter ./worker test");
+    expect(pkg.scripts["types:worker"]).toBe("wrangler types worker/worker-configuration.d.ts");
+    expect(pkg.scripts["deploy:production"]).toBeTruthy();
+  });
+});
