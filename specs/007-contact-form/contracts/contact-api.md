@@ -70,7 +70,7 @@ rate limit (FR-013a).
 | 422 | `turnstile_failed` | "We couldn't confirm you're not a bot. Please try again." (the widget is reset) |
 | 429 | `rate_limited` | "You've sent too many messages. Please try again later." |
 | 503 | `unavailable` | "Your message wasn't sent because the service is unavailable. Please try again in a few minutes." |
-| network failure / timeout (15 s) | n/a | same as 503 |
+| network failure / timeout (15 s; a guard for a hung request, not the SC-001 target of 5 s on a typical connection) | n/a | same as 503 |
 | Turnstile script failed to load | n/a | "The spam check couldn't load. Please try again later." |
 
 Implement finalises the copy in the component. It must stay plain language (constitution

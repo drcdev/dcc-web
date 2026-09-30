@@ -38,10 +38,10 @@ Rules enforced by `tests/unit/site/config-files.test.ts` (extended):
 - `run_worker_first` is exactly `["/api/*"]`. Nothing else runs Worker code (Principle VIII).
 - Production binds `contact` only and preview binds `contact-preview` only. Both bindings are
   named `DB`. Neither environment names the other's database anywhere.
-- Both `database_id` values are present, are 36-character UUIDs and differ. A placeholder fails
-  the test once setup item 19 is complete. Until then, the test for the real IDs is written
-  first and seen to fail (Principle I), and it passes when the agent commits the IDs during the
-  walkthrough.
+- Both `database_id` values are present and differ. Until setup item 19 is complete each may be
+  the committed placeholder, so the suite stays green; `setup:check` item 19 reports a
+  placeholder as missing. When the agent commits the real IDs during the walkthrough, it removes
+  the placeholder allowance in the same commit, so from then on only 36-character UUIDs pass.
 - `secrets.required` lists the same three names in both environments. That is how Wrangler
   refuses to deploy a Worker whose secrets are missing: in the installed source,
   `addRequiredSecretsInheritBindings` throws "The following required secrets have not been set".
@@ -107,7 +107,8 @@ environment value, and they pass `stdio: "inherit"` only to Wrangler itself. Uni
 - A failed run leaves the rows for the next run, whose cutoff catches up on everything overdue
   (FR-018). The run throws after logging, so the failure shows as an errored cron event in the
   dashboard and Workers Logs.
-- Log: one line, `{"event":"retention","deleted":<n>,"fingerprints_cleared":<m>}`.
+- Log: one line, `{"event":"retention","deleted":<n>}` (FR-016 allows the event name and the
+  number of messages deleted; nothing else is logged).
 - Test (`worker/test/retention.test.ts`): seed messages at 13, 12 (± 1 minute) and 11 months
   old, some `new` and some `read`; call the Worker's default export's `scheduled(controller, env, ctx)` with
   `createScheduledController({ scheduledTime, cron: "17 3 * * *" })` and

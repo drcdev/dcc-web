@@ -48,8 +48,8 @@ flag (its presence is a precondition for storing at all), user agent, referrer o
 | `idx_messages_status_received` | `(status, received_at, id)` | list new, oldest first, cursor paging (R9) |
 | `idx_messages_received` | `(received_at)` | retention delete and fingerprint clearing (R11) |
 
-Each query's plan must use its index. An integration test runs `EXPLAIN QUERY PLAN` for the
-five statements (the fingerprint-clearing `UPDATE` included) and fails if any shows
+Each query's plan must use its index. An integration test runs `EXPLAIN QUERY PLAN` for
+every statement the Worker runs (the fingerprint-clearing `UPDATE` included) and fails if any shows
 `SCAN messages` (a full table scan), so the row-read
 figures in research R10 hold.
 

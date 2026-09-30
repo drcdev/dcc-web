@@ -92,7 +92,7 @@ the edge cases. Each test sets a unique `CF-Connecting-IP` on `/api/contact` via
 | Invalid email / message over 5,000 | Field error names the field (and the limit); all values kept |
 | Double-click Send | One stored message |
 | `/api/contact` fulfilled with 503 / 429 | Plain-language error; all values kept |
-| Turnstile script aborted | "Spam check couldn't load" message; values kept |
+| Turnstile script aborted | "The spam check couldn't load. Please try again later."; values kept |
 | Keyboard only | Every control reachable in order; errors and success announced (live region) |
 
 The `a11y`, `budget`, `visual`, `shell` and `no-js` projects pick up `/contact/` from
