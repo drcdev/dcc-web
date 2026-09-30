@@ -519,3 +519,53 @@ budget still fails, the fix is smaller images or fewer eager images, never a wea
 No new service, binding, Worker code or storage. The blog is static assets inside the existing
 Worker's free plan; `@astrojs/rss` and `satteri` run only at build time. Expected monthly cost:
 **$0** (Principle IX; total remains within the $13 ceiling).
+
+## Spike results (Phase 1, tasks T003 to T006)
+
+Recorded while implementing Phase 1. None of the spikes needs a plan change.
+
+- **Spike 1, Shiki in the Sätteri pipeline and the MDX `pre` override (T003, R7, R8): passes.**
+  `tests/build/code-highlighting.test.ts` builds a fixture site whose config sets a placeholder
+  `markdown.shikiConfig.theme` and a transformer. Findings:
+  - `markdown.shikiConfig.transformers` is honoured by the default Sätteri processor
+    (`@astrojs/markdown-satteri` passes them to `codeToHast`), so no processor change is needed.
+  - The `span` hook sees `style="color:#rrggbb"` per token and can swap it for an `hl-*` class.
+  - The `pre` hook **runs after Astro's own `overflow-x: auto` is appended**, so deleting
+    `node.properties.style` there removes the background, colour and overflow style together.
+    Overflow moves to CSS (`pre { overflow-x: auto }`).
+  - A `root` hook that throws on any surviving `style` fails the build: the error surfaces as an
+    `MDXError` whose message carries the thrown text, so the colour or attribute is named.
+    Removing the `pre` deletion made the build fail with the `pre` style named, which proves the
+    guard works.
+  - `meta.__raw` on the transformer context carries the fence's meta string, so
+    ```` ```ts caption="…" ```` reaches `data-caption` without a wrapper component.
+  - With a `components.pre` override in `<Content components={…} />`, the highlighted `<pre
+    class="astro-code">` is rendered inside the override, and the page's CSP meta tag is
+    byte-identical to the site's current one (no `'unsafe-inline'` in `style-src`).
+  - Astro prints a config warning ("Shiki syntax highlighting uses inline styles that are not
+    compatible with CSP") on every build. It is informational: the transformer removes the
+    styles. The CSP is not loosened and the `attribute` fallback and Prism stay unused.
+  - Harness change: `buildFixtureSite()` gained an `overrides` option (write or patch files in
+    the copied site, such as `astro.config.mjs`). The spike used the pages collection because
+    the `posts` collection does not exist yet; T031 moves the test onto a post fixture.
+- **Spike 2, `paginate([])` (T004, R4): one page with empty data.** With `params` given,
+  `paginate([], { params: { topic }, pageSize })` yields exactly one path (`/topics/empty/`),
+  with `page.data.length === 0`, `currentPage === 1` and `lastPage === 1`. No extra code is
+  needed for an empty topic; the route only has to render an empty state when `page.data` is
+  empty. (The throwaway site lived under `.cache/spike-paginate/`, not committed.)
+- **Spike 3, impossible dates (T005, R1): the YAML parser rolls them over.** Astro's glob
+  loader parses front matter with js-yaml (`@astrojs/internal-helpers/frontmatter`). A bare
+  `2026-02-30` parses to a `Date` for **2 March 2026** and `z.date()` accepts it. A quoted
+  date, `27/08/2026` and `next tuesday` are strings and fail `z.date()`. A timestamp such as
+  `2026-08-27T10:30:00Z` also passes `z.date()`. So R1's named fallback is required in T015: a
+  check on the raw front matter text (`rawFrontmatter`), requiring `date:` and `updated:` to be
+  exactly `YYYY-MM-DD` and to round-trip to the same calendar day. That single check also
+  rejects timestamps. The first cases are in `tests/unit/content/post-schema.test.ts`; T008
+  replaces the characterisation of the roll-over with the real rejection cases.
+- **Spike 4 groundwork, full-listing page weight (T006, FR-041).** Method: measure
+  `/writing/all/` of the fixture site populated with 13 or more generated posts (12 cards on
+  page 1), each with a small generated feature image, using the `budget` Playwright project's
+  existing `measure()` (simulated slow 4G, 4x CPU, 390x844, cache disabled). Thresholds are the
+  existing ones in `tests/e2e/budget.spec.ts`: total 100 KB, JavaScript 10 KB, LCP 2.5 s, CLS
+  below 0.1, long-task blocking 200 ms. The generator is built in T026 and the measurement runs
+  in T061. If it fails, the fix is smaller or fewer eager images, never a weaker budget.

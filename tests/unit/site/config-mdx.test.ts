@@ -16,6 +16,12 @@ describe("MDX and fixture-site configuration", () => {
     );
   });
 
+  it("pins the blog dependencies to exact versions", () => {
+    expect(pkg.dependencies["@astrojs/rss"]).toMatch(/^\d+\.\d+\.\d+$/);
+    // The version @astrojs/markdown-satteri already installs.
+    expect(pkg.dependencies.satteri).toBe("0.10.5");
+  });
+
   it("registers mdx() in astro.config.mjs", () => {
     const config = read("astro.config.mjs");
     expect(config).toMatch(/from "@astrojs\/mdx"/);

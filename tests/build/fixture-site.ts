@@ -25,6 +25,12 @@ export interface FixtureFile {
 export interface FixtureSiteOptions {
   /** `build` runs a full build; `sync` only loads and validates the content collections. Default `build`. */
   mode?: "build" | "sync";
+  /**
+   * Files written into the copied site after the repository files, keyed by path relative to the
+   * site root. A function receives the copied file's current text (or "" when there is none) and
+   * returns the new text, so a test can patch a file such as astro.config.mjs.
+   */
+  overrides?: Record<string, string | ((current: string) => string)>;
 }
 
 export interface FixtureSiteResult {
@@ -100,6 +106,13 @@ export async function buildFixtureSite(
     } else {
       cpSync(resolve(fixturesRoot, from), target);
     }
+  }
+
+  for (const [path, value] of Object.entries(options.overrides ?? {})) {
+    const target = resolve(root, path);
+    mkdirSync(dirname(target), { recursive: true });
+    const next = typeof value === "function" ? value(existsSync(target) ? readFileSync(target, "utf-8") : "") : value;
+    writeFileSync(target, next);
   }
 
   const dist = resolve(root, "dist");
