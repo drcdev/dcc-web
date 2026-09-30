@@ -23,6 +23,11 @@ describe("StoryHeader", () => {
     expect(html).toContain("AI integration");
   });
 
+  it("names the h1 for the view transition when given a slug", async () => {
+    const html = await render(StoryHeader, { ...props, slug: "focus-pocus" });
+    expect(byName(html, "h1")[0]!.attrs["data-title-slug"]).toBe("focus-pocus");
+  });
+
   it("lists the seven chapters in an 'In this story' navigation as an ordered list of in-page links", async () => {
     const html = await render(StoryHeader, props);
     const nav = byName(html, "nav");

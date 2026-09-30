@@ -6,7 +6,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import EmptyProjects from "../../components/project/EmptyProjects.astro";
 import ProjectFilter from "../../components/project/ProjectFilter.astro";
 import ProjectRow from "../../components/project/ProjectRow.astro";
+import TitleTransition from "../../components/project/TitleTransition.astro";
 import { themesOf } from "../../lib/content/themes";
+import { transitionHash } from "../../lib/content/title-transition";
 import { getPublishedProjects } from "../../lib/projects";
 import { getNavigation } from "../../lib/pages";
 import "../../components/project/portfolio.css";
@@ -14,6 +16,8 @@ import "../../components/project/portfolio.css";
 const projects = await getPublishedProjects(process.env);
 const themes = themesOf(projects.map(({ data }) => data));
 const navigation = await getNavigation();
+// The title-pairing style is hashed before the layout renders the page policy.
+if (projects.length > 0) Astro.csp?.insertStyleHash(transitionHash(projects.map(({ id }) => id)));
 ---
 
 <BaseLayout
@@ -21,6 +25,7 @@ const navigation = await getNavigation();
   description="Problems I have solved with software, each told as a short story from the problem to what I would do differently."
   navigation={navigation}
 >
+  {projects.length > 0 && <TitleTransition slugs={projects.map(({ id }) => id)} />}
   <div data-projects-index class="mx-auto">
     <header data-index-header>
       <h1>Projects</h1>

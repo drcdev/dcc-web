@@ -14,9 +14,11 @@ export interface Props {
   themes: readonly string[];
   /** A draft is shown outside the production build only; the notice says so. */
   draft?: boolean;
+  /** Names the h1 for the view transition from the index row; see TitleTransition. */
+  slug?: string;
 }
 
-const { title, problem, status, themes, draft = false } = Astro.props;
+const { title, problem, status, themes, draft = false, slug } = Astro.props;
 ---
 
 {
@@ -27,7 +29,7 @@ const { title, problem, status, themes, draft = false } = Astro.props;
   )
 }
 <header data-story-header>
-  <h1 data-story-title>{title}</h1>
+  <h1 data-story-title data-title-slug={slug}>{title}</h1>
   <p data-story-problem>{problem}</p>
   <div data-story-meta>
     <StatusPill status={status} />

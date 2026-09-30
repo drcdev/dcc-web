@@ -53,7 +53,8 @@ describe("ProjectRow", () => {
   it("carries the view-transition name project-<slug> on the title", async () => {
     const html = await render(ProjectRow, props);
     const [h2] = byName(html, "h2");
-    expect(Object.keys(h2!.attrs).join(" ")).toMatch(/data-astro-transition-scope/);
+    expect(h2!.attrs["data-title-slug"]).toBe("focus-pocus");
+    expect(html).not.toMatch(/data-astro-transition-scope/);
   });
 
   it("marks a draft in text, and only a draft", async () => {

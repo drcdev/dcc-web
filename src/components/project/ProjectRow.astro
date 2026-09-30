@@ -2,8 +2,8 @@
 // One project on the index: a ruled row with the text on the left and the index
 // visual on the right at wide widths (Direction C rows, Direction A split;
 // contracts/pages-dom.md). The title is the row's only link. The title carries
-// the view-transition name `project-<slug>`, which the story's title shares
-// (docs.astro.build/en/guides/view-transitions/#transitionname).
+// the view-transition name `project-<slug>` through `data-title-slug`, which the story's
+// title shares; <TitleTransition> on the index page writes the rules.
 import { Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
 import { themeKey } from "../../lib/content/themes.ts";
@@ -30,7 +30,7 @@ const keys = [...new Set(themes.map(themeKey))].join("|");
 
 <li data-project={slug} data-themes={keys}>
   <div data-project-text>
-    <h2 data-project-title transition:name={`project-${slug}`}>
+    <h2 data-project-title data-title-slug={slug}>
       <a href={`/projects/${slug}/`}>{title}</a>
     </h2>
     <p data-project-problem>{problem}</p>

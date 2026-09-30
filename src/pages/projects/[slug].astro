@@ -53,6 +53,7 @@ const share = data.image ? await getImage({ src: data.image.src as ImageMetadata
   image={share?.src}
   imageAlt={data.image?.alt}
   draft={data.draft}
+  slug={entry.id}
 >
   <Content components={{ ...sectionComponents, ...storyBlockComponents }} />
 </ProjectLayout>

@@ -42,8 +42,8 @@ summary,
 
 /* ------------------------------------------------------------ Story header */
 
-/* The bar is decorative and empty; Phase 7 turns it on where scroll-driven
-   animation is supported and motion is allowed. Hidden everywhere until then. */
+/* The bar is decorative and empty. It is hidden by default and shown only where
+   scroll-driven animation is supported and motion is allowed (see "Motion" below). */
 [data-progress] {
   display: none;
 }
@@ -249,15 +249,77 @@ summary,
   @supports (animation-timeline: view()) {
     [data-chapter-heading][data-reveal] {
       animation: portfolio-uncover linear both;
+    }
+    /* The timeline sits in its own rule (a more specific selector) so the minifier
+       cannot fold it into the animation shorthand, which browsers do not all parse. */
+    :root [data-chapter-heading][data-reveal] {
       animation-timeline: view();
       animation-range: entry 0% entry 80%;
     }
   }
 }
 
+/* ---------------------------------------------------------------- Motion */
+
+/* Reading progress: a bar fixed to the top edge, filled by the root scroll. */
+@keyframes portfolio-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    [data-progress] {
+      display: block;
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 60;
+      height: 4px;
+      background-color: var(--color-accent-700);
+      transform: scaleX(0);
+      transform-origin: 0 50%;
+      animation: portfolio-progress linear both;
+      pointer-events: none;
+    }
+    :root [data-progress] {
+      animation-timeline: scroll(root);
+    }
+  }
+}
+@media (prefers-reduced-motion: no-preference) and (prefers-color-scheme: dark) {
+  @supports (animation-timeline: view()) {
+    :root:not([data-theme="light"]) [data-progress] {
+      background-color: var(--color-accent-300);
+    }
+  }
+}
+:root[data-theme="dark"] [data-progress] {
+  background-color: var(--color-accent-300);
+}
+@media print {
+  [data-progress] {
+    display: none;
+  }
+}
+
+/* The index and the story opt in to a cross-document view transition. The title
+   pairing rules come from <TitleTransition> (CSP-hashed inline style). */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+
 /* --------------------------------------------------------- Forced colours */
 
 @media (forced-colors: active) {
+  [data-progress] {
+    forced-color-adjust: none;
+    background-color: Highlight !important;
+  }
   [data-chapter],
   [data-invitation],
   [data-placeholder],

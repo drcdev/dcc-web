@@ -1,0 +1,16 @@
+---
+// Names project titles for the cross-document view transition. One small inline
+// <style>. Its hash must reach the page's Content Security Policy before the head
+// is rendered, which a component in the body is too late for, so the index route and
+// ProjectLayout call `Astro.csp.insertStyleHash(transitionHash(slugs))` in their
+// own frontmatter (research R4; contracts/pages-dom.md "CSP").
+import { transitionCss } from "../../lib/content/title-transition.ts";
+
+export interface Props {
+  slugs: readonly string[];
+}
+
+const css = transitionCss(Astro.props.slugs);
+---
+
+<style is:inline set:html={css}></style>

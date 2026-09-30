@@ -5,7 +5,9 @@ import type { ComponentProps } from "astro/types";
 import BaseLayout from "./BaseLayout.astro";
 import ReadingProgress from "../components/project/ReadingProgress.astro";
 import StoryHeader from "../components/project/StoryHeader.astro";
+import TitleTransition from "../components/project/TitleTransition.astro";
 import type { NavigationItem } from "../config/navigation";
+import { transitionHash } from "../lib/content/title-transition.ts";
 
 export interface Props {
   title: string;
@@ -19,15 +21,19 @@ export interface Props {
   imageAlt?: string;
   /** Shown only outside the production build, where drafts are built at all. */
   draft?: boolean;
+  /** The project slug; names the title for the view transition. */
+  slug: string;
 }
 
-const { title, problem, description, status, themes, navigation, image, imageAlt, draft = false } = Astro.props;
+const { title, problem, description, status, themes, navigation, image, imageAlt, draft = false, slug } = Astro.props;
+Astro.csp?.insertStyleHash(transitionHash([slug]));
 ---
 
 <BaseLayout title={title} description={description} navigation={navigation} image={image} imageAlt={imageAlt}>
+  <TitleTransition slugs={[slug]} />
   <ReadingProgress />
   <article data-story class="mx-auto">
-    <StoryHeader title={title} problem={problem} status={status} themes={themes} draft={draft} />
+    <StoryHeader title={title} problem={problem} status={status} themes={themes} draft={draft} slug={slug} />
     <slot />
   </article>
 </BaseLayout>
