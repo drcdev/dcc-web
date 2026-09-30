@@ -94,12 +94,12 @@ describe("wrangler.jsonc", () => {
     expect(JSON.stringify(config).match(/"database_name"/g)).toHaveLength(2);
   });
 
-  it("has two different database ids, each a UUID or the committed placeholder", () => {
-    // The placeholder allowance is removed in T074, once Don's real IDs are committed.
+  it("has two different database ids, each a real UUID (no placeholder)", () => {
+    // Don created both databases on 2026-09-29 (setup item 19); placeholders no longer pass.
     const isAllowed = (id: unknown) =>
       typeof id === "string" &&
-      (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) ||
-        /^00000000-0000-0000-0000-00000000000[12]$/.test(id));
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) &&
+      !/^0{8}-0{4}-0{4}-0{4}-0{12}$|^00000000-0000-0000-0000-00000000000[0-9]$/.test(id);
     const production = config.d1_databases[0].database_id;
     const preview = config.env.preview.d1_databases[0].database_id;
     expect(isAllowed(production)).toBe(true);

@@ -22,7 +22,7 @@
       "binding": "DB",
       "database_name": "contact",
       // Placeholder until setup item 19 (Don creates the database); replaced in T074.
-      "database_id": "00000000-0000-0000-0000-000000000001",
+      "database_id": "5b29b0c1-3c50-41ac-8337-52a2eae7cb12",
       "migrations_dir": "migrations"
     }
   ],
@@ -36,7 +36,7 @@
           "binding": "DB",
           "database_name": "contact-preview",
           // Placeholder until setup item 19; replaced in T074.
-          "database_id": "00000000-0000-0000-0000-000000000002",
+          "database_id": "3e160f9c-8b3d-4c4e-9fa2-9b327cb9daf1",
           "migrations_dir": "migrations"
         }
       ]
