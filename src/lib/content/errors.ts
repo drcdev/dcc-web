@@ -26,3 +26,12 @@ export function postFilesError(fileA: string, fileB: string, problem: string): P
   return new PageContentError(`Post files ${fileA} and ${fileB}: ${problem}`);
 }
 
+/** A problem in one project file: `Project file <path>: <problem>`. */
+export function projectFileError(file: string, problem: string): PageContentError {
+  return new PageContentError(`Project file ${file}: ${problem}`);
+}
+
+/** A problem between two project files: `Project files <a> and <b>: <problem>`. */
+export function projectFilesError(fileA: string, fileB: string, problem: string): PageContentError {
+  return new PageContentError(`Project files ${fileA} and ${fileB}: ${problem}`);
+}

@@ -34,15 +34,15 @@ description: "Task list for the portfolio (projects index and story pages)"
 
 **Purpose**: the small pure modules everything else imports. Nothing user-visible changes.
 
-- [ ] T001 [P] Test: `tests/unit/content/build-mode.test.ts` for `isProductionBuild(env)` (true only when `WORKERS_CI==="1"` and `WORKERS_CI_BRANCH==="main"`; false locally, in tests, on other branches, with missing vars). Shared file note: if `src/lib/build-mode.ts` already exists from the blog, extend its tests instead.
-- [ ] T002 [P] Test: `tests/unit/content/themes.test.ts` for `themeKey`, `themesOf` (dedupe variants such as "AI integration" and "ai  integration", first spelling as label, stable sort by label), `parseThemeParam` (known, unknown, missing, mixed case, `%20`), and `matches`.
-- [ ] T003 [P] Test: `tests/unit/content/contact-link.test.ts` for `contactHref(slug)` (`/contact/?project=<slug>`, rejects slugs not matching `^[a-z0-9-]{1,64}$`) and `tests/unit/content/stages.test.ts` for the seven stages, their ids, order and headings (data-model.md "Stage and Chapter").
-- [ ] T004 [P] Test: `tests/unit/content/project-address.test.ts` for slug from file name (`^[a-z0-9-]{1,64}$`, message "lower-case letters, digits and hyphens"), `.md`/`.mdx` twin clash, nested file, and `projectFileError` / `projectFilesError` message shape (`Project file <path>: <problem>`).
-- [ ] T005 Implement `src/lib/build-mode.ts` (`isProductionBuild`), making T001 pass.
-- [ ] T006 [P] Implement `src/lib/content/themes.ts` (`themeKey`, `themesOf`, `parseThemeParam`, `matches`), making T002 pass.
-- [ ] T007 [P] Implement `src/lib/content/contact-link.ts` and `src/lib/content/stages.ts`, making T003 pass.
-- [ ] T008 [P] Implement `src/lib/content/project-address.ts` and add `projectFileError` / `projectFilesError` to `src/lib/content/errors.ts`, making T004 pass.
-- [ ] T009 Run `corepack pnpm exec vitest run tests/unit`, `corepack pnpm run lint` and the type check; confirm green.
+- [x] T001 [P] Test: `tests/unit/content/build-mode.test.ts` for `isProductionBuild(env)` (true only when `WORKERS_CI==="1"` and `WORKERS_CI_BRANCH==="main"`; false locally, in tests, on other branches, with missing vars). Shared file note: if `src/lib/build-mode.ts` already exists from the blog, extend its tests instead.
+- [x] T002 [P] Test: `tests/unit/content/themes.test.ts` for `themeKey`, `themesOf` (dedupe variants such as "AI integration" and "ai  integration", first spelling as label, stable sort by label), `parseThemeParam` (known, unknown, missing, mixed case, `%20`), and `matches`.
+- [x] T003 [P] Test: `tests/unit/content/contact-link.test.ts` for `contactHref(slug)` (`/contact/?project=<slug>`, rejects slugs not matching `^[a-z0-9-]{1,64}$`) and `tests/unit/content/stages.test.ts` for the seven stages, their ids, order and headings (data-model.md "Stage and Chapter").
+- [x] T004 [P] Test: `tests/unit/content/project-address.test.ts` for slug from file name (`^[a-z0-9-]{1,64}$`, message "lower-case letters, digits and hyphens"), `.md`/`.mdx` twin clash, nested file, and `projectFileError` / `projectFilesError` message shape (`Project file <path>: <problem>`).
+- [x] T005 Implement `src/lib/build-mode.ts` (`isProductionBuild`), making T001 pass.
+- [x] T006 [P] Implement `src/lib/content/themes.ts` (`themeKey`, `themesOf`, `parseThemeParam`, `matches`), making T002 pass.
+- [x] T007 [P] Implement `src/lib/content/contact-link.ts` and `src/lib/content/stages.ts`, making T003 pass.
+- [x] T008 [P] Implement `src/lib/content/project-address.ts` and add `projectFileError` / `projectFilesError` to `src/lib/content/errors.ts`, making T004 pass.
+- [x] T009 Run `corepack pnpm exec vitest run tests/unit`, `corepack pnpm run lint` and the type check; confirm green.
 
 **Checkpoint**: pure logic done and unit-tested.
 
