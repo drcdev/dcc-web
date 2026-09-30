@@ -1,0 +1,49 @@
+---
+// Options diagram for the "Options considered" stage (FR-033, FR-038): one goal
+// with three routes, the chosen route drawn with a heavier line and marked in
+// text, so the choice is not carried by colour or weight alone.
+interface Props {
+  label: string;
+  description: string;
+  idPrefix?: string;
+}
+const { label, description, idPrefix = "options" } = Astro.props;
+const labelId = `${idPrefix}-label`;
+const descId = `${idPrefix}-desc`;
+const routes = [
+  { y: 8, text: "AppleScript bridge", chosen: false },
+  { y: 62, text: "OmniFocus URL scheme", chosen: false },
+  { y: 116, text: "JXA scripts + MCP server (chosen)", chosen: true },
+];
+---
+
+<figure data-diagram="options" class="not-prose m-0 text-dusk-800 dark:text-mist-200">
+  <svg
+    role="img"
+    aria-labelledby={`${labelId} ${descId}`}
+    viewBox="0 0 490 180"
+    class="h-auto w-full"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+  >
+    <title id={labelId}>{label}</title>
+    <desc id={descId}>{description}</desc>
+    <rect x="4" y="62" width="120" height="52" rx="6" />
+    <text x="64" y="93" text-anchor="middle" font-size="13" fill="currentColor" stroke="none">
+      Manage tasks
+    </text>
+    {
+      routes.map((r) => (
+        <>
+          <path d={`M124 88 C 170 88 150 ${r.y + 26} 190 ${r.y + 26}`} stroke-width={r.chosen ? 4 : 2} />
+          <rect x="190" y={r.y} width="290" height="52" rx="6" stroke-width={r.chosen ? 4 : 2} />
+          <text x="335" y={r.y + 31} text-anchor="middle" font-size="13" fill="currentColor" stroke="none">
+            {r.text}
+          </text>
+        </>
+      ))
+    }
+  </svg>
+  <figcaption class="mt-2 text-sm">{description}</figcaption>
+</figure>

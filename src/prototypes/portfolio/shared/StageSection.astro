@@ -1,0 +1,39 @@
+---
+// One story stage (FR-003, FR-010, FR-012): a labelled section with an h2, the
+// draft mark, its paragraphs, an optional visual in the same section, and slot
+// content after the body. With no visual there is no second column (no gap).
+import type { StoryStage } from "../types.ts";
+import DraftMark from "./DraftMark.astro";
+import VisualView from "./VisualView.astro";
+import "./stage-accents.css";
+
+interface Props {
+  stage: StoryStage;
+  class?: string;
+}
+const { stage, class: className } = Astro.props;
+const headingId = `${stage.id}-heading`;
+---
+
+<section
+  id={stage.id}
+  aria-labelledby={headingId}
+  data-stage={stage.id}
+  class:list={["stage-" + stage.id, "border-l-4 pl-4", className]}
+>
+  <div class:list={["grid gap-6", stage.visual && "md:grid-cols-2"]}>
+    <div>
+      <h2 id={headingId} class="mb-2 text-2xl font-semibold text-dusk-900 dark:text-mist-100">{stage.heading}</h2>
+      <p class="mb-3"><DraftMark /></p>
+      {stage.body.map((p) => <p class="mb-3 text-dusk-800 dark:text-mist-200">{p}</p>)}
+      <slot />
+    </div>
+    {
+      stage.visual && (
+        <div data-stage-visual>
+          <VisualView visual={stage.visual} idPrefix={`${stage.id}-visual`} />
+        </div>
+      )
+    }
+  </div>
+</section>

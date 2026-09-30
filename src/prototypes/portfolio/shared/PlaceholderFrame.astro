@@ -1,0 +1,21 @@
+---
+// Stand-in for a screenshot or clip that has not been made yet (FR-012, FR-037,
+// FR-038). No <img> and no media, so a clip never autoplays. The visible
+// "Placeholder" text is what assistive technology reads; the dashed border
+// survives forced colours (see stage-accents.css).
+interface Props {
+  media: "screenshot" | "clip";
+  label: string;
+  description: string;
+}
+const { media, label, description } = Astro.props;
+---
+
+<figure
+  data-placeholder
+  data-media={media}
+  class="not-prose m-0 flex min-h-40 flex-col justify-center gap-1 rounded-lg border-2 border-dashed border-dusk-600 bg-mist-50 p-4 text-dusk-900 dark:border-mist-300 dark:bg-dusk-800 dark:text-mist-100"
+>
+  <p class="m-0 text-sm"><strong>Placeholder</strong>: {label}</p>
+  <figcaption class="text-sm text-dusk-800 dark:text-mist-200">{description}</figcaption>
+</figure>

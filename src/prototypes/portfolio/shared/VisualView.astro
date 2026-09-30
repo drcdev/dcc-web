@@ -1,0 +1,23 @@
+---
+// Renders a Visual by kind, so every direction shows visuals the same way.
+import type { Visual } from "../types.ts";
+import PlaceholderFrame from "./PlaceholderFrame.astro";
+import ArchitectureDiagram from "./ArchitectureDiagram.astro";
+import OptionsDiagram from "./OptionsDiagram.astro";
+
+interface Props {
+  visual: Visual;
+  idPrefix?: string;
+}
+const { visual, idPrefix } = Astro.props;
+---
+
+{
+  visual.kind === "placeholder" ? (
+    <PlaceholderFrame media={visual.media} label={visual.label} description={visual.description} />
+  ) : visual.id === "architecture" ? (
+    <ArchitectureDiagram label={visual.label} description={visual.description} idPrefix={idPrefix} />
+  ) : (
+    <OptionsDiagram label={visual.label} description={visual.description} idPrefix={idPrefix} />
+  )
+}

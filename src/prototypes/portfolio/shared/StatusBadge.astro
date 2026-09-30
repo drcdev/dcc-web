@@ -1,0 +1,24 @@
+---
+// Project status as text plus a coloured border, so status is never colour
+// alone (FR-025). Palette tokens only; AA in both themes.
+import { STATUS_LABELS, type ProjectStatus } from "../types.ts";
+
+interface Props {
+  status: ProjectStatus;
+}
+const { status } = Astro.props;
+const tone: Record<ProjectStatus, string> = {
+  shipped:
+    "border-sage-800 bg-sage-50 text-sage-950 dark:border-sage-300 dark:bg-dusk-900 dark:text-sage-100",
+  experiment:
+    "border-lavender-800 bg-lavender-50 text-lavender-950 dark:border-lavender-300 dark:bg-dusk-900 dark:text-lavender-100",
+  "in-progress":
+    "border-rust-800 bg-rust-50 text-rust-950 dark:border-rust-300 dark:bg-dusk-900 dark:text-rust-100",
+};
+---
+
+<span
+  data-status={status}
+  class:list={["inline-block rounded border px-2 py-0.5 text-xs font-semibold", tone[status]]}
+  >{STATUS_LABELS[status]}</span
+>
