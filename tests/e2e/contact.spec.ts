@@ -283,3 +283,37 @@ test.describe("retrieval through the API", () => {
     expect(await refused.json()).toEqual({ error: "unauthorized" });
   });
 });
+
+test.describe("spam and abuse", () => {
+  test("keeps the honeypot out of the tab order and the accessibility tree", async ({ page }) => {
+    await page.goto("/contact/");
+    const trap = page.locator('input[name="website"]');
+    await expect(trap).toHaveCount(1);
+    await expect(trap).toBeHidden();
+    expect(await trap.getAttribute("tabindex")).toBe("-1");
+    expect(await trap.evaluate((el) => el.closest("[aria-hidden='true']") !== null)).toBe(true);
+    await expect(page.getByRole("textbox", { name: /website/i })).toHaveCount(0);
+
+    // Tabbing through the whole form never lands on the trap.
+    await page.getByLabel("Name", { exact: true }).focus();
+    for (let i = 0; i < 10; i += 1) {
+      await page.keyboard.press("Tab");
+      expect(await page.evaluate(() => (document.activeElement as HTMLInputElement | null)?.name)).not.toBe("website");
+    }
+  });
+
+  test("shows the success panel when the honeypot is filled, and stores nothing", async ({ page, request }) => {
+    await uniqueSender(page);
+    const name = `Honeypot ${Date.now()}`;
+    await page.goto("/contact/");
+    await expect(send(page)).toBeEnabled();
+    await fillValid(page);
+    await page.getByLabel("Name", { exact: true }).fill(name);
+    await page.locator('input[name="website"]').evaluate((el: HTMLInputElement) => {
+      el.value = "http://spam.example";
+    });
+    await send(page).click();
+    await expect(page.locator("#contact-success")).toBeVisible({ timeout: 5000 });
+    expect(await listNew(request, name), "a honeypot submission is not stored").toBeUndefined();
+  });
+});

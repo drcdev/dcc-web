@@ -143,13 +143,13 @@
 
 ### Tests first (seen to fail)
 
-- [ ] T043 [P] [US4] Extend `worker/test/contact.test.ts`: a filled `website` honeypot returns `200 {"ok":true}` with no row, no siteverify call and no D1 access (FR-011); the 4th accepted submission in a rolling hour and the 6th in a rolling day per IP hash are refused with `429 rate_limited` and a `Retry-After` header; window edges (just inside and just outside 60 minutes and 24 hours); refused submissions do not count (FR-013a); different IPs are independent; the sender is taken only from `CF-Connecting-IP`, an `X-Forwarded-For` header is ignored, and a missing `CF-Connecting-IP` counts against one shared `unknown` sender (FR-013b); a D1 failure on the rate-limit count → 503 with nothing stored (FR-012a). Must fail.
-- [ ] T044 [P] [US4] Write `worker/test/rate-limit.test.ts` for exact D1 row counting and index use of the rate-limit query (no `SCAN messages`). Must fail.
-- [ ] T045 [P] [US4] Extend `tests/e2e/contact.spec.ts`: the hidden field is never reachable by keyboard or announced (FR-008d) and a filled honeypot shows success. Must fail.
+- [X] T043 [P] [US4] Extend `worker/test/contact.test.ts`: a filled `website` honeypot returns `200 {"ok":true}` with no row, no siteverify call and no D1 access (FR-011); the 4th accepted submission in a rolling hour and the 6th in a rolling day per IP hash are refused with `429 rate_limited` and a `Retry-After` header; window edges (just inside and just outside 60 minutes and 24 hours); refused submissions do not count (FR-013a); different IPs are independent; the sender is taken only from `CF-Connecting-IP`, an `X-Forwarded-For` header is ignored, and a missing `CF-Connecting-IP` counts against one shared `unknown` sender (FR-013b); a D1 failure on the rate-limit count → 503 with nothing stored (FR-012a). Must fail.
+- [X] T044 [P] [US4] Write `worker/test/rate-limit.test.ts` for exact D1 row counting and index use of the rate-limit query (no `SCAN messages`). Must fail.
+- [X] T045 [P] [US4] Extend `tests/e2e/contact.spec.ts`: the hidden field is never reachable by keyboard or announced (FR-008d) and a filled honeypot shows success. Must fail.
 
 ### Implementation
 
-- [ ] T046 [US4] Implement `worker/src/contact/rate-limit.ts`; add the honeypot step and the rate-limit step (fail closed) to `submit.ts` in the contract's processing order; make all US4 tests pass.
+- [X] T046 [US4] Implement `worker/src/contact/rate-limit.ts`; add the honeypot step and the rate-limit step (fail closed) to `submit.ts` in the contract's processing order; make all US4 tests pass.
 
 ---
 

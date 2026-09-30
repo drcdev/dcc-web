@@ -1,6 +1,7 @@
 import { json } from "../http";
 import { hashIp } from "./ip-hash";
 import { DUPLICATE_CHECK_SQL, INSERT_MESSAGE_SQL } from "./queries";
+import { checkRateLimit } from "./rate-limit";
 import { BODY_MAX_BYTES, validateSubmission } from "./rules";
 import { TOKEN_MAX, verifyTurnstile } from "./turnstile";
 
@@ -23,8 +24,12 @@ function log(outcome: Outcome, error?: unknown): void {
 }
 
 const ok = () => json({ ok: true });
-const fail = (status: number, error: string, extra: Record<string, unknown> = {}) =>
-  json({ ok: false, error, ...extra }, status);
+const fail = (
+  status: number,
+  error: string,
+  extra: Record<string, unknown> = {},
+  headers: Record<string, string> = {},
+) => json({ ok: false, error, ...extra }, status, headers);
 
 const LOCAL_HOSTS = new Set(["127.0.0.1", "localhost"]);
 
@@ -138,10 +143,16 @@ export async function handleSubmit(request: Request, env: Env): Promise<Response
       return fail(422, "turnstile_failed");
     }
 
-    // 5. Rate limit arrives with User Story 3.
+    // 5. Rate limit. Only CF-Connecting-IP identifies the sender (X-Forwarded-For is ignored);
+    //    a missing header counts against one shared "unknown" sender (FR-013b).
+    const ipHash = await hashIp(remoteIp || "unknown", env.IP_HASH_SALT);
+    const limit = await checkRateLimit(env.DB, ipHash, Date.now());
+    if (limit.limited) {
+      log("rate_limited");
+      return fail(429, "rate_limited", {}, { "Retry-After": String(limit.retryAfter) });
+    }
 
     // 6. Insert.
-    const ipHash = remoteIp ? await hashIp(remoteIp, env.IP_HASH_SALT) : null;
     await env.DB.prepare(INSERT_MESSAGE_SQL)
       .bind(
         submission.id,

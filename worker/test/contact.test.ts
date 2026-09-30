@@ -1,6 +1,17 @@
 import { env } from "cloudflare:workers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { clearRows, mockSiteverify, ORIGIN, post, rows, run, SITEVERIFY, validBody } from "./helpers";
+import {
+  clearRows,
+  ipHashFor,
+  mockSiteverify,
+  ORIGIN,
+  post,
+  rows,
+  run,
+  seedMessage,
+  SITEVERIFY,
+  validBody,
+} from "./helpers";
 
 beforeEach(async () => {
   await clearRows();
@@ -338,6 +349,122 @@ describe("POST /api/contact: validation rows (FR-008e, FR-012a)", () => {
     });
     const response = await run(post());
     expect(response.status).toBe(503);
+    vi.restoreAllMocks();
+    expect(await rows()).toHaveLength(0);
+  });
+});
+
+const MINUTE = 60_000;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+
+async function seedFor(ip: string, ages: number[]) {
+  const hash = await ipHashFor(ip);
+  for (const age of ages) await seedMessage({ ip_hash: hash, received_at: Date.now() - age });
+}
+
+describe("POST /api/contact: honeypot leaves no trace", () => {
+  it("makes no D1 access at all for a filled website field", async () => {
+    const { spy } = mockSiteverify();
+    const prepare = vi.spyOn(env.DB, "prepare");
+    const response = await run(post(validBody({ website: "x" })));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true });
+    expect(prepare).not.toHaveBeenCalled();
+    expect(spy).not.toHaveBeenCalled();
+  });
+});
+
+describe("POST /api/contact: rate limit", () => {
+  it("accepts three in an hour and refuses the fourth with 429 and Retry-After", async () => {
+    mockSiteverify();
+    for (let i = 0; i < 3; i += 1) expect((await run(post())).status).toBe(200);
+    const response = await run(post());
+    expect(response.status).toBe(429);
+    expect(await response.json()).toEqual({ ok: false, error: "rate_limited" });
+    const retry = Number(response.headers.get("Retry-After"));
+    expect(retry).toBeGreaterThan(3500);
+    expect(retry).toBeLessThanOrEqual(3600);
+    expect(await rows()).toHaveLength(3);
+  });
+
+  it("refuses the sixth in a day once the hour has cleared", async () => {
+    mockSiteverify();
+    await seedFor("203.0.113.7", [2 * HOUR, 3 * HOUR, 4 * HOUR, 5 * HOUR, 6 * HOUR]);
+    const response = await run(post());
+    expect(response.status).toBe(429);
+    const retry = Number(response.headers.get("Retry-After"));
+    expect(retry).toBeGreaterThan(17 * 3600);
+    expect(retry).toBeLessThanOrEqual(18 * 3600);
+  });
+
+  it("window edges: a row just inside the hour counts, just outside does not", async () => {
+    mockSiteverify();
+    await seedFor("203.0.113.7", [HOUR - 5000, 30 * MINUTE, 10 * MINUTE]);
+    expect((await run(post())).status).toBe(429);
+    await clearRows();
+    await seedFor("203.0.113.7", [HOUR + 5000, 30 * MINUTE, 10 * MINUTE]);
+    expect((await run(post())).status).toBe(200);
+  });
+
+  it("window edges: a row just inside the day counts, just outside does not", async () => {
+    mockSiteverify();
+    await seedFor("203.0.113.7", [DAY - 5000, 5 * HOUR, 4 * HOUR, 3 * HOUR, 2 * HOUR]);
+    expect((await run(post())).status).toBe(429);
+    await clearRows();
+    await seedFor("203.0.113.7", [DAY + 5000, 5 * HOUR, 4 * HOUR, 3 * HOUR, 2 * HOUR]);
+    expect((await run(post())).status).toBe(200);
+  });
+
+  it("refused submissions do not count", async () => {
+    mockSiteverify({ success: false });
+    for (let i = 0; i < 6; i += 1) expect((await run(post())).status).toBe(422);
+    vi.restoreAllMocks();
+    mockSiteverify();
+    expect((await run(post())).status).toBe(200);
+    expect(await rows()).toHaveLength(1);
+  });
+
+  it("keeps different senders independent", async () => {
+    mockSiteverify();
+    await seedFor("203.0.113.7", [MINUTE, 2 * MINUTE, 3 * MINUTE]);
+    expect((await run(post())).status).toBe(429);
+    expect((await run(post(validBody(), { "CF-Connecting-IP": "198.51.100.9" }))).status).toBe(200);
+  });
+
+  it("ignores X-Forwarded-For", async () => {
+    mockSiteverify();
+    await seedFor("203.0.113.7", [MINUTE, 2 * MINUTE, 3 * MINUTE]);
+    const spoofed = await run(post(validBody(), { "X-Forwarded-For": "198.51.100.77" }));
+    expect(spoofed.status).toBe(429);
+    const other = await run(post(validBody(), { "CF-Connecting-IP": "198.51.100.9", "X-Forwarded-For": "203.0.113.7" }));
+    expect(other.status).toBe(200);
+  });
+
+  it("counts every request without CF-Connecting-IP against one shared unknown sender", async () => {
+    mockSiteverify();
+    const noIp = () => {
+      const request = post();
+      request.headers.delete("CF-Connecting-IP");
+      return request;
+    };
+    for (let i = 0; i < 3; i += 1) expect((await run(noIp())).status).toBe(200);
+    expect((await run(noIp())).status).toBe(429);
+    const stored = await rows();
+    expect(new Set(stored.map((row) => row.ip_hash)).size).toBe(1);
+    expect(stored[0].ip_hash).toBe(await ipHashFor("unknown"));
+  });
+
+  it("fails closed with 503 and stores nothing when the count query fails", async () => {
+    mockSiteverify();
+    const real = env.DB.prepare.bind(env.DB);
+    vi.spyOn(env.DB, "prepare").mockImplementation((sql: string) => {
+      if (sql.includes("ip_hash = ?1")) throw new Error("d1 down");
+      return real(sql);
+    });
+    const response = await run(post());
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ ok: false, error: "unavailable" });
     vi.restoreAllMocks();
     expect(await rows()).toHaveLength(0);
   });

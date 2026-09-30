@@ -2,6 +2,12 @@ import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test"
 import { env } from "cloudflare:workers";
 import { vi } from "vitest";
 import worker from "../src/index";
+import { hashIp } from "../src/contact/ip-hash";
+
+/** The salted hash the Worker stores for a sender IP. */
+export function ipHashFor(ip: string) {
+  return hashIp(ip, env.IP_HASH_SALT);
+}
 
 export const ORIGIN = "https://example.com";
 export const SITEVERIFY = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
@@ -94,6 +100,7 @@ export interface SeedMessage {
   received_at?: number;
   project?: string | null;
   organization?: string | null;
+  ip_hash?: string | null;
 }
 
 /** Inserts one row directly and returns its id. */
@@ -109,7 +116,7 @@ export async function seedMessage(overrides: SeedMessage = {}) {
       overrides.organization ?? null,
       overrides.project ?? null,
       "Hello",
-      "a".repeat(64),
+      overrides.ip_hash === undefined ? "a".repeat(64) : overrides.ip_hash,
       overrides.status ?? "new",
       overrides.received_at ?? Date.parse("2026-09-29T17:04:11.000Z"),
     )
