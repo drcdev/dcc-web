@@ -1,0 +1,48 @@
+---
+// The top of a project story: the title as the page's one h1, the problem line,
+// status and themes, and the "In this story" list of in-page links to the seven
+// chapters (contracts/pages-dom.md). A draft shows a notice in plain text.
+import { stages } from "../../lib/content/stages.ts";
+import StatusPill from "./StatusPill.astro";
+import ThemePills from "./ThemePills.astro";
+import "./portfolio.css";
+
+export interface Props {
+  title: string;
+  problem: string;
+  status: "shipped" | "experiment" | "in-progress";
+  themes: readonly string[];
+  /** A draft is shown outside the production build only; the notice says so. */
+  draft?: boolean;
+}
+
+const { title, problem, status, themes, draft = false } = Astro.props;
+---
+
+{
+  draft && (
+    <p data-draft-notice class="not-prose">
+      <strong>Draft.</strong> This project is not published yet and will change.
+    </p>
+  )
+}
+<header data-story-header>
+  <h1 data-story-title>{title}</h1>
+  <p data-story-problem>{problem}</p>
+  <div data-story-meta>
+    <StatusPill status={status} />
+    <ThemePills themes={themes} />
+  </div>
+  <nav aria-label="In this story" data-story-contents>
+    <p data-story-contents-label aria-hidden="true">In this story</p>
+    <ol>
+      {
+        stages.map((stage) => (
+          <li>
+            <a href={`#${stage.id}`}>{stage.heading}</a>
+          </li>
+        ))
+      }
+    </ol>
+  </nav>
+</header>

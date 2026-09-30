@@ -1,0 +1,33 @@
+---
+// A project story: reading-progress bar, story header, then the seven chapters,
+// inside BaseLayout (Direction C, docs/design/portfolio.md; contracts/pages-dom.md).
+import type { ComponentProps } from "astro/types";
+import BaseLayout from "./BaseLayout.astro";
+import ReadingProgress from "../components/project/ReadingProgress.astro";
+import StoryHeader from "../components/project/StoryHeader.astro";
+import type { NavigationItem } from "../config/navigation";
+
+export interface Props {
+  title: string;
+  problem: string;
+  description: string;
+  status: ComponentProps<typeof StoryHeader>["status"];
+  themes: readonly string[];
+  navigation: NavigationItem[];
+  /** Sharing image address and its alt text; the site default when omitted. */
+  image?: string;
+  imageAlt?: string;
+  /** Shown only outside the production build, where drafts are built at all. */
+  draft?: boolean;
+}
+
+const { title, problem, description, status, themes, navigation, image, imageAlt, draft = false } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} navigation={navigation} image={image} imageAlt={imageAlt}>
+  <ReadingProgress />
+  <article data-story class="mx-auto">
+    <StoryHeader title={title} problem={problem} status={status} themes={themes} draft={draft} />
+    <slot />
+  </article>
+</BaseLayout>

@@ -1,0 +1,58 @@
+---
+// The one route for every project story in src/content/projects/ (spec FR-002,
+// FR-073). getStaticPaths() checks the body of every project, drafts included,
+// then makes one path per published project
+// (docs.astro.build/en/guides/content-collections/#generating-routes-from-content).
+// The body is rendered with render() from astro:content and the story blocks are
+// handed to <Content /> so MDX needs no imports
+// (docs.astro.build/en/guides/integrations-guide/mdx/#passing-components-to-mdx-content).
+import { getCollection, render } from "astro:content";
+import { getImage } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import ProjectLayout from "../../layouts/ProjectLayout.astro";
+import { storyBlockComponents } from "../../components/project/blocks/index";
+import { sectionComponents } from "../../components/sections/index";
+import { validateProjectBody } from "../../lib/content/project-body";
+import { fileOfProject, getPublishedProjects } from "../../lib/projects";
+import { getNavigation } from "../../lib/pages";
+
+export async function getStaticPaths() {
+  // A broken draft must fail the production build too, so every entry is checked
+  // before drafts are filtered out.
+  for (const entry of await getCollection("projects")) {
+    validateProjectBody(fileOfProject(entry), entry.body ?? "", {
+      visualNames: Object.keys(entry.data.visuals ?? {}),
+      demoEmbed: entry.data.demo?.embed === true,
+      hasDemoLinks: Boolean(entry.data.demo || entry.data.standIn || entry.data.source),
+    });
+  }
+  const projects = await getPublishedProjects(process.env);
+  return projects.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { data } = entry;
+// The story blocks read the project from here (src/env.d.ts) and name its file in errors.
+Astro.locals.project = { slug: entry.id, file: fileOfProject(entry), data };
+Astro.locals.pageFile = Astro.locals.project.file;
+const { Content } = await render(entry);
+const navigation = await getNavigation();
+
+// A project's own sharing image is resized to the Open Graph size; Seo.astro falls
+// back to the site default when there is none.
+const share = data.image ? await getImage({ src: data.image.src as ImageMetadata, width: 1200, format: "png" }) : undefined;
+---
+
+<ProjectLayout
+  title={data.title}
+  problem={data.problem}
+  description={data.description}
+  status={data.status}
+  themes={data.themes}
+  navigation={navigation}
+  image={share?.src}
+  imageAlt={data.image?.alt}
+  draft={data.draft}
+>
+  <Content components={{ ...sectionComponents, ...storyBlockComponents }} />
+</ProjectLayout>

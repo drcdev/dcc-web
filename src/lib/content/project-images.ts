@@ -19,7 +19,7 @@ function sources(data: unknown): string[] {
 
 /**
  * @param projectsRoot absolute path of src/content/projects
- * @param file path of the project file below it, for example `focus-pocus.mdx`
+ * @param file path of the project file below it, for example `my-project.mdx`
  * @param data the parsed settings of the project
  */
 export function assertProjectImagesExist(projectsRoot: string, file: string, data: unknown): void {
