@@ -24,16 +24,16 @@ const stream = byNewest.slice(0, 8);
     <p class="text-lg text-dusk-700 dark:text-mist-300">
       Notes on leading technology teams through regulated, long-lived systems. Newest first.
     </p>
-    <section aria-labelledby="start-here" class="mb-6 mt-3 rounded-xl border border-dusk-200 p-4 dark:border-dusk-700 lg:-mx-28 xl:-mx-40">
-      <h2 id="start-here" class="mb-2 text-xl font-bold text-dusk-900 dark:text-white">Start here</h2>
+    <section aria-labelledby="start-here" class="mb-4 mt-2 rounded-xl border border-dusk-200 p-4 dark:border-dusk-700 md:p-3 lg:-mx-28 xl:-mx-40">
+      <h2 id="start-here" class="mb-1 text-xl font-bold text-dusk-900 dark:text-white md:text-lg">Start here</h2>
       <ol class="list-decimal space-y-5 pl-6 marker:font-bold marker:text-dusk-700 dark:marker:text-mist-300 md:grid md:grid-cols-3 md:gap-6 md:space-y-0 md:pl-5">
         {
           startHere.map((post) => (
             <li>
-              <h3 class="text-lg font-semibold text-dusk-900 [overflow-wrap:anywhere] dark:text-white md:text-base">
+              <h3 class="text-lg font-semibold text-dusk-900 [overflow-wrap:anywhere] dark:text-white md:text-base md:leading-snug">
                 <a class="inline-block min-h-6 hover:underline" href={postPath("b", post)}>{post.title}</a>
               </h3>
-              <p class="mt-1 text-dusk-700 dark:text-mist-300 md:line-clamp-3">{post.summary}</p>
+              <p class="mt-1 text-dusk-700 dark:text-mist-300 md:line-clamp-3 md:text-sm xl:line-clamp-2">{post.summary}</p>
               <PostMeta post={post} direction="b" topicVariant="text" class="mt-1" />
             </li>
           ))
