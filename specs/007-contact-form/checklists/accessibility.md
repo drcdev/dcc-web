@@ -8,53 +8,53 @@
 
 ## Requirement Completeness
 
-- [ ] CHK001 Are accessible-name and label requirements stated for every form control (name, email, organization, message, consent, project, submit)? [Completeness, Spec §FR-008]
-- [ ] CHK002 Is the accessibility treatment of the read-only project display defined (how it is exposed and whether it is focusable)? [Gap, Spec §FR-004]
-- [ ] CHK003 Are requirements defined for how required versus optional fields are indicated to sighted and assistive-technology users? [Gap, Spec §FR-002]
-- [ ] CHK004 Is the accessible treatment of the honeypot field specified so it is hidden from keyboard, screen-reader and autofill users alike? [Gap, Spec §FR-011]
-- [ ] CHK005 Are autocomplete/input-purpose requirements (WCAG 1.3.5) defined for name and email? [Gap, Spec §FR-002]
-- [ ] CHK006 Are requirements defined for where keyboard focus moves after a failed send and after a successful send? [Gap, Spec §FR-005]
-- [ ] CHK007 Are requirements defined for the sending/in-progress state, including how it is announced and how double activation is communicated? [Gap, Spec Edge Cases]
-- [ ] CHK008 Are accessibility requirements specified for the privacy note near the form and the consent link (link purpose, distinguishable from text)? [Completeness, Spec §FR-007]
+- [x] CHK001 Are accessible-name and label requirements stated for every form control (name, email, organization, message, consent, project, submit)? [Completeness, Spec §FR-008]
+- [x] CHK002 Is the accessibility treatment of the read-only project display defined (how it is exposed and whether it is focusable)? [Gap, Spec §FR-004]
+- [x] CHK003 Are requirements defined for how required versus optional fields are indicated to sighted and assistive-technology users? [Gap, Spec §FR-002]
+- [x] CHK004 Is the accessible treatment of the honeypot field specified so it is hidden from keyboard, screen-reader and autofill users alike? [Gap, Spec §FR-011]
+- [x] CHK005 Are autocomplete/input-purpose requirements (WCAG 1.3.5) defined for name and email? [Gap, Spec §FR-002]
+- [x] CHK006 Are requirements defined for where keyboard focus moves after a failed send and after a successful send? [Gap, Spec §FR-005]
+- [x] CHK007 Are requirements defined for the sending/in-progress state, including how it is announced and how double activation is communicated? [Gap, Spec Edge Cases]
+- [x] CHK008 Are accessibility requirements specified for the privacy note near the form and the consent link (link purpose, distinguishable from text)? [Completeness, Spec §FR-007]
 
 ## Error and Success States
 
-- [ ] CHK009 Is "errors tied to their fields" defined precisely enough to be testable (association, and a visible plus programmatic message)? [Clarity, Spec §FR-008]
-- [ ] CHK010 Are requirements defined for form-level errors (service unavailable, rate limit, human check failure) that belong to no single field? [Gap, Spec US2]
-- [ ] CHK011 Is "announced" quantified (live region politeness, timing, and whether messages repeat)? [Ambiguity, Spec §FR-008]
-- [ ] CHK012 Are error messages required to convey the problem without relying on colour alone (WCAG 1.4.1)? [Gap, Spec §FR-005]
-- [ ] CHK013 Is the behaviour defined when several fields are invalid at once (order, count, focus target)? [Coverage, Spec US2]
-- [ ] CHK014 Are requirements for the success confirmation defined (what is announced, where focus goes, whether the form remains)? [Completeness, Spec US1, §FR-005]
-- [ ] CHK015 Is the "consent required" error specified with the same field-association rules as other errors? [Consistency, Spec US1 scenario 3]
-- [ ] CHK016 Is the redundant-entry requirement (WCAG 3.3.7) addressed by the requirement that typed values are kept after errors? [Traceability, Spec §FR-005, SC-002]
-- [ ] CHK017 Are error-message wording requirements (plain language, states the limit) consistent between US2 and the constitution's plain-language rule? [Consistency, Spec US2 scenario 4]
+- [x] CHK009 Is "errors tied to their fields" defined precisely enough to be testable (association, and a visible plus programmatic message)? [Clarity, Spec §FR-008]
+- [x] CHK010 Are requirements defined for form-level errors (service unavailable, rate limit, human check failure) that belong to no single field? [Gap, Spec US2]
+- [x] CHK011 Is "announced" quantified (live region politeness, timing, and whether messages repeat)? [Ambiguity, Spec §FR-008]
+- [x] CHK012 Are error messages required to convey the problem without relying on colour alone (WCAG 1.4.1)? [Gap, Spec §FR-005]
+- [x] CHK013 Is the behaviour defined when several fields are invalid at once (order, count, focus target)? [Coverage, Spec US2]
+- [x] CHK014 Are requirements for the success confirmation defined (what is announced, where focus goes, whether the form remains)? [Completeness, Spec US1, §FR-005]
+- [x] CHK015 Is the "consent required" error specified with the same field-association rules as other errors? [Consistency, Spec US1 scenario 3]
+- [x] CHK016 Is the redundant-entry requirement (WCAG 3.3.7) addressed by the requirement that typed values are kept after errors? [Traceability, Spec §FR-005, SC-002]
+- [x] CHK017 Are error-message wording requirements (plain language, states the limit) consistent between US2 and the constitution's plain-language rule? [Consistency, Spec US2 scenario 4]
 
 ## Consent Checkbox
 
-- [ ] CHK018 Is the consent text specified so its label, link and required state form one coherent accessible name? [Clarity, Spec §FR-003]
-- [ ] CHK019 Are target-size requirements (WCAG 2.5.8) defined for the checkbox and its label? [Gap, Spec §FR-003]
-- [ ] CHK020 Is it specified whether the privacy-policy link opens in the same or a new context, so no keyboard user loses form state? [Gap, Spec US1 scenario 4]
+- [x] CHK018 Is the consent text specified so its label, link and required state form one coherent accessible name? [Clarity, Spec §FR-003]
+- [x] CHK019 Are target-size requirements (WCAG 2.5.8) defined for the checkbox and its label? [Gap, Spec §FR-003]
+- [x] CHK020 Is it specified whether the privacy-policy link opens in the same or a new context, so no keyboard user loses form state? [Gap, Spec US1 scenario 4]
 
 ## Turnstile Widget
 
-- [ ] CHK021 Are accessibility requirements defined for the Turnstile widget in each mode (invisible, managed challenge shown, failure to load)? [Gap, Spec §FR-012]
-- [ ] CHK022 Is a keyboard- and screen-reader-operable path required when a visible challenge is presented? [Gap, Spec US4 scenario 5]
-- [ ] CHK023 Is "not asked to solve a visual puzzle in normal conditions" defined with conditions that make it measurable? [Ambiguity, Spec US4 scenario 5]
-- [ ] CHK024 Are requirements defined for how a blocked or offline widget is announced and how the visitor recovers? [Coverage, Spec Edge Cases]
-- [ ] CHK025 Is the accessible-authentication requirement (WCAG 3.3.8) addressed for any challenge that may cognitively test the visitor? [Gap]
+- [x] CHK021 Are accessibility requirements defined for the Turnstile widget in each mode (invisible, managed challenge shown, failure to load)? [Gap, Spec §FR-012]
+- [x] CHK022 Is a keyboard- and screen-reader-operable path required when a visible challenge is presented? [Gap, Spec US4 scenario 5]
+- [x] CHK023 Is "not asked to solve a visual puzzle in normal conditions" defined with conditions that make it measurable? [Ambiguity, Spec US4 scenario 5]
+- [x] CHK024 Are requirements defined for how a blocked or offline widget is announced and how the visitor recovers? [Coverage, Spec Edge Cases]
+- [x] CHK025 Is the accessible-authentication requirement (WCAG 3.3.8) addressed for any challenge that may cognitively test the visitor? [Gap]
 
 ## No-JavaScript Message
 
-- [ ] CHK026 Is the no-JavaScript notice specified for placement, visibility and how assistive technology reaches it? [Gap, Spec Edge Cases]
-- [ ] CHK027 Is it defined whether the form controls remain enabled, disabled or hidden without JavaScript, and how that state is exposed? [Ambiguity, Spec Edge Cases]
+- [x] CHK026 Is the no-JavaScript notice specified for placement, visibility and how assistive technology reaches it? [Gap, Spec Edge Cases]
+- [x] CHK027 Is it defined whether the form controls remain enabled, disabled or hidden without JavaScript, and how that state is exposed? [Ambiguity, Spec Edge Cases]
 
 ## Visual, Interaction and Measurability
 
-- [ ] CHK028 Are colour-contrast requirements specified for text, error text, focus indicators and field borders in every state? [Gap, Spec §FR-001, §FR-008]
-- [ ] CHK029 Are focus-visible and focus-not-obscured (WCAG 2.4.11) requirements defined, including against any sticky header? [Gap]
-- [ ] CHK030 Are reflow and zoom requirements (320 CSS px, 400 percent, text spacing) defined for the form? [Gap, Spec §FR-008]
-- [ ] CHK031 Is there a tie-break stated where "match the current site's contact form" conflicts with WCAG 2.2 AA? [Conflict, Spec §FR-001 vs §FR-008]
-- [ ] CHK032 Is the tab order for all controls, including consent, honeypot and widget, specified? [Completeness, Spec US1 scenario 5]
-- [ ] CHK033 Does the "no WCAG 2.2 AA violations" criterion say which tool covers automatic checks and which criteria need manual review? [Measurability, Spec SC-009]
-- [ ] CHK034 Are page-level requirements (title, language, heading structure, landmark for the form) specified for `/contact/`? [Gap, Spec §FR-001]
-- [ ] CHK035 Are reduced-motion and time-limit requirements addressed for confirmation and error messages that appear or disappear? [Gap, Spec §FR-005]
+- [x] CHK028 Are colour-contrast requirements specified for text, error text, focus indicators and field borders in every state? [Gap, Spec §FR-001, §FR-008]
+- [x] CHK029 Are focus-visible and focus-not-obscured (WCAG 2.4.11) requirements defined, including against any sticky header? [Gap]
+- [x] CHK030 Are reflow and zoom requirements (320 CSS px, 400 percent, text spacing) defined for the form? [Gap, Spec §FR-008]
+- [x] CHK031 Is there a tie-break stated where "match the current site's contact form" conflicts with WCAG 2.2 AA? [Conflict, Spec §FR-001 vs §FR-008]
+- [x] CHK032 Is the tab order for all controls, including consent, honeypot and widget, specified? [Completeness, Spec US1 scenario 5]
+- [x] CHK033 Does the "no WCAG 2.2 AA violations" criterion say which tool covers automatic checks and which criteria need manual review? [Measurability, Spec SC-009]
+- [x] CHK034 Are page-level requirements (title, language, heading structure, landmark for the form) specified for `/contact/`? [Gap, Spec §FR-001]
+- [x] CHK035 Are reduced-motion and time-limit requirements addressed for confirmation and error messages that appear or disappear? [Gap, Spec §FR-005]

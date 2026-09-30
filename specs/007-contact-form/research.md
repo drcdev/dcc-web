@@ -261,6 +261,9 @@ come from developers.cloudflare.com (fetched 2026-09-29) and from the installed 
   that cannot be reversed by hashing all 2^32 IPv4 addresses without the key (Principle VII:
   "Store only a salted hash"). The `(ip_hash, received_at)` index means the query reads at most
   the sender's rows from the last 24 hours, which is at most 5 because of the limit itself.
+- **Fingerprint lifetime**: the rate-limit query never looks further back than 24 hours, so the
+  daily cron sets `ip_hash` to NULL on rows older than that (spec FR-015). The column is
+  nullable for that reason; NULLs are never counted.
 - **Scope note**: only stored messages count. Refused attempts are not stored, so they do not
   count towards the limit. Turnstile carries that load, and every refused attempt still costs at
   most one D1 read (R10).
@@ -317,6 +320,7 @@ column adds a written row per insert/update/delete):
 | List new (per page) | ≤ page size + 1 | 0 |
 | Mark read | 1 | ≤ 3 (row + status index entry) |
 | Retention (per deleted row) | 1 | 5 |
+| Fingerprint clearing (per row, once) | 1 | ≤ 3 (row + ip index entry) |
 
 **Expected usage** (generous: 20 accepted messages/day, which is far above a consulting site's
 real volume; an assistant polling every 15 minutes; 100 bot attempts/day):
@@ -325,7 +329,7 @@ real volume; an assistant polling every 15 minutes; 100 bot attempts/day):
 |---|---|---|---|
 | Worker requests (`/api/*` + cron) | 20 + 100 + 96 polls + 20 mark-read + 2 cron ≈ 240 | 100,000 | 0.24% |
 | D1 rows read (prod + preview) | 20×6 + 100×1 + 96×(≤21) + 20×1 + 20 ≈ 2,300 | 5,000,000 | < 0.05% |
-| D1 rows written | 20×5 + 20×3 + 20×5 (retention) = 260 | 100,000 | 0.26% |
+| D1 rows written | 20×5 + 20×3 + 20×5 (retention) + 20×3 (fingerprint clearing) = 320 | 100,000 | 0.32% |
 | Storage (12 months, ≤ 10 KB per row incl. indexes) | 7,300 rows ≈ 73 MB worst case | 500 MB/db, 5 GB total | < 15% |
 | Cron Triggers | 2 (one per Worker) | 5 per account | 40% |
 | D1 databases | 2 | 10 | 20% |

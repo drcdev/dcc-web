@@ -16,6 +16,21 @@ Global rules (unchanged, restated because they now involve Worker secrets):
 - Every new check is read-only (`GET`, plus one read-only `SELECT` through the D1 query
   endpoint).
 
+Recovery and rotation rules (FR-027b, FR-027c, FR-024a, FR-028a):
+
+- Every step can be repeated safely. Each check names the missing part per database, per
+  Worker or per trigger, so a half-done step shows exactly what is left.
+- If Don does not confirm the region at item 19, the walkthrough stops before any
+  `wrangler d1 create`. A new region needs a reviewed change to the spec, plan and privacy
+  policy first.
+- A database created with the wrong name or location (still empty) is removed with
+  `pnpm exec wrangler d1 delete <name>` (shown for Don to run) and created again.
+- Replacing a secret (a leaked read token, salt or Turnstile secret): Don runs the same
+  `wrangler secret put` command with a new value (plus `--env preview` for preview). It takes
+  effect on the next request with no redeploy. The runbook's item 21 section documents this.
+- A check that cannot reach Cloudflare, or whose token lacks a permission, reports
+  `could-not-check` with the cause and the permission to add. It is never shown as complete.
+
 ## Changed existing items
 
 | Item | Change |

@@ -76,9 +76,9 @@ unjustified violations.*
 | **IV. First-Party Before Custom** | Astro: prerendered MDX page plus a registered section component (content collections); processed `<script>` island (docs.astro.build/en/guides/client-side-scripts/); per-page CSP through `Astro.csp` (docs.astro.build/en/reference/api-reference/#csp); typed `astro:env` for the site key (docs.astro.build/en/guides/environment-variables/#type-safe-environment-variables). Astro Docs MCP was available and used. Cloudflare: Workers static assets with `run_worker_first`; D1 plus Wrangler migrations; Wrangler environments; Worker secrets plus `secrets.required`; Cron Triggers; Turnstile; Workers Builds; `wrangler types`; `@cloudflare/vitest-plugin`. **Considered and rejected, with reasons**: the `@astrojs/cloudflare` adapter and Astro Actions (Astro says a static site "doesn't need an adapter"; the adapter adds server rendering, falls back to the Worker for unmatched paths and still needs a custom entry for cron; research R1). The Workers Rate Limiting binding ("per location and approximate", rejected in the technical direction; research R7). Cloudflare Access for retrieval (does not cover `workers.dev` previews and adds a policy surface; research R9). **Custom code** remains only where no first-party feature exists: request validation, the rate-limit query, bearer-token checking and the retention query. |
 | **V. Static by Default** | `/contact/` is prerendered. The form's markup and the privacy note render without JavaScript, and a visible notice says sending needs JavaScript. The only JS is one island, plus Turnstile loaded on first interaction. The only server-side code is under `/api/`. |
 | **VI. Content as Files** | Page copy lives in `src/content/pages/contact.mdx` and `privacy-policy.mdx`. Messages are private data in D1, not public content, which is the constitution's own exception for the contact API. |
-| **VII. Private Data: Minimal and Protected** | Collects only name, email, optional organization, optional project and message. Stores an HMAC-SHA-256 of the IP with a secret salt, never the IP. Structured logs carry outcomes only, and a test asserts no value leaks. Location is stated: D1 `wnam` (Western North America), recorded here and in the privacy policy. Preview messages go to a separate database, Worker and secrets. A daily cron deletes messages after 12 months. Secrets live only in Worker secrets (`wrangler secret put`), Workers Builds variables and gitignored local files; E2E uses public test values. |
+| **VII. Private Data: Minimal and Protected** | Collects only name, email, optional organization, optional project and message. Stores an HMAC-SHA-256 of the IP with a secret salt, never the IP, and the daily cron clears it once the row is older than 24 hours. Structured logs carry outcomes only, Workers invocation logs are off, and a test asserts no value leaks. Every dependency failure fails closed (503, nothing stored). Location is stated: D1 `wnam` (Western North America), recorded here and in the privacy policy. Preview messages go to a separate database, Worker and secrets. A daily cron deletes messages after 12 months. Secrets live only in Worker secrets (`wrangler secret put`), Workers Builds variables and gitignored local files; E2E uses public test values. |
 | **VIII. Cloudflare Best Practices** | One Worker per environment serves the site and the API. Only `/api/*` invokes code. Config, migrations and crons are committed and applied by Workers Builds, never in the dashboard (dashboard steps are limited to credentials, the Turnstile widget and build settings, which Wrangler cannot express). The API is same-origin only, verifies Turnstile server-side (with action and hostname checks), rate-limits exactly and refuses non-HTTPS. Workers rules followed: generated `Env` types, Web Crypto, timing-safe token comparison, no floating promises, no module-level request state, observability on, explicit headers because `_headers` does not apply to Worker responses. All D1 queries indexed, with no-scan assertions. |
-| **IX. Cost Ceiling** | New items: D1 (2 databases), Turnstile (1 widget), a second Worker, 2 Cron Triggers, Workers Builds minutes, Workers Logs. **Expected monthly cost: $0.** At a generous 20 messages/day: about 240 Worker requests/day of 100,000 (0.24%); about 2,300 D1 rows read/day of 5,000,000 (<0.05%); about 260 rows written/day of 100,000 (0.26%); ≤ 73 MB storage after 12 months of 500 MB per database; 2 of 5 cron triggers; 2 of 10 databases; about 400–800 build minutes/month of 3,000. Under abuse, the Worker's own 100,000-request cap limits D1 to ≤ 700,000 reads/day (14%). The Free plan errors instead of billing. Full table: research R10. Assumes the account stays on Workers Free. |
+| **IX. Cost Ceiling** | New items: D1 (2 databases), Turnstile (1 widget), a second Worker, 2 Cron Triggers, Workers Builds minutes, Workers Logs. **Expected monthly cost: $0.** At a generous 20 messages/day: about 240 Worker requests/day of 100,000 (0.24%); about 2,300 D1 rows read/day of 5,000,000 (<0.05%); about 320 rows written/day of 100,000 (0.32%, including clearing fingerprints); ≤ 73 MB storage after 12 months of 500 MB per database; 2 of 5 cron triggers; 2 of 10 databases; about 400–800 build minutes/month of 3,000. Under abuse, the Worker's own 100,000-request cap limits D1 to ≤ 700,000 reads/day (14%). The Free plan errors instead of billing. Full table: research R10. Assumes the account stays on Workers Free. |
 | **X. Accessible, Fast and Private** | The form meets WCAG 2.2 AA: labels, `aria-describedby` and `aria-invalid` errors, a polite live region, managed focus, colour pairs from the design-source adjustments table, and axe in CI. The budget is enforced on `/contact/`, with Turnstile loaded late. No tracking. Turnstile is the constitution's allowed spam-protection exception, and the privacy policy names it and what it receives. |
 | **XI. Spec Kit Workflow** | Spec Kit branch `007-contact-form` in its own worktree. Parallel-work handling is below. Out-of-scope items (email, newsletter, booking, migration, admin UI) stay out. |
 
@@ -184,7 +184,7 @@ tests/
 ├── fixtures/worker/e2e.env            # public test values only
 ├── e2e/contact.spec.ts, templates.ts  # + contact template
 ├── component/sections/ContactForm.test.ts
-├── unit/site/…                        # config-files, csp, site-origin, deploy-*, navigation
+├── unit/site/…                        # config-files, csp, site-origin, deploy-*, navigation, privacy-policy
 └── unit/setup-check/…, unit/setup/…   # new checks, reader redaction, counts, skill text
 playwright.config.ts                   # wrangler dev web server: fresh state, local migrations, --env-file
 tsconfig.json                          # exclude worker/ (it has its own tsconfig)
@@ -268,16 +268,24 @@ Replace the placeholders in `src/content/pages/privacy-policy.mdx`:
 
 - **The contact form**: the fields (name, email, optional organization, message, and the project
   you came from, if any) and why (to reply to you). The IP address is used only to limit repeat
-  sending and is stored only as a one-way salted fingerprint. Messages are stored in Cloudflare
+  sending and is stored only as a one-way salted fingerprint, which is removed after about two
+  days. Messages are stored in Cloudflare
   D1 in Western North America (Cloudflare places the database as close to that region as it
   can; it cannot be limited to Canada). They are deleted automatically 12 months after they
   arrive, whether read or not. No email or other notification is sent.
 - **Spam protection**: Cloudflare Turnstile. It loads when you start filling in the form and
-  receives technical information about your browser and connection, including your IP address,
-  to tell people from automated submissions. It sets no tracking cookies. Link to Cloudflare's
-  Turnstile privacy addendum.
+  receives your IP address and the browser and device signals its own script collects, plus a
+  one-time token, to tell people from automated submissions. No form field is sent to it
+  (FR-012b). It sets no tracking cookies. Link to Cloudflare's Turnstile privacy addendum.
 - **Your choices**: how to ask what is held or to have a message deleted (a new contact-form
-  message or Don's listed email, answered by hand), and "Last updated" set to the merge date.
+  message or Don's listed email, answered by hand within 30 days). Deletion removes the message
+  at once, but Cloudflare's D1 recovery history (Time Travel, 7 days on the Free plan) keeps it
+  for up to 7 more days. "Last updated" is set to the merge date.
+
+Every fact above comes from spec FR-019 (the single source). `tests/unit/site/privacy-policy.test.ts`
+asserts the page states `RETENTION_MONTHS` from the shared rules and "Western North America",
+so the policy and the code cannot drift (FR-019a). The retention value changes only through a
+major change that edits the policy in the same PR (FR-018a).
 
 `draft: true` stays as it is. Publishing the policy is outside this feature.
 
@@ -295,6 +303,20 @@ Replace the placeholders in `src/content/pages/privacy-policy.mdx`:
 | Workers Paid plan would turn D1 overage into charges | The plan assumes Workers Free. Changing it is its own major change |
 | First `main` build on `dcc-web-preview` fails before merge | Expected and stated in item 22 |
 | Visual baselines need Linux regeneration (Docker) | Per CLAUDE.md: ask Don to start Docker Desktop; CI label is the fallback |
+
+## Rollback
+
+- **Failed migration**: both deploy scripts apply migrations first and stop at the first failing
+  step, so the old code keeps running against the old schema. Migrations are additive only
+  (config test), so the previous code is always compatible with a partly applied schema. Fix
+  forward with a new migration in a reviewed PR.
+- **Failed or bad Worker deploy**: `wrangler deploy` is atomic; a failed upload leaves the
+  previous version active. A deployed version that misbehaves is rolled back by reverting the
+  merge commit in a reviewed PR (merge commits only), which redeploys the previous code through
+  Workers Builds. In an emergency, Don can run `pnpm exec wrangler rollback` (production) or
+  `… --env preview`, then land the revert PR so the repository matches.
+- **Data**: D1 Time Travel (7 days on the Free plan) can restore a database to a point in time
+  if a bad change corrupts messages. Restoring is a manual, reviewed step for Don.
 
 ## Post-design Constitution re-check
 

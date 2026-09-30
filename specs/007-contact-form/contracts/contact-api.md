@@ -10,7 +10,7 @@ R1) and `Content-Type: application/json; charset=utf-8`.
 |---|---|---|
 | Method | `POST` only | `405 {"ok":false,"error":"method_not_allowed"}` with `Allow: POST` |
 | Scheme | `https:`; `http:` is accepted only when the hostname is `127.0.0.1` or `localhost` | `403 forbidden` |
-| Origin | the `Origin` header must equal `new URL(request.url).origin`; when `Sec-Fetch-Site` is present it must be `same-origin` | `403 {"ok":false,"error":"forbidden"}` |
+| Origin | the `Origin` header must be present and equal `new URL(request.url).origin`; when `Sec-Fetch-Site` is present it must be `same-origin`. A missing `Origin` is refused (FR-014) | `403 {"ok":false,"error":"forbidden"}` |
 | Content type | `application/json` (parameters ignored) | `415 unsupported_media_type` |
 | Size | `Content-Length` > 10,240 is refused before reading; the body is also read through a counting stream that aborts past 10,240 bytes | `413 too_large` |
 | Body | valid JSON object | `400 {"ok":false,"error":"invalid_json"}` |
@@ -50,6 +50,12 @@ string lengths (data-model.md).
 6. **Insert** `INSERT … ON CONFLICT(id) DO NOTHING` with `status='new'`,
    `received_at = Date.now()` → `200 {"ok":true}`.
 7. Any D1 error in steps 3, 5 or 6 → `503 {"ok":false,"error":"unavailable"}`.
+
+**Fail closed** (FR-012a): Turnstile unreachable, a siteverify error, or a D1 error at any step
+always ends in `503 unavailable` with nothing stored. No step is skipped because a dependency is
+down, and Flux's fail-open rate limit is not carried over. The client keeps every value.
+Refused submissions (steps 1, 2, 4 and 5) are never stored, so they never count towards the
+rate limit (FR-013a).
 
 ## Responses and client messages
 

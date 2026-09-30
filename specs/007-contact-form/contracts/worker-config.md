@@ -15,7 +15,7 @@
   },
   "workers_dev": true,
   "preview_urls": true,
-  "observability": { "enabled": true, "head_sampling_rate": 1 },
+  "observability": { "enabled": true, "head_sampling_rate": 1, "logs": { "invocation_logs": false } },
   "triggers": { "crons": ["17 3 * * *"] },
   "secrets": { "required": ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"] },
   "d1_databases": [
@@ -46,6 +46,10 @@ Rules enforced by `tests/unit/site/config-files.test.ts` (extended):
   refuses to deploy a Worker whose secrets are missing: in the installed source,
   `addRequiredSecretsInheritBindings` throws "The following required secrets have not been set".
 - Both environments carry one cron with the same schedule.
+- `observability.logs.invocation_logs` is `false` (inherited by `env.preview`), so Workers Logs
+  holds only the Worker's own structured lines and never the platform's per-request metadata
+  (IP, headers, URL). FR-016. Implement confirms the key name against the installed Wrangler
+  schema; if it differs, it uses the documented equivalent, never leaves invocation logs on.
 - No `vars` holds a secret-looking name, and no route or custom-domain change is made here
   (`new.doncoleman.ca` stays a dashboard Custom Domain, setup item 16).
 
@@ -98,10 +102,16 @@ environment value, and they pass `stdio: "inherit"` only to Wrangler itself. Uni
 - Loop: `DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE received_at < ?1 LIMIT 500)`
   until `meta.changes < 500`, with at most 40 iterations per run (inside the 50-query Free limit).
 - Deletes whatever the status (FR-018).
-- Log: one line, `{"event":"retention","deleted":<n>}`.
+- Then clears fingerprints: `UPDATE messages SET ip_hash = NULL WHERE received_at < ?1 AND ip_hash IS NOT NULL`
+  with `?1 = scheduledTime − 86,400,000` (FR-015). Served by `idx_messages_received`.
+- A failed run leaves the rows for the next run, whose cutoff catches up on everything overdue
+  (FR-018). The run throws after logging, so the failure shows as an errored cron event in the
+  dashboard and Workers Logs.
+- Log: one line, `{"event":"retention","deleted":<n>,"fingerprints_cleared":<m>}`.
 - Test (`worker/test/retention.test.ts`): seed messages at 13, 12 (± 1 minute) and 11 months
   old, some `new` and some `read`; call the Worker's default export's `scheduled(controller, env, ctx)` with
   `createScheduledController({ scheduledTime, cron: "17 3 * * *" })` and
   `createExecutionContext()` / `waitOnExecutionContext()` from `cloudflare:test`;
   assert only the rows older than the cutoff are gone (User Story 7, SC-007). Also a batch test
-  with 1,200 expired rows.
+  with 1,200 expired rows, and a fingerprint test: rows 25 hours old have `ip_hash` NULL after
+  the run, rows 23 hours old keep it.
