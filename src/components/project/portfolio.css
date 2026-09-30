@@ -82,7 +82,12 @@ summary,
   @apply mx-auto mb-6 max-w-screen-lg border border-rust-700 bg-rust-50 px-4 py-3 text-sm text-dusk-900 dark:border-rust-300 dark:bg-dusk-900 dark:text-white;
 }
 [data-story] {
-  @apply max-w-screen-xl;
+  @apply max-w-screen-xl text-dusk-900 dark:text-mist-200;
+}
+/* Page sections (TextBlock and others) placed inside a chapter get the
+   story's own heading colour, since the story sits outside the prose wrapper. */
+[data-story] section > h2 {
+  @apply text-rust-700 dark:text-rust-300;
 }
 /* Body headings and lists inside a chapter's text. */
 [data-chapter-text] h3 {

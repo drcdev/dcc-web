@@ -159,6 +159,18 @@ test.describe("demos and clips", () => {
   });
 });
 
+// FR-080: a story with its own sharing image uses it (resized) instead of the site default.
+test("a story with its own sharing image shares that image and its alt text", async ({ page, request }) => {
+  await page.goto("/projects/every-setting/");
+  const image = await page.locator('meta[property="og:image"]').getAttribute("content");
+  expect(image).toBeTruthy();
+  expect(image).not.toContain("og-default");
+  await expect(page.locator('meta[property="og:image:alt"]')).toHaveAttribute("content", "A sharing image");
+  const response = await request.get(new URL(image!).pathname);
+  expect(response.status()).toBe(200);
+  expect(response.headers()["content-type"]).toContain("image/png");
+});
+
 // US8: a story that uses every block (tests/fixtures/projects/every-block.mdx).
 test.describe("the every-block story", () => {
   test("renders all seven chapters, the page sections and the invitation", async ({ page }) => {

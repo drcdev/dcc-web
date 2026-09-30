@@ -184,10 +184,10 @@ description: "Task list for the portfolio (projects index and story pages)"
 
 **Goal**: the gate passes on both templates in both themes.
 
-- [ ] T072 [P] [US5] Test: `tests/e2e/a11y.spec.ts` picks up `/projects/` and `/projects/focus-pocus/` through `TEMPLATES` (both themes, 390 and 1280 px, JS off, reduced motion, reflow at 320 px, text spacing); add an axe run on the every-block fixture story and on the filtered and empty index states; add keyboard tests (Tab reaches the comparison region; focus never hidden under the sticky panel or progress bar).
-- [ ] T073 [P] Test: `tests/e2e/budget.spec.ts` covers both templates (LCP, CLS, long tasks, JS at most 10 KB, total at most 100 KB); `tests/e2e/seo.spec.ts` covers title, description, canonical, sharing image and sitemap entries for `/projects/` and the story; `tests/e2e/headers.spec.ts` confirms unchanged headers and no CSP violation on both templates.
-- [ ] T074 Fix any axe, budget, CSP or SEO failure found by T072 and T073 in `src/components/project/*`, `portfolio.css`, `ProjectLayout.astro` or images (fix sizing, never loosen the budget; contrast in both themes).
-- [ ] T075 Run `corepack pnpm run test:a11y` and `corepack pnpm run test:budget`; confirm green.
+- [x] T072 [P] [US5] Test: `tests/e2e/a11y.spec.ts` picks up `/projects/` and `/projects/focus-pocus/` through `TEMPLATES` (both themes, 390 and 1280 px, JS off, reduced motion, reflow at 320 px, text spacing); add an axe run on the every-block fixture story and on the filtered and empty index states; add keyboard tests (Tab reaches the comparison region; focus never hidden under the sticky panel or progress bar).
+- [x] T073 [P] Test: `tests/e2e/budget.spec.ts` covers both templates (LCP, CLS, long tasks, JS at most 10 KB, total at most 100 KB); `tests/e2e/seo.spec.ts` covers title, description, canonical, sharing image and sitemap entries for `/projects/` and the story; `tests/e2e/headers.spec.ts` confirms unchanged headers and no CSP violation on both templates.
+- [x] T074 Fix any axe, budget, CSP or SEO failure found by T072 and T073 in `src/components/project/*`, `portfolio.css`, `ProjectLayout.astro` or images (fix sizing, never loosen the budget; contrast in both themes).
+- [x] T075 Run `corepack pnpm run test:a11y` and `corepack pnpm run test:budget`; confirm green.
 
 **Checkpoint**: accessibility and performance gates green.
 
