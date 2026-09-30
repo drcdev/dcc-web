@@ -2,7 +2,9 @@
 // SC-001). Each test sends a unique CF-Connecting-IP so tests do not share one
 // rate-limit bucket (research R6). Turnstile runs with Cloudflare's always-pass
 // test keys, so this needs network access to challenges.cloudflare.com.
-import { test, expect, type Page } from "@playwright/test";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 import { cspViolations, recordCspViolations } from "./csp-violations.ts";
 
 let counter = 0;
@@ -48,7 +50,7 @@ test.describe("valid send", () => {
     await expect(page.locator("#contact-success-heading")).toBeFocused();
     await expect(page.locator("#contact-form")).toBeHidden();
     expect(await cspViolations(page)).toEqual([]);
-    // Retrieval of the stored message through the API is asserted in Phase 6.
+    // Retrieval of the stored message is asserted in "retrieval through the API" below.
   });
 
   test("/contact/ allows the Turnstile host in its CSP and the home page does not", async ({ request }) => {
@@ -219,5 +221,65 @@ test.describe("recovering from an error", () => {
     await expect(page.locator("#contact-success")).toBeVisible({ timeout: 5000 });
     await expect(page.locator("#contact-success-heading")).toBeFocused();
     await expect(page.locator("#contact-name-error")).toBeHidden();
+  });
+});
+
+// Retrieval through the API (FR-020 to FR-023b). The token is the public fake value in the
+// e2e env file; the local D1 state is shared across tests, so the message is found by name.
+const FIXTURE_ENV = fileURLToPath(new URL("../fixtures/worker/e2e.env", import.meta.url));
+const READ_TOKEN = /^CONTACT_READ_TOKEN=(.+)$/m.exec(readFileSync(FIXTURE_ENV, "utf-8"))?.[1]?.trim() ?? "";
+
+interface Listed {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+}
+
+async function listNew(request: APIRequestContext, name: string): Promise<Listed | undefined> {
+  let cursor: string | null = null;
+  do {
+    const response = await request.get(`/api/messages/new?limit=100${cursor ? `&after=${cursor}` : ""}`, {
+      headers: { Authorization: `Bearer ${READ_TOKEN}` },
+    });
+    expect(response.status()).toBe(200);
+    const body = (await response.json()) as { messages: Listed[]; next_cursor: string | null };
+    const found = body.messages.find((m) => m.name === name);
+    if (found) return found;
+    cursor = body.next_cursor;
+  } while (cursor);
+  return undefined;
+}
+
+test.describe("retrieval through the API", () => {
+  test("a sent message is listed once, can be marked read, and is then gone", async ({ page, request }) => {
+    expect(READ_TOKEN.length).toBeGreaterThan(0);
+    await uniqueSender(page);
+    const name = `Retrieval ${Date.now()}`;
+    await page.goto("/contact/");
+    await expect(send(page)).toBeEnabled();
+    await fillValid(page);
+    await page.getByLabel("Name", { exact: true }).fill(name);
+    await send(page).click();
+    await expect(page.locator("#contact-success")).toBeVisible({ timeout: 5000 });
+
+    const listed = await listNew(request, name);
+    expect(listed, "the sent message is in the new list").toBeDefined();
+    expect(listed).toMatchObject({ email: "ada@example.com", organization: null, project: null });
+    expect(listed).not.toHaveProperty("ip_hash");
+    expect(listed).not.toHaveProperty("status");
+
+    const auth = { Authorization: `Bearer ${READ_TOKEN}` };
+    const marked = await request.post(`/api/messages/${listed!.id}/read`, { headers: auth });
+    expect(marked.status()).toBe(200);
+    expect(await marked.json()).toEqual({ id: listed!.id, status: "read" });
+
+    expect(await listNew(request, name), "a read message never appears again").toBeUndefined();
+
+    const again = await request.post(`/api/messages/${listed!.id}/read`, { headers: auth });
+    expect(again.status()).toBe(409);
+
+    const refused = await request.get("/api/messages/new");
+    expect(refused.status()).toBe(401);
+    expect(await refused.json()).toEqual({ error: "unauthorized" });
   });
 });

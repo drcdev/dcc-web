@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { clearRows, mockSiteverify, post, run, validBody } from "./helpers";
+import { api, clearRows, mockSiteverify, post, run, seedMessage, validBody } from "./helpers";
 
 const METHODS = ["log", "info", "warn", "error", "debug"] as const;
 
@@ -68,5 +68,34 @@ describe("submit logging", () => {
     capture();
     await run(post());
     expect(lines).toHaveLength(1);
+  });
+});
+
+describe("retrieval logging", () => {
+  it("logs nothing that identifies a message, token or caller", async () => {
+    const id = await seedMessage({ name: "Zed Secretname" });
+    const requests = [
+      () => api("/api/messages/new", { token: null }),
+      () => api("/api/messages/new", { token: "wrong-secret-token" }),
+      () => api("/api/messages/new"),
+      () => api(`/api/messages/${id}/read`, { method: "POST" }),
+      () => api(`/api/messages/${id}/read`, { method: "POST" }),
+      () => api(`/api/messages/${crypto.randomUUID()}/read`, { method: "POST" }),
+      () => api("/api/messages/new?limit=0"),
+    ];
+    for (const request of requests) {
+      capture();
+      await run(request());
+      expect(lines.length).toBeLessThanOrEqual(1);
+      for (const line of lines) {
+        const parsed = JSON.parse(line) as Record<string, unknown>;
+        expect(parsed.event).toBe("messages");
+        expect(Object.keys(parsed).sort()).toEqual(["event", "outcome"]);
+        for (const secret of [id, "Zed", "Secretname", "test-read-token", "wrong-secret-token", "ada@example.com", "Hello"]) {
+          expect(line).not.toContain(secret);
+        }
+      }
+      vi.restoreAllMocks();
+    }
   });
 });

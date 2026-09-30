@@ -69,3 +69,50 @@ export async function rows() {
 export async function clearRows() {
   await env.DB.prepare("DELETE FROM messages").run();
 }
+
+export const READ_TOKEN = "test-read-token";
+
+/** A request to a retrieval route. `token: null` sends no Authorization header. */
+export function api(
+  path: string,
+  {
+    method = "GET",
+    token = READ_TOKEN,
+    headers = {},
+  }: { method?: string; token?: string | null; headers?: Record<string, string> } = {},
+) {
+  return new Request(`${ORIGIN}${path}`, {
+    method,
+    headers: { ...(token === null ? {} : { Authorization: `Bearer ${token}` }), ...headers },
+  });
+}
+
+export interface SeedMessage {
+  id?: string;
+  name?: string;
+  status?: "new" | "read";
+  received_at?: number;
+  project?: string | null;
+  organization?: string | null;
+}
+
+/** Inserts one row directly and returns its id. */
+export async function seedMessage(overrides: SeedMessage = {}) {
+  const id = overrides.id ?? crypto.randomUUID();
+  await env.DB.prepare(
+    "INSERT INTO messages (id, name, email, organization, project, message, ip_hash, status, received_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+  )
+    .bind(
+      id,
+      overrides.name ?? "Ada Example",
+      "ada@example.com",
+      overrides.organization ?? null,
+      overrides.project ?? null,
+      "Hello",
+      "a".repeat(64),
+      overrides.status ?? "new",
+      overrides.received_at ?? Date.parse("2026-09-29T17:04:11.000Z"),
+    )
+    .run();
+  return id;
+}

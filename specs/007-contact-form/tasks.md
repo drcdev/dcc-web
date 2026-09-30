@@ -126,14 +126,14 @@
 
 ### Tests first (seen to fail)
 
-- [ ] T038 [P] [US3] Write `worker/test/retrieval.contract.test.ts` for every row of contracts/retrieval-api.md: identical 401 (body and headers) for a missing header, another scheme, an empty value, a wrong token and the other environment's token, on every route and method, and when the secret is unset; token read only from `Authorization`; list-new returns only unread messages oldest first in the documented shape with no `ip_hash` or `status`; `limit` 1–100 (default 50) and `after` cursor paging across 120 messages, each exactly once; invalid `limit` or cursor 400; mark-read 200 then 409, unknown or non-UUID id 404, no content in 404/409; wrong methods 405 with `Allow`; no CORS headers; no delete, edit or single-message route (FR-020 to FR-023b). Must fail.
-- [ ] T039 [P] [US3] Extend `worker/test/query-plans.test.ts` and `worker/test/logging.test.ts` to the retrieval statements and paths. Must fail.
-- [ ] T040 [P] [US3] Enable the retrieval assertions in `tests/e2e/contact.spec.ts` (send, list with the fixture token, mark read, list empty, mark again 409, no header 401). Must fail.
+- [X] T038 [P] [US3] Write `worker/test/retrieval.contract.test.ts` for every row of contracts/retrieval-api.md: identical 401 (body and headers) for a missing header, another scheme, an empty value, a wrong token and the other environment's token, on every route and method, and when the secret is unset; token read only from `Authorization`; list-new returns only unread messages oldest first in the documented shape with no `ip_hash` or `status`; `limit` 1–100 (default 50) and `after` cursor paging across 120 messages, each exactly once; invalid `limit` or cursor 400; mark-read 200 then 409, unknown or non-UUID id 404, no content in 404/409; wrong methods 405 with `Allow`; no CORS headers; no delete, edit or single-message route (FR-020 to FR-023b). Must fail.
+- [X] T039 [P] [US3] Extend `worker/test/query-plans.test.ts` and `worker/test/logging.test.ts` to the retrieval statements and paths. Must fail.
+- [X] T040 [P] [US3] Enable the retrieval assertions in `tests/e2e/contact.spec.ts` (send, list with the fixture token, mark read, list empty, mark again 409, no header 401). Must fail.
 
 ### Implementation
 
-- [ ] T041 [US3] Implement `worker/src/messages/auth.ts` (bearer; SHA-256 digests compared with `crypto.subtle.timingSafeEqual`, constant time), `list-new.ts` and `mark-read.ts`; route them in `worker/src/index.ts`; make contract, query-plan and logging tests pass.
-- [ ] T042 [US3] Run the retrieval e2e assertions and the curl steps of quickstart section 4 against `wrangler dev`.
+- [X] T041 [US3] Implement `worker/src/messages/auth.ts` (bearer; SHA-256 digests compared with `crypto.subtle.timingSafeEqual`, constant time), `list-new.ts` and `mark-read.ts`; route them in `worker/src/index.ts`; make contract, query-plan and logging tests pass.
+- [X] T042 [US3] Run the retrieval e2e assertions and the curl steps of quickstart section 4 against `wrangler dev`.
 
 ---
 
