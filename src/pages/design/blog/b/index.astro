@@ -20,21 +20,20 @@ const stream = byNewest.slice(0, 8);
 >
   <div class="mx-auto max-w-3xl">
     <Eyebrow />
-    <h1 class="mb-3 text-4xl font-bold text-dusk-900 dark:text-white">Writing</h1>
+    <h1 class="mb-2 text-4xl font-bold text-dusk-900 dark:text-white">Writing</h1>
     <p class="text-lg text-dusk-700 dark:text-mist-300">
       Notes on leading technology teams through regulated, long-lived systems. Newest first.
     </p>
-    <TopicRow direction="b" variant="text" label="Filter by topic" />
-    <section aria-labelledby="start-here" class="my-8 rounded-xl border border-dusk-200 p-5 dark:border-dusk-700">
-      <h2 id="start-here" class="mb-4 text-2xl font-bold text-dusk-900 dark:text-white">Start here</h2>
-      <ol class="list-decimal space-y-5 pl-6 marker:font-bold marker:text-dusk-700 dark:marker:text-mist-300">
+    <section aria-labelledby="start-here" class="my-5 rounded-xl border border-dusk-200 p-4 dark:border-dusk-700">
+      <h2 id="start-here" class="mb-3 text-2xl font-bold text-dusk-900 dark:text-white">Start here</h2>
+      <ol class="list-decimal space-y-5 pl-6 marker:font-bold marker:text-dusk-700 dark:marker:text-mist-300 md:grid md:grid-cols-3 md:gap-6 md:space-y-0 md:pl-5">
         {
           startHere.map((post) => (
             <li>
               <h3 class="text-lg font-semibold text-dusk-900 [overflow-wrap:anywhere] dark:text-white">
                 <a class="hover:underline" href={postPath("b", post)}>{post.title}</a>
               </h3>
-              <p class="mt-1 text-dusk-700 dark:text-mist-300">{post.summary}</p>
+              <p class="mt-1 text-dusk-700 dark:text-mist-300 md:line-clamp-3">{post.summary}</p>
               <PostMeta post={post} direction="b" topicVariant="text" class="mt-2" />
             </li>
           ))
@@ -42,6 +41,7 @@ const stream = byNewest.slice(0, 8);
       </ol>
     </section>
     <Timeline posts={stream} group="month" />
+    <TopicRow direction="b" variant="text" label="Filter by topic" />
     <p>
       <a class="font-semibold text-accent-700 underline hover:no-underline dark:text-accent-300" href={listingPath("b", 1)}>
         Older posts and the full archive

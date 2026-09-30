@@ -4,7 +4,7 @@
 // hard-coded twice (contracts/prototype-routes.md). Prototype-only: deleted
 // with the prototypes (task T041). The prototypes are deliberately not added
 // to TEMPLATES, the visual project or a11y.spec.ts.
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import {
   byNewest,
@@ -13,6 +13,7 @@ import {
   listingPath,
   posts,
   postPath,
+  topicBySlug,
   topicPath,
   type DirectionId,
 } from "../../src/pages/design/blog/_data/samples.ts";
@@ -268,4 +269,162 @@ test.describe("US1: direction pages", () => {
     await page.goto(listingPath("c", 1));
     await expect(page.locator("[data-topic-index]").first()).toBeAttached();
   });
+});
+
+// ---------------------------------------------------------------------------
+// User Story 2 (T019): each direction shows everything a reader will need.
+// ---------------------------------------------------------------------------
+const topicSlugs = [...new Set(posts.flatMap((p) => p.topics))];
+const newest = byNewest[0]!;
+const featuredList = posts.filter((p) => p.featured);
+const longTitle = posts.reduce((a, b) => (b.title.length > a.title.length ? b : a));
+const manyTopics = posts.reduce((a, b) => (b.topics.length > a.topics.length ? b : a));
+const lastPageCount = posts.length - 5 * 2;
+const hrefsIn = (scope: Locator, selector: string) =>
+  scope.locator(selector).evaluateAll((ls) => ls.map((l) => l.getAttribute("href") ?? ""));
+
+test.describe("US2: reader needs", () => {
+  for (const d of DIRECTION_IDS) {
+    test.describe(`Direction ${d.toUpperCase()}`, () => {
+      for (const viewport of [
+        { name: "desktop", width: 1280, height: 800, limit: 800 },
+        { name: "phone", width: 390, height: 844, limit: 844 * 2 },
+      ]) {
+        test(`landing shows the newest post within the first ${viewport.name} viewport(s)`, async ({ page }) => {
+          await page.setViewportSize({ width: viewport.width, height: viewport.height });
+          await page.goto(landingPath(d));
+          const link = page.locator(`main a[href="${postPath(d, newest)}"]`).first();
+          await expect(link).toBeVisible();
+          const box = (await link.boundingBox())!;
+          const scrollY = await page.evaluate(() => window.scrollY);
+          expect(box.y + scrollY).toBeLessThan(viewport.limit);
+        });
+      }
+
+      test("landing sets featured posts apart with a visible Featured marker", async ({ page }) => {
+        await page.goto(landingPath(d));
+        const region = { a: "[data-bento]", b: "section:has(> #start-here)", c: "[data-topic-hub]" }[d];
+        expect(await page.locator(region).count()).toBeGreaterThan(0);
+        const hrefs = await hrefsIn(page.locator(region), "a");
+        const shown = featuredList.filter((p) => hrefs.includes(postPath(d, p)));
+        expect(shown.length).toBeGreaterThan(0);
+        const markers = page.locator("main [data-featured]");
+        expect(await markers.count()).toBeGreaterThan(0);
+        for (const marker of await markers.all()) {
+          await expect(marker).toBeVisible();
+          await expect(marker).toHaveText("Featured");
+        }
+      });
+
+      test("landing links to the listing and every topic", async ({ page }) => {
+        await page.goto(landingPath(d));
+        const hrefs = await hrefsIn(page.locator("main"), "a[href]");
+        expect(hrefs).toContain(listingPath(d, 1));
+        for (const t of topicSlugs) expect(hrefs, t).toContain(topicPath(d, t));
+      });
+
+      test("listing pages show posts newest first, five per page, with pagination edges", async ({ page }) => {
+        const all: string[] = [];
+        for (const n of [1, 2, 3]) {
+          await page.goto(listingPath(d, n));
+          const articles = page.locator("main article");
+          expect(await articles.count()).toBe(n === 3 ? lastPageCount : 5);
+          all.push(
+            ...(await articles.evaluateAll((els) => els.map((el) => el.querySelector("time")!.getAttribute("datetime")!))),
+          );
+          const nav = page.getByRole("navigation", { name: "Pagination" });
+          await expect(nav.locator('[aria-current="page"]')).toHaveCount(1);
+          await expect(nav.locator('[aria-current="page"]')).toContainText(String(n));
+          await expect(nav.getByRole("link", { name: /Newer/ })).toHaveCount(n === 1 ? 0 : 1);
+          await expect(nav.getByRole("link", { name: /Older/ })).toHaveCount(n === 3 ? 0 : 1);
+        }
+        expect(all).toEqual(byNewest.map((p) => p.date));
+      });
+
+      test("topic pages name the topic, introduce it above its posts and link onward", async ({ page }) => {
+        for (const t of topicSlugs) {
+          await page.goto(topicPath(d, t));
+          const topic = topicBySlug(t);
+          await expect(page.locator("h1")).toHaveText(topic.name);
+          const intro = page.getByText(topic.intro, { exact: true });
+          await expect(intro).toBeVisible();
+          const introBox = (await intro.boundingBox())!;
+          const firstPost = (await page.locator("main article").first().boundingBox())!;
+          expect(introBox.y, t).toBeLessThan(firstPost.y);
+          const hrefs = await hrefsIn(page.locator("main"), "a[href]");
+          expect(hrefs).toContain(listingPath(d, 1));
+          for (const other of topicSlugs.filter((x) => x !== t)) expect(hrefs, other).toContain(topicPath(d, other));
+        }
+      });
+
+      test("the one-post topic renders its single post", async ({ page }) => {
+        await page.goto(topicPath(d, "healthcare-leadership"));
+        const inTopic = posts.filter((p) => p.topics.includes("healthcare-leadership"));
+        expect(inTopic).toHaveLength(1);
+        await expect(page.locator("main article")).toHaveCount(1);
+        await expect(page.locator(`main article a[href="${postPath(d, inTopic[0]!)}"]`)).toHaveCount(1);
+      });
+
+      test("every post presentation shows title, date, reading time, topics and summary", async ({ page }) => {
+        const screens = [landingPath(d), listingPath(d, 1), listingPath(d, 3), topicPath(d, "agentic-ai-legacy")];
+        for (const path of screens) {
+          await page.goto(path);
+          const articles = await page.locator("main article").all();
+          expect(articles.length, path).toBeGreaterThan(0);
+          for (const article of articles) {
+            await expect(article.locator("h2, h3, h4").first().locator("a")).toHaveCount(1);
+            await expect(article.locator("time[datetime]")).toHaveCount(1);
+            await expect(article).toContainText(/\d+ min read/);
+            const topicLinks = await hrefsIn(article, "a[data-topic]");
+            expect(topicLinks.length, path).toBeGreaterThan(0);
+            for (const href of topicLinks) expect(topicSlugs.some((t) => href === topicPath(d, t)), href).toBe(true);
+            expect(((await article.locator("p").first().textContent()) ?? "").trim().length, path).toBeGreaterThan(20);
+          }
+        }
+        for (const post of [withImage, withoutImage]) {
+          await page.goto(postPath(d, post));
+          await expect(page.locator("main time[datetime]").first()).toBeVisible();
+          await expect(page.locator("main")).toContainText(/\d+ min read/);
+          expect((await hrefsIn(page.locator("main"), "a[data-topic]")).length).toBeGreaterThan(0);
+          await expect(page.locator("main")).toContainText(post.summary);
+        }
+      });
+
+      test("post pages have image with caption and alt, code, table and three related posts", async ({ page }) => {
+        for (const post of [withImage, withoutImage]) {
+          await page.goto(postPath(d, post));
+          const figure = page.locator("main article figure");
+          await expect(figure).toHaveCount(1);
+          await expect(figure.locator("figcaption")).not.toBeEmpty();
+          await expect(figure.locator("[role=img][aria-label]")).toHaveCount(1);
+          const regions = page.locator("main [role=region][tabindex='0']");
+          await expect(regions.filter({ has: page.locator("code") })).toHaveCount(1);
+          await expect(regions.filter({ has: page.locator("table") })).toHaveCount(1);
+          for (const region of await regions.all()) expect(await region.getAttribute("aria-label")).toBeTruthy();
+          const related = page.locator("section:has(> h2#related)");
+          await expect(related.getByRole("heading", { level: 2, name: "Related posts" })).toBeVisible();
+          const postHrefs = (await hrefsIn(related, "a[href]")).filter((h) => posts.some((p) => h === postPath(d, p)));
+          expect(new Set(postHrefs).size).toBe(3);
+        }
+      });
+
+      test("related posts show their date and reading time", async ({ page }) => {
+        await page.goto(postPath(d, withImage));
+        const times = page.locator("section:has(> h2#related) time[datetime]");
+        expect(await times.count()).toBeGreaterThanOrEqual(3);
+      });
+
+      test("long-title and many-topics posts do not overflow at 390 px", async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        const paths = [postPath(d, longTitle), postPath(d, manyTopics), landingPath(d), listingPath(d, 1), listingPath(d, 2), listingPath(d, 3)];
+        for (const path of paths) {
+          await page.goto(path);
+          const overflow = await page.evaluate(
+            () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          );
+          expect(overflow, path).toBeLessThanOrEqual(0);
+        }
+      });
+    });
+  }
 });
