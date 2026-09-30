@@ -225,3 +225,120 @@ describe("POST /api/contact: D1 failure", () => {
     expect(await rows()).toHaveLength(0);
   });
 });
+
+describe("POST /api/contact: validation rows (FR-008e, FR-012a)", () => {
+  async function fieldsFor(overrides: Record<string, unknown>) {
+    const { spy } = mockSiteverify();
+    const response = await run(post(validBody(overrides)));
+    expect(response.status).toBe(400);
+    const json = (await response.json()) as { ok: boolean; error: string; fields: Record<string, string> };
+    expect(json.ok).toBe(false);
+    expect(json.error).toBe("validation");
+    expect(spy).not.toHaveBeenCalled();
+    expect(await rows()).toHaveLength(0);
+    vi.restoreAllMocks();
+    return json.fields;
+  }
+
+  it("returns several field errors together", async () => {
+    expect(await fieldsFor({ name: "", email: "nope", message: "", consent: false })).toEqual({
+      name: "required",
+      email: "invalid",
+      message: "required",
+      consent: "required",
+    });
+  });
+
+  it("treats whitespace-only values as empty", async () => {
+    expect(await fieldsFor({ name: "   \t", email: "  ", message: "\n\n" })).toEqual({
+      name: "required",
+      email: "required",
+      message: "required",
+    });
+  });
+
+  it("requires consent to be exactly true", async () => {
+    expect(await fieldsFor({ consent: false })).toEqual({ consent: "required" });
+    expect(await fieldsFor({ consent: "yes" })).toEqual({ consent: "required" });
+    expect(await fieldsFor({ consent: undefined })).toEqual({ consent: "required" });
+  });
+
+  it("flags an invalid submission id", async () => {
+    expect(await fieldsFor({ submission_id: "not-a-uuid" })).toEqual({ submission_id: "invalid" });
+  });
+
+  it("accepts values at the limits and refuses one character more", async () => {
+    mockSiteverify();
+    const atLimit = validBody({
+      name: "n".repeat(100),
+      email: `${"e".repeat(242)}@example.com`,
+      organization: "o".repeat(100),
+      project: "p".repeat(100),
+      message: "m".repeat(5000),
+    });
+    // The body is over the 10 KiB cap only past ~10,240 bytes; this one is about 5.6 KB.
+    expect((await run(post(atLimit))).status).toBe(200);
+    vi.restoreAllMocks();
+    await clearRows();
+
+    expect(
+      await fieldsFor({
+        name: "n".repeat(101),
+        email: `${"e".repeat(243)}@example.com`,
+        organization: "o".repeat(101),
+        project: "p".repeat(101),
+        message: "m".repeat(5001),
+      }),
+    ).toEqual({
+      name: "too_long",
+      email: "too_long",
+      organization: "too_long",
+      project: "too_long",
+      message: "too_long",
+    });
+  });
+
+  it("checks the email format after the length", async () => {
+    for (const email of ["plain", "a@b", "a b@c.d", "@c.d"]) {
+      expect(await fieldsFor({ email }), email).toEqual({ email: "invalid" });
+    }
+  });
+
+  it("400 invalid_json also for an empty body", async () => {
+    mockSiteverify();
+    const response = await run(post(""));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ ok: false, error: "invalid_json" });
+  });
+
+  it("503 with nothing stored when the duplicate check fails", async () => {
+    const { spy } = mockSiteverify();
+    const real = env.DB.prepare.bind(env.DB);
+    vi.spyOn(env.DB, "prepare").mockImplementation((sql: string) => {
+      if (sql.trim().toUpperCase().startsWith("SELECT")) throw new Error("d1 down");
+      return real(sql);
+    });
+    const response = await run(post());
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ ok: false, error: "unavailable" });
+    expect(spy).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
+    expect(await rows()).toHaveLength(0);
+  });
+
+  it("503 with nothing stored when the insert rejects at run time", async () => {
+    mockSiteverify();
+    const real = env.DB.prepare.bind(env.DB);
+    vi.spyOn(env.DB, "prepare").mockImplementation((sql: string) => {
+      const statement = real(sql);
+      if (sql.trim().toUpperCase().startsWith("INSERT")) {
+        vi.spyOn(statement, "bind").mockReturnValue({ run: () => Promise.reject(new Error("d1 down")) } as never);
+      }
+      return statement;
+    });
+    const response = await run(post());
+    expect(response.status).toBe(503);
+    vi.restoreAllMocks();
+    expect(await rows()).toHaveLength(0);
+  });
+});

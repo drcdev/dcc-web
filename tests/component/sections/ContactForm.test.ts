@@ -201,3 +201,45 @@ describe("ContactForm tab order (FR-008o)", () => {
     }
   });
 });
+
+describe("ContactForm error containers (FR-008e to FR-008i)", () => {
+  const errorFor = (field: string) =>
+    new RegExp(`<p[^>]*id="contact-${field}-error"[^>]*>([\\s\\S]*?)</p>`).exec(html)![1]!;
+  const fields = ["name", "email", "organization", "message", "consent"];
+
+  it("gives each field error an icon, so an error is never colour alone, and a text slot for the island", () => {
+    for (const field of fields) {
+      const inner = errorFor(field);
+      expect(inner, field).toMatch(/<svg[^>]*aria-hidden="true"/);
+      expect(inner, field).toMatch(/<span data-text[^>]*><\/span>/);
+    }
+  });
+
+  it("puts each error after its control so the description sits next to the field", () => {
+    for (const field of fields) {
+      expect(byId(`contact-${field}-error`)!.index, field).toBeGreaterThan(byId(`contact-${field}`)!.index);
+    }
+  });
+
+  it("starts with no invalid state and no description on any control (the island sets them)", () => {
+    for (const field of fields) {
+      const control = byId(`contact-${field}`)!;
+      expect(control.attrs["aria-invalid"], field).toBeUndefined();
+      expect(control.attrs["aria-describedby"], field).toBeUndefined();
+    }
+  });
+
+  it("styles the invalid state with a thicker border, not colour alone", () => {
+    for (const field of ["name", "email", "organization", "message"]) {
+      expect(byId(`contact-${field}`)!.attrs.class, field).toMatch(/aria-\[invalid=true\]:border-2/);
+    }
+  });
+
+  it("keeps the form-level status region empty, polite and above Send, with a label the island can swap for Sending", () => {
+    const status = byId("contact-status")!;
+    expect(status.attrs["aria-live"]).toBe("polite");
+    expect(html).toMatch(/<div[^>]*id="contact-status"[^>]*><\/div>/);
+    expect(html).toMatch(/<span[^>]*data-send-label[^>]*>Send<\/span>/);
+    expect(status.index).toBeLessThan(submitButton().index);
+  });
+});

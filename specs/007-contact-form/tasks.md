@@ -108,15 +108,15 @@
 
 ### Tests first (seen to fail)
 
-- [ ] T032 [P] [US2] Extend `worker/test/contact.test.ts` with every validation row of contracts/contact-api.md: several field errors returned together in `fields`, each field code (`required`, `too_long`, `invalid`) including the 100/254/100/100/5,000 limits, consent missing, whitespace-only as empty, `invalid_json`, and a D1 failure on the duplicate check or the insert → 503 with nothing stored (FR-012a). Must fail.
-- [ ] T033 [P] [US2] Extend `tests/component/sections/ContactForm.test.ts` for error containers (`aria-describedby`, `aria-invalid`, polite live region, form-level status region above Send, sending state) per FR-008e to FR-008i. Must fail.
-- [ ] T034 [P] [US2] Extend `tests/e2e/contact.spec.ts`: no consent error tied to the checkbox; invalid email and 5,001-character message errors naming the field and limit, with values kept and focus on the first invalid field; double-click Send stores one message; `/api/contact` fulfilled with 503 and with 429 shows the contract's plain error with values kept and focus on Send; Turnstile script aborted shows "The spam check couldn't load. Please try again later." with values kept; keyboard-only path with announced errors and success. Must fail.
+- [X] T032 [P] [US2] Extend `worker/test/contact.test.ts` with every validation row of contracts/contact-api.md: several field errors returned together in `fields`, each field code (`required`, `too_long`, `invalid`) including the 100/254/100/100/5,000 limits, consent missing, whitespace-only as empty, `invalid_json`, and a D1 failure on the duplicate check or the insert → 503 with nothing stored (FR-012a). Must fail.
+- [X] T033 [P] [US2] Extend `tests/component/sections/ContactForm.test.ts` for error containers (`aria-describedby`, `aria-invalid`, polite live region, form-level status region above Send, sending state) per FR-008e to FR-008i. Must fail.
+- [X] T034 [P] [US2] Extend `tests/e2e/contact.spec.ts`: no consent error tied to the checkbox; invalid email and 5,001-character message errors naming the field and limit, with values kept and focus on the first invalid field; double-click Send stores one message; `/api/contact` fulfilled with 503 and with 429 shows the contract's plain error with values kept and focus on Send; Turnstile script aborted shows "The spam check couldn't load. Please try again later." with values kept; keyboard-only path with announced errors and success. Must fail.
 
 ### Implementation
 
-- [ ] T035 [US2] Complete server error mapping (400 `validation` and `invalid_json`, 503 on D1 failure) in `worker/src/contact/submit.ts`; make the Worker tests pass.
-- [ ] T036 [US2] Implement client validation, error rendering, first-error focus, sending state, double-submit guard and retry in the `ContactForm.astro` island; make component and e2e tests pass.
-- [ ] T037 [US2] Run the axe `a11y` project on `/contact/` in an error state and with the success panel shown, in both themes (SC-009), and fix findings (contrast pairs from the design-source adjustments table).
+- [X] T035 [US2] Complete server error mapping (400 `validation` and `invalid_json`, 503 on D1 failure) in `worker/src/contact/submit.ts`; make the Worker tests pass.
+- [X] T036 [US2] Implement client validation, error rendering, first-error focus, sending state, double-submit guard and retry in the `ContactForm.astro` island; make component and e2e tests pass.
+- [X] T037 [US2] Run the axe `a11y` project on `/contact/` in an error state and with the success panel shown, in both themes (SC-009), and fix findings (contrast pairs from the design-source adjustments table).
 
 ---
 
