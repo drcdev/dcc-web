@@ -77,12 +77,17 @@ describe("docs/setup.md {#workers-builds}", () => {
     expect(sectionStart).toBeGreaterThan(-1);
   });
 
-  it("names pnpm run deploy:preview as the non-production branch deploy command", () => {
+  it("names pnpm run deploy:preview as the preview Worker's deploy command", () => {
     expect(section).toContain("pnpm run deploy:preview");
+    expect(section).toContain("dcc-web-preview");
   });
 
-  it("says the build command and production deploy command are unchanged", () => {
+  it("says the build command stays pnpm run build and points to the production deploy command", () => {
     expect(section).toMatch(/build command[^.]*unchanged/i);
-    expect(section).toMatch(/production deploy[^.]*unchanged/i);
+    expect(section).toContain("pnpm run deploy:production");
+  });
+
+  it("says dcc-web no longer builds non-production branches", () => {
+    expect(section).toMatch(/non-production[^.]*off|off[^.]*non-production/i);
   });
 });

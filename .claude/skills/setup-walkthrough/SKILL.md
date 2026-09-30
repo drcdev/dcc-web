@@ -48,7 +48,8 @@ confirmation logic (FR-010): every "is this step done?" question is answered by 
    `docs/setup.md#dns-nameservers`) before he makes the switch.
 5. Before any step whose `phase` is `after-merge`, tell Don this slice's pull request must be
    merged first, and give the PR link.
-6. End with the full report (`pnpm setup:check`) and its summary line ("`N` of 18 complete").
+6. End with the full report (`pnpm setup:check`) and its summary line ("`N` of `T` complete",
+   where `T` is the registry length: the number of items `setup:check` reports, never a fixed number).
 
 ## Secret handling (FR-012, FR-024)
 
@@ -71,6 +72,7 @@ The skill runs only these read-only commands:
 - `node --version`
 - `pnpm --version`
 - `git status`
+- `pnpm exec wrangler d1 list --json`, only after Don confirms `contact-d1-databases` (see "Contact form order")
 
 Never run: `cat .env`, `printenv`, `gh auth token`, or any command with a `--verbose` or
 `--debug` flag.
@@ -98,3 +100,78 @@ shown for Don to run himself:
 ```sh
 pnpm exec wrangler deploy
 ```
+
+## Contact form order (items 19 to 25)
+
+The contact-form items follow the registry's `dependsOn`, which gives this safe order. Steps that
+Don has already completed are skipped as usual:
+
+1. `contact-d1-databases` (item 19) — the two D1 databases.
+2. `local-credentials` (item 2) — if the check says the token lacks D1 Read, Workers Builds
+   Configuration Read or Turnstile Sites Read, send Don back to add them to his read-only token
+   before continuing. Also remind him that the Workers Builds token needs D1 Edit (item 24).
+3. `contact-turnstile-widget` (item 20) — the Turnstile widget.
+4. `contact-worker-secrets` (item 21) — the three secrets on both Workers.
+5. `contact-preview-builds` (item 22) — the `dcc-web-preview` Workers Builds connection. It comes
+   before the build variable because the variable is set in that connection's build settings
+   (item 23 depends on item 22).
+6. `contact-turnstile-site-key` (item 23) — the `PUBLIC_TURNSTILE_SITE_KEY` build variable on both
+   Workers.
+7. `contact-preview-deploy` (item 24) — the D1 Edit token permission, then the migrations and
+   the clean-up schedule. After Don confirms item 19, apply the item 19 rule below to record the
+   database IDs; do it before this step.
+8. `contact-production-deploy` (item 25) — `phase: after-merge`, so the after-merge rule in
+   step 5 of Behaviour applies: give the PR link and wait for the merge. It is reported as an
+   after-merge item and does not fail the check before the merge.
+
+### Item 19: region confirmation (FR-027a, FR-027b)
+
+The `AskUserQuestion` for `contact-d1-databases` carries this text inside the question itself
+(Don cannot see prose written before the tool call), together with the three standard answers:
+
+> Both databases will be created in Western North America (`wnam`). D1 cannot keep data only in
+> Canada, and the location cannot be changed after the databases are created. Do you confirm this
+> region?
+
+If Don does not confirm the region, stop the walkthrough before any store is created: do not show
+the `wrangler d1 create` commands, do not run anything for later steps, and tell him a different
+region needs a reviewed change to the spec, plan and privacy policy first.
+
+Once he confirms, the commands below are shown for Don to run himself (the skill never runs them).
+Shown for Don to run himself at the `contact-d1-databases` step, choosing **no** if Wrangler offers
+to add the binding to the config:
+
+```sh
+pnpm exec wrangler login
+pnpm exec wrangler d1 create contact --location wnam
+pnpm exec wrangler d1 create contact-preview --location wnam
+```
+
+If a database was created with the wrong name or location and is still empty, remove it with this
+command, shown for Don to run himself, then create it again:
+
+```sh
+pnpm exec wrangler d1 delete contact
+```
+
+After Don says Done, the skill may run one non-check command for this item:
+`pnpm exec wrangler d1 list --json`. Its output contains no secrets. Copy the two database IDs
+into `wrangler.jsonc` (`contact` at the top level, `contact-preview` under `env.preview`), then
+commit and push. This is the only non-check command the skill runs during the walkthrough. Then run
+`pnpm setup:check --json --item contact-d1-databases`.
+
+### Item 21: secrets by name only
+
+Don never pastes a secret into the chat. The check confirms these by name only and the skill
+never asks for a value. Shown for Don to run himself at the `contact-worker-secrets` step, typing or
+pasting each value at Wrangler's prompt (production first, then the same three with `--env preview`
+using a different read token and salt):
+
+```sh
+pnpm exec wrangler secret put TURNSTILE_SECRET_KEY
+pnpm exec wrangler secret put CONTACT_READ_TOKEN
+openssl rand -hex 32 | pnpm exec wrangler secret put IP_HASH_SALT
+```
+
+To replace a leaked secret, Don runs the same `wrangler secret put` command again with a new value
+(plus `--env preview` for preview); no redeploy is needed.

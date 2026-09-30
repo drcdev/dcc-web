@@ -235,15 +235,15 @@
 
 ### Tests first (seen to fail)
 
-- [ ] T063 [P] [US9] Update `tests/unit/setup/items.test.ts`, `drift.test.ts`, `docs-structure.test.ts` and `skill-behaviour.test.ts` so counts derive from the registry length (25) and assert: docs sections 19 to 25 with the five standard headings, the Contact form part, item 2 token permission additions, item 10 text move, the FR-027a region restatement in the item 19 question text, shown-only commands, the `.env.example` comment, and `secrets.ts` entries for the three Worker secrets and the site-key variable. Must fail.
-- [ ] T064 [P] [US9] Extend `tests/unit/setup-check/cli.test.ts` and `report.test.ts` so output never contains a secret value and item 25 shows as after-merge without failing the check before merge (FR-028a). Must fail.
+- [X] T063 [P] [US9] Update `tests/unit/setup/items.test.ts`, `drift.test.ts`, `docs-structure.test.ts` and `skill-behaviour.test.ts` so counts derive from the registry length (25) and assert: docs sections 19 to 25 with the five standard headings, the Contact form part, item 2 token permission additions, item 10 text move, the FR-027a region restatement in the item 19 question text, shown-only commands, the `.env.example` comment, and `secrets.ts` entries for the three Worker secrets and the site-key variable. Must fail.
+- [X] T064 [P] [US9] Extend `tests/unit/setup-check/cli.test.ts` and `report.test.ts` so output never contains a secret value and item 25 shows as after-merge without failing the check before merge (FR-028a). Must fail.
 
 ### Implementation
 
-- [ ] T065 [US9] Register items 19 to 25 in `scripts/setup-check/items.ts` (dependencies and phases per contracts/setup-items.md); update `secrets.ts` and `schemas.ts` as needed.
-- [ ] T066 [US9] Write `docs/setup.md` part "Contact form" with sections 19 to 25 (anchors equal item IDs, What it is for / Where to do it / How it will be confirmed / Constitution principle / Secrets), the secret replacement and recovery rules, and the item 2 and 10 edits and intro count; update the `.env.example` token permission comment.
-- [ ] T067 [US9] Update `.claude/skills/setup-walkthrough/SKILL.md`: count from the registry, region restatement inside the item 19 `AskUserQuestion` text, stop before any store is created if the region is not confirmed (FR-027b), shown-only commands block, the allowed `wrangler d1 list --json` step, after-merge rule for item 25.
-- [ ] T068 [US9] Run `corepack pnpm run test` and `corepack pnpm setup:check`; confirm items 19 to 24 report missing or could-not-check with plain next actions and no secret in output.
+- [X] T065 [US9] Register items 19 to 25 in `scripts/setup-check/items.ts` (dependencies and phases per contracts/setup-items.md); update `secrets.ts` and `schemas.ts` as needed.
+- [X] T066 [US9] Write `docs/setup.md` part "Contact form" with sections 19 to 25 (anchors equal item IDs, What it is for / Where to do it / How it will be confirmed / Constitution principle / Secrets), the secret replacement and recovery rules, and the item 2 and 10 edits and intro count; update the `.env.example` token permission comment.
+- [X] T067 [US9] Update `.claude/skills/setup-walkthrough/SKILL.md`: count from the registry, region restatement inside the item 19 `AskUserQuestion` text, stop before any store is created if the region is not confirmed (FR-027b), shown-only commands block, the allowed `wrangler d1 list --json` step, after-merge rule for item 25.
+- [X] T068 [US9] Run `corepack pnpm run test` and `corepack pnpm setup:check`; confirm items 19 to 24 report missing or could-not-check with plain next actions and no secret in output.
 
 ---
 

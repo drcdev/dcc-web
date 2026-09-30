@@ -141,3 +141,37 @@ describe("CODEOWNERS covers every major-path item", () => {
     }
   });
 });
+
+describe("contact-form secrets, permissions and .env.example (items 2 and 19 to 25)", () => {
+  const byName = (name: string) => secretManifest.find((s) => s.name === name);
+
+  it.each(["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"])(
+    "manifest has the Worker secret %s, used by contact-worker-secrets",
+    (name) => {
+      const entry = byName(name);
+      expect(entry, `${name} missing from the manifest`).toBeDefined();
+      expect(entry!.kind).toBe("secret");
+      expect(entry!.usedBy).toContain("contact-worker-secrets");
+    },
+  );
+
+  it("manifest has the site-key build variable", () => {
+    const entry = byName("PUBLIC_TURNSTILE_SITE_KEY");
+    expect(entry).toBeDefined();
+    expect(entry!.kind).toBe("variable");
+    expect(entry!.usedBy).toContain("contact-turnstile-site-key");
+  });
+
+  it("the token's manifest permissions and the .env.example comment name the three new permissions", () => {
+    const permissions = byName("CLOUDFLARE_API_TOKEN")!.permissions ?? "";
+    const envExample = read(".env.example").replace(/\n#\s*/g, " ");
+    for (const text of [permissions, envExample]) {
+      expect(text).toContain("D1 Read");
+      expect(text).toContain("Workers Builds Configuration Read");
+      expect(text).toContain("Turnstile Sites Read");
+    }
+    expect(byName("CLOUDFLARE_API_TOKEN")!.usedBy).toEqual(
+      expect.arrayContaining(["contact-d1-databases", "contact-turnstile-widget", "contact-preview-builds"]),
+    );
+  });
+});

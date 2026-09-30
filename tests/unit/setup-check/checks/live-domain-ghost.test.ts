@@ -1,3 +1,4 @@
+import { setupItems } from "../../../../scripts/setup-check/items.ts";
 import { describe, expect, it } from "vitest";
 import { check } from "../../../../scripts/setup-check/checks/live-domain-ghost.ts";
 import type { DnsAnswer, DnsBaselineRecord, DnsRecordType } from "../../../../scripts/setup-check/types.ts";
@@ -77,7 +78,7 @@ describe("checks/live-domain-ghost", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("complete");
-    expect(result.step).toBe("Step 6 of 18");
+    expect(result.step).toBe(`Step 6 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#live-domain-ghost");
   });
 
