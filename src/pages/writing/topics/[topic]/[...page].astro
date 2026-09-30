@@ -1,0 +1,65 @@
+---
+// One topic, `/writing/topics/{topic}/` and `/writing/topics/{topic}/{n}/` (spec 008 US4;
+// contracts/blog-pages.md "Topic"; FR-013, FR-014, FR-030, FR-047, FR-048). One set of
+// pages per topic in the list, so an unknown topic has no page. It opens with the topic
+// banner (its `h1`), then the topic's posts, paged like all posts, and has no pill row.
+// `paginate()` of an empty list still builds one page (spike 2, research.md), so a topic
+// without posts gets a message and a link to all posts with no special routing
+// (docs.astro.build/en/guides/routing/#nested-pagination).
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import CardGrid from "../../../../components/post/CardGrid.astro";
+import Pagination from "../../../../components/post/Pagination.astro";
+import TopicBanner from "../../../../components/post/TopicBanner.astro";
+import { blog } from "../../../../config/blog.ts";
+import { findTopic, topics } from "../../../../config/topics.ts";
+import { getNavigation } from "../../../../lib/pages";
+import { getPostSummaries } from "../../../../lib/posts";
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = await getPostSummaries();
+  return topics.flatMap((topic) =>
+    paginate(
+      posts.filter((post) => post.topics.includes(topic.id)),
+      { params: { topic: topic.id }, pageSize: blog.pageSize },
+    ),
+  );
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const topic = findTopic(Astro.params.topic ?? "");
+if (!topic) throw new Error(`No topic "${Astro.params.topic}" in src/config/topics.ts.`);
+const navigation = await getNavigation();
+const suffix = page.currentPage > 1 ? `, page ${page.currentPage}` : "";
+const feedHref = new URL("/writing/rss.xml", Astro.site).href;
+---
+
+<BaseLayout
+  title={`${topic.name}${suffix}`}
+  description={`${topic.description}${suffix ? ` (page ${page.currentPage})` : ""}`}
+  navigation={navigation}
+>
+  <link slot="head" rel="alternate" type="application/rss+xml" title={blog.feedTitle} href={feedHref} />
+  <div class="mx-auto max-w-screen-lg">
+    <TopicBanner topic={topic.id} page={page.currentPage} />
+
+    {
+      page.data.length > 0 ? (
+        <CardGrid posts={page.data} data-topic-grid="" />
+      ) : (
+        <div>
+          <p class="text-lg text-dusk-700 dark:text-mist-300">There are no posts on this topic yet.</p>
+          <p class="mt-4">
+            <a
+              href="/writing/all/"
+              class="inline-block px-1 py-1 font-medium text-dusk-900 underline underline-offset-4 hover:text-rust-700 dark:text-white dark:hover:text-rust-400"
+              >All posts</a
+            >
+          </p>
+        </div>
+      )
+    }
+
+    <Pagination currentPage={page.currentPage} lastPage={page.lastPage} base={`/writing/topics/${topic.id}/`} />
+  </div>
+</BaseLayout>

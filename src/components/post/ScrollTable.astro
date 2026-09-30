@@ -1,0 +1,12 @@
+---
+// Replaces the Markdown `table` in a post (research R9; contracts/blog-pages.md
+// "Table"; FR-026). A wide table scrolls sideways inside its own focusable,
+// labelled region, so the page never scrolls sideways and a keyboard user can
+// scroll it. The table keeps its native semantics. Markdown tables have no
+// caption syntax, so the region's label is always "Table". No script.
+const { ...attributes } = Astro.props;
+---
+
+<div class="table-wrapper" role="region" aria-label="Table" tabindex="0">
+  <table {...attributes}><slot /></table>
+</div>

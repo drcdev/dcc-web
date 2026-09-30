@@ -9,7 +9,7 @@ import {
   futureDestinations,
   socialNavigation,
 } from "../../../src/config/navigation.ts";
-import { isCurrent } from "../../../src/lib/nav.ts";
+import { isCurrent, isInSection } from "../../../src/lib/nav.ts";
 
 describe("fixedPrimaryNavigation", () => {
   it("is exactly Writing 4, Projects 5 and Contact 7, sourced from the config file", () => {
@@ -65,7 +65,11 @@ describe("every navigation item", () => {
 
 describe("futureDestinations", () => {
   it("lists exactly the addresses reserved for later features", () => {
-    expect([...futureDestinations]).toEqual(["/writing/", "/projects/"]);
+    expect([...futureDestinations]).toEqual(["/projects/"]);
+  });
+
+  it("no longer reserves /writing/, which the blog builds", () => {
+    expect(futureDestinations).not.toContain("/writing/");
   });
 
   it("does not include any address a page builds", () => {
@@ -95,5 +99,27 @@ describe("isCurrent", () => {
   it("does not treat a child or look-alike address as current", () => {
     expect(isCurrent("/writing/some-post/", "/writing/")).toBe(false);
     expect(isCurrent("/services-extra/", "/services/")).toBe(false);
+  });
+});
+
+describe("isInSection", () => {
+  it("is true for the section address and every address below it", () => {
+    expect(isInSection("/writing/", "/writing/")).toBe(true);
+    expect(isInSection("/writing", "/writing/")).toBe(true);
+    expect(isInSection("/writing/some-post/", "/writing/")).toBe(true);
+    expect(isInSection("/writing/all/2/", "/writing/")).toBe(true);
+    expect(isInSection("/writing/topics/agentic-ai/", "/writing/")).toBe(true);
+  });
+
+  it("is false elsewhere, including look-alike addresses", () => {
+    expect(isInSection("/", "/writing/")).toBe(false);
+    expect(isInSection("/services/", "/writing/")).toBe(false);
+    expect(isInSection("/writing-tips/", "/writing/")).toBe(false);
+    expect(isInSection("/about/writing/", "/writing/")).toBe(false);
+  });
+
+  it("never treats / as a section that holds every address", () => {
+    expect(isInSection("/services/", "/")).toBe(false);
+    expect(isInSection("/", "/")).toBe(true);
   });
 });

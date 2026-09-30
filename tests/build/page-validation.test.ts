@@ -71,7 +71,8 @@ describe("build errors for page files (contracts/build-errors.md)", () => {
     expectRejected([broken("14-route-conflict.mdx", "404.mdx")], "404.mdx", "404.astro", "/404/"));
 
   it("row 14: address reserved for a later feature", () =>
-    expectRejected([broken("14-reserved-address.mdx", "writing.mdx")], "writing.mdx", "reserved", "/writing/"));
+    // "/writing/" is now claimed by the blog's routes (the conflict case above); "/projects/" is still reserved.
+    expectRejected([broken("14-reserved-address.mdx", "projects.mdx")], "projects.mdx", "reserved", "/projects/"));
 
   it("row 15: two navigation entries with the same position", () =>
     expectRejected(

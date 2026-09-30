@@ -180,8 +180,8 @@ test.describe("activation", () => {
   test("a future destination is an ordinary link that serves the not-found status", async ({ page }) => {
     await page.goto("/");
     const [response] = await Promise.all([
-      page.waitForResponse((r) => new URL(r.url()).pathname === "/writing/"),
-      page.locator(`${NAV_LIST} a[href="/writing/"]`).click(),
+      page.waitForResponse((r) => new URL(r.url()).pathname === "/projects/"),
+      page.locator(`${NAV_LIST} a[href="/projects/"]`).click(),
     ]);
     expect(response.status()).toBe(404);
   });
@@ -189,7 +189,7 @@ test.describe("activation", () => {
   test("a future destination loads the not-found page", async ({ page }) => {
     test.fixme(!TEMPLATES[1].built, NOT_FOUND_PENDING);
     await page.goto("/");
-    await page.locator(`${NAV_LIST} a[href="/writing/"]`).click();
+    await page.locator(`${NAV_LIST} a[href="/projects/"]`).click();
     await expect(page.getByRole("heading", { level: 1, name: "Page not found" })).toBeVisible();
   });
 });
@@ -332,7 +332,10 @@ test.describe("footer on every template", () => {
     expect(seen.at(-1)).toBe("https://www.linkedin.com/in/drcdev");
     // Each stop is visited once on the way down (the header and footer each link "/" twice or once).
     // The home card's call to action repeats the Services link, so "outside:/services/" may repeat too.
-    const distinct = seen.filter((s) => s !== "/" && s !== "outside:/" && s !== "outside:/services/");
+    // The Recent writing section (spec 008) repeats the Writing link and shares topic links between cards.
+    const distinct = seen.filter(
+      (s) => s !== "/" && s !== "outside:/" && s !== "outside:/services/" && !s.startsWith("outside:/writing/"),
+    );
     expect(new Set(distinct).size).toBe(distinct.length);
   });
 });

@@ -29,6 +29,7 @@ const { navigation, ...seo } = Astro.props;
     <script is:inline set:html={themeInit} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <Seo {...seo} />
+    <slot name="head" />
   </head>
   <body class="bg-white dark:bg-dusk-BASE antialiased">
     <SkipLink />

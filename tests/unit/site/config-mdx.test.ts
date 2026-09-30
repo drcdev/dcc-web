@@ -16,6 +16,12 @@ describe("MDX and fixture-site configuration", () => {
     );
   });
 
+  it("pins the blog dependencies to exact versions", () => {
+    expect(pkg.dependencies["@astrojs/rss"]).toMatch(/^\d+\.\d+\.\d+$/);
+    // The version @astrojs/markdown-satteri already installs.
+    expect(pkg.dependencies.satteri).toBe("0.10.5");
+  });
+
   it("registers mdx() in astro.config.mjs", () => {
     const config = read("astro.config.mjs");
     expect(config).toMatch(/from "@astrojs\/mdx"/);
@@ -28,7 +34,8 @@ describe("MDX and fixture-site configuration", () => {
     expect(config).toContain("astro preview");
     expect(config).toContain("--port 4322");
     expect(config).toMatch(/name:\s*"sections"/);
-    expect(config).toMatch(/testMatch:\s*\/sections\\\.spec\\\.ts\$\//);
+    // The project also runs the pagination spec, which needs the fixture site's 13 or more posts (spec 008 T057).
+    expect(config).toMatch(/testMatch:\s*\[\s*\/sections\\\.spec\\\.ts\$\/,\s*\/blog-pagination\\\.spec\\\.ts\$\/\s*\]/);
     expect(config).toMatch(/testIgnore:\s*\[[^\]]*sections\\\.spec\\\.ts\$/s);
   });
 

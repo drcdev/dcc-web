@@ -62,12 +62,18 @@ export default defineConfig({
     },
     {
       name: "sections",
-      testMatch: /sections\.spec\.ts$/,
+      testMatch: [/sections\.spec\.ts$/, /blog-pagination\.spec\.ts$/],
       use: { ...devices["Desktop Chrome"], baseURL: "http://localhost:4322" },
     },
     {
       name: "e2e",
-      testIgnore: [/a11y\.spec\.ts$/, /budget\.spec\.ts$/, /visual\.spec\.ts$/, /sections\.spec\.ts$/],
+      testIgnore: [
+        /a11y\.spec\.ts$/,
+        /budget\.spec\.ts$/,
+        /visual\.spec\.ts$/,
+        /sections\.spec\.ts$/,
+        /blog-pagination\.spec\.ts$/,
+      ],
       use: { ...devices["Desktop Chrome"] },
     },
   ],

@@ -51,6 +51,21 @@ describe("public/_headers", () => {
     expect(starRule().get(name.toLowerCase())).toBe(value);
   });
 
+  it("sets exactly the current header set on /* (no header added or removed; blog guard, FR-053)", () => {
+    expect([...starRule().keys()].sort()).toEqual(
+      [
+        "content-security-policy",
+        "cross-origin-opener-policy",
+        "permissions-policy",
+        "referrer-policy",
+        "strict-transport-security",
+        "x-content-type-options",
+        "x-frame-options",
+        "x-robots-tag",
+      ].sort(),
+    );
+  });
+
   it("never sets a cookie", () => {
     const contents = readFileSync(headersPath, "utf-8");
     expect(contents.toLowerCase()).not.toContain("set-cookie");

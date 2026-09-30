@@ -3,7 +3,7 @@
 // rows 8, 9, 10 and 16). Each failure names the file. Code fences and inline
 // code are ignored, so a page can show example tags and headings.
 import { sectionNames } from "../../components/sections/index.ts";
-import { pageFileError } from "./errors.ts";
+import { pageFileError, postFileError } from "./errors.ts";
 
 /** Replaces fenced code blocks and inline code with blank space so they are not checked. */
 function withoutCode(body: string): string {
@@ -24,15 +24,20 @@ function withoutCode(body: string): string {
   return kept.join("\n");
 }
 
-export function validatePageBody(file: string, body: string): void {
+/**
+ * @param kind which kind of file the body belongs to, for the error prefix and wording
+ *   ("Page file ..." by default, "Post file ..." for a post).
+ */
+export function validatePageBody(file: string, body: string, kind: "page" | "post" = "page"): void {
+  const fileError = kind === "post" ? postFileError : pageFileError;
   if (body.trim() === "") {
-    throw pageFileError(file, "the page has no content. Add text below the settings.");
+    throw fileError(file, `the ${kind} has no content. Add text below the settings.`);
   }
 
   const text = withoutCode(body);
 
   if (/^ {0,3}#(?:\s|$)/m.test(text) || /<h1[\s>/]/i.test(text)) {
-    throw pageFileError(
+    throw fileError(
       file,
       "the body has a level-1 heading. The page title is the only main heading, so use ## for headings in the body.",
     );
@@ -41,7 +46,7 @@ export function validatePageBody(file: string, body: string): void {
   const known = new Set<string>(sectionNames);
   for (const [, tag] of text.matchAll(/<([A-Z][A-Za-z0-9]*)/g)) {
     if (!known.has(tag as string)) {
-      throw pageFileError(
+      throw fileError(
         file,
         `<${tag}> is not a section. The sections are: ${sectionNames.join(", ")}.`,
       );
@@ -49,6 +54,6 @@ export function validatePageBody(file: string, body: string): void {
   }
 
   if (/!\[\s*\]\(/.test(text)) {
-    throw pageFileError(file, "an image in the body has no alt text. Describe the image inside the square brackets.");
+    throw fileError(file, "an image in the body has no alt text. Describe the image inside the square brackets.");
   }
 }

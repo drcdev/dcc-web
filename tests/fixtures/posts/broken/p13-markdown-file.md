@@ -1,0 +1,9 @@
+---
+title: A test post
+summary: A post used by the build tests.
+date: 2026-08-27
+topics:
+  - agentic-ai
+---
+
+Some text in the post.

@@ -1,0 +1,44 @@
+---
+// One post page per visible post: `/writing/{slug}/` (spec 008 FR-001 to FR-003;
+// research R4, R8, R9, R14). getStaticPaths() makes one path per post from
+// getPosts(), the only reader of the collection, so drafts are left out of a
+// production build (docs.astro.build/en/guides/content-collections/#generating-routes-from-content).
+// The post body is rendered with render(); `pre` and `table` are replaced by the
+// code block and the scrolling table, and the section components (Figure,
+// WideImage, FullImage) are passed so MDX needs no imports
+// (docs.astro.build/en/guides/integrations-guide/mdx/#passing-components-to-mdx-content).
+import { render } from "astro:content";
+import { getImage } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import PostLayout from "../../layouts/PostLayout.astro";
+import CodeBlock from "../../components/post/CodeBlock.astro";
+import ScrollTable from "../../components/post/ScrollTable.astro";
+import { sectionComponents } from "../../components/sections/index";
+import { selectRelated } from "../../lib/content/post-order";
+import { getNavigation } from "../../lib/pages";
+import { getPostSummaries, getPosts, postFileOf } from "../../lib/posts";
+
+export async function getStaticPaths() {
+  const [entries, summaries] = await Promise.all([getPosts(), getPostSummaries()]);
+  return entries.map((entry) => {
+    const post = summaries.find((summary) => summary.slug === entry.id)!;
+    return { params: { slug: entry.id }, props: { entry, post, related: selectRelated(post, summaries) } };
+  });
+}
+
+const { entry, post, related } = Astro.props;
+// Section components name this file in their errors (src/components/sections/validate.ts).
+Astro.locals.pageFile = postFileOf(entry);
+const { Content } = await render(entry);
+const navigation = await getNavigation();
+
+// The feature image, resized to the Open Graph size, is the sharing image;
+// Seo.astro falls back to the site default when the post has none.
+const share = post.featureImage
+  ? await getImage({ src: post.featureImage.src as ImageMetadata, width: 1200, format: "png" })
+  : undefined;
+---
+
+<PostLayout post={post} navigation={navigation} image={share?.src} related={related}>
+  <Content components={{ ...sectionComponents, pre: CodeBlock, table: ScrollTable }} />
+</PostLayout>

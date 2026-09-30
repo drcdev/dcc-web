@@ -1,0 +1,22 @@
+---
+// The related posts at the end of a post (FR-029, FR-044): up to 3 cards in a list under the
+// heading "Related posts", with card titles as `h3`. Renders nothing when there are none. The
+// caller chooses the posts with selectRelated() (src/lib/content/post-order.ts).
+import type { PostSummary } from "../../lib/content/post-summary.ts";
+import CardGrid from "./CardGrid.astro";
+
+export interface Props {
+  posts: readonly PostSummary[];
+}
+
+const posts = Astro.props.posts.slice(0, 3);
+---
+
+{
+  posts.length > 0 && (
+    <section data-related class="mx-auto mt-10 max-w-screen-lg">
+      <h2 class="mb-4 mt-0 text-2xl font-bold text-dusk-900 dark:text-white">Related posts</h2>
+      <CardGrid posts={posts} headingLevel="h3" />
+    </section>
+  )
+}

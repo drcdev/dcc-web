@@ -118,3 +118,27 @@ describe("Seo with overrides", () => {
     expect(textOf(html, "title")).toBe('A "quoted" <title> · Don Coleman');
   });
 });
+
+describe("Seo article times (FR-030)", () => {
+  const publishedTime = new Date("2026-08-27");
+  const modifiedTime = new Date("2026-09-15");
+
+  it("emits article:published_time and article:modified_time for an article", async () => {
+    const html = await render({ title: "A post", type: "article", publishedTime, modifiedTime }, "/writing/a-post/");
+    expect(content(html, "property", "og:type")).toBe("article");
+    expect(content(html, "property", "article:published_time")).toBe("2026-08-27");
+    expect(content(html, "property", "article:modified_time")).toBe("2026-09-15");
+  });
+
+  it("omits article:modified_time when there is none", async () => {
+    const html = await render({ title: "A post", type: "article", publishedTime }, "/writing/a-post/");
+    expect(meta(html, "property", "article:modified_time")).toHaveLength(0);
+    expect(content(html, "property", "article:published_time")).toBe("2026-08-27");
+  });
+
+  it("emits neither on a website page, even when given", async () => {
+    const html = await render({ publishedTime, modifiedTime });
+    expect(meta(html, "property", "article:published_time")).toHaveLength(0);
+    expect(meta(html, "property", "article:modified_time")).toHaveLength(0);
+  });
+});

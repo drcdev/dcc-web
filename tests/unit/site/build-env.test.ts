@@ -11,6 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import { topics } from "../../../src/config/topics.ts";
 import { resolveSiteOrigin } from "../../../src/lib/site-origin.ts";
 
 const run = promisify(execFile);
@@ -124,11 +125,42 @@ describe.each(environments)("astro build with the $label environment", ({ env })
     const entries = [...readFileSync(join(outDir, "sitemap-0.xml"), "utf-8").matchAll(/<loc>([^<]+)<\/loc>/g)].map(
       (m) => m[1]!,
     );
-    expect([...entries].sort()).toEqual(
-      ["/", "/about/", "/contact/", "/privacy-policy/", "/services/", "/speaking/", "/technology/", "/terms-of-use/"].map(
-        (path) => `${expectedOrigin}${path}`,
-      ),
-    );
+    // A preview build includes the sample posts, which are drafts; production leaves them out (spec 008 R3).
+    // The listing pages are published on every build: all posts and one page per topic (spec 008 US4).
+    const pages = [
+      "/",
+      "/about/",
+      "/contact/",
+      "/privacy-policy/",
+      "/services/",
+      "/speaking/",
+      "/technology/",
+      "/terms-of-use/",
+      "/writing/",
+      "/writing/all/",
+      ...topics.map((topic) => `/writing/topics/${topic.id}/`),
+    ];
+    const samplePosts = [
+      "/writing/sample-everything/",
+      "/writing/sample-long-title/",
+      "/writing/sample-short/",
+      "/writing/sample-text-only/",
+    ];
+    const expected = env.WORKERS_CI_BRANCH === "main" ? pages : [...pages, ...samplePosts];
+    expect([...entries].sort()).toEqual(expected.map((path) => `${expectedOrigin}${path}`).sort());
+  });
+
+  it("leaves the draft sample posts out of production and builds them, labelled, elsewhere (FR-032, FR-046)", () => {
+    const page = join(outDir, "writing/sample-short/index.html");
+    if (env.WORKERS_CI_BRANCH === "main") {
+      expect(files.some((f) => f.includes(`${join("writing", "sample-")}`))).toBe(false);
+      expect(readFileSync(join(outDir, "writing/index.html"), "utf-8")).toContain("There are no posts yet.");
+    } else {
+      const html = readFileSync(page, "utf-8");
+      expect(html).toMatch(/data-draft-notice[^>]*>\s*<strong>Draft\.<\/strong>/);
+      expect(html).toMatch(/<meta\s+name="robots"\s+content="noindex"\s*\/?>/);
+      expect(readFileSync(join(outDir, "writing/index.html"), "utf-8")).toContain("data-draft-label");
+    }
   });
 
   it("places the pre-paint theme script before the stylesheet in the built home page", () => {

@@ -31,13 +31,13 @@ async function sitemapEntries(request: APIRequestContext): Promise<string[]> {
 const attr = (page: Page, selector: string, name = "content") =>
   page.locator(selector).first().getAttribute(name);
 
-async function expectSharedMetadata(page: Page, origin: string) {
+async function expectSharedMetadata(page: Page, origin: string, type: "website" | "article" = "website") {
   const description = await attr(page, 'meta[name="description"]');
   expect(description?.trim()).toBeTruthy();
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex");
   await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", /\S/);
   await expect(page.locator('meta[property="og:description"]')).toHaveAttribute("content", description!);
-  await expect(page.locator('meta[property="og:type"]')).toHaveAttribute("content", "website");
+  await expect(page.locator('meta[property="og:type"]')).toHaveAttribute("content", type);
   await expect(page.locator('meta[property="og:site_name"]')).toHaveAttribute("content", "Don Coleman");
   await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute("content", "en_CA");
   await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
@@ -54,16 +54,48 @@ async function expectSharedMetadata(page: Page, origin: string) {
   const png = await response.body();
   expect(png.subarray(1, 4).toString("latin1")).toBe("PNG");
   expect(png.subarray(12, 16).toString("latin1")).toBe("IHDR");
-  expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1200, 630]);
+  // The default sharing image is 1200 by 630; a post shares its feature image resized to 1200 wide.
+  expect(png.readUInt32BE(16)).toBe(1200);
+  if (type === "website") expect(png.readUInt32BE(20)).toBe(630);
 }
+
+// This build is not a production build, so the sample posts (drafts) are built and listed;
+// production leaves them out (specs/008-blog research R3).
+const SAMPLE_POSTS = [
+  "/writing/sample-everything/",
+  "/writing/sample-long-title/",
+  "/writing/sample-short/",
+  "/writing/sample-text-only/",
+];
+
+// The all posts page and one page per topic are built on every build (spec 008 US4).
+const TOPIC_PAGES = [
+  "/writing/topics/agentic-ai/",
+  "/writing/topics/compliant-data/",
+  "/writing/topics/healthcare-leadership/",
+  "/writing/topics/technology-teams/",
+];
 
 test("the sitemap lists exactly the built public pages, never /404", async ({ request }) => {
   const origin = await robotsOrigin(request);
   const entries = await sitemapEntries(request);
   expect([...entries].sort()).toEqual(
-    ["/", "/about/", "/contact/", "/privacy-policy/", "/services/", "/speaking/", "/technology/", "/terms-of-use/"].map(
-      (path) => `${origin}${path}`,
-    ),
+    [
+      "/",
+      "/about/",
+      "/contact/",
+      "/privacy-policy/",
+      "/services/",
+      "/speaking/",
+      "/technology/",
+      "/terms-of-use/",
+      "/writing/",
+      "/writing/all/",
+      ...TOPIC_PAGES,
+      ...SAMPLE_POSTS,
+    ]
+      .map((path) => `${origin}${path}`)
+      .sort(),
   );
   for (const entry of entries) expect(new URL(entry).pathname.startsWith("/404")).toBe(false);
 });
@@ -86,6 +118,13 @@ test("robots.txt allows all crawling and points at the sitemap on the page origi
   expect(new URL(canonical!).origin).toBe(await robotsOrigin(request));
 });
 
+/** Post pages are articles; the landing, all posts and topic pages are ordinary pages (FR-030). */
+const isPostPath = (path: string) =>
+  path.startsWith("/writing/") &&
+  path !== "/writing/" &&
+  !path.startsWith("/writing/all/") &&
+  !path.startsWith("/writing/topics/");
+
 test("every public page has complete, consistent metadata", async ({ page, request }) => {
   const origin = await robotsOrigin(request);
   const entries = await sitemapEntries(request);
@@ -104,7 +143,7 @@ test("every public page has complete, consistent metadata", async ({ page, reque
     await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", entry);
     await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", entry);
-    await expectSharedMetadata(page, origin);
+    await expectSharedMetadata(page, origin, isPostPath(path) ? "article" : "website");
   }
   expect(titles.size).toBe(entries.length);
 });

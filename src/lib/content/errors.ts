@@ -15,3 +15,14 @@ export function pageFileError(file: string, problem: string): PageContentError {
 export function pageFilesError(fileA: string, fileB: string, problem: string): PageContentError {
   return new PageContentError(`Page files ${fileA} and ${fileB}: ${problem}`);
 }
+
+/** A problem in one post file: `Post file <path>: <problem>`. */
+export function postFileError(file: string, problem: string): PageContentError {
+  return new PageContentError(`Post file ${file}: ${problem}`);
+}
+
+/** A problem between two post files: `Post files <a> and <b>: <problem>`. */
+export function postFilesError(fileA: string, fileB: string, problem: string): PageContentError {
+  return new PageContentError(`Post files ${fileA} and ${fileB}: ${problem}`);
+}
+

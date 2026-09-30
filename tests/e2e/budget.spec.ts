@@ -83,6 +83,22 @@ async function measure(browser: Browser, path: string): Promise<Measurement> {
   return { ...vitals, jsBytes, totalBytes };
 }
 
+// Page weight of a full listing (specs/008-blog T058; FR-041). The fixture site (port 4322) has 17
+// posts, so `/writing/all/` shows 12 cards; the existing budget applies unchanged. `measure` takes
+// an absolute address, so this case needs no project of its own.
+test.describe("writing-all template with 12 cards on the fixture site — page budget", () => {
+  test("meets LCP, CLS, long-task, JavaScript and total-transfer budgets on simulated mobile", async ({ browser }) => {
+    const m = await measure(browser, "http://localhost:4322/writing/all/");
+    test.info().annotations.push({ type: "budget", description: JSON.stringify(m) });
+    expect(m.lcp, "LCP was recorded").not.toBeNull();
+    expect(m.lcp!, "LCP (ms)").toBeLessThanOrEqual(BUDGET.lcpMs);
+    expect(m.cls, "CLS").toBeLessThan(BUDGET.cls);
+    expect(m.longTaskMs, "long-task time (ms)").toBeLessThanOrEqual(BUDGET.longTaskMs);
+    expect(m.jsBytes, "JavaScript transferred (bytes)").toBeLessThanOrEqual(BUDGET.jsBytes);
+    expect(m.totalBytes, "total transferred (bytes)").toBeLessThanOrEqual(BUDGET.totalBytes);
+  });
+});
+
 for (const template of TEMPLATES) {
   test.describe(`${template.name} template — page budget`, () => {
     test("meets LCP, CLS, long-task, JavaScript and total-transfer budgets on simulated mobile", async ({

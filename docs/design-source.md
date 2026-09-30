@@ -30,16 +30,16 @@ owns porting it.
 | `accent-*` palette from Ghost's `--ghost-accent-color` | Fixed accent palette derived from rust `#d68844` | Foundation |
 | `--gh-font-body` / `--gh-font-heading` | System font stack now; follow-up for the real Ghost fonts, self-hosted later via Astro's built-in font support | Foundation (follow-up: fonts) |
 | `@custom-variant dark`, `.prose-accent`, heading colours (H1/H2 rust, H3 sage, H4 lavender), `.table-wrapper`, focus rings | Global styles, as-is | Foundation |
-| Prism token colours + `kg-code-card` | Shiki light/dark themes + code block component (note Astro CSP + Shiki inline styles, research R8) | Blog |
+| Prism token colours + `kg-code-card` | Shiki with one semantic theme whose colours become `hl-*` classes (no inline styles, so the CSP is unchanged), coloured in `src/styles/global.css` for light and dark, plus the `CodeBlock` component (done; spec 008 R7, R8) | Blog |
 | `kg-width-wide` / `kg-width-full` + `content-feature-image.hbs` | `WideImage` and `FullImage` sections, `FeatureImage` page component, and `.kg-width-*` rules in `src/styles/global.css` (done) | Pages |
-| `table-wrapper.js` | CSS or build-time Markdown plugin; no client script | Blog |
+| `table-wrapper.js` | `ScrollTable` component replacing the Markdown `table`, scrolling inside a focusable region; no client script (done; spec 008 R9) | Blog |
 | `theme-toggle.js` + `ui-theme-toggle.hbs` | Inline head script + toggle component | Foundation |
 | `navigation-toggle.js` | Native HTML if accessible, else tiny script; progressive enhancement per spec (tiny script chosen, research R6) | Foundation |
 | `default.hbs`, `layout-header.hbs`, `layout-footer.hbs`, `navigation.hbs` | Base layout, header, footer, navigation | Foundation |
 | `partials/Icons/*` | SVG components via Astro's built-in SVG imports; each feature ports what it uses | Each feature |
 | `layout-author-hero.hbs` | `HomeIntro` card in `src/components/page/` (done) | Pages |
 | `page.hbs` + `content-section.hbs` | `src/layouts/PageLayout.astro` (done) | Pages |
-| `ui-share.hbs` | Share component with Web Share API + plain links fallback | Blog |
+| `ui-share.hbs` | `Share` component in `src/components/post/`: plain LinkedIn and email links, plus a Share button that a bundled script shows when `navigator.share` exists; Flux's Ghost `#/share` link is not ported (done; spec 008 R10) | Blog |
 | `post.hbs`, `content-post-list.hbs` (timeline), `content-post-list-featured.hbs` (bento grid), `content-post-meta.hbs`, `ui-tag-pill.hbs` | Reference patterns only; blog and portfolio designed fresh | Blog / Portfolio |
 | `ui-contact-form.hbs`, `contact-form.js`, `supabase/functions/contact/index.ts`, `supabase/migrations/*contact*` | Contact form and API | Contact |
 | `error.hbs` | Not-found page | Foundation |
@@ -61,7 +61,7 @@ siblings to these paths instead of new conventions.
 | `src/layouts/PageLayout.astro` | Standard page layout inside `BaseLayout` | `PostLayout`, `ProjectLayout` |
 | `src/lib/content/` | `address.ts`, `body.ts`, `navigation.ts`, `images.ts`, `errors.ts`: build-time checks that raise `PageContentError` | Reused for posts and projects |
 | `src/pages/[...slug].astro` | The one route that renders every page file | `src/pages/writing/` and `src/pages/projects/` routes; the address check reserves their addresses |
-| `docs/pages.md` | Don's authoring guide | Guides for posts and projects |
+| `docs/pages.md` | Don's authoring guide | `docs/posts.md` (posts, done); a guide for projects |
 
 Test support for this structure:
 

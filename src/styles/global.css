@@ -137,6 +137,9 @@
 .table-wrapper table {
   @apply w-full text-base text-dusk-700 dark:text-mist-200 border-collapse;
   margin: 0;
+  /* A wide table keeps its natural width and scrolls inside the wrapper instead of
+     squeezing its cells until words break letter by letter (spec 008 T074). */
+  min-width: max-content;
 }
 
 .table-wrapper table thead {
@@ -327,4 +330,112 @@ button:focus-visible {
 
 .kg-width-full figcaption {
   text-align: center;
+}
+
+/* ===== Blog: code cards and syntax colours (port of Flux kg-code-card; spec 008 R7, R8) ===== */
+/* Shiki writes no colours: src/lib/markdown/shiki-classes.ts turns each token colour
+   into an hl-* class, so the page needs no inline styles (content security policy).
+   Every colour comes from an existing palette token, with a dark variant. */
+.code-card {
+  @apply relative my-8 overflow-hidden rounded-xl border border-dusk-200 bg-dusk-50 dark:border-dusk-700 dark:bg-dusk-900;
+}
+
+.code-card__bar {
+  @apply flex items-center justify-end;
+}
+
+/* The bar only takes room once its button is shown (scripts on). */
+.code-card__bar:has(button:not([hidden])) {
+  @apply px-3 pt-2;
+}
+
+.code-card__button {
+  @apply inline-flex min-h-7 cursor-pointer items-center rounded-md border border-dusk-300 bg-white px-3 text-sm font-medium text-dusk-800 hover:bg-dusk-100 dark:border-dusk-600 dark:bg-dusk-800 dark:text-mist-100 dark:hover:bg-dusk-700;
+}
+
+.code-card__caption {
+  @apply border-t border-dusk-200 px-4 py-2 text-sm text-mauve-600 dark:border-dusk-700 dark:text-mauve-400;
+}
+
+.astro-code {
+  @apply m-0 overflow-x-auto rounded-none bg-transparent p-4 text-sm leading-relaxed text-dusk-800 dark:text-mist-200;
+}
+
+.astro-code code {
+  @apply bg-transparent p-0 text-inherit;
+  font-size: inherit;
+}
+
+.hl-text {
+  color: var(--color-dusk-800);
+}
+.hl-comment {
+  color: var(--color-mauve-600);
+}
+.hl-keyword,
+.hl-tag {
+  color: var(--color-rust-700);
+}
+.hl-string {
+  color: var(--color-sage-800);
+}
+.hl-number,
+.hl-attribute {
+  color: var(--color-lavender-700);
+}
+.hl-function {
+  color: var(--color-accent-800);
+}
+.hl-type {
+  color: var(--color-sage-700);
+}
+.hl-variable {
+  color: var(--color-dusk-700);
+}
+.hl-punctuation {
+  color: var(--color-dusk-600);
+}
+
+.dark .hl-text {
+  color: var(--color-mist-200);
+}
+.dark .hl-comment {
+  color: var(--color-mauve-400);
+}
+.dark .hl-keyword,
+.dark .hl-tag {
+  color: var(--color-rust-400);
+}
+.dark .hl-string {
+  color: var(--color-sage-300);
+}
+.dark .hl-number,
+.dark .hl-attribute {
+  color: var(--color-lavender-300);
+}
+.dark .hl-function {
+  color: var(--color-accent-300);
+}
+.dark .hl-type {
+  color: var(--color-sage-400);
+}
+.dark .hl-variable {
+  color: var(--color-mist-300);
+}
+.dark .hl-punctuation {
+  color: var(--color-mist-500);
+}
+
+/* A block or table that scrolls sideways is reachable by keyboard, so it shows focus.
+   The offset is negative because the code card clips its overflow. */
+.astro-code:focus-visible,
+.table-wrapper:focus-visible {
+  @apply outline-2 -outline-offset-2 outline-accent-500 dark:outline-accent-400;
+}
+
+@media (forced-colors: active) {
+  .astro-code:focus-visible,
+  .table-wrapper:focus-visible {
+    outline-color: CanvasText;
+  }
 }

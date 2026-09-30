@@ -77,6 +77,29 @@ describe("astro.config.mjs site resolution", () => {
     const hasTailwindPlugin = plugins.some((plugin) => plugin?.name?.startsWith("@tailwindcss/vite"));
     expect(hasTailwindPlugin).toBe(true);
   });
+
+  it("declares typed env.schema entries for the two Workers Builds variables (research R3)", async () => {
+    const config = (await importFreshConfig()) as unknown as {
+      env?: { schema?: Record<string, { type?: string; context?: string; access?: string; optional?: boolean }> };
+    };
+    for (const name of ["WORKERS_CI", "WORKERS_CI_BRANCH"]) {
+      expect(config.env?.schema?.[name], name).toMatchObject({
+        type: "string",
+        context: "server",
+        access: "public",
+        optional: true,
+      });
+    }
+  });
+
+  it("registers the reading-time plugin through markdown.processor (research R6)", async () => {
+    const config = (await importFreshConfig()) as unknown as {
+      markdown?: { processor?: { name?: string; options?: { mdastPlugins?: Array<{ name?: string }> } } };
+    };
+    expect(config.markdown?.processor?.name).toBe("satteri");
+    const names = (config.markdown?.processor?.options?.mdastPlugins ?? []).map((plugin) => plugin?.name);
+    expect(names).toContain("reading-time");
+  });
 });
 
 describe("astro.config.mjs PUBLIC_TURNSTILE_SITE_KEY (research R6)", () => {

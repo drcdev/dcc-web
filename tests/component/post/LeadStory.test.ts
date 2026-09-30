@@ -1,0 +1,60 @@
+// LeadStory: the newest post, large, at the top of the landing page
+// (contracts/blog-pages.md "Landing" item 2; FR-006, FR-011, FR-052).
+import { experimental_AstroContainer as AstroContainer } from "astro/container";
+import { beforeAll, describe, expect, it } from "vitest";
+import LeadStory from "../../../src/components/post/LeadStory.astro";
+import { topicStyles } from "../../../src/components/post/topic-styles.ts";
+import { findTopic } from "../../../src/config/topics.ts";
+import { byName, classList } from "../html.ts";
+import { summary, withImage } from "./fixtures.ts";
+
+let container: AstroContainer;
+beforeAll(async () => {
+  container = await AstroContainer.create();
+});
+
+const render = (post: ReturnType<typeof summary>) => container.renderToString(LeadStory, { props: { post } });
+
+describe("LeadStory", () => {
+  it("is one <article data-lead-story> with the title as an h2 link to the post", async () => {
+    const html = await render(summary("one"));
+    const articles = byName(html, "article");
+    expect(articles).toHaveLength(1);
+    expect("data-lead-story" in articles[0]!.attrs).toBe(true);
+    expect(html).toMatch(/<h2[^>]*>\s*<a [^>]*href="\/writing\/one\/"[^>]*>\s*Title of one\s*<\/a>\s*<\/h2>/);
+    expect(byName(html, "a").filter((a) => a.attrs.href === "/writing/one/")).toHaveLength(1);
+  });
+
+  it("shows the summary, the date, the reading time and the topic pills", async () => {
+    const html = await render(summary("one", { topics: ["agentic-ai", "compliant-data"], minutesRead: 9 }));
+    expect(html).toContain("Summary of one.");
+    expect(byName(html, "time")).toHaveLength(1);
+    expect(html.replace(/<[^>]+>/g, " ")).toContain("9 min read");
+    expect(byName(html, "a").filter((a) => "data-topic-pill" in a.attrs).map((a) => a.attrs.href)).toEqual([
+      "/writing/topics/agentic-ai/",
+      "/writing/topics/compliant-data/",
+    ]);
+  });
+
+  it("loads its feature image eagerly at high priority, with its alt text", async () => {
+    const html = await render(withImage("one"));
+    const [img] = byName(html, "img");
+    expect(img!.attrs.alt).toBe("Picture for one");
+    expect(img!.attrs.loading).toBe("eager");
+    expect(img!.attrs.fetchpriority).toBe("high");
+    expect("data-text-only" in byName(html, "article")[0]!.attrs).toBe(false);
+  });
+
+  it("is a text-only card bordered in the main topic colour, with no image, without an image", async () => {
+    const html = await render(summary("one", { topics: ["technology-teams"] }));
+    expect(byName(html, "img")).toHaveLength(0);
+    const article = byName(html, "article")[0]!;
+    expect("data-text-only" in article.attrs).toBe(true);
+    const colour = findTopic("technology-teams")!.colour;
+    for (const cls of topicStyles[colour]!.border.split(/\s+/)) expect(classList(article)).toContain(cls);
+  });
+
+  it("marks a featured lead story", async () => {
+    expect(await render(summary("one", { featured: true }))).toContain("data-featured-mark");
+  });
+});

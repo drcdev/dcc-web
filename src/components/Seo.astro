@@ -5,6 +5,7 @@
 // absolute address is built against Astro's `site`, which astro.config.mjs
 // resolves from the build environment (contracts/site-origin.md).
 import { site } from "../config/site.ts";
+import { isoDate } from "../lib/format-date.ts";
 
 export interface Props {
   /** Page title without the site-name suffix; omit on the home page. */
@@ -17,6 +18,9 @@ export interface Props {
   /** False on the not-found page: no canonical link and no og:url. */
   canonical?: boolean;
   noindex?: boolean;
+  /** Article only: when the post was published and last updated (spec 008 FR-030). */
+  publishedTime?: Date;
+  modifiedTime?: Date;
 }
 
 const {
@@ -27,6 +31,8 @@ const {
   type = "website",
   canonical = true,
   noindex = !site.indexable,
+  publishedTime,
+  modifiedTime,
 } = Astro.props;
 
 if (!Astro.site) {
@@ -50,6 +56,8 @@ const imageUrl = new URL(image, Astro.site).href;
 <meta property="og:title" content={shareTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:type" content={type} />
+{type === "article" && publishedTime && <meta property="article:published_time" content={isoDate(publishedTime)} />}
+{type === "article" && modifiedTime && <meta property="article:modified_time" content={isoDate(modifiedTime)} />}
 {canonical && <meta property="og:url" content={pageUrl} />}
 <meta property="og:site_name" content={site.name} />
 <meta property="og:image" content={imageUrl} />

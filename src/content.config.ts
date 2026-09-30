@@ -2,12 +2,19 @@
 // `pages`: every Markdown or MDX file in src/content/pages/ is one page. The
 // entry id comes from the file path through `addressFromPath()`, so a file name
 // becomes its address (specs/003-standalone-pages/research.md R5).
+// `posts`: every file at the top of src/content/posts/ is one blog post; the file
+// name is its slug (specs/008-blog/research.md R1).
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { idFromPath } from "./lib/content/address.ts";
 import { assertFrontmatterImagesExist } from "./lib/content/images.ts";
+import { assertPostDates } from "./lib/content/post-dates.ts";
+import { slugFromPostPath } from "./lib/content/post-address.ts";
 import { pageSchema } from "./content/schemas/page.ts";
+import { postSchema } from "./content/schemas/post.ts";
 
 const pages = defineCollection({
   loader: glob({
@@ -24,4 +31,21 @@ const pages = defineCollection({
   schema: ({ image }) => pageSchema({ image }),
 });
 
-export const collections = { pages };
+const posts = defineCollection({
+  loader: glob({
+    // Top level only; `images/` beside the files holds pictures. A `.md` file is matched
+    // too, so the post route can fail it with "rename it to .mdx" (R1, R15).
+    pattern: "*.{md,mdx}",
+    base: "./src/content/posts",
+    // Runs for every file before its content is bundled. The date check reads the raw
+    // front matter, because the YAML parser rolls an impossible date over (R1).
+    generateId: ({ entry, base, data }) => {
+      assertPostDates(`src/content/posts/${entry}`, readFileSync(resolve(fileURLToPath(base), entry), "utf-8"));
+      assertFrontmatterImagesExist(fileURLToPath(base), entry, data, "post");
+      return slugFromPostPath(entry);
+    },
+  }),
+  schema: ({ image }) => postSchema({ image }),
+});
+
+export const collections = { pages, posts };
