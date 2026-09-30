@@ -428,3 +428,153 @@ test.describe("US2: reader needs", () => {
     });
   }
 });
+
+// ---------------------------------------------------------------------------
+// User Story 3 (T024): both themes, phone and desktop, JavaScript off, 320 px.
+// ---------------------------------------------------------------------------
+test.describe("US3: accessibility", () => {
+  for (const p of PAGES) {
+    for (const w of WIDTHS) {
+      for (const theme of THEMES) {
+        test(`axe: ${p.name}, ${w.name}, ${theme}`, async ({ page }) => {
+          await recordCspViolations(page);
+          await page.setViewportSize({ width: w.width, height: w.height });
+          await openPage(page, p.path, theme);
+          await expectNoAxeViolations(page);
+          expect(await cspViolations(page)).toEqual([]);
+        });
+      }
+    }
+
+    test(`no script: ${p.name}: content and language`, async ({ browser, baseURL }) => {
+      const context = await browser.newContext({ javaScriptEnabled: false, baseURL });
+      try {
+        const page = await context.newPage();
+        const response = await page.goto(p.path);
+        expect(response?.status()).toBe(200);
+        await expect(page.locator("html")).toHaveAttribute("lang", "en");
+        await expect(page.locator("main h1")).toHaveCount(1);
+        await expect(page.locator("main h1")).not.toBeEmpty();
+        expect((await page.title()).length).toBeGreaterThan(0);
+        expect(await page.locator("main a[href]").count()).toBeGreaterThan(0);
+      } finally {
+        await context.close();
+      }
+    });
+
+    // axe needs script to run, so the same check runs over the page with every
+    // script stripped from the response (what a reader without JavaScript gets).
+    test(`no script: ${p.name}: axe over the script-free page`, async ({ page }) => {
+      await page.route("**/design/blog/**", async (route) => {
+        if (route.request().resourceType() !== "document") return route.continue();
+        const response = await route.fetch();
+        await route.fulfill({ response, body: stripScripts(await response.text()) });
+      });
+      await page.goto(p.path);
+      expect(await page.locator("script").count()).toBe(0);
+      await expectNoAxeViolations(page);
+    });
+
+    test(`reflow at 320 px: ${p.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: 320, height: 800 });
+      await openPage(page, p.path);
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow).toBeLessThanOrEqual(0);
+      // Only the named scroll regions may be wider than the viewport.
+      const offenders = await page.evaluate(() => {
+        const out: string[] = [];
+        for (const el of document.querySelectorAll("main *")) {
+          if (el.closest("[role=region][tabindex='0']")) continue;
+          const r = el.getBoundingClientRect();
+          if (r.width > 0 && (r.right > document.documentElement.clientWidth + 1 || r.left < -1)) {
+            out.push(`${el.tagName.toLowerCase()}.${(el as HTMLElement).className}`);
+          }
+        }
+        return out;
+      });
+      expect(offenders).toEqual([]);
+    });
+
+    test(`markup and motion: ${p.name}`, async ({ page, request }) => {
+      const html = await (await request.get(p.path)).text();
+      expect(stripScripts(html)).not.toMatch(/\sstyle=["']/);
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await openPage(page, p.path);
+      const moving = await page.evaluate(() => {
+        const out: string[] = [];
+        for (const el of document.querySelectorAll("main, main *")) {
+          const s = getComputedStyle(el);
+          const dur = (v: string) => v.split(",").some((x) => parseFloat(x) > 0);
+          if (dur(s.transitionDuration) || (s.animationName !== "none" && dur(s.animationDuration))) {
+            out.push(el.tagName.toLowerCase());
+          }
+        }
+        return out;
+      });
+      expect(moving).toEqual([]);
+    });
+  }
+
+  for (const p of PAGES.filter((x) => x.screen !== "index")) {
+    for (const theme of THEMES) {
+      test(`keyboard: ${p.name}, ${theme}: skip link, focus visible, targets`, async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await openPage(page, p.path, theme);
+        await page.keyboard.press("Tab");
+        const first = await page.evaluate(() => document.activeElement?.getAttribute("href"));
+        expect(first).toBe("#main");
+
+        const seen = new Set<string>();
+        for (let i = 0; i < 60; i++) {
+          await page.keyboard.press("Tab");
+          const info = await page.evaluate(() => {
+            const el = document.activeElement as HTMLElement | null;
+            if (!el || el === document.body) return null;
+            const s = getComputedStyle(el);
+            const r = el.getBoundingClientRect();
+            const ring =
+              (s.outlineStyle !== "none" && parseFloat(s.outlineWidth) >= 2) ||
+              (s.boxShadow !== "none" && s.boxShadow !== "");
+            return {
+              key: `${el.tagName}|${el.getAttribute("href") ?? el.textContent?.slice(0, 20)}`,
+              ring,
+              w: r.width,
+              h: r.height,
+              inMain: !!el.closest("main"),
+              inline: !!el.closest("p, li, figcaption") && el.tagName === "A" && s.display === "inline",
+              label: `${el.tagName} ${(el.textContent ?? "").trim().slice(0, 30)}`,
+            };
+          });
+          if (!info || seen.has(info.key)) continue;
+          seen.add(info.key);
+          expect(info.ring, `focus ring: ${info.label}`).toBe(true);
+          if (info.inMain && !info.inline) {
+            expect(info.w >= 24 && info.h >= 24, `target size: ${info.label} ${info.w}x${info.h}`).toBe(true);
+          }
+        }
+        expect(seen.size).toBeGreaterThan(0);
+      });
+    }
+  }
+
+  for (const d of DIRECTION_IDS) {
+    test(`Direction ${d.toUpperCase()}: Tab reaches topic navigation, pagination and the disclosure`, async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(listingPath(d, 2));
+      const nav = page.getByRole("navigation", { name: "Pagination" });
+      await nav.getByRole("link").first().focus();
+      await expect(nav.getByRole("link").first()).toBeFocused();
+      const topicLink = page.locator("main a[data-topic]").first();
+      await topicLink.focus();
+      await expect(topicLink).toBeFocused();
+      const summary = page.locator("main details > summary").first();
+      if (await summary.count()) {
+        await summary.focus();
+        await page.keyboard.press("Enter");
+        await expect(page.locator("main details").first()).toHaveAttribute("open", "");
+      }
+    });
+  }
+});

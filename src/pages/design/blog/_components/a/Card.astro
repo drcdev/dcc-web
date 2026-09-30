@@ -30,7 +30,7 @@ const tone = topicBySlug(post.topics[0]!).tone;
     <Heading
       class:list={["font-bold text-dusk-900 [overflow-wrap:anywhere] dark:text-white", large ? "text-2xl md:text-3xl" : "text-xl"]}
     >
-      <a class="hover:underline" href={postPath("a", post)}>{post.title}</a>
+      <a class="inline-block min-h-6 hover:underline" href={postPath("a", post)}>{post.title}</a>
     </Heading>
     <p class="text-dusk-700 dark:text-mist-300">{post.summary}</p>
     <PostMeta post={post} direction="a" class="mt-auto pt-2" />

@@ -16,7 +16,7 @@ const Heading = level;
   <span aria-hidden="true" class="absolute -left-[1.85rem] top-2 h-3 w-3 rounded-full bg-accent-700 dark:bg-accent-300"></span>
   <article class="min-w-0">
     <Heading class="text-xl font-semibold text-dusk-900 [overflow-wrap:anywhere] dark:text-white">
-      <a class="hover:underline" href={postPath("b", post)}>{post.title}</a>
+      <a class="inline-block min-h-6 hover:underline" href={postPath("b", post)}>{post.title}</a>
     </Heading>
     <p class="mt-1 max-w-prose text-dusk-700 dark:text-mist-300">{post.summary}</p>
     <PostMeta post={post} direction="b" topicVariant="text" class="mt-2" />

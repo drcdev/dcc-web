@@ -31,7 +31,7 @@ const stream = byNewest.slice(0, 8);
           startHere.map((post) => (
             <li>
               <h3 class="text-lg font-semibold text-dusk-900 [overflow-wrap:anywhere] dark:text-white">
-                <a class="hover:underline" href={postPath("b", post)}>{post.title}</a>
+                <a class="inline-block min-h-6 hover:underline" href={postPath("b", post)}>{post.title}</a>
               </h3>
               <p class="mt-1 text-dusk-700 dark:text-mist-300 md:line-clamp-3">{post.summary}</p>
               <PostMeta post={post} direction="b" topicVariant="text" class="mt-2" />

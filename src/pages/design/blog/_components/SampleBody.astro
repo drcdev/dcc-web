@@ -37,12 +37,12 @@ const [found, check, cost, leaves] = bodySections;
         </figure>
         <h2 id={check.id}>{check.title}</h2>
         <p>The check below compares the row counts of two systems and stops the release if they differ.</p>
-        <pre tabindex="0" role="region" aria-label="Code sample: row count check" class="overflow-x-auto">
+        <pre tabindex="0" role="region" aria-label="Code sample: row count check" class="overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500 dark:focus-visible:outline-accent-400">
           <code>{`select source.entity, source.row_count, target.row_count from nightly_counts source join nightly_counts target on target.entity = source.entity and target.system = 'reporting' where source.system = 'operational' and source.row_count <> target.row_count;`}</code>
         </pre>
         <h2 id={cost.id}>{cost.title}</h2>
         <p>The table sets the effort of each step beside what it protects.</p>
-        <div class="table-wrapper" tabindex="0" role="region" aria-label="Table: effort and protection by step">
+        <div class="table-wrapper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500 dark:focus-visible:outline-accent-400" tabindex="0" role="region" aria-label="Table: effort and protection by step">
           <table>
             <caption class="p-2 text-left text-sm">Effort and protection by step</caption>
             <thead>
