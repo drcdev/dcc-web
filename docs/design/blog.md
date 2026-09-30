@@ -9,8 +9,8 @@ and four sample topics; they are not the published blog.
 
 ## How to compare
 
-Preview index: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/`. That address is
-the Cloudflare commit preview for the commit that carried the prototypes (`d12e145`), so it
+Preview index: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/`. That address is
+the Cloudflare commit preview for the commit that carried the prototypes (`9e83e04`), so it
 stays live after the prototype pages are removed from the branch, until Cloudflare retires the
 version. On a local build the same pages are at `/design/blog/`, and the directions are at
 `/design/blog/a/`, `/design/blog/b/` and `/design/blog/c/`.
@@ -42,10 +42,10 @@ on every card.
 
 Preview links, once the pull request exists (replace the placeholder with the preview URL):
 
-- Landing: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/a/`
-- Listing: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/a/all/`
-- Topic: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/a/topics/compliant-data/`
-- Post: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/a/ai-agents-and-the-mainframe/`
+- Landing: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/a/`
+- Listing: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/a/all/`
+- Topic: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/a/topics/compliant-data/`
+- Post: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/a/ai-agents-and-the-mainframe/`
 
 ### Pictures
 
@@ -116,10 +116,10 @@ text. A short "Start here" list pinned above the stream carries the featured pos
 
 Preview links, once the pull request exists (replace the placeholder with the preview URL):
 
-- Landing: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/b/`
-- Listing: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/b/all/`
-- Topic: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/b/topics/compliant-data/`
-- Post: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/b/ai-agents-and-the-mainframe/`
+- Landing: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/b/`
+- Listing: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/b/all/`
+- Topic: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/b/topics/compliant-data/`
+- Post: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/b/ai-agents-and-the-mainframe/`
 
 ### Pictures
 
@@ -190,10 +190,10 @@ above them.
 
 Preview links, once the pull request exists (replace the placeholder with the preview URL):
 
-- Landing: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/c/`
-- Listing: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/c/all/`
-- Topic: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/c/compliant-data/`
-- Post: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/c/2026/ai-agents-and-the-mainframe/`
+- Landing: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/c/`
+- Listing: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/c/all/`
+- Topic: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/c/compliant-data/`
+- Post: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/c/2026/ai-agents-and-the-mainframe/`
 
 ### Pictures
 
