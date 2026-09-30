@@ -1,0 +1,87 @@
+# Contract: message retrieval (`/api/messages*`)
+
+For Don's scheduled assistant. Same Worker, same security headers. Each environment has its own
+`CONTACT_READ_TOKEN` and its own database, so a key only ever sees its own environment's
+messages (FR-017, FR-024).
+
+## Authorization (checked first, for every `/api/messages` and `/api/messages/*` request)
+
+- Header: `Authorization: Bearer <token>`.
+- Comparison: SHA-256 of the presented token and of `env.CONTACT_READ_TOKEN`, compared with
+  `crypto.subtle.timingSafeEqual`. If the secret is unset or empty, every request is refused.
+- Failure, for any method and any path under `/api/messages`:
+  `401 {"error":"unauthorized"}` with `WWW-Authenticate: Bearer`. The body and headers are
+  identical whatever the path or method, so an unauthenticated caller learns nothing about
+  routes or messages (FR-023). There are no CORS headers, so a browser on another origin cannot
+  read any response.
+
+## `GET /api/messages/new`
+
+| Query parameter | Rule | Default |
+|---|---|---|
+| `limit` | integer 1–100 | 50 |
+| `after` | opaque cursor from a previous `next_cursor` | none (start at the oldest) |
+
+Invalid values → `400 {"error":"invalid_request"}`.
+
+`200` body:
+
+```json
+{
+  "messages": [
+    {
+      "id": "3f0c7c1e-8a5b-4d7e-9c1a-2b3c4d5e6f70",
+      "name": "Ada Example",
+      "email": "ada@example.com",
+      "organization": null,
+      "project": "Cadence",
+      "message": "Hello…",
+      "received_at": "2026-09-29T17:04:11.000Z"
+    }
+  ],
+  "next_cursor": null
+}
+```
+
+- Only `status = 'new'`, ordered by `received_at` then `id`, ascending (oldest first).
+- `ip_hash` and `status` are never returned (FR-020).
+- `next_cursor` is non-null when more messages may follow. It is base64url of
+  `"<received_at>:<id>"`, and the next page selects `(received_at, id) > cursor`. With no new
+  messages, `messages` is `[]` and `next_cursor` is `null` (User Story 3, scenario 5).
+- Text fields are returned exactly as stored, JSON-encoded. The consumer must treat them as
+  plain text.
+
+## `POST /api/messages/{id}/read`
+
+- `{id}` must be a UUID v4, or the response is `404 {"error":"not_found"}`.
+- `UPDATE messages SET status = 'read' WHERE id = ? AND status = 'new'`:
+  - 1 row changed → `200 {"id":"…","status":"read"}`
+  - 0 rows, ID exists (already read) → `409 {"error":"already_read"}`
+  - 0 rows, no such ID → `404 {"error":"not_found"}`
+- No request body is read.
+
+## Everything else (with a valid key)
+
+| Request | Response |
+|---|---|
+| `GET /api/messages`, `/api/messages/{id}`, any other sub-path | `404 {"error":"not_found"}` |
+| non-`GET` on `/api/messages/new` | `405` with `Allow: GET` |
+| non-`POST` on `/api/messages/{id}/read` | `405` with `Allow: POST` |
+| `DELETE /api/messages/{id}` | `404`; no deletion route exists (FR-022) |
+
+## Other `/api/*` paths
+
+Any `/api/*` path other than `/api/contact` and `/api/messages*` →
+`404 {"error":"not_found"}` as JSON, not the site's HTML 404 page.
+
+## Contract tests (`worker/test/retrieval.contract.test.ts`)
+
+Run through `exports.default.fetch()` against the migrated local D1. They cover every row of
+the tables above, including:
+
+- the same 401 body and headers for a missing key, a wrong key and the other environment's key,
+  on every route and method;
+- paging across 120 seeded messages, returning each exactly once, in order;
+- `ip_hash` absent from every response;
+- mark-read returning `200` then `409`, and `404` for an unknown ID;
+- a read message never appearing in a later list.
