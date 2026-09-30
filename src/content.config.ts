@@ -39,8 +39,9 @@ const posts = defineCollection({
     base: "./src/content/posts",
     // Runs for every file before its content is bundled. The date check reads the raw
     // front matter, because the YAML parser rolls an impossible date over (R1).
-    generateId: ({ entry, base }) => {
+    generateId: ({ entry, base, data }) => {
       assertPostDates(`src/content/posts/${entry}`, readFileSync(resolve(fileURLToPath(base), entry), "utf-8"));
+      assertFrontmatterImagesExist(fileURLToPath(base), entry, data, "post");
       return slugFromPostPath(entry);
     },
   }),

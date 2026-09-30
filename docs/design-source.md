@@ -61,7 +61,7 @@ siblings to these paths instead of new conventions.
 | `src/layouts/PageLayout.astro` | Standard page layout inside `BaseLayout` | `PostLayout`, `ProjectLayout` |
 | `src/lib/content/` | `address.ts`, `body.ts`, `navigation.ts`, `images.ts`, `errors.ts`: build-time checks that raise `PageContentError` | Reused for posts and projects |
 | `src/pages/[...slug].astro` | The one route that renders every page file | `src/pages/writing/` and `src/pages/projects/` routes; the address check reserves their addresses |
-| `docs/pages.md` | Don's authoring guide | Guides for posts and projects |
+| `docs/pages.md` | Don's authoring guide | `docs/posts.md` (posts, done); a guide for projects |
 
 Test support for this structure:
 

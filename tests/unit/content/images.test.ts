@@ -39,6 +39,15 @@ describe("assertFrontmatterImagesExist", () => {
     }
   });
 
+  it("names the post file, with the post wording, when a post's feature image is missing (P9)", () => {
+    const run = () =>
+      assertFrontmatterImagesExist(root, "a-post.mdx", { featureImage: { src: "./images/nope.png", alt: "a" } }, "post");
+    expect(run).toThrow(/^Post file src\/content\/posts\/a-post\.mdx: .*\.\/images\/nope\.png.*post file/);
+    expect(() =>
+      assertFrontmatterImagesExist(root, "a-post.mdx", { featureImage: { src: "./images/here.png", alt: "a" } }, "post"),
+    ).not.toThrow();
+  });
+
   it("resolves paths relative to the page file's folder", () => {
     expect(() =>
       assertFrontmatterImagesExist(root, "legal/a.mdx", { image: { src: "../images/here.png", alt: "a" } }),

@@ -146,6 +146,19 @@ describe.each(environments)("astro build with the $label environment", ({ env })
     expect([...entries].sort()).toEqual(expected.map((path) => `${expectedOrigin}${path}`));
   });
 
+  it("leaves the draft sample posts out of production and builds them, labelled, elsewhere (FR-032, FR-046)", () => {
+    const page = join(outDir, "writing/sample-short/index.html");
+    if (env.WORKERS_CI_BRANCH === "main") {
+      expect(files.some((f) => f.includes(`${join("writing", "sample-")}`))).toBe(false);
+      expect(readFileSync(join(outDir, "writing/index.html"), "utf-8")).toContain("There are no posts yet.");
+    } else {
+      const html = readFileSync(page, "utf-8");
+      expect(html).toMatch(/data-draft-notice[^>]*>\s*<strong>Draft\.<\/strong>/);
+      expect(html).toMatch(/<meta\s+name="robots"\s+content="noindex"\s*\/?>/);
+      expect(readFileSync(join(outDir, "writing/index.html"), "utf-8")).toContain("data-draft-label");
+    }
+  });
+
   it("places the pre-paint theme script before the stylesheet in the built home page", () => {
     const html = readFileSync(join(outDir, "index.html"), "utf-8");
     const head = html.slice(0, html.indexOf("</head>"));

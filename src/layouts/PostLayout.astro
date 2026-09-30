@@ -2,10 +2,12 @@
 // One blog post inside BaseLayout (Direction A of docs/design/blog.md; contracts/
 // blog-pages.md "Post"; research R14). In DOM order: the hero feature image
 // (only when the post has one), the title card that overlaps it visually, the
-// body in the site's reading column, and the "views are my own" note. The
-// Draft notice, Share and Related posts are added by later slices.
+// body in the site's reading column, and the "views are my own" note. A draft
+// starts its title card with the Draft notice and is always noindex (FR-032,
+// FR-045). Share and Related posts are added by later slices.
 import type { ComponentProps } from "astro/types";
 import BaseLayout from "./BaseLayout.astro";
+import DraftNotice from "../components/page/DraftNotice.astro";
 import PostHero from "../components/post/PostHero.astro";
 import PostMeta from "../components/post/PostMeta.astro";
 import ViewsNote from "../components/post/ViewsNote.astro";
@@ -23,9 +25,11 @@ export interface Props {
 
 const { post, navigation, image } = Astro.props;
 const feedHref = new URL("/writing/rss.xml", Astro.site).href;
-const seo: Partial<ComponentProps<typeof BaseLayout>> = image
-  ? { image, imageAlt: post.featureImage?.alt }
-  : {};
+const seo: Partial<ComponentProps<typeof BaseLayout>> = {
+  ...(image ? { image, imageAlt: post.featureImage?.alt } : {}),
+  // A draft is never indexed. Other posts keep the site-wide default (Seo.astro).
+  ...(post.draft ? { noindex: true } : {}),
+};
 ---
 
 <BaseLayout
@@ -47,6 +51,7 @@ const seo: Partial<ComponentProps<typeof BaseLayout>> = image
         post.featureImage ? "-mt-12 sm:-mt-16" : "mt-2",
       ]}
     >
+      {post.draft && <DraftNotice message="This post is a draft and is not on the live site." />}
       <p class="m-0 text-xs font-semibold uppercase tracking-wider text-rust-800 dark:text-rust-300">
         {blog.sectionName}
       </p>

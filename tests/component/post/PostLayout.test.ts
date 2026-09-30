@@ -70,6 +70,31 @@ describe("PostLayout structure", () => {
   });
 });
 
+describe("PostLayout draft (FR-032, FR-045)", () => {
+  it("starts the title card with a Draft notice, before the eyebrow and the title", async () => {
+    const html = await render(summary("d", { draft: true }));
+    const notices = byName(html, "p").filter((p) => "data-draft-notice" in p.attrs);
+    expect(notices).toHaveLength(1);
+    expect(html).toMatch(
+      /data-draft-notice[^>]*>\s*<strong[^>]*>Draft\.<\/strong>\s*This post is a draft and is not on the live site\./,
+    );
+    const card = html.indexOf("data-title-card");
+    expect(html.indexOf("data-draft-notice")).toBeGreaterThan(card);
+    expect(html.indexOf("data-draft-notice")).toBeLessThan(html.indexOf(blog.sectionName.replace("&", "&amp;"), card));
+    expect(html.indexOf("data-draft-notice")).toBeLessThan(html.indexOf("<h1"));
+  });
+
+  it("has no Draft notice for a published post", async () => {
+    expect(await render(summary("p"))).not.toContain("data-draft-notice");
+  });
+
+  it("asks search engines not to index a draft", async () => {
+    const draft = await render(summary("d", { draft: true }));
+    expect(meta(draft, "name", "robots")).toHaveLength(1);
+    expect(meta(draft, "name", "robots")[0]!.attrs.content).toBe("noindex");
+  });
+});
+
 describe("PostLayout head", () => {
   it("is an article with published and modified times", async () => {
     const html = await render(summary("one", { date: new Date("2026-08-27"), updated: new Date("2026-09-15") }));
