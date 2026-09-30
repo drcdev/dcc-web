@@ -447,3 +447,38 @@ test.describe("related posts", () => {
     expect(related!.y).toBeGreaterThan(share!.y);
   });
 });
+
+test.describe("feed", () => {
+  test("serves /writing/rss.xml as well-formed XML with an XML content type", async ({ page, request }) => {
+    const response = await request.get("/writing/rss.xml");
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toMatch(/^application\/(rss\+)?xml/);
+    const xml = await response.text();
+    const parsed = await page.evaluate((text) => {
+      const doc = new DOMParser().parseFromString(text, "application/xml");
+      return {
+        error: doc.querySelector("parsererror")?.textContent ?? null,
+        root: doc.documentElement.nodeName,
+        version: doc.documentElement.getAttribute("version"),
+        title: doc.querySelector("channel > title")?.textContent ?? null,
+      };
+    }, xml);
+    expect(parsed).toEqual({ error: null, root: "rss", version: "2.0", title: "Drift & Convergence" });
+  });
+
+  for (const path of [
+    "/writing/",
+    "/writing/all/",
+    "/writing/topics/technology-teams/",
+    "/writing/sample-everything/",
+    "/writing/sample-text-only/",
+  ]) {
+    test(`advertises the feed in the head of ${path}`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page.locator('head link[rel="alternate"][type="application/rss+xml"]')).toHaveAttribute(
+        "href",
+        /\/writing\/rss\.xml$/,
+      );
+    });
+  }
+});

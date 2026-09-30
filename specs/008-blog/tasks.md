@@ -193,13 +193,13 @@
 
 ### Tests first
 
-- [ ] T066 [P] [US6] Write `tests/unit/site/feed.test.ts` (item mapping per data-model § Feed item: title, absolute link, `guid` equal to that absolute link as a permalink, `pubDate`, description from summary, `dcterms:modified` when updated; drafts never mapped; XML escaping of a title with `&` and `<`). Extend `tests/build/blog-listing.test.ts` to parse the built feed as XML: RSS 2.0, channel title "Drift & Convergence", `language` `en-ca`, items newest first, absolute links against the build's origin, `dcterms:modified` only on updated posts, no draft items even on a preview build, valid empty channel when nothing is published, and the feed address absent from the sitemap. Run and confirm failure.
-- [ ] T067 [P] [US6] Add E2E cases to `tests/e2e/blog.spec.ts`: `/writing/rss.xml` responds 200 with an XML content type and is well-formed; every blog template has the `rel="alternate" type="application/rss+xml"` link to it (FR-037). Run and confirm failure.
+- [x] T066 [P] [US6] Write `tests/unit/site/feed.test.ts` (item mapping per data-model § Feed item: title, absolute link, `guid` equal to that absolute link as a permalink, `pubDate`, description from summary, `dcterms:modified` when updated; drafts never mapped; XML escaping of a title with `&` and `<`). Extend `tests/build/blog-listing.test.ts` to parse the built feed as XML: RSS 2.0, channel title "Drift & Convergence", `language` `en-ca`, items newest first, absolute links against the build's origin, `dcterms:modified` only on updated posts, no draft items even on a preview build, valid empty channel when nothing is published, and the feed address absent from the sitemap. Run and confirm failure.
+- [x] T067 [P] [US6] Add E2E cases to `tests/e2e/blog.spec.ts`: `/writing/rss.xml` responds 200 with an XML content type and is well-formed; every blog template has the `rel="alternate" type="application/rss+xml"` link to it (FR-037). Run and confirm failure.
 
 ### Implementation
 
-- [ ] T068 [US6] Create `src/pages/writing/rss.xml.ts` with `@astrojs/rss` (`getPosts()` filtered to non-drafts on every build, `site` from the build's own origin via `resolveSiteOrigin`, `xmlns:dcterms`, `customData` for updates). T066 and T067 must pass.
-- [ ] T069 [US6] Confirm `src/lib/content/`/sitemap behaviour: the feed is not listed as a page, and draft post pages on preview carry `noindex` (already from US3); run `tests/unit/site/sitemap.test.ts`.
+- [x] T068 [US6] Create `src/pages/writing/rss.xml.ts` with `@astrojs/rss` (`getPosts()` filtered to non-drafts on every build, `site` from the build's own origin via `resolveSiteOrigin`, `xmlns:dcterms`, `customData` for updates). T066 and T067 must pass.
+- [x] T069 [US6] Confirm `src/lib/content/`/sitemap behaviour: the feed is not listed as a page, and draft post pages on preview carry `noindex` (already from US3); run `tests/unit/site/sitemap.test.ts`.
 
 **Checkpoint**: feed complete.
 

@@ -9,9 +9,10 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildFixtureSite, type FixtureSiteResult } from "./fixture-site.ts";
 
 let site: FixtureSiteResult;
+let previewSite: FixtureSiteResult;
 
 const COUNT = 14;
-const post = (n: number, extra: { date?: string; title?: string; topics?: string[] } = {}) => {
+const post = (n: number, extra: { date?: string; title?: string; topics?: string[]; updated?: string } = {}) => {
   const number = String(n).padStart(2, "0");
   const day = String(30 - n).padStart(2, "0");
   const topics = extra.topics ?? ["agentic-ai"];
@@ -20,6 +21,7 @@ const post = (n: number, extra: { date?: string; title?: string; topics?: string
     `title: ${extra.title ?? `Listing post ${number}`}`,
     `summary: Listing post ${number} for the listing tests.`,
     `date: ${extra.date ?? `2026-06-${day}`}`,
+    ...(extra.updated ? [`updated: ${extra.updated}`] : []),
     "topics:",
     ...topics.map((t) => `  - ${t}`),
     "---",
@@ -33,7 +35,8 @@ beforeAll(async () => {
   const overrides: Record<string, string> = {};
   for (let n = 1; n <= COUNT; n += 1) {
     const topics = n <= 2 ? ["agentic-ai", "technology-teams"] : ["agentic-ai"];
-    overrides[`src/content/posts/listing-post-${String(n).padStart(2, "0")}.mdx`] = post(n, { topics });
+    const updated = n === 3 ? "2026-07-15" : undefined;
+    overrides[`src/content/posts/listing-post-${String(n).padStart(2, "0")}.mdx`] = post(n, { topics, updated });
   }
   // Same date as post 01 (2026-06-29); the title decides, ignoring case: "a tied post" sorts before "Listing post 01".
   overrides["src/content/posts/tie-b.mdx"] = post(15, { date: "2026-06-29", title: "a tied post" });
@@ -41,9 +44,14 @@ beforeAll(async () => {
     overrides,
     env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" },
   });
+  // A preview build shows the sample drafts on its pages; the feed must still hold none of them.
+  previewSite = await buildFixtureSite([], { env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "preview-branch" } });
 }, 900_000);
 
-afterAll(() => site?.cleanup());
+afterAll(() => {
+  site?.cleanup();
+  previewSite?.cleanup();
+});
 
 const TOTAL = COUNT + 1;
 const exists = (path: string) => existsSync(join(site.dist, path));
@@ -133,5 +141,56 @@ describe("topic pages", () => {
     expect(html).toContain('href="/writing/all/"');
     expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
     expect(exists("writing/topics/compliant-data/2/index.html")).toBe(false);
+  });
+});
+
+describe("the feed (/writing/rss.xml)", () => {
+  const items = (xml: string) => [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((m) => m[1]!);
+  const field = (xml: string, name: string) => xml.match(new RegExp(`<${name}[^>]*>([^<]*)</${name}>`))?.[1];
+
+  it("is RSS 2.0 with the blog's title and language", () => {
+    const xml = site.read("writing/rss.xml");
+    expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
+    expect(xml).toMatch(/<rss [^>]*version="2\.0"/);
+    expect(xml).toContain('xmlns:dcterms="http://purl.org/dc/terms/"');
+    expect(field(xml.split("<item>")[0]!, "title")).toBe("Drift &amp; Convergence");
+    expect(field(xml, "language")).toBe("en-ca");
+  });
+
+  it("lists every published post, newest first, with the same tie order as the listings", () => {
+    const links = items(site.read("writing/rss.xml")).map((item) => field(item, "link")!);
+    expect(links).toHaveLength(TOTAL);
+    const path = (link: string) => new URL(link).pathname;
+    expect(links.slice(0, 3).map(path)).toEqual(["/writing/tie-b/", "/writing/listing-post-01/", "/writing/listing-post-02/"]);
+    expect(path(links.at(-1)!)).toBe("/writing/listing-post-14/");
+  });
+
+  it("uses absolute links against the build's own origin, and a permalink guid equal to the link", () => {
+    const xml = site.read("writing/rss.xml");
+    const origin = new URL(field(xml.split("<item>")[0]!, "link")!).origin;
+    expect(site.read("writing/index.html")).toContain(`href="${origin}/writing/"`);
+    for (const item of items(xml)) {
+      const link = field(item, "link")!;
+      expect(link.startsWith(`${origin}/writing/`)).toBe(true);
+      expect(item).toContain(`<guid isPermaLink="true">${link}</guid>`);
+    }
+  });
+
+  it("adds dcterms:modified only to a post that was updated", () => {
+    const withModified = items(site.read("writing/rss.xml")).filter((item) => item.includes("<dcterms:modified>"));
+    expect(withModified).toHaveLength(1);
+    expect(withModified[0]).toContain("/writing/listing-post-03/");
+    expect(field(withModified[0]!, "dcterms:modified")).toMatch(/^2026-07-15T/);
+  });
+
+  it("holds no draft on a preview build, and is a valid empty channel when nothing is published", () => {
+    const xml = previewSite.read("writing/rss.xml");
+    expect(items(xml)).toHaveLength(0);
+    expect(xml).toMatch(/<channel>[\s\S]*<\/channel><\/rss>$/);
+    expect(previewSite.read("writing/index.html")).toContain("Draft");
+  });
+
+  it("is not listed in the sitemap", () => {
+    expect(site.read("sitemap-0.xml")).not.toContain("rss.xml");
   });
 });
