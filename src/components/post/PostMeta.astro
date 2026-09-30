@@ -1,0 +1,29 @@
+---
+// Dates, reading time and topic pills for a post's title card (FR-020, FR-021).
+// The publication date and the update date are separate <time> elements so a
+// reader and a machine can tell them apart.
+import { formatDate, isoDate } from "../../lib/format-date.ts";
+import type { PostSummary } from "../../lib/content/post-summary.ts";
+import TopicPill from "./TopicPill.astro";
+
+export interface Props {
+  post: Pick<PostSummary, "date" | "updated" | "minutesRead" | "topics">;
+}
+
+const { post } = Astro.props;
+---
+
+<p class="m-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-dusk-600 dark:text-dusk-300">
+  <span><time datetime={isoDate(post.date)}>{formatDate(post.date)}</time></span>
+  {
+    post.updated && (
+      <span>
+        Updated <time datetime={isoDate(post.updated)}>{formatDate(post.updated)}</time>
+      </span>
+    )
+  }
+  <span>{post.minutesRead} min read</span>
+</p>
+<ul aria-label="Topics" class="m-0 mt-3 flex list-none flex-wrap gap-2 p-0">
+  {post.topics.map((topic) => <li><TopicPill topic={topic} /></li>)}
+</ul>

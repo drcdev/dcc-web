@@ -1,0 +1,10 @@
+---
+// The "views are my own" note under every post (FR-027). The wording lives in
+// src/config/blog.ts, so it is identical on every post and changed in one place.
+// A plain paragraph: no role, not hidden.
+import { blog } from "../../config/blog.ts";
+---
+
+<p data-views-note class="m-0 border-t border-dusk-200 pt-4 text-sm italic text-dusk-600 dark:border-dusk-700 dark:text-dusk-300">
+  {blog.viewsNote}
+</p>

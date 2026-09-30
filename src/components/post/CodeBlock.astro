@@ -1,0 +1,70 @@
+---
+// Replaces the Markdown `pre` in a post (port of Flux kg-code-card; research R8;
+// contracts/blog-pages.md "Code block"): the highlighted `pre` inside a figure
+// with an optional caption and a copy button. The button is `hidden` in the
+// markup and shown by the script below, so without scripts the code is still
+// readable and selectable and no dead button appears. The
+// caption arrives as `data-caption`, copied from the fence's meta string by the
+// Shiki transformer (src/lib/markdown/shiki-classes.ts). No `style` attribute is
+// rendered: the page's content security policy forbids inline styles.
+// The script is the only one a post body needs. Astro bundles it as a module
+// (docs.astro.build/en/guides/client-side-scripts/#web-components-with-custom-elements).
+const { "data-caption": caption, ...attributes } = Astro.props;
+// Never pass a style through (see above); the pre is always keyboard reachable.
+delete attributes.style;
+delete attributes.tabindex;
+---
+
+<figure class="code-card" data-code-block>
+  <copy-code class="code-card__bar">
+    <span role="status" class="sr-only"></span>
+    <button
+      type="button"
+      hidden
+      aria-label={caption ? `Copy code: ${caption}` : undefined}
+      class="code-card__button"
+      data-copy-idle="Copy code">Copy code</button>
+  </copy-code>
+  <pre {...attributes} tabindex="0"><slot /></pre>
+  {caption && <figcaption class="code-card__caption">{caption}</figcaption>}
+</figure>
+
+<script>
+  const idleText = "Copy code";
+  const doneText = "Copied";
+  const failedText = "Copy failed. Select the code to copy it.";
+  const resetAfter = 2000;
+
+  class CopyCode extends HTMLElement {
+    private timer: number | undefined;
+
+    connectedCallback() {
+      const button = this.querySelector("button");
+      const status = this.querySelector('[role="status"]');
+      const pre = this.closest("[data-code-block]")?.querySelector("pre");
+      if (!button || !status || !pre) return;
+      // Shown only now that a script is running; Tailwind's reset makes `hidden`
+      // win over any display class, so the script clears the attribute itself.
+      button.hidden = false;
+
+      button.addEventListener("click", async () => {
+        let message = doneText;
+        try {
+          // The code exactly as written: the text of the pre, not its markup.
+          await navigator.clipboard.writeText(pre.textContent ?? "");
+        } catch {
+          message = failedText;
+        }
+        window.clearTimeout(this.timer);
+        button.textContent = message;
+        status.textContent = message;
+        this.timer = window.setTimeout(() => {
+          button.textContent = idleText;
+          status.textContent = "";
+        }, resetAfter);
+      });
+    }
+  }
+
+  if (!customElements.get("copy-code")) customElements.define("copy-code", CopyCode);
+</script>

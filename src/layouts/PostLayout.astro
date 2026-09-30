@@ -1,0 +1,70 @@
+---
+// One blog post inside BaseLayout (Direction A of docs/design/blog.md; contracts/
+// blog-pages.md "Post"; research R14). In DOM order: the hero feature image
+// (only when the post has one), the title card that overlaps it visually, the
+// body in the site's reading column, and the "views are my own" note. The
+// Draft notice, Share and Related posts are added by later slices.
+import type { ComponentProps } from "astro/types";
+import BaseLayout from "./BaseLayout.astro";
+import PostHero from "../components/post/PostHero.astro";
+import PostMeta from "../components/post/PostMeta.astro";
+import ViewsNote from "../components/post/ViewsNote.astro";
+import { featuredMark } from "../components/post/topic-styles.ts";
+import { blog } from "../config/blog.ts";
+import type { NavigationItem } from "../config/navigation";
+import type { PostSummary } from "../lib/content/post-summary.ts";
+
+export interface Props {
+  post: PostSummary;
+  navigation: NavigationItem[];
+  /** The sharing image path (the feature image resized for Open Graph); the site default when omitted. */
+  image?: string;
+}
+
+const { post, navigation, image } = Astro.props;
+const feedHref = new URL("/writing/rss.xml", Astro.site).href;
+const seo: Partial<ComponentProps<typeof BaseLayout>> = image
+  ? { image, imageAlt: post.featureImage?.alt }
+  : {};
+---
+
+<BaseLayout
+  title={post.title}
+  description={post.summary}
+  navigation={navigation}
+  type="article"
+  publishedTime={post.date}
+  modifiedTime={post.updated}
+  {...seo}
+>
+  <link slot="head" rel="alternate" type="application/rss+xml" title={blog.feedTitle} href={feedHref} />
+  <article class="mx-auto max-w-screen-lg">
+    {post.featureImage && <PostHero image={post.featureImage} />}
+    <div
+      data-title-card
+      class:list={[
+        "relative mx-auto max-w-3xl rounded-xl border border-dusk-200 bg-white p-6 shadow-sm dark:border-dusk-700 dark:bg-dusk-800",
+        post.featureImage ? "-mt-12 sm:-mt-16" : "mt-2",
+      ]}
+    >
+      <p class="m-0 text-xs font-semibold uppercase tracking-wider text-rust-800 dark:text-rust-300">
+        {blog.sectionName}
+      </p>
+      <h1 class="my-2 text-3xl font-bold leading-tight text-dusk-900 [overflow-wrap:anywhere] dark:text-white sm:text-4xl">
+        {post.title}
+      </h1>
+      <p class="m-0 mb-4 text-lg text-dusk-700 [overflow-wrap:anywhere] dark:text-mist-300">{post.summary}</p>
+      {post.featured && <p class="m-0 mb-3"><span data-featured-mark class={featuredMark}>Featured</span></p>}
+      <PostMeta post={post} />
+    </div>
+    <div
+      data-post-body
+      class="prose lg:prose-lg dark:prose-invert prose-accent mx-auto mt-8 max-w-3xl"
+    >
+      <slot />
+    </div>
+    <div class="mx-auto mt-8 max-w-3xl">
+      <ViewsNote />
+    </div>
+  </article>
+</BaseLayout>

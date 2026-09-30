@@ -10,7 +10,14 @@ try {
   // Each fixture site keeps its own cache (content data store, image cache).
   // The default, node_modules/.astro, is shared through the node_modules symlink,
   // so parallel builds would read one another's page files.
-  const inlineConfig = { root, logLevel: "silent" as const, cacheDir: resolve(root!, ".astro-cache") };
+  // Vite's dependency cache (default node_modules/.vite) is shared the same way and races
+  // between parallel builds (ENOTEMPTY on deps_temp), so it moves into the site as well.
+  const inlineConfig = {
+    root,
+    logLevel: "silent" as const,
+    cacheDir: resolve(root!, ".astro-cache"),
+    vite: { cacheDir: resolve(root!, ".vite-cache") },
+  };
   if (mode === "sync") await sync(inlineConfig);
   else await build(inlineConfig);
 } catch (error) {

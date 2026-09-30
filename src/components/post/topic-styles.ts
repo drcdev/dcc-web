@@ -15,7 +15,10 @@ export interface TopicStyle {
   banner: string;
 }
 
-const pillBase = "inline-block rounded-full px-3 py-1 text-sm font-medium no-underline hover:underline";
+// The transparent border is invisible normally and shows in forced-colours mode, where the
+// background is removed and the pill would otherwise read as plain link text (FR-051).
+const pillBase =
+  "inline-block rounded-full border border-transparent px-3 py-1 text-sm font-medium no-underline hover:underline";
 
 export const topicStyles: Partial<Record<Palette, TopicStyle>> = {
   rust: {
@@ -42,7 +45,7 @@ export const topicStyles: Partial<Record<Palette, TopicStyle>> = {
 
 /** The "Featured" mark on a card or a post. */
 export const featuredMark =
-  "inline-block rounded px-2 py-0.5 text-xs font-semibold uppercase tracking-wide bg-accent-100 text-accent-900 dark:bg-accent-900 dark:text-accent-100";
+  "inline-block rounded border border-transparent px-2 py-0.5 text-xs font-semibold uppercase tracking-wide bg-accent-100 text-accent-900 dark:bg-accent-900 dark:text-accent-100";
 
 /** The "Draft" label on a card (non-production builds only). */
 export const draftLabel =

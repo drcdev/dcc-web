@@ -30,9 +30,9 @@ owns porting it.
 | `accent-*` palette from Ghost's `--ghost-accent-color` | Fixed accent palette derived from rust `#d68844` | Foundation |
 | `--gh-font-body` / `--gh-font-heading` | System font stack now; follow-up for the real Ghost fonts, self-hosted later via Astro's built-in font support | Foundation (follow-up: fonts) |
 | `@custom-variant dark`, `.prose-accent`, heading colours (H1/H2 rust, H3 sage, H4 lavender), `.table-wrapper`, focus rings | Global styles, as-is | Foundation |
-| Prism token colours + `kg-code-card` | Shiki light/dark themes + code block component (note Astro CSP + Shiki inline styles, research R8) | Blog |
+| Prism token colours + `kg-code-card` | Shiki with one semantic theme whose colours become `hl-*` classes (no inline styles, so the CSP is unchanged), coloured in `src/styles/global.css` for light and dark, plus the `CodeBlock` component (done; spec 008 R7, R8) | Blog |
 | `kg-width-wide` / `kg-width-full` + `content-feature-image.hbs` | `WideImage` and `FullImage` sections, `FeatureImage` page component, and `.kg-width-*` rules in `src/styles/global.css` (done) | Pages |
-| `table-wrapper.js` | CSS or build-time Markdown plugin; no client script | Blog |
+| `table-wrapper.js` | `ScrollTable` component replacing the Markdown `table`, scrolling inside a focusable region; no client script (done; spec 008 R9) | Blog |
 | `theme-toggle.js` + `ui-theme-toggle.hbs` | Inline head script + toggle component | Foundation |
 | `navigation-toggle.js` | Native HTML if accessible, else tiny script; progressive enhancement per spec (tiny script chosen, research R6) | Foundation |
 | `default.hbs`, `layout-header.hbs`, `layout-footer.hbs`, `navigation.hbs` | Base layout, header, footer, navigation | Foundation |

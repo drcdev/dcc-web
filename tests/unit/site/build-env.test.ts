@@ -124,11 +124,16 @@ describe.each(environments)("astro build with the $label environment", ({ env })
     const entries = [...readFileSync(join(outDir, "sitemap-0.xml"), "utf-8").matchAll(/<loc>([^<]+)<\/loc>/g)].map(
       (m) => m[1]!,
     );
-    expect([...entries].sort()).toEqual(
-      ["/", "/about/", "/contact/", "/privacy-policy/", "/services/", "/speaking/", "/technology/", "/terms-of-use/"].map(
-        (path) => `${expectedOrigin}${path}`,
-      ),
-    );
+    // A preview build includes the sample posts, which are drafts; production leaves them out (spec 008 R3).
+    const pages = ["/", "/about/", "/contact/", "/privacy-policy/", "/services/", "/speaking/", "/technology/", "/terms-of-use/"];
+    const samplePosts = [
+      "/writing/sample-everything/",
+      "/writing/sample-long-title/",
+      "/writing/sample-short/",
+      "/writing/sample-text-only/",
+    ];
+    const expected = env.WORKERS_CI_BRANCH === "main" ? pages : [...pages, ...samplePosts];
+    expect([...entries].sort()).toEqual(expected.map((path) => `${expectedOrigin}${path}`));
   });
 
   it("places the pre-paint theme script before the stylesheet in the built home page", () => {
