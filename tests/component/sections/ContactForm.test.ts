@@ -1,6 +1,8 @@
 // The static markup of the contact form (contracts/contact-page.md "Static
 // markup"; FR-008a to FR-008p). The island script is not run here; the
 // browser behaviour is covered in tests/e2e/contact.spec.ts.
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import ContactForm from "../../../src/components/sections/ContactForm.astro";
 import { EMAIL_MAX, MESSAGE_MAX, NAME_MAX, ORGANIZATION_MAX } from "../../../worker/src/contact/rules.ts";
@@ -129,6 +131,15 @@ describe("ContactForm honeypot, project line and human check", () => {
     expect(line.attrs.hidden).toBeDefined();
     expect(line.attrs.tabindex).toBeUndefined();
     expect(tags(html).find((t) => t.attrs.name === "project")!.attrs.type).toBe("hidden");
+  });
+
+  it("renders no project text on the server: the line is empty and the value comes from the island as text", () => {
+    expect(html).toMatch(/<p[^>]*id="contact-project"[^>]*><\/p>/);
+    expect(tags(html).find((t) => t.attrs.name === "project")!.attrs.value).toBe("");
+    const source = readFileSync(fileURLToPath(new URL("../../../src/components/sections/ContactForm.astro", import.meta.url)), "utf-8");
+    expect(source).toContain("line.textContent");
+    expect(source).not.toMatch(/innerHTML|set:html/);
+    expect(source).toContain(".slice(0, 100)");
   });
 
   it("has an empty human-check slot carrying the public site key", () => {

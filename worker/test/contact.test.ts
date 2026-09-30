@@ -20,6 +20,37 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe("POST /api/contact: project", () => {
+  it("stores the project as plain text with control characters removed", async () => {
+    mockSiteverify();
+    const response = await run(post(validBody({ project: "  <b>Ca\u0000den\u0007ce</b>\n " })));
+    expect(response.status).toBe(200);
+    expect((await rows())[0].project).toBe("<b>Cadence</b>");
+  });
+
+  it("stores null for an absent, blank or control-only project", async () => {
+    let n = 0;
+    for (const project of [undefined, "", "   ", "\u0000\u0001"]) {
+      mockSiteverify();
+      await run(post(validBody({ project }), { "CF-Connecting-IP": `203.0.113.${100 + n++}` }));
+      vi.restoreAllMocks();
+    }
+    const stored = await rows();
+    expect(stored).toHaveLength(4);
+    expect(stored.every((row) => row.project === null)).toBe(true);
+  });
+
+  it("refuses a project over 100 characters after cleaning, and accepts exactly 100", async () => {
+    mockSiteverify();
+    const tooLong = await run(post(validBody({ project: "p".repeat(101) })));
+    expect(tooLong.status).toBe(400);
+    expect(await tooLong.json()).toMatchObject({ error: "validation", fields: { project: "too_long" } });
+    const padded = await run(post(validBody({ project: `\u0000${"p".repeat(100)}\u0000` })));
+    expect(padded.status).toBe(200);
+    expect((await rows())[0].project).toBe("p".repeat(100));
+  });
+});
+
 describe("POST /api/contact: accepted", () => {
   it("stores one row with a hashed IP and no raw IP", async () => {
     mockSiteverify();

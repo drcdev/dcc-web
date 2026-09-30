@@ -317,3 +317,50 @@ test.describe("spam and abuse", () => {
     expect(await listNew(request, name), "a honeypot submission is not stored").toBeUndefined();
   });
 });
+
+test.describe("coming from a project story", () => {
+  test("?project=Cadence shows the About line and stores the project", async ({ page, request }) => {
+    await uniqueSender(page);
+    const name = `Project ${Date.now()}`;
+    await page.goto("/contact/?project=Cadence");
+    await expect(page.locator("#contact-project")).toHaveText("About: Cadence");
+    await expect(page.locator("#contact-project")).toBeVisible();
+    await fillValid(page);
+    await page.getByLabel("Name", { exact: true }).fill(name);
+    await send(page).click();
+    await expect(page.locator("#contact-success")).toBeVisible({ timeout: 5000 });
+    expect((await listNew(request, name))?.project).toBe("Cadence");
+  });
+
+  test("a 150-character markup value renders as text, is cut to 100 and is stored the same way", async ({
+    page,
+    request,
+  }) => {
+    await uniqueSender(page);
+    const name = `Project long ${Date.now()}`;
+    const value = `<b>x</b>${"y".repeat(142)}`;
+    expect(value).toHaveLength(150);
+    const expected = value.slice(0, 100);
+    await page.goto(`/contact/?project=${encodeURIComponent(value)}`);
+    await expect(page.locator("#contact-project")).toHaveText(`About: ${expected}`);
+    expect(await page.locator("#contact-project b").count()).toBe(0);
+    await fillValid(page);
+    await page.getByLabel("Name", { exact: true }).fill(name);
+    await send(page).click();
+    await expect(page.locator("#contact-success")).toBeVisible({ timeout: 5000 });
+    expect((await listNew(request, name))?.project).toBe(expected);
+  });
+
+  test("no parameter shows no line and stores null", async ({ page, request }) => {
+    await uniqueSender(page);
+    const name = `Project none ${Date.now()}`;
+    await page.goto("/contact/");
+    await expect(send(page)).toBeEnabled();
+    await expect(page.locator("#contact-project")).toBeHidden();
+    await fillValid(page);
+    await page.getByLabel("Name", { exact: true }).fill(name);
+    await send(page).click();
+    await expect(page.locator("#contact-success")).toBeVisible({ timeout: 5000 });
+    expect((await listNew(request, name))?.project).toBeNull();
+  });
+});

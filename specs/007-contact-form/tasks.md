@@ -159,12 +159,12 @@
 
 ### Tests first (seen to fail)
 
-- [ ] T047 [P] [US5] Extend `tests/component/sections/ContactForm.test.ts` and `tests/e2e/contact.spec.ts`: `?project=Cadence` shows "About: Cadence" and stores it; a 150-character `<b>x</b>` value renders as text, is cut to 100 and stored the same way; no parameter shows no line and stores null. Must fail.
-- [ ] T048 [P] [US5] Extend `worker/test/contact.test.ts` for project length, control-character removal and storage as plain text. Must fail.
+- [X] T047 [P] [US5] Extend `tests/component/sections/ContactForm.test.ts` and `tests/e2e/contact.spec.ts`: `?project=Cadence` shows "About: Cadence" and stores it; a 150-character `<b>x</b>` value renders as text, is cut to 100 and stored the same way; no parameter shows no line and stores null. Must fail.
+- [X] T048 [P] [US5] Extend `worker/test/contact.test.ts` for project length, control-character removal and storage as plain text. Must fail.
 
 ### Implementation
 
-- [ ] T049 [US5] Implement project parameter handling (text-only rendering, 100-character cut) in the `ContactForm.astro` island and server validation; make tests pass. Note any project-story pages that already link to `/contact/?project=` (do not add new content).
+- [X] T049 [US5] Implement project parameter handling (text-only rendering, 100-character cut) in the `ContactForm.astro` island and server validation; make tests pass. Note any project-story pages that already link to `/contact/?project=` (do not add new content). Done: the island and shared rules already handled the parameter; no page in `src/` links to `/contact/?project=` yet.
 
 ---
 
