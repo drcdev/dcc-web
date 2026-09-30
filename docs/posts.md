@@ -154,10 +154,13 @@ Every published post ends with the "views are my own" note. It is one setting in
 
 ## Sample posts
 
-The four posts whose titles begin with "Sample:" are drafts that exist so the blog's pages can
-be tested and checked on the preview. They stay in the repository as drafts after real posts
-exist, because the end-to-end and visual tests depend on them. Do not edit or remove a sample
-post unless you update the tests and their visual baselines in the same change.
+There is one sample post, "Sample: Every kind of content a post can hold"
+(`src/content/posts/sample-everything.mdx`). It is a draft that holds every kind of content a
+post can have, so the blog's pages can be tested and checked on the preview. It stays in the
+repository as a draft next to the real posts, because the end-to-end and visual tests depend on
+it. Do not edit or remove it unless you update the tests and their visual baselines in the same
+change. The other cases the tests need, such as a post with no feature image and a post with a
+very long title, are test fixtures in `tests/fixtures/posts/`, not posts on the site.
 
 ## Build errors you may see
 

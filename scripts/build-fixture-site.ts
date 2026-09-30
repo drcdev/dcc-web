@@ -2,7 +2,9 @@
 // repository's site with tests/fixtures/pages/sections.mdx added as an extra
 // page (specs/003-standalone-pages/tasks.md, T004, T005) and with generated
 // blog posts added, so pagination has a second page to test
-// (specs/008-blog/tasks.md, T026). Written to .cache/fixture-site/dist.
+// (specs/008-blog/tasks.md, T026). Two fixture posts from tests/fixtures/posts/valid/ are added
+// too: a post with no feature image and a post with a very long title, the cases the removed
+// sample posts used to cover (FIXTURE_POSTS). Written to .cache/fixture-site/dist.
 import { cpSync, existsSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -16,6 +18,14 @@ export interface GeneratedPost {
   source: string;
   image: { name: string; data: Uint8Array };
 }
+
+/**
+ * Fixture posts copied from tests/fixtures/posts/valid/ (with the pictures in
+ * tests/fixtures/posts/images/): a text-only post (no feature image, 2026-08-10) and a post
+ * with a very long title holding an unbroken word (2026-08-20). tests/e2e/blog-fixtures.spec.ts
+ * checks them on the served fixture site.
+ */
+export const FIXTURE_POSTS = ["text-only.mdx", "long-title.mdx"] as const;
 
 /** The fewest generated posts: 13 means a full first page of 12 and a second page of one. */
 const MINIMUM_POSTS = 13;
@@ -122,6 +132,9 @@ async function buildSite(): Promise<void> {
     writeFileSync(resolve(postsDir, `${post.slug}.mdx`), post.source);
     writeFileSync(resolve(postsDir, "images", post.image.name), post.image.data);
   }
+  const postFixtures = resolve(repoRoot, "tests/fixtures/posts");
+  cpSync(resolve(postFixtures, "images"), resolve(postsDir, "images"), copyOptions);
+  for (const name of FIXTURE_POSTS) cpSync(resolve(postFixtures, "valid", name), resolve(postsDir, name));
 
   // Fixture projects (with their images) go into the projects collection.
   const projectFixtures = resolve(repoRoot, "tests/fixtures/projects");

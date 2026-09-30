@@ -22,7 +22,7 @@ The design is a custom theme, ported from the previous version of this site and 
 
 ## Contact form
 
-When it is available, the contact form sends messages to a small API that runs in the same Cloudflare Worker as the site. Submissions are stored in a single Cloudflare D1 database and deleted automatically after a retention period. Where the database is located is to be confirmed. The [privacy policy](/privacy-policy/) has the details, including what is still to be confirmed.
+The contact form sends messages to a small API that runs in the same Cloudflare Worker as the site. Cloudflare Turnstile checks that a person, not a script, is sending it. Messages are stored in a single Cloudflare D1 database and deleted automatically after 12 months. Your IP address is used only to limit repeat sending, and only a one-way, salted fingerprint of it is kept. The [privacy policy](/privacy-policy/) has the details, including where the database is located.
 
 ## Analytics
 
@@ -33,8 +33,9 @@ The main site uses Cloudflare Web Analytics, which sets no cookies and does not 
 | Service | Purpose | Location |
 | --- | --- | --- |
 | Cloudflare | Serves the pages and visitor statistics | Global network |
-| Cloudflare D1 | Stores contact submissions | To be confirmed |
+| Cloudflare D1 | Stores contact submissions | Set out in the privacy policy |
+| Cloudflare Turnstile | Spam check on the contact form | Global network |
 
 ## Questions
 
-Curious about how something works? Get in touch through the contact page and I am happy to explain.
+Curious about how something works? Get in touch through the [contact page](/contact/) and I am happy to explain.

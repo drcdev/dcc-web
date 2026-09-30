@@ -1,13 +1,17 @@
-// The sample posts (contracts/post-file.md "Sample posts"; FR-035, SC-006).
-// Three or four `sample-*.mdx` files stay in the repository as drafts so the
-// end-to-end and visual tests have every kind of content to check. Reads the
-// files directly, so a missing case fails here before any build.
+// The sample post (contracts/post-file.md "Sample posts"; FR-035, SC-006).
+// One `sample-*.mdx` file, the kitchen-sink sample-everything, stays in the
+// repository as a draft so the end-to-end and visual tests have every kind of
+// content to check. The cases the removed samples covered (a post with no
+// feature image, a very long title) are fixture posts in tests/fixtures/posts/valid/,
+// which scripts/build-fixture-site.ts adds to the fixture site. Reads the files
+// directly, so a missing case fails here before any build.
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { topicIds } from "../../../src/config/topics.ts";
 
 const dir = fileURLToPath(new URL("../../../src/content/posts/", import.meta.url));
+const fixtureDir = fileURLToPath(new URL("../../fixtures/posts/valid/", import.meta.url));
 
 interface Sample {
   name: string;
@@ -17,13 +21,13 @@ interface Sample {
   summary: string;
 }
 
-function load(): Sample[] {
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir)
-    .filter((name) => /^sample-.*\.mdx$/.test(name))
+function load(from: string, pattern: RegExp): Sample[] {
+  if (!existsSync(from)) return [];
+  return readdirSync(from)
+    .filter((name) => pattern.test(name))
     .sort()
     .map((name) => {
-      const source = readFileSync(`${dir}${name}`, "utf-8");
+      const source = readFileSync(`${from}${name}`, "utf-8");
       const match = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/.exec(source);
       expect(match, `${name} has front matter`).not.toBeNull();
       const front = match![1]!;
@@ -32,13 +36,13 @@ function load(): Sample[] {
     });
 }
 
-const samples = load();
+const samples = load(dir, /^sample-.*\.mdx$/);
+const fixture = (name: string) => load(fixtureDir, new RegExp(`^${name}$`))[0];
 const all = (pick: (s: Sample) => string) => samples.map(pick).join("\n");
 
 describe("sample posts", () => {
-  it("has three or four sample-*.mdx files", () => {
-    expect(samples.length).toBeGreaterThanOrEqual(3);
-    expect(samples.length).toBeLessThanOrEqual(4);
+  it("has exactly one sample-*.mdx file, sample-everything.mdx", () => {
+    expect(samples.map((s) => s.name)).toEqual(["sample-everything.mdx"]);
   });
 
   it.each(samples.map((s) => [s.name, s] as const))("%s is a draft with a Sample: title and a sample summary", (_name, s) => {
@@ -80,27 +84,50 @@ describe("sample posts", () => {
     }
   });
 
-  it("has a very long title containing a long unbroken word", () => {
-    const long = samples.find((s) => s.title.length >= 100 && s.title.split(/\s+/).some((word) => word.length >= 40));
-    expect(long, "a title of 100+ characters with a 40+ character word").toBeDefined();
+  it("is featured, has a feature image and has an update date", () => {
+    const [sample] = samples;
+    expect(sample!.front).toMatch(/^featured: true$/m);
+    expect(sample!.front).toMatch(/^featureImage:/m);
+    expect(sample!.front).toMatch(/^updated: \d{4}-\d{2}-\d{2}$/m);
   });
 
-  it("has a featured post, a post with no feature image and an updated post", () => {
-    expect(samples.some((s) => /^featured: true$/m.test(s.front))).toBe(true);
-    expect(samples.some((s) => !/^featureImage:/m.test(s.front))).toBe(true);
-    expect(samples.some((s) => /^updated: \d{4}-\d{2}-\d{2}$/m.test(s.front))).toBe(true);
-  });
-
-  it("uses all four topics", () => {
-    const used = new Set(samples.flatMap((s) => [...s.front.matchAll(/^ {2}- ([a-z0-9-]+)$/gm)].map((m) => m[1]!)));
+  // With the sample post, the real posts use every topic, so each topic page lists a post.
+  it("uses all four topics together with the real posts", () => {
+    const posts = load(dir, /\.mdx$/);
+    const used = new Set(
+      posts.flatMap((s) => [
+        ...[...s.front.matchAll(/^ {2}- ([a-z0-9-]+)$/gm)].map((m) => m[1]!),
+        ...(/^topics: \[(.*)\]$/m.exec(s.front)?.[1]?.split(",").map((id) => id.trim()) ?? []),
+      ]),
+    );
     for (const id of topicIds) expect(used, id).toContain(id);
   });
 
-  it("keeps every image small, for the performance budget", () => {
+  // Only the sample post's pictures (sample-*): the real posts' photos are sized by the build.
+  it("keeps every sample image small, for the performance budget", () => {
     const images = `${dir}images/`;
     if (!existsSync(images)) return;
-    for (const name of readdirSync(images)) {
+    const names = readdirSync(images).filter((name) => /^sample-/.test(name));
+    expect(names.length).toBeGreaterThan(0);
+    for (const name of names) {
       expect(statSync(`${images}${name}`).size, name).toBeLessThan(60 * 1024);
     }
+  });
+});
+
+// The fixture posts that stand in for the removed samples on the fixture site
+// (scripts/build-fixture-site.ts FIXTURE_POSTS; tests/e2e/blog-fixtures.spec.ts).
+describe("fixture posts for the fixture site", () => {
+  it("has a post with a very long title containing a long unbroken word", () => {
+    const long = fixture("long-title\\.mdx");
+    expect(long, "tests/fixtures/posts/valid/long-title.mdx").toBeDefined();
+    expect(long!.title.length).toBeGreaterThanOrEqual(100);
+    expect(long!.title.split(/\s+/).some((word) => word.length >= 40)).toBe(true);
+  });
+
+  it("has a post with no feature image", () => {
+    const textOnly = fixture("text-only\\.mdx");
+    expect(textOnly, "tests/fixtures/posts/valid/text-only.mdx").toBeDefined();
+    expect(textOnly!.front).not.toMatch(/^featureImage:/m);
   });
 });

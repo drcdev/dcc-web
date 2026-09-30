@@ -125,7 +125,7 @@ describe.each(environments)("astro build with the $label environment", ({ env })
     const entries = [...readFileSync(join(outDir, "sitemap-0.xml"), "utf-8").matchAll(/<loc>([^<]+)<\/loc>/g)].map(
       (m) => m[1]!,
     );
-    // A preview build includes the sample posts, which are drafts; production leaves them out (spec 008 R3).
+    // A preview build includes the sample post, which is a draft; production leaves it out (spec 008 R3).
     // The listing pages are published on every build: all posts and one page per topic (spec 008 US4).
     const pages = [
       "/",
@@ -142,21 +142,27 @@ describe.each(environments)("astro build with the $label environment", ({ env })
       "/writing/all/",
       ...topics.map((topic) => `/writing/topics/${topic.id}/`),
     ];
-    const samplePosts = [
-      "/writing/sample-everything/",
-      "/writing/sample-long-title/",
-      "/writing/sample-short/",
-      "/writing/sample-text-only/",
+    // Don's real posts (feature 010) are published, so every build lists them.
+    const realPosts = [
+      "/writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/",
+      "/writing/self-contained-development-for-ghost-themes/",
+      "/writing/starting-something-new/",
+      "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/",
     ];
-    const expected = env.WORKERS_CI_BRANCH === "main" ? pages : [...pages, ...samplePosts];
+    const samplePosts = ["/writing/sample-everything/"];
+    const expected = env.WORKERS_CI_BRANCH === "main" ? [...pages, ...realPosts] : [...pages, ...realPosts, ...samplePosts];
     expect([...entries].sort()).toEqual(expected.map((path) => `${expectedOrigin}${path}`).sort());
   });
 
-  it("leaves the draft sample posts out of production and builds them, labelled, elsewhere (FR-032, FR-046)", () => {
-    const page = join(outDir, "writing/sample-short/index.html");
+  it("leaves the draft sample post out of production and builds it, labelled, elsewhere (FR-032, FR-046)", () => {
+    const page = join(outDir, "writing/sample-everything/index.html");
     if (env.WORKERS_CI_BRANCH === "main") {
       expect(files.some((f) => f.includes(`${join("writing", "sample-")}`))).toBe(false);
-      expect(readFileSync(join(outDir, "writing/index.html"), "utf-8")).toContain("There are no posts yet.");
+      // The listing shows the real posts and links to no sample.
+      const listing = readFileSync(join(outDir, "writing/index.html"), "utf-8");
+      expect(listing).toContain('href="/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/"');
+      expect(listing).not.toContain("/writing/sample-");
+      expect(listing).not.toContain("data-draft-label");
     } else {
       const html = readFileSync(page, "utf-8");
       expect(html).toMatch(/data-draft-notice[^>]*>\s*<strong>Draft\.<\/strong>/);

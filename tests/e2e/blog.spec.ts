@@ -1,13 +1,20 @@
 // Blog end-to-end tests against the production build served by `wrangler dev`
 // (specs/008-blog/tasks.md T030; contracts/blog-pages.md "Post"). Later phases
 // add the landing, listing, topic, share and feed cases to this file (T042,
-// T057, T063, T067, T071). The sample posts are drafts, so every build that is
-// not a production build shows them.
+// T057, T063, T067, T071). The sample post is a draft, so every build that is
+// not a production build shows it. The cases the removed sample posts covered (a
+// post with no feature image, a very long title, more featured posts than fit)
+// run against the fixture site in tests/e2e/blog-fixtures.spec.ts.
 import { test, expect, type Page } from "@playwright/test";
 import { cspViolations, recordCspViolations } from "./csp-violations.ts";
 
 const POST = "/writing/sample-everything/";
-const TEXT_ONLY_POST = "/writing/sample-text-only/";
+const WAYFINDER = "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/";
+const FOCUS_POCUS = "/writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/";
+const GHOST_THEMES = "/writing/self-contained-development-for-ghost-themes/";
+const STARTING = "/writing/starting-something-new/";
+/** A post with no update date (the Wayfinder post). */
+const PLAIN_POST = WAYFINDER;
 const CAPTIONED_CODE = "const { title, summary } = entry.data;\nconsole.log(`${title}: ${summary}`);";
 
 const noSidewaysScroll = async (page: Page) => {
@@ -39,7 +46,7 @@ test.describe("post page", () => {
     await expect(page.locator("article time[datetime='2026-08-27']")).toHaveText("August 27, 2026");
     await expect(page.locator("article time[datetime='2026-09-15']")).toHaveText("September 15, 2026");
     await expect(page.locator("[data-title-card]")).toContainText("Updated");
-    await page.goto(TEXT_ONLY_POST);
+    await page.goto(PLAIN_POST);
     await expect(page.locator("[data-title-card]")).not.toContainText("Updated");
   });
 
@@ -140,8 +147,11 @@ test.describe("post page", () => {
 });
 
 // The landing page (T042; contracts/blog-pages.md "Landing"). This build is not a production
-// build, so the sample posts show: sample-everything is the newest (the lead story), sample-short
-// is the only other featured post.
+// build, so the sample post (dated 2026) shows next to the four real posts (dated 2025).
+// sample-everything is the newest (the lead story). The other three featured posts, newest first,
+// fill Featured: the Wayfinder post, the Focus Pocus post and Starting something new. The one
+// unfeatured post, Ghost themes, is all of Latest. A fourth featured post falling to Latest, and a
+// text-only card, are checked on the fixture site (tests/e2e/blog-fixtures.spec.ts).
 const LANDING = "/writing/";
 const LEAD_TITLE = "Sample: Every kind of content a post can hold";
 
@@ -200,7 +210,8 @@ test.describe("landing page", () => {
     const latest = await hrefs("[data-latest-grid]");
     const lead = await page.locator("[data-lead-story] h2 a").getAttribute("href");
     expect(lead).toBe("/writing/sample-everything/");
-    expect(featured).toEqual(["/writing/sample-short/"]);
+    expect(featured).toEqual([WAYFINDER, FOCUS_POCUS, STARTING]);
+    expect(latest).toEqual([GHOST_THEMES]);
     expect(featured).not.toContain(lead);
     expect(latest).not.toContain(lead);
     for (const href of featured) expect(latest).not.toContain(href);
@@ -208,14 +219,16 @@ test.describe("landing page", () => {
     await expect(page.locator("[data-featured-grid] [data-featured-mark]")).toHaveCount(featured.length);
   });
 
-  test("shows the lead story's image eagerly and a text-only card without one", async ({ page }) => {
+  // Every post here has a feature image; the text-only card is checked on the fixture site.
+  test("shows the lead story's image eagerly and every card with its image", async ({ page }) => {
     await page.goto(LANDING);
     const img = page.locator("[data-lead-story] img");
     await expect(img).toHaveAttribute("fetchpriority", "high");
     await expect(img).toHaveAttribute("loading", "eager");
-    const textOnly = page.locator("[data-post-card][data-text-only]");
-    await expect(textOnly).toHaveCount(1);
-    await expect(textOnly.locator("img")).toHaveCount(0);
+    await expect(page.locator("[data-lead-story][data-text-only], [data-post-card][data-text-only]")).toHaveCount(0);
+    const cards = page.locator("[data-featured-grid] [data-post-card], [data-latest-grid] [data-post-card]");
+    await expect(cards).toHaveCount(4);
+    await expect(cards.locator("img")).toHaveCount(4);
   });
 
   test("advertises the feed in the head, and has its own title, description and canonical address", async ({
@@ -268,11 +281,13 @@ test.describe("landing page", () => {
 });
 
 // The all posts and topic pages (T057; contracts/blog-pages.md "All posts" and "Topic"). The default
-// build has the four sample posts: sample-everything (2026-08-27), sample-long-title (08-20),
-// sample-text-only (08-10) and sample-short (07-30). Pagination runs against the fixture site in
-// tests/e2e/blog-pagination.spec.ts.
+// build has the sample post, sample-everything (2026-08-27), then the four real posts: the Wayfinder
+// post (2025-08-27), Focus Pocus (08-16), Ghost themes (08-07) and Starting something new (03-15).
+// Pagination runs against the fixture site in tests/e2e/blog-pagination.spec.ts. The topic checked
+// here is healthcare-leadership, the one topic with two posts (Wayfinder and Starting something new).
 const ALL = "/writing/all/";
-const TOPIC = "/writing/topics/technology-teams/";
+const TOPIC = "/writing/topics/healthcare-leadership/";
+const TOPIC_NAME = "Healthcare technology leadership";
 
 test.describe("all posts page", () => {
   test("shows the h1, the pill row and every post as a card, newest first", async ({ page }) => {
@@ -283,13 +298,8 @@ test.describe("all posts page", () => {
     const hrefs = await main
       .locator("[data-post-card] h2 a")
       .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
-    expect(hrefs).toEqual([
-      "/writing/sample-everything/",
-      "/writing/sample-long-title/",
-      "/writing/sample-text-only/",
-      "/writing/sample-short/",
-    ]);
-    // Four posts fit on one page, so there is no pagination.
+    expect(hrefs).toEqual([POST, WAYFINDER, FOCUS_POCUS, GHOST_THEMES, STARTING]);
+    // Five posts fit on one page (12), so there is no pagination.
     await expect(main.getByRole("navigation", { name: "Pages" })).toHaveCount(0);
   });
 
@@ -311,9 +321,9 @@ test.describe("all posts page", () => {
 
   test("reaches a topic page from a pill on a card", async ({ page }) => {
     await page.goto(ALL);
-    await page.locator("main [data-post-card] a[data-topic-pill][href$='/technology-teams/']").first().click();
+    await page.locator("main [data-post-card] a[data-topic-pill][href$='/healthcare-leadership/']").first().click();
     await page.waitForURL(`**${TOPIC}`);
-    await expect(page.locator("main h1")).toHaveText("High-performing technology teams");
+    await expect(page.locator("main h1")).toHaveText(TOPIC_NAME);
   });
 
   test("returns the not-found page with status 404 for /writing/all/1/ and /writing/all/99/", async ({ page }) => {
@@ -330,17 +340,18 @@ test.describe("topic page", () => {
     await page.goto(TOPIC);
     const main = page.locator("main");
     await expect(main.locator("[data-topic-banner]")).toBeVisible();
-    await expect(main.locator("h1")).toHaveText("High-performing technology teams");
+    await expect(main.locator("h1")).toHaveText(TOPIC_NAME);
     await expect(main.getByRole("navigation", { name: "Topics" })).toHaveCount(0);
     const hrefs = await main
       .locator("[data-post-card] h2 a")
       .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
-    expect(hrefs).toEqual(["/writing/sample-long-title/", "/writing/sample-text-only/"]);
-    expect(await page.title()).toBe("High-performing technology teams · Don Coleman");
+    // Newest first: the Wayfinder post (2025-08-27), then Starting something new (2025-03-15).
+    expect(hrefs).toEqual([WAYFINDER, STARTING]);
+    expect(await page.title()).toBe(`${TOPIC_NAME} · Don Coleman`);
   });
 
   test("returns the not-found page with status 404 for an unknown topic and for page 1", async ({ page }) => {
-    for (const path of ["/writing/topics/nope/", "/writing/topics/technology-teams/1/"]) {
+    for (const path of ["/writing/topics/nope/", `${TOPIC}1/`]) {
       const response = await page.goto(path);
       expect(response?.status(), path).toBe(404);
     }
@@ -348,9 +359,10 @@ test.describe("topic page", () => {
 });
 
 // Share and related posts (T063; FR-028, FR-029). Related posts are ranked by shared topics, then
-// newest. sample-everything (agentic-ai, compliant-data) shares agentic-ai with sample-short only,
-// so sample-short comes first, then the newest others. A post that shares no topic at all is proven
-// in the selection unit tests, as the sample posts all share at least one.
+// newest. sample-everything (agentic-ai, compliant-data) shares agentic-ai with the Focus Pocus post
+// only, so it comes first, then the newest others that share no topic: the Wayfinder post
+// (2025-08-27), then Ghost themes (08-07), ahead of Starting something new (03-15). Filling the
+// list from posts that share no topic is also proven in the selection unit tests.
 test.describe("share", () => {
   test("shows the Share button and calls navigator.share with the title and address", async ({ page }) => {
     await page.addInitScript(() => {
@@ -419,7 +431,7 @@ test.describe("share", () => {
     test.use({ javaScriptEnabled: false });
 
     test("shows the LinkedIn and email links and no Share button", async ({ page }) => {
-      await page.goto(TEXT_ONLY_POST);
+      await page.goto(PLAIN_POST);
       const share = page.locator("[data-share]");
       await expect(share.getByRole("link", { name: "Share on LinkedIn" })).toBeVisible();
       await expect(share.getByRole("link", { name: "Share by email" })).toBeVisible();
@@ -434,7 +446,7 @@ test.describe("related posts", () => {
     const related = page.locator("[data-related]");
     await expect(related.getByRole("heading", { level: 2, name: "Related posts" })).toBeVisible();
     const hrefs = await related.locator("li h3 a").evaluateAll((links) => links.map((a) => a.getAttribute("href")));
-    expect(hrefs).toEqual(["/writing/sample-short/", "/writing/sample-long-title/", "/writing/sample-text-only/"]);
+    expect(hrefs).toEqual([FOCUS_POCUS, WAYFINDER, GHOST_THEMES]);
     expect(hrefs).not.toContain(POST);
   });
 
@@ -471,7 +483,7 @@ test.describe("feed", () => {
     "/writing/all/",
     "/writing/topics/technology-teams/",
     "/writing/sample-everything/",
-    "/writing/sample-text-only/",
+    WAYFINDER,
   ]) {
     test(`advertises the feed in the head of ${path}`, async ({ page }) => {
       await page.goto(path);
@@ -484,7 +496,8 @@ test.describe("feed", () => {
 });
 
 test.describe("home page recent writing (US7)", () => {
-  test("lists the 3 newest sample posts as cards, newest first, with a link to all writing", async ({ page }) => {
+  // The 3 newest: sample-everything (2026-08-27), the Wayfinder post (2025-08-27), Focus Pocus (08-16).
+  test("lists the 3 newest posts as cards, newest first, with a link to all writing", async ({ page }) => {
     await page.goto("/");
     const section = page.locator("section[aria-labelledby]").filter({
       has: page.getByRole("heading", { level: 2, name: "Recent writing" }),
@@ -493,8 +506,8 @@ test.describe("home page recent writing (US7)", () => {
     const cards = section.locator("article[data-post-card]");
     await expect(cards).toHaveCount(3);
     await expect(cards.nth(0).getByRole("heading", { level: 3 })).toContainText("Every kind of content a post can hold");
-    await expect(cards.nth(1).getByRole("heading", { level: 3 })).toContainText("A very long title");
-    await expect(cards.nth(2).getByRole("heading", { level: 3 })).toContainText("A post with no feature image");
+    await expect(cards.nth(1).getByRole("heading", { level: 3 })).toContainText("The Systems Leadership Wayfinder");
+    await expect(cards.nth(2).getByRole("heading", { level: 3 })).toContainText("Building Focus Pocus");
     await expect(section.getByRole("link", { name: "All writing" })).toHaveAttribute("href", "/writing/");
   });
 

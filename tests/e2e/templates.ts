@@ -3,6 +3,13 @@
 // The not-found page was built in Phase 7 (T071, src/pages/404.astro; T072
 // flipped `built` to `true` here), so the header/no-JS assertions that were
 // marked `fixme` while it didn't exist now run and must pass.
+
+/**
+ * The fixture site (scripts/build-fixture-site.ts), served on port 4322 by playwright.config.ts.
+ * A template on it has an absolute address; `page.goto`, `request.get` and `page.route` all take one.
+ */
+export const FIXTURE_SITE = "http://localhost:4322";
+
 export const TEMPLATES = [
   { name: "home", path: "/", built: true },
   { name: "not-found", path: "/nope/", built: true },
@@ -16,9 +23,11 @@ export const TEMPLATES = [
   { name: "writing-landing", path: "/writing/", built: true },
   { name: "writing-all", path: "/writing/all/", built: true },
   { name: "writing-topic", path: "/writing/topics/technology-teams/", built: true },
-  // Blog post pages. The sample posts are drafts, so these also cover the draft post page (FR-039).
+  // Blog post pages. The sample post is a draft, so it also covers the draft post page (FR-039).
   { name: "writing-post", path: "/writing/sample-everything/", built: true },
-  { name: "writing-post-text-only", path: "/writing/sample-text-only/", built: true },
+  // A post with no feature image: the fixture post tests/fixtures/posts/valid/text-only.mdx, which
+  // only the fixture site has (the site itself has no post without a feature image).
+  { name: "writing-post-text-only", path: `${FIXTURE_SITE}/writing/text-only/`, built: true },
   { name: "projects", path: "/projects/", built: true },
   { name: "project-story", path: "/projects/focus-pocus/", built: true },
 ] as const;

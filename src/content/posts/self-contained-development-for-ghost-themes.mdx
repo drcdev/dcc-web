@@ -1,0 +1,854 @@
+---
+title: Self-contained development for Ghost themes
+summary: Stop rebuilding Ghost development environments from scratch. This guide shows how to create a (nearly) complete automation workflow using GitHub Codespaces that spins up a local Ghost instance with realistic content and seamless deployment in minutes.
+date: 2025-08-07
+topics:
+  - technology-teams
+featureImage:
+  src: ./images/ghost-themes-hero.jpg
+  alt: A cute white cartoon ghost with big black eyes floating against an orange background
+  caption: Photo by Warren Umoh on Unsplash
+---
+
+When I start on a new project, I prioritize keeping everything together and isolated. This lets me experiment, without installing countless versions of Node, CLI tools, and other dependencies. It also makes the process predictable, repeatable, and more secure.
+
+I absolutely love the Ghost platform for website and newsletter hosting. It is one of the few solutions around that makes it easy, without sacrificing customization. I created a theme because I wanted something tailored for me. The Ghost framework made it easy enough to do, with some help from a few other tools [mentioned here](/about/).
+
+<Figure caption="Split screen of dark and light mode of my custom theme called Flux">
+
+![A split screen showing the Flux Ghost theme in dark mode on one side and light mode on the other](./images/ghost-themes-flux.png)
+
+</Figure>
+
+As I learned how to navigate theme building, it was really important that I wasn't maintaining a local or self-hosted instance when my website would be hosted on [Magic Pages](https://www.magicpages.co). I wanted to be able to spin up a development environment when I needed it, synchronize content in, and then immediately get to developing and testing.
+
+There are 4 components to my automation and workflow now:
+
+1. A Codespaces configuration that automatically installs and starts Ghost and other required tools.
+2. A GitHub Actions workflow to deploy my theme.
+3. Content management scripts including:
+   1. A few initial steps that must be done manually.
+   2. Scripts to compare settings, sync my live website posts/pages to the local instance, and generate some extra posts to add volume when there isn't much on the live site yet.
+
+[GitHub - drcdev/Ghost-Starter: A development starter theme for Ghost](https://github.com/drcdev/Ghost-Starter) A development starter theme for Ghost. Contribute to drcdev/Ghost-Starter development by creating an account on GitHub.
+
+I've added everything to the Ghost Starter theme above if you would rather review the code yourself. Check out the .devcontainer and .scripts folders. Otherwise, read on!
+
+## Codespaces
+
+The first half of the puzzle is a devcontainer. Here is what I set up:
+
+- A Node.js container, recently updated to meet Ghost 6 recommendations
+- Port forwarding for the default `2368`
+- Create, start, and attach scripts
+- The official [Ghost VS Code extension](https://marketplace.visualstudio.com/items?itemName=TryGhost.ghost)
+
+```json caption=".devcontainer/devcontainer.json"
+{
+  "name": "Node.js",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bullseye",
+
+  // "features": {},
+
+  "forwardPorts": [2368],
+
+  "postCreateCommand": "sh ./.devcontainer/postCreateCommand.sh",
+  "postStartCommand": "sh ./.devcontainer/postStartCommand.sh",
+  "postAttachCommand": "sh ./.devcontainer/postAttachCommand.sh",
+  
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "TryGhost.ghost"
+      ]
+    }
+  }
+
+  // "customizations": {},
+}
+```
+
+### Lifecycle scripts
+
+**postCreateCommand** happens only once, right after **creation/rebuild**.
+
+- Installs dependencies, installs Ghost, and symlinks the theme folder.
+
+```sh caption=".devcontainer/postCreateCommand.sh"
+# Install npm dependencies
+npm i
+npm i -g ghost-cli@latest
+npm i -g gscan@latest
+
+# Install Ghost without starting
+cd /workspaces
+mkdir ghost
+cd ghost
+ghost install local --no-start
+
+# Symlink the current folder to the ghost themes folder
+ln -s /workspaces/flux /workspaces/ghost/content/themes/flux
+
+# Return to theme folder
+cd /workspaces/flux
+```
+
+**postStartCommand** runs on **every container start**, after creation, restart, or resume.
+
+- Simple. Confirm everything is installed every time the container starts.
+- Mostly redundant, but has been helpful on occasion when switching branches without rebuilding the container.
+
+```sh caption=".devcontainer/postStartCommand.sh"
+npm i
+```
+
+**postAttachCommand** runs **each time a user/editor attaches** to the container, ideal for UI-dependent initialization.
+
+- Start Ghost, then start the project in development mode.
+
+```sh caption=".devcontainer/postAttachCommand.sh"
+cd /workspaces/ghost
+ghost start
+cd /workspaces/flux
+npm start
+```
+
+## Deployment
+
+Deployment is straight forward and uses the provided Ghost deploy theme action.
+
+```yaml caption=".github/workflows/deploy-theme.yml"
+# Learn more → https://github.com/TryGhost/action-deploy-theme
+name: Deploy Theme
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - ".devcontainer/**"
+      - ".github/**"
+      - ".vscode/**"
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Run build
+        run: npm run build
+
+      - name: Deploy Ghost theme
+        uses: TryGhost/action-deploy-theme@v1
+        with:
+          api-url: ${{ secrets.GHOST_ADMIN_API_URL }}
+          api-key: ${{ secrets.GHOST_ADMIN_API_KEY }}
+
+```
+
+## Content management
+
+Next up is creating a realistic development environment quickly and easily. Ghost doesn't allow settings, routes, or redirects to be managed through the Admin API. However, with a bit of manual setup, you can automate a content sync and review differences in settings between two environments.
+
+I created a combination of four scripts and some package.json commands that make content syncing easy once everything is set up.
+
+```json caption="package.json"
+{
+...
+  "scripts": {
+    ...
+    "compare-settings": "node .scripts/compare-settings.js",
+    "content-seed": "npm run content-delete && npm run content-sync && npm run content-generate",
+    "content-delete": "node .scripts/content-delete-all.js",
+    "content-sync": "node .scripts/content-sync-all.js",
+    "content-generate": "node .scripts/content-generate.js"
+  }
+}
+```
+
+### Manual setup
+
+Before you can use the scripts, you have to go through a few manual steps below. Each time a Codespace is created or rebuilt, complete the following steps:
+
+1. Access local Ghost instance and create an admin account
+2. Create custom integrations:
+   1. Local Ghost: Settings → Integrations → Add custom integration
+   2. Production Ghost: Create matching integration
+3. Add environment variables to Codespaces secrets:
+   1. LOCAL_GHOST_ADMIN_API_URL=http://localhost:2368
+   2. LOCAL_GHOST_ADMIN_API_KEY=your_local_admin_key
+   3. LOCAL_GHOST_CONTENT_API_KEY=your_local_content_key
+   4. PROD_GHOST_CONTENT_API_URL=https://your-site.com
+   5. PROD_GHOST_CONTENT_API_KEY=your_prod_content_key
+4. Upload routes.yaml to Ghost Admin (Settings → Labs → Routes)
+5. Seed with content: `npm run content-seed`
+
+### Settings and content scripts
+
+These scripts were originally written independently, but were recently enhanced with some help from Claude Code to improve output formatting and error handling.
+
+Compare settings between production and local:
+
+```js caption=".scripts/compare-settings.js"
+const GhostContentAPI = require("@tryghost/content-api");
+
+// Settings categorization for better organization
+const SETTING_CATEGORIES = {
+  branding: ['title', 'description', 'logo', 'icon', 'cover_image', 'accent_color'],
+  social: ['facebook', 'twitter', 'linkedin_url', 'github_url', 'social_urls'],
+  content: ['posts_per_page', 'default_page_visibility', 'members_allow_free_signup'],
+  technical: ['timezone', 'locale', 'codeinjection_head', 'codeinjection_foot', 'url'],
+  navigation: ['navigation', 'secondary_navigation'],
+  meta: ['meta_title', 'meta_description', 'og_image', 'og_title', 'og_description', 'twitter_image', 'twitter_title', 'twitter_description'],
+  other: [] // Will be populated with uncategorized settings
+};
+
+// Default ignore list for assets and computed values
+const DEFAULT_IGNORE = ['logo', 'icon', 'cover_image', 'url', 'og_image', 'twitter_image'];
+
+// Command line argument parsing
+const args = process.argv.slice(2);
+const showAll = args.includes('--show-all');
+const format = args.find(arg => arg.startsWith('--format='))?.split('=')[1] || 'enhanced';
+const categoryFilter = args.find(arg => arg.startsWith('--category='))?.split('=')[1];
+
+// Color codes for terminal output
+const colors = {
+  reset: '\x1b[0m',
+  green: '\x1b[32m',
+  red: '\x1b[31m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  cyan: '\x1b[36m',
+  bold: '\x1b[1m',
+  dim: '\x1b[2m'
+};
+
+// Utility functions
+function colorize(text, color) {
+  return `${colors[color]}${text}${colors.reset}`;
+}
+
+function truncateValue(value, maxLength = 50) {
+  const str = typeof value === 'string' ? value : JSON.stringify(value);
+  return str.length > maxLength ? str.substring(0, maxLength) + '...' : str;
+}
+
+function categorizeSettings(settings) {
+  const categorized = {};
+  const uncategorized = [];
+  
+  // Initialize categories
+  Object.keys(SETTING_CATEGORIES).forEach(cat => {
+    categorized[cat] = [];
+  });
+  
+  Object.keys(settings).forEach(key => {
+    let found = false;
+    for (const [category, keys] of Object.entries(SETTING_CATEGORIES)) {
+      if (keys.includes(key)) {
+        categorized[category].push(key);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      uncategorized.push(key);
+    }
+  });
+  
+  if (uncategorized.length > 0) {
+    categorized.other = uncategorized;
+  }
+  
+  return categorized;
+}
+
+function printHeader(title) {
+  const width = 80;
+  const padding = Math.max(0, Math.floor((width - title.length - 2) / 2));
+  const line = '═'.repeat(width);
+  
+  console.log(colorize(line, 'cyan'));
+  console.log(colorize(`${'═'.repeat(padding)} ${title} ${'═'.repeat(padding)}`, 'cyan'));
+  console.log(colorize(line, 'cyan'));
+}
+
+function printSummary(stats) {
+  console.log(colorize('\n📊 SUMMARY', 'bold'));
+  console.log('─'.repeat(40));
+  console.log(`Total Settings:    ${stats.total}`);
+  console.log(`${colorize('✅ Identical:', 'green')}      ${stats.identical} (${Math.round(stats.identical/stats.total*100)}%)`);
+  console.log(`${colorize('❌ Different:', 'red')}      ${stats.different} (${Math.round(stats.different/stats.total*100)}%)`);
+  console.log(`${colorize('⚠️  Ignored:', 'yellow')}       ${stats.ignored} (${Math.round(stats.ignored/stats.total*100)}%)`);
+  console.log('─'.repeat(40));
+}
+
+function compareSettings(localSettings, prodSettings) {
+  const stats = { total: 0, identical: 0, different: 0, ignored: 0 };
+  const categorized = categorizeSettings(localSettings);
+  
+  printHeader('GHOST SETTINGS COMPARISON');
+  
+  // Process each category
+  Object.entries(categorized).forEach(([category, keys]) => {
+    if (keys.length === 0) return;
+    if (categoryFilter && category !== categoryFilter) return;
+    
+    console.log(colorize(`\n🏷️  ${category.toUpperCase()}`, 'blue'));
+    console.log('─'.repeat(60));
+    
+    keys.forEach(key => {
+      stats.total++;
+      const localValue = localSettings[key];
+      const prodValue = prodSettings[key];
+      
+      if (DEFAULT_IGNORE.includes(key)) {
+        stats.ignored++;
+        if (showAll) {
+          console.log(`${colorize('⚠️', 'yellow')}  ${colorize(key, 'dim')}: ${colorize('(ignored - asset/computed)', 'yellow')}`);
+        }
+      } else if (JSON.stringify(localValue) === JSON.stringify(prodValue)) {
+        stats.identical++;
+        if (showAll) {
+          console.log(`${colorize('✅', 'green')} ${key}: ${colorize('identical', 'green')}`);
+        }
+      } else {
+        stats.different++;
+        console.log(`${colorize('❌', 'red')} ${colorize(key, 'bold')}:`);
+        console.log(`   Local:  ${colorize(truncateValue(localValue), 'cyan')}`);
+        console.log(`   Prod:   ${colorize(truncateValue(prodValue), 'cyan')}`);
+        
+        // Show full values if truncated
+        if (JSON.stringify(localValue).length > 50 || JSON.stringify(prodValue).length > 50) {
+          console.log(`   ${colorize('(values truncated - use --verbose for full)', 'dim')}`);
+        }
+        console.log();
+      }
+    });
+  });
+  
+  printSummary(stats);
+  
+  if (!showAll && stats.identical > 0) {
+    console.log(colorize(`\n💡 Use --show-all to see ${stats.identical} identical settings`, 'dim'));
+  }
+}
+
+// Initialize APIs
+const apiLocal = new GhostContentAPI({
+  url: process.env.LOCAL_GHOST_ADMIN_API_URL,
+  key: process.env.LOCAL_GHOST_CONTENT_API_KEY,
+  version: "v6.0",
+});
+
+const apiProd = new GhostContentAPI({
+  url: process.env.PROD_GHOST_CONTENT_API_URL,
+  key: process.env.PROD_GHOST_CONTENT_API_KEY,
+  version: "v6.0",
+});
+
+// Main execution
+async function compareGhostSettings() {
+  try {
+    console.log(colorize('🔄 Fetching settings from both environments...', 'dim'));
+    
+    const [localSettings, prodSettings] = await Promise.all([
+      apiLocal.settings.browse(),
+      apiProd.settings.browse()
+    ]);
+    
+    compareSettings(localSettings, prodSettings);
+    
+  } catch (error) {
+    console.error(colorize('❌ Error fetching settings:', 'red'));
+    console.error(error.message);
+    process.exit(1);
+  }
+}
+
+// Run the comparison
+compareGhostSettings();
+```
+
+Delete all pages and posts from the local instance:
+
+```js caption=".scripts/content-delete-all.js"
+const GhostAdminAPI = require("@tryghost/admin-api");
+
+const apiLocal = new GhostAdminAPI({
+  url: process.env.LOCAL_GHOST_ADMIN_API_URL,
+  key: process.env.LOCAL_GHOST_ADMIN_API_KEY,
+  version: "v6.0",
+});
+
+async function deleteAllContent() {
+  console.log("Starting content deletion...");
+
+  try {
+    // Delete all posts
+    const posts = await apiLocal.posts.browse({ limit: "all" });
+    console.log(`Found ${posts.length} posts to delete`);
+    
+    for (const post of posts) {
+      try {
+        await apiLocal.posts.delete({ id: post.id });
+        console.log(`Deleted post: ${post.title}`);
+      } catch (error) {
+        console.error(`Failed to delete post "${post.title}":`, error.message);
+      }
+    }
+
+    // Delete all pages
+    const pages = await apiLocal.pages.browse({ limit: "all" });
+    console.log(`Found ${pages.length} pages to delete`);
+    
+    for (const page of pages) {
+      try {
+        await apiLocal.pages.delete({ id: page.id });
+        console.log(`Deleted page: ${page.title}`);
+      } catch (error) {
+        console.error(`Failed to delete page "${page.title}":`, error.message);
+      }
+    }
+
+    console.log("Content deletion completed!");
+  } catch (error) {
+    console.error("Failed to delete content:", error);
+    process.exit(1);
+  }
+}
+
+deleteAllContent();
+```
+
+Sync all production pages and create them in the local instance.
+
+```js caption=".scripts/content-sync-all.js"
+const GhostAdminAPI = require("@tryghost/admin-api");
+const GhostContentAPI = require("@tryghost/content-api");
+
+const apiLocal = new GhostAdminAPI({
+  url: process.env.LOCAL_GHOST_ADMIN_API_URL,
+  key: process.env.LOCAL_GHOST_ADMIN_API_KEY,
+  version: "v6.0",
+});
+
+const apiProd = new GhostContentAPI({
+  url: process.env.PROD_GHOST_CONTENT_API_URL,
+  key: process.env.PROD_GHOST_CONTENT_API_KEY,
+  version: "v6.0",
+});
+
+async function syncAllContent() {
+  console.log("Starting content sync from production to local...");
+
+  try {
+    // Sync posts
+    console.log("Fetching posts from production...");
+    const posts = await apiProd.posts.browse({
+      limit: "all",
+      include: "tags,authors",
+    });
+    console.log(`Found ${posts.length} posts to sync`);
+
+    for (const post of posts) {
+      try {
+        await apiLocal.posts.add(
+          {
+            title: post.title,
+            slug: post.slug,
+            html: post.html,
+            featured: post.featured,
+            status: "published",
+            feature_image: post.feature_image,
+            custom_excerpt: post.custom_excerpt,
+            visibility: post.visibility,
+            published_at: post.published_at,
+            tags: post.tags,
+          },
+          { source: "html" }
+        );
+        console.log(`Synced post: ${post.title}`);
+      } catch (error) {
+        console.error(`Failed to sync post "${post.title}":`, error.message);
+      }
+    }
+
+    // Sync pages
+    console.log("Fetching pages from production...");
+    const pages = await apiProd.pages.browse({
+      limit: "all",
+      include: "tags,authors,lexical",
+    });
+    console.log(`Found ${pages.length} pages to sync`);
+
+    for (const page of pages) {
+      try {
+        await apiLocal.pages.add(
+          {
+            title: page.title,
+            slug: page.slug,
+            html: page.html,
+            status: "published",
+            feature_image: page.feature_image,
+            custom_excerpt: page.custom_excerpt,
+            visibility: page.visibility,
+            published_at: page.published_at,
+            tags: page.tags,
+          },
+          { source: "html" }
+        );
+        console.log(`Synced page: ${page.title}`);
+      } catch (error) {
+        console.error(`Failed to sync page "${page.title}":`, error.message);
+      }
+    }
+
+    console.log("Content sync completed!");
+  } catch (error) {
+    console.error("Failed to sync content:", error);
+    process.exit(1);
+  }
+}
+
+syncAllContent();
+```
+
+Finally, generate 15 realistic posts with feature images. It will also add a kitchen sink page at /test that includes most content elements you will want to test in your theme.
+
+```js caption=".scripts/content-generate.js"
+const GhostAdminAPI = require("@tryghost/admin-api");
+
+const count = 15;
+
+const apiLocal = new GhostAdminAPI({
+  url: process.env.LOCAL_GHOST_ADMIN_API_URL,
+  key: process.env.LOCAL_GHOST_ADMIN_API_KEY,
+  version: "v6.0",
+});
+
+// Realistic tag categories
+const tagCategories = {
+  technology: ["JavaScript", "React", "Node.js", "TypeScript", "CSS", "HTML", "Web Development"],
+  topics: ["Tutorial", "Best Practices", "Performance", "Security", "Testing", "Architecture"],
+  tools: ["Git", "Docker", "VS Code", "npm", "Webpack", "TailwindCSS"],
+  concepts: ["Responsive Design", "Accessibility", "SEO", "Progressive Web Apps", "API Design"]
+};
+
+// Realistic post templates
+const postTemplates = [
+  {
+    titleTemplate: "Building Modern {tech} Applications: A Complete Guide",
+    excerptTemplate: "Learn how to build scalable and maintainable applications using {tech} with best practices and real-world examples.",
+    contentType: "tutorial",
+    tags: ["tutorial", "technology", "tools"]
+  },
+  {
+    titleTemplate: "The Ultimate Guide to {concept}",
+    excerptTemplate: "Everything you need to know about {concept}, from basic principles to advanced implementation strategies.",
+    contentType: "guide",
+    tags: ["topics", "concepts"]
+  },
+  {
+    titleTemplate: "{tech} vs {tech2}: Which Should You Choose in 2024?",
+    excerptTemplate: "An in-depth comparison of {tech} and {tech2}, helping you make the right choice for your next project.",
+    contentType: "comparison",
+    tags: ["technology", "topics"]
+  },
+  {
+    titleTemplate: "10 {concept} Tips Every Developer Should Know",
+    excerptTemplate: "Boost your development workflow with these essential {concept} tips and tricks used by industry professionals.",
+    contentType: "tips",
+    tags: ["topics", "concepts"]
+  },
+  {
+    titleTemplate: "Getting Started with {tool}: A Beginner's Guide",
+    excerptTemplate: "Master {tool} from scratch with this comprehensive beginner's guide, complete with practical examples.",
+    contentType: "beginner",
+    tags: ["tools", "tutorial"]
+  }
+];
+
+// Feature image URLs (using Unsplash for consistent professional images)
+const featureImages = [
+  "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&h=600&fit=crop",
+  "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&h=600&fit=crop",
+  "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&h=600&fit=crop",
+  "https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=1200&h=600&fit=crop",
+  "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1200&h=600&fit=crop",
+  "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=1200&h=600&fit=crop",
+  "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&h=600&fit=crop",
+  "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=1200&h=600&fit=crop"
+];
+
+function getRandomElement(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+function getRandomElements(array, count) {
+  const shuffled = [...array].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
+
+function generateRealisticContent(template, replacements) {
+  const paragraphs = [
+    `<p>In today's rapidly evolving tech landscape, ${template.contentType === 'tutorial' ? 'mastering new technologies' : 'staying updated with best practices'} is crucial for developers at all levels.</p>`,
+    `<p>This comprehensive guide will walk you through the essential concepts, providing practical examples and real-world applications that you can implement immediately in your projects.</p>`,
+    `<h2>Getting Started</h2><p>Before diving into the technical details, let's establish a solid foundation by understanding the core principles and setting up your development environment properly.</p>`,
+    `<p>We'll cover everything from basic setup to advanced configuration options, ensuring you have all the tools needed to follow along effectively.</p>`,
+    `<h2>Core Concepts</h2><p>Understanding the fundamental concepts is essential for building robust and scalable applications. Let's explore the key principles that will guide our implementation.</p>`,
+    `<p>These concepts form the backbone of modern development practices and are widely adopted across the industry for their proven effectiveness.</p>`,
+    `<h2>Implementation</h2><p>Now that we have a solid understanding of the theory, let's put these concepts into practice with hands-on examples and code snippets.</p>`,
+    `<p>Each example is designed to be practical and immediately applicable to your own projects, with clear explanations of why certain approaches are preferred.</p>`,
+    `<h2>Best Practices</h2><p>Following industry best practices ensures your code is maintainable, scalable, and follows established conventions that other developers can easily understand.</p>`,
+    `<p>We'll cover common pitfalls to avoid and share insights from experienced developers who have successfully implemented these solutions in production environments.</p>`,
+    `<h2>Conclusion</h2><p>By implementing these strategies and techniques, you'll be well-equipped to tackle complex challenges and build professional-grade applications.</p>`,
+    `<p>Remember that continuous learning and practice are key to mastering any technology. Don't hesitate to experiment and adapt these concepts to your specific use cases.</p>`
+  ];
+  
+  return paragraphs.join('\n');
+}
+
+function createRealisticPost(index) {
+  const template = getRandomElement(postTemplates);
+  
+  // Generate replacements for template variables
+  const techOptions = [...tagCategories.technology, ...tagCategories.tools];
+  const tech = getRandomElement(techOptions);
+  const tech2 = getRandomElements(techOptions.filter(t => t !== tech), 1)[0];
+  const concept = getRandomElement(tagCategories.concepts);
+  const tool = getRandomElement(tagCategories.tools);
+  
+  const replacements = { tech, tech2, concept, tool };
+  
+  // Generate title and excerpt
+  let title = template.titleTemplate;
+  let excerpt = template.excerptTemplate;
+  
+  Object.keys(replacements).forEach(key => {
+    title = title.replace(`{${key}}`, replacements[key]);
+    excerpt = excerpt.replace(`{${key}}`, replacements[key]);
+  });
+  
+  // Generate tags based on template
+  const postTags = [];
+  template.tags.forEach(tagCategory => {
+    const categoryTags = tagCategories[tagCategory];
+    if (categoryTags) {
+      postTags.push({ name: getRandomElement(categoryTags) });
+    }
+  });
+  
+  // Add some additional random tags
+  if (Math.random() > 0.5) {
+    postTags.push({ name: getRandomElement([...tagCategories.topics, ...tagCategories.concepts]) });
+  }
+  
+  // Generate realistic publication date (within last 6 months)
+  const now = new Date();
+  const sixMonthsAgo = new Date(now.getTime() - (6 * 30 * 24 * 60 * 60 * 1000));
+  const publishedAt = new Date(sixMonthsAgo.getTime() + Math.random() * (now.getTime() - sixMonthsAgo.getTime()));
+  
+  return {
+    title,
+    status: "published",
+    featured: Math.random() > 0.7, // 30% chance of being featured
+    feature_image: getRandomElement(featureImages),
+    custom_excerpt: excerpt,
+    html: generateRealisticContent(template, replacements),
+    meta_title: `${title} | Developer Guide`,
+    meta_description: excerpt.length > 160 ? excerpt.substring(0, 157) + "..." : excerpt,
+    tags: postTags,
+    published_at: publishedAt.toISOString(),
+    visibility: "public"
+  };
+}
+
+async function generatePosts() {
+  console.log("Starting realistic post generation...");
+  
+  try {
+    console.log("Note: Posts will be created using the default Ghost user")
+    
+    // Generate realistic posts
+    console.log(`Generating ${count} realistic posts...`);
+    const results = [];
+    
+    for (let i = 0; i < count; i++) {
+      try {
+        const post = createRealisticPost(i);
+        const result = await apiLocal.posts.add(post, { source: "html" });
+        console.log(`Generated post: ${post.title}`);
+        results.push(result);
+        
+        // Small delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (error) {
+        console.error(`Failed to create post ${i + 1}:`, error.message);
+      }
+    }
+    
+    // Generate additional test page
+    console.log("Generating test page...");
+    try {
+      const testPage = {
+        title: "Test",
+        status: "published",
+        html: `
+          <p>This is a comprehensive test page that serves as a "kitchen sink" to demonstrate all the different types of content and HTML elements that the Flux theme should render correctly. Use this page to verify that all styling and layout components work properly.</p>
+          
+          <h1>Heading Level 1</h1>
+          <p>This is a paragraph following an H1 heading. It should have proper spacing and typography according to the theme's design system.</p>
+          
+          <h2>Heading Level 2</h2>
+          <p>This is content under an H2 heading. The theme should provide clear visual hierarchy between different heading levels.</p>
+          
+          <h3>Heading Level 3</h3>
+          <p>H3 headings are commonly used for subsections within content.</p>
+          
+          <h4>Heading Level 4</h4>
+          <p>Smaller subsections might use H4 headings.</p>
+          
+          <h5>Heading Level 5</h5>
+          <p>H5 headings for even smaller subsections.</p>
+          
+          <h6>Heading Level 6</h6>
+          <p>The smallest heading level available in HTML.</p>
+          
+          <h2>Text Formatting</h2>
+          <p>This paragraph contains <strong>bold text</strong>, <em>italic text</em>, <code>inline code</code>, and <a href="#test">linked text</a>. It also includes <mark>highlighted text</mark> and <del>strikethrough text</del>.</p>
+          
+          <p>Here's some <sup>superscript</sup> and <sub>subscript</sub> text for good measure.</p>
+          
+          <h2>Lists</h2>
+          <h3>Unordered List</h3>
+          <ul>
+            <li>First list item</li>
+            <li>Second list item with <strong>bold text</strong></li>
+            <li>Third list item with a <a href="#test">link</a></li>
+            <li>Fourth list item</li>
+          </ul>
+          
+          <h3>Ordered List</h3>
+          <ol>
+            <li>Numbered item one</li>
+            <li>Numbered item two</li>
+            <li>Numbered item three</li>
+            <li>Numbered item four</li>
+          </ol>
+          
+          <h3>Nested Lists</h3>
+          <ul>
+            <li>Parent item
+              <ul>
+                <li>Nested item</li>
+                <li>Another nested item</li>
+              </ul>
+            </li>
+            <li>Another parent item</li>
+          </ul>
+          
+          <h2>Code Blocks</h2>
+          <p>Here's a code block to test syntax highlighting and code styling:</p>
+          <pre><code>function testFunction() {
+    const message = "Hello, World!";
+    console.log(message);
+    return message;
+}
+          
+// Call the function
+testFunction();</code></pre>
+          
+          <h2>Blockquotes</h2>
+          <blockquote>
+            <p>This is a blockquote to test how the theme handles quoted content. It should be visually distinct from regular paragraphs with appropriate styling, spacing, and possibly quotation marks or indentation.</p>
+          </blockquote>
+          
+          <h2>Tables</h2>
+          <p>Testing responsive table handling:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Status</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Dark Mode</td>
+                <td>✅ Implemented</td>
+                <td>Toggle in header</td>
+              </tr>
+              <tr>
+                <td>Responsive Design</td>
+                <td>✅ Implemented</td>
+                <td>Mobile-first approach</td>
+              </tr>
+              <tr>
+                <td>TailwindCSS</td>
+                <td>✅ Implemented</td>
+                <td>Utility-first styling</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <h2>Images</h2>
+          <p>Testing image display (placeholder text since we don't have actual images):</p>
+          <p><em>[Image placeholder - in a real implementation, this would test image responsiveness, captions, and lazy loading]</em></p>
+          
+          <h2>Horizontal Rule</h2>
+          <p>Content before horizontal rule.</p>
+          <hr>
+          <p>Content after horizontal rule.</p>
+          
+          <h2>Definition Lists</h2>
+          <dl>
+            <dt>Ghost</dt>
+            <dd>A modern open source headless CMS</dd>
+            
+            <dt>TailwindCSS</dt>
+            <dd>A utility-first CSS framework</dd>
+            
+            <dt>Handlebars</dt>
+            <dd>The templating engine used by Ghost themes</dd>
+          </dl>
+          
+          <h2>Long Content Test</h2>
+          <p>This section tests how the theme handles longer paragraphs and content flow. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+          
+          <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+          
+          <h2>Conclusion</h2>
+          <p>This kitchen sink page should help identify any styling issues or content rendering problems in the Flux theme. All elements above should display properly with consistent styling, proper spacing, and responsive behavior.</p>
+        `,
+        custom_excerpt: "A comprehensive kitchen sink page that demonstrates all content types and HTML elements to test theme rendering and styling.",
+        meta_title: "Test | Content Generation Test",
+        meta_description: "A simple test page to verify content generation functionality.",
+        visibility: "public"
+      };
+      
+      const result = await apiLocal.pages.add(testPage, { source: "html" });
+      console.log(`Generated test page: ${testPage.title}`);
+      results.push(result);
+      
+    } catch (error) {
+      console.error(`Failed to create test page:`, error.message);
+    }
+    
+    console.log(`Successfully generated ${results.length} posts!`);
+  } catch (error) {
+    console.error("Failed to generate posts:", error);
+    process.exit(1);
+  }
+}
+
+generatePosts();
+```
+
+## Conclusion
+
+Hopefully, you find this as useful as I do. Did you use some or all of this to improve your workflow? Do you have something better you can share? Please share!
