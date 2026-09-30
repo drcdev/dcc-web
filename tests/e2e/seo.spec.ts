@@ -59,15 +59,12 @@ async function expectSharedMetadata(page: Page, origin: string, type: "website" 
   if (type === "website") expect(png.readUInt32BE(20)).toBe(630);
 }
 
-// This build is not a production build, so the sample posts (drafts) are built and listed;
-// production leaves them out (specs/008-blog research R3). The four real posts (feature 010)
+// This build is not a production build, so the sample post (a draft) is built and listed;
+// production leaves it out (specs/008-blog research R3). The four real posts (feature 010)
 // are published and listed on every build.
 const POSTS = [
   "/writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/",
   "/writing/sample-everything/",
-  "/writing/sample-long-title/",
-  "/writing/sample-short/",
-  "/writing/sample-text-only/",
   "/writing/self-contained-development-for-ghost-themes/",
   "/writing/starting-something-new/",
   "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/",

@@ -28,6 +28,7 @@ in the gitignored `.env` as `GHOST_ADMIN`.
 | D4 | About page draft flag | **About is live copy** (`draft: false`): it carries Don's own wording from Ghost, so the placeholder notice goes. This supersedes spec 003 FR-021 for About. The legal pages stay drafts. |
 | D5 | The Wayfinder post was members-only after its marker (the printable PDFs) | **Publish publicly.** The two PDFs are served from `/files/`. |
 | D6 | Sentences about newsletters, subscribing and comments (Ghost features) | **Reword minimally**: "newsletter" becomes "series" on the About page; the two subscribe lines and the comment invitation in "Starting something new" become "follow along here" and a link to the contact page. Every edit is listed in the pull request. |
+| D7 | The four `sample-*` draft posts from spec 008, now that real posts exist | **Keep only the kitchen-sink post** `sample-everything` (it exercises every construct on the preview); remove `sample-short`, `sample-long-title` and `sample-text-only`. Checks that used the removed posts as their only subject move to fixture posts so no coverage is lost. This supersedes spec 008 FR-035's count of sample posts. |
 
 ## Content mapping
 

@@ -6,7 +6,7 @@
 // option, project files from tests/fixtures/projects/ to its src/content/projects/), and runs Astro's programmatic
 // build() or sync() (docs.astro.build/en/reference/programmatic-reference/).
 // The repository's real (non-`sample-*`) posts are left out of the copy unless a test sets
-// `realPosts`, so a fixture build holds only the sample posts and the fixtures it adds (and does
+// `realPosts`, so a fixture build holds only the sample post and the fixtures it adds (and does
 // not spend time resizing the real posts' photos).
 // The programmatic API is experimental; only tests use it.
 import { execFile } from "node:child_process";
@@ -56,7 +56,7 @@ export interface FixtureSiteOptions {
   projects?: readonly (string | FixtureFile)[];
   /**
    * Keep the repository's real posts (every src/content/posts/*.mdx not named `sample-*`) in the
-   * copied site. Default false: they are removed, so the only posts are the samples and fixtures.
+   * copied site. Default false: they are removed, so the only posts are the sample and fixtures.
    */
   realPosts?: boolean;
   /** Extra files to write into the site, keyed by path relative to the site root (for example an oversized clip). */

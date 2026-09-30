@@ -66,7 +66,7 @@ describe("fixture-site harness, post fixtures (T025)", () => {
     expect(existsSync(`${result.root}/src/content/posts/images/sample.png`)).toBe(true);
   });
 
-  it("leaves the repository's real posts out by default and keeps the sample posts", async () => {
+  it("leaves the repository's real posts out by default and keeps the sample post", async () => {
     result = await buildFixtureSite([], { mode: "sync" });
     expect(result.message).toBe("");
     const posts = readdirSync(`${result.root}/src/content/posts`).filter((name) => /\.mdx?$/.test(name));

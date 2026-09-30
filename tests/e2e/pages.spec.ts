@@ -130,13 +130,13 @@ test("the projects index and every story answer 200", async ({ request }) => {
   }
 });
 
-test("the sitemap lists the eight pages, the listing pages, the real and sample posts and the projects, and neither the not-found page nor the cookie policy", async ({ request }) => {
+test("the sitemap lists the eight pages, the listing pages, the real posts, the sample post and the projects, and neither the not-found page nor the cookie policy", async ({ request }) => {
   const index = await (await request.get("/sitemap-index.xml")).text();
   const first = /<loc>[^<]*(\/sitemap-[^<]+\.xml)<\/loc>/.exec(index)?.[1];
   const sitemap = await (await request.get(first!)).text();
   const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]!).pathname).sort();
-  // The sample posts are drafts: built outside production, left out of a production build. The
-  // four real posts are published. Sorted by code point, so the real posts sit among the samples.
+  // The sample post is a draft: built outside production, left out of a production build. The
+  // four real posts are published. Sorted by code point, so the sample sits among the real posts.
   expect(paths).toEqual([
     "/",
     "/about/",
@@ -152,9 +152,6 @@ test("the sitemap lists the eight pages, the listing pages, the real and sample 
     "/writing/all/",
     "/writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/",
     "/writing/sample-everything/",
-    "/writing/sample-long-title/",
-    "/writing/sample-short/",
-    "/writing/sample-text-only/",
     "/writing/self-contained-development-for-ghost-themes/",
     "/writing/starting-something-new/",
     "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/",

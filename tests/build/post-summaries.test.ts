@@ -19,7 +19,8 @@ export async function GET() {
 
 async function summaries(env?: Record<string, string>) {
   const result = await buildFixtureSite([], {
-    posts: ["valid/published.mdx", "valid/draft.mdx"],
+    // text-only.mdx (2026-08-10, one short paragraph) stands in for the removed short sample post.
+    posts: ["valid/published.mdx", "valid/draft.mdx", "valid/text-only.mdx"],
     overrides: { "src/pages/summaries.json.ts": route },
     ...(env ? { env } : {}),
   });
@@ -32,22 +33,23 @@ describe("getPostSummaries", () => {
   it("includes drafts and reading time in a build that is not production", async () => {
     const posts = await summaries();
     const slugs = posts.map((p) => p.slug);
-    expect(slugs).toEqual(expect.arrayContaining(["published", "draft", "sample-everything", "sample-short"]));
+    expect(slugs).toEqual(expect.arrayContaining(["published", "draft", "sample-everything", "text-only"]));
     expect(posts.find((p) => p.slug === "draft")?.draft).toBe(true);
     expect(posts.find((p) => p.slug === "published")?.href).toBe("/writing/published/");
     for (const post of posts) expect(Number.isInteger(post.minutesRead) && post.minutesRead >= 1).toBe(true);
-    expect(posts.find((p) => p.slug === "sample-short")?.minutesRead).toBe(1);
+    expect(posts.find((p) => p.slug === "text-only")?.minutesRead).toBe(1);
     expect(posts.find((p) => p.slug === "sample-everything")?.minutesRead).toBeGreaterThanOrEqual(1);
   });
 
   it("sorts newest first", async () => {
     const posts = await summaries();
-    expect(posts.map((p) => p.slug).indexOf("published")).toBeLessThan(posts.map((p) => p.slug).indexOf("sample-short"));
+    // published (2026-08-27) is newer than text-only (2026-08-10).
+    expect(posts.map((p) => p.slug).indexOf("published")).toBeLessThan(posts.map((p) => p.slug).indexOf("text-only"));
   });
 
   it("leaves drafts out of a Workers Builds build of main (production)", async () => {
     const posts = await summaries({ WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" });
-    expect(posts.map((p) => p.slug)).toEqual(["published"]);
+    expect(posts.map((p) => p.slug)).toEqual(["published", "text-only"]);
   });
 
   it("includes drafts in a Workers Builds build of another branch (preview)", async () => {

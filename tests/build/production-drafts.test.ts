@@ -1,6 +1,6 @@
 // SC-004 and FR-032, FR-045, FR-046: drafts are built and labelled on every build
 // except a Workers Builds build of `main` (or one with no branch variable), and
-// are always noindex. The sample posts in src/content/posts/ are drafts, so a
+// are always noindex. The sample post in src/content/posts/ is a draft, so a
 // site with only draft posts has nothing to show in production. The all posts and
 // topic page cases turn green with Phase 6, the feed with Phase 8 and the home
 // section with Phase 9.
