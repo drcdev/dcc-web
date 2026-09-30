@@ -1,0 +1,53 @@
+---
+// Direction C topic index: every topic with its post count. "details" is the
+// phone disclosure (a <details>, no JavaScript); "list" is the always-open list
+// for the desktop side column. Pages render both and hide one per breakpoint.
+import { postsInTopic, topicPath, topics, listingPath } from "../../_data/samples.ts";
+
+export interface Props {
+  mode: "details" | "list";
+  current?: string;
+}
+
+const { mode, current } = Astro.props;
+const items = topics.map((t) => ({ ...t, count: postsInTopic(t.slug).length }));
+const link = "text-dusk-900 underline hover:no-underline dark:text-white";
+---
+
+{
+  mode === "details" ? (
+    <details data-topic-index class="rounded-lg border border-dusk-200 p-4 dark:border-dusk-700">
+      <summary class="cursor-pointer font-semibold text-dusk-900 dark:text-white">Browse by topic</summary>
+      <ul class="mt-3 space-y-2">
+        {items.map((t) => (
+          <li>
+            <a class={link} href={topicPath("c", t.slug)} aria-current={t.slug === current ? "page" : undefined}>
+              {t.name}
+            </a>{" "}
+            <span class="text-sm text-dusk-700 dark:text-mist-300">({t.count})</span>
+          </li>
+        ))}
+        <li>
+          <a class={link} href={listingPath("c", 1)}>All posts</a>
+        </li>
+      </ul>
+    </details>
+  ) : (
+    <div data-topic-index>
+      <h2 class="mb-3 text-lg font-bold text-dusk-900 dark:text-white">Topics</h2>
+      <ul class="space-y-2">
+        {items.map((t) => (
+          <li>
+            <a class={link} href={topicPath("c", t.slug)} aria-current={t.slug === current ? "page" : undefined}>
+              {t.name}
+            </a>{" "}
+            <span class="text-sm text-dusk-700 dark:text-mist-300">({t.count})</span>
+          </li>
+        ))}
+        <li>
+          <a class={link} href={listingPath("c", 1)}>All posts</a>
+        </li>
+      </ul>
+    </div>
+  )
+}

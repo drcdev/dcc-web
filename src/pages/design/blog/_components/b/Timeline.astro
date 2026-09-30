@@ -1,0 +1,30 @@
+---
+// A newest-first stream grouped by month or year, each group a heading over a
+// timeline rule with entries.
+import Entry from "./Entry.astro";
+import { formatMonth, groupPosts } from "../../_data/screens.ts";
+import type { SamplePost } from "../../_data/samples.ts";
+
+export interface Props {
+  posts: SamplePost[];
+  group: "month" | "year";
+}
+
+const { posts, group } = Astro.props;
+const groups = groupPosts(posts, (p) => (group === "month" ? formatMonth(p.date) : p.date.slice(0, 4)));
+---
+
+{
+  groups.map(([label, items]) => (
+    <section aria-labelledby={`g-${label.replace(/\s+/g, "-")}`} data-month-group={group === "month" ? label : undefined} data-year-group={group === "year" ? label : undefined} class="mb-8">
+      <h2 id={`g-${label.replace(/\s+/g, "-")}`} class="mb-4 text-lg font-bold uppercase tracking-wide text-dusk-700 dark:text-mist-300">
+        {label}
+      </h2>
+      <ol class="ml-2 border-l-2 border-dusk-400 pl-7 dark:border-dusk-500">
+        {items.map((post) => (
+          <Entry post={post} level="h3" />
+        ))}
+      </ol>
+    </section>
+  ))
+}

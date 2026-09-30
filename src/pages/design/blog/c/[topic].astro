@@ -1,0 +1,56 @@
+---
+import Shell from "../_components/Shell.astro";
+import Eyebrow from "../_components/Eyebrow.astro";
+import Row from "../_components/c/Row.astro";
+import TopicIndex from "../_components/c/TopicIndex.astro";
+import { postsInTopic, topics } from "../_data/samples.ts";
+import { toneBanner } from "../_data/tones.ts";
+
+export function getStaticPaths() {
+  return topics.map((topic) => ({ params: { topic: topic.slug }, props: { topic } }));
+}
+
+const { topic } = Astro.props;
+const list = postsInTopic(topic.slug);
+const featured = list.find((p) => p.featured) ?? list[0]!;
+const rest = list.filter((p) => p !== featured);
+---
+
+<Shell
+  title={`Prototype C · Topic hub: ${topic.name}`}
+  description={`Direction C, Topic hubs: the hub for ${topic.name}.`}
+  direction="c"
+  screen={{ kind: "topic", topic: topic.slug }}
+>
+  <div class:list={["mb-8 rounded-2xl p-6 md:p-10", toneBanner[topic.tone]]}>
+    <Eyebrow />
+    <h1 class="mb-3 text-3xl font-bold md:text-4xl">{topic.name}</h1>
+    <p class="max-w-prose text-lg">{topic.intro}</p>
+  </div>
+  <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem]">
+    <div class="space-y-8">
+      <section aria-labelledby="featured">
+        <h2 id="featured" class="mb-3 text-xl font-bold text-dusk-900 dark:text-white">
+          {featured.featured ? "Featured" : "Newest"}
+        </h2>
+        <Row post={featured} level="h3" />
+      </section>
+      {
+        rest.length > 0 && (
+          <section aria-labelledby="all-in-topic">
+            <h2 id="all-in-topic" class="mb-3 text-xl font-bold text-dusk-900 dark:text-white">
+              More on this topic
+            </h2>
+            <div class="space-y-6">
+              {rest.map((post) => (
+                <Row post={post} level="h3" />
+              ))}
+            </div>
+          </section>
+        )
+      }
+      <div class="lg:hidden"><TopicIndex mode="details" current={topic.slug} /></div>
+    </div>
+    <aside aria-label="Other topics" class="hidden lg:block"><TopicIndex mode="list" current={topic.slug} /></aside>
+  </div>
+</Shell>

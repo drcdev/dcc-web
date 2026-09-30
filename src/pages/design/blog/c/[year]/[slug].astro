@@ -1,0 +1,72 @@
+---
+import Shell from "../../_components/Shell.astro";
+import Eyebrow from "../../_components/Eyebrow.astro";
+import PostImage from "../../_components/PostImage.astro";
+import PostMeta from "../../_components/PostMeta.astro";
+import SampleBody from "../../_components/SampleBody.astro";
+import Row from "../../_components/c/Row.astro";
+import { posts, relatedTo, topicBySlug } from "../../_data/samples.ts";
+import { bodySections, groupPosts } from "../../_data/screens.ts";
+
+export function getStaticPaths() {
+  return posts.map((post) => ({ params: { year: post.date.slice(0, 4), slug: post.slug }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const related = groupPosts(relatedTo(post), (r) => r.topics.find((t) => post.topics.includes(t)) ?? "newest");
+---
+
+<Shell
+  title={`Prototype C · ${post.title}`}
+  description={post.summary}
+  direction="c"
+  screen={{ kind: "post", post }}
+>
+  <header class="mb-8 max-w-3xl">
+    <Eyebrow />
+    <h1 class="mb-3 text-3xl font-bold text-dusk-900 [overflow-wrap:anywhere] dark:text-white md:text-4xl">{post.title}</h1>
+    <p class="text-lg text-dusk-700 dark:text-mist-300">{post.summary}</p>
+  </header>
+  <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem]">
+    <article class="min-w-0">
+      {post.image && <PostImage post={post} class="mb-8 rounded-lg" />}
+      <SampleBody variant={post.body} />
+    </article>
+    <aside aria-label="About this post" class="min-w-0 self-start rounded-lg border border-dusk-200 p-4 dark:border-dusk-700 lg:sticky lg:top-4">
+      <PostMeta post={post} direction="c" class="flex-col items-start" />
+      {
+        post.body !== "short" && (
+          <nav aria-label="In this post" class="mt-4 border-t border-dusk-200 pt-4 dark:border-dusk-700">
+            <p class="mb-2 font-semibold text-dusk-900 dark:text-white">In this post</p>
+            <ol class="list-decimal space-y-1 pl-5 text-dusk-900 dark:text-mist-100">
+              {bodySections.map((s) => (
+                <li>
+                  <a class="underline hover:no-underline" href={`#${s.id}`}>{s.title}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )
+      }
+    </aside>
+  </div>
+  <section aria-labelledby="related" class="mt-14">
+    <h2 id="related" class="mb-4 text-2xl font-bold text-dusk-900 dark:text-white">Related posts</h2>
+    <div class="grid gap-8 md:grid-cols-2">
+      {
+        related.map(([key, items]) => (
+          <div>
+            <h3 class="mb-3 text-lg font-bold text-dusk-900 dark:text-white">
+              {key === "newest" ? "Newest writing" : `More in ${topicBySlug(key).name}`}
+            </h3>
+            <div class="space-y-5">
+              {items.map((r) => (
+                <Row post={r} level="h4" />
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</Shell>

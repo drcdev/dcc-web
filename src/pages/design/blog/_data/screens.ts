@@ -43,3 +43,21 @@ const monthFormat = new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "
 
 export const formatDate = (date: string) => dateFormat.format(new Date(`${date}T00:00:00Z`));
 export const formatMonth = (date: string) => monthFormat.format(new Date(`${date}T00:00:00Z`));
+
+/** Groups posts (already in order) by a key, keeping first-seen order. */
+export function groupPosts(list: SamplePost[], key: (post: SamplePost) => string): [string, SamplePost[]][] {
+  const groups = new Map<string, SamplePost[]>();
+  for (const post of list) {
+    const k = key(post);
+    groups.set(k, [...(groups.get(k) ?? []), post]);
+  }
+  return [...groups.entries()];
+}
+
+/** The sections of the full sample body, for in-page contents (direction C). */
+export const bodySections = [
+  { id: "what-we-found", title: "What we found" },
+  { id: "a-sample-check", title: "A sample check" },
+  { id: "what-it-costs", title: "What it costs" },
+  { id: "where-this-leaves-us", title: "Where this leaves us" },
+] as const;

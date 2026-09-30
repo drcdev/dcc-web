@@ -1,0 +1,54 @@
+---
+// Direction A, "Front page": the newest post as a lead story, featured posts in
+// a bento grid, then the latest posts as cards.
+import Shell from "../_components/Shell.astro";
+import Eyebrow from "../_components/Eyebrow.astro";
+import TopicRow from "../_components/TopicRow.astro";
+import Card from "../_components/a/Card.astro";
+import { byNewest, featuredPosts, listingPath } from "../_data/samples.ts";
+
+const [lead, ...rest] = byNewest;
+const bento = featuredPosts.filter((p) => p.slug !== lead!.slug);
+const latest = rest.filter((p) => !bento.includes(p)).slice(0, 6);
+const bentoClass = (index: number) =>
+  index === 0 ? "md:col-span-2 md:row-span-2" : index === 3 ? "md:col-span-3" : "";
+---
+
+<Shell
+  title="Prototype A · Writing landing page"
+  description="Direction A, Front page: a lead story and a bento grid of featured posts."
+  direction="a"
+  screen={{ kind: "landing" }}
+>
+  <Eyebrow />
+  <h1 class="mb-6 text-4xl font-bold text-dusk-900 dark:text-white">Writing</h1>
+  <div data-lead-story>
+    <Card post={lead!} level="h2" large class="md:grid md:grid-cols-2" />
+  </div>
+  <TopicRow direction="a" />
+  {
+    bento.length > 0 && (
+      <section aria-labelledby="featured" data-bento class="my-10">
+        <h2 id="featured" class="mb-4 text-2xl font-bold text-dusk-900 dark:text-white">
+          Featured
+        </h2>
+        <div class="grid gap-4 md:grid-cols-3">
+          {bento.map((post, index) => (
+            <Card post={post} class={bentoClass(index)} large={index === 0} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+  <section aria-labelledby="latest" class="my-10">
+    <h2 id="latest" class="mb-4 text-2xl font-bold text-dusk-900 dark:text-white">Latest</h2>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {latest.map((post) => <Card post={post} />)}
+    </div>
+    <p class="mt-6">
+      <a class="font-semibold text-accent-700 underline hover:no-underline dark:text-accent-300" href={listingPath("a", 1)}>
+        See all posts
+      </a>
+    </p>
+  </section>
+</Shell>

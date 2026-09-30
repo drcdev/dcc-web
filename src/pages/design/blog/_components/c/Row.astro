@@ -1,0 +1,24 @@
+---
+// Direction C post row: compact, with the topic tone as a left rule.
+import PostMeta from "../PostMeta.astro";
+import { postPath, topicBySlug, type SamplePost } from "../../_data/samples.ts";
+import { toneBorder } from "../../_data/tones.ts";
+
+export interface Props {
+  post: SamplePost;
+  level?: "h2" | "h3" | "h4";
+  class?: string;
+}
+
+const { post, level = "h3", class: className } = Astro.props;
+const Heading = level;
+const tone = topicBySlug(post.topics[0]!).tone;
+---
+
+<article class:list={["min-w-0 border-l-4 py-1 pl-4", toneBorder[tone], className]}>
+  <Heading class="text-lg font-semibold text-dusk-900 [overflow-wrap:anywhere] dark:text-white">
+    <a class="hover:underline" href={postPath("c", post)}>{post.title}</a>
+  </Heading>
+  <p class="mt-1 text-dusk-700 dark:text-mist-300">{post.summary}</p>
+  <PostMeta post={post} direction="c" class="mt-2" />
+</article>

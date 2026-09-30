@@ -1,0 +1,28 @@
+---
+import type { GetStaticPaths } from "astro";
+import Shell from "../../_components/Shell.astro";
+import Eyebrow from "../../_components/Eyebrow.astro";
+import TopicRow from "../../_components/TopicRow.astro";
+import Pagination from "../../_components/Pagination.astro";
+import Timeline from "../../_components/b/Timeline.astro";
+import { byNewest, PAGE_SIZE } from "../../_data/samples.ts";
+
+export const getStaticPaths = (({ paginate }) => paginate(byNewest, { pageSize: PAGE_SIZE })) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+---
+
+<Shell
+  title={`Prototype B · All posts, page ${page.currentPage}`}
+  description="Direction B, Timeline: all posts grouped by year, newest first."
+  direction="b"
+  screen={{ kind: "listing", page: page.currentPage }}
+>
+  <div class="mx-auto max-w-3xl">
+    <Eyebrow />
+    <h1 class="mb-2 text-4xl font-bold text-dusk-900 dark:text-white">All posts</h1>
+    <TopicRow direction="b" variant="text" />
+    <Timeline posts={page.data} group="year" />
+    <Pagination direction="b" current={page.currentPage} last={page.lastPage} />
+  </div>
+</Shell>

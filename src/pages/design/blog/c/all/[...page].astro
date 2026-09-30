@@ -1,0 +1,33 @@
+---
+import type { GetStaticPaths } from "astro";
+import Shell from "../../_components/Shell.astro";
+import Eyebrow from "../../_components/Eyebrow.astro";
+import Pagination from "../../_components/Pagination.astro";
+import Row from "../../_components/c/Row.astro";
+import TopicIndex from "../../_components/c/TopicIndex.astro";
+import { byNewest, PAGE_SIZE } from "../../_data/samples.ts";
+
+export const getStaticPaths = (({ paginate }) => paginate(byNewest, { pageSize: PAGE_SIZE })) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+---
+
+<Shell
+  title={`Prototype C · All posts, page ${page.currentPage}`}
+  description="Direction C, Topic hubs: all posts in a list beside a topic index."
+  direction="c"
+  screen={{ kind: "listing", page: page.currentPage }}
+>
+  <Eyebrow />
+  <h1 class="mb-6 text-4xl font-bold text-dusk-900 dark:text-white">All posts</h1>
+  <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem]">
+    <div>
+      <div class="mb-6 lg:hidden"><TopicIndex mode="details" /></div>
+      <div class="space-y-6">
+        {page.data.map((post) => <Row post={post} level="h2" />)}
+      </div>
+      <Pagination direction="c" current={page.currentPage} last={page.lastPage} />
+    </div>
+    <aside aria-label="Topic index" class="hidden lg:block"><TopicIndex mode="list" /></aside>
+  </div>
+</Shell>

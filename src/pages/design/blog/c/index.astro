@@ -1,0 +1,57 @@
+---
+// Direction C, "Topic hubs": a three-post Latest strip, then one hub per topic
+// with its introduction, a featured post and its newest posts.
+import Shell from "../_components/Shell.astro";
+import Eyebrow from "../_components/Eyebrow.astro";
+import Row from "../_components/c/Row.astro";
+import { byNewest, listingPath, postsInTopic, topicPath, topics } from "../_data/samples.ts";
+import { toneBanner } from "../_data/tones.ts";
+
+const latest = byNewest.slice(0, 3);
+const hubs = topics.map((topic) => {
+  const list = postsInTopic(topic.slug);
+  const featured = list.find((p) => p.featured) ?? list[0]!;
+  return { topic, featured, newest: list.filter((p) => p !== featured).slice(0, 2), count: list.length };
+});
+const link = "font-semibold text-accent-700 underline hover:no-underline dark:text-accent-300";
+---
+
+<Shell
+  title="Prototype C · Writing landing page"
+  description="Direction C, Topic hubs: a Latest strip and one hub per topic."
+  direction="c"
+  screen={{ kind: "landing" }}
+>
+  <Eyebrow />
+  <h1 class="mb-6 text-4xl font-bold text-dusk-900 dark:text-white">Writing</h1>
+  <section aria-labelledby="latest" class="mb-12">
+    <h2 id="latest" class="mb-4 text-2xl font-bold text-dusk-900 dark:text-white">Latest</h2>
+    <div class="grid gap-6 md:grid-cols-3">
+      {latest.map((post) => <Row post={post} />)}
+    </div>
+    <p class="mt-4"><a class={link} href={listingPath("c", 1)}>All posts</a></p>
+  </section>
+  <div class="grid gap-8 lg:grid-cols-2">
+    {
+      hubs.map(({ topic, featured, newest, count }) => (
+        <section data-topic-hub={topic.slug} aria-labelledby={`hub-${topic.slug}`} class="rounded-2xl border border-dusk-200 dark:border-dusk-700">
+          <div class:list={["rounded-t-2xl p-5", toneBanner[topic.tone]]}>
+            <h2 id={`hub-${topic.slug}`} class="mb-2 text-2xl font-bold">
+              <a class="underline hover:no-underline" href={topicPath("c", topic.slug)}>{topic.name}</a>
+            </h2>
+            <p>{topic.intro}</p>
+          </div>
+          <div class="space-y-5 p-5">
+            <Row post={featured} />
+            {newest.map((post) => <Row post={post} />)}
+            <p>
+              <a class={link} href={topicPath("c", topic.slug)}>
+                All {count} {count === 1 ? "post" : "posts"} on this topic
+              </a>
+            </p>
+          </div>
+        </section>
+      ))
+    }
+  </div>
+</Shell>

@@ -168,3 +168,104 @@ test.describe("directions index", () => {
     });
   }
 });
+
+// ---------------------------------------------------------------------------
+// User Story 1 (T014): every direction page exists, is furnished as a
+// prototype, links onward, and the directions differ in structure.
+// ---------------------------------------------------------------------------
+const DIRECTION_PAGES = PAGES.filter((p) => p.direction);
+const others = (d: DirectionId) => DIRECTION_IDS.filter((x) => x !== d);
+
+/** Every generated prototype page (FR-017), enumerated from the sample data. */
+function allGeneratedPaths(d: DirectionId): string[] {
+  const listing = [1, 2, 3].map((n) => listingPath(d, n));
+  const topicPaths = [...new Set(posts.flatMap((p) => p.topics))].map((t) => topicPath(d, t));
+  return [landingPath(d), ...listing, ...topicPaths, ...posts.map((p) => postPath(d, p))];
+}
+
+test.describe("US1: direction pages", () => {
+  for (const p of DIRECTION_PAGES) {
+    test(`${p.name}: furniture, headings and links`, async ({ page, request }) => {
+      const response = await page.goto(p.path);
+      expect(response?.status()).toBe(200);
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex");
+      await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
+      expect(await page.title()).toMatch(/^Prototype/);
+      await expect(page.locator("[data-prototype-notice]")).toHaveCount(1);
+      await expect(page.locator("main")).toHaveCount(1);
+      await expect(page.locator("h1")).toHaveCount(1);
+      await expect(page.locator("main")).toContainText("Drift & Convergence");
+      await expect(page.locator("a[href='#main']").first()).toBeAttached();
+
+      // No skipped heading levels inside main.
+      const levels = await page
+        .locator("main :is(h1,h2,h3,h4,h5,h6)")
+        .evaluateAll((hs) => hs.map((h) => Number(h.tagName.slice(1))));
+      for (let i = 1; i < levels.length; i++) expect(levels[i]! - levels[i - 1]!, p.path).toBeLessThanOrEqual(1);
+
+      // Notice links: index and the same screen elsewhere (FR-005).
+      const notice = page.locator("[data-prototype-notice]");
+      await expect(notice.locator('a[href="/design/blog/"]')).toHaveCount(1);
+      for (const other of others(p.direction!)) {
+        await expect(notice.locator(`a[data-other-direction="${other}"]`)).toHaveCount(1);
+      }
+
+      // Links resolve; none point at the real blog.
+      const hrefs = await page
+        .locator("main a[href]")
+        .evaluateAll((links) => links.map((l) => l.getAttribute("href") ?? ""));
+      for (const href of new Set(hrefs)) {
+        expect(href.startsWith("/writing"), href).toBe(false);
+        if (href.startsWith("/") && !href.startsWith("//")) {
+          expect((await request.get(href)).status(), href).toBe(200);
+        }
+      }
+    });
+  }
+
+  for (const d of DIRECTION_IDS) {
+    test(`Direction ${d.toUpperCase()}: landing reaches the listing and a post within two clicks of the index`, async ({
+      page,
+    }) => {
+      await page.goto(INDEX_PATH);
+      await page.locator(`[data-direction="${d}"] a[data-link="landing"]`).click();
+      await expect(page).toHaveURL(landingPath(d));
+      const hrefs = await page.locator("main a[href]").evaluateAll((ls) => ls.map((l) => l.getAttribute("href")!));
+      expect(hrefs).toContain(listingPath(d, 1));
+      expect(hrefs.some((h) => posts.some((post) => h === postPath(d, post)))).toBe(true);
+    });
+
+    test(`Direction ${d.toUpperCase()}: every generated page has the prototype furniture (FR-017)`, async ({
+      request,
+    }) => {
+      for (const path of allGeneratedPaths(d)) {
+        const response = await request.get(path);
+        expect(response.status(), path).toBe(200);
+        const html = await response.text();
+        expect(html, path).toMatch(/<meta name="robots" content="noindex"/);
+        expect(html, path).not.toMatch(/rel="canonical"/);
+        expect(html, path).toMatch(/<title>Prototype/);
+        expect(html, path).toContain("data-prototype-notice");
+      }
+    });
+  }
+
+  test("A: lead story and featured bento region", async ({ page }) => {
+    await page.goto(landingPath("a"));
+    await expect(page.locator("[data-lead-story]")).toHaveCount(1);
+    await expect(page.locator("[data-bento] [data-featured]").first()).toBeVisible();
+  });
+
+  test("B: Start here list and month grouping", async ({ page }) => {
+    await page.goto(landingPath("b"));
+    await expect(page.getByRole("heading", { name: "Start here" })).toBeVisible();
+    expect(await page.locator("[data-month-group]").count()).toBeGreaterThan(1);
+  });
+
+  test("C: topic hub regions and a topic index", async ({ page }) => {
+    await page.goto(landingPath("c"));
+    expect(await page.locator("[data-topic-hub]").count()).toBe(4);
+    await page.goto(listingPath("c", 1));
+    await expect(page.locator("[data-topic-index]").first()).toBeAttached();
+  });
+});
