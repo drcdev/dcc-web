@@ -267,6 +267,6 @@ None.
 
 ## Decision
 
-Chosen direction:
+Chosen direction: Direction A
 
-Notes:
+Notes: I prefer this format with the ability to add pictures/graphics.
