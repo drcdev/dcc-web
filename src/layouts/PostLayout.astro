@@ -4,12 +4,15 @@
 // (only when the post has one), the title card that overlaps it visually, the
 // body in the site's reading column, and the "views are my own" note. A draft
 // starts its title card with the Draft notice and is always noindex (FR-032,
-// FR-045). Share and Related posts are added by later slices.
+// FR-045). After the note come the Share area (inside the article) and the
+// Related posts (FR-028, FR-029).
 import type { ComponentProps } from "astro/types";
 import BaseLayout from "./BaseLayout.astro";
 import DraftNotice from "../components/page/DraftNotice.astro";
 import PostHero from "../components/post/PostHero.astro";
 import PostMeta from "../components/post/PostMeta.astro";
+import RelatedPosts from "../components/post/RelatedPosts.astro";
+import Share from "../components/post/Share.astro";
 import ViewsNote from "../components/post/ViewsNote.astro";
 import { featuredMark } from "../components/post/topic-styles.ts";
 import { blog } from "../config/blog.ts";
@@ -21,9 +24,11 @@ export interface Props {
   navigation: NavigationItem[];
   /** The sharing image path (the feature image resized for Open Graph); the site default when omitted. */
   image?: string;
+  /** Up to 3 related posts, chosen by the route with selectRelated(); none leaves the section out. */
+  related?: readonly PostSummary[];
 }
 
-const { post, navigation, image } = Astro.props;
+const { post, navigation, image, related = [] } = Astro.props;
 const feedHref = new URL("/writing/rss.xml", Astro.site).href;
 const seo: Partial<ComponentProps<typeof BaseLayout>> = {
   ...(image ? { image, imageAlt: post.featureImage?.alt } : {}),
@@ -71,5 +76,7 @@ const seo: Partial<ComponentProps<typeof BaseLayout>> = {
     <div class="mx-auto mt-8 max-w-3xl">
       <ViewsNote />
     </div>
+    <Share title={post.title} href={post.href} />
   </article>
+  <RelatedPosts posts={related} />
 </BaseLayout>

@@ -175,13 +175,13 @@
 
 ### Tests first
 
-- [ ] T062 [P] [US5] Write `tests/unit/site/share-links.test.ts` (`shareLinks(title, url)` returns the LinkedIn share-offsite URL and a `mailto:` with encoded subject and body, no tracking parameters), and component tests `tests/component/post/Share.test.ts` (`data-share`, `h2` "Share this post", always "Share on LinkedIn" and "Share by email", a `hidden` Share button at the end of the same row) and `RelatedPosts.test.ts` (`data-related`, `h2` "Related posts", up to 3 cards with `h3` titles in a list, absent when no other posts). Run and confirm failure.
-- [ ] T063 [P] [US5] Add cases to `tests/e2e/blog.spec.ts`: with `navigator.share` stubbed the Share button appears and is called with the post title and address (and showing it does not move other content); without it, or without scripts, there is no button and the links still work; related posts never include the post itself or drafts in a production build; the post with no shared topic shows the newest others. Run and confirm failure.
+- [x] T062 [P] [US5] Write `tests/unit/site/share-links.test.ts` (`shareLinks(title, url)` returns the LinkedIn share-offsite URL and a `mailto:` with encoded subject and body, no tracking parameters), and component tests `tests/component/post/Share.test.ts` (`data-share`, `h2` "Share this post", always "Share on LinkedIn" and "Share by email", a `hidden` Share button at the end of the same row) and `RelatedPosts.test.ts` (`data-related`, `h2` "Related posts", up to 3 cards with `h3` titles in a list, absent when no other posts). Run and confirm failure.
+- [x] T063 [P] [US5] Add cases to `tests/e2e/blog.spec.ts`: with `navigator.share` stubbed the Share button appears and is called with the post title and address (and showing it does not move other content); without it, or without scripts, there is no button and the links still work; related posts never include the post itself or drafts in a production build; the post with no shared topic shows the newest others. Run and confirm failure.
 
 ### Implementation
 
-- [ ] T064 [P] [US5] Create `src/lib/share.ts`, `src/components/post/Share.astro` (bundled module script, button hidden until `navigator.share` exists) and `RelatedPosts.astro`. T062 must pass.
-- [ ] T065 [US5] Add Share and RelatedPosts to `src/layouts/PostLayout.astro` / `src/pages/writing/[slug].astro` (selection through `selectRelated`). T063, T092, a11y and budget for the post templates must pass.
+- [x] T064 [P] [US5] Create `src/lib/share.ts`, `src/components/post/Share.astro` (bundled module script, button hidden until `navigator.share` exists) and `RelatedPosts.astro`. T062 must pass.
+- [x] T065 [US5] Add Share and RelatedPosts to `src/layouts/PostLayout.astro` / `src/pages/writing/[slug].astro` (selection through `selectRelated`). T063, T092, a11y and budget for the post templates must pass.
 
 **Checkpoint**: sharing and related reading work.
 

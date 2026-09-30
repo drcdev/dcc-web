@@ -14,18 +14,19 @@ import PostLayout from "../../layouts/PostLayout.astro";
 import CodeBlock from "../../components/post/CodeBlock.astro";
 import ScrollTable from "../../components/post/ScrollTable.astro";
 import { sectionComponents } from "../../components/sections/index";
+import { selectRelated } from "../../lib/content/post-order";
 import { getNavigation } from "../../lib/pages";
 import { getPostSummaries, getPosts, postFileOf } from "../../lib/posts";
 
 export async function getStaticPaths() {
   const [entries, summaries] = await Promise.all([getPosts(), getPostSummaries()]);
-  return entries.map((entry) => ({
-    params: { slug: entry.id },
-    props: { entry, post: summaries.find((summary) => summary.slug === entry.id)! },
-  }));
+  return entries.map((entry) => {
+    const post = summaries.find((summary) => summary.slug === entry.id)!;
+    return { params: { slug: entry.id }, props: { entry, post, related: selectRelated(post, summaries) } };
+  });
 }
 
-const { entry, post } = Astro.props;
+const { entry, post, related } = Astro.props;
 // Section components name this file in their errors (src/components/sections/validate.ts).
 Astro.locals.pageFile = postFileOf(entry);
 const { Content } = await render(entry);
@@ -38,6 +39,6 @@ const share = post.featureImage
   : undefined;
 ---
 
-<PostLayout post={post} navigation={navigation} image={share?.src}>
+<PostLayout post={post} navigation={navigation} image={share?.src} related={related}>
   <Content components={{ ...sectionComponents, pre: CodeBlock, table: ScrollTable }} />
 </PostLayout>

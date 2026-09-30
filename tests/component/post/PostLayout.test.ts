@@ -70,6 +70,21 @@ describe("PostLayout structure", () => {
   });
 });
 
+describe("PostLayout share and related (FR-028, FR-029)", () => {
+  it("puts the share area after the views note, then the related posts, in the page", async () => {
+    const html = await render(summary("one"), { related: [summary("two")] });
+    expect(html.indexOf("data-share")).toBeGreaterThan(html.indexOf("data-views-note"));
+    expect(html.indexOf("data-related")).toBeGreaterThan(html.indexOf("data-share"));
+    expect(html).toContain("https://example.test/writing/one/");
+  });
+
+  it("leaves the related section out when there are no related posts", async () => {
+    const html = await render(summary("one"));
+    expect(html).toContain("data-share");
+    expect(html).not.toContain("data-related");
+  });
+});
+
 describe("PostLayout draft (FR-032, FR-045)", () => {
   it("starts the title card with a Draft notice, before the eyebrow and the title", async () => {
     const html = await render(summary("d", { draft: true }));

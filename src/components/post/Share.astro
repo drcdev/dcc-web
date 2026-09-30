@@ -1,0 +1,55 @@
+---
+// The share area at the end of a post (port of Flux ui-share.hbs; FR-028; research R10). The
+// LinkedIn and email links are plain links and always work, with or without scripts. The Share
+// button is `hidden` in the markup, at the end of the same row, and the script below shows it only
+// when the device offers `navigator.share`, so showing it moves no other content. The script is a
+// bundled module, loaded after parse (docs.astro.build/en/guides/client-side-scripts/), so the
+// content security policy is unchanged.
+import { shareLinks } from "../../lib/share.ts";
+
+export interface Props {
+  /** The post's title. */
+  title: string;
+  /** The post's address on this site, such as `/writing/one/`. */
+  href: string;
+}
+
+const { title, href } = Astro.props;
+const url = new URL(href, Astro.site ?? Astro.url).href;
+const links = shareLinks(title, url);
+const control =
+  "inline-flex min-h-11 items-center rounded-full border border-rust-600 px-4 py-2 text-sm font-medium text-rust-800 no-underline hover:bg-rust-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rust-600 dark:border-rust-300 dark:text-rust-300 dark:hover:bg-rust-950";
+---
+
+<section
+  data-share
+  data-share-title={title}
+  data-share-url={url}
+  class="mx-auto mt-8 max-w-3xl rounded-lg border border-rust-200 bg-gradient-to-r from-rust-50 to-white p-4 dark:border-dusk-600 dark:from-rust-800 dark:to-dusk-700"
+>
+  <h2 class="m-0 mb-3 text-lg font-bold text-dusk-900 dark:text-white">Share this post</h2>
+  <div class="flex flex-wrap items-center gap-3">
+    <a href={links.linkedin} class={control}>Share on LinkedIn</a>
+    <a href={links.email} class={control}>Share by email</a>
+    <button type="button" hidden data-share-button class:list={[control, "cursor-pointer bg-transparent"]}>Share</button>
+  </div>
+</section>
+
+<script>
+  // Shown only now that a script is running on a device with the system share feature. Tailwind's
+  // reset makes `hidden` win over display classes, so the script clears the attribute itself.
+  for (const section of document.querySelectorAll<HTMLElement>("[data-share]")) {
+    const button = section.querySelector<HTMLButtonElement>("[data-share-button]");
+    const { shareTitle, shareUrl } = section.dataset;
+    if (!button || !shareTitle || !shareUrl || typeof navigator.share !== "function") continue;
+    button.hidden = false;
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.share({ title: shareTitle, url: shareUrl });
+      } catch (error) {
+        // Closing the share sheet is not an error.
+        if (!(error instanceof DOMException && error.name === "AbortError")) throw error;
+      }
+    });
+  }
+</script>

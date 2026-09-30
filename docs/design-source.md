@@ -39,7 +39,7 @@ owns porting it.
 | `partials/Icons/*` | SVG components via Astro's built-in SVG imports; each feature ports what it uses | Each feature |
 | `layout-author-hero.hbs` | `HomeIntro` card in `src/components/page/` (done) | Pages |
 | `page.hbs` + `content-section.hbs` | `src/layouts/PageLayout.astro` (done) | Pages |
-| `ui-share.hbs` | Share component with Web Share API + plain links fallback | Blog |
+| `ui-share.hbs` | `Share` component in `src/components/post/`: plain LinkedIn and email links, plus a Share button that a bundled script shows when `navigator.share` exists; Flux's Ghost `#/share` link is not ported (done; spec 008 R10) | Blog |
 | `post.hbs`, `content-post-list.hbs` (timeline), `content-post-list-featured.hbs` (bento grid), `content-post-meta.hbs`, `ui-tag-pill.hbs` | Reference patterns only; blog and portfolio designed fresh | Blog / Portfolio |
 | `ui-contact-form.hbs`, `contact-form.js`, `supabase/functions/contact/index.ts`, `supabase/migrations/*contact*` | Contact form and API | Contact |
 | `error.hbs` | Not-found page | Foundation |

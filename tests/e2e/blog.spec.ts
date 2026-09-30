@@ -38,9 +38,9 @@ test.describe("post page", () => {
     await page.goto(POST);
     await expect(page.locator("article time[datetime='2026-08-27']")).toHaveText("August 27, 2026");
     await expect(page.locator("article time[datetime='2026-09-15']")).toHaveText("September 15, 2026");
-    await expect(page.locator("article")).toContainText("Updated");
+    await expect(page.locator("[data-title-card]")).toContainText("Updated");
     await page.goto(TEXT_ONLY_POST);
-    await expect(page.locator("article")).not.toContainText("Updated");
+    await expect(page.locator("[data-title-card]")).not.toContainText("Updated");
   });
 
   test("has no content security policy violation and no inline style inside highlighted code", async ({ page }) => {
@@ -344,5 +344,106 @@ test.describe("topic page", () => {
       const response = await page.goto(path);
       expect(response?.status(), path).toBe(404);
     }
+  });
+});
+
+// Share and related posts (T063; FR-028, FR-029). Related posts are ranked by shared topics, then
+// newest. sample-everything (agentic-ai, compliant-data) shares agentic-ai with sample-short only,
+// so sample-short comes first, then the newest others. A post that shares no topic at all is proven
+// in the selection unit tests, as the sample posts all share at least one.
+test.describe("share", () => {
+  test("shows the Share button and calls navigator.share with the title and address", async ({ page }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { shared: unknown[] }).shared = [];
+      Object.defineProperty(navigator, "share", {
+        configurable: true,
+        value: (data: unknown) => {
+          (window as unknown as { shared: unknown[] }).shared.push(data);
+          return Promise.resolve();
+        },
+      });
+    });
+    await page.goto(POST);
+    const button = page.locator("[data-share]").getByRole("button", { name: "Share", exact: true });
+    await expect(button).toBeVisible();
+    await button.click();
+    const shared = await page.evaluate(() => (window as unknown as { shared: unknown[] }).shared);
+    // The address is the post's canonical one, on the site's own origin.
+    const canonical = await page.locator("link[rel=canonical]").getAttribute("href");
+    expect(canonical).toMatch(new RegExp(`${POST}$`));
+    expect(shared).toEqual([{ title: "Sample: Every kind of content a post can hold", url: canonical }]);
+  });
+
+  test("showing the button moves no other content", async ({ browser }) => {
+    const shown = await browser.newPage();
+    await shown.addInitScript(() => {
+      Object.defineProperty(navigator, "share", { configurable: true, value: () => Promise.resolve() });
+    });
+    await shown.goto(POST);
+    await shown.locator("[data-share] button").waitFor({ state: "visible" });
+    const hidden = await browser.newPage();
+    await hidden.addInitScript(() => {
+      Object.defineProperty(navigator, "share", { configurable: true, value: undefined });
+    });
+    await hidden.goto(POST);
+    await expect(hidden.locator("[data-share] button")).toBeHidden();
+    for (const selector of ["[data-share] a", "[data-related]"]) {
+      expect((await shown.locator(selector).first().boundingBox())!.y).toBe(
+        (await hidden.locator(selector).first().boundingBox())!.y,
+      );
+    }
+    await shown.close();
+    await hidden.close();
+  });
+
+  test("has no button without navigator.share, and the plain links work", async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, "share", { configurable: true, value: undefined });
+    });
+    await page.goto(POST);
+    const share = page.locator("[data-share]");
+    await expect(share.getByRole("heading", { level: 2, name: "Share this post" })).toBeVisible();
+    await expect(share.getByRole("button")).toBeHidden();
+    const canonical = await page.locator("link[rel=canonical]").getAttribute("href");
+    await expect(share.getByRole("link", { name: "Share on LinkedIn" })).toHaveAttribute(
+      "href",
+      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(canonical!)}`,
+    );
+    await expect(share.getByRole("link", { name: "Share by email" })).toHaveAttribute(
+      "href",
+      /^mailto:\?subject=Sample%3A%20Every%20kind.*&body=https%3A%2F%2F/,
+    );
+  });
+
+  test.describe("without scripts", () => {
+    test.use({ javaScriptEnabled: false });
+
+    test("shows the LinkedIn and email links and no Share button", async ({ page }) => {
+      await page.goto(TEXT_ONLY_POST);
+      const share = page.locator("[data-share]");
+      await expect(share.getByRole("link", { name: "Share on LinkedIn" })).toBeVisible();
+      await expect(share.getByRole("link", { name: "Share by email" })).toBeVisible();
+      await expect(share.getByRole("button")).toBeHidden();
+    });
+  });
+});
+
+test.describe("related posts", () => {
+  test("lists up to 3 other posts, most shared topics first, never the post itself", async ({ page }) => {
+    await page.goto(POST);
+    const related = page.locator("[data-related]");
+    await expect(related.getByRole("heading", { level: 2, name: "Related posts" })).toBeVisible();
+    const hrefs = await related.locator("li h3 a").evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+    expect(hrefs).toEqual(["/writing/sample-short/", "/writing/sample-long-title/", "/writing/sample-text-only/"]);
+    expect(hrefs).not.toContain(POST);
+  });
+
+  test("puts the share area and then the related posts after the views note", async ({ page }) => {
+    await page.goto(POST);
+    const views = await page.locator("[data-views-note]").boundingBox();
+    const share = await page.locator("[data-share]").boundingBox();
+    const related = await page.locator("[data-related]").boundingBox();
+    expect(share!.y).toBeGreaterThan(views!.y);
+    expect(related!.y).toBeGreaterThan(share!.y);
   });
 });
