@@ -141,7 +141,7 @@
 - [x] T051 [US3] Wire `assertPostFiles()` into the posts collection loading in `src/content.config.ts` and `src/lib/posts.ts` (SHARED, additive) so P13 to P17 stop the build; wire the body checks (P12, P18 to P20, and P22 if `astro:assets` alone does not name the post) through `src/lib/content/body.ts` with the post error label. T046 must pass.
 - [x] T052 [US3] Add the Draft label to `PostCard.astro`, the Draft notice at the start of the title card in `PostLayout.astro` (reusing `DraftNotice.astro` with its `message` prop from T022), and `noindex` on draft post pages through `Seo.astro`'s existing `noindex` prop. T048 and T050 must pass.
 - [x] T053 [US3] Write `docs/posts.md` (authoring guide: every setting, file naming and address and the effect of renaming, topics with the add, rename and remove steps of FR-042, images and sections, tables, code languages and captions, draft and featured, the update date, that drafts are readable by anyone with a preview address, the views note, sample posts, every build error of contracts/build-errors.md with its fix, how to check a draft on the preview). T049 must pass. Update `docs/design-source.md` only if a row applies (SHARED).
-- [ ] T054 [US3] Run `tests/build/**` (allow the long timeout) and the US3 tests; all must pass except the feed and home assertions that later stories satisfy. Status: US3 tests pass; left open because the all-posts and topic-page cases in one-file-post and production-drafts also stay red until Phase 6, besides the feed (Phase 8) and home (Phase 9) cases.
+- [x] T054 [US3] Run `tests/build/**` (allow the long timeout) and the US3 tests; all must pass except the feed and home assertions that later stories satisfy. Status: US3 tests pass; left open because the all-posts and topic-page cases in one-file-post and production-drafts also stay red until Phase 6, besides the feed (Phase 8) and home (Phase 9) cases.
 
 **Checkpoint**: Don can publish with one file; bad files fail clearly.
 
@@ -211,12 +211,12 @@
 
 ### Tests first
 
-- [ ] T070 [P] [US7] Write `tests/component/post/RecentWriting.test.ts` (under `tests/component/sections/` if the repo's section tests live there): `<section aria-labelledby>`, `h2` "Recent writing", 3 `PostCard`s with `h3` titles in a list that is a 3-across grid from `md`, link "All writing" to `/writing/`, renders nothing when there are no visible posts; plus a schema case in `tests/unit/content/section-schemas.test.ts` (SHARED) for registering the section. Run and confirm failure.
-- [ ] T071 [P] [US7] Add E2E cases to `tests/e2e/blog.spec.ts` and `tests/e2e/pages.spec.ts`: Home lists the 3 newest sample posts as cards and reaches the newest post in 2 selections (SC-001); the production-mode build case in T048 asserts the section is absent. Run and confirm failure.
+- [x] T070 [P] [US7] Write `tests/component/post/RecentWriting.test.ts` (under `tests/component/sections/` if the repo's section tests live there): `<section aria-labelledby>`, `h2` "Recent writing", 3 `PostCard`s with `h3` titles in a list that is a 3-across grid from `md`, link "All writing" to `/writing/`, renders nothing when there are no visible posts; plus a schema case in `tests/unit/content/section-schemas.test.ts` (SHARED) for registering the section. Run and confirm failure.
+- [x] T071 [P] [US7] Add E2E cases to `tests/e2e/blog.spec.ts` and `tests/e2e/pages.spec.ts`: Home lists the 3 newest sample posts as cards and reaches the newest post in 2 selections (SC-001); the production-mode build case in T048 asserts the section is absent. Run and confirm failure.
 
 ### Implementation
 
-- [ ] T072 [US7] Create `src/components/sections/RecentWriting.astro`; register it in `src/components/sections/index.ts` and `schemas.ts` (SHARED, additive, keep any sibling entries); add one line `<RecentWriting />` after the body in `src/content/pages/index.mdx` (SHARED). T070 and T071 must pass; the existing home tests and a11y must stay green.
+- [x] T072 [US7] Create `src/components/sections/RecentWriting.astro`; register it in `src/components/sections/index.ts` and `schemas.ts` (SHARED, additive, keep any sibling entries); add one line `<RecentWriting />` after the body in `src/content/pages/index.mdx` (SHARED). T070 and T071 must pass; the existing home tests and a11y must stay green.
 
 **Checkpoint**: all seven stories complete.
 

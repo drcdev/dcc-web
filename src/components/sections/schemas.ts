@@ -52,4 +52,5 @@ export const sectionSchemas = {
   WideImage: section({ caption: text.optional() }, needsOneImage),
   FullImage: section({ caption: text.optional() }, needsOneImage),
   ContactForm: section({}),
+  RecentWriting: section({}),
 } satisfies Record<SectionName, z.ZodType>;

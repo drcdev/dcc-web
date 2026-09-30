@@ -482,3 +482,25 @@ test.describe("feed", () => {
     });
   }
 });
+
+test.describe("home page recent writing (US7)", () => {
+  test("lists the 3 newest sample posts as cards, newest first, with a link to all writing", async ({ page }) => {
+    await page.goto("/");
+    const section = page.locator("section[aria-labelledby]").filter({
+      has: page.getByRole("heading", { level: 2, name: "Recent writing" }),
+    });
+    await expect(section).toBeVisible();
+    const cards = section.locator("article[data-post-card]");
+    await expect(cards).toHaveCount(3);
+    await expect(cards.nth(0).getByRole("heading", { level: 3 })).toContainText("Every kind of content a post can hold");
+    await expect(cards.nth(1).getByRole("heading", { level: 3 })).toContainText("A very long title");
+    await expect(cards.nth(2).getByRole("heading", { level: 3 })).toContainText("A post with no feature image");
+    await expect(section.getByRole("link", { name: "All writing" })).toHaveAttribute("href", "/writing/");
+  });
+
+  test("reaches the newest post in 2 selections from Home (SC-001)", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("link", { name: /Every kind of content a post can hold/ }).click();
+    await expect(page).toHaveURL(/\/writing\/sample-everything\/$/);
+  });
+});

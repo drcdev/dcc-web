@@ -1,0 +1,37 @@
+---
+// The home page's "Recent writing" section (spec 008 US7; FR-038, FR-044): the three newest
+// visible posts as PostCards, 3 across from `md`, with a link to /writing/. Renders nothing
+// when there are no visible posts. The posts come from getPostSummaries(), the only reader of
+// the collection, so drafts are left out of a production build. A `posts` prop replaces the
+// lookup, which is how the component tests feed it.
+import PostCard from "../post/PostCard.astro";
+import type { PostSummary } from "../../lib/content/post-summary.ts";
+import { selectRecent } from "../../lib/content/post-order.ts";
+import { getPostSummaries } from "../../lib/posts";
+
+export interface Props {
+  posts?: readonly PostSummary[];
+}
+
+const recent = selectRecent(Astro.props.posts ?? (await getPostSummaries()));
+---
+
+{
+  recent.length > 0 && (
+    <section aria-labelledby="recent-writing-heading" data-recent-writing class="not-prose my-10">
+      <h2 id="recent-writing-heading" class="mb-4 mt-0 text-2xl font-bold text-dusk-900 dark:text-white">
+        Recent writing
+      </h2>
+      <ul class="m-0 grid list-none gap-6 p-0 sm:grid-cols-2 md:grid-cols-3">
+        {recent.map((post) => <PostCard post={post} headingLevel="h3" />)}
+      </ul>
+      <p class="mt-6">
+        <a
+          href="/writing/"
+          class="inline-block px-1 py-1 font-medium text-dusk-900 underline underline-offset-4 hover:text-rust-700 dark:text-white dark:hover:text-rust-400"
+          >All writing</a
+        >
+      </p>
+    </section>
+  )
+}

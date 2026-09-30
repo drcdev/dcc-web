@@ -33,7 +33,12 @@ for (const [path, title] of PAGES) {
       await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(1);
       await expect(page.getByRole("main")).toHaveCount(1);
       await expect(page.getByRole("contentinfo")).toHaveCount(1);
-      await expect(page.locator("main [role=region], main section[aria-label], main section[aria-labelledby]")).toHaveCount(0);
+      // The home page's "Recent writing" section (spec 008 US7) is a labelled region by design.
+      await expect(
+        page.locator(
+          "main [role=region], main section[aria-label], main section[aria-labelledby]:not([data-recent-writing])",
+        ),
+      ).toHaveCount(0);
       await expect(page.locator("aside, [role=complementary], [role=search]")).toHaveCount(0);
     });
 
@@ -156,7 +161,10 @@ test.describe("home introduction card (FR-016 to FR-019, FR-028a)", () => {
     const body = page.locator("#content-section");
     await expect(body).toContainText(/helps/i);
     await expect(body).toContainText(/what don does/i);
-    await expect(body.locator("a.bg-rust-600, a[class*='bg-rust']")).toHaveCount(0);
+    // Recent writing's topic pills use a tinted rust background; only a button-style link is unwanted.
+    await expect(
+      body.locator("a.bg-rust-600, a[class*='bg-rust']:not([data-topic-pill])"),
+    ).toHaveCount(0);
   });
 
   test("the photo is an optimised WebP loaded with high priority", async ({ page }) => {
@@ -189,5 +197,18 @@ test.describe("home introduction card (FR-016 to FR-019, FR-028a)", () => {
       expect(style.w).toBeGreaterThanOrEqual(24);
       expect(style.h).toBeGreaterThanOrEqual(24);
     }
+  });
+});
+
+test.describe("home recent writing keeps the introduction intact (US7)", () => {
+  test("Recent writing comes after the body text, and Home keeps one h1", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("h1")).toHaveCount(1);
+    const order = await page.evaluate(() => {
+      const titles = [...document.querySelectorAll("h2")].map((h) => h.textContent?.trim());
+      return { recent: titles.indexOf("Recent writing"), what: titles.indexOf("What Don does") };
+    });
+    expect(order.what).toBeGreaterThanOrEqual(0);
+    expect(order.recent).toBeGreaterThan(order.what);
   });
 });
