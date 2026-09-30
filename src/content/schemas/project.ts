@@ -16,9 +16,9 @@ const idPattern = /^[a-z][a-z0-9-]*$/;
 const id = z.string().regex(idPattern, "use lower-case letters, digits and hyphens, starting with a letter");
 
 const problem = text
-  .max(140, "keep the problem to 140 characters or fewer")
-  .regex(/[.?!]$/, "write the problem as one sentence that ends with . ? or !")
-  .refine((value) => !/[.?!]\s+\S/.test(value), "write the problem as one sentence, not several");
+  .max(140, "write the problem as one sentence of at most 140 characters")
+  .regex(/[.?!]$/, "write the problem as one sentence of at most 140 characters that ends with . ? or !")
+  .refine((value) => !/[.?!]\s+\S/.test(value), "write the problem as one sentence of at most 140 characters, not several sentences");
 
 const fit = z.enum(["meets", "partly", "misses"]);
 
@@ -54,20 +54,20 @@ const comparison = z
       if (seenOptions.has(o.id)) issue(["options", index, "id"], `the option id ${o.id} is used twice`);
       seenOptions.add(o.id);
       for (const cid of constraintIds) {
-        if (!(cid in o.fit)) issue(["options", index, "fit"], `add a fit for the constraint ${cid}`);
+        if (!(cid in o.fit)) issue(["options", index, "fit"], `the option ${o.id} needs a fit for the constraint ${cid}`);
       }
       for (const key of Object.keys(o.fit)) {
-        if (!seenConstraints.has(key)) issue(["options", index, "fit", key], `${key} is not a constraint id`);
+        if (!seenConstraints.has(key)) issue(["options", index, "fit", key], `the option ${o.id} names ${key}, which is not a constraint id`);
       }
       if (!o.chosen && o.reason !== undefined) {
-        issue(["options", index, "reason"], "only the chosen option has a reason");
+        issue(["options", index, "reason"], `the option ${o.id} is not chosen, so remove its reason`);
       }
       if (o.chosen && o.reason === undefined) {
-        issue(["options", index, "reason"], "the chosen option needs a reason");
+        issue(["options", index, "reason"], `the chosen option ${o.id} needs a reason`);
       }
     });
     const chosen = value.options.filter((o) => o.chosen).length;
-    if (chosen !== 1) issue(["options"], `mark exactly one option as chosen (found ${chosen})`);
+    if (chosen !== 1) issue(["options"], `exactly one option must be chosen (found ${chosen}); add chosen: true to one option`);
   });
 
 /** A visual of the kinds allowed on the index and in the story. */

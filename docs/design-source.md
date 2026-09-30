@@ -52,16 +52,21 @@ siblings to these paths instead of new conventions.
 
 | Path | Holds | Later features add |
 |---|---|---|
-| `src/content.config.ts` | Every collection definition (`pages` now) | `posts`, `projects` collections |
+| `src/content.config.ts` | Every collection definition (`pages` and `projects` now) | `posts` collection |
 | `src/content/schemas/shared.ts` | Reusable Zod pieces: `imageWithAlt`, `seoFields`, `navField` | Nothing; reuse |
 | `src/content/schemas/page.ts` | `pageSchema({ image })` | `post.ts`, `project.ts` beside it |
-| `src/content/pages/` (+ `images/`) | Page files and their images | `src/content/posts/`, `src/content/projects/` |
+| `src/content/pages/` (+ `images/`) | Page files and their images | `src/content/posts/` |
+| `src/content/projects/` (+ `images/`) | One MDX file per project, with its images and clips (`docs/projects.md`) | Nothing; add a file |
+| `src/content/schemas/project.ts` | `projectSchema({ image })`: the settings, comparison and visuals rules | Nothing; extend here |
+| `src/components/project/blocks/` | Story blocks usable in project files with no import: `Chapter`, `Visual`, `OptionComparison`, `Demo`, `Invitation` (`index.ts` registry, `schemas.ts` prop rules) | New blocks register in `index.ts` and `schemas.ts` |
+| `src/pages/projects/` | The Projects index and the one story route `[slug].astro` | Nothing |
+| `src/lib/content/project-*.ts` | Project build checks: address, body, images, order | Reused |
 | `src/components/sections/` | Sections usable in any MDX body: one `.astro` file each, `index.ts` (the registry, a closed list of names) and `schemas.ts` (prop rules) | New sections register in `index.ts` and `schemas.ts` |
 | `src/components/page/` | `HomeIntro`, `FeatureImage`, `DraftNotice` | Post and project furniture in `src/components/post/` and similar |
 | `src/layouts/PageLayout.astro` | Standard page layout inside `BaseLayout` | `PostLayout`, `ProjectLayout` |
 | `src/lib/content/` | `address.ts`, `body.ts`, `navigation.ts`, `images.ts`, `errors.ts`: build-time checks that raise `PageContentError` | Reused for posts and projects |
 | `src/pages/[...slug].astro` | The one route that renders every page file | `src/pages/writing/` and `src/pages/projects/` routes; the address check reserves their addresses |
-| `docs/pages.md` | Don's authoring guide | `docs/posts.md` (posts, done); a guide for projects |
+| `docs/pages.md`, `docs/posts.md`, `docs/projects.md` | Don's authoring guides (pages, posts and projects, all done) | Nothing; add a guide beside them |
 
 Test support for this structure:
 

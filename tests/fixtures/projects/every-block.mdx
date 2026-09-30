@@ -1,0 +1,101 @@
+---
+title: Every block
+problem: Does every building block work together in one story?
+description: A project file that uses every story block and page section.
+themes: [Blocks]
+status: in-progress
+visual:
+  kind: image
+  src: ./images/sample.png
+  alt: A sample picture
+  placeholder: true
+standIn:
+  href: https://example.com/every-block
+  label: Every block stand-in
+source: https://github.com/drcdev/every-block
+visuals:
+  shot:
+    kind: image
+    src: ./images/sample.png
+    alt: A placeholder screenshot
+    placeholder: true
+  plan:
+    kind: diagram
+    src: ./images/sample.png
+    alt: A plan diagram
+    description: Two boxes joined by one arrow.
+comparison:
+  caption: Every-block options
+  constraints:
+    - { id: simple, label: Simple to run, detail: One command. }
+    - { id: fast, label: Fast }
+  options:
+    - id: script
+      name: A script
+      summary: One file.
+      fit: { simple: meets, fast: partly }
+    - id: service
+      name: A service
+      summary: Always running.
+      fit: { simple: misses, fast: meets }
+      chosen: true
+      reason: Speed mattered more than simplicity.
+---
+
+<Chapter stage="problem" visual="shot">
+<Lead>
+An intro paragraph inside a chapter.
+</Lead>
+
+<TextBlock title="A titled block">
+
+Some text in a section.
+
+</TextBlock>
+</Chapter>
+
+<Chapter stage="constraints" visual="plan">
+What made it hard.
+
+### A level-three heading
+
+<Visual name="shot" />
+</Chapter>
+
+<Chapter stage="options">
+Short framing.
+
+<OptionComparison />
+</Chapter>
+
+<Chapter stage="built">
+What was built.
+
+<Figure caption="A figure inside a chapter">
+
+![A sample picture in the body](./images/sample.png)
+
+</Figure>
+
+<Demo />
+</Chapter>
+
+<Chapter stage="outcome">
+How it turned out.
+
+<CallToAction label="See the source" href="https://github.com/drcdev/every-block">
+
+The code is public.
+
+</CallToAction>
+</Chapter>
+
+<Chapter stage="lessons" draft>
+What was learned.
+</Chapter>
+
+<Chapter stage="invitation">
+If you have a problem like this, tell me about it.
+
+<Invitation />
+</Chapter>

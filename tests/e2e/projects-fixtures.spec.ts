@@ -1,5 +1,5 @@
 // The projects index on the fixture site (port 4322, playwright.config.ts project
-// `sections`): four projects (Focus Pocus and the three fixtures) so filtering,
+// `sections`): five projects (Focus Pocus and the four fixtures) so filtering,
 // clearing, sharing and the unknown-theme message have something to work on
 // (US4; contracts/filter-island.md; FR-014).
 import { expect, test, type Page } from "@playwright/test";
@@ -12,8 +12,8 @@ const status = (page: Page) => page.locator("[data-filter-status]");
 test("lists every project, with the controls ready", async ({ page }) => {
   await page.goto(INDEX);
   await expect(page.locator("project-filter[data-ready]")).toHaveCount(1);
-  await expect(rows(page)).toHaveCount(4);
-  await expect(status(page)).toHaveText("Showing all 4 projects.");
+  await expect(rows(page)).toHaveCount(5);
+  await expect(status(page)).toHaveText("Showing all 5 projects.");
   await expect(page.getByRole("group", { name: "Filter by theme" })).toBeVisible();
   await expect(page.locator("[data-filter-all]")).toHaveAttribute("aria-pressed", "true");
 });
@@ -33,9 +33,9 @@ test("filters by theme, announces the count and clears", async ({ page }) => {
   await expect(page).toHaveURL(/\/projects\/\?theme=tooling$/);
   await expect(page.locator('button[data-theme="tooling"]')).toHaveAttribute("aria-pressed", "true");
   await page.locator("[data-filter-all]").click();
-  await expect(rows(page)).toHaveCount(4);
+  await expect(rows(page)).toHaveCount(5);
   await expect(page).toHaveURL(/\/projects\/$/);
-  await expect(status(page)).toHaveText("Showing all 4 projects.");
+  await expect(status(page)).toHaveText("Showing all 5 projects.");
 });
 
 test("keeps focus on the pressed button", async ({ page }) => {
@@ -62,7 +62,7 @@ test("an unknown theme lists nothing, says so and keeps the address until cleare
   await expect(status(page)).toHaveText("No projects match this theme.");
   await expect(page).toHaveURL(/\?theme=nonsense$/);
   await page.getByRole("button", { name: "Show all projects" }).click();
-  await expect(rows(page)).toHaveCount(4);
+  await expect(rows(page)).toHaveCount(5);
   await expect(page).toHaveURL(/\/projects\/$/);
   await expect(page.locator("[data-filter-empty]")).toBeHidden();
   await expect(page.locator("[data-filter-all]")).toBeFocused();
@@ -156,5 +156,42 @@ test.describe("demos and clips", () => {
     await expect(video).toHaveJSProperty("paused", true);
     await expect(video).toHaveJSProperty("autoplay", false);
     await expect(video).toHaveJSProperty("muted", true);
+  });
+});
+
+// US8: a story that uses every block (tests/fixtures/projects/every-block.mdx).
+test.describe("the every-block story", () => {
+  test("renders all seven chapters, the page sections and the invitation", async ({ page }) => {
+    await page.goto("/projects/every-block/");
+    await expect(page.locator("[data-chapter]")).toHaveCount(7);
+    await expect(page.getByText("An intro paragraph inside a chapter.")).toBeVisible();
+    await expect(page.getByText("A titled block")).toBeVisible();
+    await expect(page.getByText("A figure inside a chapter")).toBeVisible();
+    await expect(page.getByRole("link", { name: "See the source" })).toBeVisible();
+    await expect(page.locator('a[href="/contact/?project=every-block"]')).toHaveCount(1);
+  });
+
+  test("marks placeholders and the draft chapter with real text", async ({ page }) => {
+    await page.goto("/projects/every-block/");
+    await expect(page.locator("[data-placeholder]").first()).toContainText("Placeholder");
+    await expect(page.locator("#lessons [data-draft-mark]")).toHaveText("Draft for review");
+    await expect(page.locator("[data-draft-mark]")).toHaveCount(1);
+  });
+
+  test("the comparison scrolls with the keyboard at a narrow width", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/projects/every-block/");
+    const region = page.locator("[data-comparison]");
+    await region.scrollIntoViewIfNeeded();
+    await region.focus();
+    await expect(region).toBeFocused();
+    expect(await region.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+    await page.keyboard.press("ArrowRight");
+    await expect.poll(() => region.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
+    const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }));
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
   });
 });

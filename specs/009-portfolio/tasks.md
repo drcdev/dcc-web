@@ -170,13 +170,13 @@ description: "Task list for the portfolio (projects index and story pages)"
 
 **Independent test**: 32 broken fixtures each fail with the contracted phrase; adding one file plus images publishes a project.
 
-- [ ] T065 [P] [US7] Test: create broken fixtures `tests/fixtures/projects/broken/01-*.mdx` to `32-*.mdx` (contracts/build-errors.md) and `tests/build/project-validation.test.ts` asserting each build fails naming the file and the contracted phrase and that no message contains an environment value (fails until T068 closes any gap).
-- [ ] T066 [P] [US7] Test: `tests/build/one-file-project.test.ts` (adding one `.mdx` plus images publishes the project on the index and at `/projects/<slug>/`, touching no other file; SC-004) and `tests/build/project-routes.test.ts` (duplicate slug `x.md` + `x.mdx`, nested file, and a page file under `/projects/…` fail).
-- [ ] T067 [P] [US8] Test: `tests/unit/content/projects-guide.test.ts` (every setting and block name from the schema and registry appears in `docs/projects.md`, FR-075), plus an every-block fixture `tests/fixtures/projects/every-block.mdx` with `tests/build/every-block.test.ts` (builds; page sections `Figure`, `TextBlock`, `Lead`, `CallToAction` usable inside a chapter).
-- [ ] T068 [US7] Fix any gaps T065 to T067 expose in `project-body.ts`, `project.ts`, `content.config.ts` `generateId` and error wording (plain language, FR-076) until all 32 rows pass.
-- [ ] T069 [US7] Write `docs/projects.md` (plain-language authoring guide: location, every setting, every block, skeleton, images and clips, drafts, how errors read), link it from `docs/pages.md` and add the content-structure rows to `docs/design-source.md` (shared files: keep both sides).
-- [ ] T070 [P] [US8] Test: extend `tests/e2e/projects-fixtures.spec.ts` with the every-block story (all blocks render, comparison keyboard scroll, placeholder marks, draft chapter mark) and confirm it passes.
-- [ ] T071 Run `corepack pnpm exec vitest run` (build project included), lint and `astro check`; confirm green.
+- [x] T065 [P] [US7] Test: create broken fixtures `tests/fixtures/projects/broken/01-*.mdx` to `32-*.mdx` (contracts/build-errors.md) and `tests/build/project-validation.test.ts` asserting each build fails naming the file and the contracted phrase and that no message contains an environment value (fails until T068 closes any gap).
+- [x] T066 [P] [US7] Test: `tests/build/one-file-project.test.ts` (adding one `.mdx` plus images publishes the project on the index and at `/projects/<slug>/`, touching no other file; SC-004) and `tests/build/project-routes.test.ts` (duplicate slug `x.md` + `x.mdx`, nested file, and a page file under `/projects/…` fail).
+- [x] T067 [P] [US8] Test: `tests/unit/content/projects-guide.test.ts` (every setting and block name from the schema and registry appears in `docs/projects.md`, FR-075), plus an every-block fixture `tests/fixtures/projects/every-block.mdx` with `tests/build/every-block.test.ts` (builds; page sections `Figure`, `TextBlock`, `Lead`, `CallToAction` usable inside a chapter).
+- [x] T068 [US7] Fix any gaps T065 to T067 expose in `project-body.ts`, `project.ts`, `content.config.ts` `generateId` and error wording (plain language, FR-076) until all 32 rows pass.
+- [x] T069 [US7] Write `docs/projects.md` (plain-language authoring guide: location, every setting, every block, skeleton, images and clips, drafts, how errors read), link it from `docs/pages.md` and add the content-structure rows to `docs/design-source.md` (shared files: keep both sides).
+- [x] T070 [P] [US8] Test: extend `tests/e2e/projects-fixtures.spec.ts` with the every-block story (all blocks render, comparison keyboard scroll, placeholder marks, draft chapter mark) and confirm it passes.
+- [x] T071 Run `corepack pnpm exec vitest run` (build project included), lint and `astro check`; confirm green.
 
 **Checkpoint**: authoring contract enforced and documented.
 
