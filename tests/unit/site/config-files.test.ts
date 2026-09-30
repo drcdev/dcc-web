@@ -152,12 +152,15 @@ describe("wrangler.jsonc", () => {
   });
 });
 
+// Importing these configs pulls in Astro, Vite or ESLint, which takes over 5 s when the machine is loaded.
+const HEAVY_IMPORT_TIMEOUT = 60_000;
+
 describe("astro.config.mjs", () => {
   it("sets no adapter and no server output (static by default, Principle V)", async () => {
     const config = (await import("../../../astro.config.mjs")).default;
     expect(config.adapter).toBeUndefined();
     expect(config.output).not.toBe("server");
-  });
+  }, HEAVY_IMPORT_TIMEOUT);
 });
 
 describe("vitest.config.ts", () => {
@@ -169,7 +172,7 @@ describe("vitest.config.ts", () => {
     expect(include).toEqual(
       expect.arrayContaining(["tests/unit/**/*.test.ts", "tests/component/**/*.test.ts"]),
     );
-  });
+  }, HEAVY_IMPORT_TIMEOUT);
 });
 
 interface TestPlaywrightProject {
@@ -391,7 +394,7 @@ describe("worker workspace and tooling wiring (007 contact form)", () => {
     expect(entry).toBeDefined();
     expect(entry?.rules?.["@typescript-eslint/no-floating-promises"]).toBe("error");
     expect(entry?.languageOptions?.parserOptions?.projectService).toBeTruthy();
-  });
+  }, HEAVY_IMPORT_TIMEOUT);
 
   it("wires typecheck, test, types:worker and deploy:production scripts", () => {
     expect(pkg.scripts.typecheck).toBe(

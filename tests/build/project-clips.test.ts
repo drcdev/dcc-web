@@ -31,6 +31,7 @@ describe("a project with a clip", () => {
     expect(video).toContain('preload="none"');
     expect(video).toMatch(/poster="\/_astro\/[^"]+"/);
     expect(video).not.toMatch(/autoplay/i);
+    expect(video).not.toMatch(/\bloop\b/i);
     expect(html).toContain("Shows the flow from start to finish.");
   });
 

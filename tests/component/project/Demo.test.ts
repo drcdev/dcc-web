@@ -43,6 +43,24 @@ describe("Demo link forms", () => {
   });
 });
 
+describe("Demo link privacy (FR-046)", () => {
+  it("opens demo, stand-in and source links in the same tab, so there is no opener, and adds no tracking parameters", async () => {
+    const html = await withData({
+      demo: { href: "https://demo.drc.dev/fp", embed: false },
+      standIn: { href: "https://drc.dev/projects/focus-pocus", label: "Focus Pocus on drc.dev" },
+      source: "https://github.com/drcdev/focus-pocus",
+    });
+    const links = byName(html, "a");
+    expect(links).toHaveLength(3);
+    for (const a of links) {
+      expect(a.attrs.target).toBeUndefined();
+      expect(a.attrs.href).not.toMatch(/[?&](utm_|ref=|fbclid|gclid)/i);
+      // Nothing may loosen the site's referrer policy for these links.
+      expect(a.attrs.referrerpolicy ?? "strict-origin-when-cross-origin").toMatch(/^(no-referrer|origin|strict-origin(-when-cross-origin)?)$/);
+    }
+  });
+});
+
 describe("Demo embed", () => {
   const embedded = { demo: { href: "https://demo.drc.dev/fp", embed: true } };
   const frameOf = (data: Record<string, unknown>) => renderWithProject(Demo, { frame: true }, undefined, makeProject(data));

@@ -300,14 +300,7 @@ summary,
     }
   }
 }
-@media (prefers-reduced-motion: no-preference) and (prefers-color-scheme: dark) {
-  @supports (animation-timeline: view()) {
-    :root:not([data-theme="light"]) [data-progress] {
-      background-color: var(--color-accent-300);
-    }
-  }
-}
-:root[data-theme="dark"] [data-progress] {
+.dark [data-progress] {
   background-color: var(--color-accent-300);
 }
 @media print {

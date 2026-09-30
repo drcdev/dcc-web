@@ -202,8 +202,8 @@ description: "Task list for the portfolio (projects index and story pages)"
 
 ## Phase 12: Preview checks and polish (needs Don)
 
-- [ ] T080 Re-read the four checklists in `specs/009-portfolio/checklists/` and confirm every requirement has a test; fix or note gaps in the PR body.
-- [ ] T081 [P] Confirm no production import from `src/prototypes/portfolio`, no new dependency in `package.json`, and `public/_headers` unchanged (`git diff main -- package.json public/_headers`).
+- [x] T080 Re-read the four checklists in `specs/009-portfolio/checklists/` and confirm every requirement has a test; fix or note gaps in the PR body.
+- [x] T081 [P] Confirm no production import from `src/prototypes/portfolio`, no new dependency in `package.json`, and `public/_headers` unchanged (`git diff main -- package.json public/_headers`).
 - [ ] T082 Write the PR notes: major change under Principle III (navigation, new page type and transitions, per-page `frame-src`), $0 added cost, auto-merge left off because of the `[PREVIEW-CHECK]` items below.
 - [ ] T083 Check on the preview deployment, in both themes: Projects nav, index rows at 1280 and 390 px, Focus Pocus story, comparison keyboard scroll, stand-in and source links [PREVIEW-CHECK]
 - [ ] T084 Check page transition feel on the preview: the title carries from index row to story header in Chromium, no flash, and nothing under reduced motion [PREVIEW-CHECK]

@@ -413,6 +413,42 @@ test.describe("portfolio states", () => {
     }
   }
 
+  test("every-block story survives 400% zoom (320 px) with text spacing: no sideways scroll, headings and comparison visible", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto(`${FIXTURE}/projects/every-block/`);
+    await page.evaluate(() => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(`* {
+        line-height: 1.5 !important;
+        letter-spacing: 0.12em !important;
+        word-spacing: 0.16em !important;
+      }
+      p { margin-bottom: 2em !important; }`);
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    });
+    await expectNoHorizontalScroll(page);
+    const headings = page.locator("[data-chapter-heading]");
+    const count = await headings.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i += 1) {
+      const heading = headings.nth(i);
+      await heading.scrollIntoViewIfNeeded();
+      await expect(heading).toBeVisible();
+      const fits = await heading.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0 && r.left >= -1 && r.right <= document.documentElement.clientWidth + 1;
+      });
+      expect(fits, `heading ${i}`).toBe(true);
+    }
+    const comparison = page.locator("[data-comparison]");
+    await comparison.scrollIntoViewIfNeeded();
+    await expect(comparison).toBeVisible();
+    expect(await comparison.evaluate((el) => el.getBoundingClientRect().right <= document.documentElement.clientWidth + 1)).toBe(true);
+    await expectNoHorizontalScroll(page);
+  });
+
   test("Tab reaches the comparison region on the every-block story", async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });
     await page.goto(`${FIXTURE}/projects/every-block/`);

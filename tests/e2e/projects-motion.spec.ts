@@ -161,6 +161,77 @@ test.describe("with motion allowed", () => {
   });
 });
 
+/** Resolve any CSS colour to sRGB channels by painting it on a canvas. */
+const contrastRatio = (page: Page) =>
+  page.evaluate(() => {
+    const toRgb = (color: string): [number, number, number] => {
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = 1;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+      ctx.fillStyle = "#000";
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, 1, 1);
+      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+      return [r!, g!, b!];
+    };
+    const luminance = ([r, g, b]: [number, number, number]) => {
+      const lin = (v: number) => {
+        const c = v / 255;
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+    };
+    const bar = getComputedStyle(document.querySelector("[data-progress]")!).backgroundColor;
+    let background = "rgb(255, 255, 255)";
+    for (const el of [document.body, document.documentElement]) {
+      const bg = getComputedStyle(el).backgroundColor;
+      if (bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent") {
+        background = bg;
+        break;
+      }
+    }
+    const a = luminance(toRgb(bar));
+    const b = luminance(toRgb(background));
+    return { bar, background, ratio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) };
+  });
+
+test.describe("progress bar contrast (FR-083, WCAG 1.4.11)", () => {
+  test.use({ reducedMotion: "no-preference", viewport: { width: 1440, height: 900 } });
+  for (const theme of ["light", "dark"] as const) {
+    test(`is at least 3:1 against the page background in the ${theme} theme`, async ({ page }) => {
+      await page.addInitScript((value) => {
+        try {
+          localStorage.setItem("color-theme", value);
+        } catch {
+          // Storage unavailable: the page falls back to its default theme.
+        }
+      }, theme);
+      await page.goto(STORY);
+      await expect(page.locator("html")).toHaveClass(theme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
+      await expect(page.locator("[data-progress]")).toHaveCSS("display", "block");
+      const { bar, background, ratio } = await contrastRatio(page);
+      expect(ratio, `${bar} on ${background}`).toBeGreaterThanOrEqual(3);
+    });
+  }
+});
+
+test.describe("chapter DOM order (FR-023)", () => {
+  test("puts each chapter's text before its visual, so focus order follows", async ({ page }) => {
+    await page.goto(STORY);
+    const grids = page.locator('[data-chapter-grid][data-has-visual="true"]');
+    const count = await grids.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i += 1) {
+      const order = await grids.nth(i).evaluate((el) => {
+        const text = el.querySelector("[data-chapter-text]")!;
+        const visual = el.querySelector("[data-chapter-visual]")!;
+        return text.compareDocumentPosition(visual);
+      });
+      expect(order & 4 /* DOCUMENT_POSITION_FOLLOWING */, `chapter ${i}`).toBeTruthy();
+    }
+  });
+});
+
 test.describe("with reduced motion", () => {
   test.use({ reducedMotion: "reduce", viewport: { width: 1440, height: 900 } });
 
