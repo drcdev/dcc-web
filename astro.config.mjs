@@ -41,17 +41,6 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
 
-  // The two Workers Builds variables that tell production from a preview build,
-  // read by src/lib/posts.ts to decide whether draft posts are built
-  // (docs.astro.build/en/guides/environment-variables/#type-safe-environment-variables;
-  // specs/008-blog/research.md R3).
-  env: {
-    schema: {
-      WORKERS_CI: envField.string({ context: "server", access: "public", optional: true }),
-      WORKERS_CI_BRANCH: envField.string({ context: "server", access: "public", optional: true }),
-    },
-  },
-
   // Sätteri is Astro's default Markdown processor; it is named here only to add
   // the reading-time plugin, which stores `minutesRead` for posts
   // (docs.astro.build/en/recipes/reading-time/; specs/008-blog/research.md R6).
@@ -97,8 +86,14 @@ export default defineConfig({
   // other build defaults to Cloudflare's always-pass test key
   // (docs.astro.build/en/guides/environment-variables/#type-safe-environment-variables;
   // specs/007-contact-form/research.md R6).
+  //
+  // The two Workers Builds variables that tell production from a preview build,
+  // read by src/lib/posts.ts to decide whether draft posts are built
+  // (specs/008-blog/research.md R3).
   env: {
     schema: {
+      WORKERS_CI: envField.string({ context: "server", access: "public", optional: true }),
+      WORKERS_CI_BRANCH: envField.string({ context: "server", access: "public", optional: true }),
       PUBLIC_TURNSTILE_SITE_KEY: envField.string({
         context: "client",
         access: "public",

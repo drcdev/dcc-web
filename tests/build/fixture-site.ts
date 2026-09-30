@@ -79,7 +79,10 @@ async function runAstro(root: string, mode: "build" | "sync", env: Record<string
     await run(process.execPath, [runner, root, mode], {
       cwd: repoRoot,
       maxBuffer: 16 * 1024 * 1024,
-      env: { ...inherited, ...env },
+      // A Workers Builds build (WORKERS_CI=1) must be given the Turnstile site key
+      // (astro.config.mjs; specs/007-contact-form/research.md R6), so the harness
+      // supplies Cloudflare's always-pass test key unless a test sets its own.
+      env: { PUBLIC_TURNSTILE_SITE_KEY: "1x00000000000000000000AA", ...inherited, ...env },
     });
     return "";
   } catch (error) {

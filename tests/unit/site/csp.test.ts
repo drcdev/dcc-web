@@ -51,9 +51,12 @@ beforeAll(async () => {
 });
 
 describe("astro.config.mjs security.csp", () => {
-  // Guard for the blog (spec FR-053; tasks T090): the policy equals its
-  // current values exactly, so adding Shiki, env or markdown options to the
-  // config can never widen it. Run green before and after every config change.
+  // Guard for the blog (spec FR-053; tasks T090): the site-wide policy equals
+  // main's current values exactly, so adding Shiki, env or markdown options to
+  // the config can never widen it. Re-pointed at main after the rebase onto the
+  // contact form (T079): main's Turnstile sources are added per page through
+  // Astro.csp in ContactForm.astro (covered below), not in this config, so the
+  // site-wide values are unchanged. Run green before and after every config change.
   it("equals its current values exactly (no new source, no 'unsafe-inline')", () => {
     expect(csp.directives).toEqual([
       "default-src 'self'",
