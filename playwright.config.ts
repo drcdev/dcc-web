@@ -17,7 +17,8 @@ export default defineConfig({
         "rm -rf .cache/e2e-state && pnpm exec wrangler d1 migrations apply contact --local --persist-to .cache/e2e-state && pnpm exec wrangler dev --ip 127.0.0.1 --port 4321 --persist-to .cache/e2e-state --env-file tests/fixtures/worker/e2e.env",
       url: "http://127.0.0.1:4321",
       reuseExistingServer: !process.env.CI,
-      timeout: 120 * 1000,      env: { WRANGLER_SEND_METRICS: "false" },
+      timeout: 120 * 1000,
+      env: { WRANGLER_SEND_METRICS: "false" },
     },
     // Fixture site for the section-component tests (tests/e2e/sections.spec.ts):
     // the repository's site plus tests/fixtures/pages/sections.mdx, built by
