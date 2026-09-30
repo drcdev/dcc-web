@@ -519,8 +519,8 @@ needed):
 
 ```sh
 pnpm exec wrangler login
-pnpm exec wrangler d1 create contact --location wnam
-pnpm exec wrangler d1 create contact-preview --location wnam
+pnpm exec wrangler d1 create contact --location wnam --env-file /dev/null
+pnpm exec wrangler d1 create contact-preview --location wnam --env-file /dev/null
 ```
 
 Choose **no** if Wrangler offers to add the binding to the config. The database IDs are not secret;
@@ -530,7 +530,7 @@ pushes. If a database was created with the wrong name or location and is still e
 create it again:
 
 ```sh
-pnpm exec wrangler d1 delete contact
+pnpm exec wrangler d1 delete contact --env-file /dev/null
 ```
 
 **How it will be confirmed**
@@ -580,16 +580,20 @@ salt used to hash visitor addresses for rate limiting.
 **Where to do it**
 In a terminal in the repository, run these yourself and type or paste each value at the prompt.
 Never paste a value into the chat. For the read token, generate a new random value in your password
-manager first. Production (`dcc-web`):
+manager first. The repository's `.env` holds the read-only token from step 2, and Wrangler would use
+it instead of your dashboard login, so every command passes `--env-file /dev/null`. Production
+(`dcc-web`, `--env ""` selects the top-level environment):
 
 ```sh
-pnpm exec wrangler secret put TURNSTILE_SECRET_KEY
-pnpm exec wrangler secret put CONTACT_READ_TOKEN
-openssl rand -hex 32 | pnpm exec wrangler secret put IP_HASH_SALT
+pnpm exec wrangler secret put TURNSTILE_SECRET_KEY --env "" --env-file /dev/null
+pnpm exec wrangler secret put CONTACT_READ_TOKEN --env "" --env-file /dev/null
+openssl rand -hex 32 | pnpm exec wrangler secret put IP_HASH_SALT --env "" --env-file /dev/null
 ```
 
-Preview (`dcc-web-preview`): the same three commands with `--env preview`, using a **different** read
-token and salt. The first preview command offers to create the Worker `dcc-web-preview`; answer yes.
+Preview (`dcc-web-preview`): the same three commands with `--env preview` in place of `--env ""`,
+using a **different** read token and salt. The first preview command offers to create the Worker
+`dcc-web-preview`; answer yes. "No access to the specified resource" means the read-only token was
+used: check that `--env-file /dev/null` is on the command.
 Give each read token only to the scheduled assistant for that environment.
 
 **Replacing a secret.** If a read token, salt or Turnstile secret leaks, run the same

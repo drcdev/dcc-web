@@ -143,15 +143,15 @@ to add the binding to the config:
 
 ```sh
 pnpm exec wrangler login
-pnpm exec wrangler d1 create contact --location wnam
-pnpm exec wrangler d1 create contact-preview --location wnam
+pnpm exec wrangler d1 create contact --location wnam --env-file /dev/null
+pnpm exec wrangler d1 create contact-preview --location wnam --env-file /dev/null
 ```
 
 If a database was created with the wrong name or location and is still empty, remove it with this
 command, shown for Don to run himself, then create it again:
 
 ```sh
-pnpm exec wrangler d1 delete contact
+pnpm exec wrangler d1 delete contact --env-file /dev/null
 ```
 
 After Don says Done, the skill may run one non-check command for this item:
@@ -165,12 +165,13 @@ commit and push. This is the only non-check command the skill runs during the wa
 Don never pastes a secret into the chat. The check confirms these by name only and the skill
 never asks for a value. Shown for Don to run himself at the `contact-worker-secrets` step, typing or
 pasting each value at Wrangler's prompt (production first, then the same three with `--env preview`
-using a different read token and salt):
+in place of `--env ""`, using a different read token and salt). `--env-file /dev/null` keeps Wrangler
+from using the read-only token in the repository's `.env` instead of Don's dashboard login:
 
 ```sh
-pnpm exec wrangler secret put TURNSTILE_SECRET_KEY
-pnpm exec wrangler secret put CONTACT_READ_TOKEN
-openssl rand -hex 32 | pnpm exec wrangler secret put IP_HASH_SALT
+pnpm exec wrangler secret put TURNSTILE_SECRET_KEY --env "" --env-file /dev/null
+pnpm exec wrangler secret put CONTACT_READ_TOKEN --env "" --env-file /dev/null
+openssl rand -hex 32 | pnpm exec wrangler secret put IP_HASH_SALT --env "" --env-file /dev/null
 ```
 
 To replace a leaked secret, Don runs the same `wrangler secret put` command again with a new value
