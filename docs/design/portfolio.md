@@ -8,9 +8,9 @@ The screenshots in this document are full-page captures of each page at 390 px (
 
 ## Preview addresses
 
-Every address below is pinned to commit `PINNED_SHA_PLACEHOLDER`, the last commit that still contained the prototypes, so the links keep working after the prototypes are removed from the site. Cloudflare keeps a limited number of versions, so these links may expire; the screenshots are the lasting record.
+Every address below is pinned to commit `1f35eae43904d7134c2b7e5eb573565b7ffc0cee`, the last commit that still contained the prototypes, so the links keep working after the prototypes are removed from the site. Cloudflare keeps a limited number of versions, so these links may expire; the screenshots are the lasting record.
 
-- Hub (all three directions): PINNED_URL_PLACEHOLDER/design/portfolio/
+- Hub (all three directions): https://81aad47f-dcc-web.drc-dev.workers.dev/design/portfolio/
 
 ## Direction A: Timeline
 
@@ -18,8 +18,8 @@ Stages sit on a vertical rail, one after another. Each option is a native disclo
 
 ### Preview
 
-- Index: PINNED_URL_PLACEHOLDER/design/portfolio/a/
-- Story (Focus Pocus): PINNED_URL_PLACEHOLDER/design/portfolio/a/focus-pocus/
+- Index: https://81aad47f-dcc-web.drc-dev.workers.dev/design/portfolio/a/
+- Story (Focus Pocus): https://81aad47f-dcc-web.drc-dev.workers.dev/design/portfolio/a/focus-pocus/
 
 ### Screenshots
 
@@ -58,8 +58,8 @@ Stages are stacked cards. Options are WAI-ARIA tabs, one tab per option. The ind
 
 ### Preview
 
-- Index: PINNED_URL_PLACEHOLDER/design/portfolio/b/
-- Story (Focus Pocus): PINNED_URL_PLACEHOLDER/design/portfolio/b/focus-pocus/
+- Index: https://81aad47f-dcc-web.drc-dev.workers.dev/design/portfolio/b/
+- Story (Focus Pocus): https://81aad47f-dcc-web.drc-dev.workers.dev/design/portfolio/b/focus-pocus/
 
 ### Screenshots
 
@@ -98,8 +98,8 @@ Full-width chapters, each with a visual that stays in view beside its text on wi
 
 ### Preview
 
-- Index: PINNED_URL_PLACEHOLDER/design/portfolio/c/
-- Story (Focus Pocus): PINNED_URL_PLACEHOLDER/design/portfolio/c/focus-pocus/
+- Index: https://81aad47f-dcc-web.drc-dev.workers.dev/design/portfolio/c/
+- Story (Focus Pocus): https://81aad47f-dcc-web.drc-dev.workers.dev/design/portfolio/c/focus-pocus/
 
 ### Screenshots
 
