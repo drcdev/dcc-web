@@ -2,18 +2,18 @@
 
 This document lays out three design directions for the blog on this site (the writing section
 under `/writing/`), so that one can be chosen. The prototypes were built as pages on the
-preview deployment of this pull request, at `/design/blog/`. They are removed after review, so
-the pictures below show every direction as it looked in the prototypes, and the descriptions
+preview deployment of this pull request, at `/design/blog/`. They were removed from the branch
+after review, so the pictures below show every direction as it looked in the prototypes, and the descriptions
 and pictures alone should be enough to compare them. The prototypes use invented sample posts
 and four sample topics; they are not the published blog.
 
 ## How to compare
 
-Preview index: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/`. That address is
-the Cloudflare commit preview for the commit that carried the prototypes (`9e83e04`), so it
-stays live after the prototype pages are removed from the branch, until Cloudflare retires the
-version. On a local build the same pages are at `/design/blog/`, and the directions are at
-`/design/blog/a/`, `/design/blog/b/` and `/design/blog/c/`.
+Preview index: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/`. The prototype
+pages were removed from the branch after review; this address is the Cloudflare commit
+preview for the commit that carried them (`9e83e04`), so it stays live until Cloudflare
+retires that version. The pinned preview and the pictures below are the record of the
+directions, and the pictures and descriptions alone are enough to compare them.
 
 Each direction has the same three screens, shown in the pictures: the landing page (the front
 of the writing section), the listing (all posts, newest first, split into pages), and one
@@ -40,7 +40,9 @@ on every card.
 
 ### Preview
 
-Preview links, once the pull request exists (replace the placeholder with the preview URL):
+The prototype pages were removed from the branch after review. These links point at the pinned
+commit preview (`9e83e04`), which stays live until Cloudflare retires it; the pictures below
+are the lasting record:
 
 - Landing: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/a/`
 - Listing: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/a/all/`
@@ -114,7 +116,9 @@ text. A short "Start here" list pinned above the stream carries the featured pos
 
 ### Preview
 
-Preview links, once the pull request exists (replace the placeholder with the preview URL):
+The prototype pages were removed from the branch after review. These links point at the pinned
+commit preview (`9e83e04`), which stays live until Cloudflare retires it; the pictures below
+are the lasting record:
 
 - Landing: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/b/`
 - Listing: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/b/all/`
@@ -188,7 +192,9 @@ above them.
 
 ### Preview
 
-Preview links, once the pull request exists (replace the placeholder with the preview URL):
+The prototype pages were removed from the branch after review. These links point at the pinned
+commit preview (`9e83e04`), which stays live until Cloudflare retires it; the pictures below
+are the lasting record:
 
 - Landing: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/c/`
 - Listing: `https://70e5332d-dcc-web.drc-dev.workers.dev/design/blog/c/all/`
