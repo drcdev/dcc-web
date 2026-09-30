@@ -106,6 +106,50 @@ summary,
   @apply m-0 mb-2;
 }
 
+/* ------------------------------------------------------- Option comparison */
+
+/* The table scrolls inside its own region so the page never scrolls sideways. */
+[data-comparison] {
+  @apply my-6 overflow-x-auto border border-dusk-300 dark:border-mist-700;
+}
+[data-comparison]:focus-visible {
+  @apply outline-2 outline-offset-2 outline-accent-500 dark:outline-accent-400;
+}
+[data-comparison] table {
+  @apply w-full border-collapse text-left text-base;
+  min-width: 40rem;
+}
+[data-comparison] caption {
+  @apply p-3 text-left text-sm font-semibold;
+}
+[data-comparison] th,
+[data-comparison] td {
+  @apply border-t border-dusk-300 p-3 align-top dark:border-mist-700;
+}
+[data-comparison] th[scope="row"] {
+  @apply w-44 font-semibold;
+}
+[data-comparison] small {
+  @apply block text-sm font-normal text-dusk-800 dark:text-mist-200;
+}
+[data-comparison] ul {
+  @apply m-0 list-none p-0;
+}
+[data-comparison] li + li {
+  @apply mt-1;
+}
+/* The chosen option is marked by the word "Chosen" and by a heavier column edge;
+   colour alone never carries it. */
+[data-comparison] [data-chosen] {
+  @apply border-x-2 border-x-accent-700 dark:border-x-accent-300;
+}
+[data-chosen-label] {
+  @apply mt-1 block w-fit border border-current px-2 text-sm font-semibold;
+}
+[data-reason] {
+  @apply mt-4 max-w-prose;
+}
+
 /* -------------------------------------------------------- Demo and invitation */
 
 [data-demo-links] {
@@ -155,8 +199,18 @@ summary,
   [data-invitation],
   [data-placeholder],
   [data-draft-mark],
-  [data-status] {
+  [data-status],
+  [data-comparison],
+  [data-comparison] th,
+  [data-comparison] td,
+  [data-chosen-label] {
     border-color: CanvasText;
+  }
+  [data-comparison] [data-chosen] {
+    border-inline-color: Highlight;
+  }
+  [data-comparison]:focus-visible {
+    outline-color: CanvasText;
   }
   [data-demo-links] a:focus-visible,
   [data-invitation]:focus-visible {

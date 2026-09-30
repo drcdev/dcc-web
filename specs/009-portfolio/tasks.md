@@ -86,12 +86,12 @@ description: "Task list for the portfolio (projects index and story pages)"
 
 **Independent test**: component tests plus body-check unit tests pass; the comparison is a labelled, keyboard-reachable table with the chosen option in text.
 
-- [ ] T026 [P] [US2] Test: `tests/component/project/OptionComparison.test.ts` (data table, `<caption>`, `th scope="col"` per option and `scope="row"` per constraint, region with `tabindex="0"` and accessible name, "Chosen" in text plus `data-chosen`, reason paragraph, fit as text with the decorative mark `aria-hidden`, "In its favour" and "Against it" rows only when some option has them, empty cell for a missing list, constraint detail as small text).
-- [ ] T027 [P] [US7] Test: `tests/unit/content/project-body.test.ts` for `validateProjectBody()` (seven chapters in order; missing, repeated and out-of-order; unknown block such as `<Timeline>`; unknown visual name; `visual="demo"` without `demo.embed`; OptionComparison once and only in the options chapter; Invitation once and only in the invitation chapter; Demo at most once, only in built, required when demo/standIn/source is set; no `#` or `##` headings; body image without alt; code fences ignored; every error names the file).
-- [ ] T028 [P] [US2] Test: extend `tests/unit/content/project-schema.test.ts` for rows 12 to 15 and 31 of contracts/build-errors.md (exactly one chosen, chosen reason, fit gaps, empty comparison) and fix the schema if any fails.
-- [ ] T029 [US2] Implement `src/components/project/blocks/OptionComparison.astro` (register it) and its CSS in `portfolio.css` (scroll inside the region, forced-colours-safe chosen mark), making T026 pass.
-- [ ] T030 [US7] Implement `src/lib/content/project-body.ts` (`validateProjectBody`, same pattern as `validatePageBody`), making T027 pass; it is wired into the story route in Phase 5.
-- [ ] T031 Run unit and component suites, lint and `astro check`; confirm green.
+- [x] T026 [P] [US2] Test: `tests/component/project/OptionComparison.test.ts` (data table, `<caption>`, `th scope="col"` per option and `scope="row"` per constraint, region with `tabindex="0"` and accessible name, "Chosen" in text plus `data-chosen`, reason paragraph, fit as text with the decorative mark `aria-hidden`, "In its favour" and "Against it" rows only when some option has them, empty cell for a missing list, constraint detail as small text).
+- [x] T027 [P] [US7] Test: `tests/unit/content/project-body.test.ts` for `validateProjectBody()` (seven chapters in order; missing, repeated and out-of-order; unknown block such as `<Timeline>`; unknown visual name; `visual="demo"` without `demo.embed`; OptionComparison once and only in the options chapter; Invitation once and only in the invitation chapter; Demo at most once, only in built, required when demo/standIn/source is set; no `#` or `##` headings; body image without alt; code fences ignored; every error names the file).
+- [x] T028 [P] [US2] Test: extend `tests/unit/content/project-schema.test.ts` for rows 12 to 15 and 31 of contracts/build-errors.md (exactly one chosen, chosen reason, fit gaps, empty comparison) and fix the schema if any fails.
+- [x] T029 [US2] Implement `src/components/project/blocks/OptionComparison.astro` (register it) and its CSS in `portfolio.css` (scroll inside the region, forced-colours-safe chosen mark), making T026 pass.
+- [x] T030 [US7] Implement `src/lib/content/project-body.ts` (`validateProjectBody`, same pattern as `validatePageBody`), making T027 pass; it is wired into the story route in Phase 5.
+- [x] T031 Run unit and component suites, lint and `astro check`; confirm green.
 
 **Checkpoint**: comparison and body check ready for the story page.
 
