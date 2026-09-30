@@ -597,9 +597,19 @@ used: check that `--env-file /dev/null` is on the command.
 Give each read token only to the scheduled assistant for that environment.
 
 **Replacing a secret.** If a read token, salt or Turnstile secret leaks, run the same
-`wrangler secret put` command again with a new value (plus `--env preview` for preview). It takes
-effect on the next request with no redeploy. After replacing the read token, give the new value to
-the scheduled assistant.
+`wrangler secret put` command again with a new value. On `dcc-web` it takes effect on the next
+request with no redeploy. On `dcc-web-preview`, plain `secret put` refuses once a branch build has
+uploaded a preview-alias version ("the latest version of your Worker isn't currently deployed"), so
+use the versions form, deploy it, then rebuild the branch so its alias inherits the new value:
+
+```sh
+pnpm exec wrangler versions secret put CONTACT_READ_TOKEN --env preview --env-file /dev/null
+pnpm exec wrangler versions deploy --env preview --env-file /dev/null
+```
+
+then choose **Retry build** on the latest `dcc-web-preview` build (or push a commit). After replacing
+a read token, give the new value to the scheduled assistant. A value from `openssl rand -hex 32`
+avoids shell-quoting trouble when the assistant sends it as a bearer token.
 
 **How it will be confirmed**
 `pnpm setup:check --item contact-worker-secrets` reports complete when `TURNSTILE_SECRET_KEY`,

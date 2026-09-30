@@ -174,5 +174,8 @@ pnpm exec wrangler secret put CONTACT_READ_TOKEN --env "" --env-file /dev/null
 openssl rand -hex 32 | pnpm exec wrangler secret put IP_HASH_SALT --env "" --env-file /dev/null
 ```
 
-To replace a leaked secret, Don runs the same `wrangler secret put` command again with a new value
-(plus `--env preview` for preview); no redeploy is needed.
+To replace a leaked secret on `dcc-web`, Don runs the same `wrangler secret put` command again with
+a new value; no redeploy is needed. On `dcc-web-preview` plain `secret put` refuses after a branch
+build, so Don runs `wrangler versions secret put NAME --env preview --env-file /dev/null`, then
+`wrangler versions deploy --env preview --env-file /dev/null`, and the agent pushes a commit (or Don
+retries the build) so the branch alias inherits the new value.
