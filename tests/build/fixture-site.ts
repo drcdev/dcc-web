@@ -2,7 +2,8 @@
 // research.md R14). Copies this repository's site source into a temporary
 // directory under .cache/, adds chosen fixture page files from
 // tests/fixtures/pages/ to its src/content/pages/ (and, with the `posts` option,
-// post files from tests/fixtures/posts/ to its src/content/posts/), and runs Astro's programmatic
+// post files from tests/fixtures/posts/ to its src/content/posts/, and with the `projects`
+// option, project files from tests/fixtures/projects/ to its src/content/projects/), and runs Astro's programmatic
 // build() or sync() (docs.astro.build/en/reference/programmatic-reference/).
 // The programmatic API is experimental; only tests use it.
 import { execFile } from "node:child_process";
@@ -15,6 +16,7 @@ import { promisify } from "node:util";
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
 const fixturesRoot = resolve(repoRoot, "tests/fixtures/pages");
 const postFixturesRoot = resolve(repoRoot, "tests/fixtures/posts");
+const projectFixturesRoot = resolve(repoRoot, "tests/fixtures/projects");
 
 /**
  * A fixture file: `from` is relative to tests/fixtures/pages/ (for the `posts` option, to
@@ -47,6 +49,8 @@ export interface FixtureSiteOptions {
    * `WORKERS_CI_BRANCH` are never passed on, so a build depends only on what the test sets.
    */
   env?: Record<string, string>;
+  /** Fixture project files from tests/fixtures/projects/, copied to src/content/projects/ with their images. */
+  projects?: readonly (string | FixtureFile)[];
 }
 
 export interface FixtureSiteResult {
@@ -145,6 +149,14 @@ export async function buildFixtureSite(
     const postImages = resolve(postFixturesRoot, "images");
     if (existsSync(postImages)) cpSync(postImages, resolve(postsDir, "images"), { recursive: true });
     copyFixtures(options.posts, postFixturesRoot, postsDir);
+  }
+
+  if (options.projects) {
+    const projectsDir = resolve(root, "src/content/projects");
+    mkdirSync(projectsDir, { recursive: true });
+    const projectImages = resolve(projectFixturesRoot, "images");
+    if (existsSync(projectImages)) cpSync(projectImages, resolve(projectsDir, "images"), { recursive: true });
+    copyFixtures(options.projects, projectFixturesRoot, projectsDir);
   }
 
   for (const [path, value] of Object.entries(options.overrides ?? {})) {
