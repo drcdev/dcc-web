@@ -75,7 +75,7 @@ export const posts: SamplePost[] = [
     slug: "quiet-handoffs",
     title: "Why the quiet handoffs decide whether a team ships",
     date: "2026-09-15",
-    readingMinutes: 6,
+    readingMinutes: 1,
     topics: ["high-performing-teams"],
     summary:
       "Most delivery problems start in the gaps between people. Four small habits that make a handoff boring, and why boring is the goal.",
@@ -86,7 +86,7 @@ export const posts: SamplePost[] = [
     slug: "ai-agents-and-the-mainframe",
     title: "Putting an AI agent in front of a system nobody wants to touch",
     date: "2026-08-27",
-    readingMinutes: 9,
+    readingMinutes: 3,
     topics: ["agentic-ai-legacy", "compliant-data"],
     summary:
       "An agent can read a legacy system's screens faster than a new hire, but it cannot tell you which of them are safe to change. What we automated, and what stayed human.",
@@ -101,7 +101,7 @@ export const posts: SamplePost[] = [
     slug: "audit-trail-as-a-product",
     title: "Treat the audit trail as a product, not a by-product",
     date: "2026-08-06",
-    readingMinutes: 7,
+    readingMinutes: 1,
     topics: ["compliant-data"],
     summary:
       "If an auditor is a user, the audit trail needs a design, an owner and a roadmap. What changed when we started treating it that way.",
@@ -116,7 +116,7 @@ export const posts: SamplePost[] = [
     slug: "what-a-clinic-taught-me-about-uptime",
     title: "What a clinic waiting room taught me about uptime",
     date: "2026-07-14",
-    readingMinutes: 5,
+    readingMinutes: 1,
     topics: ["healthcare-leadership"],
     summary:
       "An outage looks different from the front desk. A short story about a slow morning, and how it changed the way we talk about availability.",
@@ -131,7 +131,7 @@ export const posts: SamplePost[] = [
     slug: "reading-a-system-you-did-not-build",
     title: "Reading a system you did not build",
     date: "2026-06-23",
-    readingMinutes: 8,
+    readingMinutes: 3,
     topics: ["agentic-ai-legacy", "high-performing-teams"],
     summary:
       "A practical order for learning an unfamiliar codebase: start with the data, then the jobs, then the people who wake up when it breaks.",
@@ -142,7 +142,7 @@ export const posts: SamplePost[] = [
     slug: "small-teams-large-interfaces",
     title: "Small teams, large interfaces: keeping ownership clear as systems grow",
     date: "2026-05-29",
-    readingMinutes: 6,
+    readingMinutes: 1,
     topics: ["high-performing-teams", "compliant-data"],
     summary:
       "The team stays small, the number of interfaces does not. How we decided who owns each boundary and what that saved us in incident reviews.",
@@ -158,7 +158,7 @@ export const posts: SamplePost[] = [
     title:
       "Three years of integration work between a hospital, two labs and a payer, and the one rule we kept breaking every quarter",
     date: "2026-05-05",
-    readingMinutes: 12,
+    readingMinutes: 1,
     topics: ["compliant-data", "high-performing-teams", "agentic-ai-legacy"],
     summary:
       "The rule was simple: never change a message format and its consumers in the same release. Why it was so hard to keep, and what finally worked.",
@@ -173,7 +173,7 @@ export const posts: SamplePost[] = [
     slug: "retention-rules-in-plain-language",
     title: "Retention rules in plain language",
     date: "2026-04-11",
-    readingMinutes: 4,
+    readingMinutes: 1,
     topics: ["compliant-data"],
     summary:
       "How long you keep data is a decision, and it should be written where the people who make it can read it. A template that fits on one page.",
@@ -184,7 +184,7 @@ export const posts: SamplePost[] = [
     slug: "when-the-pilot-outlives-the-plan",
     title: "When the pilot outlives the plan",
     date: "2026-03-18",
-    readingMinutes: 7,
+    readingMinutes: 1,
     topics: ["agentic-ai-legacy"],
     summary:
       "Every AI pilot has an end date on the slide and none in practice. Questions worth asking before a pilot quietly becomes production.",
@@ -199,7 +199,7 @@ export const posts: SamplePost[] = [
     slug: "on-call-without-heroics",
     title: "On-call without heroics",
     date: "2026-02-24",
-    readingMinutes: 8,
+    readingMinutes: 1,
     topics: ["high-performing-teams"],
     summary:
       "A rota that depends on one person who always answers is a risk, not a strength. How we spread the load and wrote down what people actually do at 3 a.m.",
@@ -214,7 +214,7 @@ export const posts: SamplePost[] = [
     slug: "schema-changes-are-people-changes",
     title: "Schema changes are people changes",
     date: "2026-01-30",
-    readingMinutes: 5,
+    readingMinutes: 1,
     topics: ["compliant-data"],
     summary:
       "The migration script is the easy part. The hard part is the reports, exports and spreadsheets that quietly depend on the old shape.",
@@ -225,7 +225,7 @@ export const posts: SamplePost[] = [
     slug: "first-ninety-days-of-a-legacy-rescue",
     title: "The first ninety days of a legacy rescue",
     date: "2025-11-19",
-    readingMinutes: 10,
+    readingMinutes: 1,
     topics: ["agentic-ai-legacy", "high-performing-teams"],
     summary:
       "A plan for the first three months of taking over a system in trouble: what to measure, what to leave alone, and when to say no.",
@@ -240,7 +240,7 @@ export const posts: SamplePost[] = [
     slug: "data-contracts-between-friends",
     title: "Data contracts between friends",
     date: "2025-09-08",
-    readingMinutes: 6,
+    readingMinutes: 1,
     topics: ["compliant-data"],
     summary:
       "Two teams that trust each other still need a written agreement about their data. What goes in a one-page contract and who signs it.",

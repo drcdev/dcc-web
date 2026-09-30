@@ -4,44 +4,44 @@
 // and a wide table in the existing .table-wrapper. The "short" variant is a
 // brief body; "full-no-image" omits only the feature image (rendered by the
 // post page), so the in-body figure stays.
-import type { BodyKind } from "../_data/samples.ts";
+import { posts, postPath, type BodyKind, type DirectionId, type SamplePost } from "../_data/samples.ts";
+import { fullBodies, shortBodies } from "../_data/bodies.ts";
 import Figure from "../_images/records.svg";
 import { bodySections } from "../_data/screens.ts";
 
 export interface Props {
   variant: BodyKind;
+  post: SamplePost;
+  direction: DirectionId;
 }
 
-const { variant } = Astro.props;
+const { variant, post, direction } = Astro.props;
 const full = variant !== "short";
 const [found, check, cost, leaves] = bodySections;
+const fullText = fullBodies[post.slug];
+const shortText = shortBodies[post.slug] ?? [];
+// Short bodies end with a route to the full sample post (research R2).
+const fullPost = posts.find((p) => p.body === (post.image ? "full-with-image" : "full-no-image"))!;
 ---
 
 <div class="prose prose-lg max-w-none dark:prose-invert prose-accent" data-sample-body={variant}>
-  <p>
-    Most of the work in a large system happens in the seams between teams, tools and old decisions. This is a sample
-    post for the design prototype: the words are placeholders, but the shapes are real, so each direction can be judged
-    on a post of realistic length and structure.
-  </p>
+  {full && fullText ? fullText.opening.map((text) => <p>{text}</p>) : null}
   {
-    full ? (
+    full && fullText ? (
       <>
         <h2 id={found.id}>{found.title}</h2>
-        <p>
-          We started by writing down what each job actually did, not what its name said. That took two afternoons and
-          saved us from removing something that a month-end report still depended on.
-        </p>
+        <p>{fullText.found}</p>
         <figure>
           <Figure role="img" aria-label="Four rows of records, each with a short highlighted entry." class="h-auto w-full" />
           <figcaption>Four record types, and the one entry in each that other teams read.</figcaption>
         </figure>
         <h2 id={check.id}>{check.title}</h2>
-        <p>The check below compares the row counts of two systems and stops the release if they differ.</p>
+        <p>{fullText.check}</p>
         <pre tabindex="0" role="region" aria-label="Code sample: row count check" class="overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500 dark:focus-visible:outline-accent-400">
           <code>{`select source.entity, source.row_count, target.row_count from nightly_counts source join nightly_counts target on target.entity = source.entity and target.system = 'reporting' where source.system = 'operational' and source.row_count <> target.row_count;`}</code>
         </pre>
         <h2 id={cost.id}>{cost.title}</h2>
-        <p>The table sets the effort of each step beside what it protects.</p>
+        <p>{fullText.cost}</p>
         <div class="table-wrapper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500 dark:focus-visible:outline-accent-400" tabindex="0" role="region" aria-label="Table: effort and protection by step">
           <table>
             <caption class="p-2 text-left text-sm">Effort and protection by step</caption>
@@ -80,16 +80,19 @@ const [found, check, cost, leaves] = bodySections;
           </table>
         </div>
         <h2 id={leaves.id}>{leaves.title}</h2>
-        <p>
-          None of this is clever. It is a habit of writing things down and checking them, which is why it keeps working
-          when the team changes.
-        </p>
+        <p>{fullText.closing}</p>
       </>
     ) : (
-      <p>
-        This is a short sample body. It stands in for a post that has not been written yet, so the layouts can be
-        compared without a long read.
-      </p>
+      <>
+        {shortText.map((text) => (
+          <p>{text}</p>
+        ))}
+        <p>
+          <a href={postPath(direction, fullPost)} data-full-post>
+            Read a longer post with a figure, a code sample and a table: {fullPost.title}
+          </a>
+        </p>
+      </>
     )
   }
 </div>

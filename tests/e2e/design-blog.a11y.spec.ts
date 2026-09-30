@@ -590,3 +590,64 @@ test.describe("US3: accessibility", () => {
     });
   }
 });
+
+// ---------------------------------------------------------------------------
+// Convergence (T043-T046): realistic body text, reading times that agree with
+// it, a route from short bodies to the full sample post, titles naming screens.
+// ---------------------------------------------------------------------------
+const fullFor = (post: (typeof posts)[number]) => (post.image ? withImage : withoutImage);
+
+test.describe("convergence: sample bodies", () => {
+  for (const d of DIRECTION_IDS) {
+    test(`Direction ${d.toUpperCase()}: bodies never describe themselves as placeholders (T043)`, async ({ request }) => {
+      for (const post of posts) {
+        const html = await (await request.get(postPath(d, post))).text();
+        const body = html.slice(html.indexOf("data-sample-body"));
+        expect(body.length, post.slug).toBeGreaterThan(200);
+        expect(body, post.slug).not.toMatch(/placeholder|sample body|stands in for|not been written|lorem/i);
+      }
+    });
+
+    test(`Direction ${d.toUpperCase()}: reading minutes agree with the body length (T044)`, async ({ page }) => {
+      for (const post of posts) {
+        await page.goto(postPath(d, post));
+        const text = (await page.locator("[data-sample-body]").innerText()).trim();
+        const words = text.split(/\s+/).length;
+        const expected = Math.max(1, Math.ceil(words / 200));
+        expect(Math.abs(post.readingMinutes - expected), `${post.slug}: ${words} words`).toBeLessThanOrEqual(1);
+      }
+    });
+
+    test(`Direction ${d.toUpperCase()}: short bodies link to the full sample post (T045)`, async ({ page, request }) => {
+      for (const post of posts.filter((p) => p.body === "short")) {
+        await page.goto(postPath(d, post));
+        const link = page.locator("[data-sample-body]").locator("a[data-full-post]");
+        await expect(link, post.slug).toHaveCount(1);
+        const target = postPath(d, fullFor(post));
+        await expect(link).toHaveAttribute("href", target);
+        expect((await request.get(target)).status(), target).toBe(200);
+      }
+      for (const post of posts.filter((p) => p.body !== "short")) {
+        await page.goto(postPath(d, post));
+        await expect(page.locator("[data-sample-body] a[data-full-post]")).toHaveCount(0);
+      }
+    });
+  }
+
+  test("every prototype page has a unique title naming its direction and screen (T046)", async ({ request }) => {
+    const titles = new Map<string, string>();
+    const paths = [INDEX_PATH, ...DIRECTION_IDS.flatMap(allGeneratedPaths)];
+    for (const path of paths) {
+      const html = await (await request.get(path)).text();
+      const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "";
+      const decoded = title.replace(/&amp;/g, "&").replace(/&#39;|&#x27;/g, "'").replace(/&quot;/g, '"');
+      if (path !== INDEX_PATH) {
+        expect(decoded, path).toMatch(
+          /^Prototype [ABC] · (Writing landing page|All posts, page \d+|Topic: .+|Topic hub: .+|Post: .+)/,
+        );
+      }
+      expect(titles.has(decoded), `${path} duplicates ${titles.get(decoded)}`).toBe(false);
+      titles.set(decoded, path);
+    }
+  });
+});

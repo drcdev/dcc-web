@@ -17,7 +17,7 @@ const tone = topicBySlug(post.topics[0]!).tone;
 ---
 
 <Shell
-  title={`Prototype A · ${post.title}`}
+  title={`Prototype A · Post: ${post.title}`}
   description={post.summary}
   direction="a"
   screen={{ kind: "post", post }}
@@ -38,7 +38,7 @@ const tone = topicBySlug(post.topics[0]!).tone;
       </div>
     </header>
     <div class="mx-auto mt-8 max-w-3xl">
-      <SampleBody variant={post.body} />
+      <SampleBody variant={post.body} post={post} direction="a" />
     </div>
   </article>
   <section aria-labelledby="related" class="mt-14">

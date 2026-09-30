@@ -17,7 +17,7 @@ const related = groupPosts(relatedTo(post), (r) => r.topics.find((t) => post.top
 ---
 
 <Shell
-  title={`Prototype C · ${post.title}`}
+  title={`Prototype C · Post: ${post.title}`}
   description={post.summary}
   direction="c"
   screen={{ kind: "post", post }}
@@ -30,7 +30,7 @@ const related = groupPosts(relatedTo(post), (r) => r.topics.find((t) => post.top
   <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem]">
     <article class="min-w-0">
       {post.image && <PostImage post={post} class="mb-8 rounded-lg" />}
-      <SampleBody variant={post.body} />
+      <SampleBody variant={post.body} post={post} direction="c" />
     </article>
     <aside aria-label="About this post" class="min-w-0 self-start rounded-lg border border-dusk-200 p-4 dark:border-dusk-700 lg:sticky lg:top-4">
       <PostMeta post={post} direction="c" class="flex-col items-start" />
