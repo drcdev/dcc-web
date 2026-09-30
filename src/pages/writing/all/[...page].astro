@@ -1,0 +1,51 @@
+---
+// All posts, `/writing/all/` and `/writing/all/{n}/` (spec 008 US4; contracts/blog-pages.md
+// "All posts"; FR-012, FR-014, FR-030, FR-047, FR-048). `paginate()` builds one page per
+// `pageSize` posts, page 1 at the bare address and no `/1/` or pages past the last
+// (docs.astro.build/en/guides/routing/#pagination). With no visible posts it builds one
+// empty page that keeps the heading, the topic pill row and a plain message.
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import CardGrid from "../../../components/post/CardGrid.astro";
+import Pagination from "../../../components/post/Pagination.astro";
+import TopicPillRow from "../../../components/post/TopicPillRow.astro";
+import { blog } from "../../../config/blog.ts";
+import { getNavigation } from "../../../lib/pages";
+import { getPostSummaries } from "../../../lib/posts";
+
+export const getStaticPaths = (async ({ paginate }) => {
+  return paginate(await getPostSummaries(), { pageSize: blog.pageSize });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const navigation = await getNavigation();
+const suffix = page.currentPage > 1 ? `, page ${page.currentPage}` : "";
+const heading = `All posts${suffix}`;
+const feedHref = new URL("/writing/rss.xml", Astro.site).href;
+---
+
+<BaseLayout title={heading} description={`${blog.feedDescription}${suffix ? ` (page ${page.currentPage})` : ""}`} navigation={navigation}>
+  <link slot="head" rel="alternate" type="application/rss+xml" title={blog.feedTitle} href={feedHref} />
+  <div class="mx-auto max-w-screen-lg">
+    <header class="mb-8">
+      <p class="m-0 text-xs font-semibold uppercase tracking-wider text-rust-800 dark:text-rust-300">
+        {blog.sectionName}
+      </p>
+      <h1 class="my-2 text-5xl font-bold break-words text-dusk-900 dark:text-white">{heading}</h1>
+    </header>
+
+    <div class="mb-8">
+      <TopicPillRow />
+    </div>
+
+    {
+      page.data.length > 0 ? (
+        <CardGrid posts={page.data} data-all-posts-grid="" />
+      ) : (
+        <p class="text-lg text-dusk-700 dark:text-mist-300">There are no posts yet.</p>
+      )
+    }
+
+    <Pagination currentPage={page.currentPage} lastPage={page.lastPage} base="/writing/all/" />
+  </div>
+</BaseLayout>

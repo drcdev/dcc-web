@@ -266,3 +266,83 @@ test.describe("landing page", () => {
     await noSidewaysScroll(page);
   });
 });
+
+// The all posts and topic pages (T057; contracts/blog-pages.md "All posts" and "Topic"). The default
+// build has the four sample posts: sample-everything (2026-08-27), sample-long-title (08-20),
+// sample-text-only (08-10) and sample-short (07-30). Pagination runs against the fixture site in
+// tests/e2e/blog-pagination.spec.ts.
+const ALL = "/writing/all/";
+const TOPIC = "/writing/topics/technology-teams/";
+
+test.describe("all posts page", () => {
+  test("shows the h1, the pill row and every post as a card, newest first", async ({ page }) => {
+    await page.goto(ALL);
+    const main = page.locator("main");
+    await expect(main.locator("h1")).toHaveText("All posts");
+    await expect(main.getByRole("navigation", { name: "Topics" })).toBeVisible();
+    const hrefs = await main
+      .locator("[data-post-card] h2 a")
+      .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+    expect(hrefs).toEqual([
+      "/writing/sample-everything/",
+      "/writing/sample-long-title/",
+      "/writing/sample-text-only/",
+      "/writing/sample-short/",
+    ]);
+    // Four posts fit on one page, so there is no pagination.
+    await expect(main.getByRole("navigation", { name: "Pages" })).toHaveCount(0);
+  });
+
+  test("advertises the feed and keeps Writing current in the header", async ({ page }) => {
+    await page.goto(ALL);
+    await expect(page.locator('head link[rel="alternate"][type="application/rss+xml"]')).toHaveAttribute(
+      "href",
+      /\/writing\/rss\.xml$/,
+    );
+    expect(await page.title()).toBe("All posts · Don Coleman");
+    await expect(page.locator('#primary-nav-list a[href="/writing/"]')).toHaveAttribute("aria-current", "true");
+  });
+
+  test("does not scroll sideways at 320 px", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto(ALL);
+    await noSidewaysScroll(page);
+  });
+
+  test("reaches a topic page from a pill on a card", async ({ page }) => {
+    await page.goto(ALL);
+    await page.locator("main [data-post-card] a[data-topic-pill][href$='/technology-teams/']").first().click();
+    await page.waitForURL(`**${TOPIC}`);
+    await expect(page.locator("main h1")).toHaveText("High-performing technology teams");
+  });
+
+  test("returns the not-found page with status 404 for /writing/all/1/ and /writing/all/99/", async ({ page }) => {
+    for (const path of ["/writing/all/1/", "/writing/all/99/"]) {
+      const response = await page.goto(path);
+      expect(response?.status(), path).toBe(404);
+      await expect(page.locator("main h1")).not.toHaveText("All posts");
+    }
+  });
+});
+
+test.describe("topic page", () => {
+  test("opens with a banner and h1, then the topic's posts, with no pill row", async ({ page }) => {
+    await page.goto(TOPIC);
+    const main = page.locator("main");
+    await expect(main.locator("[data-topic-banner]")).toBeVisible();
+    await expect(main.locator("h1")).toHaveText("High-performing technology teams");
+    await expect(main.getByRole("navigation", { name: "Topics" })).toHaveCount(0);
+    const hrefs = await main
+      .locator("[data-post-card] h2 a")
+      .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+    expect(hrefs).toEqual(["/writing/sample-long-title/", "/writing/sample-text-only/"]);
+    expect(await page.title()).toBe("High-performing technology teams · Don Coleman");
+  });
+
+  test("returns the not-found page with status 404 for an unknown topic and for page 1", async ({ page }) => {
+    for (const path of ["/writing/topics/nope/", "/writing/topics/technology-teams/1/"]) {
+      const response = await page.goto(path);
+      expect(response?.status(), path).toBe(404);
+    }
+  });
+});

@@ -14,6 +14,8 @@ export const TEMPLATES = [
   { name: "technology", path: "/technology/", built: true },
   { name: "contact", path: "/contact/", built: true },
   { name: "writing-landing", path: "/writing/", built: true },
+  { name: "writing-all", path: "/writing/all/", built: true },
+  { name: "writing-topic", path: "/writing/topics/technology-teams/", built: true },
   // Blog post pages. The sample posts are drafts, so these also cover the draft post page (FR-039).
   { name: "writing-post", path: "/writing/sample-everything/", built: true },
   { name: "writing-post-text-only", path: "/writing/sample-text-only/", built: true },

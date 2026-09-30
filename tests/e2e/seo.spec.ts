@@ -68,6 +68,14 @@ const SAMPLE_POSTS = [
   "/writing/sample-text-only/",
 ];
 
+// The all posts page and one page per topic are built on every build (spec 008 US4).
+const TOPIC_PAGES = [
+  "/writing/topics/agentic-ai/",
+  "/writing/topics/compliant-data/",
+  "/writing/topics/healthcare-leadership/",
+  "/writing/topics/technology-teams/",
+];
+
 test("the sitemap lists exactly the built public pages, never /404", async ({ request }) => {
   const origin = await robotsOrigin(request);
   const entries = await sitemapEntries(request);
@@ -82,8 +90,12 @@ test("the sitemap lists exactly the built public pages, never /404", async ({ re
       "/technology/",
       "/terms-of-use/",
       "/writing/",
+      "/writing/all/",
+      ...TOPIC_PAGES,
       ...SAMPLE_POSTS,
-    ].map((path) => `${origin}${path}`),
+    ]
+      .map((path) => `${origin}${path}`)
+      .sort(),
   );
   for (const entry of entries) expect(new URL(entry).pathname.startsWith("/404")).toBe(false);
 });
@@ -106,6 +118,13 @@ test("robots.txt allows all crawling and points at the sitemap on the page origi
   expect(new URL(canonical!).origin).toBe(await robotsOrigin(request));
 });
 
+/** Post pages are articles; the landing, all posts and topic pages are ordinary pages (FR-030). */
+const isPostPath = (path: string) =>
+  path.startsWith("/writing/") &&
+  path !== "/writing/" &&
+  !path.startsWith("/writing/all/") &&
+  !path.startsWith("/writing/topics/");
+
 test("every public page has complete, consistent metadata", async ({ page, request }) => {
   const origin = await robotsOrigin(request);
   const entries = await sitemapEntries(request);
@@ -124,7 +143,7 @@ test("every public page has complete, consistent metadata", async ({ page, reque
     await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", entry);
     await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", entry);
-    await expectSharedMetadata(page, origin, path.startsWith("/writing/") && path !== "/writing/" ? "article" : "website");
+    await expectSharedMetadata(page, origin, isPostPath(path) ? "article" : "website");
   }
   expect(titles.size).toBe(entries.length);
 });

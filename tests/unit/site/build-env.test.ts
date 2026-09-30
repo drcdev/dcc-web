@@ -11,6 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import { topics } from "../../../src/config/topics.ts";
 import { resolveSiteOrigin } from "../../../src/lib/site-origin.ts";
 
 const run = promisify(execFile);
@@ -125,6 +126,7 @@ describe.each(environments)("astro build with the $label environment", ({ env })
       (m) => m[1]!,
     );
     // A preview build includes the sample posts, which are drafts; production leaves them out (spec 008 R3).
+    // The listing pages are published on every build: all posts and one page per topic (spec 008 US4).
     const pages = [
       "/",
       "/about/",
@@ -135,6 +137,8 @@ describe.each(environments)("astro build with the $label environment", ({ env })
       "/technology/",
       "/terms-of-use/",
       "/writing/",
+      "/writing/all/",
+      ...topics.map((topic) => `/writing/topics/${topic.id}/`),
     ];
     const samplePosts = [
       "/writing/sample-everything/",
@@ -143,7 +147,7 @@ describe.each(environments)("astro build with the $label environment", ({ env })
       "/writing/sample-text-only/",
     ];
     const expected = env.WORKERS_CI_BRANCH === "main" ? pages : [...pages, ...samplePosts];
-    expect([...entries].sort()).toEqual(expected.map((path) => `${expectedOrigin}${path}`));
+    expect([...entries].sort()).toEqual(expected.map((path) => `${expectedOrigin}${path}`).sort());
   });
 
   it("leaves the draft sample posts out of production and builds them, labelled, elsewhere (FR-032, FR-046)", () => {

@@ -569,3 +569,7 @@ Recorded while implementing Phase 1. None of the spikes needs a plan change.
   existing ones in `tests/e2e/budget.spec.ts`: total 100 KB, JavaScript 10 KB, LCP 2.5 s, CLS
   below 0.1, long-task blocking 200 ms. The generator is built in T026 and the measurement runs
   in T061. If it fails, the fix is smaller or fewer eager images, never a weaker budget.
+- **Spike 4 result, full-listing page weight (T061, FR-041).** Measured on `/writing/all/` of the
+  fixture site (17 posts, 12 cards on page 1, lazy card images): total transferred 43,081 bytes
+  (budget 100 KB), JavaScript 0 bytes (10 KB), LCP 736 ms (2.5 s), CLS 0 (0.1), long-task blocking
+  0 ms (200 ms). The budget holds with no change to images or thresholds.

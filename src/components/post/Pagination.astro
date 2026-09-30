@@ -1,0 +1,66 @@
+---
+// Page links under a listing (contracts/blog-pages.md "Pagination"; FR-012, FR-049).
+// "Previous page" and "Next page" are left out, not disabled, at the ends; every page
+// number is a link named "Page {n}" (nothing is shortened; the list wraps); page 1
+// links to the bare address; the current page is a plain item with
+// `aria-current="page"`. Nothing renders for a single page. Every target is at least
+// 24 by 24 CSS px (`min-h-6 min-w-6`). `base` is the listing's bare address, such as
+// `/writing/all/`; `currentPage` and `lastPage` are Astro's `page.currentPage` and
+// `page.lastPage` (docs.astro.build/en/guides/routing/#pagination).
+export interface Props {
+  currentPage: number;
+  lastPage: number;
+  /** The listing's address for page 1, with a trailing slash. */
+  base: string;
+}
+
+const { currentPage, lastPage, base } = Astro.props;
+const href = (n: number) => (n === 1 ? base : `${base}${n}/`);
+const numbers = Array.from({ length: lastPage }, (_, index) => index + 1);
+const link =
+  "inline-flex min-h-6 min-w-6 items-center justify-center rounded px-2 py-1 font-medium text-dusk-900 underline underline-offset-4 hover:text-rust-700 dark:text-white dark:hover:text-rust-400";
+const current =
+  "inline-flex min-h-6 min-w-6 items-center justify-center rounded border-2 border-dusk-900 px-2 py-1 font-bold text-dusk-900 dark:border-white dark:text-white";
+---
+
+{
+  lastPage > 1 && (
+    <nav aria-label="Pages" class="mt-10">
+      <ul class="m-0 flex list-none flex-wrap items-center gap-x-2 gap-y-2 p-0">
+        {
+          currentPage > 1 && (
+            <li>
+              <a href={href(currentPage - 1)} rel="prev" class={link}>
+                Previous page
+              </a>
+            </li>
+          )
+        }
+        {
+          numbers.map((n) => (
+            <li>
+              {n === currentPage ? (
+                <span aria-current="page" class={current}>
+                  {n}
+                </span>
+              ) : (
+                <a href={href(n)} aria-label={`Page ${n}`} class={link}>
+                  {n}
+                </a>
+              )}
+            </li>
+          ))
+        }
+        {
+          currentPage < lastPage && (
+            <li>
+              <a href={href(currentPage + 1)} rel="next" class={link}>
+                Next page
+              </a>
+            </li>
+          )
+        }
+      </ul>
+    </nav>
+  )
+}

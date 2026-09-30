@@ -102,7 +102,7 @@ for (const path of NOT_BUILT) {
   });
 }
 
-test("the sitemap lists the eight pages and the sample posts, and neither the not-found page nor the cookie policy", async ({ request }) => {
+test("the sitemap lists the eight pages, the listing pages and the sample posts, and neither the not-found page nor the cookie policy", async ({ request }) => {
   const index = await (await request.get("/sitemap-index.xml")).text();
   const first = /<loc>[^<]*(\/sitemap-[^<]+\.xml)<\/loc>/.exec(index)?.[1];
   const sitemap = await (await request.get(first!)).text();
@@ -118,10 +118,15 @@ test("the sitemap lists the eight pages and the sample posts, and neither the no
     "/technology/",
     "/terms-of-use/",
     "/writing/",
+    "/writing/all/",
     "/writing/sample-everything/",
     "/writing/sample-long-title/",
     "/writing/sample-short/",
     "/writing/sample-text-only/",
+    "/writing/topics/agentic-ai/",
+    "/writing/topics/compliant-data/",
+    "/writing/topics/healthcare-leadership/",
+    "/writing/topics/technology-teams/",
   ]);
   expect(paths.some((p) => p.startsWith("/404") || p === "/cookie-policy/")).toBe(false);
 });

@@ -95,7 +95,8 @@ test("with the beacon blocked, pages, navigation and the theme switch still work
 
   await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Writing" }).click();
   await expect(page).toHaveURL(/\/writing\/$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Page not found" })).toBeVisible();
+  // The writing landing page exists since spec 008 (it was the not-found page before).
+  await expect(page.getByRole("heading", { level: 1, name: "Writing" })).toBeVisible();
   await page.getByRole("banner").getByRole("link", { name: "Don Coleman" }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(html).not.toHaveClass(/(^|\s)dark(\s|$)/);
