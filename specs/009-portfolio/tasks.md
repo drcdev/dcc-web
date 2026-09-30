@@ -195,10 +195,10 @@ description: "Task list for the portfolio (projects index and story pages)"
 
 **Purpose**: the new snapshotted pages and changed navigation get baselines; nothing else may change.
 
-- [ ] T076 Test: add `projects-{phone,desktop}-{light,dark}` and `project-story-{phone,desktop}-{light,dark}` (full page, reduced motion emulated so every chapter is final) to `tests/e2e/visual.spec.ts` (shared file: keep both sides).
-- [ ] T077 Update macOS baselines: `corepack pnpm run test:visual:update`. Review the diff: only the eight new `projects-*` / `project-story-*` images may be new; any changed existing image (header, footer, home, about, contact, sections, not-found, menu) is a regression to fix, not to refresh.
-- [ ] T078 Update Linux baselines: `corepack pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, report that Don must start it and stop; the fallback is the `visual-baselines` PR label plus `gh run download` of `visual-baselines-linux`). Review the diffs the same way and commit the images.
-- [ ] T079 Run the full gate: `ASTRO_PREVIEW_BACKGROUND=1 perl -e 'alarm 1800; exec @ARGV' corepack pnpm run verify` (rerun on port-collision noise); confirm secrets lint, ESLint, types, Vitest, build and all Playwright projects are green.
+- [x] T076 Test: add `projects-{phone,desktop}-{light,dark}` and `project-story-{phone,desktop}-{light,dark}` (full page, reduced motion emulated so every chapter is final) to `tests/e2e/visual.spec.ts` (shared file: keep both sides).
+- [x] T077 Update macOS baselines: `corepack pnpm run test:visual:update`. Review the diff: only the eight new `projects-*` / `project-story-*` images may be new; any changed existing image (header, footer, home, about, contact, sections, not-found, menu) is a regression to fix, not to refresh.
+- [ ] T078 Update Linux baselines: `corepack pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, report that Don must start it and stop; the fallback is the `visual-baselines` PR label plus `gh run download` of `visual-baselines-linux`). Review the diffs the same way and commit the images. (deferred: CI `visual-baselines` label fallback chosen by Don)
+- [x] T079 Run the full gate: `ASTRO_PREVIEW_BACKGROUND=1 perl -e 'alarm 1800; exec @ARGV' corepack pnpm run verify` (rerun on port-collision noise); confirm secrets lint, ESLint, types, Vitest, build and all Playwright projects are green.
 
 ## Phase 12: Preview checks and polish (needs Don)
 

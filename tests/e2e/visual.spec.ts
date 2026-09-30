@@ -108,3 +108,20 @@ for (const size of WIDTHS) {
     }
   }
 }
+
+// The projects index and the Focus Pocus story (FR-084), full page, both sizes
+// and themes, with reduced motion emulated so every chapter is in its final state.
+for (const size of WIDTHS) {
+  for (const theme of THEMES) {
+    for (const [name, path] of [
+      ["projects", "/projects/"],
+      ["project-story", "/projects/focus-pocus/"],
+    ] as const) {
+      test(`${name} page — ${size.name} — ${theme}`, async ({ page }) => {
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await open(page, path, size.width, size.height, theme);
+        await expect(page).toHaveScreenshot(`${name}-${size.name}-${theme}.png`, { fullPage: true });
+      });
+    }
+  }
+}
