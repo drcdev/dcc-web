@@ -144,8 +144,16 @@ Every Astro choice names the Astro docs page that supports it, found through the
   for projects via a prop, or a project-specific mark).
 - **Rationale**: FR-074, clarification; `process.env` is available in `getStaticPaths()` at build
   time; one pure function is unit-testable and shared with the blog.
+- **Docs**: docs.astro.build/en/guides/environment-variables/ ("Default environment variables":
+  `import.meta.env.PROD` is true for every `astro build`, so it cannot tell preview from
+  production; "Setting environment variables" / "Using the CLI": host-set variables reach the
+  build through `process.env`) and docs.astro.build/en/reference/modules/astro-env/ (`getSecret()`
+  "defaults to `process.env` in dev and build").
 - **Alternatives**: a custom `astro:env` variable set per environment (adds a Workers Builds
   setting, i.e. a configuration change); `import.meta.env.PROD` (true for preview builds too).
+- **Validation runs before filtering**: the body check runs over every collection entry, drafts
+  included, before `getPublishedProjects` drops drafts, so a production build still fails on a
+  broken draft (FR-073).
 
 ## R9. Visuals: images, diagrams, clips
 
@@ -192,6 +200,8 @@ Every Astro choice names the Astro docs page that supports it, found through the
   (`/projects/focus-pocus/` marks Projects with `aria-current="page"`). Link checks then require
   `/projects/` and every story page to answer 200 (FR-081).
 - **Rationale**: FR-010, US4 AS1; shared with the blog (plan "Parallel work").
+- **Docs**: docs.astro.build/en/reference/api-reference/#url (`Astro.url.pathname`, which the
+  header already passes to `isCurrent`).
 - **Alternatives**: a `currentSection` prop passed by each layout: more plumbing for the same
   result.
 
@@ -225,6 +235,8 @@ Every Astro choice names the Astro docs page that supports it, found through the
   table in a labelled scroll region, and the invitation. Colours are the prototype's
   `stage-accents.css` palette tokens (non-text 3:1) — no new colours or typefaces (FR-003).
 - **Rationale**: the design Decision and FR-001/FR-002; the prototype passed axe in both themes.
+- **Docs**: docs.astro.build/en/guides/images/ (`<Image />` from `astro:assets` with `alt`,
+  widths and lazy loading) and docs.astro.build/en/guides/images/#images-in-content-collections.
 
 ## R15. Sharing metadata and sitemap
 

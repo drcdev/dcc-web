@@ -35,9 +35,13 @@ Invariants (checked by schema `superRefine` or build-time checks):
 2. If a chapter uses `visual="demo"`, `demo.embed` is `true`.
 3. Every visual name used in the body exists in `visuals` (or is `demo`).
 4. Two files never share a slug (`.md`/`.mdx` twins or nested files fail); the slug never clashes
-   with another route (the address check in `src/lib/content/address.ts` already reserves
-   `/projects/…` for `src/pages/projects/`).
+   with another route: once `/projects/` leaves `futureDestinations` (`src/config/navigation.ts`),
+   the existing address check in `src/lib/content/address.ts` treats the `src/pages/projects/[slug].astro`
+   route as the owner of the `/projects/` prefix, so a page file there fails. `address.ts` itself
+   needs no change.
 5. Every image and clip path resolves to a file (named in the error).
+6. The schema and the body check run on **every** collection entry, drafts included, in every
+   build mode; draft filtering happens only after validation (FR-073).
 
 ## IndexVisual / Visual
 

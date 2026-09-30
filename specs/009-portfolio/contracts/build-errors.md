@@ -13,7 +13,7 @@ path. Each row has one broken fixture in `tests/fixtures/projects/broken/` and o
 | 03 | Missing status / unknown status | schema | file, `status`, the allowed values |
 | 04 | No theme / more than four / same theme twice | schema | file, `themes` |
 | 05 | Missing index visual or its alt | schema | file, `visual` / `alt` |
-| 06 | Setting of the wrong kind (e.g. `order: first`) | schema | file, the setting |
+| 06 | Setting of the wrong kind (e.g. `order: first`), or an order of 0, below 0 or not whole | schema | file, the setting |
 | 07 | Unknown setting (e.g. `titel`) | schema (strict) | file, the setting |
 | 08 | Problem over 140 characters or more than one sentence | schema | file, `problem`, "one sentence of at most 140 characters" |
 | 09 | Missing chapter | body check | file, "is missing the chapter" + stage |
@@ -37,7 +37,11 @@ path. Each row has one broken fixture in `tests/fixtures/projects/broken/` and o
 | 27 | Bad file name (capitals, spaces) | `generateId` | file, "lower-case letters, digits and hyphens" |
 | 28 | Level-1 or level-2 heading in the body | body check | file, "use ### for headings" |
 | 29 | Body image without alt text | body check | file, "alt text" |
-| 30 | Invitation block missing or outside the invitation chapter; Demo block missing when demo/standIn/source set | body check | file, "Invitation" / "Demo" |
+| 30 | Invitation block missing, outside the invitation chapter or repeated; Demo block missing when demo/standIn/source set, outside the built chapter or repeated | body check | file, "Invitation" / "Demo" |
+| 31 | Reason on an option that is not chosen; fit naming an unknown constraint; duplicate option or constraint id | schema | file, `comparison`, the id |
+| 32 | Visual name not matching `^[a-z][a-z0-9-]*$` or using the reserved name `demo`; a clip as the index visual | schema | file, `visuals` / `visual`, the name or kind |
+
+No message contains anything from outside the project file (no environment value or secret).
 
 A page file that tries to use `/projects/…` fails through the existing address check (the
 `src/pages/projects/` routes own that prefix once `/projects/` is no longer reserved).

@@ -26,7 +26,9 @@ blocks**, MDX components handed to `<Content components={...} />` so no imports 
 `OptionComparison`, `Demo` and `Invitation`. The existing page sections (`Figure`, `TextBlock`
 and the rest) are usable inside chapters. A build-time body check (the same pattern as
 `validatePageBody`) enforces the seven chapters in order, known block names, visual references
-and block placement, and names the file in every error.
+and block placement, and names the file in every error. It runs over every collection entry,
+drafts included, before drafts are filtered out, so a production build still fails on a broken
+draft (FR-073).
 
 Motion is CSS only: the reading-progress bar and chapter-heading uncover use CSS scroll-driven
 animations, the visual panel uses `position: sticky`, and the index-to-story transition is the
@@ -164,8 +166,10 @@ it names. Test file names are indicative.
    and the expected phrase; `one-file-project.test.ts` (adding one file plus images publishes the
    project on the index and at `/projects/<slug>/`, SC-004); `project-drafts.test.ts` (draft
    absent from index, routes, sitemap and sharing metadata, and no draft-only image or clip file in
-   `dist/`, with the production environment; present and marked with a preview environment); `project-csp.test.ts` (embed page gets `frame-src
-   https://drc.dev https://*.drc.dev`, other pages do not).
+   `dist/`, with the production environment; a draft with an invalid body still fails the
+   production build; present and marked with a preview environment); `project-csp.test.ts` (embed
+   page gets `frame-src https://drc.dev https://*.drc.dev`, other pages do not; no inline `style`
+   attribute on either template).
 4. **E2E** (`tests/e2e/`, against `wrangler dev`): `projects.spec.ts` (index status 200 and nav
    current; row layout at 1280 and 390 px; no horizontal scroll from 320 px; story chapters in
    order; "In this story" links; comparison region keyboard scroll; invitation to

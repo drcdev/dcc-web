@@ -94,9 +94,12 @@ the test hooks; class names are free.
   description; clip → `<video controls muted playsinline preload="none" poster>` (no `autoplay`)
   with a visible description; placeholder → visible "Placeholder" mark.
 - Embedded demo (chapter `visual="demo"`): `<iframe src="https://…drc.dev/…" title="<demo title>"
-  loading="lazy" sandbox="allow-scripts allow-same-origin allow-forms">` with no `allow` autoplay;
+  loading="lazy" sandbox="allow-scripts allow-same-origin allow-forms"
+  referrerpolicy="strict-origin-when-cross-origin">` with no `allow` attribute (no autoplay, camera,
+  microphone or location);
   the "Open the … demo" link stays in the built chapter.
-- No `<script>` element other than the site shell's (theme init, menu, analytics beacon).
+- No `<script>` element other than the site shell's (theme init, menu, analytics beacon), and no
+  element with an inline `style` attribute on either page (FR-047).
 
 ## Motion (CSS only)
 

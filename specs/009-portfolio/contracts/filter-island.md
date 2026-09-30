@@ -17,7 +17,7 @@ deferred module). Pure logic in `src/lib/content/themes.ts` (`themeKey`, `themes
 | Load, no `?theme=` | All rows shown; "All projects" pressed; status "Showing all N projects." |
 | Load, `?theme=<value>` matching a key after `themeKey()` | Only rows with that key shown; that button `aria-pressed="true"`; status "Showing K projects about <label>." (K=1 → "project"); address unchanged |
 | Load, unknown `?theme=` | No rows shown; empty message and "Show all projects" button; status "No projects match this theme."; address kept until cleared |
-| Click a theme button | Filter as above; `history.replaceState` sets `?theme=<key>` |
+| Click a theme button | Filter as above; `history.replaceState` sets `?theme=<key>` (no new history entry, so Back leaves the index) |
 | Click "All projects" or "Show all projects" | All rows; `?theme` removed |
 | Back from a story | The index loads with its `?theme=` and reapplies it (bfcache or reload) |
 

@@ -678,7 +678,8 @@ demo stand-in link and the invitation.
     no sentence-ending punctuation followed by a space inside it.
   - The date is a calendar date written `YYYY-MM-DD`. It is used only to order projects (FR-016)
     and is not shown on the pages.
-  - Status is a closed list (shipped, experiment, in progress); adding a status is a spec change.
+  - Status is a closed list (shipped, experiment, in progress, written in the file as `shipped`,
+    `experiment` and `in-progress`); adding a status is a spec change.
     Themes are deliberately open (clarification): Don adds a new theme by writing it in a project
     file, with no list to update.
 - **FR-072**: The story building blocks (chapter with optional visual, visual, option comparison,
@@ -698,13 +699,17 @@ demo stand-in link and the invitation.
   - settings: a missing required setting; a setting of the wrong kind (for example text where a
     number is expected); an unknown setting; an unknown status; no themes, more than four, or the
     same theme twice after normalising; a problem statement that is not one sentence or is over
-    the limit; an order that is not a whole number of 1 or more;
+    the limit; an order that is not a whole number of 1 or more; a visual name that is not
+    lower-case letters, digits and hyphens starting with a letter, or is the reserved name `demo`;
+    a clip used as the index visual;
   - chapters: a missing, repeated or out-of-order chapter; a level-1 or level-2 heading in the
     story text;
   - comparison: no options or no constraints; not exactly one chosen option; a chosen option with
-    no reason; a missing fit for some option and constraint;
+    no reason, or a reason on an option that is not chosen; a missing fit for some option and
+    constraint, or a fit naming a constraint that does not exist; two options or two constraints
+    with the same id;
   - blocks: an unknown building block; a comparison, demo or invitation block that is missing
-    where required or placed outside its chapter; a visual name that the settings do not define;
+    where required, placed outside its chapter or used more than once; a visual name that the settings do not define;
     an embedded-demo visual on a project whose demo is not marked for embedding;
   - media: a missing, unreadable or unsupported image or clip file; an image (in the settings or
     the story text) with no alternative text; a diagram or clip with no description; a clip over
@@ -717,7 +722,8 @@ demo stand-in link and the invitation.
 
   The build stops at the first invalid project it meets and may report only that one; fixing it
   and building again shows the next. The same checks run, with the same messages, in local, CI,
-  preview and production builds, and on draft projects as well as published ones.
+  preview and production builds, and on draft projects as well as published ones: a production
+  build still validates a draft's settings and story even though it builds no page for it.
 - **FR-074**: Draft projects MUST be excluded from production builds (no index entry, no story page,
   not in the sitemap). On preview deployments and in local development they MUST appear on the index
   and have their story page, each visibly marked "Draft".
