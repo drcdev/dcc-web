@@ -219,13 +219,13 @@
 
 ### Tests first (seen to fail)
 
-- [ ] T059 [P] [US9] Extend `tests/unit/setup-check/providers/read-only.test.ts` and add tests for each new `CloudflareReader` method (`listD1Databases`, `listD1AppliedMigrations`, `listWorkerSecretNames`, `listWorkerCrons`, `listBuildTriggers`, `listBuildVariableNames`, `listTurnstileWidgets`): only documented fields returned, `secret`, `value` and `sitekey` dropped (fixtures contain values and prove they never come back), the `SELECT` body is exactly the constant, 403 gives the permission hint. Must fail.
-- [ ] T060 [P] [US9] Write one `tests/unit/setup-check/checks/<id>.test.ts` per new item (`contact-d1-databases`, `contact-turnstile-widget`, `contact-worker-secrets`, `contact-preview-builds`, `contact-turnstile-site-key`, `contact-preview-deploy`, `contact-production-deploy`) covering complete, missing (per database, Worker or trigger), pending and could-not-check; unreadable region is `missing`; D1 IDs must equal `wrangler.jsonc` and a placeholder ID is `missing`. Must fail.
+- [X] T059 [P] [US9] Extend `tests/unit/setup-check/providers/read-only.test.ts` and add tests for each new `CloudflareReader` method (`listD1Databases`, `listD1AppliedMigrations`, `listWorkerSecretNames`, `listWorkerCrons`, `listBuildTriggers`, `listBuildVariableNames`, `listTurnstileWidgets`): only documented fields returned, `secret`, `value` and `sitekey` dropped (fixtures contain values and prove they never come back), the `SELECT` body is exactly the constant, 403 gives the permission hint. Must fail.
+- [X] T060 [P] [US9] Write one `tests/unit/setup-check/checks/<id>.test.ts` per new item (`contact-d1-databases`, `contact-turnstile-widget`, `contact-worker-secrets`, `contact-preview-builds`, `contact-turnstile-site-key`, `contact-preview-deploy`, `contact-production-deploy`) covering complete, missing (per database, Worker or trigger), pending and could-not-check; unreadable region is `missing`; D1 IDs must equal `wrangler.jsonc` and a placeholder ID is `missing`. Must fail.
 
 ### Implementation
 
-- [ ] T061 [US9] Add the seven reader methods to `scripts/setup-check/types.ts` and `scripts/setup-check/providers/cloudflare.ts` (drop value, secret and sitekey fields before returning; fixed `SELECT` constant).
-- [ ] T062 [US9] Add `scripts/setup-check/checks/` modules for the seven items per contracts/setup-items.md; make the reader and check tests pass.
+- [X] T061 [US9] Add the seven reader methods to `scripts/setup-check/types.ts` and `scripts/setup-check/providers/cloudflare.ts` (drop value, secret and sitekey fields before returning; fixed `SELECT` constant).
+- [X] T062 [US9] Add `scripts/setup-check/checks/` modules for the seven items per contracts/setup-items.md; make the reader and check tests pass.
 
 ---
 

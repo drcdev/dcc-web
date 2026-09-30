@@ -27,7 +27,7 @@ function fakeCtx(overrides: Partial<ProviderContext> = {}): ProviderContext {
     dns: { resolve: vi.fn(), resolveNameservers: vi.fn() } as never,
     http: { get: vi.fn(), head: vi.fn() } as never,
     env: { get: vi.fn(() => undefined), has: vi.fn(() => false) },
-    fs: { readText: vi.fn(() => null), readJson: vi.fn(() => null), exists: vi.fn(() => false) },
+    fs: { readText: vi.fn(() => null), readJson: vi.fn(() => null), exists: vi.fn(() => false), listFiles: vi.fn(() => []) },
     now: () => new Date("2026-09-28T12:00:00.000Z"),
     ...overrides,
   };
@@ -283,6 +283,7 @@ describe("setup-check/cli main", () => {
         readText: vi.fn(() => null),
         readJson: vi.fn((path: string) => (path === "setup/config.json" ? { owner: "" } : null)) as never,
         exists: vi.fn(() => false),
+        listFiles: vi.fn(() => []),
       },
     });
     const code = await main([], options(items, ctx));
