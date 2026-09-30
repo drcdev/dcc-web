@@ -20,20 +20,20 @@ const link = "font-semibold text-accent-700 underline hover:no-underline dark:te
   canonical={false}
 >
   <PrototypeNotice screen={{ kind: "index" }} />
-  <h1 class="my-4 text-4xl font-bold text-dusk-900 dark:text-white">Blog design directions</h1>
+  <h1 class="my-4 break-words text-4xl font-bold text-dusk-900 dark:text-white">Blog design directions</h1>
   <p class="mb-8 max-w-prose text-dusk-700 dark:text-mist-300">
     Three ways the Drift &amp; Convergence blog could look and be organised. Each has a landing page, a listing and a post
     page filled with sample posts. Open one, look at it in both themes and at phone and desktop width, then compare.
   </p>
-  <div class="grid gap-6 lg:grid-cols-3">
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
     {
       directions.map((direction) => (
         <section
           data-direction={direction.id}
           aria-labelledby={`direction-${direction.id}`}
-          class="rounded-lg border border-dusk-200 p-5 dark:border-dusk-700"
+          class="min-w-0 rounded-lg border border-dusk-200 p-5 dark:border-dusk-700"
         >
-          <h2 id={`direction-${direction.id}`} class="mb-3 text-2xl font-semibold text-dusk-900 dark:text-white">
+          <h2 id={`direction-${direction.id}`} class="mb-3 break-words text-2xl font-semibold text-dusk-900 dark:text-white">
             Direction {direction.id.toUpperCase()}: {direction.name}
           </h2>
           <p class="mb-3 text-dusk-700 dark:text-mist-300">{direction.summary}</p>

@@ -301,6 +301,19 @@ test.describe("US2: reader needs", () => {
         });
       }
 
+      // Headroom for platform font metrics: Linux CI sets the same text a
+      // little taller than macOS, so the newest post must sit well inside the
+      // first desktop viewport, not just under its edge.
+      test("landing keeps the newest post 120 px clear of the desktop fold", async ({ page }) => {
+        await page.setViewportSize({ width: 1280, height: 800 });
+        await page.goto(landingPath(d));
+        const link = page.locator(`main a[href="${postPath(d, newest)}"]`).first();
+        await expect(link).toBeVisible();
+        const box = (await link.boundingBox())!;
+        const scrollY = await page.evaluate(() => window.scrollY);
+        expect(box.y + scrollY).toBeLessThan(800 - 120);
+      });
+
       test("landing sets featured posts apart with a visible Featured marker", async ({ page }) => {
         await page.goto(landingPath(d));
         const region = { a: "[data-bento]", b: "section:has(> #start-here)", c: "[data-topic-hub]" }[d];
@@ -528,6 +541,24 @@ test.describe("US3: accessibility", () => {
       expect(moving).toEqual([]);
     });
   }
+
+  // Headroom for platform font metrics: Linux CI renders the same text a
+  // little wider than macOS, so the index content must also fit at 200
+  // percent text on the narrowest phone (320 px). The site footer is shared
+  // with every page and is measured by the checks above, so this one looks at
+  // the index's own content inside main.
+  test("text at 200 percent at 320 px: index content fits", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await openPage(page, INDEX_PATH);
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "200%";
+    });
+    const overflow = await page.evaluate(() => {
+      const main = document.querySelector("main")!;
+      return main.scrollWidth - main.clientWidth;
+    });
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
 
   for (const p of PAGES.filter((x) => x.screen !== "index")) {
     for (const theme of THEMES) {
