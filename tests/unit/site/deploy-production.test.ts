@@ -7,7 +7,7 @@ import { productionDeploySteps } from "../../../scripts/deploy/production.ts";
 describe("productionDeploySteps", () => {
   it("applies production migrations first, then deploys", () => {
     expect(productionDeploySteps({ WORKERS_CI_BRANCH: "main" })).toEqual([
-      ["d1", "migrations", "apply", "contact", "--remote"],
+      ["d1", "migrations", "apply", "dcc-web-contact", "--remote"],
       ["deploy"],
     ]);
   });
@@ -15,7 +15,7 @@ describe("productionDeploySteps", () => {
   it("never selects the preview environment", () => {
     const flat = productionDeploySteps({ WORKERS_CI_BRANCH: "main" }).flat();
     expect(flat).not.toContain("--env");
-    expect(flat).not.toContain("contact-preview");
+    expect(flat).not.toContain("dcc-web-contact-preview");
   });
 
   it("accepts WRANGLER_CI_OVERRIDE_NAME when it is dcc-web", () => {

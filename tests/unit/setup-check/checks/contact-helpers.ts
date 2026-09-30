@@ -16,7 +16,7 @@ export function wranglerText(ids: { production: string; preview: string } = { pr
   "name": "dcc-web",
   "triggers": { "crons": ["17 3 * * *"] },
   "d1_databases": [
-    { "binding": "DB", "database_name": "contact", "database_id": "${ids.production}", },
+    { "binding": "DB", "database_name": "dcc-web-contact", "database_id": "${ids.production}", },
   ],
   "env": {
     "preview": {
@@ -24,7 +24,7 @@ export function wranglerText(ids: { production: string; preview: string } = { pr
       "triggers": { "crons": ["17 3 * * *"] },
       /* block */
       "d1_databases": [
-        { "binding": "DB", "database_name": "contact-preview", "database_id": "${ids.preview}" }
+        { "binding": "DB", "database_name": "dcc-web-contact-preview", "database_id": "${ids.preview}" }
       ]
     }
   }

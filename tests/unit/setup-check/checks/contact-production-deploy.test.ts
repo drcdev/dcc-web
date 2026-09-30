@@ -9,8 +9,8 @@ const production = trigger({ deployCommand: "pnpm run deploy:production" });
 function cloud(overrides: Record<string, unknown> = {}) {
   return {
     listD1Databases: async () => [
-      { uuid: PROD_ID, name: "contact", runningInRegion: "WNAM" },
-      { uuid: PREVIEW_ID, name: "contact-preview", runningInRegion: "WNAM" },
+      { uuid: PROD_ID, name: "dcc-web-contact", runningInRegion: "WNAM" },
+      { uuid: PREVIEW_ID, name: "dcc-web-contact-preview", runningInRegion: "WNAM" },
     ],
     listBuildTriggers: async () => [production],
     listD1AppliedMigrations: async () => MIGRATIONS,

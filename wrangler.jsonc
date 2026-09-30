@@ -20,9 +20,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "contact",
-      // Placeholder until setup item 19 (Don creates the database); replaced in T074.
-      "database_id": "5b29b0c1-3c50-41ac-8337-52a2eae7cb12",
+      "database_name": "dcc-web-contact",
+      "database_id": "9b51b0c4-2ddb-4563-8621-c99d28de4e16",
       "migrations_dir": "migrations"
     }
   ],
@@ -34,9 +33,8 @@
       "d1_databases": [
         {
           "binding": "DB",
-          "database_name": "contact-preview",
-          // Placeholder until setup item 19; replaced in T074.
-          "database_id": "3e160f9c-8b3d-4c4e-9fa2-9b327cb9daf1",
+          "database_name": "dcc-web-contact-preview",
+          "database_id": "53cef28f-8a6c-4b53-8557-bbc30aa986bf",
           "migrations_dir": "migrations"
         }
       ]

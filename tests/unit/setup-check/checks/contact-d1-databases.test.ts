@@ -7,8 +7,8 @@ import { envFrom } from "./test-helpers.ts";
 import { PLACEHOLDER_IDS, PREVIEW_ID, PROD_ID, contactContext, wranglerText } from "./contact-helpers.ts";
 
 const both = [
-  { uuid: PROD_ID, name: "contact", runningInRegion: "WNAM" },
-  { uuid: PREVIEW_ID, name: "contact-preview", runningInRegion: "WNAM" },
+  { uuid: PROD_ID, name: "dcc-web-contact", runningInRegion: "WNAM" },
+  { uuid: PREVIEW_ID, name: "dcc-web-contact-preview", runningInRegion: "WNAM" },
 ];
 
 describe("checks/contact-d1-databases", () => {
@@ -23,7 +23,7 @@ describe("checks/contact-d1-databases", () => {
   it("is missing per database when one does not exist", async () => {
     const result = await check(contactContext({ cloudflare: { listD1Databases: async () => [both[0]!] } }));
     expect(result.status).toBe("missing");
-    expect(result.details.join("\n")).toMatch(/contact-preview/);
+    expect(result.details.join("\n")).toMatch(/dcc-web-contact-preview/);
     expect(result.details.join("\n")).not.toMatch(/contact:/);
     expect(result.nextAction).toMatch(/wrangler d1 create/);
   });
@@ -37,7 +37,7 @@ describe("checks/contact-d1-databases", () => {
   });
 
   it("is missing when an ID differs from wrangler.jsonc", async () => {
-    const other = both.map((d) => (d.name === "contact" ? { ...d, uuid: "33333333-3333-4333-8333-333333333333" } : d));
+    const other = both.map((d) => (d.name === "dcc-web-contact" ? { ...d, uuid: "33333333-3333-4333-8333-333333333333" } : d));
     const result = await check(contactContext({ cloudflare: { listD1Databases: async () => other } }));
     expect(result.status).toBe("missing");
     expect(result.details.join("\n")).toMatch(/does not match wrangler\.jsonc/);

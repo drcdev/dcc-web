@@ -146,8 +146,8 @@ describe("docs/setup.md contact-form part (items 19 to 25)", () => {
     expect(s).toContain("Western North America");
     expect(s).toContain("`wnam`");
     expect(s).toMatch(/cannot be changed/i);
-    expect(s).toContain("pnpm exec wrangler d1 create contact --location wnam");
-    expect(s).toContain("pnpm exec wrangler d1 create contact-preview --location wnam");
+    expect(s).toContain("pnpm exec wrangler d1 create dcc-web-contact --location wnam");
+    expect(s).toContain("pnpm exec wrangler d1 create dcc-web-contact-preview --location wnam");
     expect(s).toContain("pnpm exec wrangler d1 delete");
   });
 
