@@ -197,14 +197,14 @@ description: "Task list for the portfolio (projects index and story pages)"
 
 - [x] T076 Test: add `projects-{phone,desktop}-{light,dark}` and `project-story-{phone,desktop}-{light,dark}` (full page, reduced motion emulated so every chapter is final) to `tests/e2e/visual.spec.ts` (shared file: keep both sides).
 - [x] T077 Update macOS baselines: `corepack pnpm run test:visual:update`. Review the diff: only the eight new `projects-*` / `project-story-*` images may be new; any changed existing image (header, footer, home, about, contact, sections, not-found, menu) is a regression to fix, not to refresh.
-- [ ] T078 Update Linux baselines: `corepack pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, report that Don must start it and stop; the fallback is the `visual-baselines` PR label plus `gh run download` of `visual-baselines-linux`). Review the diffs the same way and commit the images. (deferred: CI `visual-baselines` label fallback chosen by Don)
+- [x] T078 Update Linux baselines: `corepack pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, report that Don must start it and stop; the fallback is the `visual-baselines` PR label plus `gh run download` of `visual-baselines-linux`). Review the diffs the same way and commit the images. (deferred: CI `visual-baselines` label fallback chosen by Don)
 - [x] T079 Run the full gate: `ASTRO_PREVIEW_BACKGROUND=1 perl -e 'alarm 1800; exec @ARGV' corepack pnpm run verify` (rerun on port-collision noise); confirm secrets lint, ESLint, types, Vitest, build and all Playwright projects are green.
 
 ## Phase 12: Preview checks and polish (needs Don)
 
 - [x] T080 Re-read the four checklists in `specs/009-portfolio/checklists/` and confirm every requirement has a test; fix or note gaps in the PR body.
 - [x] T081 [P] Confirm no production import from `src/prototypes/portfolio`, no new dependency in `package.json`, and `public/_headers` unchanged (`git diff main -- package.json public/_headers`).
-- [ ] T082 Write the PR notes: major change under Principle III (navigation, new page type and transitions, per-page `frame-src`), $0 added cost, auto-merge left off because of the `[PREVIEW-CHECK]` items below.
+- [x] T082 Write the PR notes: major change under Principle III (navigation, new page type and transitions, per-page `frame-src`), $0 added cost, auto-merge left off because of the `[PREVIEW-CHECK]` items below.
 - [ ] T083 Check on the preview deployment, in both themes: Projects nav, index rows at 1280 and 390 px, Focus Pocus story, comparison keyboard scroll, stand-in and source links [PREVIEW-CHECK]
 - [ ] T084 Check page transition feel on the preview: the title carries from index row to story header in Chromium, no flash, and nothing under reduced motion [PREVIEW-CHECK]
 - [ ] T085 Check both themes on the preview for progress bar and chapter uncover feel and the sticky visual at 1280 px [PREVIEW-CHECK]
