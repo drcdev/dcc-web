@@ -1,7 +1,8 @@
 # Contract: build errors for post files
 
 Every rule stops `astro build` (and so `pnpm run verify`, CI and the Cloudflare deploy) with a
-message naming the file and the problem (FR-003, FR-018, FR-033, SC-003). Messages written by
+message naming the file and the problem (FR-003, FR-018, FR-033, FR-043, FR-044, FR-052,
+SC-003). Messages written by
 this feature start with `Post file` or `Post files`; schema messages come from Astro's content
 collection error, which names the entry and the key. Each row has one broken fixture in
 `tests/fixtures/posts/broken/` and one case in `tests/build/post-validation.test.ts`. The build
@@ -30,6 +31,7 @@ stops at the first error; tests use one broken file per run.
 | P19 | Unknown section tag (`<Callout>`) | body check | file name, `Callout`, the list of sections |
 | P20 | Empty body | body check | file name, "no content" |
 | P21 | A topic removed from the list while a post still names it | schema (enum) | file name, the topic id |
+| P22 | Body image file that does not exist (`![…](./images/missing.png)`) | `astro:assets` import / body check | file name, image path (FR-052) |
 
 P21 is the same mechanism as P6; its test removes a topic from a copied `topics.ts` in the
 fixture site. There is no warning tier (spec FR-033): nothing else about a post file is

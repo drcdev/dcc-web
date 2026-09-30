@@ -59,5 +59,5 @@ const { title } = entry.data;
   `draft: true`, with a title beginning "Sample:" and a summary saying it is a sample post used
   to check the blog's pages. They stay in the repository (E2E and visual tests depend on them). Together they cover captioned,
   wide and full-width images, code with and without a caption and without a language, a wide
-  table, headings `##` to `####`, at least one featured post, one post without a feature image,
+  table, every body heading level `##` to `######`, a very long title, at least one featured post, one post without a feature image,
   one updated post, and all four topics (FR-035).

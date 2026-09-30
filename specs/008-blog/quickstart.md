@@ -21,7 +21,7 @@ corepack pnpm run test
 
 Expect green for the new files under `tests/unit/` (post schema, topics, post order, reading
 time, build mode, Shiki classes, share links, feed items, navigation), `tests/component/post/`
-and `tests/build/` (post validation rows P1–P21, one-file post, listings and feed, production
+and `tests/build/` (post validation rows P1–P22, one-file post, listings and feed, production
 build without drafts).
 
 ## 2. Build and look
@@ -63,8 +63,11 @@ ASTRO_PREVIEW_BACKGROUND=1 perl -e 'alarm 1200; exec @ARGV' corepack pnpm run ve
 ```
 
 Runs secrets scan, lint, type check, Vitest, build and every Playwright project (`e2e`,
-`a11y`, `budget`, `visual`, `sections`). The `a11y` and `budget` projects now include the four
-blog templates.
+`a11y`, `budget`, `visual`, `sections`). The `a11y` and `budget` projects now include the blog
+templates (landing, all posts, a topic, a post with and without a feature image); the `a11y`
+project also runs `blog.a11y.spec.ts` (headings, focus, targets, reduced motion, forced colours,
+zoom and text spacing, scripts) and `blog-fixture.a11y.spec.ts` (listing page 2 and the empty
+pages of a production-mode build).
 
 ## 5. Visual baselines (intended appearance change)
 

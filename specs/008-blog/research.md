@@ -199,7 +199,10 @@ Counts live in `src/config/blog.ts` (`pageSize: 12`, `featuredMax: 3`, `latestMa
 
 **Decision**: follow Astro's "Add reading time" recipe for the Sätteri processor. A plugin made
 with `defineMdastPlugin` (`src/lib/markdown/reading-time.ts`) runs `context.textContent(root)`
-and stores `minutesRead` (a whole number) on `context.data.astro.frontmatter`. The count is done
+and stores `minutesRead` (a whole number) on `context.data.astro.frontmatter`. Because
+`textContent` does not include attribute values, the plugin also adds the text of each code
+fence's `caption="…"` meta and each section's `caption` attribute, so the count matches spec
+FR-021 (captions counted; language names, tag names and other markup not). The count is done
 by a pure `readingMinutes(text)` in the same folder: words split on whitespace, 225 words a
 minute, rounded up, at least 1 (FR-021, edge case "very short post"). It is registered with
 `markdown: { processor: satteri({ mdastPlugins: [readingTime] }) }` in `astro.config.mjs`; MDX
@@ -495,6 +498,12 @@ Every rule has a broken fixture in `tests/fixtures/posts/broken/` and a case in
   `/writing/topics/{topic}/`, a post) are added to `TEMPLATES` in `tests/e2e/templates.ts`, so
   the existing `a11y` project checks them with axe (WCAG 2.2 AA tags) at phone and desktop widths
   in both themes, with the menu open and without JS, and the `budget` project measures them.
+  `tests/e2e/blog.a11y.spec.ts` adds the checks axe does not make (heading structure, focus
+  order and indicator, target size, reduced motion, forced colours, 320 px with text spacing,
+  failed images, script inventory), and `tests/e2e/blog-fixture.a11y.spec.ts` covers listing
+  page N ≥ 2 on the fixture site and the empty pages of a production-mode build served through
+  `page.route`, so every FR-039 template is checked. Both match the existing `a11y` project by
+  file name.
 - **Visual (per-platform baselines)**: see plan § Visual baselines.
 
 **Budget risk**: the landing page shows several card images. Sample images are small, simple

@@ -602,8 +602,9 @@ no published posts and check it is left out.
   | `featured` | no | `true` or `false` (default `false`) |
   | `draft` | no | `true` or `false` (default `false`) |
 
-  A date is unreadable when it is not a real calendar date in the `YYYY-MM-DD` form (for
-  example `next tuesday`, `2026-02-30` or `27/08/2026`). The data model and the post-file
+  A date is unreadable when it is not a real calendar date written unquoted in the
+  `YYYY-MM-DD` form (for example `next tuesday`, `2026-02-30`, `27/08/2026` or the quoted
+  `"2026-08-27"`). The data model and the post-file
   contract repeat this table and must match it.
 - **FR-032**: Posts marked as drafts MUST NOT appear anywhere on the production site: no page,
   landing page lead story, Featured or Latest grid, listing, topic page, related list, home
@@ -640,7 +641,8 @@ no published posts and check it is left out.
   build-errors contract) with how to fix it.
 - **FR-035**: The feature MUST include three or four sample posts, each marked as a draft and
   clearly labelled as a sample, together covering every kind of body content (captioned, wide
-  and full-width images, code with and without a caption, a wide table, all heading levels) and
+  and full-width images, code with and without a caption, a wide table, every body heading
+  level from 2 to 6) and
   at least one featured post and one post without a feature image, so the pages can be tested
   and checked on the preview deployment without being published on the live site. Each sample
   post's title begins with "Sample:" and its summary says it is a sample post used to check the
@@ -768,8 +770,8 @@ no published posts and check it is left out.
   any images it uses), with no other file edited. Adding a new topic (FR-042) or changing the
   shared "views are my own" wording (FR-027) are separate one-place edits, not part of
   publishing a post.
-- **SC-003**: 100% of the invalid post cases listed in FR-003 and FR-033 fail the build with a
-  message that names the file and the problem.
+- **SC-003**: 100% of the invalid post cases listed in FR-003, FR-018, FR-031, FR-033, FR-043,
+  FR-044 and FR-052 fail the build with a message that names the file and the problem.
 - **SC-004**: 0 draft posts appear in any page, listing, feed or sitemap of the production
   build, and 100% of draft posts appear, marked "Draft", on the preview deployment.
 - **SC-005**: Every blog page template listed in FR-039 passes automated accessibility checks

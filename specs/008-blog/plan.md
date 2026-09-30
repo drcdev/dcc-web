@@ -55,7 +55,7 @@ violations and no `style` attribute in highlighted code); only existing colours 
 redirects; $0 added running cost.
 
 **Scale/Scope**: 4 page routes + 1 feed endpoint; ~16 new components; 1 new collection; 4 sample
-posts; 21 build-error fixtures; 16 new visual baselines per platform plus 4 changed (home).
+posts; 22 build-error fixtures; 16 new visual baselines per platform plus 4 changed (home).
 
 ## Constitution Check
 
@@ -63,7 +63,7 @@ posts; 21 build-error fixtures; 16 new visual baselines per platform plus 4 chan
 
 | Principle | How this plan complies |
 |---|---|
-| **I. Test-First** | Every layer is planned before code (R16): schema/unit tests for the post schema, topics, ordering and selection, reading time, build mode, Shiki transformer, share links and feed items; component tests for every new component; build tests for all 21 build-error rows, one-file publishing and production draft exclusion; E2E, axe and visual tests for each template. Tasks will order tests before implementation and require them to fail first. |
+| **I. Test-First** | Every layer is planned before code (R16): schema/unit tests for the post schema, topics, ordering and selection, reading time, build mode, Shiki transformer, share links and feed items; component tests for every new component; build tests for all 22 build-error rows, one-file publishing and production draft exclusion; E2E, axe and visual tests for each template. Tasks will order tests before implementation and require them to fail first. |
 | **II. Automated Release Gate** | No gate is weakened. New templates join the existing `a11y`, `budget` and `visual` projects; the existing `verify` script is reused (no new script). A budget failure is fixed with smaller images, not a looser budget. |
 | **III. Human Review for Major Changes** | **Major change: yes.** It changes the site navigation (section-wide current marker) and the Home page, adds two dependencies (`@astrojs/rss`, `satteri`), adds build configuration (`markdown.processor`, `shikiConfig`, `env.schema` in `astro.config.mjs`) and changes visual baselines. The PR carries the major-change label, auto-merge stays off, and Don approves after checking the preview. |
 | **IV. First-Party Before Custom** | Per capability, first-party option → decision: collections + Zod → used (R1); topics → Zod enum in config (data collection considered, R2); drafts → `getCollection` filter + typed `astro:env` (`import.meta.env.PROD` falls short: true on preview and test builds, R3); pagination → `paginate()` (R4); reading time → Astro's documented Sätteri recipe, without its third-party `reading-time` package (R6); highlighting → built-in Shiki with `shikiConfig.theme`/`transformers` (the first-party CSP option `'unsafe-inline'` for style attributes falls short: it loosens the policy site-wide; Prism named as fallback, R7); copy button → Astro component script and a custom element, no framework island (R8); tables → MDX `components` override (R9); share → Web Share API + plain links, no third-party widget (R10); feed → `@astrojs/rss` (R11); images → `astro:assets` (R14); Cloudflare → static assets and Workers Builds variables, nothing new. Astro Docs MCP was available and each choice cites its page. |
@@ -72,7 +72,7 @@ posts; 21 build-error fixtures; 16 new visual baselines per platform plus 4 chan
 | **VII. Private Data** | No personal data collected; share links carry only the post title and address. |
 | **VIII. Cloudflare Best Practices** | Only static assets change; no Worker code, bindings or dashboard settings. Draft detection reads variables Workers Builds already sets. |
 | **IX. Cost Ceiling** | Expected added monthly cost: **$0** (build-time packages only; static assets on the free plan, R17). |
-| **X. Accessible, Fast and Private** | Axe (WCAG 2.2 AA) on every template in both themes at phone and desktop widths, without JS and with the menu open; topic colours chosen for AA and verified; no sideways scroll at 320 px; budget measured per template; no third-party scripts (share links are plain navigations). |
+| **X. Accessible, Fast and Private** | Axe (WCAG 2.2 AA) on every template in both themes at phone and desktop widths, without JS and with the menu open, including the states the default build cannot show (listing page N ≥ 2 on the fixture site; empty landing, all posts and topic pages from a production-mode build); topic colours chosen for AA and verified; no sideways scroll at 320 px; budget measured per template; no third-party scripts (share links are plain navigations). |
 | **XI. Spec Kit Workflow** | Spec Kit branch `008-blog` and directory; shared files with the parallel portfolio and contact branches are listed below with the conflict plan. |
 
 Development workflow: every Astro decision in research.md names its documentation page; site
@@ -130,6 +130,7 @@ src/
 │   │                                #     ViewsNote, RelatedPosts, topic-styles.ts
 │   ├── sections/RecentWriting.astro # NEW
 │   ├── sections/index.ts, schemas.ts# SHARED: register RecentWriting
+│   ├── page/DraftNotice.astro       # SHARED: optional `message` prop (post wording)
 │   ├── SiteHeader.astro             # SHARED: section current marker
 │   └── Seo.astro                    # SHARED: article published/modified times
 ├── layouts/
@@ -178,7 +179,11 @@ keeping both sides:
 | `astro.config.mjs` | new `markdown` and `env` blocks; CSP untouched | contact adds Worker/API config, possibly CSP `connect-src`/`form-action` and Turnstile hosts | keep both; this plan does not touch `security.csp` |
 | `package.json`, `pnpm-lock.yaml` | add `@astrojs/rss`, `satteri` | others add their packages | re-apply dependency lines, then regenerate the lockfile with `corepack pnpm install` (never hand-merge it) |
 | `src/styles/global.css` | one appended block (code card, `hl-*`) at the end | others append their blocks | keep both blocks |
-| `tests/e2e/templates.ts`, `visual.spec.ts` | new template rows and snapshot loop | others add theirs | keep all rows; regenerate baselines after the rebase |
+| `src/components/page/DraftNotice.astro` | optional `message` prop; default wording unchanged | portfolio may reuse it for projects | keep both props |
+| `tests/e2e/templates.ts`, `visual.spec.ts`, `budget.spec.ts` | new template rows, snapshot loop, fixture-site listing budget case | others add theirs | keep all rows and cases; regenerate baselines after the rebase |
+| `playwright.config.ts` | at most a `sections` `testMatch` extension and a fixture-backed budget entry (new blog a11y specs match the existing `a11y` project by name) | others may add projects or servers | keep both sides; never change existing servers or thresholds |
+| `scripts/build-fixture-site.ts`, `tests/build/fixture-site.ts` | generated fixture posts; harness options for post files, env variables and text replacement | portfolio may add project fixtures | keep both; each feature's options stay independent |
+| `tests/unit/site/astro-config.test.ts`, `csp.test.ts`, `headers.test.ts`, `tests/component/BaseLayout.test.ts`, `DraftNotice.test.ts` | added cases only | contact may change the CSP assertions for its hosts | keep both; if `main` changes the CSP, this feature's "unchanged" guard compares against `main`'s policy after the rebase |
 | `docs/design-source.md` | mark three Blog rows done | portfolio marks its rows | keep both |
 
 Before the PR, the branch is rebased onto the latest `main`, the full gate is rerun, and the
