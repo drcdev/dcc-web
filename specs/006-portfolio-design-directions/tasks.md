@@ -101,23 +101,23 @@
 
 ### Tests first
 
-- [ ] T038 [P] [US1] Component test `tests/component/prototypes/portfolio/b-story.test.ts` †: same story assertions as T025, plus option cards all in HTML, chosen first and labelled, the tab container carrying `hidden js:flex`, and no `role="tablist"` in server HTML. Extend T013's component list with B's components. See it fail.
-- [ ] T039 [P] [US1] Component test `tests/component/prototypes/portfolio/option-tabs.test.ts` † for the `OptionTabs` pre-script markup per contracts/islands.md (all options visible, chosen marked with reason, tab buttons hidden without JS, 24 px target classes). See it fail.
-- [ ] T040 [P] [US2] Component test `tests/component/prototypes/portfolio/b-index.test.ts` † (bento cards: five entries, all fields, only Focus Pocus links to the B story, filter markup, `@view-transition` opt-in class or name present). See it fail.
-- [ ] T041 [US1] E2E (`portfolio-directions.spec.ts`, B section): everything in T027 adapted; option tabs by keyboard: Left/Right, Home/End, only the selected tab in the Tab order, automatic activation, every option reachable, `tablist` name "Options considered"; invitation `href`. See it fail.
-- [ ] T042 [US2] E2E (B section): index fields, filter behaviour and announcements as in T028; following Focus Pocus reaches the B story. See it fail.
-- [ ] T043 [US3] E2E (B section): reduced motion (reveals off, no `@view-transition` animation, all content visible), JS off (all options stacked, no tab buttons visible), forced colours, mid-visit reduced-motion change, instant tab and filter changes, and the extra-state axe runs, all as in T029. See it fail.
-- [ ] T050 [US1] Add the B index and story routes to `tests/e2e/portfolio-prototypes.ts` † now, before the pages exist, so the shared a11y, no-JS and budget suites fail on them first.
+- [X] T038 [P] [US1] Component test `tests/component/prototypes/portfolio/b-story.test.ts` †: same story assertions as T025, plus option cards all in HTML, chosen first and labelled, the tab container carrying `hidden js:flex`, and no `role="tablist"` in server HTML. Extend T013's component list with B's components. See it fail.
+- [X] T039 [P] [US1] Component test `tests/component/prototypes/portfolio/option-tabs.test.ts` † for the `OptionTabs` pre-script markup per contracts/islands.md (all options visible, chosen marked with reason, tab buttons hidden without JS, 24 px target classes). See it fail.
+- [X] T040 [P] [US2] Component test `tests/component/prototypes/portfolio/b-index.test.ts` † (bento cards: five entries, all fields, only Focus Pocus links to the B story, filter markup, `@view-transition` opt-in class or name present). See it fail.
+- [X] T041 [US1] E2E (`portfolio-directions.spec.ts`, B section): everything in T027 adapted; option tabs by keyboard: Left/Right, Home/End, only the selected tab in the Tab order, automatic activation, every option reachable, `tablist` name "Options considered"; invitation `href`. See it fail.
+- [X] T042 [US2] E2E (B section): index fields, filter behaviour and announcements as in T028; following Focus Pocus reaches the B story. See it fail.
+- [X] T043 [US3] E2E (B section): reduced motion (reveals off, no `@view-transition` animation, all content visible), JS off (all options stacked, no tab buttons visible), forced colours, mid-visit reduced-motion change, instant tab and filter changes, and the extra-state axe runs, all as in T029. See it fail.
+- [X] T050 [US1] Add the B index and story routes to `tests/e2e/portfolio-prototypes.ts` † now, before the pages exist, so the shared a11y, no-JS and budget suites fail on them first.
 
 ### Implementation
 
-- [ ] T044 [P] [US1] Create `src/prototypes/portfolio/b/b.css` † (cards, staggered `view()` reveals in the no-preference guard, `@view-transition { navigation: auto; }` only inside `prefers-reduced-motion: no-preference`, forced-colours borders, reflow).
-- [ ] T045 [US1] Create `src/prototypes/portfolio/b/OptionTabs.astro` † (`<option-tabs>` island: WAI-ARIA tabs, automatic activation, arrow/Home/End, roving tabindex, unselected panels `hidden`). Run T039 until it passes.
-- [ ] T046 [P] [US1] Create `src/prototypes/portfolio/b/StageCard.astro` † and `b/DemoPanel.astro` † (placeholder frame plus link, stand-in note; no iframe).
-- [ ] T047 [US1] Create `src/prototypes/portfolio/b/CardStory.astro` †.
-- [ ] T048 [P] [US2] Create `src/prototypes/portfolio/b/BentoIndex.astro` †.
-- [ ] T049 [US1] Create pages `src/pages/design/portfolio/b/focus-pocus.astro` † and `src/pages/design/portfolio/b/index.astro` † with `noindex` and titles "Cards – …". Run T038 and T040 until they pass.
-- [ ] T051 [US1] Build and run T041 to T043 plus the existing a11y, no-JS and budget suites for B. Fix until green (keep JS with `<option-tabs>` and the filter under 10 KB).
+- [X] T044 [P] [US1] Create `src/prototypes/portfolio/b/b.css` † (cards, staggered `view()` reveals in the no-preference guard, `@view-transition { navigation: auto; }` only inside `prefers-reduced-motion: no-preference`, forced-colours borders, reflow).
+- [X] T045 [US1] Create `src/prototypes/portfolio/b/OptionTabs.astro` † (`<option-tabs>` island: WAI-ARIA tabs, automatic activation, arrow/Home/End, roving tabindex, unselected panels `hidden`). Run T039 until it passes.
+- [X] T046 [P] [US1] Create `src/prototypes/portfolio/b/StageCard.astro` † and `b/DemoPanel.astro` † (placeholder frame plus link, stand-in note; no iframe).
+- [X] T047 [US1] Create `src/prototypes/portfolio/b/CardStory.astro` †.
+- [X] T048 [P] [US2] Create `src/prototypes/portfolio/b/BentoIndex.astro` †.
+- [X] T049 [US1] Create pages `src/pages/design/portfolio/b/focus-pocus.astro` † and `src/pages/design/portfolio/b/index.astro` † with `noindex` and titles "Cards – …". Run T038 and T040 until they pass.
+- [X] T051 [US1] Build and run T041 to T043 plus the existing a11y, no-JS and budget suites for B. Fix until green (keep JS with `<option-tabs>` and the filter under 10 KB).
 - [ ] T052 [US3] [PREVIEW-CHECK] Direction B manual checks for FR-039 (tabs and filter by keyboard, reading order, focus not obscured, screen-reader names for tabs, diagrams and placeholders, announcements, view transition between index and story looks right and does not run with reduced motion), recorded in the PR description.
 
 **Checkpoint**: Directions A and B are independently complete.

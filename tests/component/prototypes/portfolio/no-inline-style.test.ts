@@ -21,6 +21,11 @@ import OptionDetails from "../../../../src/prototypes/portfolio/a/OptionDetails.
 import TimelineStage from "../../../../src/prototypes/portfolio/a/TimelineStage.astro";
 import TimelineStory from "../../../../src/prototypes/portfolio/a/TimelineStory.astro";
 import TimelineIndex from "../../../../src/prototypes/portfolio/a/TimelineIndex.astro";
+import OptionTabs from "../../../../src/prototypes/portfolio/b/OptionTabs.astro";
+import StageCard from "../../../../src/prototypes/portfolio/b/StageCard.astro";
+import DemoPanel from "../../../../src/prototypes/portfolio/b/DemoPanel.astro";
+import CardStory from "../../../../src/prototypes/portfolio/b/CardStory.astro";
+import BentoIndex from "../../../../src/prototypes/portfolio/b/BentoIndex.astro";
 import { allEntries, focusPocus } from "../../../../src/prototypes/portfolio/sample.ts";
 
 interface Entry {
@@ -50,6 +55,11 @@ const COMPONENTS: Entry[] = [
   { name: "A TimelineStage", component: TimelineStage, props: { stage: focusPocus.stages[3], number: 4 } },
   { name: "A TimelineStory", component: TimelineStory, props: { story: focusPocus } },
   { name: "A TimelineIndex", component: TimelineIndex, props: { entries: allEntries } },
+  { name: "B OptionTabs", component: OptionTabs, props: { options: focusPocus.options } },
+  { name: "B StageCard", component: StageCard, props: { stage: focusPocus.stages[0] } },
+  { name: "B DemoPanel", component: DemoPanel, props: { demo: focusPocus.demo } },
+  { name: "B CardStory", component: CardStory, props: { story: focusPocus } },
+  { name: "B BentoIndex", component: BentoIndex, props: { entries: allEntries } },
   ...focusPocus.stages.map((stage) => ({
     name: `StageSection ${stage.id}`,
     component: StageSection as AstroComponentFactory,

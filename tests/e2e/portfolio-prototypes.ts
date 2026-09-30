@@ -5,4 +5,6 @@
 export const PORTFOLIO_PROTOTYPES: ReadonlyArray<{ name: string; path: string; built: true }> = [
   { name: "portfolio-a-index", path: "/design/portfolio/a/", built: true },
   { name: "portfolio-a-story", path: "/design/portfolio/a/focus-pocus/", built: true },
+  { name: "portfolio-b-index", path: "/design/portfolio/b/", built: true },
+  { name: "portfolio-b-story", path: "/design/portfolio/b/focus-pocus/", built: true },
 ];

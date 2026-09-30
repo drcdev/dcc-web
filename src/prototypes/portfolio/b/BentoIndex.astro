@@ -1,0 +1,56 @@
+---
+// Direction B "Cards" index: a bento grid, modelled on Flux's featured-post
+// list (one wide card, the rest half its width). An entry per project (FR-020,
+// FR-021, FR-024, FR-025). Only Focus Pocus links to a story; every other card
+// links only to its drc.dev page.
+import type { ProjectEntry } from "../types.ts";
+import PortfolioFilter from "../shared/PortfolioFilter.astro";
+import PrototypeNotice from "../shared/PrototypeNotice.astro";
+import StatusBadge from "../shared/StatusBadge.astro";
+import ThemePills from "../shared/ThemePills.astro";
+import VisualView from "../shared/VisualView.astro";
+import "./b.css";
+
+interface Props {
+  entries: ProjectEntry[];
+}
+const { entries } = Astro.props;
+const storyBase = "/design/portfolio/b";
+---
+
+<PrototypeNotice />
+<header class="mb-6 max-w-3xl">
+  <h1 class="mb-2 text-5xl font-extrabold text-dusk-900 dark:text-mist-100">Projects</h1>
+  <p class="text-dusk-800 dark:text-mist-200">{entries[0]?.reviewNote}</p>
+</header>
+
+<PortfolioFilter entries={entries}>
+  <ul class="bc-bento">
+    {
+      entries.map((entry) => (
+        <li class="bc-card" data-entry={entry.slug} data-themes={entry.themes.join("|")}>
+          <h2 class="bc-title" data-vt-title={entry.storyPath ? "" : undefined}>
+            {entry.storyPath ? (
+              <a class="bc-link text-2xl" href={`${storyBase}${entry.storyPath}`}>
+                {entry.title}
+              </a>
+            ) : (
+              entry.title
+            )}
+          </h2>
+          <p class="m-0 text-dusk-800 dark:text-mist-200">{entry.problem}</p>
+          <div data-entry-visual>
+            <VisualView visual={entry.visual} idPrefix={`${entry.slug}-visual`} />
+          </div>
+          <div class="bc-meta">
+            <StatusBadge status={entry.status} />
+            <ThemePills themes={entry.themes} />
+          </div>
+          <a class="bc-link" href={entry.externalHref}>
+            {entry.title} on drc.dev
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</PortfolioFilter>

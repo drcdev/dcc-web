@@ -1,0 +1,42 @@
+---
+// One story stage as a card (FR-010, FR-012, FR-013): heading, draft mark and
+// text, with the stage's visual in the same card (beside the text at desktop
+// width, after it on a phone). Slot content sits below both. With no visual
+// there is no second column.
+import type { StageId, StoryStage } from "../types.ts";
+import DraftMark from "../shared/DraftMark.astro";
+import VisualView from "../shared/VisualView.astro";
+import "../shared/stage-accents.css";
+import "./b.css";
+
+interface Props {
+  stage: StoryStage;
+}
+const { stage } = Astro.props;
+const headingId = `${stage.id}-heading`;
+const stageClass: `stage-${StageId}` = `stage-${stage.id}`;
+---
+
+<section
+  id={stage.id}
+  aria-labelledby={headingId}
+  data-stage={stage.id}
+  data-reveal
+  class:list={["bc-card", stageClass]}
+>
+  <div class:list={["bc-split", stage.visual && "bc-split--visual"]}>
+    <div class="bc-text">
+      <h2 id={headingId} class="bc-heading">{stage.heading}</h2>
+      <p class="mb-3"><DraftMark /></p>
+      {stage.body.map((p) => <p class="mb-3">{p}</p>)}
+    </div>
+    {
+      stage.visual && (
+        <div data-stage-visual class="bc-media">
+          <VisualView visual={stage.visual} idPrefix={`${stage.id}-visual`} />
+        </div>
+      )
+    }
+  </div>
+  <div class="bc-after"><slot /></div>
+</section>
