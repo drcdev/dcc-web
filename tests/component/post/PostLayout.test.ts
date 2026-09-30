@@ -48,6 +48,18 @@ describe("PostLayout structure", () => {
     expect(html.indexOf("<img")).toBeLessThan(html.indexOf("<h1"));
   });
 
+  it("keeps the caption inside the hero figure, before the title card and the body (FR-019, FR-023)", async () => {
+    const post = summary("cap", { featureImage: { ...withImage("cap").featureImage!, caption: "Caption for cap." } });
+    const html = await render(post);
+    const figure = html.indexOf("<figure");
+    const caption = html.indexOf("Caption for cap.");
+    expect(figure).toBeGreaterThan(-1);
+    expect(caption).toBeGreaterThan(figure);
+    expect(caption).toBeLessThan(html.indexOf("</figure>"));
+    expect(html.indexOf("</figure>")).toBeLessThan(html.indexOf("data-title-card"));
+    expect(html.indexOf("data-title-card")).toBeLessThan(html.indexOf("Body text."));
+  });
+
   it("has no image and no empty hero box without a feature image", async () => {
     const html = await render(summary("plain"));
     expect(byName(html, "img")).toHaveLength(0);

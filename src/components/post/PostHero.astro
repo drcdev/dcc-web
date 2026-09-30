@@ -3,7 +3,9 @@
 // largest thing painted on the page, so it loads eagerly at high priority; width
 // and height come from `astro:assets`, so nothing shifts when it arrives
 // (docs.astro.build/en/guides/images/#astro-components-for-images). Rendered only
-// when the post has a feature image, so there is never an empty box.
+// when the post has a feature image, so there is never an empty box. A caption
+// is a figcaption under the image (FR-023); the title card stops overlapping
+// the image when there is one, so the caption is never hidden.
 import { Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
 
@@ -14,7 +16,7 @@ export interface Props {
 const { image } = Astro.props;
 ---
 
-<div data-post-hero class="overflow-hidden rounded-xl">
+<figure data-post-hero class="m-0">
   <Image
     src={image.src}
     alt={image.alt}
@@ -22,6 +24,13 @@ const { image } = Astro.props;
     sizes="(min-width: 1280px) 1280px, 100vw"
     loading="eager"
     fetchpriority="high"
-    class="h-auto max-h-[28rem] min-h-40 w-full object-cover"
+    class="h-auto max-h-[28rem] min-h-40 w-full rounded-xl object-cover"
   />
-</div>
+  {
+    image.caption && (
+      <figcaption class="mx-auto mt-2 max-w-3xl px-1 text-sm text-dusk-700 [overflow-wrap:anywhere] dark:text-mist-300">
+        {image.caption}
+      </figcaption>
+    )
+  }
+</figure>

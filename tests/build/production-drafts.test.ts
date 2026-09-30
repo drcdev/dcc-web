@@ -7,6 +7,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { topics } from "../../src/config/topics.ts";
 import { buildFixtureSite, type FixtureSiteResult } from "./fixture-site.ts";
 
 const posts = ["valid/published.mdx", "valid/draft.mdx"];
@@ -51,6 +52,19 @@ describe.each([
       expect(text, path).not.toMatch(/\/writing\/(draft|sample-[a-z-]+)\//);
       expect(text, path).not.toContain("A draft post");
     }
+  });
+
+  it("leaves the Recent writing section off the home page (US7 AC2, FR-038)", () => {
+    const html = builds[key]!.read("index.html");
+    expect(html).not.toContain("data-recent-writing");
+    expect(html).not.toContain("Recent writing");
+  });
+
+  it("keeps the listing pages in the sitemap although no post is visible (FR-042)", () => {
+    const sitemap = builds[key]!.read("sitemap-0.xml");
+    expect(sitemap).toContain("/writing/</loc>");
+    expect(sitemap).toContain("/writing/all/</loc>");
+    for (const topic of topics) expect(sitemap).toContain(`/writing/topics/${topic.id}/</loc>`);
   });
 
   it("adds no listing pages because of drafts (FR-012)", () => {
