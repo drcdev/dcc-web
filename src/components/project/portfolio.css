@@ -1,0 +1,165 @@
+@reference "../../styles/global.css";
+
+/* Portfolio story styles, ported from Direction C "Chapters"
+   (docs/design/portfolio.md). Existing palette tokens and the system font only.
+   Every effect is behind the reduced-motion guard and the resting state is the
+   fully visible one (FR-016, FR-018). */
+
+/* ------------------------------------------------------------ Stage accents */
+
+/* One palette colour per stage, used for the chapter rule (never for text), so
+   the shades only need the 3:1 non-text contrast in each theme. */
+[data-stage="problem"] {
+  @apply border-rust-700 dark:border-rust-300;
+}
+[data-stage="constraints"] {
+  @apply border-sand-700 dark:border-sand-300;
+}
+[data-stage="options"] {
+  @apply border-lavender-700 dark:border-lavender-300;
+}
+[data-stage="built"] {
+  @apply border-sage-700 dark:border-sage-300;
+}
+[data-stage="outcome"] {
+  @apply border-mist-700 dark:border-mist-300;
+}
+[data-stage="lessons"] {
+  @apply border-mauve-600 dark:border-mauve-300;
+}
+[data-stage="invitation"] {
+  @apply border-accent-700 dark:border-accent-300;
+}
+
+/* A focused element or anchor target is never hidden behind the sticky header. */
+a,
+button,
+summary,
+[tabindex],
+[id] {
+  scroll-margin-top: 6rem;
+}
+
+/* ----------------------------------------------------------------- Chapter */
+
+[data-chapter] {
+  @apply border-t-[10px] py-10;
+}
+@media (min-width: 48rem) {
+  [data-chapter] {
+    min-height: 60svh;
+  }
+}
+[data-chapter-grid] {
+  display: grid;
+  gap: 2rem;
+}
+[data-chapter-grid] > * {
+  min-width: 0;
+}
+@media (min-width: 64rem) {
+  [data-chapter-grid][data-has-visual="true"] {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+    gap: 4rem;
+    align-items: start;
+  }
+}
+[data-chapter-number] {
+  @apply m-0 mb-1 text-base font-semibold text-dusk-800 dark:text-mist-200;
+}
+[data-chapter-heading] {
+  @apply mb-4 text-4xl font-extrabold tracking-tight text-dusk-900 md:text-6xl dark:text-mist-100;
+}
+[data-chapter-text] > p {
+  @apply text-dusk-800 dark:text-mist-200;
+  line-height: 1.7;
+  max-width: 62ch;
+}
+[data-chapter-visual] {
+  min-width: 0;
+}
+/* The panel stays in view beside its chapter's text: wide screens, motion
+   allowed. Otherwise it is an ordinary block after the text. */
+@media (min-width: 80rem) and (prefers-reduced-motion: no-preference) {
+  [data-chapter-visual] {
+    position: sticky;
+    top: 7rem;
+  }
+}
+[data-chapter-after] {
+  margin-top: 2rem;
+}
+
+/* ------------------------------------------------------------------ Visual */
+
+[data-visual] {
+  @apply m-0;
+}
+[data-visual] img,
+[data-visual] video {
+  @apply block h-auto w-full max-w-full;
+}
+[data-visual] figcaption {
+  @apply mt-2 text-sm text-dusk-800 dark:text-mist-200;
+}
+[data-visual-mark] {
+  @apply m-0 mb-2;
+}
+
+/* -------------------------------------------------------- Demo and invitation */
+
+[data-demo-links] {
+  @apply m-0 mt-4 flex list-none flex-wrap gap-x-6 gap-y-1 p-0;
+}
+[data-demo-links] a,
+[data-invitation] {
+  @apply inline-flex min-h-11 items-center font-medium text-dusk-900 underline underline-offset-4 dark:text-white;
+}
+[data-invitation] {
+  @apply border-2 border-accent-700 px-5 font-semibold no-underline dark:border-accent-300;
+}
+[data-demo-links] a:focus-visible,
+[data-invitation]:focus-visible {
+  @apply outline-2 outline-offset-2 outline-accent-500 dark:outline-accent-400;
+}
+[data-demo-note] {
+  @apply text-sm text-dusk-800 dark:text-mist-200;
+}
+
+/* ------------------------------------------------------------------ Reveal */
+
+/* Each chapter heading is uncovered from the left as its chapter enters, only
+   where the browser supports scroll-driven animation and motion is allowed. */
+@keyframes portfolio-uncover {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    [data-chapter-heading][data-reveal] {
+      animation: portfolio-uncover linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 80%;
+    }
+  }
+}
+
+/* --------------------------------------------------------- Forced colours */
+
+@media (forced-colors: active) {
+  [data-chapter],
+  [data-invitation],
+  [data-placeholder],
+  [data-draft-mark],
+  [data-status] {
+    border-color: CanvasText;
+  }
+  [data-demo-links] a:focus-visible,
+  [data-invitation]:focus-visible {
+    outline-color: CanvasText;
+  }
+}

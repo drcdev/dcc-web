@@ -68,15 +68,15 @@ description: "Task list for the portfolio (projects index and story pages)"
 
 **Independent test**: each component renders the DOM in contracts/pages-dom.md.
 
-- [ ] T017 [P] [US8] Test: `tests/component/project/Pill.test.ts`, `StatusPill.test.ts`, `ThemePills.test.ts` (plain label pill with a tone, optional `href`, status shown as text, theme list `aria-label="Themes"`; FR-017 single pill style).
-- [ ] T018 [P] [US8] Test: `tests/component/project/Chapter.test.ts` (`section` with `id`, `aria-labelledby`, "Chapter N of 7", one `h2` with `data-reveal`, visual/no-visual layout hooks, `draft` mark "Draft for review", `data-stage`).
-- [ ] T019 [P] [US8] Test: `tests/component/project/Visual.test.ts` (image with `alt`; diagram with reachable visible description and `aria-describedby`; clip `<video controls muted playsinline preload="none" poster>` with no `autoplay` and a visible description; placeholder shows a visible "Placeholder" mark; first visual eager, others `loading="lazy"`).
-- [ ] T020 [P] [US3] Test: `tests/component/project/Invitation.test.ts` (href `/contact/?project=<slug>`, accessible name includes the title, plain link, no script) and `tests/component/project/Demo.test.ts` link forms (open-demo link text, stand-in link with "This is not a live demo.", source-code link "Source code for <title>", all same-tab with no `target`).
-- [ ] T021 [P] [US8] Test: `tests/unit/content/project-blocks.test.ts` for the block registry (`storyBlockNames` is the closed set Chapter, Visual, OptionComparison, Demo, Invitation) and the prop schemas in `blocks/schemas.ts`.
-- [ ] T022 [US8] Implement `src/components/Pill.astro` (shared; if the blog's version exists, keep it and add `tone`/`href`), `src/components/project/StatusPill.astro` and `ThemePills.astro`, making T017 pass.
-- [ ] T023 [US8] Implement `src/components/project/blocks/{schemas.ts,index.ts,Chapter.astro,Visual.astro}` and the start of `src/components/project/portfolio.css` (tokens only, ported from the Direction C prototype), making T018, T019 and T021 pass.
-- [ ] T024 [US3] Implement `src/components/project/blocks/Invitation.astro` and the link forms of `Demo.astro` (embed comes in Phase 8), making T020 pass.
-- [ ] T025 Run `corepack pnpm exec vitest run tests/component tests/unit`, lint and `astro check`; confirm green.
+- [x] T017 [P] [US8] Test: `tests/component/project/Pill.test.ts`, `StatusPill.test.ts`, `ThemePills.test.ts` (plain label pill with a tone, optional `href`, status shown as text, theme list `aria-label="Themes"`; FR-017 single pill style).
+- [x] T018 [P] [US8] Test: `tests/component/project/Chapter.test.ts` (`section` with `id`, `aria-labelledby`, "Chapter N of 7", one `h2` with `data-reveal`, visual/no-visual layout hooks, `draft` mark "Draft for review", `data-stage`).
+- [x] T019 [P] [US8] Test: `tests/component/project/Visual.test.ts` (image with `alt`; diagram with reachable visible description and `aria-describedby`; clip `<video controls muted playsinline preload="none" poster>` with no `autoplay` and a visible description; placeholder shows a visible "Placeholder" mark; first visual eager, others `loading="lazy"`).
+- [x] T020 [P] [US3] Test: `tests/component/project/Invitation.test.ts` (href `/contact/?project=<slug>`, accessible name includes the title, plain link, no script) and `tests/component/project/Demo.test.ts` link forms (open-demo link text, stand-in link with "This is not a live demo.", source-code link "Source code for <title>", all same-tab with no `target`).
+- [x] T021 [P] [US8] Test: `tests/unit/content/project-blocks.test.ts` for the block registry (`storyBlockNames` is the closed set Chapter, Visual, OptionComparison, Demo, Invitation) and the prop schemas in `blocks/schemas.ts`.
+- [x] T022 [US8] Implement `src/components/Pill.astro` (shared; if the blog's version exists, keep it and add `tone`/`href`), `src/components/project/StatusPill.astro` and `ThemePills.astro`, making T017 pass.
+- [x] T023 [US8] Implement `src/components/project/blocks/{schemas.ts,index.ts,Chapter.astro,Visual.astro}` and the start of `src/components/project/portfolio.css` (tokens only, ported from the Direction C prototype), making T018, T019 and T021 pass.
+- [x] T024 [US3] Implement `src/components/project/blocks/Invitation.astro` and the link forms of `Demo.astro` (embed comes in Phase 8), making T020 pass.
+- [x] T025 Run `corepack pnpm exec vitest run tests/component tests/unit`, lint and `astro check`; confirm green.
 
 **Checkpoint**: blocks render in isolation.
 

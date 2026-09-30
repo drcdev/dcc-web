@@ -1,0 +1,62 @@
+---
+// <Visual name="…" />: a named visual from the project's `visuals` as a figure
+// (data-model.md "IndexVisual / Visual"; contracts/pages-dom.md). Images carry
+// alt text, diagrams and clips a visible description, and a clip is never
+// autoplaying. Only the first visual on a page is eager.
+import { Image } from "astro:assets";
+import { checkProps, currentProject, findVisual } from "./context.ts";
+import "../portfolio.css";
+
+export interface Props {
+  name: string;
+  eager?: boolean;
+  idPrefix?: string;
+}
+
+const project = currentProject("Visual", Astro.locals);
+const { name, eager = false, idPrefix = "visual" } = checkProps("Visual", Astro.props, project);
+const visual = findVisual("Visual", name, project);
+const loading = eager ? "eager" : "lazy";
+const describedBy = `${idPrefix}-${name}-description`;
+
+// Clips are emitted as hashed assets by Vite. Phase 8 (T063) adds the
+// existence and size checks; until then a clip that is not found keeps its path.
+const clipFiles = import.meta.glob<string>("/src/content/projects/**/*.{webm,mp4}", {
+  query: "?url",
+  import: "default",
+  eager: true,
+});
+const clipSrc =
+  visual.kind === "clip"
+    ? (clipFiles[`/src/content/projects/${visual.src.replace(/^\.\//, "")}`] ?? visual.src)
+    : undefined;
+---
+
+<figure data-visual={visual.kind} data-visual-name={name}>
+  {visual.placeholder && <p data-placeholder data-visual-mark class="text-sm font-semibold"><strong>Placeholder</strong></p>}
+  {
+    visual.kind === "clip" ? (
+      <>
+        <video controls muted playsinline preload="none" poster={(visual.poster as ImageMetadata).src} aria-describedby={describedBy}>
+          <source src={clipSrc} />
+        </video>
+        <figcaption id={describedBy}>
+          <strong>{visual.label}.</strong> {visual.description}
+        </figcaption>
+      </>
+    ) : (
+      <>
+        <Image
+          src={visual.src as ImageMetadata}
+          alt={visual.alt}
+          loading={loading}
+          decoding={eager ? "sync" : "async"}
+          widths={[480, 800]}
+          sizes="(min-width: 64rem) 26rem, 100vw"
+          aria-describedby={visual.kind === "diagram" ? describedBy : undefined}
+        />
+        {visual.kind === "diagram" && <figcaption id={describedBy}>{visual.description}</figcaption>}
+      </>
+    )
+  }
+</figure>

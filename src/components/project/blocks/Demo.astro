@@ -1,0 +1,37 @@
+---
+// <Demo />: the link forms of the built chapter (data-model.md "Demo and
+// StandIn"): an open-demo link, or a stand-in link with the not-a-live-demo
+// note, plus the source-code link. All same-tab plain links. The embedded demo
+// itself comes in Phase 8.
+import { checkProps, currentProject } from "./context.ts";
+import "../portfolio.css";
+
+const project = currentProject("Demo", Astro.locals);
+checkProps("Demo", Astro.props, project);
+const { title, demo, standIn, source } = project.data;
+---
+
+<ul data-demo-links>
+  {
+    demo && (
+      <li>
+        <a href={demo.href}>Open the {demo.title ?? title} demo</a>
+      </li>
+    )
+  }
+  {
+    standIn && (
+      <li>
+        <a href={standIn.href}>{standIn.label ?? `${title} on drc.dev`}</a>{" "}
+        <span data-demo-note>This is not a live demo.</span>
+      </li>
+    )
+  }
+  {
+    source && (
+      <li>
+        <a href={source}>Source code for {title}</a>
+      </li>
+    )
+  }
+</ul>
