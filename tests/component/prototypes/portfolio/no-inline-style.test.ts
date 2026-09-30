@@ -17,6 +17,10 @@ import StatusBadge from "../../../../src/prototypes/portfolio/shared/StatusBadge
 import ThemePills from "../../../../src/prototypes/portfolio/shared/ThemePills.astro";
 import PortfolioFilter from "../../../../src/prototypes/portfolio/shared/PortfolioFilter.astro";
 import StageSection from "../../../../src/prototypes/portfolio/shared/StageSection.astro";
+import OptionDetails from "../../../../src/prototypes/portfolio/a/OptionDetails.astro";
+import TimelineStage from "../../../../src/prototypes/portfolio/a/TimelineStage.astro";
+import TimelineStory from "../../../../src/prototypes/portfolio/a/TimelineStory.astro";
+import TimelineIndex from "../../../../src/prototypes/portfolio/a/TimelineIndex.astro";
 import { allEntries, focusPocus } from "../../../../src/prototypes/portfolio/sample.ts";
 
 interface Entry {
@@ -42,6 +46,10 @@ const COMPONENTS: Entry[] = [
   { name: "StatusBadge", component: StatusBadge, props: { status: "shipped" } },
   { name: "ThemePills", component: ThemePills, props: { themes: ["Web"] } },
   { name: "PortfolioFilter", component: PortfolioFilter, props: { entries: allEntries }, slot: "<ul></ul>" },
+  { name: "A OptionDetails", component: OptionDetails, props: { option: focusPocus.options[2] } },
+  { name: "A TimelineStage", component: TimelineStage, props: { stage: focusPocus.stages[3], number: 4 } },
+  { name: "A TimelineStory", component: TimelineStory, props: { story: focusPocus } },
+  { name: "A TimelineIndex", component: TimelineIndex, props: { entries: allEntries } },
   ...focusPocus.stages.map((stage) => ({
     name: `StageSection ${stage.id}`,
     component: StageSection as AstroComponentFactory,

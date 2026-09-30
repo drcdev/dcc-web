@@ -2,4 +2,7 @@
 // contracts/prototype-routes.md). Same entry shape as TEMPLATES so the shared
 // a11y, no-JS and budget suites cover them. Every name starts with `portfolio-`
 // so `--grep portfolio` selects them. Removed with the prototypes in Phase 9.
-export const PORTFOLIO_PROTOTYPES: ReadonlyArray<{ name: string; path: string; built: true }> = [];
+export const PORTFOLIO_PROTOTYPES: ReadonlyArray<{ name: string; path: string; built: true }> = [
+  { name: "portfolio-a-index", path: "/design/portfolio/a/", built: true },
+  { name: "portfolio-a-story", path: "/design/portfolio/a/focus-pocus/", built: true },
+];

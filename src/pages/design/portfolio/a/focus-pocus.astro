@@ -1,0 +1,16 @@
+---
+// Direction A "Timeline": the Focus Pocus story (prototype; removed before merge).
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getNavigation } from "../../../../lib/pages";
+import TimelineStory from "../../../../prototypes/portfolio/a/TimelineStory.astro";
+import { focusPocus } from "../../../../prototypes/portfolio/sample";
+---
+
+<BaseLayout
+  title="Timeline – Focus Pocus"
+  description="Design prototype: the Focus Pocus project story as stages on a vertical timeline."
+  navigation={await getNavigation()}
+  noindex
+>
+  <TimelineStory story={focusPocus} />
+</BaseLayout>

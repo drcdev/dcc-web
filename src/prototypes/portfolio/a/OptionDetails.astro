@@ -1,0 +1,33 @@
+---
+// One option in Direction A: a native <details>, so it works with no script and
+// with the keyboard (Enter or Space on the summary). The chosen option starts
+// open and is labelled "Chosen" in text (FR-011, FR-016).
+import type { StoryOption } from "../types.ts";
+import "./a.css";
+
+interface Props {
+  option: StoryOption;
+}
+const { option } = Astro.props;
+---
+
+<details data-option={option.id} data-chosen={option.chosen ? "" : undefined} open={option.chosen} class="tl-option">
+  <summary>
+    <span>{option.name}</span>
+    {option.chosen && <span class="tl-chosen">Chosen</span>}
+  </summary>
+  <div class="tl-option-body">
+    <p>{option.summary}</p>
+    <p><strong>In its favour</strong></p>
+    <ul>{option.pros.map((line) => <li>{line}</li>)}</ul>
+    <p><strong>Against it</strong></p>
+    <ul>{option.cons.map((line) => <li>{line}</li>)}</ul>
+    {
+      option.chosen && option.reason && (
+        <p>
+          <strong>Why it was chosen.</strong> {option.reason}
+        </p>
+      )
+    }
+  </div>
+</details>

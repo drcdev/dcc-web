@@ -1,0 +1,244 @@
+@reference "../../../styles/global.css";
+
+/* Direction A "Timeline" (specs/006-portfolio-design-directions). One idea:
+   the story is a vertical rail. A muted line runs down the left, stage markers
+   sit on it in stage colours, and an accent line fills in as the reader scrolls.
+   Everything else stays quiet. Existing palette tokens and the system font only
+   (FR-005). No transitions anywhere: the only motion is the scroll-driven
+   fill and rise, and it is off for reduced motion (FR-016). */
+
+.timeline {
+  --tl-marker: 2.5rem;
+  --tl-gutter: 3.5rem;
+  --tl-rail: calc(var(--tl-marker) / 2);
+  @apply relative;
+}
+@media (min-width: 48rem) {
+  .timeline {
+    --tl-marker: 3rem;
+    --tl-gutter: 5rem;
+    --tl-rail: calc(var(--tl-marker) / 2);
+  }
+}
+
+/* The rail: a muted track, and a fill drawn over it. Borders, not
+   backgrounds, so forced colours keeps both. */
+.timeline::before,
+.timeline::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--tl-rail) - 1px);
+  border-left: 2px solid;
+}
+.timeline::before {
+  @apply border-dusk-200 dark:border-dusk-700;
+}
+.timeline::after {
+  @apply border-accent-700 dark:border-accent-300;
+  transform-origin: top;
+}
+
+/* One stage or one index entry: marker in the gutter, content beside it. */
+.tl-stage,
+.tl-entry {
+  display: grid;
+  grid-template-columns: var(--tl-gutter) minmax(0, 1fr);
+  position: relative;
+  padding-block: 1.5rem 2.5rem;
+}
+.tl-entry {
+  padding-block: 1rem 2rem;
+}
+
+.tl-marker {
+  @apply relative flex items-center justify-center rounded-full border-2 bg-white text-lg font-semibold text-dusk-900 dark:bg-dusk-BASE dark:text-mist-100;
+  border-color: inherit;
+  width: var(--tl-marker);
+  height: var(--tl-marker);
+  align-self: start;
+}
+/* Index entries carry a plain dot; the stage number would claim an order the
+   projects do not have. */
+.tl-marker--dot {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-left: calc(var(--tl-rail) - 0.625rem);
+  margin-top: 0.5rem;
+  @apply border-accent-700 dark:border-accent-300;
+}
+
+.tl-body {
+  min-width: 0;
+}
+.tl-split {
+  display: grid;
+  gap: 1.5rem;
+}
+@media (min-width: 48rem) {
+  .tl-split--visual {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+}
+.tl-text {
+  max-width: 68ch;
+}
+.tl-text > p {
+  @apply text-dusk-800 dark:text-mist-200;
+  line-height: 1.65;
+}
+.tl-heading {
+  @apply text-2xl font-semibold text-dusk-900 dark:text-mist-100;
+  margin-block: 0.25rem 0.5rem;
+  min-height: var(--tl-marker);
+  display: flex;
+  align-items: center;
+}
+.tl-after {
+  margin-top: 1.5rem;
+}
+
+/* Options: native disclosure, the chosen one open. */
+.tl-options {
+  @apply m-0 flex list-none flex-col gap-3 p-0;
+}
+.tl-option {
+  @apply rounded-lg border border-dusk-300 text-dusk-900 dark:border-dusk-600 dark:text-mist-100;
+}
+.tl-option[data-chosen] {
+  @apply border-2 border-lavender-700 dark:border-lavender-300;
+}
+.tl-option > summary {
+  @apply flex cursor-pointer items-center gap-3 rounded-lg px-4 py-3 font-semibold;
+  min-height: 3rem;
+  list-style: none;
+}
+.tl-option > summary::-webkit-details-marker {
+  display: none;
+}
+.tl-option > summary::before {
+  content: "";
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  rotate: -45deg;
+}
+.tl-option[open] > summary::before {
+  rotate: 45deg;
+}
+.tl-option > summary:focus-visible {
+  @apply outline-2 outline-offset-2 outline-accent-500 dark:outline-accent-400;
+}
+.tl-chosen {
+  @apply ml-auto rounded border border-lavender-800 bg-lavender-50 px-2 py-0.5 text-xs font-semibold text-lavender-950 dark:border-lavender-300 dark:bg-dusk-900 dark:text-lavender-100;
+}
+.tl-option-body {
+  @apply px-4 pb-4 pl-10 text-dusk-800 dark:text-mist-200;
+}
+.tl-option-body p,
+.tl-option-body ul {
+  @apply m-0 mb-2;
+}
+.tl-option-body ul {
+  @apply list-disc pl-5;
+}
+.tl-option-body strong {
+  @apply text-dusk-900 dark:text-mist-100;
+}
+
+/* Links and calls to action inside a stage: at least 24 by 24 px. */
+.tl-link {
+  @apply inline-flex min-h-8 items-center rounded font-medium text-dusk-900 underline underline-offset-4 dark:text-white;
+}
+.tl-links {
+  @apply m-0 mt-4 flex list-none flex-wrap gap-x-6 gap-y-1 p-0;
+}
+.tl-cta {
+  @apply inline-flex min-h-11 items-center rounded-lg border-2 border-accent-700 px-5 font-semibold text-dusk-900 dark:border-accent-300 dark:text-white;
+}
+
+/* Index entry parts. */
+.tl-entry[hidden] {
+  display: none;
+}
+.tl-entry-title {
+  @apply m-0 text-2xl font-semibold text-dusk-900 dark:text-mist-100;
+}
+.tl-entry-meta {
+  @apply mt-3 flex flex-wrap items-center gap-2;
+}
+
+/* Focus never lands under something else (FR-035): the header is not sticky,
+   and every target keeps scroll room above it. */
+.tl-stage,
+.tl-entry {
+  scroll-margin-top: 6rem;
+}
+
+/* Reveal: the stage rises and fades in as it enters, and the rail fill grows
+   with the scroll. Only where the browser supports scroll-driven animation and
+   the visitor has not asked for reduced motion. Resting state is the fully
+   visible one (FR-018). */
+@keyframes tl-rise {
+  from {
+    opacity: 0;
+    translate: 0 1.5rem;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes tl-fill {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .timeline [data-reveal] {
+      animation: tl-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 25%;
+    }
+    .timeline::after {
+      animation: tl-fill linear both;
+      animation-timeline: view();
+      animation-range: cover 10% cover 90%;
+    }
+  }
+}
+
+/* Forced colours: rail, markers and option frames keep a system colour. */
+@media (forced-colors: active) {
+  .timeline::before {
+    border-color: GrayText;
+  }
+  .timeline::after {
+    border-color: Highlight;
+  }
+  .tl-marker,
+  .tl-option,
+  .tl-chosen,
+  .tl-cta {
+    border-color: CanvasText;
+  }
+  .tl-option > summary:focus-visible {
+    outline-color: CanvasText;
+  }
+}
+
+/* Narrow phones: a slimmer gutter so text keeps its width down to 320 px. */
+@media (max-width: 30rem) {
+  .timeline {
+    --tl-gutter: 3rem;
+    --tl-marker: 2.25rem;
+  }
+}
