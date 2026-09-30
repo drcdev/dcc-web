@@ -108,8 +108,8 @@ function options(omit: keyof typeof categories | null): FixtureSiteOptions {
       "astro.config.mjs": (config) =>
         `import { theme, transformers } from "./spike-shiki.mjs";\n` +
         config.replace(
-          `trailingSlash: "always",`,
-          `trailingSlash: "always",\n  markdown: { shikiConfig: { theme, transformers } },`,
+          `processor: satteri({ mdastPlugins: [readingTimePlugin] }),`,
+          `processor: satteri({ mdastPlugins: [readingTimePlugin] }),\n    shikiConfig: { theme, transformers },`,
         ),
       "src/pages/[...slug].astro": (route) =>
         route

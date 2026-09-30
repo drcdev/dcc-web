@@ -164,3 +164,32 @@ describe("BaseLayout page container", () => {
     expect(html.indexOf("</main>")).toBeLessThan(html.indexOf("<footer"));
   });
 });
+
+describe("BaseLayout head slot (blog feed link; research R3)", () => {
+  const feedLink = '<link rel="alternate" type="application/rss+xml" title="Feed" href="https://example.test/writing/rss.xml">';
+
+  async function renderWith(slots: Record<string, string>) {
+    const container = await AstroContainer.create({ astroConfig: { site: "https://example.test" } });
+    return container.renderToString(BaseLayout, {
+      partial: false,
+      props: { title: "Test page", navigation: [{ label: "Alpha", href: "/alpha/", kind: "primary" }] },
+      request: new Request("https://example.test/test-page/"),
+      slots: { default: "<h1>Test page</h1>", ...slots },
+    });
+  }
+
+  it("renders content passed to the named head slot inside <head>", async () => {
+    const withHead = await renderWith({ head: feedLink });
+    const head = withHead.slice(withHead.indexOf("<head"), withHead.indexOf("</head>"));
+    expect(head).toContain(feedLink);
+    expect(withHead.indexOf(feedLink)).toBeLessThan(withHead.indexOf("<body"));
+  });
+
+  it("leaves the output byte-identical when the slot is not used", async () => {
+    const without = await renderWith({});
+    const withHead = await renderWith({ head: feedLink });
+    expect(withHead.replace(feedLink, "")).toBe(without);
+    expect(without).not.toContain("application/rss+xml");
+  });
+});
+

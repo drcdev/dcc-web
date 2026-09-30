@@ -1,0 +1,24 @@
+---
+// A `<ul>` of post cards (contracts/blog-pages.md "Post card"; FR-044). Renders
+// nothing for no posts, so an empty list is never output. Other attributes go
+// to the `<ul>`, so a page can mark its grid (`data-featured-grid`).
+import type { HTMLAttributes } from "astro/types";
+import type { PostSummary } from "../../lib/content/post-summary.ts";
+import PostCard from "./PostCard.astro";
+
+export interface Props extends HTMLAttributes<"ul"> {
+  posts: readonly PostSummary[];
+  /** Heading level of every card title. */
+  headingLevel?: "h2" | "h3";
+}
+
+const { posts, headingLevel = "h2", class: className, ...rest } = Astro.props;
+---
+
+{
+  posts.length > 0 && (
+    <ul class:list={["m-0 grid list-none gap-6 p-0 sm:grid-cols-2 lg:grid-cols-3", className]} {...rest}>
+      {posts.map((post) => <PostCard post={post} headingLevel={headingLevel} />)}
+    </ul>
+  )
+}

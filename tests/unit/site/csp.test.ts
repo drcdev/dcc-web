@@ -51,6 +51,27 @@ beforeAll(async () => {
 });
 
 describe("astro.config.mjs security.csp", () => {
+  // Guard for the blog (spec FR-053; tasks T090): the policy equals its
+  // current values exactly, so adding Shiki, env or markdown options to the
+  // config can never widen it. Run green before and after every config change.
+  it("equals its current values exactly (no new source, no 'unsafe-inline')", () => {
+    expect(csp.directives).toEqual([
+      "default-src 'self'",
+      "img-src 'self' data:",
+      "font-src 'self'",
+      "connect-src 'self' https://cloudflareinsights.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ]);
+    expect(csp.scriptDirective?.resources).toEqual(["'self'", "https://static.cloudflareinsights.com"]);
+    expect(csp.scriptDirective?.hashes).toHaveLength(1);
+    expect(csp.scriptDirective?.strictDynamic).toBeUndefined();
+    expect(csp.styleDirective?.resources).toEqual(["'self'"]);
+    expect(csp.styleDirective?.hashes ?? []).toEqual([]);
+    expect(Object.keys(csp).sort()).toEqual(["directives", "scriptDirective", "styleDirective"]);
+  });
+
   it.each([
     ["default-src", ["'self'"]],
     ["script-src", ["'self'", "https://static.cloudflareinsights.com"]],

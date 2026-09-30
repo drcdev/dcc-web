@@ -1,0 +1,18 @@
+---
+// One link to a topic page, in the topic's colour (contracts/blog-pages.md
+// "Post card"; FR-011, FR-017). The pill classes come from the static map in
+// topic-styles.ts because Tailwind needs whole class names in source.
+import { findTopic } from "../../config/topics.ts";
+import { topicStyle } from "./topic-styles.ts";
+
+export interface Props {
+  /** A topic id from src/config/topics.ts. */
+  topic: string;
+}
+
+const { topic: id } = Astro.props;
+const topic = findTopic(id);
+if (!topic) throw new Error(`TopicPill: "${id}" is not a topic in src/config/topics.ts.`);
+---
+
+<a href={`/writing/topics/${topic.id}/`} data-topic-pill class={topicStyle(topic.colour).pill}>{topic.name}</a>

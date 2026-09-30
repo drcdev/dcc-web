@@ -1,0 +1,77 @@
+---
+title: "Sample: Every kind of content a post can hold"
+summary: This is a sample post used to check the blog's pages. It holds a captioned image, wide and full-width images, code, a wide table and every heading level.
+date: 2026-08-27
+updated: 2026-09-15
+topics:
+  - agentic-ai
+  - compliant-data
+featureImage:
+  src: ./images/sample-hero.png
+  alt: Two plain boxes joined by a line, drawn as a simple diagram
+  caption: A plain diagram used as the feature image
+featured: true
+draft: true
+---
+
+This post exists only to check how the blog looks. Nothing in it is advice. It has one of each kind of content, so a page, a card and the reading time can be checked against real material.
+
+## A captioned image
+
+<Figure caption="The same diagram again, inside a figure with a caption">
+
+![Two plain boxes joined by a line](./images/sample-figure.png)
+
+</Figure>
+
+### A wide image
+
+<WideImage caption="A wide image runs a little beyond the text column on large screens">
+
+![A plain green band with two boxes](./images/sample-wide.png)
+
+</WideImage>
+
+#### A full-width image
+
+<FullImage caption="A full-width image runs across the whole page">
+
+![A plain purple band with two boxes](./images/sample-full.png)
+
+</FullImage>
+
+##### Code with a caption
+
+```ts caption="Reading a post's settings"
+const { title, summary } = entry.data;
+console.log(`${title}: ${summary}`);
+```
+
+###### Code without a caption
+
+```js
+function add(a, b) {
+  return a + b;
+}
+```
+
+## Code without a language
+
+```
+This text has no language.
+    Its line breaks and indentation stay as written.
+```
+
+## A very long line of code
+
+```sh
+curl --silent --show-error --fail --location --header "Accept: application/json" --header "User-Agent: sample-post-check" "https://example.com/a/very/long/address/that/keeps/going/and/going/and/going/index.json"
+```
+
+## A wide table
+
+| Quarter | Region | Team | Budget | Spent | Left | Owner | Status | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Q1 | North | Data | 120 | 100 | 20 | Alex | On track | Nothing to report |
+| Q2 | South | Platform | 200 | 180 | 20 | Sam | On track | Waiting on a review |
+| Q3 | East | Integration | 150 | 160 | -10 | Jo | Over | Cost of a late change |

@@ -1,7 +1,8 @@
 // Fixture-site harness for build-level tests (specs/003-standalone-pages/
 // research.md R14). Copies this repository's site source into a temporary
 // directory under .cache/, adds chosen fixture page files from
-// tests/fixtures/pages/ to its src/content/pages/, and runs Astro's programmatic
+// tests/fixtures/pages/ to its src/content/pages/ (and, with the `posts` option,
+// post files from tests/fixtures/posts/ to its src/content/posts/), and runs Astro's programmatic
 // build() or sync() (docs.astro.build/en/reference/programmatic-reference/).
 // The programmatic API is experimental; only tests use it.
 import { execFile } from "node:child_process";
@@ -13,8 +14,12 @@ import { promisify } from "node:util";
 
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
 const fixturesRoot = resolve(repoRoot, "tests/fixtures/pages");
+const postFixturesRoot = resolve(repoRoot, "tests/fixtures/posts");
 
-/** A fixture page file: `from` is relative to tests/fixtures/pages/, `to` (default: the base name) to src/content/pages/. */
+/**
+ * A fixture file: `from` is relative to tests/fixtures/pages/ (for the `posts` option, to
+ * tests/fixtures/posts/), `to` (default: the base name) to src/content/pages/ (or src/content/posts/).
+ */
 export interface FixtureFile {
   from: string;
   to?: string;
@@ -31,6 +36,17 @@ export interface FixtureSiteOptions {
    * returns the new text, so a test can patch a file such as astro.config.mjs.
    */
   overrides?: Record<string, string | ((current: string) => string)>;
+  /**
+   * Post fixture files, relative to tests/fixtures/posts/ (for example `valid/minimal.mdx` or
+   * `broken/P01-no-title.mdx`), copied into the site's src/content/posts/ together with the
+   * pictures in tests/fixtures/posts/images/.
+   */
+  posts?: readonly (string | FixtureFile)[];
+  /**
+   * Environment variables for the build, such as `WORKERS_CI`. The runner's own `WORKERS_CI` and
+   * `WORKERS_CI_BRANCH` are never passed on, so a build depends only on what the test sets.
+   */
+  env?: Record<string, string>;
 }
 
 export interface FixtureSiteResult {
@@ -55,9 +71,16 @@ const run = promisify(execFile);
 const runner = fileURLToPath(new URL("./run-astro.ts", import.meta.url));
 
 /** Runs Astro in a child process; resolves to the error text, or "" when it succeeded. */
-async function runAstro(root: string, mode: "build" | "sync"): Promise<string> {
+async function runAstro(root: string, mode: "build" | "sync", env: Record<string, string> = {}): Promise<string> {
+  const inherited = Object.fromEntries(
+    Object.entries(process.env).filter(([name]) => name !== "WORKERS_CI" && name !== "WORKERS_CI_BRANCH"),
+  );
   try {
-    await run(process.execPath, [runner, root, mode], { cwd: repoRoot, maxBuffer: 16 * 1024 * 1024 });
+    await run(process.execPath, [runner, root, mode], {
+      cwd: repoRoot,
+      maxBuffer: 16 * 1024 * 1024,
+      env: { ...inherited, ...env },
+    });
     return "";
   } catch (error) {
     const { stdout = "", stderr = "" } = error as { stdout?: string; stderr?: string };
@@ -79,6 +102,21 @@ function walk(dir: string, into: string[] = []): string[] {
   return into;
 }
 
+/** Copies fixture files from `fromRoot` into `into`, applying each file's `to` name and `replace` edit. */
+function copyFixtures(files: readonly (string | FixtureFile)[], fromRoot: string, into: string): void {
+  for (const file of files) {
+    const { from, to, replace } = typeof file === "string" ? ({ from: file } as FixtureFile) : file;
+    const target = resolve(into, to ?? from.split("/").at(-1) ?? from);
+    mkdirSync(dirname(target), { recursive: true });
+    if (replace) {
+      const text = readFileSync(resolve(fromRoot, from), "utf-8");
+      writeFileSync(target, text.replace(replace[0], replace[1]));
+    } else {
+      cpSync(resolve(fromRoot, from), target);
+    }
+  }
+}
+
 export async function buildFixtureSite(
   files: readonly (string | FixtureFile)[],
   options: FixtureSiteOptions = {},
@@ -96,16 +134,14 @@ export async function buildFixtureSite(
   mkdirSync(pagesDir, { recursive: true });
   const images = resolve(fixturesRoot, "images");
   if (existsSync(images)) cpSync(images, resolve(pagesDir, "images"), { recursive: true });
-  for (const file of files) {
-    const { from, to, replace } = typeof file === "string" ? ({ from: file } as FixtureFile) : file;
-    const target = resolve(pagesDir, to ?? from.split("/").at(-1) ?? from);
-    mkdirSync(dirname(target), { recursive: true });
-    if (replace) {
-      const text = readFileSync(resolve(fixturesRoot, from), "utf-8");
-      writeFileSync(target, text.replace(replace[0], replace[1]));
-    } else {
-      cpSync(resolve(fixturesRoot, from), target);
-    }
+  copyFixtures(files, fixturesRoot, pagesDir);
+
+  if (options.posts) {
+    const postsDir = resolve(root, "src/content/posts");
+    mkdirSync(postsDir, { recursive: true });
+    const postImages = resolve(postFixturesRoot, "images");
+    if (existsSync(postImages)) cpSync(postImages, resolve(postsDir, "images"), { recursive: true });
+    copyFixtures(options.posts, postFixturesRoot, postsDir);
   }
 
   for (const [path, value] of Object.entries(options.overrides ?? {})) {
@@ -116,7 +152,7 @@ export async function buildFixtureSite(
   }
 
   const dist = resolve(root, "dist");
-  const message = await runAstro(root, options.mode === "sync" ? "sync" : "build");
+  const message = await runAstro(root, options.mode === "sync" ? "sync" : "build", options.env);
   const ok = message === "";
 
   return {

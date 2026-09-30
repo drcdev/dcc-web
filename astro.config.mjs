@@ -7,8 +7,10 @@ import { defineConfig, envField } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import sitemap from "@astrojs/sitemap";
 import mdx from "@astrojs/mdx";
+import { satteri } from "@astrojs/markdown-satteri";
 
 import { resolveSiteOrigin } from "./src/lib/site-origin.ts";
+import { readingTimePlugin } from "./src/lib/markdown/reading-time.ts";
 
 // Astro evaluates this file before loading .env files, so the build's own
 // address is resolved from process.env (set by Cloudflare Workers Builds) and
@@ -35,6 +37,24 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+  },
+
+  // The two Workers Builds variables that tell production from a preview build,
+  // read by src/lib/posts.ts to decide whether draft posts are built
+  // (docs.astro.build/en/guides/environment-variables/#type-safe-environment-variables;
+  // specs/008-blog/research.md R3).
+  env: {
+    schema: {
+      WORKERS_CI: envField.string({ context: "server", access: "public", optional: true }),
+      WORKERS_CI_BRANCH: envField.string({ context: "server", access: "public", optional: true }),
+    },
+  },
+
+  // Sätteri is Astro's default Markdown processor; it is named here only to add
+  // the reading-time plugin, which stores `minutesRead` for posts
+  // (docs.astro.build/en/recipes/reading-time/; specs/008-blog/research.md R6).
+  markdown: {
+    processor: satteri({ mdastPlugins: [readingTimePlugin] }),
   },
 
   // Page content security policy, rendered by Astro as a <meta> tag with hashes

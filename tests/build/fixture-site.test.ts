@@ -1,7 +1,7 @@
 // Smoke test for the fixture-site harness (tests/build/fixture-site.ts): it
 // builds a copy of the site, runs the content layer against fixture pages, and
 // reports failures as text. Fails until the content layer exists.
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { afterEach, describe, expect, it } from "vitest";
 import { buildFixtureSite, type FixtureSiteResult } from "./fixture-site.ts";
 
@@ -34,5 +34,68 @@ describe("fixture-site harness", () => {
     const { root } = result;
     result.cleanup();
     expect(existsSync(root)).toBe(false);
+  });
+});
+
+describe("fixture-site harness, post fixtures (T025)", () => {
+  it("copies post files and their images from tests/fixtures/posts/ into src/content/posts/", async () => {
+    result = await buildFixtureSite([], { mode: "sync", posts: ["valid/minimal.mdx"] });
+    expect(result.message).toBe("");
+    expect(result.ok).toBe(true);
+    expect(existsSync(`${result.root}/src/content/posts/minimal.mdx`)).toBe(true);
+    expect(existsSync(`${result.root}/src/content/posts/images/sample.png`)).toBe(true);
+  });
+
+  it("places a post file at the `to` name", async () => {
+    result = await buildFixtureSite([], {
+      mode: "sync",
+      posts: [{ from: "valid/minimal.mdx", to: "renamed-post.mdx" }],
+    });
+    expect(existsSync(`${result.root}/src/content/posts/renamed-post.mdx`)).toBe(true);
+    expect(existsSync(`${result.root}/src/content/posts/minimal.mdx`)).toBe(false);
+    expect(result.ok).toBe(true);
+  });
+
+  it("replaces text in a copied post file, to test an edit", async () => {
+    result = await buildFixtureSite([], {
+      mode: "sync",
+      posts: [{ from: "valid/minimal.mdx", replace: ["featured: false", "featured: true"] }],
+    });
+    const text = readFileSync(`${result.root}/src/content/posts/minimal.mdx`, "utf-8");
+    expect(text).toContain("featured: true");
+    expect(text).not.toContain("featured: false");
+  });
+
+  it("reports a broken post file as a failure that names the file and the problem", async () => {
+    result = await buildFixtureSite([], { mode: "sync", posts: ["broken/p01-no-title.mdx"] });
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("p01-no-title");
+    expect(result.message).toContain("title");
+  });
+
+  it("sets environment variables for the build (WORKERS_CI)", async () => {
+    // The site address depends on WORKERS_CI, so the built sitemap shows the variables arrived.
+    result = await buildFixtureSite(["workshops.mdx"], {
+      env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" },
+    });
+    expect(result.message).toBe("");
+    expect(result.read("sitemap-0.xml")).toContain("https://new.doncoleman.ca/");
+  });
+
+  it("does not leak WORKERS_CI from the test runner's own environment into a build", async () => {
+    const saved = { ci: process.env.WORKERS_CI, branch: process.env.WORKERS_CI_BRANCH };
+    process.env.WORKERS_CI = "1";
+    process.env.WORKERS_CI_BRANCH = "main";
+    try {
+      result = await buildFixtureSite(["workshops.mdx"]);
+    } finally {
+      if (saved.ci === undefined) delete process.env.WORKERS_CI;
+      else process.env.WORKERS_CI = saved.ci;
+      if (saved.branch === undefined) delete process.env.WORKERS_CI_BRANCH;
+      else process.env.WORKERS_CI_BRANCH = saved.branch;
+    }
+    expect(result.message).toBe("");
+    expect(result.read("sitemap-0.xml")).toContain("https://doncoleman.ca/");
+    expect(result.read("sitemap-0.xml")).not.toContain("new.doncoleman.ca");
   });
 });

@@ -77,3 +77,32 @@ describe("validatePageBody", () => {
     expect(() => check("Text <em>x</em>\n\n<div>y</div>")).not.toThrow();
   });
 });
+
+describe("validatePageBody for a post file (P12, P18 to P20)", () => {
+  const POST = "src/content/posts/example.mdx";
+  const checkPost = (body: string) => validatePageBody(POST, body, "post");
+
+  it("starts every message with Post file and names the file", () => {
+    for (const body of ["", "# Title", "<Callout />", "![](./x.jpg)"]) {
+      expect(() => checkPost(body)).toThrow(`Post file ${POST}: `);
+    }
+  });
+
+  it("says the post has no content, not the page", () => {
+    expect(() => checkPost("  ")).toThrow("the post has no content");
+  });
+
+  it("keeps the same rules: use ##, unknown section with the list, alt text", () => {
+    expect(() => checkPost("# Title")).toThrow("use ##");
+    const run = () => checkPost("<Callout />");
+    expect(run).toThrow("Callout");
+    for (const name of sectionNames) expect(run).toThrow(name);
+    expect(() => checkPost("![](./x.jpg)")).toThrow("alt text");
+  });
+
+  it("leaves the page messages unchanged when no kind is given", () => {
+    expect(() => validatePageBody(FILE, "")).toThrow(`Page file ${FILE}: the page has no content. Add text below the settings.`);
+    expect(() => validatePageBody(FILE, "", "page")).toThrow(`Page file ${FILE}: the page has no content.`);
+  });
+});
+
