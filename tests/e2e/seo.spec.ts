@@ -81,6 +81,7 @@ test("the sitemap lists exactly the built public pages, never /404", async ({ re
       "/speaking/",
       "/technology/",
       "/terms-of-use/",
+      "/writing/",
       ...SAMPLE_POSTS,
     ].map((path) => `${origin}${path}`),
   );
@@ -123,7 +124,7 @@ test("every public page has complete, consistent metadata", async ({ page, reque
     await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", entry);
     await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", entry);
-    await expectSharedMetadata(page, origin, path.startsWith("/writing/") ? "article" : "website");
+    await expectSharedMetadata(page, origin, path.startsWith("/writing/") && path !== "/writing/" ? "article" : "website");
   }
   expect(titles.size).toBe(entries.length);
 });

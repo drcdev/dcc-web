@@ -125,7 +125,17 @@ describe.each(environments)("astro build with the $label environment", ({ env })
       (m) => m[1]!,
     );
     // A preview build includes the sample posts, which are drafts; production leaves them out (spec 008 R3).
-    const pages = ["/", "/about/", "/contact/", "/privacy-policy/", "/services/", "/speaking/", "/technology/", "/terms-of-use/"];
+    const pages = [
+      "/",
+      "/about/",
+      "/contact/",
+      "/privacy-policy/",
+      "/services/",
+      "/speaking/",
+      "/technology/",
+      "/terms-of-use/",
+      "/writing/",
+    ];
     const samplePosts = [
       "/writing/sample-everything/",
       "/writing/sample-long-title/",

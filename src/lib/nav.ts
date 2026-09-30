@@ -13,3 +13,15 @@ function normalise(path: string): string {
 export function isCurrent(pathname: string, href: string): boolean {
   return normalise(pathname) === normalise(href);
 }
+
+/**
+ * Whether `pathname` is `href` or an address below it, so a link to a section
+ * stays marked on every page inside it (`/writing/` covers `/writing/some-post/`).
+ * `/` covers only itself, never every address. Whole path segments are compared,
+ * so `/writing-tips/` is not inside `/writing/`.
+ */
+export function isInSection(pathname: string, href: string): boolean {
+  const path = normalise(pathname === "" ? "/" : pathname);
+  const root = normalise(href);
+  return root === "/" ? path === "/" : path.startsWith(root);
+}

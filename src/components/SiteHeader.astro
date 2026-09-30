@@ -12,12 +12,13 @@
 // script below arrives (docs.astro.build/en/guides/client-side-scripts/).
 import { site } from "../config/site";
 import type { NavigationItem } from "../config/navigation";
-import { isCurrent } from "../lib/nav";
+import { isCurrent, isInSection } from "../lib/nav";
 import MenuIcon from "../icons/menu.svg";
 
 // The items come from the `navigation` prop, built by mergeNavigation() from
-// the page files (src/lib/pages.ts; FR-025). The current page is marked only
-// on its exact address (FR-025b).
+// the page files (src/lib/pages.ts; FR-025). The current page is marked on its
+// exact address (FR-025b); a link to a section is also marked, with
+// aria-current="true", on every address inside it (spec 008 FR-004).
 export interface Props {
   navigation: NavigationItem[];
 }
@@ -49,14 +50,17 @@ const pathname = Astro.url.pathname;
           {
             navigation.map((item) => {
               const current = isCurrent(pathname, item.href);
+              // Inside a section (the blog's posts, listings and topics) the link stays marked and
+              // shows the same current style, with "true" because the page itself is another one.
+              const inSection = !current && isInSection(pathname, item.href);
               return (
                 <li>
                   <a
                     href={item.href}
-                    aria-current={current ? "page" : undefined}
+                    aria-current={current ? "page" : inSection ? "true" : undefined}
                     class:list={[
                       "font-medium motion-safe:transition-colors",
-                      current
+                      current || inSection
                         ? "underline decoration-2 underline-offset-4 text-rust-700 dark:text-rust-400"
                         : "text-dusk-900 hover:text-rust-700 dark:text-white dark:hover:text-rust-400",
                     ]}

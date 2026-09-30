@@ -138,3 +138,131 @@ test.describe("post page", () => {
     await expect(region).toBeFocused();
   });
 });
+
+// The landing page (T042; contracts/blog-pages.md "Landing"). This build is not a production
+// build, so the sample posts show: sample-everything is the newest (the lead story), sample-short
+// is the only other featured post.
+const LANDING = "/writing/";
+const LEAD_TITLE = "Sample: Every kind of content a post can hold";
+
+test.describe("landing page", () => {
+  test("shows the parts in order: eyebrow and h1, feed link, lead story, pills, Featured, Latest, All posts", async ({
+    page,
+  }) => {
+    await page.goto(LANDING);
+    const main = page.locator("main");
+    await expect(main.locator("h1")).toHaveText("Writing");
+    await expect(main.getByText("Drift & Convergence", { exact: true }).first()).toBeVisible();
+    const feed = main.getByRole("link", { name: "Subscribe (RSS)" });
+    await expect(feed).toBeVisible();
+    await expect(feed).toHaveAttribute("href", "/writing/rss.xml");
+    await expect(main.locator("[data-lead-story]")).toHaveCount(1);
+    await expect(main.locator("[data-lead-story] h2")).toHaveText(LEAD_TITLE);
+    await expect(main.getByRole("navigation", { name: "Topics" })).toBeVisible();
+    await expect(main.getByRole("heading", { level: 2, name: "Featured" })).toBeVisible();
+    await expect(main.locator("[data-featured-grid]")).toBeVisible();
+    await expect(main.getByRole("heading", { level: 2, name: "Latest" })).toBeVisible();
+    await expect(main.locator("[data-latest-grid]")).toBeVisible();
+    await expect(main.getByRole("link", { name: "All posts" }).first()).toBeVisible();
+
+    // Document order.
+    const order = await page.evaluate(() => {
+      const at = (selector: string) => {
+        const el = document.querySelector(selector);
+        return el ? Array.from(document.querySelectorAll("*")).indexOf(el) : -1;
+      };
+      const heading = (text: string) => {
+        const el = Array.from(document.querySelectorAll("main h2")).find((h) => h.textContent?.trim() === text);
+        return el ? Array.from(document.querySelectorAll("*")).indexOf(el) : -1;
+      };
+      return [
+        at("main h1"),
+        at('main a[href$="rss.xml"]'),
+        at("[data-lead-story]"),
+        at('main nav[aria-label="Topics"]'),
+        heading("Featured"),
+        at("[data-featured-grid]"),
+        heading("Latest"),
+        at("[data-latest-grid]"),
+      ];
+    });
+    expect(order.every((n) => n >= 0)).toBe(true);
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+  });
+
+  test("shows no post twice: the lead story is not in Featured or Latest, and no Featured post is in Latest", async ({
+    page,
+  }) => {
+    await page.goto(LANDING);
+    const hrefs = async (selector: string) =>
+      page.locator(`${selector} [data-post-card] h3 a`).evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+    const featured = await hrefs("[data-featured-grid]");
+    const latest = await hrefs("[data-latest-grid]");
+    const lead = await page.locator("[data-lead-story] h2 a").getAttribute("href");
+    expect(lead).toBe("/writing/sample-everything/");
+    expect(featured).toEqual(["/writing/sample-short/"]);
+    expect(featured).not.toContain(lead);
+    expect(latest).not.toContain(lead);
+    for (const href of featured) expect(latest).not.toContain(href);
+    expect(new Set([lead, ...featured, ...latest]).size).toBe(1 + featured.length + latest.length);
+    await expect(page.locator("[data-featured-grid] [data-featured-mark]")).toHaveCount(featured.length);
+  });
+
+  test("shows the lead story's image eagerly and a text-only card without one", async ({ page }) => {
+    await page.goto(LANDING);
+    const img = page.locator("[data-lead-story] img");
+    await expect(img).toHaveAttribute("fetchpriority", "high");
+    await expect(img).toHaveAttribute("loading", "eager");
+    const textOnly = page.locator("[data-post-card][data-text-only]");
+    await expect(textOnly).toHaveCount(1);
+    await expect(textOnly.locator("img")).toHaveCount(0);
+  });
+
+  test("advertises the feed in the head, and has its own title, description and canonical address", async ({
+    page,
+  }) => {
+    await page.goto(LANDING);
+    await expect(page.locator('head link[rel="alternate"][type="application/rss+xml"]')).toHaveAttribute(
+      "href",
+      /\/writing\/rss\.xml$/,
+    );
+    expect(await page.title()).toBe("Writing · Don Coleman");
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /compliant data/);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/writing\/$/);
+    await expect(page.locator('meta[property="og:type"]')).toHaveAttribute("content", "website");
+    // The site's default sharing image (FR-030 says a feature image is for posts only).
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /\.png$/);
+    await expect(page.locator('meta[property="og:image"]')).not.toHaveAttribute("content", /sample/);
+  });
+
+  test("links each pill to its topic page and offers every topic, with All posts last", async ({ page }) => {
+    await page.goto(LANDING);
+    const links = page.locator('main nav[aria-label="Topics"] a');
+    expect(await links.count()).toBeGreaterThanOrEqual(5);
+    const hrefs = await links.evaluateAll((els) => els.map((a) => a.getAttribute("href")));
+    expect(hrefs.at(-1)).toBe("/writing/all/");
+    for (const href of hrefs.slice(0, -1)) expect(href).toMatch(/^\/writing\/topics\/[a-z-]+\/$/);
+    const first = hrefs[0]!;
+    await Promise.all([
+      page.waitForURL(`**${first}`),
+      links.first().click(),
+    ]);
+  });
+
+  test("marks Writing as the current page", async ({ page }) => {
+    await page.goto(LANDING);
+    await expect(page.locator('#primary-nav-list a[href="/writing/"]')).toHaveAttribute("aria-current", "page");
+    await expect(page.locator("#primary-nav-list a[aria-current]")).toHaveCount(1);
+  });
+
+  test("marks Writing as the current section on a post page", async ({ page }) => {
+    await page.goto(POST);
+    await expect(page.locator('#primary-nav-list a[href="/writing/"]')).toHaveAttribute("aria-current", "true");
+  });
+
+  test("does not scroll sideways at 320 px", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto(LANDING);
+    await noSidewaysScroll(page);
+  });
+});

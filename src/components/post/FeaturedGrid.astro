@@ -1,0 +1,34 @@
+---
+// The Featured bento grid on the landing page: one to three cards (contracts/
+// blog-pages.md "Landing" item 4; Direction A of docs/design/blog.md; FR-007). The
+// layout suits the count: one card alone, two side by side, three with the first
+// across the full width above the other two, so there is never a lone full-width
+// fourth card. A card's DOM order is its visual order (FR-049). Renders nothing
+// for no posts; the page leaves the heading out with it.
+import type { HTMLAttributes } from "astro/types";
+import { blog } from "../../config/blog.ts";
+import type { PostSummary } from "../../lib/content/post-summary.ts";
+import PostCard from "./PostCard.astro";
+
+export interface Props extends HTMLAttributes<"ul"> {
+  /** Featured posts, newest first. Only the first three are shown. */
+  posts: readonly PostSummary[];
+}
+
+const { posts, class: className, ...rest } = Astro.props;
+const shown = posts.slice(0, blog.featuredMax);
+const layout =
+  shown.length === 1
+    ? ""
+    : shown.length === 2
+      ? "sm:grid-cols-2"
+      : "sm:grid-cols-2 sm:[&>li:first-child]:col-span-2";
+---
+
+{
+  shown.length > 0 && (
+    <ul data-featured-grid class:list={["m-0 grid list-none gap-6 p-0", layout, className]} {...rest}>
+      {shown.map((post) => <PostCard post={post} headingLevel="h3" />)}
+    </ul>
+  )
+}

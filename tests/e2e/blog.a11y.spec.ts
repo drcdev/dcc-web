@@ -101,7 +101,9 @@ for (const template of blogTemplates) {
               const style = getComputedStyle(el);
               return {
                 index: all.indexOf(el),
-                top: el.getBoundingClientRect().top + window.scrollY,
+                // Cards in one grid row are read one after the other, so a card's pills sit below
+                // the next card's title. Order is judged by the card a control sits in (FR-049).
+                top: (el.closest("[data-post-card], [data-lead-story]") ?? el).getBoundingClientRect().top + window.scrollY,
                 inHeader: !!el.closest("header, a[href='#main']") || el.matches("a[href='#main'], .sr-only"),
                 outline: style.outlineStyle,
                 width: parseFloat(style.outlineWidth),

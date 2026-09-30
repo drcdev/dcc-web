@@ -13,7 +13,7 @@ const PAGES = [
   ["/technology/", "Technology"],
 ] as const;
 
-const NOT_BUILT = ["/cookie-policy/", "/writing/", "/projects/"] as const;
+const NOT_BUILT = ["/cookie-policy/", "/projects/"] as const;
 
 for (const [path, title] of PAGES) {
   test.describe(`${path}`, () => {
@@ -117,6 +117,7 @@ test("the sitemap lists the eight pages and the sample posts, and neither the no
     "/speaking/",
     "/technology/",
     "/terms-of-use/",
+    "/writing/",
     "/writing/sample-everything/",
     "/writing/sample-long-title/",
     "/writing/sample-short/",

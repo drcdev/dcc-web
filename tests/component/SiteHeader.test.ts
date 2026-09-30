@@ -125,6 +125,32 @@ describe("SiteHeader current page", () => {
   });
 });
 
+describe("SiteHeader current section (FR-004)", () => {
+  const writing = async (pathname: string) => navList(await render(pathname)).links.find((a) => a.attrs.href === "/writing/")!;
+
+  it('marks Writing with aria-current="page" on /writing/ and gives it the current style', async () => {
+    const link = await writing("/writing/");
+    expect(link.attrs["aria-current"]).toBe("page");
+    expect(classList(link)).toContain("underline");
+  });
+
+  it.each(["/writing/some-post/", "/writing/all/", "/writing/all/2/", "/writing/topics/agentic-ai/"])(
+    'marks Writing with aria-current="true" and the same style on %s',
+    async (pathname) => {
+      const link = await writing(pathname);
+      expect(link.attrs["aria-current"]).toBe("true");
+      expect(classList(link)).toContain("underline");
+    },
+  );
+
+  it("marks only one link, and leaves Writing unmarked elsewhere", async () => {
+    const html = await render("/writing/some-post/");
+    expect(navList(html).links.filter((a) => a.attrs["aria-current"] !== undefined)).toHaveLength(1);
+    expect((await writing("/services/")).attrs["aria-current"]).toBeUndefined();
+    expect((await writing("/writing-tips/")).attrs["aria-current"]).toBeUndefined();
+  });
+});
+
 describe("SiteHeader menu button", () => {
   const button = () => byName(home, "button");
 

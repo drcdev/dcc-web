@@ -1,0 +1,76 @@
+---
+// The lead story at the top of the landing page: the newest visible post, shown
+// large (contracts/blog-pages.md "Landing" item 2; Direction A of docs/design/blog.md;
+// FR-006, FR-011, FR-047, FR-052). Not a list item: it stands alone under the page
+// heading, so it is a bare `<article data-lead-story>` with the title as an `h2`.
+// The feature image is the largest thing on the page, so it loads eagerly at high
+// priority; a post without one is a text-only card bordered in its main topic's
+// colour, with no fallback graphic. Images go through `astro:assets`
+// (docs.astro.build/en/guides/images/#astro-components-for-images).
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import { findTopic } from "../../config/topics.ts";
+import { formatDate, isoDate } from "../../lib/format-date.ts";
+import type { PostSummary } from "../../lib/content/post-summary.ts";
+import TopicPill from "./TopicPill.astro";
+import { draftLabel, featuredMark, topicStyle } from "./topic-styles.ts";
+
+export interface Props {
+  post: PostSummary;
+}
+
+const { post } = Astro.props;
+const mainTopic = findTopic(post.topics[0] ?? "");
+const textOnly = !post.featureImage;
+const flags = {
+  ...(post.featured ? { "data-featured": "" } : {}),
+  ...(textOnly ? { "data-text-only": "" } : {}),
+  ...(post.draft ? { "data-draft": "" } : {}),
+};
+const border =
+  textOnly && mainTopic ? `border-2 ${topicStyle(mainTopic.colour).border}` : "border border-dusk-200 dark:border-dusk-700";
+---
+
+<article
+  data-lead-story
+  {...flags}
+  class:list={[
+    "grid min-w-0 overflow-hidden rounded-xl bg-white dark:bg-dusk-800",
+    post.featureImage && "md:grid-cols-2",
+    border,
+  ]}
+>
+  {
+    post.featureImage && (
+      <Image
+        src={post.featureImage.src as ImageMetadata}
+        alt={post.featureImage.alt}
+        widths={[480, 640, 800, 960]}
+        sizes="(min-width: 1024px) 512px, (min-width: 768px) 50vw, 100vw"
+        loading="eager"
+        fetchpriority="high"
+        class="aspect-[16/9] h-auto w-full object-cover md:aspect-auto md:h-full md:min-h-64"
+      />
+    )
+  }
+  <div class="flex min-w-0 flex-col gap-3 p-6 md:p-8">
+    <h2 class="m-0 text-2xl font-bold leading-tight [overflow-wrap:anywhere] sm:text-3xl">
+      <a href={post.href} class="text-dusk-900 hover:underline dark:text-white">{post.title}</a>
+    </h2>
+    <p class="m-0 text-lg text-dusk-700 [overflow-wrap:anywhere] dark:text-mist-300">{post.summary}</p>
+    {
+      (post.featured || post.draft) && (
+        <p class="m-0 flex flex-wrap gap-2">
+          {post.featured && <span data-featured-mark class={featuredMark}>Featured</span>}
+          {post.draft && <span data-draft-label class={draftLabel}>Draft</span>}
+        </p>
+      )
+    }
+    <p class="m-0 text-sm text-dusk-600 dark:text-dusk-300">
+      <time datetime={isoDate(post.date)}>{formatDate(post.date)}</time> · {post.minutesRead} min read
+    </p>
+    <ul aria-label="Topics" class="m-0 mt-auto flex list-none flex-wrap gap-2 p-0">
+      {post.topics.map((topic) => <li><TopicPill topic={topic} /></li>)}
+    </ul>
+  </div>
+</article>
