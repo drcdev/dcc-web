@@ -26,6 +26,10 @@ for (const entry of ["src", "public", "setup", "astro.config.mjs", "tsconfig.jso
 // Dependencies resolve through the repository's node_modules.
 symlinkSync(resolve(repoRoot, "node_modules"), resolve(siteRoot, "node_modules"), "dir");
 
+// The contact form imports the shared limits from the Worker package.
+mkdirSync(resolve(siteRoot, "worker/src/contact"), { recursive: true });
+cpSync(resolve(repoRoot, "worker/src/contact/rules.ts"), resolve(siteRoot, "worker/src/contact/rules.ts"));
+
 if (existsSync(fixture)) {
   mkdirSync(resolve(siteRoot, "src/content/pages"), { recursive: true });
   cpSync(fixture, resolve(siteRoot, "src/content/pages/sections.mdx"));

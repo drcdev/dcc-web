@@ -2,6 +2,7 @@
 // import (contracts/sections.md; research R3). The registry maps each name to
 // its component; anything else fails the build (src/lib/content/body.ts).
 import CallToAction from "./CallToAction.astro";
+import ContactForm from "./ContactForm.astro";
 import Figure from "./Figure.astro";
 import FullImage from "./FullImage.astro";
 import Lead from "./Lead.astro";
@@ -19,6 +20,7 @@ export const sectionNames = [
   "Figure",
   "WideImage",
   "FullImage",
+  "ContactForm",
 ] as const;
 
 export type SectionName = (typeof sectionNames)[number];
@@ -37,4 +39,5 @@ export const sectionComponents = {
   Figure,
   WideImage,
   FullImage,
+  ContactForm,
 } satisfies Record<SectionName, unknown>;

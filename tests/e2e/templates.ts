@@ -12,6 +12,7 @@ export const TEMPLATES = [
   { name: "privacy-policy", path: "/privacy-policy/", built: true },
   { name: "terms-of-use", path: "/terms-of-use/", built: true },
   { name: "technology", path: "/technology/", built: true },
+  { name: "contact", path: "/contact/", built: true },
 ] as const;
 
 export const NOT_FOUND_PENDING = "not-found page is built in Phase 7 (T071); T072 enables this";

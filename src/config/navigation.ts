@@ -44,4 +44,4 @@ export const socialNavigation: readonly NavigationItem[] = [
  * link checks accept a not-found response only for these, so a typo in any other
  * link still fails. Remove an entry when the feature that builds that page lands.
  */
-export const futureDestinations: readonly string[] = ["/writing/", "/projects/", "/contact/"];
+export const futureDestinations: readonly string[] = ["/writing/", "/projects/"];

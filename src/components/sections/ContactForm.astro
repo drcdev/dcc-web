@@ -1,0 +1,498 @@
+---
+// The contact form (port of Flux partials/ui-contact-form.hbs and
+// assets/js/contact-form.js; contracts/contact-page.md; FR-008a to FR-008p).
+// Without JavaScript the fields are usable but Send is disabled and a notice
+// says why. The island below posts JSON to /api/contact, loads Cloudflare
+// Turnstile only after the first interaction, and shows accessible errors.
+// Dropped from Flux: the Ghost member pre-fill, Supabase and its auth bridge.
+import { PUBLIC_TURNSTILE_SITE_KEY } from "astro:env/client";
+import { EMAIL_MAX, MESSAGE_MAX, NAME_MAX, ORGANIZATION_MAX } from "../../../worker/src/contact/rules.ts";
+import { allowTurnstile } from "./contact-csp.ts";
+import { checkSection } from "./validate.ts";
+
+checkSection("ContactForm", Astro.props, "", Astro.locals);
+
+// The page policy gets the Turnstile script and frame sources on this page only
+// (docs.astro.build/en/reference/api-reference/#csp).
+allowTurnstile(Astro.csp);
+
+// Field borders use dusk-500 (light) and dusk-400 (dark) so they meet 3:1
+// against their backgrounds; the focus ring is the site's accent outline.
+const control =
+  "block w-full rounded-lg border border-dusk-500 bg-dusk-50 p-2.5 text-base text-dusk-900 " +
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500 " +
+  "aria-[invalid=true]:border-2 aria-[invalid=true]:border-rust-700 " +
+  "dark:border-dusk-400 dark:bg-dusk-700 dark:text-white dark:focus-visible:outline-accent-400 " +
+  "dark:aria-[invalid=true]:border-rust-300";
+const label = "mb-2 block text-sm font-medium text-dusk-900 dark:text-white";
+const error =
+  "mt-2 items-start gap-2 text-sm font-medium text-rust-700 dark:text-rust-300 [&:not([hidden])]:flex";
+const link = "underline underline-offset-2 hover:text-rust-700 dark:hover:text-rust-300";
+---
+
+<div class="not-prose mx-auto max-w-screen-lg" data-contact>
+  <form
+    id="contact-form"
+    class="text-dusk-900 dark:text-mist-300"
+    novalidate
+    action="/api/contact"
+    method="post"
+    aria-labelledby="contact-form-heading"
+  >
+    <h2 id="contact-form-heading" class="mb-4 text-2xl font-bold text-dusk-900 dark:text-white">Send a message</h2>
+
+    <p id="contact-js-required" class="mb-4 rounded-lg border border-dusk-500 p-3 text-sm dark:border-dusk-400">
+      Sending this form needs JavaScript. You can still read how your information is handled in the
+      <a class={link} href="/privacy-policy/" target="_blank" rel="noopener">privacy policy (opens in a new tab)</a>.
+    </p>
+
+    <p id="contact-required-note" class="mb-4 text-sm">All fields are required unless marked optional.</p>
+
+    <p id="contact-project" class="mb-4 text-sm font-medium" hidden></p>
+    <input type="hidden" name="project" value="" />
+
+    <!-- Honeypot: display none, so it is not shown, focusable, read or autofilled. -->
+    <div class="hidden" aria-hidden="true">
+      <input type="text" name="website" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <label for="contact-name" class={label}>Name</label>
+        <input
+          type="text"
+          id="contact-name"
+          name="name"
+          class={control}
+          required
+          maxlength={NAME_MAX}
+          autocomplete="name"
+        />
+        <p id="contact-name-error" class={error} hidden>
+          <svg class="mt-0.5 size-4 shrink-0" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor"
+            ><path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM9 6h2v5H9V6Zm0 6h2v2H9v-2Z"
+              clip-rule="evenodd"></path></svg
+          ><span data-text></span>
+        </p>
+      </div>
+      <div>
+        <label for="contact-email" class={label}>Email</label>
+        <div class="relative">
+          <div class="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3.5">
+            <svg
+              class="h-4 w-4 text-dusk-600 dark:text-dusk-300"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 20 16"
+            >
+              <path d="m10.036 8.278 9.258-7.79A1.979 1.979 0 0 0 18 0H2A1.987 1.987 0 0 0 .641.541l9.395 7.737Z"></path>
+              <path
+                d="M11.241 9.817c-.36.275-.801.425-1.255.427-.428 0-.845-.138-1.187-.395L0 2.6V14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2.5l-8.759 7.317Z"
+              ></path>
+            </svg>
+          </div>
+          <input
+            type="email"
+            id="contact-email"
+            name="email"
+            class={control + " ps-10"}
+            required
+            maxlength={EMAIL_MAX}
+            autocomplete="email"
+          />
+        </div>
+        <p id="contact-email-error" class={error} hidden>
+          <svg class="mt-0.5 size-4 shrink-0" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor"
+            ><path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM9 6h2v5H9V6Zm0 6h2v2H9v-2Z"
+              clip-rule="evenodd"></path></svg
+          ><span data-text></span>
+        </p>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <label for="contact-organization" class={label}>Organization (optional)</label>
+      <input
+        type="text"
+        id="contact-organization"
+        name="organization"
+        class={control}
+        maxlength={ORGANIZATION_MAX}
+        autocomplete="organization"
+      />
+      <p id="contact-organization-error" class={error} hidden>
+        <svg class="mt-0.5 size-4 shrink-0" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor"
+          ><path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM9 6h2v5H9V6Zm0 6h2v2H9v-2Z"
+            clip-rule="evenodd"></path></svg
+        ><span data-text></span>
+      </p>
+    </div>
+
+    <div class="mb-4">
+      <label for="contact-message" class={label}>Message</label>
+      <textarea
+        id="contact-message"
+        name="message"
+        rows="6"
+        class={control}
+        required
+        maxlength={MESSAGE_MAX}
+        spellcheck="true"></textarea>
+      <p id="contact-message-error" class={error} hidden>
+        <svg class="mt-0.5 size-4 shrink-0" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor"
+          ><path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM9 6h2v5H9V6Zm0 6h2v2H9v-2Z"
+            clip-rule="evenodd"></path></svg
+        ><span data-text></span>
+      </p>
+    </div>
+
+    <div class="mb-4">
+      <div class="flex items-start gap-3">
+        <input
+          id="contact-consent"
+          type="checkbox"
+          name="consent"
+          value="yes"
+          required
+          class="mt-0.5 size-6 shrink-0 rounded-sm border border-dusk-500 bg-dusk-50 accent-rust-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500 dark:border-dusk-400 dark:bg-dusk-700 dark:accent-rust-400 dark:focus-visible:outline-accent-400"
+        />
+        <label for="contact-consent" class="text-sm font-medium"
+          >I agree that Don Coleman may keep what I enter in this form and use it to reply to me, as described in the <a
+            class={link}
+            href="/privacy-policy/"
+            target="_blank"
+            rel="noopener">privacy policy (opens in a new tab)</a
+          >.</label
+        >
+      </div>
+      <p id="contact-consent-error" class={error} hidden>
+        <svg class="mt-0.5 size-4 shrink-0" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor"
+          ><path
+            fill-rule="evenodd"
+            d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM9 6h2v5H9V6Zm0 6h2v2H9v-2Z"
+            clip-rule="evenodd"></path></svg
+        ><span data-text></span>
+      </p>
+    </div>
+
+    <div id="contact-turnstile" data-sitekey={PUBLIC_TURNSTILE_SITE_KEY}></div>
+
+    <div id="contact-status" role="status" aria-live="polite" class="my-4 min-h-6 text-sm font-medium text-rust-700 dark:text-rust-300"></div>
+
+    <button
+      type="submit"
+      disabled
+      class="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-linear-to-br from-rust-400 to-rust-800 p-0.5 text-sm font-medium text-dusk-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500 disabled:cursor-not-allowed disabled:opacity-60 dark:text-white dark:focus-visible:outline-accent-400"
+    >
+      <span class="relative rounded-md bg-white px-4 py-2 group-hover:bg-transparent dark:bg-dusk-BASE dark:group-hover:bg-transparent" data-send-label>Send</span>
+    </button>
+  </form>
+
+  <section id="contact-success" hidden tabindex="-1" class="rounded-lg bg-sage-100 p-6 text-center dark:bg-sage-900">
+    <svg class="mx-auto mb-4 size-12 text-sage-800 dark:text-sage-300" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <h2 id="contact-success-heading" tabindex="-1" class="mb-2 text-xl font-bold text-sage-900 dark:text-sage-100">Message sent</h2>
+    <p class="text-sage-900 dark:text-sage-100">Thanks, your message was sent. I'll reply by email.</p>
+  </section>
+</div>
+
+<script>
+  import { validateSubmission } from "../../../worker/src/contact/rules.ts";
+
+  type Turnstile = {
+    render(container: string, options: Record<string, unknown>): string;
+    reset(widgetId?: string): void;
+  };
+  declare global {
+    interface Window {
+      turnstile?: Turnstile;
+    }
+  }
+
+  const TURNSTILE_SCRIPT = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+  const MESSAGES = {
+    generic: "Your message wasn't sent. Please try again.",
+    forbidden: "Your message wasn't sent. Please try again from doncoleman.ca.",
+    tooLarge: "Your message is too long to send. Please shorten it.",
+    botCheck: "We couldn't confirm you're not a bot. Please try again.",
+    rateLimited: "You've sent too many messages. Please try again later.",
+    unavailable: "Your message wasn't sent because the service is unavailable. Please try again in a few minutes.",
+    checkFailedToLoad: "The spam check couldn't load. Please try again later.",
+    checking: "Checking you're not a bot…",
+    sending: "Sending your message…",
+  } as const;
+  const FIELDS = ["name", "email", "organization", "message", "consent"] as const;
+  type Field = (typeof FIELDS)[number];
+  const FIELD_LABEL: Record<Field, string> = {
+    name: "Name",
+    email: "Email",
+    organization: "Organization",
+    message: "Message",
+    consent: "Consent",
+  };
+  const LIMITS = { name: 100, email: 254, organization: 100, message: 5000 } as const;
+
+  function fieldMessage(field: string, code: string): string {
+    if (field === "consent") return "Tick the box to agree before sending.";
+    if (code === "too_long") {
+      const limit = LIMITS[field as keyof typeof LIMITS];
+      const label = FIELD_LABEL[field as Field] ?? "This field";
+      return `${label} is too long. The limit is ${limit?.toLocaleString("en-CA")} characters.`;
+    }
+    switch (field) {
+      case "name":
+        return "Name: enter your name.";
+      case "email":
+        return code === "invalid" ? "Email: enter a valid email address." : "Email: enter your email address.";
+      case "message":
+        return "Message: write your message.";
+      default:
+        return MESSAGES.generic;
+    }
+  }
+
+  const form = document.getElementById("contact-form") as HTMLFormElement | null;
+  if (form) start(form);
+
+  function start(form: HTMLFormElement) {
+    const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+    const notice = $("contact-js-required");
+    const status = $("contact-status");
+    const send = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    const sendLabel = send.querySelector<HTMLElement>("[data-send-label]")!;
+    const success = $("contact-success");
+    const successHeading = $("contact-success-heading");
+    const slot = $("contact-turnstile");
+    const control = (field: Field) => $<HTMLInputElement | HTMLTextAreaElement>(`contact-${field}`);
+
+    let submissionId = crypto.randomUUID();
+    let token = "";
+    let widgetId: string | undefined;
+    const tokenWaiters: Array<() => void> = [];
+    let scriptRequested = false;
+    let scriptFailed = false;
+    let sending = false;
+
+    // 1. Start: the notice goes, Send comes alive, ?project= is read as plain text.
+    notice.hidden = true;
+    send.disabled = false;
+    const project = (new URLSearchParams(location.search).get("project") ?? "")
+      .replace(/[\u0000-\u001f\u007f-\u009f]/g, "")
+      .trim()
+      .slice(0, 100);
+    if (project !== "") {
+      form.querySelector<HTMLInputElement>('input[name="project"]')!.value = project;
+      const line = $("contact-project");
+      line.textContent = `About: ${project}`;
+      line.hidden = false;
+    }
+
+    // The status region is cleared first so an identical message is announced again.
+    function setStatus(message: string) {
+      status.textContent = "";
+      if (message !== "") setTimeout(() => (status.textContent = message), 60);
+    }
+
+    function clearErrors() {
+      for (const field of FIELDS) {
+        const box = $(`contact-${field}-error`);
+        box.hidden = true;
+        box.querySelector("[data-text]")!.textContent = "";
+        const input = control(field);
+        input.removeAttribute("aria-invalid");
+        input.removeAttribute("aria-describedby");
+      }
+    }
+
+    function showError(field: Field, message: string) {
+      const box = $(`contact-${field}-error`);
+      box.querySelector("[data-text]")!.textContent = message;
+      box.hidden = false;
+      const input = control(field);
+      input.setAttribute("aria-invalid", "true");
+      input.setAttribute("aria-describedby", box.id);
+    }
+
+    function showFieldErrors(errors: Record<string, string>): boolean {
+      const invalid = FIELDS.filter((field) => errors[field] !== undefined);
+      for (const field of invalid) showError(field, fieldMessage(field, errors[field]!));
+      if (invalid.length === 0) return false;
+      setStatus(invalid.length === 1 ? "1 field needs attention." : `${invalid.length} fields need attention.`);
+      control(invalid[0]!).focus();
+      return true;
+    }
+
+    function setSending(on: boolean) {
+      sending = on;
+      send.disabled = on;
+      sendLabel.textContent = on ? "Sending…" : "Send";
+      if (!on) send.focus();
+    }
+
+    // 2. Turnstile loads on the first interaction, never on page load.
+    function resetCheck() {
+      token = "";
+      if (widgetId !== undefined && window.turnstile) window.turnstile.reset(widgetId);
+    }
+    function loadCheck() {
+      if (scriptRequested) return;
+      scriptRequested = true;
+      const script = document.createElement("script");
+      script.src = TURNSTILE_SCRIPT;
+      script.async = true;
+      script.onload = () => {
+        if (!window.turnstile) return fail();
+        widgetId = window.turnstile.render("#contact-turnstile", {
+          sitekey: slot.dataset.sitekey,
+          action: "contact",
+          appearance: "interaction-only",
+          "response-field": false,
+          callback: (value: string) => {
+            token = value;
+            scriptFailed = false;
+            for (const wake of tokenWaiters.splice(0)) wake();
+          },
+          "error-callback": () => {
+            token = "";
+            fail();
+            return true;
+          },
+          // A silent refresh: no time limit on filling in the form.
+          "expired-callback": () => {
+            token = "";
+            resetCheck();
+          },
+        });
+      };
+      script.onerror = fail;
+      document.head.append(script);
+    }
+    function fail() {
+      scriptFailed = true;
+      for (const wake of tokenWaiters.splice(0)) wake();
+    }
+    form.addEventListener("focusin", loadCheck);
+    form.addEventListener("input", loadCheck);
+
+    function waitForToken(): Promise<boolean> {
+      if (token !== "") return Promise.resolve(true);
+      if (scriptFailed) return Promise.resolve(false);
+      loadCheck();
+      return new Promise((resolve) => {
+        const timer = setTimeout(() => resolve(false), 10_000);
+        tokenWaiters.push(() => {
+          clearTimeout(timer);
+          resolve(token !== "");
+        });
+      });
+    }
+
+    // 3. Submit.
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (sending) return;
+      setStatus("");
+      clearErrors();
+
+      const values = {
+        submission_id: submissionId,
+        name: control("name").value,
+        email: control("email").value,
+        organization: control("organization").value,
+        project: form.querySelector<HTMLInputElement>('input[name="project"]')!.value,
+        message: control("message").value,
+        consent: (control("consent") as HTMLInputElement).checked,
+        website: form.querySelector<HTMLInputElement>('input[name="website"]')!.value,
+      };
+      const result = validateSubmission(values);
+      if (!result.ok) {
+        showFieldErrors(result.fields);
+        return;
+      }
+
+      setSending(true);
+      if (token === "") setStatus(MESSAGES.checking);
+      if (!(await waitForToken())) {
+        // Keep every value; a later attempt can load the check again.
+        scriptRequested = false;
+        scriptFailed = false;
+        document.querySelector(`script[src="${TURNSTILE_SCRIPT}"]`)?.remove();
+        setSending(false);
+        setStatus(MESSAGES.checkFailedToLoad);
+        return;
+      }
+      setStatus(MESSAGES.sending);
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15_000);
+      try {
+        const response = await fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...values, turnstile_token: token }),
+          signal: controller.signal,
+        });
+        const data = (await response.json().catch(() => ({}))) as { error?: string; fields?: Record<string, string> };
+        if (response.ok) {
+          form.hidden = true;
+          success.hidden = false;
+          setStatus("");
+          successHeading.focus();
+          submissionId = crypto.randomUUID();
+          sending = false;
+          return;
+        }
+        // The token was spent or refused: get a fresh one for the next attempt.
+        resetCheck();
+        setSending(false);
+        if (response.status === 400 && data.error === "validation" && data.fields) {
+          const fields = { ...data.fields };
+          delete fields.submission_id;
+          if (showFieldErrors(fields)) return;
+          setStatus(MESSAGES.generic);
+          return;
+        }
+        setStatus(
+          response.status === 403
+            ? MESSAGES.forbidden
+            : response.status === 413
+              ? MESSAGES.tooLarge
+              : response.status === 422
+                ? MESSAGES.botCheck
+                : response.status === 429
+                  ? MESSAGES.rateLimited
+                  : response.status >= 500
+                    ? MESSAGES.unavailable
+                    : MESSAGES.generic,
+        );
+      } catch {
+        resetCheck();
+        setSending(false);
+        setStatus(MESSAGES.unavailable);
+      } finally {
+        clearTimeout(timeout);
+      }
+    });
+
+    // 7. Back-forward cache: reset the visible state, keep the typed values.
+    window.addEventListener("pageshow", (event) => {
+      if (!event.persisted) return;
+      form.hidden = false;
+      success.hidden = true;
+      clearErrors();
+      setStatus("");
+      setSending(false);
+      resetCheck();
+    });
+  }
+</script>

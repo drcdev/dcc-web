@@ -2,7 +2,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "astro/config";
+import { defineConfig, envField } from "astro/config";
 
 import tailwindcss from "@tailwindcss/vite";
 import sitemap from "@astrojs/sitemap";
@@ -60,6 +60,21 @@ export default defineConfig({
         "base-uri 'self'",
         "form-action 'self'",
       ],
+    },
+  },
+
+  // The Turnstile site key is public by design. Workers Builds must set it (a
+  // missing variable fails the build rather than shipping a test key); every
+  // other build defaults to Cloudflare's always-pass test key
+  // (docs.astro.build/en/guides/environment-variables/#type-safe-environment-variables;
+  // specs/007-contact-form/research.md R6).
+  env: {
+    schema: {
+      PUBLIC_TURNSTILE_SITE_KEY: envField.string({
+        context: "client",
+        access: "public",
+        ...(process.env.WORKERS_CI === "1" ? {} : { default: "1x00000000000000000000AA" }),
+      }),
     },
   },
 

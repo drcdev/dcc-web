@@ -15,6 +15,7 @@ interface SiteverifyResponse {
   success?: boolean;
   action?: string;
   hostname?: string;
+  metadata?: { result_with_testing_key?: boolean };
 }
 
 export interface VerifyInput {
@@ -52,5 +53,8 @@ export async function verifyTurnstile(input: VerifyInput): Promise<boolean> {
   } catch {
     throw new TurnstileUnavailableError();
   }
+  // Cloudflare's documented test secrets answer with a fixed hostname (example.com) and no
+  // action, and say so in the metadata. Only a real siteverify answer can carry that flag.
+  if (result.metadata?.result_with_testing_key === true) return result.success === true;
   return result.success === true && result.action === TURNSTILE_ACTION && result.hostname === input.hostname;
 }

@@ -80,6 +80,9 @@ export async function buildFixtureSite(
   const root = resolve(repoRoot, ".cache/fixture-tests", randomUUID());
   mkdirSync(root, { recursive: true });
   for (const entry of siteEntries) cpSync(resolve(repoRoot, entry), resolve(root, entry), { recursive: true });
+  // The contact form imports its shared limits from the Worker package.
+  mkdirSync(resolve(root, "worker/src/contact"), { recursive: true });
+  cpSync(resolve(repoRoot, "worker/src/contact/rules.ts"), resolve(root, "worker/src/contact/rules.ts"));
   // Dependencies resolve through the repository's node_modules.
   symlinkSync(resolve(repoRoot, "node_modules"), resolve(root, "node_modules"), "dir");
 

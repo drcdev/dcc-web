@@ -48,7 +48,7 @@ for (const template of TEMPLATES) {
       test("shows no menu button and no theme switch", async ({ page }) => {
         await expect(page.locator(MENU_BUTTON)).toBeHidden();
         await expect(page.locator('button[aria-label^="Theme:"]')).toHaveCount(0);
-        await expect(page.locator("button:visible")).toHaveCount(0);
+        await expect(page.locator("button:visible:enabled")).toHaveCount(0);
       });
 
       test("reaches every navigation link with Tab in order", async ({ page }) => {

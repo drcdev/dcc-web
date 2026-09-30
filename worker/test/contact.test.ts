@@ -168,6 +168,15 @@ describe("POST /api/contact: Turnstile", () => {
     expect(await rows()).toHaveLength(0);
   });
 
+  it("accepts Cloudflare's documented testing-key answer (no action, hostname example.com) and nothing else lacking them", async () => {
+    // The always-pass test secret used by the E2E run answers like this (research R6).
+    mockSiteverify({ success: true, hostname: "example.com", metadata: { result_with_testing_key: true } });
+    expect((await run(post(validBody(), {}, "http://127.0.0.1:4321/api/contact"))).status).toBe(200);
+    vi.restoreAllMocks();
+    mockSiteverify({ success: false, metadata: { result_with_testing_key: true } });
+    expect((await run(post())).status).toBe(422);
+  });
+
   it("422 when the token is missing, without calling siteverify", async () => {
     const { spy } = mockSiteverify();
     const response = await run(post(validBody({ turnstile_token: undefined })));
