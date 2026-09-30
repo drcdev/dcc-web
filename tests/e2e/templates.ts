@@ -3,6 +3,8 @@
 // The not-found page was built in Phase 7 (T071, src/pages/404.astro; T072
 // flipped `built` to `true` here), so the header/no-JS assertions that were
 // marked `fixme` while it didn't exist now run and must pass.
+import { PORTFOLIO_PROTOTYPES } from "./portfolio-prototypes";
+
 export const TEMPLATES = [
   { name: "home", path: "/", built: true },
   { name: "not-found", path: "/nope/", built: true },
@@ -12,6 +14,7 @@ export const TEMPLATES = [
   { name: "privacy-policy", path: "/privacy-policy/", built: true },
   { name: "terms-of-use", path: "/terms-of-use/", built: true },
   { name: "technology", path: "/technology/", built: true },
+  ...PORTFOLIO_PROTOTYPES,
 ] as const;
 
 export const NOT_FOUND_PENDING = "not-found page is built in Phase 7 (T071); T072 enables this";
