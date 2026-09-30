@@ -11,6 +11,7 @@ export const storyBlockSchemas = {
   Chapter: z.strictObject({ stage: z.enum(stageIds), visual: text.optional(), draft: z.boolean().optional() }),
   Visual: z.strictObject({ name: text, eager: z.boolean().optional(), idPrefix: text.optional() }),
   OptionComparison: z.strictObject({}),
-  Demo: z.strictObject({}),
+  // `frame` is set by <Chapter visual="demo"> to render the embedded demo itself.
+  Demo: z.strictObject({ frame: z.boolean().optional() }),
   Invitation: z.strictObject({}),
 } satisfies Record<StoryBlockName, z.ZodType>;

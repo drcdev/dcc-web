@@ -9,6 +9,7 @@ import sitemap from "@astrojs/sitemap";
 import mdx from "@astrojs/mdx";
 import { satteri } from "@astrojs/markdown-satteri";
 
+import { pruneDraftAssets } from "./src/lib/prune-unreferenced-assets.ts";
 import { resolveSiteOrigin } from "./src/lib/site-origin.ts";
 import { readingTimePlugin } from "./src/lib/markdown/reading-time.ts";
 import { shikiClassTransformer } from "./src/lib/markdown/shiki-classes.ts";
@@ -39,6 +40,12 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    build: {
+      // A project clip is always a file, never a data: address: the page policy has
+      // no media-src for data:, and a small clip would otherwise be inlined
+      // (vite.dev/config/build-options#build-assetsinlinelimit; specs/009-portfolio).
+      assetsInlineLimit: (file) => (/\.(webm|mp4)$/i.test(file) ? false : undefined),
+    },
   },
 
   // Sätteri is Astro's default Markdown processor; it is named here only to add
@@ -103,5 +110,10 @@ export default defineConfig({
   },
 
   // The not-found page is not a public page (FR-017c, FR-018; research R9).
-  integrations: [sitemap({ filter: (page) => !new URL(page).pathname.startsWith("/404") }), mdx()],
+  // pruneDraftAssets drops what only a draft project used from the production build.
+  integrations: [
+    sitemap({ filter: (page) => !new URL(page).pathname.startsWith("/404") }),
+    mdx(),
+    pruneDraftAssets(process.env),
+  ],
 });

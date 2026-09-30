@@ -153,14 +153,14 @@ description: "Task list for the portfolio (projects index and story pages)"
 
 **Independent test**: the embed page gets `frame-src`, a link-only page does not; a draft is absent from a production-mode build and marked otherwise.
 
-- [ ] T057 [P] [US6] Test: extend `tests/component/project/Demo.test.ts` with the embed (`<iframe>` with `title`, `loading="lazy"`, `sandbox="allow-scripts allow-same-origin allow-forms"`, `referrerpolicy="strict-origin-when-cross-origin"`, no `allow` attribute, open-demo link kept outside the frame) and the chapter `visual="demo"` panel in `Chapter.test.ts`.
-- [ ] T058 [P] [US6] Test: `tests/build/project-csp.test.ts` (embed page CSP meta contains `frame-src https://drc.dev https://*.drc.dev`; link-only and index pages unchanged; `public/_headers` unchanged; no element with an inline `style` attribute on the index or any story, FR-047).
-- [ ] T059 [P] [US7] Test: `tests/build/project-drafts.test.ts` (production env: draft absent from index, routes, sitemap, sharing metadata, and no draft-only image or clip file in `dist/`; a draft with an invalid body or settings still fails the production build naming the file, FR-073; preview env: present and marked "Draft"; published project unaffected).
-- [ ] T060 [P] [US6] Test: `tests/build/project-clips.test.ts` (tiny committed WebM in `tests/fixtures/projects/`; a missing clip and a clip over 5 MB fail naming file and path; clip renders with poster, controls, muted and no autoplay).
-- [ ] T061 [P] [US6] Test: extend `tests/e2e/projects-fixtures.spec.ts` (embedded-demo story: lazy iframe and no CSP violation; link-only story has no iframe; clip controls visible and clip not playing).
-- [ ] T062 [US6] Implement the embed in `Demo.astro` and the demo visual in `Chapter.astro`; call `Astro.csp.insertDirective("frame-src https://drc.dev https://*.drc.dev")` from route frontmatter only when the project embeds (before layout render), making T057 and T058 pass.
-- [ ] T063 [US6] Implement clip support in `Visual.astro` and the clip check in the schema (Vite `import.meta.glob(..., { query: "?url" })`, existence and 5 MB limit) and ensure production builds drop draft-only assets, making T059 to T061 pass.
-- [ ] T064 Run `corepack pnpm exec vitest run` (including the build project), the `sections` Playwright project and lint; confirm green.
+- [x] T057 [P] [US6] Test: extend `tests/component/project/Demo.test.ts` with the embed (`<iframe>` with `title`, `loading="lazy"`, `sandbox="allow-scripts allow-same-origin allow-forms"`, `referrerpolicy="strict-origin-when-cross-origin"`, no `allow` attribute, open-demo link kept outside the frame) and the chapter `visual="demo"` panel in `Chapter.test.ts`.
+- [x] T058 [P] [US6] Test: `tests/build/project-csp.test.ts` (embed page CSP meta contains `frame-src https://drc.dev https://*.drc.dev`; link-only and index pages unchanged; `public/_headers` unchanged; no element with an inline `style` attribute on the index or any story, FR-047).
+- [x] T059 [P] [US7] Test: `tests/build/project-drafts.test.ts` (production env: draft absent from index, routes, sitemap, sharing metadata, and no draft-only image or clip file in `dist/`; a draft with an invalid body or settings still fails the production build naming the file, FR-073; preview env: present and marked "Draft"; published project unaffected).
+- [x] T060 [P] [US6] Test: `tests/build/project-clips.test.ts` (tiny committed WebM in `tests/fixtures/projects/`; a missing clip and a clip over 5 MB fail naming file and path; clip renders with poster, controls, muted and no autoplay).
+- [x] T061 [P] [US6] Test: extend `tests/e2e/projects-fixtures.spec.ts` (embedded-demo story: lazy iframe and no CSP violation; link-only story has no iframe; clip controls visible and clip not playing).
+- [x] T062 [US6] Implement the embed in `Demo.astro` and the demo visual in `Chapter.astro`; call `Astro.csp.insertDirective("frame-src https://drc.dev https://*.drc.dev")` from route frontmatter only when the project embeds (before layout render), making T057 and T058 pass.
+- [x] T063 [US6] Implement clip support in `Visual.astro` and the clip check in the schema (Vite `import.meta.glob(..., { query: "?url" })`, existence and 5 MB limit) and ensure production builds drop draft-only assets, making T059 to T061 pass.
+- [x] T064 Run `corepack pnpm exec vitest run` (including the build project), the `sections` Playwright project and lint; confirm green.
 
 **Checkpoint**: demos and drafts done.
 

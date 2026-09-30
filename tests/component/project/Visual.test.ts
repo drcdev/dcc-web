@@ -27,17 +27,13 @@ describe("Visual", () => {
     expect(html).toContain("Three boxes in a row.");
   });
 
-  it("renders a clip with controls, muted, no autoplay, and a visible description", async () => {
-    const html = await renderWithProject(Visual, { name: "walkthrough" });
-    const [video] = byName(html, "video");
-    expect(video!.raw).toMatch(/\bcontrols\b/);
-    expect(video!.raw).toMatch(/\bmuted\b/);
-    expect(video!.raw).toMatch(/\bplaysinline\b/);
-    expect(video!.attrs.preload).toBe("none");
-    expect(video!.attrs.poster).toBeTruthy();
-    expect(video!.raw).not.toMatch(/autoplay/);
-    expect(html).toContain("Shows the flow from start to finish.");
-    expect(html).toContain("A walkthrough");
+  // A clip that resolves needs a real file under src/content/projects, which only a
+  // built site has; tests/build/project-clips.test.ts renders one (controls, muted,
+  // poster, no autoplay, description). Here the component's own failure is checked.
+  it("throws naming the project file and the path for a clip that is not there", async () => {
+    await expect(renderWithProject(Visual, { name: "walkthrough" })).rejects.toThrow(
+      /focus-pocus\.mdx.*\.\/images\/clip\.webm/s,
+    );
   });
 
   it("is lazy unless it is the first visual", async () => {

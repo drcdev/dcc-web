@@ -4,6 +4,7 @@
 // alt text, diagrams and clips a visible description, and a clip is never
 // autoplaying. Only the first visual on a page is eager.
 import { Image } from "astro:assets";
+import { projectFileError } from "../../../lib/content/errors.ts";
 import { checkProps, currentProject, findVisual } from "./context.ts";
 import "../portfolio.css";
 
@@ -19,17 +20,20 @@ const visual = findVisual("Visual", name, project);
 const loading = eager ? "eager" : "lazy";
 const describedBy = `${idPrefix}-${name}-description`;
 
-// Clips are emitted as hashed assets by Vite. Phase 8 (T063) adds the
-// existence and size checks; until then a clip that is not found keeps its path.
+// A clip is emitted as a hashed asset by Vite. That it exists and is within 5 MB is
+// checked when the collection loads (src/lib/content/project-images.ts), before
+// this runs. The glob is lazy and only the clip on this page is awaited, so a clip
+// no built page uses (a draft's, in the production build) is not emitted.
 const clipFiles = import.meta.glob<string>("/src/content/projects/**/*.{webm,mp4}", {
   query: "?url",
   import: "default",
-  eager: true,
 });
-const clipSrc =
-  visual.kind === "clip"
-    ? (clipFiles[`/src/content/projects/${visual.src.replace(/^\.\//, "")}`] ?? visual.src)
-    : undefined;
+let clipSrc: string | undefined;
+if (visual.kind === "clip") {
+  const load = clipFiles[`/src/content/projects/${visual.src.replace(/^\.\//, "")}`];
+  if (!load) throw projectFileError(project.file, `the clip ${visual.src} was not found. Check the path (it is relative to the project file).`);
+  clipSrc = await load();
+}
 ---
 
 <figure data-visual={visual.kind} data-visual-name={name}>

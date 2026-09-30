@@ -12,6 +12,7 @@ import type { ImageMetadata } from "astro";
 import ProjectLayout from "../../layouts/ProjectLayout.astro";
 import { storyBlockComponents } from "../../components/project/blocks/index";
 import { sectionComponents } from "../../components/sections/index";
+import { allowDemoFrames } from "../../lib/content/demo-csp";
 import { validateProjectBody } from "../../lib/content/project-body";
 import { fileOfProject, getPublishedProjects } from "../../lib/projects";
 import { getNavigation } from "../../lib/pages";
@@ -35,6 +36,10 @@ const { data } = entry;
 // The story blocks read the project from here (src/env.d.ts) and name its file in errors.
 Astro.locals.project = { slug: entry.id, file: fileOfProject(entry), data };
 Astro.locals.pageFile = Astro.locals.project.file;
+// A story that embeds a demo allows drc.dev frames in its page policy. This has to
+// run here, before the layout renders the policy; a story that only links to its
+// demo keeps the site policy (research R10).
+if (data.demo?.embed) allowDemoFrames(Astro.csp);
 const { Content } = await render(entry);
 const navigation = await getNavigation();
 

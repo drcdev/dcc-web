@@ -3,6 +3,7 @@
 // clearing, sharing and the unknown-theme message have something to work on
 // (US4; contracts/filter-island.md; FR-014).
 import { expect, test, type Page } from "@playwright/test";
+import { cspViolations, recordCspViolations } from "./csp-violations.ts";
 
 const INDEX = "/projects/";
 const rows = (page: Page) => page.locator("[data-project]:not([hidden])");
@@ -117,4 +118,43 @@ test("buttons wrap and the page does not scroll sideways at 320px", async ({ pag
     tops.add(Math.round((await button.boundingBox())!.y));
   }
   expect(tops.size).toBeGreaterThan(1);
+});
+
+// US6: embedded demo, link-only demo and clip (contracts/pages-dom.md). The demo
+// address is answered locally so the run needs no network.
+test.describe("demos and clips", () => {
+  test("an embedded demo is a lazy frame that loads on reaching it, with no CSP violation", async ({ page }) => {
+    await recordCspViolations(page);
+    const requested: string[] = [];
+    await page.route("https://demo.drc.dev/**", (route) => {
+      requested.push(route.request().url());
+      return route.fulfill({ contentType: "text/html", body: "<!doctype html><title>Demo</title><p>Demo</p>" });
+    });
+    await page.goto("/projects/every-setting/");
+    const frame = page.locator("iframe");
+    await expect(frame).toHaveCount(1);
+    await expect(frame).toHaveAttribute("loading", "lazy");
+    await expect(frame).toHaveAttribute("title", "Every setting demo");
+    await frame.scrollIntoViewIfNeeded();
+    await expect.poll(() => requested.length).toBeGreaterThan(0);
+    expect(await cspViolations(page)).toEqual([]);
+    await expect(page.getByRole("link", { name: "Open the Every setting demo" })).toBeVisible();
+  });
+
+  test("a link-only story (Focus Pocus, a stand-in) has no frame", async ({ page }) => {
+    await page.goto("/projects/focus-pocus/");
+    await expect(page.locator("iframe")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Focus Pocus on drc.dev" })).toBeVisible();
+  });
+
+  test("a clip shows its controls and is not playing", async ({ page }) => {
+    await page.goto("/projects/every-setting/");
+    const video = page.locator("video");
+    await expect(video).toHaveCount(1);
+    await video.scrollIntoViewIfNeeded();
+    await expect(video).toHaveAttribute("controls", "");
+    await expect(video).toHaveJSProperty("paused", true);
+    await expect(video).toHaveJSProperty("autoplay", false);
+    await expect(video).toHaveJSProperty("muted", true);
+  });
 });

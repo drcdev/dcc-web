@@ -169,6 +169,12 @@ summary,
   @apply m-0 mb-2 text-dusk-900 dark:text-mist-100;
 }
 
+/* The embedded demo: a bordered frame as wide as its panel. */
+[data-demo-frame] {
+  @apply block w-full max-w-full border border-dusk-300 bg-transparent dark:border-mist-700;
+  aspect-ratio: 4 / 3;
+}
+
 /* ------------------------------------------------------- Option comparison */
 
 /* The table scrolls inside its own region so the page never scrolls sideways. */

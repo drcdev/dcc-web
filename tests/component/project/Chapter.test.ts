@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import Chapter from "../../../src/components/project/blocks/Chapter.astro";
 import { byName, textOf } from "../html.ts";
 import { render } from "../sections/helpers.ts";
-import { renderWithProject } from "./helpers.ts";
+import { makeProject, renderWithProject } from "./helpers.ts";
 
 describe("Chapter", () => {
   it("renders a labelled section with number, one h2 and the text", async () => {
@@ -31,6 +31,19 @@ describe("Chapter", () => {
     expect(html).toContain("data-chapter-visual");
     expect(html).toContain('data-has-visual="true"');
     expect(byName(html, "img")[0]!.attrs.alt).toBe("A screenshot of the tool");
+  });
+
+  it("renders the embedded demo as the chapter's visual panel", async () => {
+    const project = makeProject({ demo: { href: "https://demo.drc.dev/fp", embed: true } });
+    const html = await renderWithProject(Chapter, { stage: "built", visual: "demo" }, "<p>x</p>", project);
+    expect(html).toContain("data-chapter-visual");
+    expect(html).toContain('data-has-visual="true"');
+    expect(byName(html, "iframe")).toHaveLength(1);
+    expect(byName(html, "iframe")[0]!.attrs.src).toBe("https://demo.drc.dev/fp");
+  });
+
+  it('fails naming the project file when visual="demo" is used without an embedded demo', async () => {
+    await expect(renderWithProject(Chapter, { stage: "built", visual: "demo" }, "x")).rejects.toThrow(/focus-pocus\.mdx.*embed/s);
   });
 
   it("marks a draft chapter", async () => {
