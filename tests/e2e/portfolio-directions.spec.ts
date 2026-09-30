@@ -3,7 +3,8 @@
 // prototypes in Phase 9.
 import { test, expect, type Browser, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { focusPocus, allEntries } from "../../src/prototypes/portfolio/sample.ts";
+import { focusPocus, allEntries, directions } from "../../src/prototypes/portfolio/sample.ts";
+import { TEMPLATES } from "./templates.ts";
 import { STAGE_ORDER } from "../../src/prototypes/portfolio/types.ts";
 
 const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"];
@@ -1429,5 +1430,71 @@ test.describe("Direction C Chapters: reduced motion, no JavaScript, forced colou
     await page.goto(`${C_INDEX}?theme=Nonsense`);
     await axeClean(page);
     await context.close();
+  });
+});
+
+// Hub (T068; FR-006, FR-007, FR-030, SC-003).
+const HUB = "/design/portfolio/";
+const SIX_PAGES = directions.flatMap((d) => [d.indexPath, d.storyPath]);
+
+test.describe("Portfolio hub", () => {
+  test("shows a route to each direction and reaches all six pages", async ({ page, request }) => {
+    await page.goto(HUB);
+    await expect(page.locator("h1")).toHaveText("Portfolio design directions");
+    for (const d of directions) {
+      await expect(page.locator(`main a[href='${d.indexPath}']`)).toHaveCount(1);
+      await expect(page.locator(`main a[href='${d.storyPath}']`)).toHaveCount(1);
+    }
+    for (const path of SIX_PAGES) expect((await request.get(path)).status(), path).toBe(200);
+  });
+
+  test("puts noindex on all seven routes and lists none in header, footer or sitemap", async ({ page, request }) => {
+    for (const path of [HUB, ...SIX_PAGES]) {
+      await page.goto(path);
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+      await expect(page.locator("header a[href^='/design/'], footer a[href^='/design/']")).toHaveCount(0);
+    }
+    const sitemap = await (await request.get("/sitemap-0.xml")).text();
+    expect(sitemap).not.toContain("/design/");
+  });
+
+  test("is linked from no non-prototype page in TEMPLATES (FR-007)", async ({ page }) => {
+    for (const template of TEMPLATES) {
+      if (template.path.startsWith("/design/")) continue;
+      await page.goto(template.path);
+      await expect(page.locator("a[href*='/design/']"), template.name).toHaveCount(0);
+    }
+  });
+
+  test("has zero axe violations with reduced motion, forced colours, JavaScript off and at 320 px", async ({ browser }) => {
+    const reduced = await browser.newContext({ reducedMotion: "reduce", viewport: { width: 1280, height: 800 } });
+    let page = await reduced.newPage();
+    await page.goto(HUB);
+    await axeClean(page);
+    await reduced.close();
+
+    const forced = await browser.newContext({ forcedColors: "active", viewport: { width: 1280, height: 800 } });
+    page = await forced.newPage();
+    await page.addInitScript(() => localStorage.setItem("color-theme", "light"));
+    await page.goto(HUB);
+    await axeClean(page);
+    await forced.close();
+
+    const noJs = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+    page = await noJs.newPage();
+    await page.route(`**${HUB}`, async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({ response, body: (await response.text()).replace(/<script\b[\s\S]*?<\/script>/gi, "") });
+    });
+    await page.goto(HUB);
+    await axeClean(page);
+    await noJs.close();
+
+    const narrow = await browser.newContext({ viewport: { width: 320, height: 640 } });
+    page = await narrow.newPage();
+    await page.goto(HUB);
+    await axeClean(page);
+    await noHorizontalScroll(page);
+    await narrow.close();
   });
 });
