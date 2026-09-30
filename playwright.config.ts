@@ -62,7 +62,7 @@ export default defineConfig({
     },
     {
       name: "sections",
-      testMatch: [/sections\.spec\.ts$/, /blog-pagination\.spec\.ts$/],
+      testMatch: [/sections\.spec\.ts$/, /blog-pagination\.spec\.ts$/, /projects-fixtures\.spec\.ts$/],
       use: { ...devices["Desktop Chrome"], baseURL: "http://localhost:4322" },
     },
     {
@@ -73,6 +73,7 @@ export default defineConfig({
         /visual\.spec\.ts$/,
         /sections\.spec\.ts$/,
         /blog-pagination\.spec\.ts$/,
+        /projects-fixtures\.spec\.ts$/,
       ],
       use: { ...devices["Desktop Chrome"] },
     },

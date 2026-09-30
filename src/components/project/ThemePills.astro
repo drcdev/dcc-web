@@ -1,0 +1,13 @@
+---
+// A project's themes as a labelled list of text pills (FR-017, FR-025).
+import Pill from "../Pill.astro";
+
+export interface Props {
+  themes: readonly string[];
+}
+const { themes } = Astro.props;
+---
+
+<ul class="not-prose m-0 flex list-none flex-wrap gap-1 p-0" aria-label="Themes">
+  {themes.map((theme) => <li><Pill>{theme}</Pill></li>)}
+</ul>

@@ -1,0 +1,117 @@
+---
+title: Focus Pocus
+problem: Manage OmniFocus tasks by talking to Claude Desktop instead of clicking through screens.
+description: How Focus Pocus lets Claude Desktop read and change OmniFocus tasks by conversation.
+themes: [AI integration, Automation, macOS]
+status: experiment
+visual:
+  kind: image
+  src: ./images/focus-pocus/index.svg
+  alt: Placeholder for a screenshot of Claude Desktop answering a question about OmniFocus tasks
+  placeholder: true
+order: 1
+standIn:
+  href: https://drc.dev/projects/focus-pocus
+  label: Focus Pocus on drc.dev
+source: https://github.com/drcdev/focus-pocus
+draft: false
+visuals:
+  screenshot:
+    kind: image
+    src: ./images/focus-pocus/screenshot.svg
+    alt: Placeholder for a screenshot of a Claude Desktop chat asking for the tasks due this week
+    placeholder: true
+  architecture:
+    kind: diagram
+    src: ./images/focus-pocus/architecture.svg
+    alt: Three boxes joined by arrows, from Claude Desktop to the Focus Pocus server to OmniFocus
+    description: Claude Desktop calls the Focus Pocus MCP server, which runs JXA scripts that read and change tasks in OmniFocus.
+comparison:
+  caption: The three ways to reach OmniFocus that were considered
+  constraints:
+    - id: macos-only
+      label: Works on macOS
+      detail: OmniFocus is automated through macOS, with permission granted by the user.
+    - id: natural-dates
+      label: Natural-language dates
+      detail: Phrases such as "next Friday at 2pm" become real due dates.
+    - id: bulk-speed
+      label: Fast bulk changes
+      detail: Changing many tasks does not slow a large OmniFocus database.
+    - id: mcp-model
+      label: Fits Claude Desktop's MCP model
+      detail: The tool is offered to Claude as a set of MCP tools.
+  options:
+    - id: applescript-bridge
+      name: AppleScript bridge
+      summary: Send AppleScript commands to OmniFocus from a small helper.
+      fit: { macos-only: meets, natural-dates: partly, bulk-speed: partly, mcp-model: partly }
+      pros: [Long-established and well documented for OmniFocus.]
+      cons: [Awkward to write and test, and hard to return structured data.]
+    - id: url-scheme
+      name: OmniFocus URL scheme
+      summary: Open omnifocus:// links to add or change tasks.
+      fit: { macos-only: meets, natural-dates: misses, bulk-speed: misses, mcp-model: misses }
+      pros: [No scripting and no permission prompts.]
+      cons: [Cannot read tasks back, so questions about the task list cannot be answered.]
+    - id: jxa-mcp
+      name: JXA behind an MCP server
+      summary: Run JavaScript for Automation scripts from a TypeScript MCP server that Claude Desktop calls.
+      fit: { macos-only: meets, natural-dates: meets, bulk-speed: meets, mcp-model: meets }
+      pros: [Reads and writes tasks with structured results., Scripts are plain JavaScript that can be tested.]
+      cons: [JXA is thinly documented, so each script takes trial and error.]
+      chosen: true
+      reason: It is the only route that can both read and change OmniFocus, return structured results, and be offered to Claude as MCP tools.
+---
+
+{/* DRAFT FOR REVIEW: written by Claude from the public sources (drc.dev, drc.dev/projects/focus-pocus and github.com/drcdev/focus-pocus). The facts (MCP server, TypeScript and Node.js, JXA, 35+ tools, 39 JXA scripts, natural-language dates, bulk operations, caching for large databases, macOS only) come from those pages. The options, the reasons and the lessons are a plain-language reading of them for Don to correct. Themes, status and the screenshots are placeholders. */}
+
+<Chapter stage="problem" visual="screenshot" draft>
+OmniFocus holds the task list, but working with it means switching apps and clicking through screens.
+
+The aim was to ask for what is needed in plain sentences, from inside Claude Desktop, and have OmniFocus do it.
+</Chapter>
+
+<Chapter stage="constraints" draft>
+OmniFocus can only be automated on a Mac, so everything had to run locally and ask macOS for permission.
+
+People say dates in many ways, such as "next Friday at 2pm" or "in 3 days", and the tool had to read them correctly.
+
+Changing many tasks at once must not slow down a database of a thousand tasks or more.
+
+Claude Desktop talks to outside tools through the Model Context Protocol, so the tool had to fit that model.
+</Chapter>
+
+<Chapter stage="options" draft>
+Three routes were open. Each one reaches OmniFocus differently, and each one meets the four constraints to a different degree.
+
+<OptionComparison />
+</Chapter>
+
+<Chapter stage="built" visual="architecture" draft>
+Focus Pocus is an MCP server written in TypeScript on Node.js. It gives Claude Desktop more than 35 tools for tasks, projects and tags.
+
+Behind the tools are 39 JXA scripts that do the work inside OmniFocus. A cache with pagination keeps large databases responsive, and a diagnostics tool checks the setup.
+
+<Demo />
+</Chapter>
+
+<Chapter stage="outcome" draft>
+Tasks can be created, updated and managed by conversation, including in bulk, with dates read from everyday phrases.
+
+Claude can also open the Inbox, Forecast, Flagged and Projects views, and balance work across the schedule.
+</Chapter>
+
+<Chapter stage="lessons" draft>
+Coding with an AI assistant went fastest when the boundary between the assistant and the app was small and well named.
+
+Limits remain: it only runs on macOS, it needs automation permission, and the first run on a large database is slower.
+
+More detail is in the blog post about building Focus Pocus.
+</Chapter>
+
+<Chapter stage="invitation" draft>
+If a tool you use every day could work better with an AI assistant, tell me about it.
+
+<Invitation />
+</Chapter>

@@ -19,6 +19,8 @@ export const TEMPLATES = [
   // Blog post pages. The sample posts are drafts, so these also cover the draft post page (FR-039).
   { name: "writing-post", path: "/writing/sample-everything/", built: true },
   { name: "writing-post-text-only", path: "/writing/sample-text-only/", built: true },
+  { name: "projects", path: "/projects/", built: true },
+  { name: "project-story", path: "/projects/focus-pocus/", built: true },
 ] as const;
 
 export const NOT_FOUND_PENDING = "not-found page is built in Phase 7 (T071); T072 enables this";

@@ -70,9 +70,24 @@ describe("build errors for page files (contracts/build-errors.md)", () => {
   it("row 14: address used by another route", () =>
     expectRejected([broken("14-route-conflict.mdx", "404.mdx")], "404.mdx", "404.astro", "/404/"));
 
-  it("row 14: address reserved for a later feature", () =>
-    // "/writing/" is now claimed by the blog's routes (the conflict case above); "/projects/" is still reserved.
-    expectRejected([broken("14-reserved-address.mdx", "projects.mdx")], "projects.mdx", "reserved", "/projects/"));
+  it("row 14: address reserved for a later feature", async () => {
+    // The blog and the portfolio have both landed, so the site reserves nothing at the moment; the
+    // copied site reserves /later/ itself, so the check stays covered until the next feature does.
+    result = await buildFixtureSite([broken("14-reserved-address.mdx", "later.mdx")], {
+      overrides: {
+        "src/config/navigation.ts": (current) => {
+          const reserved = current.replace(
+            "export const futureDestinations: readonly string[] = [];",
+            'export const futureDestinations: readonly string[] = ["/later/"];',
+          );
+          if (reserved === current) throw new Error("navigation.ts no longer declares an empty futureDestinations list");
+          return reserved;
+        },
+      },
+    });
+    expect(result.ok, "the build should fail").toBe(false);
+    for (const text of ["later.mdx", "reserved", "/later/"]) expect(result.message).toContain(text);
+  });
 
   it("row 15: two navigation entries with the same position", () =>
     expectRejected(

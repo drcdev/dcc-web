@@ -1,0 +1,93 @@
+---
+title: Every setting
+problem: Does every setting a project file allows pass validation?
+description: A project file that uses every setting.
+themes: [AI integration, Automation, macOS]
+status: experiment
+visual:
+  kind: diagram
+  src: ./images/sample.png
+  alt: A sample diagram
+  description: Boxes joined by arrows.
+  placeholder: true
+order: 2
+date: 2025-06-01
+demo:
+  href: https://demo.drc.dev/every-setting
+  title: Every setting
+  embed: true
+source: https://github.com/drcdev/every-setting
+image:
+  src: ./images/sample.png
+  alt: A sharing image
+draft: false
+visuals:
+  screenshot:
+    kind: image
+    src: ./images/sample.png
+    alt: A screenshot
+    placeholder: true
+  architecture:
+    kind: diagram
+    src: ./images/sample.png
+    alt: An architecture diagram
+    description: Three boxes in a row.
+  walkthrough:
+    kind: clip
+    src: ./images/clip.webm
+    poster: ./images/poster.png
+    label: A walkthrough
+    description: Shows the flow from start to finish.
+comparison:
+  caption: Options compared
+  constraints:
+    - { id: simple, label: Simple to run, detail: One command. }
+    - { id: fast, label: Fast }
+  options:
+    - id: script
+      name: A script
+      summary: One file.
+      fit: { simple: meets, fast: partly }
+      pros: [Small.]
+      cons: [Slow to start.]
+    - id: service
+      name: A service
+      summary: Always running.
+      fit: { simple: misses, fast: meets }
+      chosen: true
+      reason: Speed mattered more than simplicity.
+---
+
+<Chapter stage="problem" visual="screenshot">
+Who had the problem and what it was.
+</Chapter>
+
+<Chapter stage="constraints" visual="architecture">
+What made it hard.
+</Chapter>
+
+<Chapter stage="options">
+Short framing.
+
+<OptionComparison />
+</Chapter>
+
+<Chapter stage="built" visual="demo">
+What was built.
+
+<Demo />
+</Chapter>
+
+<Chapter stage="outcome" visual="walkthrough">
+How it turned out.
+</Chapter>
+
+<Chapter stage="lessons">
+What was learned.
+</Chapter>
+
+<Chapter stage="invitation">
+If you have a problem like this, tell me about it.
+
+<Invitation />
+</Chapter>

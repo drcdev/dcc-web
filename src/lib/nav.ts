@@ -16,7 +16,8 @@ export function isCurrent(pathname: string, href: string): boolean {
 
 /**
  * Whether `pathname` is `href` or an address below it, so a link to a section
- * stays marked on every page inside it (`/writing/` covers `/writing/some-post/`).
+ * stays marked on every page inside it (`/writing/` covers `/writing/some-post/`,
+ * `/projects/` covers `/projects/some-story/`).
  * `/` covers only itself, never every address. Whole path segments are compared,
  * so `/writing-tips/` is not inside `/writing/`.
  */

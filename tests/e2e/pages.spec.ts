@@ -13,7 +13,7 @@ const PAGES = [
   ["/technology/", "Technology"],
 ] as const;
 
-const NOT_BUILT = ["/cookie-policy/", "/projects/"] as const;
+const NOT_BUILT = ["/cookie-policy/"] as const;
 
 for (const [path, title] of PAGES) {
   test.describe(`${path}`, () => {
@@ -107,7 +107,13 @@ for (const path of NOT_BUILT) {
   });
 }
 
-test("the sitemap lists the eight pages, the listing pages and the sample posts, and neither the not-found page nor the cookie policy", async ({ request }) => {
+test("the projects index and every story answer 200", async ({ request }) => {
+  for (const path of ["/projects/", "/projects/focus-pocus/"]) {
+    expect((await request.get(path)).status(), path).toBe(200);
+  }
+});
+
+test("the sitemap lists the eight pages, the listing pages, the sample posts and the projects, and neither the not-found page nor the cookie policy", async ({ request }) => {
   const index = await (await request.get("/sitemap-index.xml")).text();
   const first = /<loc>[^<]*(\/sitemap-[^<]+\.xml)<\/loc>/.exec(index)?.[1];
   const sitemap = await (await request.get(first!)).text();
@@ -118,6 +124,8 @@ test("the sitemap lists the eight pages, the listing pages and the sample posts,
     "/about/",
     "/contact/",
     "/privacy-policy/",
+    "/projects/",
+    "/projects/focus-pocus/",
     "/services/",
     "/speaking/",
     "/technology/",

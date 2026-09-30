@@ -1,7 +1,8 @@
 # Adding and editing pages
 
 Every page on the site is one file in `src/content/pages/`. Add the file, commit, and the page
-exists. There is nothing else to register.
+exists. There is nothing else to register. Projects work the same way and have their own guide:
+see [projects.md](projects.md).
 
 ## Where the file goes
 

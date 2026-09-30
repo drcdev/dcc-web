@@ -3,5 +3,12 @@
 declare namespace App {
   interface Locals {
     pageFile?: string;
+    /** The project the story route is rendering, read by the story building blocks. */
+    project?: {
+      slug: string;
+      /** Repo-relative path of the project file, for error messages. */
+      file: string;
+      data: import("./lib/projects.ts").ProjectEntry["data"];
+    };
   }
 }

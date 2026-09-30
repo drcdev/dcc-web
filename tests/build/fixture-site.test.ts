@@ -29,6 +29,24 @@ describe("fixture-site harness", () => {
     expect(result.ok).toBe(true);
   });
 
+  it("syncs valid project fixtures with their images into the projects collection", async () => {
+    result = await buildFixtureSite([], { mode: "sync", projects: ["minimal.mdx", "every-setting.mdx", "draft.mdx"] });
+    expect(result.message).toBe("");
+    expect(result.ok).toBe(true);
+    expect(existsSync(`${result.root}/src/content/projects/minimal.mdx`)).toBe(true);
+    expect(existsSync(`${result.root}/src/content/projects/images/sample.png`)).toBe(true);
+  });
+
+  it("reports a project file with a missing setting by file and setting", async () => {
+    result = await buildFixtureSite([], {
+      mode: "sync",
+      projects: [{ from: "minimal.mdx", to: "no-status.mdx", replace: ["status: shipped\n", ""] }],
+    });
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("no-status");
+    expect(result.message).toContain("status");
+  });
+
   it("removes the temporary site on cleanup", async () => {
     result = await buildFixtureSite(["workshops.mdx"], { mode: "sync" });
     const { root } = result;

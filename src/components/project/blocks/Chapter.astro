@@ -1,0 +1,54 @@
+---
+// <Chapter stage="…" visual="name" draft>: one of the seven story stages
+// (data-model.md "Stage and Chapter"; contracts/pages-dom.md). A rule in the
+// stage colour, the chapter number, the h2, the slotted text, then the stage's
+// visual panel. The first chapter's visual is the page's eager image.
+import { stages } from "../../../lib/content/stages.ts";
+import DraftMark from "../DraftMark.astro";
+import { checkProps, currentProject, findVisual } from "./context.ts";
+import Demo from "./Demo.astro";
+import Visual from "./Visual.astro";
+import "../portfolio.css";
+
+export interface Props {
+  stage: (typeof stages)[number]["id"];
+  visual?: string;
+  draft?: boolean;
+}
+
+const project = currentProject("Chapter", Astro.locals);
+const { stage: stageId, visual, draft } = checkProps("Chapter", Astro.props, project);
+const stage = stages.find((s) => s.id === stageId)!;
+// `demo` names the embedded demo (rendered by <Demo frame />); it is not in `visuals`.
+const embedsDemo = visual === "demo";
+const named = visual && !embedsDemo ? visual : undefined;
+if (named) findVisual("Chapter", named, project);
+const headingId = `${stage.id}-heading`;
+---
+
+<section id={stage.id} aria-labelledby={headingId} data-stage={stage.id} data-chapter>
+  <div data-chapter-grid data-has-visual={String(Boolean(named || embedsDemo))}>
+    <div data-chapter-text>
+      <div data-chapter-head>
+        <p data-chapter-number>Chapter {stage.order} of {stages.length}</p>
+        <h2 id={headingId} data-chapter-heading data-reveal>{stage.heading}</h2>
+      </div>
+      {draft && <p class="mb-3"><DraftMark /></p>}
+      <slot />
+    </div>
+    {
+      embedsDemo && (
+        <div data-chapter-visual data-demo-visual>
+          <Demo frame />
+        </div>
+      )
+    }
+    {
+      named && (
+        <div data-chapter-visual>
+          <Visual name={named} eager={stage.order === 1} idPrefix={stage.id} />
+        </div>
+      )
+    }
+  </div>
+</section>

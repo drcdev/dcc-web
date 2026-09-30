@@ -1,0 +1,468 @@
+@reference "../../styles/global.css";
+
+/* Portfolio story styles, ported from Direction C "Chapters"
+   (docs/design/portfolio.md). Existing palette tokens and the system font only.
+   Every effect is behind the reduced-motion guard and the resting state is the
+   fully visible one (FR-016, FR-018). */
+
+/* ------------------------------------------------------------ Stage accents */
+
+/* One palette colour per stage, used for the chapter rule (never for text), so
+   the shades only need the 3:1 non-text contrast in each theme. */
+[data-stage="problem"] {
+  @apply border-rust-700 dark:border-rust-300;
+}
+[data-stage="constraints"] {
+  @apply border-sand-700 dark:border-sand-300;
+}
+[data-stage="options"] {
+  @apply border-lavender-700 dark:border-lavender-300;
+}
+[data-stage="built"] {
+  @apply border-sage-700 dark:border-sage-300;
+}
+[data-stage="outcome"] {
+  @apply border-mist-700 dark:border-mist-300;
+}
+[data-stage="lessons"] {
+  @apply border-mauve-600 dark:border-mauve-300;
+}
+[data-stage="invitation"] {
+  @apply border-accent-700 dark:border-accent-300;
+}
+
+/* A focused element or anchor target is never hidden behind the sticky header. */
+a,
+button,
+summary,
+[tabindex],
+[id] {
+  scroll-margin-top: 6rem;
+}
+
+/* ------------------------------------------------------------ Story header */
+
+/* The bar is decorative and empty. It is hidden by default and shown only where
+   scroll-driven animation is supported and motion is allowed (see "Motion" below). */
+[data-progress] {
+  display: none;
+}
+[data-story-header] {
+  @apply mx-auto mb-10 max-w-screen-lg;
+}
+[data-story-title] {
+  @apply my-4 text-5xl font-extrabold tracking-tight break-words text-dusk-900 md:text-7xl dark:text-white;
+}
+[data-story-problem] {
+  @apply my-4 max-w-prose text-xl text-dusk-800 md:text-2xl dark:text-mist-200;
+  line-height: 1.5;
+}
+[data-story-meta] {
+  @apply my-4 flex flex-wrap items-center gap-3;
+}
+[data-story-contents] {
+  @apply mt-8 max-w-prose border-t border-dusk-300 pt-4 dark:border-mist-700;
+}
+[data-story-contents-label] {
+  @apply m-0 mb-2 text-sm font-semibold tracking-wide text-dusk-800 uppercase dark:text-mist-200;
+}
+[data-story-contents] ol {
+  @apply m-0 list-decimal pl-6;
+}
+[data-story-contents] li {
+  @apply py-1;
+}
+[data-story-contents] a {
+  @apply inline-flex min-h-6 items-center text-dusk-900 underline underline-offset-4 dark:text-white;
+}
+[data-story-contents] a:focus-visible {
+  @apply outline-2 outline-offset-2 outline-accent-500 dark:outline-accent-400;
+}
+[data-draft-notice] {
+  @apply mx-auto mb-6 max-w-screen-lg border border-rust-700 bg-rust-50 px-4 py-3 text-sm text-dusk-900 dark:border-rust-300 dark:bg-dusk-900 dark:text-white;
+}
+[data-story] {
+  @apply max-w-screen-xl text-dusk-900 dark:text-mist-200;
+}
+/* Page sections (TextBlock and others) placed inside a chapter get the
+   story's own heading colour, since the story sits outside the prose wrapper. */
+[data-story] section > h2 {
+  @apply text-rust-700 dark:text-rust-300;
+}
+/* Body headings and lists inside a chapter's text. */
+[data-chapter-text] h3 {
+  @apply mt-6 mb-2 text-2xl font-bold text-dusk-900 dark:text-white;
+}
+[data-chapter-text] ul,
+[data-chapter-text] ol {
+  @apply max-w-prose pl-6 text-dusk-800 dark:text-mist-200;
+  line-height: 1.7;
+}
+[data-chapter-text] ul {
+  @apply list-disc;
+}
+[data-chapter-text] ol {
+  @apply list-decimal;
+}
+[data-chapter-text] a:not([data-invitation]) {
+  @apply underline underline-offset-4;
+}
+
+/* ----------------------------------------------------------------- Chapter */
+
+[data-chapter] {
+  @apply border-t-[10px] py-10;
+}
+@media (min-width: 48rem) {
+  [data-chapter] {
+    min-height: 60svh;
+  }
+}
+[data-chapter-grid] {
+  display: grid;
+  gap: 2rem;
+}
+[data-chapter-grid] > * {
+  min-width: 0;
+}
+@media (min-width: 64rem) {
+  [data-chapter-grid][data-has-visual="true"] {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+    gap: 4rem;
+    align-items: start;
+  }
+}
+[data-chapter-number] {
+  @apply m-0 mb-1 text-base font-semibold text-dusk-800 dark:text-mist-200;
+}
+[data-chapter-heading] {
+  @apply mb-4 text-4xl font-extrabold tracking-tight text-dusk-900 md:text-6xl dark:text-mist-100;
+}
+[data-chapter-text] > p {
+  @apply text-dusk-800 dark:text-mist-200;
+  line-height: 1.7;
+  max-width: 62ch;
+}
+[data-chapter-visual] {
+  min-width: 0;
+}
+/* The panel stays in view beside its chapter's text: wide screens, motion
+   allowed. Otherwise it is an ordinary block after the text. */
+@media (min-width: 80rem) and (prefers-reduced-motion: no-preference) {
+  [data-chapter-visual] {
+    position: sticky;
+    top: 7rem;
+  }
+}
+[data-chapter-after] {
+  margin-top: 2rem;
+}
+
+/* ------------------------------------------------------------------ Visual */
+
+[data-visual] {
+  @apply m-0;
+}
+[data-visual] img,
+[data-visual] video {
+  @apply block h-auto w-full max-w-full;
+}
+[data-visual] figcaption {
+  @apply mt-2 text-sm text-dusk-800 dark:text-mist-200;
+}
+[data-visual-mark] {
+  @apply m-0 mb-2 text-dusk-900 dark:text-mist-100;
+}
+
+/* The embedded demo: a bordered frame as wide as its panel. */
+[data-demo-frame] {
+  @apply block w-full max-w-full border border-dusk-300 bg-transparent dark:border-mist-700;
+  aspect-ratio: 4 / 3;
+}
+
+/* ------------------------------------------------------- Option comparison */
+
+/* The table scrolls inside its own region so the page never scrolls sideways. */
+[data-comparison] {
+  @apply my-6 overflow-x-auto border border-dusk-300 text-dusk-900 dark:border-mist-700 dark:text-mist-100;
+}
+[data-comparison]:focus-visible {
+  @apply outline-2 outline-offset-2 outline-accent-500 dark:outline-accent-400;
+}
+[data-comparison] table {
+  @apply w-full border-collapse text-left text-base;
+  min-width: 40rem;
+}
+[data-comparison] caption {
+  @apply p-3 text-left text-sm font-semibold;
+}
+[data-comparison] th,
+[data-comparison] td {
+  @apply border-t border-dusk-300 p-3 align-top dark:border-mist-700;
+}
+[data-comparison] th[scope="row"] {
+  @apply w-44 font-semibold;
+}
+[data-comparison] small {
+  @apply block text-sm font-normal text-dusk-800 dark:text-mist-200;
+}
+[data-comparison] ul {
+  @apply m-0 list-none p-0;
+}
+[data-comparison] li + li {
+  @apply mt-1;
+}
+/* The chosen option is marked by the word "Chosen" and by a heavier column edge;
+   colour alone never carries it. */
+[data-comparison] [data-chosen] {
+  @apply border-x-2 border-x-accent-700 dark:border-x-accent-300;
+}
+[data-chosen-label] {
+  @apply mt-1 block w-fit border border-current px-2 text-sm font-semibold;
+}
+[data-reason] {
+  @apply mt-4 max-w-prose;
+}
+
+/* -------------------------------------------------------- Demo and invitation */
+
+[data-demo-links] {
+  @apply m-0 mt-4 flex list-none flex-wrap gap-x-6 gap-y-1 p-0;
+}
+[data-demo-links] a,
+[data-invitation] {
+  @apply inline-flex min-h-11 items-center font-medium text-dusk-900 underline underline-offset-4 dark:text-white;
+}
+[data-invitation] {
+  @apply border-2 border-accent-700 px-5 font-semibold no-underline dark:border-accent-300;
+}
+[data-demo-links] a:focus-visible,
+[data-invitation]:focus-visible {
+  @apply outline-2 outline-offset-2 outline-accent-500 dark:outline-accent-400;
+}
+[data-demo-note] {
+  @apply text-sm text-dusk-800 dark:text-mist-200;
+}
+
+/* ------------------------------------------------------------------ Reveal */
+
+/* Each chapter heading is uncovered from the left as its chapter enters, only
+   where the browser supports scroll-driven animation and motion is allowed. */
+@keyframes portfolio-uncover {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    [data-chapter-heading][data-reveal] {
+      animation: portfolio-uncover linear both;
+    }
+    /* The timeline sits in its own rule (a more specific selector) so the minifier
+       cannot fold it into the animation shorthand, which browsers do not all parse. */
+    :root [data-chapter-heading][data-reveal] {
+      animation-timeline: view();
+      animation-range: entry 0% entry 80%;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------- Motion */
+
+/* Reading progress: a bar fixed to the top edge, filled by the root scroll. */
+@keyframes portfolio-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    [data-progress] {
+      display: block;
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 60;
+      height: 4px;
+      background-color: var(--color-accent-700);
+      transform: scaleX(0);
+      transform-origin: 0 50%;
+      animation: portfolio-progress linear both;
+      pointer-events: none;
+    }
+    :root [data-progress] {
+      animation-timeline: scroll(root);
+    }
+  }
+}
+.dark [data-progress] {
+  background-color: var(--color-accent-300);
+}
+@media print {
+  [data-progress] {
+    display: none;
+  }
+}
+
+/* The index and the story opt in to a cross-document view transition. The title
+   pairing rules come from <TitleTransition> (CSP-hashed inline style). */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+
+/* --------------------------------------------------------- Forced colours */
+
+@media (forced-colors: active) {
+  [data-progress] {
+    forced-color-adjust: none;
+    background-color: Highlight !important;
+  }
+  [data-chapter],
+  [data-invitation],
+  [data-placeholder],
+  [data-draft-mark],
+  [data-status],
+  [data-comparison],
+  [data-comparison] th,
+  [data-comparison] td,
+  [data-chosen-label] {
+    border-color: CanvasText;
+  }
+  [data-comparison] [data-chosen] {
+    border-inline-color: Highlight;
+  }
+  [data-comparison]:focus-visible {
+    outline-color: CanvasText;
+  }
+  [data-demo-links] a:focus-visible,
+  [data-invitation]:focus-visible {
+    outline-color: CanvasText;
+  }
+}
+
+/* ------------------------------------------------------------------- Index */
+
+/* Direction C's ruled rows with Direction A's two-column split inside each row:
+   text left, visual right from 64rem, one column below. */
+[data-projects-index] {
+  @apply max-w-screen-xl;
+}
+[data-index-header] {
+  @apply mb-8;
+}
+[data-index-header] h1 {
+  @apply my-4 text-5xl font-extrabold tracking-tight break-words text-dusk-900 md:text-7xl dark:text-white;
+}
+[data-index-header] p {
+  @apply my-4 max-w-prose text-xl text-dusk-800 dark:text-mist-200;
+  line-height: 1.5;
+}
+[data-projects-empty] {
+  @apply text-lg text-dusk-800 dark:text-mist-200;
+}
+/* The hidden attribute must win over the display values set below. */
+[data-filter-controls][hidden],
+[data-filter-status][hidden],
+[data-filter-empty][hidden],
+[data-project][hidden] {
+  display: none;
+}
+/* When script is running the controls take their space, unseen, until the island
+   is ready, so revealing them moves nothing (CLS). Without script they stay
+   `display: none` and take no space. */
+/* Tailwind's preflight hides [hidden] with !important inside @layer base, and a
+   layered !important beats an unlayered one, so this sits in the same layer. */
+@layer base {
+  :root.js project-filter:not([data-ready]) :is([data-filter-controls], [data-filter-status])[hidden] {
+    display: block !important;
+    visibility: hidden;
+  }
+}
+[data-filter-controls] {
+  @apply mb-6;
+}
+[data-filter-label] {
+  @apply m-0 mb-2 text-sm font-semibold tracking-wide text-dusk-800 uppercase dark:text-mist-200;
+}
+[data-filter-buttons] {
+  @apply flex flex-wrap gap-2;
+}
+[data-filter-buttons] button,
+[data-filter-clear] {
+  @apply inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center border-2 border-dusk-900 bg-white px-4 py-1 text-base font-semibold text-dusk-900 dark:border-mist-200 dark:bg-dusk-900 dark:text-white;
+}
+[data-filter-buttons] button[aria-pressed="true"] {
+  @apply border-accent-700 bg-accent-700 text-white dark:border-accent-300 dark:bg-accent-300 dark:text-dusk-900;
+}
+[data-filter-buttons] button:focus-visible,
+[data-filter-clear]:focus-visible {
+  @apply outline-2 outline-offset-2 outline-accent-500 dark:outline-accent-400;
+}
+[data-filter-status] {
+  @apply mb-4 text-base text-dusk-800 dark:text-mist-200;
+}
+[data-filter-empty] {
+  @apply my-8 text-lg text-dusk-800 dark:text-mist-200;
+}
+[data-project-list] {
+  @apply m-0 list-none p-0;
+}
+[data-project] {
+  @apply grid gap-6 border-t-[6px] border-dusk-900 py-8 dark:border-mist-200;
+}
+[data-project] > * {
+  min-width: 0;
+}
+@media (min-width: 64rem) {
+  [data-project] {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+    gap: 4rem;
+    align-items: center;
+  }
+}
+[data-project-title] {
+  @apply m-0 mb-3 text-3xl font-extrabold tracking-tight text-dusk-900 md:text-5xl dark:text-white;
+}
+[data-project-title] a {
+  @apply text-dusk-900 underline-offset-4 hover:underline dark:text-white;
+}
+[data-project-title] a:focus-visible {
+  @apply outline-2 outline-offset-2 outline-accent-500 dark:outline-accent-400;
+}
+[data-project-problem] {
+  @apply m-0 mb-4 max-w-prose text-xl text-dusk-800 dark:text-mist-200;
+  line-height: 1.5;
+}
+[data-project] [data-draft-mark] {
+  @apply m-0 mb-3 inline-block border border-rust-700 bg-rust-50 px-2 py-0.5 text-sm font-semibold text-dusk-900 dark:border-rust-300 dark:bg-dusk-900 dark:text-white;
+}
+[data-project-meta] {
+  @apply flex flex-wrap items-center gap-3;
+}
+[data-project-visual] img {
+  @apply block h-auto w-full max-w-full;
+}
+
+@media (forced-colors: active) {
+  [data-project],
+  [data-filter-buttons] button,
+  [data-filter-clear],
+  [data-project] [data-draft-mark] {
+    border-color: CanvasText;
+  }
+  [data-filter-buttons] button[aria-pressed="true"] {
+    border-color: Highlight;
+    outline: 2px solid Highlight;
+  }
+  [data-filter-buttons] button:focus-visible,
+  [data-filter-clear]:focus-visible {
+    outline-color: CanvasText;
+  }
+}

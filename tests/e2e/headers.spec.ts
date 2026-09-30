@@ -32,6 +32,8 @@ const FORBIDDEN = ["unsafe-inline", "unsafe-eval", "web3forms", "jsdelivr", "sup
 const RESPONSES = [
   { path: "/", status: 200, html: true },
   { path: "/nope/", status: 404, html: true },
+  { path: "/projects/", status: 200, html: true },
+  { path: "/projects/focus-pocus/", status: 200, html: true },
   { path: "/robots.txt", status: 200, html: false },
   { path: "/sitemap-index.xml", status: 200, html: false },
   { path: "/og-default.png", status: 200, html: false },

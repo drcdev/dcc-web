@@ -34,9 +34,13 @@ describe("MDX and fixture-site configuration", () => {
     expect(config).toContain("astro preview");
     expect(config).toContain("--port 4322");
     expect(config).toMatch(/name:\s*"sections"/);
-    // The project also runs the pagination spec, which needs the fixture site's 13 or more posts (spec 008 T057).
-    expect(config).toMatch(/testMatch:\s*\[\s*\/sections\\\.spec\\\.ts\$\/,\s*\/blog-pagination\\\.spec\\\.ts\$\/\s*\]/);
+    // The project also runs the pagination spec, which needs the fixture site's 13 or more posts
+    // (spec 008 T057), and the project fixtures spec (spec 009).
+    expect(config).toMatch(
+      /testMatch:\s*\[\s*\/sections\\\.spec\\\.ts\$\/,\s*\/blog-pagination\\\.spec\\\.ts\$\/,\s*\/projects-fixtures\\\.spec\\\.ts\$\/\s*\]/,
+    );
     expect(config).toMatch(/testIgnore:\s*\[[^\]]*sections\\\.spec\\\.ts\$/s);
+    expect(config).toMatch(/testIgnore:\s*\[[^\]]*projects-fixtures\\\.spec\\\.ts\$/s);
   });
 
   it("includes tests/build in vitest", () => {

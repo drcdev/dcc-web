@@ -2,7 +2,8 @@
 // research.md R14). Copies this repository's site source into a temporary
 // directory under .cache/, adds chosen fixture page files from
 // tests/fixtures/pages/ to its src/content/pages/ (and, with the `posts` option,
-// post files from tests/fixtures/posts/ to its src/content/posts/), and runs Astro's programmatic
+// post files from tests/fixtures/posts/ to its src/content/posts/, and with the `projects`
+// option, project files from tests/fixtures/projects/ to its src/content/projects/), and runs Astro's programmatic
 // build() or sync() (docs.astro.build/en/reference/programmatic-reference/).
 // The programmatic API is experimental; only tests use it.
 import { execFile } from "node:child_process";
@@ -15,6 +16,7 @@ import { promisify } from "node:util";
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
 const fixturesRoot = resolve(repoRoot, "tests/fixtures/pages");
 const postFixturesRoot = resolve(repoRoot, "tests/fixtures/posts");
+const projectFixturesRoot = resolve(repoRoot, "tests/fixtures/projects");
 
 /**
  * A fixture file: `from` is relative to tests/fixtures/pages/ (for the `posts` option, to
@@ -24,7 +26,7 @@ export interface FixtureFile {
   from: string;
   to?: string;
   /** Replace the first occurrence of `[search, replacement]` in the copied file (to test an edit). */
-  replace?: readonly [string, string];
+  replace?: readonly [string, string] | readonly (readonly [string, string])[];
 }
 
 export interface FixtureSiteOptions {
@@ -47,6 +49,10 @@ export interface FixtureSiteOptions {
    * `WORKERS_CI_BRANCH` are never passed on, so a build depends only on what the test sets.
    */
   env?: Record<string, string>;
+  /** Fixture project files from tests/fixtures/projects/, copied to src/content/projects/ with their images. */
+  projects?: readonly (string | FixtureFile)[];
+  /** Extra files to write into the site, keyed by path relative to the site root (for example an oversized clip). */
+  write?: Readonly<Record<string, string | Uint8Array>>;
 }
 
 export interface FixtureSiteResult {
@@ -112,8 +118,11 @@ function copyFixtures(files: readonly (string | FixtureFile)[], fromRoot: string
     const target = resolve(into, to ?? from.split("/").at(-1) ?? from);
     mkdirSync(dirname(target), { recursive: true });
     if (replace) {
-      const text = readFileSync(resolve(fromRoot, from), "utf-8");
-      writeFileSync(target, text.replace(replace[0], replace[1]));
+      // One pair or a list of pairs; each replaces its first occurrence, in order.
+      const pairs = (typeof replace[0] === "string" ? [replace] : replace) as readonly (readonly [string, string])[];
+      let text = readFileSync(resolve(fromRoot, from), "utf-8");
+      for (const [search, replacement] of pairs) text = text.replace(search, replacement);
+      writeFileSync(target, text);
     } else {
       cpSync(resolve(fromRoot, from), target);
     }
@@ -147,11 +156,24 @@ export async function buildFixtureSite(
     copyFixtures(options.posts, postFixturesRoot, postsDir);
   }
 
+  if (options.projects) {
+    const projectsDir = resolve(root, "src/content/projects");
+    mkdirSync(projectsDir, { recursive: true });
+    const projectImages = resolve(projectFixturesRoot, "images");
+    if (existsSync(projectImages)) cpSync(projectImages, resolve(projectsDir, "images"), { recursive: true });
+    copyFixtures(options.projects, projectFixturesRoot, projectsDir);
+  }
+
   for (const [path, value] of Object.entries(options.overrides ?? {})) {
     const target = resolve(root, path);
     mkdirSync(dirname(target), { recursive: true });
     const next = typeof value === "function" ? value(existsSync(target) ? readFileSync(target, "utf-8") : "") : value;
     writeFileSync(target, next);
+  }
+
+  for (const [path, content] of Object.entries(options.write ?? {})) {
+    mkdirSync(dirname(resolve(root, path)), { recursive: true });
+    writeFileSync(resolve(root, path), content);
   }
 
   const dist = resolve(root, "dist");

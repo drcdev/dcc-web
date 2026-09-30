@@ -123,6 +123,16 @@ async function buildSite(): Promise<void> {
     writeFileSync(resolve(postsDir, "images", post.image.name), post.image.data);
   }
 
+  // Fixture projects (with their images) go into the projects collection.
+  const projectFixtures = resolve(repoRoot, "tests/fixtures/projects");
+  if (existsSync(projectFixtures)) {
+    // broken/ holds the files that must fail the build (tests/build/project-validation.test.ts).
+    cpSync(projectFixtures, resolve(siteRoot, "src/content/projects"), {
+      ...copyOptions,
+      filter: (source: string) => copyOptions.filter(source) && !source.includes("/broken"),
+    });
+  }
+
   await build({ root: siteRoot, logLevel: "warn" });
 }
 

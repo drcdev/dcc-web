@@ -92,6 +92,12 @@ describe("assertUniqueAddresses", () => {
     expect(run).toThrow("src/pages/writing/[slug].astro");
   });
 
+  it("fails for a page file under the projects story route's prefix", () => {
+    const run = () => check({ pageFiles: ["projects/x.md"], routeFiles: ["projects/[slug].astro"] });
+    expect(run).toThrow("src/content/pages/projects/x.md");
+    expect(run).toThrow("src/pages/projects/[slug].astro");
+  });
+
   it("ignores the pages route itself and pages outside a variable route's prefix", () => {
     expect(() =>
       check({ pageFiles: ["about.mdx", "notes/x.mdx"], routeFiles: ["[...slug].astro", "writing/[slug].astro"] }),

@@ -1,0 +1,14 @@
+---
+// <Invitation />: the closing link to the contact form, carrying only the
+// project slug (FR-015; Principle VII). A plain same-tab link, no script.
+import { contactHref } from "../../../lib/content/contact-link.ts";
+import { checkProps, currentProject } from "./context.ts";
+import "../portfolio.css";
+
+const project = currentProject("Invitation", Astro.locals);
+checkProps("Invitation", Astro.props, project);
+---
+
+<p>
+  <a href={contactHref(project.slug)} data-invitation>Tell me about a problem like {project.data.title}</a>
+</p>

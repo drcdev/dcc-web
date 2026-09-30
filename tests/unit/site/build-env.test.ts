@@ -132,6 +132,8 @@ describe.each(environments)("astro build with the $label environment", ({ env })
       "/about/",
       "/contact/",
       "/privacy-policy/",
+      "/projects/",
+      "/projects/focus-pocus/",
       "/services/",
       "/speaking/",
       "/technology/",

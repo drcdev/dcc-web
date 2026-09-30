@@ -1,0 +1,55 @@
+---
+title: Draft project
+problem: A project that is not ready to be seen.
+description: A draft project, left out of the production build.
+themes: [Tooling]
+status: in-progress
+visual:
+  kind: image
+  src: ./images/sample.png
+  alt: A sample picture
+  placeholder: true
+draft: true
+comparison:
+  constraints:
+    - { id: simple, label: Simple to run }
+  options:
+    - id: script
+      name: A script
+      summary: One file.
+      fit: { simple: meets }
+      chosen: true
+      reason: It is the simplest thing that works.
+---
+
+<Chapter stage="problem">
+Who had the problem and what it was.
+</Chapter>
+
+<Chapter stage="constraints">
+What made it hard.
+</Chapter>
+
+<Chapter stage="options">
+Short framing.
+
+<OptionComparison />
+</Chapter>
+
+<Chapter stage="built">
+What was built.
+</Chapter>
+
+<Chapter stage="outcome">
+How it turned out.
+</Chapter>
+
+<Chapter stage="lessons">
+What was learned.
+</Chapter>
+
+<Chapter stage="invitation">
+If you have a problem like this, tell me about it.
+
+<Invitation />
+</Chapter>

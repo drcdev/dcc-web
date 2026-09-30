@@ -382,3 +382,125 @@ test.describe("contact form states", () => {
     }
   }
 });
+
+// Portfolio states the TEMPLATES loop does not reach (FR-080, FR-081; T072).
+// The every-block story and the filtered and empty index states live on the
+// fixture site (port 4322, playwright.config.ts), which every run serves.
+const FIXTURE = "http://localhost:4322";
+
+test.describe("portfolio states", () => {
+  const states = [
+    { name: "the every-block fixture story", path: "/projects/every-block/" },
+    { name: "the filtered index", path: "/projects/?theme=tooling" },
+    { name: "the empty index (unknown theme)", path: "/projects/?theme=nonsense" },
+  ];
+  for (const state of states) {
+    for (const size of WIDTHS) {
+      for (const theme of THEMES) {
+        test(`has zero axe violations on ${state.name} at ${size.name} width in the ${theme} theme`, async ({
+          page,
+        }) => {
+          await page.setViewportSize({ width: size.width, height: size.height });
+          await setTheme(page, theme);
+          await page.goto(`${FIXTURE}${state.path}`);
+          await expect(page.locator("html")).toHaveClass(theme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
+          if (state.path.startsWith("/projects/?")) {
+            await expect(page.locator("project-filter[data-ready]")).toHaveCount(1);
+          }
+          await expectNoAxeViolations(page);
+        });
+      }
+    }
+  }
+
+  test("every-block story survives 400% zoom (320 px) with text spacing: no sideways scroll, headings and comparison visible", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto(`${FIXTURE}/projects/every-block/`);
+    await page.evaluate(() => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(`* {
+        line-height: 1.5 !important;
+        letter-spacing: 0.12em !important;
+        word-spacing: 0.16em !important;
+      }
+      p { margin-bottom: 2em !important; }`);
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    });
+    await expectNoHorizontalScroll(page);
+    const headings = page.locator("[data-chapter-heading]");
+    const count = await headings.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i += 1) {
+      const heading = headings.nth(i);
+      await heading.scrollIntoViewIfNeeded();
+      await expect(heading).toBeVisible();
+      const fits = await heading.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0 && r.left >= -1 && r.right <= document.documentElement.clientWidth + 1;
+      });
+      expect(fits, `heading ${i}`).toBe(true);
+    }
+    const comparison = page.locator("[data-comparison]");
+    await comparison.scrollIntoViewIfNeeded();
+    await expect(comparison).toBeVisible();
+    expect(await comparison.evaluate((el) => el.getBoundingClientRect().right <= document.documentElement.clientWidth + 1)).toBe(true);
+    await expectNoHorizontalScroll(page);
+  });
+
+  test("Tab reaches the comparison region on the every-block story", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto(`${FIXTURE}/projects/every-block/`);
+    const region = page.locator("[data-comparison]");
+    for (let i = 0; i < 80; i += 1) {
+      await page.keyboard.press("Tab");
+      if (await region.evaluate((el) => el === document.activeElement)) break;
+    }
+    await expect(region).toBeFocused();
+    await expect(region).toBeInViewport();
+  });
+
+  for (const path of ["/projects/focus-pocus/", "/projects/"]) {
+    test(`focus is never hidden under sticky or fixed content on ${path}`, async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.goto(path);
+      const seen = new Set<string>();
+      for (let i = 0; i < 120; i += 1) {
+        await page.keyboard.press("Tab");
+        // Focus scrolling is smooth where motion is allowed: let it settle first.
+        await page.evaluate(
+          () =>
+            new Promise<void>((resolve) => {
+              let last = -1;
+              let steady = 0;
+              const tick = () => {
+                steady = scrollY === last ? steady + 1 : 0;
+                last = scrollY;
+                if (steady >= 5) resolve();
+                else requestAnimationFrame(tick);
+              };
+              tick();
+            }),
+        );
+        const stop = await page.evaluate(() => {
+          const el = document.activeElement as HTMLElement | null;
+          if (!el || el === document.body) return null;
+          const rect = el.getBoundingClientRect();
+          if (rect.width === 0 || rect.height === 0) return null;
+          const x = Math.min(Math.max(rect.left + rect.width / 2, 0), innerWidth - 1);
+          const y = Math.min(Math.max(rect.top + Math.min(rect.height / 2, 20), 0), innerHeight - 1);
+          const top = document.elementFromPoint(x, y);
+          const covered = !top || !(el.contains(top) || top.contains(el));
+          const by = top ? `${top.tagName}.${String(top.className).slice(0, 60)}[${Object.keys((top as HTMLElement).dataset).join(",")}]` : "nothing";
+          return { id: `${el.tagName}#${el.id}.${el.className}|${el.textContent?.slice(0, 20)}`, covered, by, y };
+        });
+        if (!stop) continue;
+        if (seen.has(stop.id)) break;
+        seen.add(stop.id);
+        expect(stop.covered, `focused ${stop.id} is covered by ${stop.by} at y=${stop.y}`).toBe(false);
+      }
+      expect(seen.size).toBeGreaterThan(3);
+    });
+  }
+});

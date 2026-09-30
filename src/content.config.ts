@@ -4,6 +4,8 @@
 // becomes its address (specs/003-standalone-pages/research.md R5).
 // `posts`: every file at the top of src/content/posts/ is one blog post; the file
 // name is its slug (specs/008-blog/research.md R1).
+// `projects`: one MDX file per project directly in src/content/projects/; the
+// file name is its slug (specs/009-portfolio/data-model.md).
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { readFileSync } from "node:fs";
@@ -15,6 +17,9 @@ import { assertPostDates } from "./lib/content/post-dates.ts";
 import { slugFromPostPath } from "./lib/content/post-address.ts";
 import { pageSchema } from "./content/schemas/page.ts";
 import { postSchema } from "./content/schemas/post.ts";
+import { projectSchema } from "./content/schemas/project.ts";
+import { assertProjectImagesExist } from "./lib/content/project-images.ts";
+import { slugFromPath } from "./lib/content/project-address.ts";
 
 const pages = defineCollection({
   loader: glob({
@@ -48,4 +53,19 @@ const posts = defineCollection({
   schema: ({ image }) => postSchema({ image }),
 });
 
-export const collections = { pages, posts };
+// `projects`: one MDX file per project directly in src/content/projects/. The
+// entry id is the slug from the file name (specs/009-portfolio/data-model.md).
+const projects = defineCollection({
+  loader: glob({
+    pattern: "**/*.{md,mdx}",
+    base: "./src/content/projects",
+    generateId: ({ entry, base, data }) => {
+      const slug = slugFromPath(entry);
+      assertProjectImagesExist(fileURLToPath(base), entry, data);
+      return slug;
+    },
+  }),
+  schema: ({ image }) => projectSchema({ image }),
+});
+
+export const collections = { pages, posts, projects };

@@ -85,6 +85,8 @@ test("the sitemap lists exactly the built public pages, never /404", async ({ re
       "/about/",
       "/contact/",
       "/privacy-policy/",
+      "/projects/",
+      "/projects/focus-pocus/",
       "/services/",
       "/speaking/",
       "/technology/",
@@ -160,4 +162,21 @@ test("the not-found page has metadata and noindex but no canonical and no og:url
   await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
   await expect(page.locator('meta[property="og:url"]')).toHaveCount(0);
   await expectSharedMetadata(page, origin);
+});
+
+test("the project story has its own title, description, canonical, sharing image and sitemap entry", async ({
+  page,
+  request,
+}) => {
+  const origin = await robotsOrigin(request);
+  const entries = await sitemapEntries(request);
+  expect(entries).toContain(`${origin}/projects/`);
+  expect(entries).toContain(`${origin}/projects/focus-pocus/`);
+  await page.goto("/projects/focus-pocus/");
+  expect(await page.title()).toContain("Focus Pocus");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", `${origin}/projects/focus-pocus/`);
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /Focus Pocus/);
+  await expectSharedMetadata(page, origin);
+  // Focus Pocus has no sharing image of its own, so it uses the site default (FR-080).
+  expect(await attr(page, 'meta[property="og:image"]')).toContain("og-default");
 });
