@@ -45,7 +45,8 @@ const { title } = entry.data;
 - **Address**: the file name is the slug; the post lives at `/writing/{slug}/`. Lower-case
   letters, digits and hyphens only; not `all` or `topics`; no two files with the same slug; no
   sub-folders; `.mdx` only.
-- **Settings**: exactly those in [data-model.md](../data-model.md) § Post; any other key fails.
+- **Settings**: exactly those in spec FR-031 and [data-model.md](../data-model.md) § Post; any
+  other key fails. Dates are unquoted `YYYY-MM-DD`.
 - **Topics**: ids from `src/config/topics.ts`; the build error lists the allowed ids.
 - **Body**: `##` to `######` headings (no `#`); images need alt text; the site's sections
   (`Figure`, `WideImage`, `FullImage`, …) work without imports; a code fence may name a
@@ -55,7 +56,8 @@ const { title } = entry.data;
 - **Featured**: `featured: true` adds the "Featured" mark everywhere the post appears and makes
   it eligible for the landing page's Featured grid.
 - **Sample posts**: the feature ships three or four posts named `sample-*.mdx`, each
-  `draft: true` and saying in its summary that it is a sample. Together they cover captioned,
+  `draft: true`, with a title beginning "Sample:" and a summary saying it is a sample post used
+  to check the blog's pages. They stay in the repository (E2E and visual tests depend on them). Together they cover captioned,
   wide and full-width images, code with and without a caption and without a language, a wide
   table, headings `##` to `####`, at least one featured post, one post without a feature image,
   one updated post, and all four topics (FR-035).

@@ -9,12 +9,12 @@ One file: `src/content/posts/{slug}.mdx`, images in `src/content/posts/images/`.
 
 | Setting | Type | Required | Rules |
 |---|---|---|---|
-| `title` | text | yes | trimmed, not empty |
-| `summary` | text | yes | trimmed, not empty; used on cards, the post's title card, page description and feed |
-| `date` | date (`YYYY-MM-DD`) | yes | a readable date; the publication date |
-| `updated` | date | no | a readable date, not earlier than `date` |
-| `topics` | list of topic ids | yes | at least one; each in the controlled list (Topic); no repeats; the first is the **main topic** |
-| `featureImage` | `{ src, alt, caption? }` | no | `src` a local image that exists; `alt` required and not empty; `caption` optional |
+| `title` | text | yes | trimmed, not empty or only spaces; no length limit |
+| `summary` | text | yes | trimmed, not empty or only spaces; no length limit; used on cards, the post's title card, page description and feed |
+| `date` | date (`YYYY-MM-DD`) | yes | a real calendar date written `YYYY-MM-DD` (a YAML date); a quoted string, a time or any other form fails; the publication date |
+| `updated` | date (`YYYY-MM-DD`) | no | same form as `date`, on or after `date` (equal is allowed) |
+| `topics` | list of topic ids | yes | at least one; each in the controlled list (Topic); no repeats; no maximum; the first is the **main topic** |
+| `featureImage` | `{ src, alt, caption? }` | no | `src` a local image in `src/content/posts/images/` that exists; `alt` required and not empty (no decorative option); `caption` optional |
 | `featured` | true/false | no | default `false` |
 | `draft` | true/false | no | default `false` |
 
@@ -45,7 +45,9 @@ One file: `src/content/posts/{slug}.mdx`, images in `src/content/posts/images/`.
 5. On a production build, no draft appears in any page, listing, related list, home section,
    feed or sitemap; on every other build drafts are built and listed, and the feed still
    excludes them (FR-032, FR-036).
-6. Listing order is `date` descending, then `title` ascending (FR-015).
+6. Listing order is `date` descending, then `title` ascending (English collation, case
+   ignored), then `slug` ascending (FR-015).
+7. Draft post pages always carry `<meta name="robots" content="noindex">` (FR-045).
 
 **States**
 
@@ -83,7 +85,7 @@ interface PostSummary {
 
 | Field | Type | Rules |
 |---|---|---|
-| `id` | text | lower-case letters, digits, hyphens; unique; used in `/writing/topics/{id}/` |
+| `id` | text | lower-case letters, digits, hyphens; at most 40 characters; unique; used in `/writing/topics/{id}/`; kept once a post uses it (FR-016) |
 | `name` | text | shown on pills and the banner |
 | `description` | text | one or two sentences for the topic banner |
 | `colour` | palette name | one of the existing palettes (`rust`, `sage`, `lavender`, `mist`, `sand`, `mauve`, `dusk`); unique across topics |
@@ -132,7 +134,11 @@ From `paginate()`: `data`, `currentPage`, `lastPage`, `url.prev/next/first/last`
 
 ```ts
 interface BuildEnv { WORKERS_CI?: string; WORKERS_CI_BRANCH?: string }
-function includeDrafts(env: BuildEnv): boolean  // false only when WORKERS_CI === "1" && WORKERS_CI_BRANCH === "main"
+function includeDrafts(env: BuildEnv): boolean
+// WORKERS_CI !== "1"                          → true  (local, dev, GitHub Actions, tests: not Workers Builds)
+// WORKERS_CI === "1" && branch is "main"      → false (production)
+// WORKERS_CI === "1" && branch missing/empty  → false (fail-safe: undetectable counts as production, FR-046)
+// WORKERS_CI === "1" && any other branch      → true  (preview deployment)
 ```
 
 ## Feed item (derived, `src/pages/writing/rss.xml.ts`)

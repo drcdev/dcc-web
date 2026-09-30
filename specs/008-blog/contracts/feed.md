@@ -24,8 +24,9 @@ FR-036, FR-037; SC-008).
 </rss>
 ```
 
-- Items: every post with `draft` false, newest first (date, then title), on **every** build;
-  drafts never appear, including on preview.
+- Items: every post with `draft` false, newest first (date, then title, then slug; spec
+  FR-015), on **every** build; drafts never appear, including on preview. Titles and summaries
+  are XML-escaped text (a fixture title containing `&` and `<` proves it).
 - `{site}` is the build's own origin (`resolveSiteOrigin`), so preview feeds point at the
   preview.
 - No published posts: a valid channel with no items.

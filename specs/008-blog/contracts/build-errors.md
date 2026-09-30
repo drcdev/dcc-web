@@ -9,14 +9,14 @@ stops at the first error; tests use one broken file per run.
 
 | # | Mistake | Detected by | Message must contain |
 |---|---|---|---|
-| P1 | No `title` | schema | file name, `title` |
-| P2 | No `summary` | schema | file name, `summary` |
+| P1 | No `title`, or empty or only spaces | schema | file name, `title` |
+| P2 | No `summary`, or empty or only spaces | schema | file name, `summary` |
 | P3 | No `date` | schema | file name, `date` |
-| P4 | Unreadable date (`date: next tuesday`) | schema | file name, `date` |
+| P4 | Unreadable date (`date: next tuesday`, `"2026-08-27"` quoted, `27/08/2026`, `2026-02-30`) | schema / post file check | file name, `date` |
 | P5 | No `topics`, or an empty list | schema | file name, `topics` |
-| P6 | Unknown topic (`agentic-a1`) | schema (enum) | file name, `agentic-a1`, every allowed topic id |
+| P6 | Unknown topic (`agentic-a1`) | schema (enum) | file name, `agentic-a1`, every allowed topic id in list order |
 | P7 | Same topic twice | schema | file name, `topics` |
-| P8 | `featureImage` without `alt` (or empty) | schema | file name, `alt` |
+| P8 | `featureImage` without `alt` (or empty) | schema | file name, `alt`, "alt text" |
 | P9 | `featureImage` file that does not exist | image check / `image()` | file name, image path |
 | P10 | `updated` earlier than `date` | schema | file name, `updated` |
 | P11 | Unknown or misspelled setting (`sumary`) | strict schema | file name, `sumary` |
@@ -32,6 +32,8 @@ stops at the first error; tests use one broken file per run.
 | P21 | A topic removed from the list while a post still names it | schema (enum) | file name, the topic id |
 
 P21 is the same mechanism as P6; its test removes a topic from a copied `topics.ts` in the
-fixture site. A Shiki colour the class map does not know, or a `style` attribute left in
+fixture site. There is no warning tier (spec FR-033): nothing else about a post file is
+checked. A code fence naming a language the highlighter does not know is not an error; it is
+shown as plain text (spec Edge Cases). A Shiki colour the class map does not know, or a `style` attribute left in
 highlighted code, also fails the build (R7); that is a developer error, covered by
 `tests/unit/markdown/shiki-classes.test.ts`, not a post-file row.

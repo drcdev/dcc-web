@@ -25,8 +25,15 @@ shared pieces in `src/content/schemas/shared.ts` (`captionedImage`, `requiredTex
   `table` elements through MDX's `components` prop, which plain `.md` files do not support. A
   `.md` file in `src/content/posts/` fails the build with "rename it to .mdx" (contract
   build-errors row P13), rather than silently rendering without the copy button.
-- Dates use `z.coerce.date()`; an unreadable date fails with Zod's date message. `updated`
-  earlier than `date` fails through a `superRefine` on the object (FR-033).
+- Dates accept only a YAML date written `YYYY-MM-DD` (spec FR-031): `z.date()` on the value
+  YAML parses, so a quoted string, a date with a time, `27/08/2026` or `next tuesday` fails
+  with a message naming `date`. An impossible date such as `2026-02-30` must also fail; the
+  first schema test establishes whether the YAML parser rejects it or silently rolls it over,
+  and in the second case the post file check compares the raw frontmatter text with the parsed
+  date. `updated` earlier than `date` fails through a `superRefine` on the
+  object (FR-033); equal is allowed.
+- Custom schema messages make both image description failures say "alt text" (FR-033), and the
+  unknown-topic message lists the allowed ids in list order.
 - Drafts are filtered at query time (R3), not by the loader, so the schema is identical in every
   environment and a broken draft still fails the build everywhere.
 
@@ -88,7 +95,12 @@ tell the `main` deploy (`wrangler deploy`) from branch previews (`wrangler versi
 GitHub Actions `verify` run, the Playwright servers and the fixture-site builds) includes drafts.
 
 - A pure function `includeDrafts(env)` in a new `src/lib/build-mode.ts` holds the rule and is
-  unit-tested for each environment.
+  unit-tested for each environment. Fail-safe (spec FR-046): when `WORKERS_CI === "1"` but
+  `WORKERS_CI_BRANCH` is missing or empty, the build cannot tell production from preview and
+  treats itself as production (drafts left out). Drafts are included only for a non-Workers
+  build or a Workers Builds build of a named branch other than `main`.
+- Draft post pages pass `noindex` to `Seo.astro` on every build (FR-045), independent of
+  `site.indexable`.
 - The two variables reach page code through Astro's typed environment variables: `env.schema`
   in `astro.config.mjs` declares `WORKERS_CI` and `WORKERS_CI_BRANCH` as
   `envField.string({ context: "server", access: "public", optional: true })`, read in
@@ -100,8 +112,9 @@ GitHub Actions `verify` run, the Playwright servers and the fixture-site builds)
   so every page, listing, topic page, related list, home section and the sitemap (which only
   lists built pages) follow one rule. The feed filters `!data.draft` **always** (US6 scenario 3:
   drafts never appear in the feed, even on preview).
-- Draft post pages show the existing `DraftNotice` component with post wording ("This post is a
-  draft and is not on the live site.").
+- Draft post pages show the existing `DraftNotice` component with post wording ("Draft. This
+  post is a draft and is not on the live site."), at the start of the title card (FR-032);
+  draft cards show a "Draft" label beside the Featured mark in the same colours (FR-011).
 
 **Rationale**: `import.meta.env.PROD` is true for every `astro build`, including preview
 deploys and the CI test build, so the documented `PROD` example would hide the sample drafts on
@@ -165,8 +178,9 @@ draft page, feed item or sitemap entry.
 **Decision**: pure functions over plain post summaries in `src/lib/content/post-order.ts`,
 unit-tested without Astro:
 
-- `sortNewestFirst`: `date` descending, then `title` ascending (`localeCompare` with `"en"`), so
-  equal dates are stable between builds (FR-015).
+- `sortNewestFirst`: `date` descending, then `title` ascending (`localeCompare` with `"en"` and
+  `sensitivity: "base"`), then `slug` ascending, so equal dates are stable between builds
+  (FR-015).
 - `selectLanding(posts)`: `lead` = first; `featured` = up to 3 featured posts other than the lead,
   most recent first; `latest` = up to 6 of the rest not already shown. One post gives only a
   lead; no featured posts leaves `featured` empty and the grid out (FR-006–FR-009, edge cases).
@@ -330,7 +344,7 @@ time); rejected.
 **Decision**: the post route also passes `table: ScrollTable`.
 `src/components/post/ScrollTable.astro` renders
 `<div class="table-wrapper" role="region" aria-label="Table" tabindex="0"><table><slot /></table></div>`
-(the label uses the table's caption text when one is given). The `.table-wrapper` rules ported
+(Markdown tables have no caption syntax, so the label is always "Table"; spec FR-026). The `.table-wrapper` rules ported
 from Flux already exist in `src/styles/global.css` (`overflow-x-auto`, borders, padding). The
 table keeps its native semantics (FR-026); the focusable region lets keyboard users scroll it.
 No client script.

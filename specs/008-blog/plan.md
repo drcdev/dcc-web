@@ -19,7 +19,8 @@ policy stays unchanged; a `CodeBlock` component (MDX `pre` override) adds the ca
 button, the only script in a post body. Tables scroll inside a focusable region through an MDX
 `table` override (no script). Drafts are left out only of the production build, detected from
 the Cloudflare Workers Builds variables the site already uses (`WORKERS_CI=1` and
-`WORKERS_CI_BRANCH=main`). The home page gains a `RecentWriting` section; "Writing" in the header
+`WORKERS_CI_BRANCH=main`); a Workers Builds build whose branch is missing counts as production
+(fail-safe, spec FR-046), and draft pages always carry `noindex` (FR-045). The home page gains a `RecentWriting` section; "Writing" in the header
 is marked current across the section. Four sample posts ship as drafts. Details and doc
 citations: [research.md](./research.md).
 
@@ -48,8 +49,9 @@ evergreen browsers; every page readable without JavaScript.
 **Performance Goals**: the existing per-page budget on simulated mobile (LCP ≤ 2.5 s, CLS <
 0.1, long tasks ≤ 200 ms, JS ≤ 10 KB, total ≤ 100 KB) for every blog template.
 
-**Constraints**: WCAG 2.2 AA in both themes; no sideways scroll at 320 px; CSP unchanged (no
-`'unsafe-inline'`); only existing colours and fonts; post addresses without topic or date; no
+**Constraints**: WCAG 2.2 AA in both themes; no sideways scroll at 320 px; CSP unchanged (spec
+FR-053: no edit to `security.csp` or the `_headers` policy, no `'unsafe-inline'`, zero
+violations and no `style` attribute in highlighted code); only existing colours and fonts; post addresses without topic or date; no
 redirects; $0 added running cost.
 
 **Scale/Scope**: 4 page routes + 1 feed endpoint; ~16 new components; 1 new collection; 4 sample
@@ -211,8 +213,14 @@ for exactly these 20 snapshots per platform, after the pages match Direction A.
   empty first page itself (R4); covered by a build test.
 - **Budget on the landing page**: several card images; mitigated by small sample images, lazy
   loading and responsive sizes (R16).
+- **Budget on a full listing page** (spec FR-041): the four sample posts cannot fill a
+  12-card page, so the budget check also measures `/writing/all/` on the fixture site, whose
+  generated posts carry small feature images; the tasks phase must add that measurement.
 - **Drafts outside Workers Builds**: a production build made elsewhere would include drafts;
-  production only deploys from Workers Builds on `main` (R3).
+  production only deploys from Workers Builds on `main` (R3). Inside Workers Builds a missing
+  branch variable fails safe to production (FR-046).
+- **Impossible dates** (`2026-02-30`): whether the YAML parser rejects or rolls them over is
+  proven by the first schema test; R1 names the fallback check.
 - **"Views are my own" wording** is placeholder copy until Don provides his own (spec
   Assumptions).
 
