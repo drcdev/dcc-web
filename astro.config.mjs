@@ -63,6 +63,15 @@ export default defineConfig({
     },
   },
 
-  // The not-found page is not a public page (FR-017c, FR-018; research R9).
-  integrations: [sitemap({ filter: (page) => !new URL(page).pathname.startsWith("/404") }), mdx()],
+  // The not-found page is not a public page (FR-017c, FR-018; research R9), and
+  // neither are the design prototypes under /design/ (docs.astro.build/en/guides/integrations-guide/sitemap/#filter).
+  integrations: [
+    sitemap({
+      filter: (page) => {
+        const { pathname } = new URL(page);
+        return !pathname.startsWith("/404") && !pathname.startsWith("/design/");
+      },
+    }),
+    mdx(),
+  ],
 });

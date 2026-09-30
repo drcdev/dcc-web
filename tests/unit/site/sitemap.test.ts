@@ -63,6 +63,11 @@ describe("astro.config.mjs sitemap", () => {
     for (const entry of entries) expect(new URL(entry!).pathname.startsWith("/404")).toBe(false);
   });
 
+  it("excludes every page under /design/ (design prototypes are never listed)", async () => {
+    const { site, entries } = await buildSitemap({}, ["", "about/", "design/blog/", "design/blog/a/all/2/"]);
+    expect(entries).toEqual([`${site}/`, `${site}/about/`]);
+  });
+
   it.each([
     ["local build", {}, "https://doncoleman.ca"],
     ["main branch build", { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" }, "https://new.doncoleman.ca"],

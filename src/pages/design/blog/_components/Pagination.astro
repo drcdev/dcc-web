@@ -1,0 +1,56 @@
+---
+// Listing pagination: numbered pages, Newer/Older links (absent at the ends)
+// and "Page N of M" (contracts/prototype-routes.md, "Listing page MUST").
+import { listingPath, type DirectionId } from "../_data/samples.ts";
+
+export interface Props {
+  direction: DirectionId;
+  current: number;
+  last: number;
+}
+
+const { direction, current, last } = Astro.props;
+const numbers = Array.from({ length: last }, (_, i) => i + 1);
+const link = "underline hover:no-underline";
+---
+
+<nav aria-label="Pagination" class="my-8 flex flex-wrap items-center justify-between gap-4 text-dusk-900 dark:text-mist-100">
+  <ul class="flex flex-wrap items-center gap-4">
+    {
+      current > 1 && (
+        <li>
+          <a class={link} href={listingPath(direction, current - 1)} rel="prev">
+            Newer posts
+          </a>
+        </li>
+      )
+    }
+    {
+      numbers.map((n) => (
+        <li>
+          {n === current ? (
+            <span aria-current="page" class="font-bold">
+              <span class="sr-only">Page </span>
+              {n}
+            </span>
+          ) : (
+            <a class={link} href={listingPath(direction, n)}>
+              <span class="sr-only">Page </span>
+              {n}
+            </a>
+          )}
+        </li>
+      ))
+    }
+    {
+      current < last && (
+        <li>
+          <a class={link} href={listingPath(direction, current + 1)} rel="next">
+            Older posts
+          </a>
+        </li>
+      )
+    }
+  </ul>
+  <p class="text-sm">Page {current} of {last}</p>
+</nav>

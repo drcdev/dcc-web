@@ -1,0 +1,93 @@
+---
+// The sample post body (FR-010, research R2, R4): inside the site's prose
+// wrapper, with a figure and caption, plain code in a focusable scroll region
+// and a wide table in the existing .table-wrapper. The "short" variant is a
+// brief body; "full-no-image" omits only the feature image (rendered by the
+// post page), so the in-body figure stays.
+import type { BodyKind } from "../_data/samples.ts";
+import Figure from "../_images/records.svg";
+
+export interface Props {
+  variant: BodyKind;
+}
+
+const { variant } = Astro.props;
+const full = variant !== "short";
+---
+
+<div class="prose prose-lg max-w-none dark:prose-invert prose-accent" data-sample-body={variant}>
+  <p>
+    Most of the work in a large system happens in the seams between teams, tools and old decisions. This is a sample
+    post for the design prototype: the words are placeholders, but the shapes are real, so each direction can be judged
+    on a post of realistic length and structure.
+  </p>
+  {
+    full ? (
+      <>
+        <h2>What we found</h2>
+        <p>
+          We started by writing down what each job actually did, not what its name said. That took two afternoons and
+          saved us from removing something that a month-end report still depended on.
+        </p>
+        <figure>
+          <Figure role="img" aria-label="Four rows of records, each with a short highlighted entry." class="h-auto w-full" />
+          <figcaption>Four record types, and the one entry in each that other teams read.</figcaption>
+        </figure>
+        <h2>A sample check</h2>
+        <p>The check below compares the row counts of two systems and stops the release if they differ.</p>
+        <pre tabindex="0" role="region" aria-label="Code sample: row count check" class="overflow-x-auto">
+          <code>{`select source.entity, source.row_count, target.row_count from nightly_counts source join nightly_counts target on target.entity = source.entity and target.system = 'reporting' where source.system = 'operational' and source.row_count <> target.row_count;`}</code>
+        </pre>
+        <h2>What it costs</h2>
+        <p>The table sets the effort of each step beside what it protects.</p>
+        <div class="table-wrapper" tabindex="0" role="region" aria-label="Table: effort and protection by step">
+          <table>
+            <caption class="p-2 text-left text-sm">Effort and protection by step</caption>
+            <thead>
+              <tr>
+                <th scope="col">Step</th>
+                <th scope="col">Effort</th>
+                <th scope="col">Owner</th>
+                <th scope="col">What it protects</th>
+                <th scope="col">How often</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Write down the jobs</td>
+                <td>Two afternoons</td>
+                <td>Team lead</td>
+                <td>Reports that depend on old jobs</td>
+                <td>Once, then yearly</td>
+              </tr>
+              <tr>
+                <td>Compare row counts</td>
+                <td>One sprint</td>
+                <td>Data engineer</td>
+                <td>Silent data loss between systems</td>
+                <td>Every night</td>
+              </tr>
+              <tr>
+                <td>Review the retention rules</td>
+                <td>One meeting</td>
+                <td>Privacy officer</td>
+                <td>Keeping data longer than promised</td>
+                <td>Every quarter</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <h2>Where this leaves us</h2>
+        <p>
+          None of this is clever. It is a habit of writing things down and checking them, which is why it keeps working
+          when the team changes.
+        </p>
+      </>
+    ) : (
+      <p>
+        This is a short sample body. It stands in for a post that has not been written yet, so the layouts can be
+        compared without a long read.
+      </p>
+    )
+  }
+</div>

@@ -1,0 +1,30 @@
+---
+// A topic link. "pill" is colour-coded with the topic's existing palette
+// (research R5); "text" is a plain underlined link. The topic name is always
+// text, so colour is never the only signal.
+import { topicBySlug, type DirectionId, type Tone } from "../_data/samples.ts";
+import { topicPath } from "../_data/samples.ts";
+
+export interface Props {
+  direction: DirectionId;
+  slug: string;
+  variant?: "pill" | "text";
+}
+
+const { direction, slug, variant = "pill" } = Astro.props;
+const topic = topicBySlug(slug);
+
+// Whole class names so Tailwind can see them.
+const tones: Record<Tone, string> = {
+  rust: "bg-rust-100 text-rust-900 dark:bg-rust-900 dark:text-rust-100",
+  sage: "bg-sage-100 text-sage-900 dark:bg-sage-900 dark:text-sage-100",
+  lavender: "bg-lavender-100 text-lavender-900 dark:bg-lavender-900 dark:text-lavender-100",
+  mist: "bg-mist-200 text-dusk-900 dark:bg-dusk-700 dark:text-mist-100",
+};
+const pill = "inline-block rounded-full px-3 py-1 text-sm font-medium hover:underline";
+const text = "text-dusk-700 underline hover:no-underline dark:text-mist-300";
+---
+
+<a href={topicPath(direction, slug)} class:list={[variant === "pill" ? [pill, tones[topic.tone]] : text]} data-topic={slug}
+  >{topic.name}</a
+>
