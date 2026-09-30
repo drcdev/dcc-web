@@ -99,6 +99,7 @@ working inside Claude Desktop's MCP model.
 | `indexPath` | string | `/design/portfolio/<key>/` |
 | `storyPath` | string | `/design/portfolio/<key>/focus-pocus/` |
 | `behaviours` | `{ stages; options; demo; reveals: string }` | the four behaviours, in plain words |
+| `dimensions` | `{ storyLayout; stageMovement; optionPattern; indexStructure; revealStyle: string }` | the five FR-001 dimensions, one short value each, used by the distinctness test |
 | `javascript` | string[] | islands used: `"filter"`, and `"option-tabs"` for B |
 | `newResources` | string[] | empty unless the direction needs a colour or typeface the site lacks (FR-005) |
 
@@ -127,6 +128,8 @@ working inside Claude Desktop's MCP model.
 10. `focusPocus.demo.live === false` implies a non-empty `standInNote`.
 11. `directions` has exactly three entries with keys `a`, `b`, `c`, and every
     `newResources` array is present (possibly empty).
+12. Every pair of `directions` has different values in at least three of the five
+    `dimensions` fields (FR-001; tested in `tests/unit/prototypes/portfolio/distinct.test.ts`).
 
 ## Filter rule (`src/prototypes/portfolio/filter.ts`)
 

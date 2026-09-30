@@ -69,7 +69,7 @@ design added no dependency, service, CSP change or shared-component edit.*
 | VII. Private Data | Pass | Nothing is collected. The contact hand-off carries only a project slug (`?project=focus-pocus`), no personal data. |
 | VIII. Cloudflare Best Practices | Pass | No Worker code, D1, Cron or Turnstile change. Pages are served as static assets. Preview addresses use Workers' own version preview URLs. |
 | IX. Cost Ceiling | Pass | Nothing new is paid for. Expected new monthly cost: **$0**. Uses existing Workers Builds and preview URLs within the free plan. |
-| X. Accessible, Fast and Private | Pass | Every prototype route runs the full axe/WCAG 2.2 AA suite in both themes at two widths, plus the performance budget. No third-party scripts, iframes or tracking. |
+| X. Accessible, Fast and Private | Pass | Every prototype route, the hub included, runs the shared a11y suite (axe WCAG 2.2 A/AA in both themes at two widths, menu open, JavaScript off) and the performance budget. The feature E2E spec adds axe runs in the remaining FR-030 states (reduced motion, JavaScript off at desktop width, forced colours, 320 px, 200% zoom), and FR-039's manual checks cover what axe cannot. No third-party scripts, iframes or tracking. |
 | XI. Spec Kit Workflow | Pass | Spec Kit branch and folder. Separate worktree. Files are disjoint from feature 005 except the shared edits listed under Merge risks, whose resolution is stated. |
 
 ### Capability table (Principle IV)
@@ -152,16 +152,20 @@ under the site's `trailingSlash: "always"`.
 | Layer | Where | Covers |
 |---|---|---|
 | Unit | `tests/unit/prototypes/portfolio/sample.test.ts` | Invariants 1–11 in data-model.md (stage order, draft marks, one chosen option with reason, statuses/themes coverage, slugs, stand-in note) |
+| Unit | `…/sitemap-filter.test.ts` | Runs the configured `@astrojs/sitemap` hooks the way `tests/unit/site/sitemap.test.ts` does (the filter is an inline closure and cannot be imported); `/design/…` pages and `/404…` pages are dropped, other pages kept |
+| Unit | `…/distinct.test.ts` | FR-001: every pair of directions differs in at least three of the five `dimensions` (data-model invariant 12) |
 | Unit | `…/filter.test.ts` | `themesOf`, `matches`, `parseThemeParam` including unknown theme |
 | Unit | `…/contact-link.test.ts` | `/contact/?project=focus-pocus`; bad slug throws |
 | Unit | `…/decision-doc.test.ts` | Decision document structure (contracts/decision-document.md). Written when the document is drafted; must pass before the final commit |
 | Component | `tests/component/prototypes/portfolio/*.test.ts` | Each direction's story renders 7 stages in order with ids, h2s and draft marks; every option in HTML with chosen marked and reason; diagrams have `role="img"` and names; placeholders say "Placeholder" plus description; no `style=` attributes; filter controls carry `hidden js:` classes; invitation `href` |
 | E2E (feature) | `tests/e2e/portfolio-directions.spec.ts` (`e2e` project) | Per direction: order of stages; every option reachable (details open / tab arrows / table cells); visuals inside their stage and beside at 1280 px; index fields for 5 entries; filter apply/clear/`?theme=` known and unknown; Focus Pocus → same-direction story; other entries not story links; invitation `href`; reduced motion → `[data-reveal]` has `animation-name: none` and opacity 1, and no `@view-transition` animation; JS off → all stages, options, visual text, invitation visible, no visible buttons; `#options` deep link visible at once; theme toggle mid-story keeps `scrollY`; noindex meta; not in nav; hub links |
-| Accessibility | existing `tests/e2e/a11y.spec.ts` via `TEMPLATES` | axe WCAG 2.2 AA at 390/1280 × dark/light, menu open, no-JS, forced colours, reduced motion, 320 px and 200% reflow, text spacing, headings, skip link, no load-time transitions |
+| Accessibility | existing `tests/e2e/a11y.spec.ts` via `TEMPLATES` | axe WCAG 2.2 A/AA at 390/1280 × dark/light, with the menu open, and with JavaScript off at 390 px; non-axe checks for forced colours, reduced motion, 320 px and 200% reflow, text spacing, headings, skip link, no load-time transitions |
+| Accessibility (feature) | `tests/e2e/portfolio-directions.spec.ts` | axe WCAG 2.2 A/AA on every prototype route in the FR-030 states the shared suite does not run axe in: reduced motion, JavaScript off at 1280 px, forced colours, 320 px, 200% zoom |
 | No-JS shell | existing `tests/e2e/no-js.spec.ts` via `TEMPLATES` | Nav, no visible buttons, only theme-init as classic inline script |
 | Performance budget | existing `tests/e2e/budget.spec.ts` via `TEMPLATES` | LCP, CLS, long tasks, ≤ 10 KB JS, ≤ 100 KB total, noindex, per prototype page |
 | Sitemap | existing seo/pages/build-env tests | Unchanged expectations still pass because of the `/design/` filter |
 | Visual | existing `visual` project | Unchanged: no prototype baselines; existing baselines must still match (proves the shared shell is untouched) |
+| Scope guard | checkpoint command in tasks.md (not a Vitest file) | FR-045, FR-050 to FR-054: the branch diff against the merge base with `origin/main` touches no forbidden path. Kept out of the unit suite because CI checks out with `fetch-depth: 2` and has no merge base to diff against |
 | Screenshots | `tests/design/portfolio/capture.*` | Not a test gate: produces the 24 images on demand |
 
 ## Delivery sequence (for tasks)
@@ -174,7 +178,10 @@ under the site's `trailingSlash: "always"`.
 4. Capture screenshots. Draft `docs/design/portfolio.md` with its test.
 5. Push. Take the version preview URL of that commit (R12).
 6. One final commit: fill in pinned URLs and SHA, run the document test, delete every †
-   file, revert both ‡ edits, confirm the diff is docs-only, run `verify`, push. Open the PR
+   file, revert both ‡ edits (both files then match `origin/main` exactly, whatever the blog
+   feature has done), confirm the diff is docs-only, run `verify`, push. No intermediate
+   commit is made between the pinned commit and this one, so the pinned commit stays the last
+   commit with prototypes (FR-046). Open the PR
    from `drc-agents`, labelled major change, auto-merge off (Principle III).
 
 ## Merge risks and parallel work

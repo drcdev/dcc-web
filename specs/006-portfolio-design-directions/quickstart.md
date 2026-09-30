@@ -98,6 +98,8 @@ under 600 KB.
    ```sh
    git fetch origin main
    git diff --stat origin/main...HEAD -- . ':!specs' ':!.specify'
+   git diff --name-only origin/main...HEAD -- .specify      # only .specify/feature.json
+   git diff origin/main -- astro.config.mjs tests/e2e/templates.ts   # empty
    ```
 
 5. Run the full gate (step 4) again, commit, push.

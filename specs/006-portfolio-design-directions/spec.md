@@ -295,9 +295,11 @@ is present and empty.
   (chosen and not chosen), every visual or its text alternative, and the invitation. This holds
   whatever comparison pattern a direction uses (for example, options behind tabs or collapsed
   panels are all shown expanded). The demo is shown as its description and the link to open
-  it. Controls that cannot work without JavaScript are not shown. The page follows the
-  device's light or dark preference, so both themes remain reviewable by changing that
-  preference. (Constitution Principle V.)
+  it. Controls that cannot work without JavaScript, including the theme switch, are not
+  shown. Without JavaScript the page renders in the site's standard no-JavaScript theme,
+  which is dark on every page of the site (the shared layout is not changed by this feature,
+  FR-051); the light theme is reviewed with JavaScript on, and the no-JavaScript state is
+  reviewed in the dark theme. (Constitution Principle V.)
 - **FR-018**: "Hidden" content, for FR-016, FR-017 and User Story 3, means any content that is
   not displayed, is fully or almost fully transparent, is positioned or clipped out of view, or
   is collapsed so it cannot be read without an action the reader cannot take in that state.
@@ -372,9 +374,8 @@ is present and empty.
   `/design/blog/` namespace, `docs/design/blog.md` and `docs/design/blog/`. Apart from the
   shared files named in FR-053, the feature MUST NOT create, edit or delete any file outside
   the paths it owns.
-- **FR-052**: The feature MUST NOT alter any other feature's work, including its content,
-  pages, components, tests, visual baselines, decision documents and prototypes, and MUST NOT
-  change the package manifest or the lockfile.
+- **FR-052**: The feature MUST NOT change the package manifest or the lockfile. (The rule
+  against altering other features' work is FR-045.)
 - **FR-053**: The only shared files the feature may edit are the site configuration's sitemap
   filter (to keep the prototypes out of the sitemap) and the shared list of page templates the
   accessibility, no-JavaScript and performance checks run against (to put the prototypes under
@@ -419,8 +420,10 @@ is present and empty.
   III, and its description MUST say so. Auto-merge MUST stay off, and the pull request waits
   for Don's review of the pinned preview addresses and his approval.
 - **FR-045**: The feature MUST NOT alter or remove work belonging to the parallel blog design
-  directions feature or any other feature, including their decision documents and prototypes
-  (see FR-051 to FR-053).
+  directions feature or any other feature, including their content, pages, components,
+  tests, visual baselines, decision documents and prototypes, and it MUST NOT change the
+  package manifest or the lockfile (FR-052). The paths it may touch are set by FR-051 and
+  FR-053.
 - **FR-046**: Each preview address in the decision document MUST point to the preview
   deployment of the pinned commit, so the link keeps working after the prototypes are
   removed. The pinned commit is the last commit that contains the prototypes: the one from
@@ -470,7 +473,8 @@ is present and empty.
 - **SC-002**: In every direction, a reader can reach all seven story stages and every one of the
   sample project's options, both with reduced motion requested and with JavaScript turned off.
 - **SC-003**: The automated accessibility checks report zero WCAG 2.2 A or AA violations on
-  every direction's story page and index in every state listed in FR-030.
+  every direction's story page and index, and on the review page, in every state listed in
+  FR-030.
 - **SC-004**: Don can compare the directions and record a choice using the decision document and
   its screenshots alone, in one sitting of under 30 minutes, without needing to ask how any
   direction behaves. This is checked objectively before review by confirming that the document
