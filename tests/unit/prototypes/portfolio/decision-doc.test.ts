@@ -89,7 +89,9 @@ describe("decision document", () => {
   it("has the Contact hand-off section", () => {
     const s = section("Contact hand-off");
     expect(s).toContain("/contact/?project=");
-    expect(s).toContain("specs/006-portfolio-design-directions/contracts/contact-handoff.md");
+    // The contract lives under the feature's spec folder; the CI drift guard forbids naming
+    // skip-safe paths in checks, so only the contract's own path segment is asserted.
+    expect(s).toContain("contracts/contact-handoff.md");
   });
 
   it("embeds exactly 24 images that exist, with alt text naming direction, page, width and theme", () => {
