@@ -5,6 +5,9 @@
 // post files from tests/fixtures/posts/ to its src/content/posts/, and with the `projects`
 // option, project files from tests/fixtures/projects/ to its src/content/projects/), and runs Astro's programmatic
 // build() or sync() (docs.astro.build/en/reference/programmatic-reference/).
+// The repository's real (non-`sample-*`) posts are left out of the copy unless a test sets
+// `realPosts`, so a fixture build holds only the sample posts and the fixtures it adds (and does
+// not spend time resizing the real posts' photos).
 // The programmatic API is experimental; only tests use it.
 import { execFile } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -51,6 +54,11 @@ export interface FixtureSiteOptions {
   env?: Record<string, string>;
   /** Fixture project files from tests/fixtures/projects/, copied to src/content/projects/ with their images. */
   projects?: readonly (string | FixtureFile)[];
+  /**
+   * Keep the repository's real posts (every src/content/posts/*.mdx not named `sample-*`) in the
+   * copied site. Default false: they are removed, so the only posts are the samples and fixtures.
+   */
+  realPosts?: boolean;
   /** Extra files to write into the site, keyed by path relative to the site root (for example an oversized clip). */
   write?: Readonly<Record<string, string | Uint8Array>>;
 }
@@ -141,6 +149,16 @@ export async function buildFixtureSite(
   cpSync(resolve(repoRoot, "worker/src/contact/rules.ts"), resolve(root, "worker/src/contact/rules.ts"));
   // Dependencies resolve through the repository's node_modules.
   symlinkSync(resolve(repoRoot, "node_modules"), resolve(root, "node_modules"), "dir");
+
+  if (!options.realPosts) {
+    // Leave out the real posts; their pictures stay, unreferenced, so nothing builds them.
+    const copiedPosts = resolve(root, "src/content/posts");
+    if (existsSync(copiedPosts)) {
+      for (const name of readdirSync(copiedPosts)) {
+        if (/\.mdx?$/.test(name) && !name.startsWith("sample-")) rmSync(resolve(copiedPosts, name));
+      }
+    }
+  }
 
   const pagesDir = resolve(root, "src/content/pages");
   mkdirSync(pagesDir, { recursive: true });

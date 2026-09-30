@@ -1,6 +1,7 @@
 // The seven launch page files (data-model.md "Launch content"; FR-020 to
 // FR-024). Reads the files directly, so a missing page or a wrong claim fails
-// here before any build.
+// here before any build. About carries Don's real copy and is live (draft: false,
+// feature 010 Ghost content); the other six are still drafts.
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -16,21 +17,22 @@ function load(name: string) {
   return { front: match![1]!, body: match![2]!, all: source, text: source.toLowerCase() };
 }
 
+// [file, nav position (undefined: not in the navigation), draft].
 const LAUNCH = [
-  ["index.mdx", 1],
-  ["services.mdx", 2],
-  ["speaking.mdx", 3],
-  ["about.mdx", 6],
-  ["privacy-policy.mdx", undefined],
-  ["terms-of-use.mdx", undefined],
-  ["technology.mdx", undefined],
+  ["index.mdx", 1, true],
+  ["services.mdx", 2, true],
+  ["speaking.mdx", 3, true],
+  ["about.mdx", 6, false],
+  ["privacy-policy.mdx", undefined, true],
+  ["terms-of-use.mdx", undefined, true],
+  ["technology.mdx", undefined, true],
 ] as const;
 
 describe("launch page files", () => {
-  for (const [name, position] of LAUNCH) {
-    it(`${name} is a draft with the expected nav position`, () => {
+  for (const [name, position, draft] of LAUNCH) {
+    it(`${name} is ${draft ? "a draft" : "live"} with the expected nav position`, () => {
       const { front } = load(name);
-      expect(front).toMatch(/^draft: true$/m);
+      expect(front).toMatch(new RegExp(`^draft: ${draft}$`, "m"));
       if (position === undefined) {
         expect(front).not.toMatch(/^nav:/m);
       } else {
@@ -88,12 +90,27 @@ describe("Speaking (FR-021)", () => {
   });
 });
 
-describe("About (FR-021)", () => {
-  const { text } = load("about.mdx");
-  it("covers background, credentials and how the practice fits alongside his full-time role", () => {
-    expect(text).toMatch(/background/);
-    expect(text).toMatch(/credentials/);
-    expect(text).toMatch(/full-time/);
+// About is Don's real copy (feature 010), which replaces the FR-021 draft wording.
+describe("About", () => {
+  const { front, body } = load("about.mdx");
+
+  it("has a feature image with alt text", () => {
+    expect(front).toMatch(/^featureImage:\s*\n\s+src: \.\/images\/\S+/m);
+    expect(front).toMatch(/^\s+alt: \S/m);
+  });
+
+  it("has an About me heading", () => {
+    expect(body).toMatch(/^## (\*\*)?About me(\*\*)?$/im);
+  });
+
+  it("has a Recognition section that links to both CCHL articles", () => {
+    const match = /^### Recognition$([\s\S]*?)(?=^#{1,3} |(?![\s\S]))/m.exec(body);
+    expect(match, "Recognition section").not.toBeNull();
+    const links = [...match![1]!.matchAll(/\[[^\]]+\]\((https:\/\/[^)\s]+)\)/g)].map((m) => m[1]!);
+    expect(links).toEqual([
+      "https://cchl-ccls.ca/news_article/don-coleman-expresses-the-importance-of-exercising-curiosity-for-healthcare-leaders/",
+      "https://cchl-ccls.ca/news_article/2024-chapter-awards-for-distinguished-service/",
+    ]);
   });
 });
 

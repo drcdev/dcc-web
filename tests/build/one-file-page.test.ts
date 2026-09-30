@@ -38,11 +38,13 @@ describe("a page that is one file", () => {
     expect(navList(html)).not.toContain("Workshops");
     expect(withoutCurrent(navList(html))).toBe(withoutCurrent(navList(about)));
 
-    // Not a draft: no notice, and the robots meta matches a draft launch page's.
+    // Not a draft: no notice, and the robots meta matches a draft launch page's (Services is
+    // still a draft; About went live with feature 010).
+    const services = result.read("services/index.html");
     expect(html).not.toContain("data-draft-notice");
-    expect(about).toContain("data-draft-notice");
+    expect(services).toContain("data-draft-notice");
     expect(robotsMeta(html)).not.toBe("");
-    expect(robotsMeta(html)).toBe(robotsMeta(about));
+    expect(robotsMeta(html)).toBe(robotsMeta(services));
   });
 
   it("changes only its own HTML file when one word in it changes", async () => {

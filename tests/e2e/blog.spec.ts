@@ -140,8 +140,10 @@ test.describe("post page", () => {
 });
 
 // The landing page (T042; contracts/blog-pages.md "Landing"). This build is not a production
-// build, so the sample posts show: sample-everything is the newest (the lead story), sample-short
-// is the only other featured post.
+// build, so the sample posts (dated 2026) show next to the four real posts (dated 2025).
+// sample-everything is the newest (the lead story). The next three featured posts, newest first,
+// fill Featured: sample-short, the Wayfinder post and the Focus Pocus post. Starting something new
+// is featured too but fourth, so it falls to Latest with the unfeatured posts, newest first.
 const LANDING = "/writing/";
 const LEAD_TITLE = "Sample: Every kind of content a post can hold";
 
@@ -200,7 +202,17 @@ test.describe("landing page", () => {
     const latest = await hrefs("[data-latest-grid]");
     const lead = await page.locator("[data-lead-story] h2 a").getAttribute("href");
     expect(lead).toBe("/writing/sample-everything/");
-    expect(featured).toEqual(["/writing/sample-short/"]);
+    expect(featured).toEqual([
+      "/writing/sample-short/",
+      "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/",
+      "/writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/",
+    ]);
+    expect(latest).toEqual([
+      "/writing/sample-long-title/",
+      "/writing/sample-text-only/",
+      "/writing/self-contained-development-for-ghost-themes/",
+      "/writing/starting-something-new/",
+    ]);
     expect(featured).not.toContain(lead);
     expect(latest).not.toContain(lead);
     for (const href of featured) expect(latest).not.toContain(href);
@@ -269,8 +281,9 @@ test.describe("landing page", () => {
 
 // The all posts and topic pages (T057; contracts/blog-pages.md "All posts" and "Topic"). The default
 // build has the four sample posts: sample-everything (2026-08-27), sample-long-title (08-20),
-// sample-text-only (08-10) and sample-short (07-30). Pagination runs against the fixture site in
-// tests/e2e/blog-pagination.spec.ts.
+// sample-text-only (08-10) and sample-short (07-30), then the four real posts: the Wayfinder post
+// (2025-08-27), Focus Pocus (08-16), Ghost themes (08-07) and Starting something new (03-15).
+// Pagination runs against the fixture site in tests/e2e/blog-pagination.spec.ts.
 const ALL = "/writing/all/";
 const TOPIC = "/writing/topics/technology-teams/";
 
@@ -288,8 +301,12 @@ test.describe("all posts page", () => {
       "/writing/sample-long-title/",
       "/writing/sample-text-only/",
       "/writing/sample-short/",
+      "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/",
+      "/writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/",
+      "/writing/self-contained-development-for-ghost-themes/",
+      "/writing/starting-something-new/",
     ]);
-    // Four posts fit on one page, so there is no pagination.
+    // Eight posts fit on one page (12), so there is no pagination.
     await expect(main.getByRole("navigation", { name: "Pages" })).toHaveCount(0);
   });
 
@@ -335,7 +352,12 @@ test.describe("topic page", () => {
     const hrefs = await main
       .locator("[data-post-card] h2 a")
       .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
-    expect(hrefs).toEqual(["/writing/sample-long-title/", "/writing/sample-text-only/"]);
+    // Newest first: the two samples, then the Ghost themes post.
+    expect(hrefs).toEqual([
+      "/writing/sample-long-title/",
+      "/writing/sample-text-only/",
+      "/writing/self-contained-development-for-ghost-themes/",
+    ]);
     expect(await page.title()).toBe("High-performing technology teams · Don Coleman");
   });
 
@@ -348,9 +370,10 @@ test.describe("topic page", () => {
 });
 
 // Share and related posts (T063; FR-028, FR-029). Related posts are ranked by shared topics, then
-// newest. sample-everything (agentic-ai, compliant-data) shares agentic-ai with sample-short only,
-// so sample-short comes first, then the newest others. A post that shares no topic at all is proven
-// in the selection unit tests, as the sample posts all share at least one.
+// newest. sample-everything (agentic-ai, compliant-data) shares agentic-ai with sample-short and the
+// Focus Pocus post, so those two come first (newest first), then the newest other post,
+// sample-long-title. A post that shares no topic at all is proven in the selection unit tests, as
+// the sample posts all share at least one.
 test.describe("share", () => {
   test("shows the Share button and calls navigator.share with the title and address", async ({ page }) => {
     await page.addInitScript(() => {
@@ -434,7 +457,11 @@ test.describe("related posts", () => {
     const related = page.locator("[data-related]");
     await expect(related.getByRole("heading", { level: 2, name: "Related posts" })).toBeVisible();
     const hrefs = await related.locator("li h3 a").evaluateAll((links) => links.map((a) => a.getAttribute("href")));
-    expect(hrefs).toEqual(["/writing/sample-short/", "/writing/sample-long-title/", "/writing/sample-text-only/"]);
+    expect(hrefs).toEqual([
+      "/writing/sample-short/",
+      "/writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/",
+      "/writing/sample-long-title/",
+    ]);
     expect(hrefs).not.toContain(POST);
   });
 

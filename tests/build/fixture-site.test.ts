@@ -1,10 +1,12 @@
 // Smoke test for the fixture-site harness (tests/build/fixture-site.ts): it
 // builds a copy of the site, runs the content layer against fixture pages, and
 // reports failures as text. Fails until the content layer exists.
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { buildFixtureSite, type FixtureSiteResult } from "./fixture-site.ts";
 
+const root = fileURLToPath(new URL("../../", import.meta.url));
 let result: FixtureSiteResult | undefined;
 afterEach(() => result?.cleanup());
 
@@ -62,6 +64,22 @@ describe("fixture-site harness, post fixtures (T025)", () => {
     expect(result.ok).toBe(true);
     expect(existsSync(`${result.root}/src/content/posts/minimal.mdx`)).toBe(true);
     expect(existsSync(`${result.root}/src/content/posts/images/sample.png`)).toBe(true);
+  });
+
+  it("leaves the repository's real posts out by default and keeps the sample posts", async () => {
+    result = await buildFixtureSite([], { mode: "sync" });
+    expect(result.message).toBe("");
+    const posts = readdirSync(`${result.root}/src/content/posts`).filter((name) => /\.mdx?$/.test(name));
+    expect(posts.length).toBeGreaterThan(0);
+    expect(posts.filter((name) => !name.startsWith("sample-"))).toEqual([]);
+  });
+
+  it("keeps the repository's real posts with `realPosts`", async () => {
+    result = await buildFixtureSite([], { mode: "sync", realPosts: true });
+    expect(result.message).toBe("");
+    const real = readdirSync(`${root}src/content/posts`).filter((name) => /\.mdx?$/.test(name) && !name.startsWith("sample-"));
+    expect(real.length).toBeGreaterThan(0);
+    for (const name of real) expect(existsSync(`${result.root}/src/content/posts/${name}`), name).toBe(true);
   });
 
   it("places a post file at the `to` name", async () => {

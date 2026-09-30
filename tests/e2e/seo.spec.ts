@@ -60,12 +60,17 @@ async function expectSharedMetadata(page: Page, origin: string, type: "website" 
 }
 
 // This build is not a production build, so the sample posts (drafts) are built and listed;
-// production leaves them out (specs/008-blog research R3).
-const SAMPLE_POSTS = [
+// production leaves them out (specs/008-blog research R3). The four real posts (feature 010)
+// are published and listed on every build.
+const POSTS = [
+  "/writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/",
   "/writing/sample-everything/",
   "/writing/sample-long-title/",
   "/writing/sample-short/",
   "/writing/sample-text-only/",
+  "/writing/self-contained-development-for-ghost-themes/",
+  "/writing/starting-something-new/",
+  "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/",
 ];
 
 // The all posts page and one page per topic are built on every build (spec 008 US4).
@@ -94,7 +99,7 @@ test("the sitemap lists exactly the built public pages, never /404", async ({ re
       "/writing/",
       "/writing/all/",
       ...TOPIC_PAGES,
-      ...SAMPLE_POSTS,
+      ...POSTS,
     ]
       .map((path) => `${origin}${path}`)
       .sort(),

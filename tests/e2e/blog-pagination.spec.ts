@@ -1,6 +1,7 @@
 // Pagination on the fixture site (port 4322, playwright.config.ts project `sections`; specs/008-blog
-// tasks.md T057; FR-012). The fixture site has the four sample posts and 13 generated posts (17 in
-// all, so 12 on page 1 and 5 on page 2); every generated post and two samples are on `agentic-ai`.
+// tasks.md T057; FR-012). The fixture site has the four sample posts, the four real posts and 13
+// generated posts (21 in all, so 12 on page 1 and 9 on page 2); every generated post, two samples
+// and the Focus Pocus post are on `agentic-ai` (16, so 12 and 4).
 import { test, expect } from "@playwright/test";
 
 const ALL = "/writing/all/";

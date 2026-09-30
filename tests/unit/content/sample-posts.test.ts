@@ -96,10 +96,13 @@ describe("sample posts", () => {
     for (const id of topicIds) expect(used, id).toContain(id);
   });
 
-  it("keeps every image small, for the performance budget", () => {
+  // Only the sample posts' pictures (sample-*): the real posts' photos are sized by the build.
+  it("keeps every sample image small, for the performance budget", () => {
     const images = `${dir}images/`;
     if (!existsSync(images)) return;
-    for (const name of readdirSync(images)) {
+    const names = readdirSync(images).filter((name) => /^sample-/.test(name));
+    expect(names.length).toBeGreaterThan(0);
+    for (const name of names) {
       expect(statSync(`${images}${name}`).size, name).toBeLessThan(60 * 1024);
     }
   });

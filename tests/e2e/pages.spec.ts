@@ -3,27 +3,32 @@
 // FR-030; SC-001).
 import { test, expect } from "@playwright/test";
 
+// [address, h1, draft]. About carries Don's real copy and is live (feature 010); the rest are drafts.
 const PAGES = [
-  ["/", "Don Coleman"],
-  ["/services/", "Services"],
-  ["/speaking/", "Speaking"],
-  ["/about/", "About"],
-  ["/privacy-policy/", "Privacy policy"],
-  ["/terms-of-use/", "Terms of use"],
-  ["/technology/", "Technology"],
+  ["/", "Don Coleman", true],
+  ["/services/", "Services", true],
+  ["/speaking/", "Speaking", true],
+  ["/about/", "About", false],
+  ["/privacy-policy/", "Privacy policy", true],
+  ["/terms-of-use/", "Terms of use", true],
+  ["/technology/", "Technology", true],
 ] as const;
 
 const NOT_BUILT = ["/cookie-policy/"] as const;
 
-for (const [path, title] of PAGES) {
+for (const [path, title, draft] of PAGES) {
   test.describe(`${path}`, () => {
-    test("returns 200 with one h1 and a draft notice", async ({ page }) => {
+    test(`returns 200 with one h1 and ${draft ? "a" : "no"} draft notice`, async ({ page }) => {
       const response = await page.goto(path);
       expect(response?.status()).toBe(200);
       await expect(page.locator("h1")).toHaveCount(1);
       await expect(page.locator("h1")).toHaveText(title);
-      await expect(page.locator("[data-draft-notice]")).toHaveCount(1);
-      await expect(page.locator("[data-draft-notice]")).toContainText("Draft.");
+      if (draft) {
+        await expect(page.locator("[data-draft-notice]")).toHaveCount(1);
+        await expect(page.locator("[data-draft-notice]")).toContainText("Draft.");
+      } else {
+        await expect(page.locator("[data-draft-notice]")).toHaveCount(0);
+      }
     });
 
     test("has exactly the foundation's landmarks", async ({ page }) => {
@@ -95,6 +100,18 @@ test("Services, Speaking and About mark themselves current; Home does not when e
   await expect(page.locator('#primary-nav-list a[aria-current="page"]')).toHaveCount(0);
 });
 
+test("About shows the About me section and the Recognition links (feature 010)", async ({ page }) => {
+  await page.goto("/about/");
+  await expect(page.getByRole("heading", { level: 2, name: /^about me$/i })).toHaveCount(1);
+  await expect(page.getByRole("heading", { level: 3, name: "Recognition" })).toHaveCount(1);
+  const links = page.locator("main a[href^='https://cchl-ccls.ca/news_article/']");
+  await expect(links).toHaveCount(2);
+  expect(await links.evaluateAll((els) => els.map((el) => el.getAttribute("href")))).toEqual([
+    "https://cchl-ccls.ca/news_article/don-coleman-expresses-the-importance-of-exercising-curiosity-for-healthcare-leaders/",
+    "https://cchl-ccls.ca/news_article/2024-chapter-awards-for-distinguished-service/",
+  ]);
+});
+
 test("the former single-word addresses resolve", async ({ request }) => {
   for (const path of ["/about/", "/privacy-policy/", "/terms-of-use/", "/technology/"]) {
     expect((await request.get(path)).status(), path).toBe(200);
@@ -113,12 +130,13 @@ test("the projects index and every story answer 200", async ({ request }) => {
   }
 });
 
-test("the sitemap lists the eight pages, the listing pages, the sample posts and the projects, and neither the not-found page nor the cookie policy", async ({ request }) => {
+test("the sitemap lists the eight pages, the listing pages, the real and sample posts and the projects, and neither the not-found page nor the cookie policy", async ({ request }) => {
   const index = await (await request.get("/sitemap-index.xml")).text();
   const first = /<loc>[^<]*(\/sitemap-[^<]+\.xml)<\/loc>/.exec(index)?.[1];
   const sitemap = await (await request.get(first!)).text();
   const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]!).pathname).sort();
-  // The sample posts are drafts: built outside production, left out of a production build.
+  // The sample posts are drafts: built outside production, left out of a production build. The
+  // four real posts are published. Sorted by code point, so the real posts sit among the samples.
   expect(paths).toEqual([
     "/",
     "/about/",
@@ -132,10 +150,14 @@ test("the sitemap lists the eight pages, the listing pages, the sample posts and
     "/terms-of-use/",
     "/writing/",
     "/writing/all/",
+    "/writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/",
     "/writing/sample-everything/",
     "/writing/sample-long-title/",
     "/writing/sample-short/",
     "/writing/sample-text-only/",
+    "/writing/self-contained-development-for-ghost-themes/",
+    "/writing/starting-something-new/",
+    "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/",
     "/writing/topics/agentic-ai/",
     "/writing/topics/compliant-data/",
     "/writing/topics/healthcare-leadership/",
