@@ -364,3 +364,14 @@ test.describe("coming from a project story", () => {
     expect((await listNew(request, name))?.project).toBeNull();
   });
 });
+
+test.describe("privacy note", () => {
+  test("the page note links the privacy policy, underlined, in a new tab", async ({ page }) => {
+    await page.goto("/contact/");
+    const link = page.locator("main p a[href='/privacy-policy/']").first();
+    await expect(link).toHaveText("privacy policy (opens in a new tab)");
+    await expect(link).toHaveAttribute("target", "_blank");
+    await expect(link).toHaveAttribute("rel", /noopener/);
+    expect(await link.evaluate((el) => getComputedStyle(el).textDecorationLine)).toContain("underline");
+  });
+});

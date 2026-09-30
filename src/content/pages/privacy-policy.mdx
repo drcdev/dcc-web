@@ -20,14 +20,18 @@ Cloudflare serves the pages of this site. To do that, Cloudflare processes stand
 
 ## The contact form
 
-When the contact form is available, it collects only what you type into it. The fields it asks for are to be confirmed.
+The contact form collects only what you type into it: your name, your email address, an optional organization, your message and, if you arrived from a project page, the name of that project. It is used to reply to you and for nothing else.
 
-Submissions are stored in a Cloudflare D1 database. Where that database is located is to be confirmed. They are deleted automatically after a retention period. The retention period is to be confirmed.
+Your IP address is used only to limit repeat sending. It is not stored as it is: only a one-way, salted fingerprint of it is kept, and that fingerprint is removed after about two days. No email or other notification is sent when you submit the form.
+
+Messages are stored in a Cloudflare D1 database in Western North America. Cloudflare places the database as close to that region as it can, and it cannot be limited to Canada. Messages are deleted automatically 12 months after they arrive, whether they have been read or not.
 
 ## Spam protection
 
-Sending the contact form may run a spam-protection check by a third-party service. The service receives technical information about your browser so it can tell people from automated submissions. The service and exactly what it receives are to be confirmed.
+Sending the contact form uses Cloudflare Turnstile to tell people from automated submissions. It loads when you start filling in the form and receives your IP address and the browser and device signals its own script collects, plus a one-time token. No form field is sent to it. It sets no tracking cookies. Read [Cloudflare's Turnstile privacy addendum](https://www.cloudflare.com/turnstile-privacy-policy/) for how Cloudflare handles that information.
 
 ## Your choices
 
-You can ask what this site holds about you, and you can ask for your contact submission to be deleted. How to make a request is to be confirmed.
+You can ask what this site holds about you, and you can ask for your contact message to be deleted. Send a new message through the contact form or email [contact@doncoleman.ca](mailto:contact@doncoleman.ca). I answer by hand within 30 days.
+
+Deleting a message removes it from the store at once. Cloudflare's database recovery history (Time Travel, 7 days on the plan this site uses) keeps a copy for up to 7 more days before it is gone.

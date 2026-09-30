@@ -254,3 +254,13 @@ describe("ContactForm error containers (FR-008e to FR-008i)", () => {
     expect(status.index).toBeLessThan(submitButton().index);
   });
 });
+
+describe("Contact page privacy note (FR-007)", () => {
+  const page = readFileSync(fileURLToPath(new URL("../../../src/content/pages/contact.mdx", import.meta.url)), "utf-8");
+
+  it("sits above the form and links the privacy policy in a new tab", () => {
+    const link = /<a href="\/privacy-policy\/" target="_blank" rel="noopener">privacy policy \(opens in a new tab\)<\/a>/.exec(page);
+    expect(link).not.toBeNull();
+    expect(link!.index).toBeLessThan(page.indexOf("<ContactForm"));
+  });
+});

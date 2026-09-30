@@ -114,26 +114,14 @@ describe("Privacy policy (FR-022, FR-022a)", () => {
 
   it("names Cloudflare D1 for storage, retention, spam protection and how to ask about or delete data", () => {
     expect(text).toContain("cloudflare d1");
-    expect(text).toMatch(/where (that|the) database is located is to be confirmed/);
-    expect(text).toContain("retention");
+    expect(text).toContain("deleted automatically");
     expect(text).toContain("spam");
     expect(text).toMatch(/delet/);
     expect(text).toMatch(/ask (what|for)/);
   });
 
-  it('marks the four unconfirmed items "to be confirmed"', () => {
-    const count = (text.match(/to be confirmed/g) ?? []).length;
-    expect(count).toBeGreaterThanOrEqual(4);
-  });
-
-  it("does not assert a storage location", () => {
-    expect(text).not.toMatch(/canada|toronto/);
-  });
-
-  it("states no concrete retention duration and does not name the spam-protection service", () => {
-    expect(text).not.toMatch(/\b\d+\s*(day|week|month|year)s?\b/);
-    expect(text).not.toContain("turnstile");
-  });
+  // The contact-form facts (region, retention, Turnstile, deletion route) are pinned
+  // against the shared rules in tests/unit/site/privacy-policy.test.ts.
 
   it("does not link to the old cookie policy and shows a Last updated date", () => {
     expect(all).not.toContain("/cookie-policy/");
