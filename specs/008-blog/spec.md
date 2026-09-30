@@ -15,8 +15,10 @@ The appearance and structure of every blog screen follow **Direction A: Front pa
 post is featured" rule and trade-offs). In short:
 
 - **Writing landing page**: the section name "Drift & Convergence" above the heading
-  "Writing"; the newest post as a large lead story; a row of colour-coded topic pills with a
-  link to all posts; a "Featured" bento grid of larger image cards; then a "Latest" card grid
+  "Writing"; the newest post as a large lead story (with its feature image when it has one,
+  otherwise the prototype's text-only card); a row of colour-coded topic pills with a
+  link to all posts; a "Featured" bento grid of up to 3 larger image cards (the prototype's full-width fourth
+  card is not used); then a "Latest" card grid
   of recent posts.
 - **Listings** (all posts, and each topic): card grids, newest first. A topic page opens with
   an introduction banner in the topic's colour.
@@ -54,6 +56,21 @@ constitution (no interview was possible). `/speckit-clarify` may revisit any of 
   fallback that still looks deliberate"). A feature image is optional.
 - Q: What does the feed contain? → A: Every published post, newest first, with title,
   address, publication date and summary. Drafts never appear.
+
+Answered by Don in `/speckit-clarify`:
+
+- Q: Do sample posts (all drafts) show on the branch preview deployment, which Don uses to
+  check the pages against Direction A? → A: Yes. Drafts are built and shown with a visible
+  "Draft" notice on preview (non-production) deployments and in development and test builds,
+  and are left out of the production build only.
+- Q: Should the landing page's lead story show the post's feature image? → A: Only when the
+  post has one. Without a feature image the lead story is the prototype's text-only card with
+  a topic-coloured border, with no large fallback graphic.
+- Q: How many featured posts should the "Featured" bento grid hold? → A: Up to 3 (the spec
+  default, chosen over the prototype's 4); the prototype's full-width fourth card is not used.
+- Q: What should each post in the home page's "Recent writing" section look like? → A: The
+  blog's own post card (feature image or fallback, title, date, reading time, topic pills,
+  summary, "Featured" mark) in a grid of 3 across on wide screens.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -117,17 +134,20 @@ below.
 1. **Given** published posts, **When** a reader opens `/writing/`, **Then** the newest
    published post is the lead story, showing its title, summary, date, reading time and topic
    pills, and linking to the post.
-2. **Given** some published posts are marked featured, **When** the landing page is shown,
+2. **Given** the newest post has a feature image, **When** the landing page is shown, **Then**
+   the lead story shows that image; **given** it has none, the lead story is a text-only card
+   with a border in its main topic's colour and no fallback graphic.
+3. **Given** some published posts are marked featured, **When** the landing page is shown,
    **Then** a "Featured" grid shows up to 3 of them (most recently published first, never
    repeating the lead story), each marked "Featured".
-3. **Given** no published post is featured apart from the lead story, **When** the landing
+4. **Given** no published post is featured apart from the lead story, **When** the landing
    page is shown, **Then** the featured grid and its heading are left out.
-4. **Given** published posts, **When** the landing page is shown, **Then** a "Latest" grid
+5. **Given** published posts, **When** the landing page is shown, **Then** a "Latest" grid
    shows up to 6 of the newest posts not already shown as the lead story or in the featured
    grid, and a link leads to all posts.
-5. **Given** the landing page, **When** a reader looks under the lead story, **Then** a row of
+6. **Given** the landing page, **When** a reader looks under the lead story, **Then** a row of
    topic pills links to each topic's page, plus a link to all posts.
-6. **Given** the site navigation, **When** a reader activates "Writing", **Then** they arrive at
+7. **Given** the site navigation, **When** a reader activates "Writing", **Then** they arrive at
    `/writing/`, and the "Writing" entry is marked as the current section on every blog page.
 
 ---
@@ -144,7 +164,8 @@ with a message that names the file and the problem.
 flow is required by the constitution (Principle VI, Content as Files).
 
 **Independent Test**: Add one valid post file and confirm it appears everywhere it should; add
-one draft and confirm it appears nowhere on the production build; add invalid files and
+one draft and confirm it appears nowhere on the production build but does appear, marked
+"Draft", on a preview build; add invalid files and
 confirm each fails the build with a clear message.
 
 **Acceptance Scenarios**:
@@ -170,6 +191,9 @@ confirm each fails the build with a clear message.
    "Featured" mark wherever it is shown and is eligible for the featured grid.
 8. **Given** Don sets an update date earlier than the publication date, **When** the site is
    built, **Then** the build fails with a clear message.
+9. **Given** a post file marked as a draft, **When** a preview (non-production) deployment,
+   development or test build is made, **Then** the post is built and listed like a published
+   post and its page shows a visible "Draft" notice.
 
 ---
 
@@ -265,8 +289,9 @@ no published posts and check it is left out.
 **Acceptance Scenarios**:
 
 1. **Given** published posts, **When** a visitor opens the home page, **Then** a "Recent
-   writing" section shows the 3 newest published posts with title, date, reading time and
-   summary, each linking to its post, and a link to `/writing/`.
+   writing" section shows the 3 newest published posts as the blog's post cards (feature image
+   or fallback graphic, title, date, reading time, topic pills and summary), 3 across on wide
+   screens, each linking to its post, and a link to `/writing/`.
 2. **Given** no published posts, **When** the home page is shown, **Then** the "Recent
    writing" section is left out entirely.
 
@@ -321,12 +346,15 @@ no published posts and check it is left out.
 
 - **FR-006**: The landing page MUST show the section name "Drift & Convergence" and the
   heading "Writing", then the newest published post as a lead story with its title, summary,
-  publication date, reading time and topic pills.
+  publication date, reading time and topic pills. The lead story MUST show the post's feature
+  image when it has one; without one it MUST be a text-only card bordered in the post's main
+  topic colour, with no fallback graphic.
 - **FR-007**: Beneath the lead story the landing page MUST show a row of topic pills, one per
   topic in the controlled list, each linking to its topic page, plus a link to all posts.
 - **FR-008**: The landing page MUST show a "Featured" grid of up to 3 published featured posts,
   most recently published first, excluding the lead story; the grid and its heading MUST be
-  left out when there are none.
+  left out when there are none. The bento layout MUST suit 1, 2 or 3 cards; the prototype's
+  full-width fourth card is not used.
 - **FR-009**: The landing page MUST show a "Latest" grid of up to 6 of the newest published
   posts not already shown on the page, and a link to all posts.
 - **FR-010**: The landing page MUST show a visible link to the feed.
@@ -399,7 +427,10 @@ no published posts and check it is left out.
   with settings at the top (title, summary, publication date, topics, and optionally a feature
   image with description, featured mark, update date and draft mark) and the body below.
 - **FR-032**: Posts marked as drafts MUST NOT appear anywhere on the production site: no page,
-  listing, topic page, related list, home page section, feed entry or sitemap entry.
+  listing, topic page, related list, home page section, feed entry or sitemap entry. On
+  preview (non-production) deployments and in development and test builds, drafts MUST be
+  built and listed like published posts, and each draft's post page MUST show a visible
+  "Draft" notice.
 - **FR-033**: A post missing required information (title, summary, publication date, at least
   one topic, or a description for the feature image or a body image) or with invalid values
   (an unknown topic, an update date before the publication date, an unreadable date) MUST fail
@@ -411,7 +442,7 @@ no published posts and check it is left out.
   clearly labelled as a sample, together covering every kind of body content (captioned, wide
   and full-width images, code with and without a caption, a wide table, all heading levels) and
   at least one featured post and one post without a feature image, so the pages can be tested
-  without being published on the live site.
+  and checked on the preview deployment without being published on the live site.
 
 **Feed**
 
@@ -424,8 +455,8 @@ no published posts and check it is left out.
 **Home page**
 
 - **FR-038**: The home page MUST show a "Recent writing" section with the 3 newest published
-  posts (title, date, reading time and summary, each linking to its post) and a link to
-  `/writing/`, and MUST leave the section out when there are no published posts.
+  posts, shown with the blog's post card (FR-011) in a grid of 3 across on wide screens, and a
+  link to `/writing/`, and MUST leave the section out when there are no published posts.
 
 **Quality**
 
@@ -458,7 +489,7 @@ no published posts and check it is left out.
 - **SC-003**: 100% of the invalid post cases listed in FR-003 and FR-033 fail the build with a
   message that names the file and the problem.
 - **SC-004**: 0 draft posts appear in any page, listing, feed or sitemap of the production
-  build.
+  build, and 100% of draft posts appear, marked "Draft", on the preview deployment.
 - **SC-005**: Every blog page template passes automated accessibility checks with no WCAG 2.2
   AA violations in both themes, at phone and desktop widths.
 - **SC-006**: No blog page scrolls sideways at 320 px wide, including a post with a wide table,
@@ -485,9 +516,11 @@ no published posts and check it is left out.
   networks can be added later.
 - The "views are my own" wording is plain placeholder copy until Don supplies his own;
   changing it later is a one-place edit.
+- "Production build" means the build deployed to the live site; how a build knows it is
+  production or preview is settled in planning.
 - Posts use the same image and section conventions already set up for the site's pages.
-- Sample posts are drafts, so they appear in development and test builds but never on the live
-  site.
+- Sample posts are drafts, so they appear in development and test builds and on preview
+  deployments (marked "Draft") but never on the live site.
 
 ### Dependencies and parallel work
 
