@@ -12,6 +12,7 @@ export const configSchema = z.object({
   repo: z.string().min(1),
   machineAccount: z.string().min(1),
   workerName: z.string().min(1),
+  previewWorkerName: z.string().min(1).optional(),
   zone: z.string().min(1),
   reviewHost: z.string().min(1),
   ghostMarker: z.string().min(1),

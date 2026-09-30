@@ -6,6 +6,7 @@ import { FALLBACK_ORIGIN, previewAlias, resolveSiteOrigin } from "../../../src/l
 const baseConfig = {
   reviewHost: "new.doncoleman.ca",
   workerName: "dcc-web",
+  previewWorkerName: "dcc-web-preview",
   workersSubdomain: "drc-agents",
 };
 
@@ -26,7 +27,23 @@ describe("resolveSiteOrigin", () => {
       { WORKERS_CI: "1", WORKERS_CI_BRANCH: "002-site-foundation" },
       baseConfig,
     );
-    expect(origin).toBe("https://br-002-site-foundation-dcc-web.drc-agents.workers.dev");
+    expect(origin).toBe("https://br-002-site-foundation-dcc-web-preview.drc-agents.workers.dev");
+  });
+
+  it("matches the preview address pattern https://<alias>-dcc-web-preview.<subdomain>.workers.dev", () => {
+    const origin = resolveSiteOrigin(
+      { WORKERS_CI: "1", WORKERS_CI_BRANCH: "Feature/Nav_Fix" },
+      baseConfig,
+    );
+    expect(origin).toBe("https://feature-nav-fix-dcc-web-preview.drc-agents.workers.dev");
+  });
+
+  it("falls back when previewWorkerName is missing", () => {
+    const { previewWorkerName, ...withoutPreview } = baseConfig;
+    void previewWorkerName;
+    expect(
+      resolveSiteOrigin({ WORKERS_CI: "1", WORKERS_CI_BRANCH: "feature-x" }, withoutPreview),
+    ).toBe(FALLBACK_ORIGIN);
   });
 
   it("falls back when the branch alias would be null", () => {
@@ -76,11 +93,12 @@ describe("previewAlias", () => {
     expect(previewAlias("---")).toBeNull();
   });
 
-  it("truncates to 55 characters and trims a trailing dash", () => {
+  it("truncates to 47 characters and trims a trailing dash", () => {
     const longBranch = "a".repeat(80);
     const alias = previewAlias(longBranch);
     expect(alias).not.toBeNull();
-    expect(alias!.length).toBeLessThanOrEqual(55);
+    expect(alias!.length).toBe(47);
+    expect(previewAlias("a".repeat(46) + "-bbbbbb")!.length).toBe(46);
     expect(alias!.endsWith("-")).toBe(false);
   });
 });

@@ -3,6 +3,7 @@
   "repo": "dcc-web",
   "machineAccount": "drc-agents",
   "workerName": "dcc-web",
+  "previewWorkerName": "dcc-web-preview",
   "zone": "doncoleman.ca",
   "reviewHost": "new.doncoleman.ca",
   "ghostMarker": "Ghost",

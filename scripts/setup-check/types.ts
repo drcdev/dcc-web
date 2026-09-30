@@ -126,6 +126,8 @@ export interface SetupConfig {
   repo: string;
   machineAccount: string;
   workerName: string;
+  /** The preview Worker (`dcc-web-preview`) that serves non-main branch builds. */
+  previewWorkerName?: string;
   zone: string;
   reviewHost: string;
   ghostMarker: string;

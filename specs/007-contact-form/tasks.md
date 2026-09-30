@@ -203,13 +203,13 @@
 
 ### Tests first (seen to fail)
 
-- [ ] T055 [P] [US8] Extend `tests/unit/site/site-origin.test.ts` for `previewWorkerName` and the preview address pattern `https://<alias>-dcc-web-preview.drc-dev.workers.dev` (alias cut to 47 characters). Must fail.
-- [ ] T056 [P] [US8] Rewrite `tests/unit/site/deploy-preview.test.ts` and add `tests/unit/site/deploy-production.test.ts` for `scripts/deploy/preview.ts` and `scripts/deploy/production.ts` per contracts/worker-config.md: `WRANGLER_CI_OVERRIDE_NAME` guard fails when misconfigured, production refuses unless the branch is `main`, migrations first (`contact-preview --env preview` or `contact`), stop at first failing step, aliased upload on non-main branches, no environment value in output. Must fail.
-- [ ] T057 [P] [US8] Write `worker/test/environments.test.ts` with a second Vitest project that loads `wrangler.jsonc` with `environment: "preview"` (Cloudflare Vitest integration): the preview project binds `DB` to `contact-preview`; a message stored through one environment's Worker is absent from the other's list-new, and each environment's read token is refused (identical 401) by the other (SC-006, FR-017, FR-024). Run it; must fail because the `preview` Vitest project does not exist yet.
+- [X] T055 [P] [US8] Extend `tests/unit/site/site-origin.test.ts` for `previewWorkerName` and the preview address pattern `https://<alias>-dcc-web-preview.drc-dev.workers.dev` (alias cut to 47 characters). Must fail.
+- [X] T056 [P] [US8] Rewrite `tests/unit/site/deploy-preview.test.ts` and add `tests/unit/site/deploy-production.test.ts` for `scripts/deploy/preview.ts` and `scripts/deploy/production.ts` per contracts/worker-config.md: `WRANGLER_CI_OVERRIDE_NAME` guard fails when misconfigured, production refuses unless the branch is `main`, migrations first (`contact-preview --env preview` or `contact`), stop at first failing step, aliased upload on non-main branches, no environment value in output. Must fail.
+- [X] T057 [P] [US8] Write `worker/test/environments.test.ts` with a second Vitest project that loads `wrangler.jsonc` with `environment: "preview"` (Cloudflare Vitest integration): the preview project binds `DB` to `contact-preview`; a message stored through one environment's Worker is absent from the other's list-new, and each environment's read token is refused (identical 401) by the other (SC-006, FR-017, FR-024). Run it; must fail because the `preview` Vitest project does not exist yet.
 
 ### Implementation
 
-- [ ] T058 [US8] Add `previewWorkerName` to `setup/config.json` and `src/lib/site-origin.ts`; rewrite `scripts/deploy/preview.ts`; create `scripts/deploy/production.ts`; wire the `deploy:preview` and `deploy:production` scripts; add the `preview` project to `worker/vitest.config.ts`; make the tests pass.
+- [X] T058 [US8] Add `previewWorkerName` to `setup/config.json` and `src/lib/site-origin.ts`; rewrite `scripts/deploy/preview.ts`; create `scripts/deploy/production.ts`; wire the `deploy:preview` and `deploy:production` scripts; add the `preview` project to `worker/vitest.config.ts`; make the tests pass.
 
 ---
 
