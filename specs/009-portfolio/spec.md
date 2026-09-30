@@ -48,6 +48,15 @@ looked at the preview deployment.
 - Q: Apart from a live demo, should a project be able to link out to other places? → A: One
   optional source-code link (any HTTPS address), shown in the "What I built" chapter beside the
   demo or stand-in link. Index entries link only to their story.
+- Q: With JavaScript off, what should the index's theme filter do? → A: It is not shown. The filter
+  is a small script that sets `?theme=<theme>` in the address; with JavaScript off the filter
+  controls are hidden and every project is listed. No per-theme pages are built.
+- Q: Are themes free text in each project file or picked from a fixed list? → A: Free text, matched
+  ignoring case and spacing; variants show under one label on the index. Adding a project still
+  needs only one file.
+- Q: Should draft projects appear on preview deployments? → A: Yes. Drafts appear on preview
+  deployments and in local development with a visible "Draft" mark, and are left out of production
+  builds only (no index entry, no story page, no sitemap entry).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -192,8 +201,8 @@ open a story; compare the page by eye with the chosen direction.
    projects shown is announced.
 5. **Given** a theme filter is applied, **When** the visitor clears it, **Then** every project is
    shown again.
-6. **Given** a filtered index, **When** the visitor shares or reloads the page address, **Then**
-   the same theme filter is applied.
+6. **Given** a filtered index, **When** the visitor shares or reloads the page address (which
+   carries the theme as `?theme=<theme>`), **Then** the same theme filter is applied.
 7. **Given** a project on the index, **When** the visitor chooses it, **Then** its story page
    opens; with motion allowed and a supporting browser, the change uses a page transition, and
    otherwise the page loads normally.
@@ -225,8 +234,8 @@ and readable.
    visual's text alternative, the full option comparison with the chosen option and its reason,
    any demo link and the invitation link are present and readable.
 4. **Given** JavaScript is turned off, **When** the index loads, **Then** every project is listed
-   with all its details, and the theme filter either works without script or is not shown; no
-   control is shown that does nothing.
+   with all its details, and the theme filter controls are not shown; no control is shown that
+   does nothing.
 5. **Given** a browser without support for scroll-linked effects or page transitions, **When** a
    story or the index loads, **Then** the content shows in its final state and pages load
    normally, with nothing hidden.
@@ -305,7 +314,9 @@ deliberately broken project file and confirm the build fails naming the file and
 7. **Given** a project file referencing an image that does not exist, **When** the site is built,
    **Then** the build fails naming the file and the image.
 8. **Given** a project marked as a draft, **When** the site is built for production, **Then** it is
-   not on the index and has no story page.
+   not on the index, has no story page and is not in the sitemap; **When** the site is built for a
+   preview deployment or local development, **Then** it is on the index and has its story page,
+   both visibly marked "Draft".
 9. **Given** a failed build, **When** it runs in CI, **Then** the check fails and nothing is
    deployed.
 
@@ -376,6 +387,9 @@ demo stand-in link and the invitation.
   shows an empty placeholder, and a tall visual never makes a row overlap the next.
 - **A theme filter with no matches**: a theme in the address that matches no project (for example
   from an old link) shows a plain message saying no projects match, with a way to clear the filter.
+- **Theme spelling variants**: themes that differ only in case or spacing (for example
+  "Accessibility" and "accessibility ") count as one theme and show as one filter choice under one
+  label.
 - **Many themes**: theme choices wrap onto more lines rather than overflowing the page.
 - **Long titles and problem statements**: long words wrap; a problem statement longer than the
   one-line limit fails the build rather than being cut off.
@@ -425,10 +439,12 @@ demo stand-in link and the invitation.
   project's title as its accessible name and be reachable with the keyboard. Index entries MUST NOT
   carry any other link (no demo, stand-in or source-code link).
 - **FR-013**: Visitors MUST be able to filter the index by one theme at a time and clear the filter.
-  The list of themes MUST be derived from the published projects, with no duplicates, in a stable
-  order.
-- **FR-014**: The chosen theme MUST be reflected in the page address so the filtered view can be
-  shared and reloaded; an unknown theme in the address MUST show a no-match message with a way to
+  Themes are free text in each project file. The list of themes MUST be derived from the published
+  projects, matching themes ignoring case and spacing so that variants show as one choice under one
+  label, with no duplicates, in a stable order.
+- **FR-014**: The chosen theme MUST be reflected in the page address as `?theme=<theme>` on
+  `/projects/` (no separate per-theme pages are built) so the filtered view can be shared and
+  reloaded; an unknown theme in the address MUST show a no-match message with a way to
   clear it.
 - **FR-015**: Filtering MUST announce the number of projects shown to assistive technology and MUST
   indicate the chosen theme visually and programmatically.
@@ -512,8 +528,8 @@ demo stand-in link and the invitation.
 - **FR-061**: With JavaScript turned off, every story MUST be fully readable (all chapters, visuals'
   text alternatives, the full comparison with the chosen option and reason, demo links and the
   invitation), and the index MUST list every project with all its details.
-- **FR-062**: With JavaScript turned off, the index MUST NOT show a filter control that does nothing:
-  it either works without script or is not shown.
+- **FR-062**: The theme filter is a script enhancement. With JavaScript turned off, the index MUST NOT
+  show the filter controls, and MUST list every project.
 - **FR-063**: Browsers without scroll-linked effects or page transitions MUST get the full content in
   its final state and normal page loads.
 - **FR-064**: A story page MUST NOT need any script to be read. Script is allowed only for
@@ -538,7 +554,8 @@ demo stand-in link and the invitation.
   a missing fit, a missing image or alternative text, a clip without a description, a demo address
   not on drc.dev, a source-code address that is not HTTPS, an unknown building block, and a duplicate or clashing slug.
 - **FR-074**: Draft projects MUST be excluded from production builds (no index entry, no story page,
-  not in the sitemap).
+  not in the sitemap). On preview deployments and in local development they MUST appear on the index
+  and have their story page, each visibly marked "Draft".
 - **FR-075**: An authoring guide for projects MUST sit beside the existing guide for pages
   (`docs/pages.md`), covering the settings, the building blocks, and the build error messages.
 
@@ -562,8 +579,8 @@ demo stand-in link and the invitation.
   demo or stand-in page, optional source-code address, optional sharing image, draft flag, and a
   story body.
 - **Status**: one of shipped, experiment, in progress; shown as a labelled pill.
-- **Theme**: a short label shared across projects; the set of themes on the index is derived from
-  the published projects.
+- **Theme**: a short free-text label shared across projects; themes that differ only in case or
+  spacing are the same theme. The set of themes on the index is derived from the published projects.
 - **Chapter**: one of the seven fixed story stages, in a fixed order, with a heading, body text and
   an optional visual.
 - **Visual**: an image, diagram (with a text description) or short clip (with a text description),
@@ -616,7 +633,11 @@ demo stand-in link and the invitation.
   still has it, with a short line; making chapters optional is follow-up work if Don wants it.
 - The index shows every published project on one page; there is no pagination at launch, since Don
   expects a handful of projects.
-- Theme filtering is single-select (one theme at a time), as in the design prototypes.
+- Theme filtering is single-select (one theme at a time), as in the design prototypes, and runs as a
+  small script on the index only; without script the filter is hidden rather than replaced by
+  per-theme pages.
+- A build can tell whether it is for production or for a preview deployment or local development,
+  so drafts are shown, marked, everywhere except production.
 - The contact form (feature 007, merged to main) already reads the project named in its link and
   shows it on the form; this feature only builds the link. The form currently shows the slug;
   showing the project's title there is contact-feature follow-up work.
