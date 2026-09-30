@@ -1151,6 +1151,29 @@ test.describe("Direction C Chapters: story", () => {
       expect(small).toEqual([]);
     }
   });
+
+  for (const width of [1280, 390]) {
+    test(`gives every interactive control a visible focus indicator at ${width} px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: width === 390 ? 700 : 800 });
+      await page.goto(C_STORY);
+      let visited = 0;
+      for (let i = 0; i < 80; i += 1) {
+        await page.keyboard.press("Tab");
+        await settleScroll(page);
+        const info = await page.evaluate(() => {
+          const el = document.activeElement as HTMLElement;
+          if (!el.closest("main")) return null;
+          const s = getComputedStyle(el);
+          return { outlineStyle: s.outlineStyle, outlineWidth: parseFloat(s.outlineWidth) };
+        });
+        if (!info) continue;
+        visited += 1;
+        expect(info.outlineStyle).not.toBe("none");
+        expect(info.outlineWidth).toBeGreaterThanOrEqual(2);
+      }
+      expect(visited).toBeGreaterThan(5);
+    });
+  }
 });
 
 test.describe("Direction C Chapters: index", () => {
@@ -1466,7 +1489,7 @@ test.describe("Portfolio hub", () => {
     }
   });
 
-  test("has zero axe violations with reduced motion, forced colours, JavaScript off and at 320 px", async ({ browser }) => {
+  test("has zero axe violations with reduced motion, forced colours, JavaScript off, at 320 px and at 200% zoom", async ({ browser }) => {
     const reduced = await browser.newContext({ reducedMotion: "reduce", viewport: { width: 1280, height: 800 } });
     let page = await reduced.newPage();
     await page.goto(HUB);
@@ -1496,5 +1519,14 @@ test.describe("Portfolio hub", () => {
     await axeClean(page);
     await noHorizontalScroll(page);
     await narrow.close();
+
+    const zoom = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    page = await zoom.newPage();
+    await page.goto(HUB);
+    const client = await zoom.newCDPSession(page);
+    await client.send("Emulation.setDeviceMetricsOverride", { width: 640, height: 360, deviceScaleFactor: 2, mobile: false });
+    await axeClean(page);
+    await noHorizontalScroll(page);
+    await zoom.close();
   });
 });
