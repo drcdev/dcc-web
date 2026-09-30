@@ -22,10 +22,12 @@ post is featured" rule and trade-offs). In short:
   of recent posts.
 - **Listings** (all posts, and each topic): card grids, newest first. A topic page opens with
   an introduction banner in the topic's colour.
-- **Post page**: a large feature image with the title card overlapping it, carrying the
-  section name, title, summary, a "Featured" mark when featured, date, reading time and topic
+- **Post page**: a large feature image (when the post has one) with the title card
+  overlapping it, carrying the section name, title, summary, a "Featured" mark when featured, date, reading time and topic
   pills; then the body in the site's reading column.
 - **Topics** appear as colour-coded pills on every card; each topic keeps a distinct colour.
+- **Posts without a feature image** appear as text-only cards bordered in their main topic's
+  colour, as in the Direction A pictures; there is no fallback graphic anywhere.
 - No new colours or fonts: only those already in the site's design system.
 
 ## Clarifications
@@ -51,9 +53,9 @@ constitution (no interview was possible). `/speckit-clarify` may revisit any of 
   "Recent writing" section; up to 3 related posts at the end of a post.
 - Q: What makes a post "related"? → A: Other published posts that share the most topics with
   it, most shared topics first, then newest first.
-- Q: What does a post without a feature image look like? → A: It gets a deliberate fallback
-  graphic in its first topic's colour (Direction A trade-off: "posts without one need a
-  fallback that still looks deliberate"). A feature image is optional.
+- Q: What does a post without a feature image look like? → A: Superseded by Don's answer
+  below: a text-only card bordered in its main topic's colour, and no fallback graphic. A
+  feature image is optional.
 - Q: What does the feed contain? → A: Every published post, newest first, with title,
   address, publication date and summary. Drafts never appear.
 
@@ -69,8 +71,16 @@ Answered by Don in `/speckit-clarify`:
 - Q: How many featured posts should the "Featured" bento grid hold? → A: Up to 3 (the spec
   default, chosen over the prototype's 4); the prototype's full-width fourth card is not used.
 - Q: What should each post in the home page's "Recent writing" section look like? → A: The
-  blog's own post card (feature image or fallback, title, date, reading time, topic pills,
+  blog's own post card (feature image when present, title, date, reading time, topic pills,
   summary, "Featured" mark) in a grid of 3 across on wide screens.
+- Q: How should a post with no feature image look on cards and on its own page? → A:
+  Text-only everywhere. Every card without an image (Featured, Latest, listings, topic pages,
+  related posts, home "Recent writing") is a text-only card bordered in its main topic's
+  colour, as in the Direction A pictures; the post page opens straight with the title card and
+  no hero image. The fallback graphic is dropped entirely.
+- Q: Should the all posts listing and the topic pages also show the topic pill row? → A: The
+  landing page and the all posts listing only. Topic pages rely on their introduction banner
+  and the pills on each card.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -92,7 +102,7 @@ and desktop widths in both themes, with and without scripts enabled.
 **Acceptance Scenarios**:
 
 1. **Given** a published post, **When** a reader opens `/writing/{slug}/`, **Then** they see
-   the feature image (or the fallback graphic), the section name, title, summary, publication
+   the feature image (when it has one), the section name, title, summary, publication
    date, reading time in minutes and a pill for each of its topics, followed by the body.
 2. **Given** a post with a captioned image, a wide image and a full-width image, **When** it is
    shown on a desktop screen, **Then** the wide image extends a little past the text column,
@@ -211,14 +221,14 @@ through the pages, and open each topic page.
 **Acceptance Scenarios**:
 
 1. **Given** more published posts than fit on one page, **When** a reader opens
-   `/writing/all/`, **Then** they see the first 12 posts newest first as cards, with links to
-   the next page and to numbered pages.
+   `/writing/all/`, **Then** they see the row of topic pills with its "All posts" link, then
+   the first 12 posts newest first as cards, with links to the next page and to numbered pages.
 2. **Given** page N of the listing, **When** it is shown at `/writing/all/{n}/`, **Then** it
    shows the Nth set of posts, with links to the previous and next pages where they exist,
    and the current page identified to assistive technology.
 3. **Given** a topic, **When** a reader opens `/writing/topics/{topic}/`, **Then** they see an
    introduction banner in the topic's colour with its name and a short description, followed
-   by that topic's published posts, newest first.
+   by that topic's published posts, newest first; the topic pill row is not shown there.
 4. **Given** a topic with more posts than fit on one page, **When** its page is shown, **Then**
    its posts are split into pages the same way as the all posts listing.
 5. **Given** a topic with no published posts, **When** a reader opens its page, **Then** the
@@ -290,7 +300,7 @@ no published posts and check it is left out.
 
 1. **Given** published posts, **When** a visitor opens the home page, **Then** a "Recent
    writing" section shows the 3 newest published posts as the blog's post cards (feature image
-   or fallback graphic, title, date, reading time, topic pills and summary), 3 across on wide
+   when present, otherwise a text-only card bordered in the main topic's colour, title, date, reading time, topic pills and summary), 3 across on wide
    screens, each linking to its post, and a link to `/writing/`.
 2. **Given** no published posts, **When** the home page is shown, **Then** the "Recent
    writing" section is left out entirely.
@@ -310,8 +320,9 @@ no published posts and check it is left out.
   scheduling); Don uses the draft mark to hold a post back.
 - **Two posts with the same publication date**: ordered by title so the order is stable from
   build to build.
-- **Post without a feature image**: the card and post page show the topic-coloured fallback
-  graphic, not an empty box.
+- **Post without a feature image**: every card for it is a text-only card bordered in its main
+  topic's colour (no empty image box, no fallback graphic), and its post page opens with the
+  title card and no hero image.
 - **Very long title or unbroken word or address**: wraps without the page scrolling sideways.
 - **Very short post**: reading time is shown as at least 1 minute.
 - **Code sample without a language**: shown as plain, unhighlighted text in the same box, still
@@ -361,15 +372,19 @@ no published posts and check it is left out.
 
 **Cards and listings**
 
-- **FR-011**: Every post card MUST show the post's feature image (or fallback graphic), title,
+- **FR-011**: Every post card MUST show the post's feature image when it has one, title,
   publication date, reading time, topic pills and summary, and a "Featured" mark when the post
-  is featured. The title MUST link to the post; each topic pill MUST link to its topic page.
-- **FR-012**: The all posts listing MUST show every published post, newest first, 12 per page,
+  is featured. A card for a post without a feature image MUST be a text-only card bordered in
+  the post's main topic colour, with no empty image area and no fallback graphic. The title
+  MUST link to the post; each topic pill MUST link to its topic page.
+- **FR-012**: The all posts listing MUST show the topic pill row described in FR-007 under its
+  heading, then every published post, newest first, 12 per page,
   with previous, next and numbered page links; the current page MUST be identified to
   assistive technology.
 - **FR-013**: Each topic MUST have a page that opens with an introduction banner in the topic's
   colour (its name and a short description) followed by that topic's published posts, newest
-  first, paged the same way as the all posts listing.
+  first, paged the same way as the all posts listing. Topic pages do not show the topic pill
+  row.
 - **FR-014**: Listings with no posts MUST show a plain-language "no posts yet" message instead
   of an empty grid.
 - **FR-015**: Posts with the same publication date MUST be ordered by title, so every listing's
@@ -388,7 +403,8 @@ no published posts and check it is left out.
 
 **Post page**
 
-- **FR-019**: The post page MUST show the feature image (or fallback graphic), then a title
+- **FR-019**: The post page MUST show the feature image when the post has one (without one, the
+  page opens directly with the title card and no hero image or fallback graphic), then a title
   card with the section name, title, summary, "Featured" mark when featured, publication date,
   reading time and topic pills, followed by the body.
 - **FR-020**: When a post is marked as updated, the post page MUST show the update date next to
@@ -511,7 +527,8 @@ no published posts and check it is left out.
   "Writing".
 - The counts (12 per listing page, up to 3 featured, up to 6 latest, 3 on the home page, up to
   3 related) are defaults that planning may tune without changing the design.
-- The first topic a post names is its main topic, used for the fallback graphic's colour.
+- The first topic a post names is its main topic, used for the border colour of its text-only
+  cards and lead story.
 - Share links cover LinkedIn and email, matching the site's existing social presence; other
   networks can be added later.
 - The "views are my own" wording is plain placeholder copy until Don supplies his own;
