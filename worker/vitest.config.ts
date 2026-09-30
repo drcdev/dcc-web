@@ -9,7 +9,15 @@ export default defineConfig(async () => {
     plugins: [
       cloudflareTest({
         wrangler: { configPath: "../wrangler.jsonc" },
-        miniflare: { bindings: { TEST_MIGRATIONS: migrations } },
+        miniflare: {
+          bindings: {
+            TEST_MIGRATIONS: migrations,
+            // Test-only values; the real secrets are set per environment (Constitution VII).
+            TURNSTILE_SECRET_KEY: "test-turnstile-secret",
+            CONTACT_READ_TOKEN: "test-read-token",
+            IP_HASH_SALT: "test-salt",
+          },
+        },
       }),
     ],
     test: {

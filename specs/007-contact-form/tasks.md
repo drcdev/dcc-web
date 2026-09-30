@@ -63,16 +63,16 @@
 
 ### Tests first (seen to fail)
 
-- [ ] T017 [P] [US1] Write `worker/test/contact.test.ts` (accept and refuse at the edge) per contracts/contact-api.md: a valid submit returns `200 {"ok":true}` and stores one row with `ip_hash` and no raw IP, organization null, status `new`; wrong method 405 with `Allow: POST`; `Origin` missing, foreign, or `Sec-Fetch-Site` not `same-origin` → 403; `http:` on a non-local host → 403 while `127.0.0.1`/`localhost` are accepted (FR-014); wrong content type 415; `Content-Length` over 10,240 and a streamed body over 10,240 bytes → 413 with no row. Turnstile (mocked siteverify): accepted only when `success`, `action === "contact"` and `hostname` equals the request host, otherwise 422 with no row; siteverify unreachable or non-200 → 503 with no row (FR-012a); siteverify receives `remoteip` and `idempotency_key` and no form field (FR-012b); siteverify is the only outbound request (FR-026). Must fail.
-- [ ] T018 [P] [US1] Write `worker/test/ip-hash.test.ts`: HMAC-SHA-256 known vector with a test salt gives 64 lowercase hex characters; the same IP under a different salt gives a different hash. Must fail.
-- [ ] T019 [P] [US1] Write `worker/test/logging.test.ts`: spy on `console` across the submit success and failure paths and assert at most one line per request carrying only `event`, `outcome` and, for a 503, an error `name`; no submitted value, IP or hash appears (FR-016). Must fail.
-- [ ] T020 [P] [US1] Write `worker/test/query-plans.test.ts`: `EXPLAIN QUERY PLAN` for every statement the submit path runs at this phase (duplicate check, insert), asserting no `SCAN messages` (FR-025a). Must fail.
+- [X] T017 [P] [US1] Write `worker/test/contact.test.ts` (accept and refuse at the edge) per contracts/contact-api.md: a valid submit returns `200 {"ok":true}` and stores one row with `ip_hash` and no raw IP, organization null, status `new`; wrong method 405 with `Allow: POST`; `Origin` missing, foreign, or `Sec-Fetch-Site` not `same-origin` → 403; `http:` on a non-local host → 403 while `127.0.0.1`/`localhost` are accepted (FR-014); wrong content type 415; `Content-Length` over 10,240 and a streamed body over 10,240 bytes → 413 with no row. Turnstile (mocked siteverify): accepted only when `success`, `action === "contact"` and `hostname` equals the request host, otherwise 422 with no row; siteverify unreachable or non-200 → 503 with no row (FR-012a); siteverify receives `remoteip` and `idempotency_key` and no form field (FR-012b); siteverify is the only outbound request (FR-026). Must fail.
+- [X] T018 [P] [US1] Write `worker/test/ip-hash.test.ts`: HMAC-SHA-256 known vector with a test salt gives 64 lowercase hex characters; the same IP under a different salt gives a different hash. Must fail.
+- [X] T019 [P] [US1] Write `worker/test/logging.test.ts`: spy on `console` across the submit success and failure paths and assert at most one line per request carrying only `event`, `outcome` and, for a 503, an error `name`; no submitted value, IP or hash appears (FR-016). Must fail.
+- [X] T020 [P] [US1] Write `worker/test/query-plans.test.ts`: `EXPLAIN QUERY PLAN` for every statement the submit path runs at this phase (duplicate check, insert), asserting no `SCAN messages` (FR-025a). Must fail.
 
 ### Implementation
 
-- [ ] T021 [US1] Implement `worker/src/contact/ip-hash.ts` (HMAC-SHA-256 with `IP_HASH_SALT`) and `worker/src/contact/turnstile.ts` (server-side siteverify with action and hostname checks, fail closed, research R6).
-- [ ] T022 [US1] Implement `worker/src/contact/submit.ts` (method, scheme, origin and content-type checks, size cap, parse, `validateSubmission`, duplicate check, Turnstile, insert; outcome-only structured logs) and route `POST /api/contact` in `worker/src/index.ts`; make the Phase 3 Worker tests pass.
-- [ ] T023 [US1] Run `corepack pnpm --filter ./worker test` and `corepack pnpm run typecheck` until green.
+- [X] T021 [US1] Implement `worker/src/contact/ip-hash.ts` (HMAC-SHA-256 with `IP_HASH_SALT`) and `worker/src/contact/turnstile.ts` (server-side siteverify with action and hostname checks, fail closed, research R6).
+- [X] T022 [US1] Implement `worker/src/contact/submit.ts` (method, scheme, origin and content-type checks, size cap, parse, `validateSubmission`, duplicate check, Turnstile, insert; outcome-only structured logs) and route `POST /api/contact` in `worker/src/index.ts`; make the Phase 3 Worker tests pass.
+- [X] T023 [US1] Run `corepack pnpm --filter ./worker test` and `corepack pnpm run typecheck` until green.
 
 **Checkpoint**: the submit path works against local D1.
 

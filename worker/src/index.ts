@@ -1,9 +1,11 @@
+import { handleSubmit } from "./contact/submit";
 import { json } from "./http";
 
 export default {
-  // Only /api/* reaches the Worker (`assets.run_worker_first`). Later phases add routes;
-  // until then every path is an unknown one.
-  async fetch(): Promise<Response> {
+  // Only /api/* reaches the Worker (`assets.run_worker_first`). Later phases add routes.
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const { pathname } = new URL(request.url);
+    if (pathname === "/api/contact") return handleSubmit(request, env);
     return json({ error: "not_found" }, 404);
   },
 
