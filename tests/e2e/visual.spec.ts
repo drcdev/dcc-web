@@ -81,3 +81,30 @@ for (const size of WIDTHS) {
     });
   }
 }
+
+// The blog pages (spec 008): landing, all posts, one topic page and the richest
+// sample post, full page, both sizes and themes (16 images per platform).
+for (const size of WIDTHS) {
+  for (const theme of THEMES) {
+    for (const [name, path] of [
+      ["writing-landing", "/writing/"],
+      ["writing-all", "/writing/all/"],
+      ["writing-topic", "/writing/topics/technology-teams/"],
+      ["writing-post", "/writing/sample-everything/"],
+    ] as const) {
+      test(`${name} — ${size.name} — ${theme}`, async ({ page }) => {
+        await open(page, path, size.width, size.height, theme);
+        if (name === "writing-post") {
+          await expect(page.locator("button", { hasText: "Copy" }).first()).toBeVisible();
+        }
+        // Below-the-fold images are lazy: load them all so a full-page shot shows every card image.
+        await page.evaluate(async () => {
+          const images = Array.from(document.images);
+          for (const img of images) img.loading = "eager";
+          await Promise.all(images.map((img) => img.decode().catch(() => undefined)));
+        });
+        await expect(page).toHaveScreenshot(`${name}-${size.name}-${theme}.png`, { fullPage: true });
+      });
+    }
+  }
+}

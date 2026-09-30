@@ -332,7 +332,10 @@ test.describe("footer on every template", () => {
     expect(seen.at(-1)).toBe("https://www.linkedin.com/in/drcdev");
     // Each stop is visited once on the way down (the header and footer each link "/" twice or once).
     // The home card's call to action repeats the Services link, so "outside:/services/" may repeat too.
-    const distinct = seen.filter((s) => s !== "/" && s !== "outside:/" && s !== "outside:/services/");
+    // The Recent writing section (spec 008) repeats the Writing link and shares topic links between cards.
+    const distinct = seen.filter(
+      (s) => s !== "/" && s !== "outside:/" && s !== "outside:/services/" && !s.startsWith("outside:/writing/"),
+    );
     expect(new Set(distinct).size).toBe(distinct.length);
   });
 });

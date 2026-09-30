@@ -137,6 +137,9 @@
 .table-wrapper table {
   @apply w-full text-base text-dusk-700 dark:text-mist-200 border-collapse;
   margin: 0;
+  /* A wide table keeps its natural width and scrolls inside the wrapper instead of
+     squeezing its cells until words break letter by letter (spec 008 T074). */
+  min-width: max-content;
 }
 
 .table-wrapper table thead {
