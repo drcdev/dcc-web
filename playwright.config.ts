@@ -14,7 +14,7 @@ export default defineConfig({
     {
       // Fresh local D1 state on every start, then the site plus the Worker (research R4).
       command:
-        "rm -rf .cache/e2e-state && pnpm exec wrangler d1 migrations apply contact --local --persist-to .cache/e2e-state && pnpm exec wrangler dev --ip 127.0.0.1 --port 4321 --persist-to .cache/e2e-state --env-file tests/fixtures/worker/e2e.env",
+        "rm -rf .cache/e2e-state && pnpm exec wrangler d1 migrations apply dcc-web-contact --local --persist-to .cache/e2e-state && pnpm exec wrangler dev --ip 127.0.0.1 --port 4321 --persist-to .cache/e2e-state --env-file tests/fixtures/worker/e2e.env",
       url: "http://127.0.0.1:4321",
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,

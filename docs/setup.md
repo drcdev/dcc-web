@@ -505,8 +505,8 @@ are done in the order shown. Two rules apply to every step:
 ## 19. Contact databases {#contact-d1-databases}
 
 **What it is for**
-Contact messages are stored in Cloudflare D1, with production (`contact`) and preview
-(`contact-preview`) in separate databases so a test message never lands in the real one.
+Contact messages are stored in Cloudflare D1, with production (`dcc-web-contact`) and preview
+(`dcc-web-contact-preview`) in separate databases so a test message never lands in the real one.
 
 **Where to do it**
 Read this first. Both databases will be created in Western North America (`wnam`). D1 cannot keep
@@ -519,18 +519,18 @@ needed):
 
 ```sh
 pnpm exec wrangler login
-pnpm exec wrangler d1 create contact --location wnam --env-file /dev/null
-pnpm exec wrangler d1 create contact-preview --location wnam --env-file /dev/null
+pnpm exec wrangler d1 create dcc-web-contact --location wnam --env-file /dev/null
+pnpm exec wrangler d1 create dcc-web-contact-preview --location wnam --env-file /dev/null
 ```
 
 Choose **no** if Wrangler offers to add the binding to the config. The database IDs are not secret;
 once you confirm, the agent runs `pnpm exec wrangler d1 list --json`, copies the two IDs into
-`wrangler.jsonc` (`contact` at the top level, `contact-preview` under `env.preview`), commits and
+`wrangler.jsonc` (`dcc-web-contact` at the top level, `dcc-web-contact-preview` under `env.preview`), commits and
 pushes. If a database was created with the wrong name or location and is still empty, remove it and
 create it again:
 
 ```sh
-pnpm exec wrangler d1 delete contact --env-file /dev/null
+pnpm exec wrangler d1 delete dcc-web-contact --env-file /dev/null
 ```
 
 **How it will be confirmed**
@@ -673,7 +673,7 @@ VIII (Secure by Default) and X (Accessible, Fast and Private).
 ## 24. Preview migrations and clean-up schedule {#contact-preview-deploy}
 
 **What it is for**
-The preview deployment applies the database migrations to `contact-preview` and registers the daily
+The preview deployment applies the database migrations to `dcc-web-contact-preview` and registers the daily
 clean-up schedule, so a test submission on the preview address works end to end.
 
 **Where to do it**
@@ -682,7 +682,7 @@ Worker's Settings → Build → API token) → Edit → add Account → **D1: Ed
 (the agent does this) or choose Retry build on `dcc-web-preview`.
 
 **How it will be confirmed**
-`pnpm setup:check --item contact-preview-deploy` reports complete when `contact-preview` has applied
+`pnpm setup:check --item contact-preview-deploy` reports complete when `dcc-web-contact-preview` has applied
 every file in `migrations/` and `dcc-web-preview` has the cron `17 3 * * *`. That is also how the
 Workers Builds token's D1 permission is confirmed, indirectly. It reports `pending` while a
 `dcc-web-preview` build is running.
@@ -707,7 +707,7 @@ traffic is still only the review address.
 
 **How it will be confirmed**
 `pnpm setup:check --item contact-production-deploy` reports complete when `dcc-web`'s production
-trigger uses `pnpm run deploy:production`, `contact` has applied every file in `migrations/`, and
+trigger uses `pnpm run deploy:production`, `dcc-web-contact` has applied every file in `migrations/`, and
 `dcc-web` has the cron `17 3 * * *`. Before the merge it is shown as an after-merge item and does not
 fail the check.
 

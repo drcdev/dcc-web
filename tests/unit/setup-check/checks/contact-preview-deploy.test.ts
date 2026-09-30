@@ -5,8 +5,8 @@ import { envFrom } from "./test-helpers.ts";
 import { MIGRATIONS, PREVIEW_ID, PROD_ID, contactContext } from "./contact-helpers.ts";
 
 const databases = async () => [
-  { uuid: PROD_ID, name: "contact", runningInRegion: "WNAM" },
-  { uuid: PREVIEW_ID, name: "contact-preview", runningInRegion: "WNAM" },
+  { uuid: PROD_ID, name: "dcc-web-contact", runningInRegion: "WNAM" },
+  { uuid: PREVIEW_ID, name: "dcc-web-contact-preview", runningInRegion: "WNAM" },
 ];
 
 function cloud(overrides: Record<string, unknown> = {}) {
@@ -56,7 +56,7 @@ describe("checks/contact-preview-deploy", () => {
   it("is missing when the preview database does not exist", async () => {
     const result = await check(contactContext({ cloudflare: cloud({ listD1Databases: async () => [] }) }));
     expect(result.status).toBe("missing");
-    expect(result.summary).toMatch(/contact-preview/);
+    expect(result.summary).toMatch(/dcc-web-contact-preview/);
   });
 
   it("is pending while a dcc-web-preview build is running", async () => {

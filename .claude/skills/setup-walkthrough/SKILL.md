@@ -143,20 +143,20 @@ to add the binding to the config:
 
 ```sh
 pnpm exec wrangler login
-pnpm exec wrangler d1 create contact --location wnam --env-file /dev/null
-pnpm exec wrangler d1 create contact-preview --location wnam --env-file /dev/null
+pnpm exec wrangler d1 create dcc-web-contact --location wnam --env-file /dev/null
+pnpm exec wrangler d1 create dcc-web-contact-preview --location wnam --env-file /dev/null
 ```
 
 If a database was created with the wrong name or location and is still empty, remove it with this
 command, shown for Don to run himself, then create it again:
 
 ```sh
-pnpm exec wrangler d1 delete contact --env-file /dev/null
+pnpm exec wrangler d1 delete dcc-web-contact --env-file /dev/null
 ```
 
 After Don says Done, the skill may run one non-check command for this item:
 `pnpm exec wrangler d1 list --json`. Its output contains no secrets. Copy the two database IDs
-into `wrangler.jsonc` (`contact` at the top level, `contact-preview` under `env.preview`), then
+into `wrangler.jsonc` (`dcc-web-contact` at the top level, `dcc-web-contact-preview` under `env.preview`), then
 commit and push. This is the only non-check command the skill runs during the walkthrough. Then run
 `pnpm setup:check --json --item contact-d1-databases`.
 

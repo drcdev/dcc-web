@@ -45,8 +45,8 @@ describe("setupItems registry invariants", () => {
     const where = setupItems.find((i) => i.id === "contact-d1-databases")!.where;
     expect(where).toContain("wnam");
     expect(where).toMatch(/cannot be changed/i);
-    expect(where).toContain("wrangler d1 create contact --location wnam");
-    expect(where).toContain("wrangler d1 create contact-preview --location wnam");
+    expect(where).toContain("wrangler d1 create dcc-web-contact --location wnam");
+    expect(where).toContain("wrangler d1 create dcc-web-contact-preview --location wnam");
   });
 
   it("has unique ids", () => {
