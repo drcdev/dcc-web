@@ -193,3 +193,45 @@ test.describe("with reduced motion", () => {
     await expect(page.getByRole("table")).toBeVisible();
   });
 });
+
+// FR-060, FR-024 and the "Printing a story" edge case.
+test.describe("switching modes on an open story", () => {
+  test.use({ reducedMotion: "no-preference", viewport: { width: 1440, height: 900 } });
+
+  test("switching to reduced motion without a reload removes the bar, unpins the visual and settles headings", async ({
+    page,
+  }) => {
+    await page.goto(STORY);
+    await expect(page.locator("[data-progress]")).toHaveCSS("display", "block");
+    await expect(page.locator("[data-chapter-visual]").first()).toHaveCSS("position", "sticky");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await expect(page.locator("[data-progress]")).toHaveCSS("display", "none");
+    await expect(page.locator("[data-chapter-visual]").first()).toHaveCSS("position", "static");
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            Array.from(document.querySelectorAll("[data-chapter-heading]")).filter(
+              (el) => el.getAnimations().length > 0 || getComputedStyle(el).clipPath !== "none",
+            ).length,
+        ),
+      )
+      .toBe(0);
+    for (const heading of await page.locator("main h2").all()) await expect(heading).toBeVisible();
+  });
+
+  test("printing shows every chapter and the full comparison, and no progress bar", async ({ page }) => {
+    await page.goto(STORY);
+    await page.emulateMedia({ media: "print" });
+    await expect(page.locator("[data-progress]")).toHaveCSS("display", "none");
+    await expect(page.locator("section[data-stage]")).toHaveCount(7);
+    for (const heading of await page.locator("main h2").all()) await expect(heading).toBeVisible();
+    const comparison = page.getByRole("table");
+    await expect(comparison).toBeVisible();
+    const cut = await page.locator("[data-comparison]").first().evaluate((el) => {
+      const region = el.closest("[role=region]") ?? el;
+      return { client: region.clientWidth, scroll: region.scrollWidth, overflow: getComputedStyle(region).overflowX };
+    });
+    expect(cut.scroll <= cut.client || cut.overflow === "visible", "the comparison is not cut off").toBe(true);
+  });
+});

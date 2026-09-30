@@ -68,6 +68,9 @@ alt: Claude Desktop listing tasks       # required: describe the picture
 placeholder: true           # optional: marks it "Placeholder" until the real one arrives
 ```
 
+Before adding a photo, remove its location and camera details (the hidden information such
+as where it was taken and what phone or camera took it). The site does not do this for you.
+
 - `image`: a picture. `src` and `alt` are needed.
 - `diagram`: a picture of a diagram (an SVG works well). It also needs a `description` that
   says in words what the diagram shows.
@@ -212,6 +215,16 @@ The build stops at the first problem and names the file. Messages start with `Pr
 
 - A missing or misspelled setting, a wrong kind of value (for example `order: first`), or a
   `status` that is not one of the three allowed words.
+- No themes at all, more than four themes, or the same theme twice.
+- An `order` that is not a whole number of 1 or more (0, below 0, or a fraction).
+- A visual name under `visuals` that is not lower-case letters, digits and hyphens starting
+  with a letter, or that uses the reserved name `demo`.
+- A clip used as the index visual (the `visual` on the project's card): it must be an image or a diagram.
+- Two options, or two constraints, with the same `id`.
+- An unsupported picture or clip file type (use a common picture format for pictures, and
+  `.webm` or `.mp4` for clips).
+- A page elsewhere on the site that claims an address under `/projects/`; that address belongs
+  to the projects.
 - A `problem` over 140 characters or with more than one sentence.
 - A picture with no `alt`, a diagram with no `description`, a clip with no `description`, or a
   file that does not exist. A clip over 5 MB.

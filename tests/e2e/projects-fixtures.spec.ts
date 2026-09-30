@@ -141,6 +141,53 @@ test.describe("demos and clips", () => {
     await expect(page.getByRole("link", { name: "Open the Every setting demo" })).toBeVisible();
   });
 
+  test("the embedded demo frame is no keyboard trap and the open-demo link sits outside it (FR-041)", async ({
+    page,
+  }) => {
+    await page.route("https://demo.drc.dev/**", (route) =>
+      route.fulfill({ contentType: "text/html", body: "<!doctype html><title>Demo</title><p>Demo</p>" }),
+    );
+    await page.goto("/projects/every-setting/");
+    const frame = page.locator("iframe");
+    await frame.scrollIntoViewIfNeeded();
+    const link = page.getByRole("link", { name: "Open the Every setting demo" });
+    await expect(link).toBeVisible();
+    expect(await link.evaluate((el) => !!el.closest("iframe"))).toBe(false);
+    // Tab from the link before the frame until focus is on the frame, then out of it again.
+    const onFrame = () => page.evaluate(() => document.activeElement?.tagName === "IFRAME");
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await frame.evaluate((el) => {
+      const before = document.createElement("button");
+      before.textContent = "start";
+      before.id = "trap-probe-start";
+      el.parentElement!.insertBefore(before, el);
+      before.focus();
+    });
+    let reached = false;
+    for (let i = 0; i < 6 && !reached; i += 1) {
+      await page.keyboard.press("Tab");
+      reached = await onFrame();
+    }
+    expect(reached, "Tab reaches the frame").toBe(true);
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Tab");
+    expect(await onFrame(), "a further Tab leaves the frame").toBe(false);
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Shift+Tab");
+    const stillTrapped = await onFrame();
+    expect(stillTrapped && (await page.evaluate(() => document.hasFocus())), "Shift+Tab leaves the frame").toBe(false);
+  });
+
+  test("the open-demo link stays visible when the frame request is blocked (FR-041)", async ({ page }) => {
+    await page.route("https://demo.drc.dev/**", (route) => route.abort());
+    await page.goto("/projects/every-setting/");
+    await page.locator("iframe").scrollIntoViewIfNeeded();
+    const link = page.getByRole("link", { name: "Open the Every setting demo" });
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAttribute("href", /^https:\/\/demo\.drc\.dev/);
+  });
+
   test("a link-only story (Focus Pocus, a stand-in) has no frame", async ({ page }) => {
     await page.goto("/projects/focus-pocus/");
     await expect(page.locator("iframe")).toHaveCount(0);

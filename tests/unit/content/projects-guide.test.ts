@@ -59,4 +59,27 @@ describe("docs/projects.md", () => {
   it.each(stageIds)("names the chapter %s", (stage) => {
     expect(guide).toContain(stage);
   });
+
+  // FR-073: every class of build error is explained in plain language.
+  const errorClasses: Array<[string, RegExp]> = [
+    ["no themes", /no themes|without any themes|at least one theme/i],
+    ["more than four themes", /more than four themes|over four themes/i],
+    ["the same theme twice", /same theme (twice|more than once)|repeated theme/i],
+    ["an order that is not a whole number of 1 or more", /`order`[^\n]*(whole number|below 1|less than 1)/i],
+    ["a visual name that breaks the name rule", /visual name[^\n]*(lower-case|letters)/i],
+    ["the reserved visual name demo", /reserved[^\n]*`demo`|`demo`[^\n]*reserved/i],
+    ["a clip used as the index visual", /clip[^\n]*(as|for) the (card|index|project's) (visual|picture)|`visual`[^\n]*clip/i],
+    ["two options or constraints with the same id", /same `id`|`id` (that )?(repeats|is used twice)/i],
+    ["an unsupported image or clip file", /(unsupported|not supported|other than)[^\n]*(picture|image|clip|file type)/i],
+    ["a page claiming an address under /projects/", /\/projects\/[^\n]*(page|address)|page[^\n]*\/projects\//i],
+  ];
+  it.each(errorClasses)("explains the build error: %s", (_name, pattern) => {
+    const section = guide.slice(guide.indexOf("## Build errors you may see"));
+    expect(section).toMatch(pattern);
+  });
+
+  it("tells Don to remove location and camera details from photos", () => {
+    expect(guide).toMatch(/location[^\n]*camera|camera[^\n]*location/i);
+    expect(guide).toMatch(/remove/i);
+  });
 });

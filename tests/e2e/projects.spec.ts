@@ -35,6 +35,58 @@ test.describe("the Focus Pocus story", () => {
     }
   });
 
+  for (const size of [
+    { width: 1280, height: 800 },
+    { width: 390, height: 844 },
+  ]) {
+    test(`an 'In this story' link leaves the chapter heading uncovered and moves focus on at ${size.width}px (FR-027)`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(size);
+      await page.goto(STORY);
+      const nav = page.getByRole("navigation", { name: "In this story" });
+      for (const [id, heading] of CHAPTERS) {
+        await nav.getByRole("link", { name: heading }).click();
+        await expect(page).toHaveURL(new RegExp(`#${id}$`));
+        // Let the smooth scroll bring the heading into view and settle before measuring.
+        await expect(page.locator(`#${id}-heading`)).toBeInViewport();
+        await page.evaluate(
+          () =>
+            new Promise<void>((resolve) => {
+              let last = -1;
+              let steady = 0;
+              const tick = () => {
+                steady = window.scrollY === last ? steady + 1 : 0;
+                last = window.scrollY;
+                if (steady >= 10) resolve();
+                else requestAnimationFrame(tick);
+              };
+              tick();
+            }),
+        );
+        const covered = await page.evaluate((headingId) => {
+          const el = document.getElementById(headingId)!;
+          const rect = el.getBoundingClientRect();
+          const hit = document.elementFromPoint(rect.left + 4, rect.top + 2);
+          return { top: rect.top, inside: !!hit && (hit === el || el.contains(hit)), info: hit?.outerHTML.slice(0, 120), rect: [rect.left, rect.top, rect.width, rect.height] };
+        }, `${id}-heading`);
+        expect(covered.top, `${id} heading top edge is in the viewport`).toBeGreaterThanOrEqual(0);
+        expect(covered.inside, `${id} heading top edge is not covered ${JSON.stringify(covered)}`).toBe(true);
+        await page.keyboard.press("Tab");
+        const focus = await page.evaluate((chapterId) => {
+          const chapter = document.getElementById(chapterId)!;
+          const active = document.activeElement as HTMLElement;
+          const position = chapter.compareDocumentPosition(active);
+          const inside = chapter.contains(active);
+          const after = !!(position & Node.DOCUMENT_POSITION_FOLLOWING);
+          return { inside, after, isBody: active === document.body };
+        }, id);
+        expect(focus.isBody, `${id}: focus is not reset to the page`).toBe(false);
+        expect(focus.inside || focus.after, `${id}: focus is in or after the chapter`).toBe(true);
+      }
+    });
+  }
+
   test("the comparison region can be reached and scrolled by keyboard", async ({ page }) => {
     await page.goto(STORY);
     const region = page.getByRole("region", { name: /ways to reach OmniFocus/ });
