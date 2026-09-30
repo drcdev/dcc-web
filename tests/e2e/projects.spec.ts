@@ -73,3 +73,75 @@ test.describe("the Focus Pocus story", () => {
     expect([...origins]).toEqual(["http://127.0.0.1:4321"]);
   });
 });
+
+test.describe("the projects index", () => {
+  const INDEX = "/projects/";
+
+  test("answers 200 with one h1, one row for Focus Pocus and a link to its story", async ({ page }) => {
+    const response = await page.goto(INDEX);
+    expect(response?.status()).toBe(200);
+    await expect(page.locator("h1")).toHaveText("Projects");
+    await expect(page.locator("[data-project]")).toHaveCount(1);
+    const link = page.locator("[data-project] h2 a");
+    await expect(link).toHaveText("Focus Pocus");
+    await expect(link).toHaveAttribute("href", STORY);
+    await link.click();
+    await expect(page).toHaveURL(new RegExp(`${STORY}$`));
+    await expect(page.locator("h1")).toHaveText("Focus Pocus");
+  });
+
+  test("the header Projects link is current on the index and on a story", async ({ page }) => {
+    // The index is the link's own page; a story is inside its section (spec 008 FR-004).
+    for (const [path, value] of [
+      [INDEX, "page"],
+      [STORY, "true"],
+    ] as const) {
+      await page.goto(path);
+      const current = page.locator("#primary-nav-list a[aria-current]");
+      await expect(current).toHaveCount(1);
+      await expect(current).toHaveText("Projects");
+      await expect(current).toHaveAttribute("aria-current", value);
+      await expect(current).toHaveClass(/underline/);
+    }
+  });
+
+  test("a row is two columns at 1280px and one column at 390px", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(INDEX);
+    const text = await page.locator("[data-project-text]").boundingBox();
+    const visual = await page.locator("[data-project-visual]").boundingBox();
+    expect(visual!.x).toBeGreaterThan(text!.x + text!.width - 1);
+    await page.setViewportSize({ width: 390, height: 844 });
+    const textNarrow = await page.locator("[data-project-text]").boundingBox();
+    const visualNarrow = await page.locator("[data-project-visual]").boundingBox();
+    expect(visualNarrow!.y).toBeGreaterThanOrEqual(textNarrow!.y + textNarrow!.height - 1);
+  });
+
+  for (const width of [320, 390, 1280]) {
+    test(`does not scroll sideways at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto(INDEX);
+      const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+      }));
+      expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+    });
+  }
+
+  test("going back from a story restores the index with its ?theme=", async ({ page }) => {
+    await page.goto(`${INDEX}?theme=macos`);
+    await expect(page.locator("[data-project]")).toBeVisible();
+    await page.locator("[data-project] h2 a").click();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/projects\/\?theme=macos$/);
+    await expect(page.locator('button[data-theme="macos"]')).toHaveAttribute("aria-pressed", "true");
+  });
+
+  test("the header Projects link always opens the unfiltered index", async ({ page }) => {
+    await page.goto(`${INDEX}?theme=macos`);
+    await page.locator('#primary-nav-list a[href="/projects/"]').click();
+    await expect(page).toHaveURL(/\/projects\/$/);
+    await expect(page.locator("[data-filter-all]")).toHaveAttribute("aria-pressed", "true");
+  });
+});

@@ -1,0 +1,104 @@
+---
+// The theme filter (contracts/filter-island.md). The server renders every
+// project and keeps the controls, status line and empty message `hidden`; the
+// custom element below reveals them once it is set up (`data-ready`), so a
+// reader without JavaScript, or with the script blocked, sees a plain list.
+// The script is processed by Astro and loaded as a deferred module
+// (docs.astro.build/en/guides/client-side-scripts/#web-components-with-custom-elements).
+import type { Theme } from "../../lib/content/themes.ts";
+import { filterStatus } from "../../lib/content/themes.ts";
+import "./portfolio.css";
+
+export interface Props {
+  themes: readonly Theme[];
+  total: number;
+}
+
+const { themes, total } = Astro.props;
+---
+
+<project-filter data-total={total} data-themes-json={JSON.stringify(themes)}>
+  <div role="group" aria-labelledby="filter-label" data-filter-controls hidden>
+    <p id="filter-label" data-filter-label>Filter by theme</p>
+    <div data-filter-buttons>
+      <button type="button" aria-pressed="true" data-filter-all>All projects</button>
+      {
+        themes.map((theme) => (
+          <button type="button" aria-pressed="false" data-theme={theme.key}>
+            {theme.label}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+  <p role="status" aria-live="polite" data-filter-status hidden>
+    {filterStatus({ shown: total, total, theme: null, unknown: false })}
+  </p>
+  <ul data-project-list class="not-prose">
+    <slot />
+  </ul>
+  <div data-filter-empty hidden>
+    <p>No projects match this theme.</p>
+    <button type="button" data-filter-clear>Show all projects</button>
+  </div>
+</project-filter>
+
+<script>
+  import { filterStatus, matches, parseThemeParam, themeSearch, type Theme } from "../../lib/content/themes.ts";
+
+  class ProjectFilter extends HTMLElement {
+    connectedCallback() {
+      const themes: Theme[] = JSON.parse(this.dataset.themesJson ?? "[]");
+      const total = Number(this.dataset.total ?? 0);
+      const rows = [...this.querySelectorAll<HTMLElement>("[data-project]")];
+      const controls = this.querySelector<HTMLElement>("[data-filter-controls]")!;
+      const status = this.querySelector<HTMLElement>("[data-filter-status]")!;
+      const empty = this.querySelector<HTMLElement>("[data-filter-empty]")!;
+      const all = this.querySelector<HTMLButtonElement>("[data-filter-all]")!;
+      const clear = this.querySelector<HTMLButtonElement>("[data-filter-clear]")!;
+      const buttons = [...this.querySelectorAll<HTMLButtonElement>("button[data-theme]")];
+
+      const apply = (search: string, announce: boolean) => {
+        const { key, unknown } = parseThemeParam(search, themes);
+        const theme = themes.find((item) => item.key === key) ?? null;
+        let shown = 0;
+        for (const row of rows) {
+          const keys = (row.dataset.themes ?? "").split("|");
+          const visible = !unknown && matches({ themes: keys }, key);
+          row.hidden = !visible;
+          if (visible) shown += 1;
+        }
+        all.setAttribute("aria-pressed", String(key === null && !unknown));
+        for (const button of buttons) button.setAttribute("aria-pressed", String(button.dataset.theme === key));
+        empty.hidden = !unknown;
+        // textContent only: the address value is never written into the page.
+        const text = filterStatus({ shown, total, theme, unknown });
+        if (announce || status.textContent?.trim() !== text) status.textContent = text;
+      };
+
+      const choose = (key: string | null) => {
+        const search = themeSearch(location.search, key);
+        history.replaceState(history.state, "", `${location.pathname}${search}${location.hash}`);
+        apply(search, true);
+      };
+
+      all.addEventListener("click", () => choose(null));
+      for (const button of buttons) button.addEventListener("click", () => choose(button.dataset.theme ?? null));
+      clear.addEventListener("click", () => {
+        choose(null);
+        all.focus();
+      });
+      // Back from a story can restore the page from the back/forward cache.
+      window.addEventListener("pageshow", (event) => {
+        if (event.persisted) apply(location.search, false);
+      });
+
+      apply(location.search, false);
+      controls.hidden = false;
+      status.hidden = false;
+      this.dataset.ready = "";
+    }
+  }
+
+  if (!customElements.get("project-filter")) customElements.define("project-filter", ProjectFilter);
+</script>

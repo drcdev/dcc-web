@@ -42,6 +42,7 @@ export const socialNavigation: readonly NavigationItem[] = [
 /**
  * Internal addresses reserved for later features. No page file may use them, and
  * link checks accept a not-found response only for these, so a typo in any other
- * link still fails. Remove an entry when the feature that builds that page lands.
+ * link still fails. Remove an entry when the feature that builds that page lands;
+ * the blog and the portfolio have landed, so the list is empty.
  */
-export const futureDestinations: readonly string[] = ["/projects/"];
+export const futureDestinations: readonly string[] = [];

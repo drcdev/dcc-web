@@ -1,0 +1,53 @@
+---
+// One project on the index: a ruled row with the text on the left and the index
+// visual on the right at wide widths (Direction C rows, Direction A split;
+// contracts/pages-dom.md). The title is the row's only link. The title carries
+// the view-transition name `project-<slug>`, which the story's title shares
+// (docs.astro.build/en/guides/view-transitions/#transitionname).
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import { themeKey } from "../../lib/content/themes.ts";
+import StatusPill from "./StatusPill.astro";
+import ThemePills from "./ThemePills.astro";
+import "./portfolio.css";
+
+export interface Props {
+  slug: string;
+  title: string;
+  problem: string;
+  status: "shipped" | "experiment" | "in-progress";
+  themes: readonly string[];
+  visual: { src: unknown; alt: string };
+  /** A draft is listed outside the production build only, and marked. */
+  draft?: boolean;
+  /** Only the first row's image is loaded eagerly. */
+  eager?: boolean;
+}
+
+const { slug, title, problem, status, themes, visual, draft = false, eager = false } = Astro.props;
+const keys = [...new Set(themes.map(themeKey))].join("|");
+---
+
+<li data-project={slug} data-themes={keys}>
+  <div data-project-text>
+    <h2 data-project-title transition:name={`project-${slug}`}>
+      <a href={`/projects/${slug}/`}>{title}</a>
+    </h2>
+    <p data-project-problem>{problem}</p>
+    {draft && <p data-draft-mark>Draft</p>}
+    <div data-project-meta>
+      <StatusPill status={status} />
+      <ThemePills themes={themes} />
+    </div>
+  </div>
+  <div data-project-visual>
+    <Image
+      src={visual.src as ImageMetadata}
+      alt={visual.alt}
+      widths={[480, 800]}
+      sizes="(min-width: 64rem) 32rem, 100vw"
+      loading={eager ? "eager" : "lazy"}
+      decoding={eager ? "sync" : "async"}
+    />
+  </div>
+</li>

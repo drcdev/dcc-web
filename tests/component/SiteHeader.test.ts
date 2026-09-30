@@ -221,6 +221,13 @@ describe("SiteHeader navigation prop (FR-025, FR-025b)", () => {
     ]);
   });
 
+  it('marks the section link with aria-current="true" on a page below it when no link is exact', async () => {
+    const html = await render("/alpha/gamma/", custom);
+    const { links } = navList(html);
+    expect(links.filter((a) => a.attrs["aria-current"] === "page")).toHaveLength(0);
+    expect(links.filter((a) => a.attrs["aria-current"] === "true").map((a) => a.attrs.href)).toEqual(["/alpha/"]);
+  });
+
   it("marks the current page only on the exact address", async () => {
     const html = await render("/alpha/beta/", custom);
     const { links } = navList(html);

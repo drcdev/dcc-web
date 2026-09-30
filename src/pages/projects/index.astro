@@ -1,0 +1,50 @@
+---
+// The projects index: one ruled row per published project, text left and the
+// index visual right at wide widths, with a theme filter that works as an island
+// (contracts/pages-dom.md, contracts/filter-island.md; FR-004 to FR-014).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import EmptyProjects from "../../components/project/EmptyProjects.astro";
+import ProjectFilter from "../../components/project/ProjectFilter.astro";
+import ProjectRow from "../../components/project/ProjectRow.astro";
+import { themesOf } from "../../lib/content/themes";
+import { getPublishedProjects } from "../../lib/projects";
+import { getNavigation } from "../../lib/pages";
+import "../../components/project/portfolio.css";
+
+const projects = await getPublishedProjects(process.env);
+const themes = themesOf(projects.map(({ data }) => data));
+const navigation = await getNavigation();
+---
+
+<BaseLayout
+  title="Projects"
+  description="Problems I have solved with software, each told as a short story from the problem to what I would do differently."
+  navigation={navigation}
+>
+  <div data-projects-index class="mx-auto">
+    <header data-index-header>
+      <h1>Projects</h1>
+      <p>Problems I have solved with software, told from the problem to the lessons.</p>
+    </header>
+    {
+      projects.length === 0 ? (
+        <EmptyProjects />
+      ) : (
+        <ProjectFilter themes={themes} total={projects.length}>
+          {projects.map(({ id, data }, index) => (
+            <ProjectRow
+              slug={id}
+              title={data.title}
+              problem={data.problem}
+              status={data.status}
+              themes={data.themes}
+              visual={data.visual}
+              draft={data.draft}
+              eager={index === 0}
+            />
+          ))}
+        </ProjectFilter>
+      )
+    }
+  </div>
+</BaseLayout>

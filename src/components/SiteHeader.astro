@@ -18,7 +18,8 @@ import MenuIcon from "../icons/menu.svg";
 // The items come from the `navigation` prop, built by mergeNavigation() from
 // the page files (src/lib/pages.ts; FR-025). The current page is marked on its
 // exact address (FR-025b); a link to a section is also marked, with
-// aria-current="true", on every address inside it (spec 008 FR-004).
+// aria-current="true", on every address inside it (spec 008 FR-004; a project
+// story under /projects/ keeps Projects marked the same way, spec 009 US4).
 export interface Props {
   navigation: NavigationItem[];
 }
@@ -50,7 +51,7 @@ const pathname = Astro.url.pathname;
           {
             navigation.map((item) => {
               const current = isCurrent(pathname, item.href);
-              // Inside a section (the blog's posts, listings and topics) the link stays marked and
+              // Inside a section (the blog's posts, listings and topics, a project story) the link stays marked and
               // shows the same current style, with "true" because the page itself is another one.
               const inSection = !current && isInSection(pathname, item.href);
               return (

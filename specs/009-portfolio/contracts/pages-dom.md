@@ -89,7 +89,7 @@ the test hooks; class names are free.
 </main>
 ```
 
-- Headings: one `h1`; seven `h2`; body headings `h3`+. Header Projects link is `aria-current="page"`.
+- Headings: one `h1`; seven `h2`; body headings `h3`+. Header Projects link is `aria-current="true"` (the story is inside the Projects section; the shared section rule from spec 008 FR-004).
 - Visuals: image → `<img alt>`; diagram → `<figure>` with `<img alt aria-describedby>` and a visible
   description; clip → `<video controls muted playsinline preload="none" poster>` (no `autoplay`)
   with a visible description; placeholder → visible "Placeholder" mark.

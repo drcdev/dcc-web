@@ -196,8 +196,9 @@ Every Astro choice names the Astro docs page that supports it, found through the
 
 - **Decision**: remove `"/projects/"` from `futureDestinations` (the address check then treats
   `src/pages/projects/*` as the owner of `/projects/…`, so a page file can no longer claim it), and
-  change `isCurrent(pathname, href)` so a non-home entry is also current for addresses under it
-  (`/projects/focus-pocus/` marks Projects with `aria-current="page"`). Link checks then require
+  reuse the blog's section rule `isInSection(pathname, href)` so a non-home entry is also current
+  for addresses under it (`/projects/focus-pocus/` marks Projects with `aria-current="true"`, as
+  spec 008 FR-004 does for posts). Link checks then require
   `/projects/` and every story page to answer 200 (FR-081).
 - **Rationale**: FR-010, US4 AS1; shared with the blog (plan "Parallel work").
 - **Docs**: docs.astro.build/en/reference/api-reference/#url (`Astro.url.pathname`, which the

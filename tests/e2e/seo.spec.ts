@@ -85,6 +85,8 @@ test("the sitemap lists exactly the built public pages, never /404", async ({ re
       "/about/",
       "/contact/",
       "/privacy-policy/",
+      "/projects/",
+      "/projects/focus-pocus/",
       "/services/",
       "/speaking/",
       "/technology/",

@@ -1,0 +1,120 @@
+// The projects index on the fixture site (port 4322, playwright.config.ts project
+// `sections`): four projects (Focus Pocus and the three fixtures) so filtering,
+// clearing, sharing and the unknown-theme message have something to work on
+// (US4; contracts/filter-island.md; FR-014).
+import { expect, test, type Page } from "@playwright/test";
+
+const INDEX = "/projects/";
+const rows = (page: Page) => page.locator("[data-project]:not([hidden])");
+const status = (page: Page) => page.locator("[data-filter-status]");
+
+test("lists every project, with the controls ready", async ({ page }) => {
+  await page.goto(INDEX);
+  await expect(page.locator("project-filter[data-ready]")).toHaveCount(1);
+  await expect(rows(page)).toHaveCount(4);
+  await expect(status(page)).toHaveText("Showing all 4 projects.");
+  await expect(page.getByRole("group", { name: "Filter by theme" })).toBeVisible();
+  await expect(page.locator("[data-filter-all]")).toHaveAttribute("aria-pressed", "true");
+});
+
+test("theme variants collapse to one button", async ({ page }) => {
+  await page.goto(INDEX);
+  // Tooling is on two projects and AI integration on two: one button each.
+  await expect(page.locator('button[data-theme="tooling"]')).toHaveCount(1);
+  await expect(page.locator('button[data-theme="ai-integration"]')).toHaveCount(1);
+});
+
+test("filters by theme, announces the count and clears", async ({ page }) => {
+  await page.goto(INDEX);
+  await page.locator('button[data-theme="tooling"]').click();
+  await expect(rows(page)).toHaveCount(2);
+  await expect(status(page)).toHaveText("Showing 2 projects about Tooling.");
+  await expect(page).toHaveURL(/\/projects\/\?theme=tooling$/);
+  await expect(page.locator('button[data-theme="tooling"]')).toHaveAttribute("aria-pressed", "true");
+  await page.locator("[data-filter-all]").click();
+  await expect(rows(page)).toHaveCount(4);
+  await expect(page).toHaveURL(/\/projects\/$/);
+  await expect(status(page)).toHaveText("Showing all 4 projects.");
+});
+
+test("keeps focus on the pressed button", async ({ page }) => {
+  await page.goto(INDEX);
+  const button = page.locator('button[data-theme="macos"]');
+  await button.focus();
+  await page.keyboard.press("Enter");
+  await expect(button).toBeFocused();
+});
+
+test("reloading or sharing ?theme= applies the filter", async ({ page }) => {
+  await page.goto(`${INDEX}?theme=tooling`);
+  await expect(rows(page)).toHaveCount(2);
+  await expect(page.locator('button[data-theme="tooling"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(status(page)).toHaveText("Showing 2 projects about Tooling.");
+  await page.reload();
+  await expect(rows(page)).toHaveCount(2);
+});
+
+test("an unknown theme lists nothing, says so and keeps the address until cleared", async ({ page }) => {
+  await page.goto(`${INDEX}?theme=nonsense`);
+  await expect(rows(page)).toHaveCount(0);
+  await expect(page.locator("[data-filter-empty]")).toBeVisible();
+  await expect(status(page)).toHaveText("No projects match this theme.");
+  await expect(page).toHaveURL(/\?theme=nonsense$/);
+  await page.getByRole("button", { name: "Show all projects" }).click();
+  await expect(rows(page)).toHaveCount(4);
+  await expect(page).toHaveURL(/\/projects\/$/);
+  await expect(page.locator("[data-filter-empty]")).toBeHidden();
+  await expect(page.locator("[data-filter-all]")).toBeFocused();
+});
+
+test("an unknown ?theme= with markup renders nothing from it and is not repeated", async ({ page }) => {
+  await page.goto(`${INDEX}?theme=${encodeURIComponent("<img src=x onerror=window.__x=1>")}`);
+  await expect(page.locator("[data-filter-empty]")).toBeVisible();
+  await expect(page.locator("main img[src='x']")).toHaveCount(0);
+  expect(await page.evaluate(() => (window as unknown as { __x?: number }).__x)).toBeUndefined();
+  await expect(status(page)).not.toContainText("img");
+  await expect(page.locator("main")).not.toContainText("onerror");
+});
+
+test("changing the filter twice then pressing Back leaves the index (no history entries)", async ({ page }) => {
+  await page.goto("/");
+  await page.goto(INDEX);
+  await page.locator('button[data-theme="tooling"]').click();
+  await page.locator('button[data-theme="macos"]').click();
+  await expect(page).toHaveURL(/\?theme=macos$/);
+  await page.goBack();
+  await expect(page).not.toHaveURL(/projects/);
+});
+
+test("announces the status as a polite live region", async ({ page }) => {
+  await page.goto(INDEX);
+  await expect(status(page)).toHaveAttribute("aria-live", "polite");
+  await expect(status(page)).toHaveAttribute("role", "status");
+  await page.locator('button[data-theme="tooling"]').click();
+  await page.locator('button[data-theme="tooling"]').click();
+  await expect(status(page)).toHaveText("Showing 2 projects about Tooling.");
+});
+
+test("filter targets are at least 24x24 px", async ({ page }) => {
+  await page.goto(INDEX);
+  for (const button of await page.locator("project-filter button:visible").all()) {
+    const box = await button.boundingBox();
+    expect(box!.width).toBeGreaterThanOrEqual(24);
+    expect(box!.height).toBeGreaterThanOrEqual(24);
+  }
+});
+
+test("buttons wrap and the page does not scroll sideways at 320px", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto(INDEX);
+  const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    clientWidth: document.documentElement.clientWidth,
+  }));
+  expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+  const tops = new Set<number>();
+  for (const button of await page.locator("project-filter button:visible").all()) {
+    tops.add(Math.round((await button.boundingBox())!.y));
+  }
+  expect(tops.size).toBeGreaterThan(1);
+});
