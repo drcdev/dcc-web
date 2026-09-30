@@ -45,12 +45,13 @@ for (const size of WIDTHS) {
   }
 }
 
-// The new pages: home (with the introduction card) and about, full page.
+// The pages: home (with the introduction card), about and contact, full page.
 for (const size of WIDTHS) {
   for (const theme of THEMES) {
     for (const [name, path] of [
       ["home", "/"],
       ["about", "/about/"],
+      ["contact", "/contact/"],
     ] as const) {
       test(`${name} page — ${size.name} — ${theme}`, async ({ page }) => {
         await open(page, path, size.width, size.height, theme);
