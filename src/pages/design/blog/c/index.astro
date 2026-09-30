@@ -31,12 +31,12 @@ const link = "font-semibold text-accent-700 underline hover:no-underline dark:te
     </div>
     <p class="mt-4"><a class={link} href={listingPath("c", 1)}>All posts</a></p>
   </section>
-  <div class="grid gap-8 lg:grid-cols-2">
+  <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
     {
       hubs.map(({ topic, featured, newest, count }) => (
         <section data-topic-hub={topic.slug} aria-labelledby={`hub-${topic.slug}`} class="rounded-2xl border border-dusk-200 dark:border-dusk-700">
           <div class:list={["rounded-t-2xl p-5", toneBanner[topic.tone]]}>
-            <h2 id={`hub-${topic.slug}`} class="mb-2 text-2xl font-bold">
+            <h2 id={`hub-${topic.slug}`} class="mb-2 break-words text-2xl font-bold">
               <a class="underline hover:no-underline" href={topicPath("c", topic.slug)}>{topic.name}</a>
             </h2>
             <p>{topic.intro}</p>

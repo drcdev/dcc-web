@@ -24,7 +24,7 @@ const rest = list.filter((p) => p !== featured);
 >
   <div class:list={["mb-8 rounded-2xl p-6 md:p-10", toneBanner[topic.tone]]}>
     <Eyebrow />
-    <h1 class="mb-3 text-3xl font-bold md:text-4xl">{topic.name}</h1>
+    <h1 class="mb-3 break-words text-3xl font-bold md:text-4xl">{topic.name}</h1>
     <p class="max-w-prose text-lg">{topic.intro}</p>
   </div>
   <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem]">

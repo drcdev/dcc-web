@@ -475,6 +475,18 @@ test.describe("US3: accessibility", () => {
       await expectNoAxeViolations(page);
     });
 
+    test(`text at 200 percent on a phone: ${p.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await openPage(page, p.path);
+      await page.evaluate(() => {
+        document.documentElement.style.fontSize = "200%";
+      });
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+
     test(`reflow at 320 px: ${p.name}`, async ({ page }) => {
       await page.setViewportSize({ width: 320, height: 800 });
       await openPage(page, p.path);
