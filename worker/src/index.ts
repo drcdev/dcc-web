@@ -1,6 +1,7 @@
 import { handleSubmit } from "./contact/submit";
 import { json } from "./http";
 import { handleMessages } from "./messages/router";
+import { runRetention } from "./retention";
 
 export default {
   // Only /api/* reaches the Worker (`assets.run_worker_first`). Later phases add routes.
@@ -13,6 +14,8 @@ export default {
     return json({ error: "not_found" }, 404);
   },
 
-  // The retention cron is implemented in a later phase.
-  async scheduled(): Promise<void> {},
+  // Daily retention (cron `17 3 * * *`, both environments): see retention.ts.
+  async scheduled(controller: ScheduledController, env: Env): Promise<void> {
+    await runRetention(env.DB, controller.scheduledTime);
+  },
 } satisfies ExportedHandler<Env>;

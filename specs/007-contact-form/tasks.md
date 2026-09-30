@@ -174,12 +174,12 @@
 
 ### Tests first (seen to fail)
 
-- [ ] T050 [P] [US6] Write `tests/unit/site/privacy-policy.test.ts` asserting `src/content/pages/privacy-policy.mdx` states the collected fields, `RETENTION_MONTHS` from the shared rules, "Western North America", the IP fingerprint handling (removed after about two days), Turnstile with exactly the FR-012b list and its privacy addendum link, the deletion request route with the 30-day answer and the 7-day Time Travel note, no leftover placeholders, `draft: true` unchanged. Must fail.
-- [ ] T051 [P] [US6] Extend the `ContactForm` component test and `tests/e2e/contact.spec.ts` for the page note linking to the privacy policy (underlined, "(opens in a new tab)"). Must fail.
+- [X] T050 [P] [US6] Write `tests/unit/site/privacy-policy.test.ts` asserting `src/content/pages/privacy-policy.mdx` states the collected fields, `RETENTION_MONTHS` from the shared rules, "Western North America", the IP fingerprint handling (removed after about two days), Turnstile with exactly the FR-012b list and its privacy addendum link, the deletion request route with the 30-day answer and the 7-day Time Travel note, no leftover placeholders, `draft: true` unchanged. Must fail.
+- [X] T051 [P] [US6] Extend the `ContactForm` component test and `tests/e2e/contact.spec.ts` for the page note linking to the privacy policy (underlined, "(opens in a new tab)"). Must fail.
 
 ### Implementation
 
-- [ ] T052 [US6] Edit only "The contact form", "Spam protection", "Your choices" and "Last updated" in `src/content/pages/privacy-policy.mdx` per plan.md "Privacy policy text"; make the tests pass and run the `pages`, `seo` and `a11y` e2e projects for `/privacy-policy/`.
+- [X] T052 [US6] Edit only "The contact form", "Spam protection", "Your choices" and "Last updated" in `src/content/pages/privacy-policy.mdx` per plan.md "Privacy policy text"; make the tests pass and run the `pages`, `seo` and `a11y` e2e projects for `/privacy-policy/`.
 
 ---
 
@@ -189,11 +189,11 @@
 
 ### Tests first (seen to fail)
 
-- [ ] T053 [P] [US7] Write `worker/test/retention.test.ts` per contracts/worker-config.md "Retention cron": only rows older than `RETENTION_MONTHS` calendar months (UTC) deleted regardless of read state (SC-007), rows at the boundary ± 1 minute on the right side, the 29 February mapping pinned, a 1,200-row batch fully deleted, fingerprint cleared on rows 25 hours old while rows 23 hours old keep it and the message stays, both statements indexed (no `SCAN messages`), exactly one log line with `event` and the deleted count and no personal data (FR-016), and a failure in one step leaves the rows for the next run and still surfaces as an errored run. Must fail.
+- [X] T053 [P] [US7] Write `worker/test/retention.test.ts` per contracts/worker-config.md "Retention cron": only rows older than `RETENTION_MONTHS` calendar months (UTC) deleted regardless of read state (SC-007), rows at the boundary ± 1 minute on the right side, the 29 February mapping pinned, a 1,200-row batch fully deleted, fingerprint cleared on rows 25 hours old while rows 23 hours old keep it and the message stays, both statements indexed (no `SCAN messages`), exactly one log line with `event` and the deleted count and no personal data (FR-016), and a failure in one step leaves the rows for the next run and still surfaces as an errored run. Must fail.
 
 ### Implementation
 
-- [ ] T054 [US7] Implement `worker/src/retention.ts` and wire `scheduled` in `worker/src/index.ts`; make the test pass and confirm the cron `17 3 * * *` exists for both environments in `wrangler.jsonc`.
+- [X] T054 [US7] Implement `worker/src/retention.ts` and wire `scheduled` in `worker/src/index.ts`; make the test pass and confirm the cron `17 3 * * *` exists for both environments in `wrangler.jsonc`.
 
 ---
 
