@@ -9,8 +9,10 @@ and four sample topics; they are not the published blog.
 
 ## How to compare
 
-Preview index: `[preview URL to be filled once the pull request exists]/design/blog/`. On a
-local build the same pages are at `/design/blog/`, and the directions are at
+Preview index: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/`. That address is
+the Cloudflare commit preview for the commit that carried the prototypes (`d12e145`), so it
+stays live after the prototype pages are removed from the branch, until Cloudflare retires the
+version. On a local build the same pages are at `/design/blog/`, and the directions are at
 `/design/blog/a/`, `/design/blog/b/` and `/design/blog/c/`.
 
 Each direction has the same three screens, shown in the pictures: the landing page (the front
@@ -40,10 +42,10 @@ on every card.
 
 Preview links, once the pull request exists (replace the placeholder with the preview URL):
 
-- Landing: `[preview URL to be filled]/design/blog/a/`
-- Listing: `[preview URL to be filled]/design/blog/a/all/`
-- Topic: `[preview URL to be filled]/design/blog/a/topics/compliant-data/`
-- Post: `[preview URL to be filled]/design/blog/a/ai-agents-and-the-mainframe/`
+- Landing: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/a/`
+- Listing: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/a/all/`
+- Topic: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/a/topics/compliant-data/`
+- Post: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/a/ai-agents-and-the-mainframe/`
 
 ### Pictures
 
@@ -114,10 +116,10 @@ text. A short "Start here" list pinned above the stream carries the featured pos
 
 Preview links, once the pull request exists (replace the placeholder with the preview URL):
 
-- Landing: `[preview URL to be filled]/design/blog/b/`
-- Listing: `[preview URL to be filled]/design/blog/b/all/`
-- Topic: `[preview URL to be filled]/design/blog/b/topics/compliant-data/`
-- Post: `[preview URL to be filled]/design/blog/b/ai-agents-and-the-mainframe/`
+- Landing: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/b/`
+- Listing: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/b/all/`
+- Topic: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/b/topics/compliant-data/`
+- Post: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/b/ai-agents-and-the-mainframe/`
 
 ### Pictures
 
@@ -188,10 +190,10 @@ above them.
 
 Preview links, once the pull request exists (replace the placeholder with the preview URL):
 
-- Landing: `[preview URL to be filled]/design/blog/c/`
-- Listing: `[preview URL to be filled]/design/blog/c/all/`
-- Topic: `[preview URL to be filled]/design/blog/c/compliant-data/`
-- Post: `[preview URL to be filled]/design/blog/c/2026/ai-agents-and-the-mainframe/`
+- Landing: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/c/`
+- Listing: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/c/all/`
+- Topic: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/c/compliant-data/`
+- Post: `https://f4b8ac2f-dcc-web.drc-dev.workers.dev/design/blog/c/2026/ai-agents-and-the-mainframe/`
 
 ### Pictures
 
