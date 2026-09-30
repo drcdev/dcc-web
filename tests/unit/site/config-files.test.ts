@@ -72,10 +72,66 @@ describe("wrangler.jsonc", () => {
     expect(config.preview_urls).toBe(true);
   });
 
-  it("has no main script and no vars or secrets", () => {
-    expect(config.main).toBeUndefined();
-    expect(config.vars).toBeUndefined();
-    expect(config.secrets).toBeUndefined();
+  it("runs the Worker only for /api/* (Principle VIII)", () => {
+    expect(config.main).toBe("worker/src/index.ts");
+    expect(config.assets?.run_worker_first).toEqual(["/api/*"]);
+  });
+
+  it("binds only contact in production and only contact-preview in preview, both as DB", () => {
+    expect(config.d1_databases).toHaveLength(1);
+    expect(config.d1_databases[0]).toMatchObject({
+      binding: "DB",
+      database_name: "contact",
+      migrations_dir: "migrations",
+    });
+    const preview = config.env?.preview;
+    expect(preview?.d1_databases).toHaveLength(1);
+    expect(preview.d1_databases[0]).toMatchObject({
+      binding: "DB",
+      database_name: "contact-preview",
+      migrations_dir: "migrations",
+    });
+    expect(JSON.stringify(config).match(/"database_name"/g)).toHaveLength(2);
+  });
+
+  it("has two different database ids, each a UUID or the committed placeholder", () => {
+    // The placeholder allowance is removed in T074, once Don's real IDs are committed.
+    const isAllowed = (id: unknown) =>
+      typeof id === "string" &&
+      (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) ||
+        /^00000000-0000-0000-0000-00000000000[12]$/.test(id));
+    const production = config.d1_databases[0].database_id;
+    const preview = config.env.preview.d1_databases[0].database_id;
+    expect(isAllowed(production)).toBe(true);
+    expect(isAllowed(preview)).toBe(true);
+    expect(production).not.toBe(preview);
+  });
+
+  it("names the preview Worker dcc-web-preview", () => {
+    expect(config.env?.preview?.name).toBe("dcc-web-preview");
+  });
+
+  it("runs the same daily cron in both environments", () => {
+    expect(config.triggers?.crons).toEqual(["17 3 * * *"]);
+    expect(config.env.preview.triggers?.crons).toEqual(["17 3 * * *"]);
+  });
+
+  it("requires the same three secrets in both environments", () => {
+    const names = ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"];
+    expect(config.secrets?.required).toEqual(names);
+    expect(config.env.preview.secrets?.required).toEqual(names);
+  });
+
+  it("keeps invocation logs off", () => {
+    expect(config.observability?.enabled).toBe(true);
+    expect(config.observability?.logs?.invocation_logs).toBe(false);
+  });
+
+  it("holds no secret-looking vars", () => {
+    const vars = { ...(config.vars ?? {}), ...(config.env?.preview?.vars ?? {}) };
+    for (const name of Object.keys(vars)) {
+      expect(name).not.toMatch(/SECRET|TOKEN|SALT|KEY|PASSWORD/i);
+    }
   });
 
   it("serves the custom 404 page for unknown paths", () => {
@@ -149,7 +205,10 @@ describe("playwright.config.ts", () => {
   it("runs the webServer through wrangler dev on 127.0.0.1:4321 with metrics off", async () => {
     const config = await loadConfig();
     const server = config.webServer[0];
-    expect(server?.command).toBe("pnpm exec wrangler dev --ip 127.0.0.1 --port 4321");
+    expect(server?.command).toContain("wrangler dev --ip 127.0.0.1 --port 4321");
+    expect(server?.command).toContain("--persist-to .cache/e2e-state");
+    expect(server?.command).toContain("--env-file tests/fixtures/worker/e2e.env");
+    expect(server?.command).toContain("wrangler d1 migrations apply contact --local --persist-to .cache/e2e-state");
     expect(server?.env?.WRANGLER_SEND_METRICS).toBe("false");
     expect(server?.env?.ASTRO_PREVIEW_BACKGROUND).toBeUndefined();
     expect(server?.url).toBe("http://127.0.0.1:4321");
@@ -328,5 +387,31 @@ describe("worker workspace and tooling wiring (007 contact form)", () => {
     expect(pkg.scripts.test).toBe("vitest run && pnpm --filter ./worker test");
     expect(pkg.scripts["types:worker"]).toBe("wrangler types worker/worker-configuration.d.ts");
     expect(pkg.scripts["deploy:production"]).toBeTruthy();
+  });
+});
+
+describe("contact Worker files", () => {
+  const root = fileURLToPath(new URL("../../../", import.meta.url));
+
+  it("has only additive migrations (no DROP, DELETE or RENAME)", () => {
+    const dir = `${root}migrations/`;
+    const files = readdirSync(dir).filter((f) => f.endsWith(".sql"));
+    expect(files.length).toBeGreaterThan(0);
+    for (const file of files) {
+      const sql = readFileSync(`${dir}${file}`, "utf-8");
+      expect(sql, file).not.toMatch(/\b(DROP|DELETE|RENAME)\b/i);
+    }
+  });
+
+  it("ignores .cache/ in git", () => {
+    const gitignore = readFileSync(`${root}.gitignore`, "utf-8").split("\n");
+    expect(gitignore).toContain(".cache/");
+  });
+
+  it("provides the e2e env file with public test values only", () => {
+    const text = readFileSync(`${root}tests/fixtures/worker/e2e.env`, "utf-8");
+    expect(text).toContain("TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA");
+    expect(text).toMatch(/^CONTACT_READ_TOKEN=.+/m);
+    expect(text).toMatch(/^IP_HASH_SALT=.+/m);
   });
 });
