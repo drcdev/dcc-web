@@ -153,4 +153,5 @@ Each story ends with a hand-off to the contact form that carries the project wit
 
 ## Decision
 
-<!-- Don: record the chosen direction and any changes here. -->
+Story pages: Direction C
+Index page: Direction C, but using the content layout of Direction A (two column instead of three)
