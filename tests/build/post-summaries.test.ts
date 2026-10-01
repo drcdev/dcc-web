@@ -29,24 +29,8 @@ async function summaries(env?: Record<string, string>) {
   return JSON.parse(result.read("summaries.json")) as { slug: string; draft: boolean; minutesRead: number; href: string }[];
 }
 
+// The two default-environment cases (drafts and reading time; newest first) run in local-site.test.ts.
 describe("getPostSummaries", () => {
-  it("includes drafts and reading time in a build that is not production", async () => {
-    const posts = await summaries();
-    const slugs = posts.map((p) => p.slug);
-    expect(slugs).toEqual(expect.arrayContaining(["published", "draft", "sample-everything", "text-only"]));
-    expect(posts.find((p) => p.slug === "draft")?.draft).toBe(true);
-    expect(posts.find((p) => p.slug === "published")?.href).toBe("/writing/published/");
-    for (const post of posts) expect(Number.isInteger(post.minutesRead) && post.minutesRead >= 1).toBe(true);
-    expect(posts.find((p) => p.slug === "text-only")?.minutesRead).toBe(1);
-    expect(posts.find((p) => p.slug === "sample-everything")?.minutesRead).toBeGreaterThanOrEqual(1);
-  });
-
-  it("sorts newest first", async () => {
-    const posts = await summaries();
-    // published (2026-08-27) is newer than text-only (2026-08-10).
-    expect(posts.map((p) => p.slug).indexOf("published")).toBeLessThan(posts.map((p) => p.slug).indexOf("text-only"));
-  });
-
   it("leaves drafts out of a Workers Builds build of main (production)", async () => {
     const posts = await summaries({ WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" });
     expect(posts.map((p) => p.slug)).toEqual(["published", "text-only"]);

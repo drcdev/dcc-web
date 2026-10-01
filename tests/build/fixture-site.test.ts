@@ -117,21 +117,4 @@ describe("fixture-site harness, post fixtures (T025)", () => {
     expect(result.message).toBe("");
     expect(result.read("sitemap-0.xml")).toContain("https://doncoleman.ca/");
   });
-
-  it("does not leak WORKERS_CI from the test runner's own environment into a build", async () => {
-    const saved = { ci: process.env.WORKERS_CI, branch: process.env.WORKERS_CI_BRANCH };
-    process.env.WORKERS_CI = "1";
-    process.env.WORKERS_CI_BRANCH = "main";
-    try {
-      result = await buildFixtureSite(["workshops.mdx"]);
-    } finally {
-      if (saved.ci === undefined) delete process.env.WORKERS_CI;
-      else process.env.WORKERS_CI = saved.ci;
-      if (saved.branch === undefined) delete process.env.WORKERS_CI_BRANCH;
-      else process.env.WORKERS_CI_BRANCH = saved.branch;
-    }
-    expect(result.message).toBe("");
-    expect(result.read("sitemap-0.xml")).toContain("https://doncoleman.ca/");
-    expect(result.read("sitemap-0.xml")).not.toContain("new.doncoleman.ca");
-  });
 });

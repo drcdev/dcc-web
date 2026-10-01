@@ -3,7 +3,7 @@
 // are always noindex. The sample post in src/content/posts/ is a draft, so a
 // site with only draft posts has nothing to show in production. The all posts and
 // topic page cases turn green with Phase 6, the feed with Phase 8 and the home
-// section with Phase 9.
+// section with Phase 9. The local or test build (no environment) runs in local-site.test.ts.
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -19,7 +19,6 @@ beforeAll(async () => {
   builds.production = await buildFixtureSite([], { posts: ["valid/draft.mdx"], env: production });
   builds.noBranch = await buildFixtureSite([], { posts: ["valid/draft.mdx"], env: { WORKERS_CI: "1" } });
   builds.preview = await buildFixtureSite([], { posts, env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "008-blog" } });
-  builds.local = await buildFixtureSite([], { posts });
 }, 900_000);
 
 afterAll(() => {
@@ -102,7 +101,6 @@ describe.each([
 
 describe.each([
   ["a preview build (Workers Builds, another branch)", "preview"],
-  ["a local or test build (no environment)", "local"],
 ] as const)("%s", (_label, key) => {
   it("builds the draft page with a Draft notice and a noindex robots tag", () => {
     const build = builds[key]!;

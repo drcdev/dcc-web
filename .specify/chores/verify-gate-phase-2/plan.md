@@ -373,7 +373,7 @@ canary.
 
 ### W4 Local fixture site: one shared default-env build set (D2)
 
-- [ ] W4 done
+- [x] W4 done (L1 posts: unknown-language.mdx is dated 2026-08-09 via `replace`, because the home page shows only the three newest posts and the extra posts pushed `published` out of "adds the post to the home page section"; the row 15 assertion reads the header labels in L1's workshops page; source files were not re-run before deletion, the destination file runs all of their assertions: 49 green)
 
 **Files:** new `tests/build/local-site.test.ts`. Delete `one-file-page.test.ts`,
 `one-file-post.test.ts`, `one-file-project.test.ts`, `code-highlighting.test.ts`,
