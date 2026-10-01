@@ -24,6 +24,7 @@ describe("slugFromPath", () => {
   it("rejects a nested file", () => {
     expect(() => slugFromPath("x/y.mdx")).toThrow("x/y.mdx");
     expect(() => slugFromPath("x/y.mdx")).toThrow(PageContentError);
+    expect(() => slugFromPath("x/y.mdx")).toThrow("not in a subfolder");
   });
 });
 

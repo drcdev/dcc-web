@@ -90,7 +90,7 @@ Call-site runs, all in `build/page-validation.test.ts`:
 | 11 | Section missing a prop | `component/sections/CallToAction.test.ts` "throws naming the section and the missing or invalid prop" | build, rows 11 and 12 (names the page file) |
 | 12 | Image section without image | `component/sections/Images.test.ts` "throws naming the section when there is no image", and `unit/section-schemas.test.ts` "says an image is needed" | build, rows 11 and 12 (same `checkSection` path) |
 | 13 | Two files, one address | `unit/address.test.ts` "fails for two page files with the same address, naming both and the address" and "fails for x.mdx together with x/index.mdx" | build, row 13 (`x.mdx` with `x/index.mdx`) |
-| 14 | Address used by a route, or reserved | `unit/address.test.ts` "fails for a page against a route file in src/pages", "fails for a page against a generated route file such as robots.txt.ts", "fails for the home page against src/pages/index.astro", "fails for a page under the fixed prefix of a route with a variable part", "fails for reserved address %s", and "row 14: page addresses against the real route files (/projects/ prefix)" | build, row 13 (same `assertUniqueAddresses` call) |
+| 14 | Address used by a route, or reserved | `unit/address.test.ts` "fails for a page against a route file in src/pages", "fails for a page against a generated route file such as robots.txt.ts", "fails for the home page against src/pages/index.astro", "fails for a page under the fixed prefix of a route with a variable part", "fails for reserved address %s", and "row 14: page addresses against the real route files (/projects/ prefix)"; the route-file list at the call site: `build/page-validation.test.ts` "row 14" (a page at `404.mdx` against `src/pages/404.astro`) | build, row 13 (the page-file list) and build, row 14 (the route-file list, same `assertUniqueAddresses` call) |
 | 15 | Same navigation position | `unit/navigation.test.ts` "fails when two pages use the same position, naming both files and the position" and "fails when a page asks for fixed position %i, naming the page and the fixed entry" | `build/local-site.test.ts` "lists the page-sourced About entry in the header, between Projects and Contact" (the page-sourced entry reaches the real header) |
 | 16 | Level-1 heading | `unit/body.test.ts` "rejects a level-1 Markdown heading and an <h1>, saying to use ##" | build, rows 8 to 10 and 16 |
 | 17 | Bad file or folder name | `unit/address.test.ts` "rejects %s with the file name and the naming rule" | sync, row 17 |
@@ -183,7 +183,7 @@ titled "%s names the file and the phrase" (each row asserts the file and the phr
 | 23 | Unknown building block | `unit/project-body.test.ts` "row 23: an unknown block lists the blocks ..." | build, rows 09 to 11 |
 | 24 | Unknown visual name | "row 24" | build, rows 09 to 11 |
 | 25 | `visual="demo"` without embed | "row 25" | build, rows 09 to 11 |
-| 26 | Duplicate slug, nested file | `unit/project-address.test.ts` "names both files when .md and .mdx share a slug" and "rejects a nested file" | build, row 26 (duplicate); sync, row 27 (nested file, same `slugFromPath`) |
+| 26 | Duplicate slug, nested file | `unit/project-address.test.ts` "names both files when .md and .mdx share a slug" and "rejects a nested file" (including the phrase "not in a subfolder") | build, row 26 (duplicate); sync, row 27 (nested file, same `slugFromPath`) |
 | 27 | Bad file name | `unit/project-address.test.ts` "rejects %s with the file name and the naming rule" | sync, row 27 |
 | 28 | Level-1 or level-2 heading | `unit/project-body.test.ts` "row 28" | build, rows 09 to 11 |
 | 29 | Body image without alt | "row 29" | build, rows 09 to 11 |
@@ -231,11 +231,11 @@ Counted on 2026-10-01 after phase 2:
 | `drafts.test.ts` | 2 (production, preview) | 0 |
 | `blog-listing.test.ts` | 1 | 0 |
 | `indexing.test.ts` | 2 (real `astro build`, main-branch and preview environments) | 0 |
-| `page-validation.test.ts` | 4 | 3 |
+| `page-validation.test.ts` | 5 | 3 |
 | `post-validation.test.ts` | 3 | 4 |
 | `project-validation.test.ts` | 2 | 3 |
 | `fixture-site.test.ts` | 0 | 2 |
 | `focus-pocus.test.ts` | 0 | 0 |
-| **Total** | **19** | **12** |
+| **Total** | **20** | **12** |
 
 Before phase 2 the project ran 144 runs: 132 full builds and 12 syncs.

@@ -58,6 +58,9 @@ describe("page route and component wiring (build)", () => {
       "/x/",
     ));
 
+  it("row 14: the route checks addresses over the src/pages route-file list (404.mdx against 404.astro)", () =>
+    expectRejected("build", [broken("14-route-conflict.mdx", "404.mdx")], "404.mdx", "404.astro", "/404/"));
+
   it("rows 8 to 10 and 16: the route runs validatePageBody", () =>
     expectRejected("build", [broken("16-level-one-heading.mdx")], "Page file", "16-level-one-heading", "use ##"));
 

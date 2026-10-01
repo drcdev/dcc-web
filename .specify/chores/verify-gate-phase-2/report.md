@@ -103,3 +103,8 @@ changed-paths and docs-structure unit tests: 97 passed.
    later.
 10. If CI time does not drop as expected, local-site.test.ts (5 sequential builds) is the
     likely bottleneck; the plan's fallback is to split out the two code builds (+1 build).
+
+## Fix round 1
+
+- C1: added `row 14` build to `tests/build/page-validation.test.ts` (restored fixture `14-route-conflict.mdx` as `404.mdx`, asserts `404.mdx`, `404.astro`, `/404/`); `docs/testing.md` row 14 mapping and budget (page-validation 5, total 20 builds + 12 syncs) and plan.md W6 note updated. Test result: page-validation build file 8 passed.
+- C2: added `.toThrow("not in a subfolder")` to `tests/unit/content/project-address.test.ts` "rejects a nested file"; mapping noted in `docs/testing.md` row 26. Test result: unit files 44 passed.
