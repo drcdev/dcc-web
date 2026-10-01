@@ -38,6 +38,7 @@ This feature makes the two series the organising idea of the Writing pages, whil
 - Q: On a text-only post card (no feature image), which topic should colour the card's border when the post is in a series? → A: The series colour. This is an intended visual change for tagged posts, and the FR-018 baseline refresh covers it.
 - Q: How should a free-form topic's display label be made from its id? → A: Sentence case. Hyphens become spaces and the first letter is capitalised (`cloud-cost` → "Cloud cost").
 - Q: How should the home page's "Recent writing" section name Drift & Convergence? → A: Keep the "Recent writing" heading and add one short line under it that names Drift & Convergence and links to both series pages.
+- Q: Drift (lavender) and Convergence (sage) share their colours with the Agentic AI and Technology teams topics. What should the series colours be? → A: Recolour the two clashing topics. Drift keeps flux's `lavender` and Convergence keeps `sage`; Agentic AI moves to `mauve` and Technology teams moves to `sand`, the two flux palettes no topic used. Free-form topics stay `dusk`. Every controlled topic and series has a unique colour again.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -88,7 +89,7 @@ Wherever a post's topic pills are shown (the landing, `/writing/all/`, topic pag
 
 1. **Given** a post tagged `convergence` and `healthcare-leadership`, **When** its card appears on the landing, `/writing/all/`, a topic page or the home page, **Then** the Convergence marker is visually distinct from the Healthcare pill and appears before it.
 2. **Given** the same post, **When** a visitor opens the post, **Then** a series marker appears beside the topic pills in the post header and links to the series page.
-3. **Given** a post with no series tag, **When** it appears on any of these pages, **Then** its pills look exactly as they did before this feature.
+3. **Given** a post with no series tag, **When** it appears on any of these pages, **Then** its pills look exactly as they did before this feature, except that Agentic AI and Technology teams pills take their new colours (FR-010a).
 4. **Given** forced-colours mode, a screen reader, or a visitor who cannot tell colours apart, **When** they meet a series marker, **Then** they can still tell it is a series and not an ordinary topic, because its text reads "Series: Drift" or "Series: Convergence".
 5. **Given** any page with a series marker, **When** an automated accessibility check runs, **Then** it reports no WCAG 2.2 AA failures, and the marker's text meets 4.5:1 contrast in both light and dark themes.
 6. **Given** a post tagged into a series with no feature image, **When** its text-only card appears on any listing, **Then** the card's border is in the series colour (lavender for Drift, sage for Convergence).
@@ -164,12 +165,12 @@ The feed's title and description name the two series. The home page's "Recent wr
 
 **Series markers**
 
-- **FR-010**: Wherever a post's topics are shown (landing lead story and cards, `/writing/all/`, topic and series pages, post headers, home "Recent writing", related posts), a series tag MUST render as a series marker that appears before the other topics and links to its series page. The marker is pill-shaped, reads "Series: Drift" or "Series: Convergence", and has a heavier weight and a visible outline, so it differs from ordinary topic pills by its text and not by colour alone. The series is the post's main topic: a text-only card (no feature image) for a post in a series takes its border colour from the series. Posts without a series tag MUST look the same as before this feature.
-- **FR-010a**: Series colours MUST come from the flux design theme's palette assignments: Drift uses `lavender` and Convergence uses `sage`, for markers, banners and text-only card borders. Free-form topic pills use the neutral `dusk` palette. Every text and background pair meets 4.5:1 contrast in both themes. No new colours are added.
+- **FR-010**: Wherever a post's topics are shown (landing lead story and cards, `/writing/all/`, topic and series pages, post headers, home "Recent writing", related posts), a series tag MUST render as a series marker that appears before the other topics and links to its series page. The marker is pill-shaped, reads "Series: Drift" or "Series: Convergence", and has a heavier weight and a visible outline, so it differs from ordinary topic pills by its text and not by colour alone. The series is the post's main topic: a text-only card (no feature image) for a post in a series takes its border colour from the series. Posts without a series tag MUST look the same as before this feature, apart from the Agentic AI and Technology teams recolour in FR-010a.
+- **FR-010a**: Series colours MUST come from the flux design theme's palette assignments: Drift uses `lavender` and Convergence uses `sage`, for markers, banners and text-only card borders. Agentic AI (`agentic-ai`) moves from `lavender` to `mauve` and Technology teams (`technology-teams`) moves from `sage` to `sand`, so every controlled topic and series has a unique colour (the existing unique-colour rule covers series and ordinary topics together). Free-form topic pills use the neutral `dusk` palette. Every text and background pair meets 4.5:1 contrast in both themes. No new colours are added.
 
 **Free-form topics**
 
-- **FR-011**: Posts MUST be able to carry topics beyond the controlled list. Controlled topics (the four existing topics and the two series) keep their visual treatment: colours, banners and, for series, the series marker. Any other topic shows as a neutral (`dusk`) pill, labelled in sentence case from its id (hyphens become spaces and the first letter is capitalised, so `cloud-cost` reads "Cloud cost"), that links to its own listing page at `/writing/topics/{id}/`, with a plain banner and the same listing and pagination as other topic pages. Free-form topics MUST NOT appear in the landing's topic pill row. The build MUST fail when a free-form topic id is within two letters (edit distance two or less) of a controlled id, with a plain message naming the post and the controlled id it probably meant.
+- **FR-011**: Posts MUST be able to carry topics beyond the controlled list. Controlled topics (the four existing topics and the two series) keep their visual treatment: coloured pills, banners and, for series, the series marker. Any other topic shows as a neutral (`dusk`) pill, labelled in sentence case from its id (hyphens become spaces and the first letter is capitalised, so `cloud-cost` reads "Cloud cost"), that links to its own listing page at `/writing/topics/{id}/`, with a plain banner and the same listing and pagination as other topic pages. Free-form topics MUST NOT appear in the landing's topic pill row. The build MUST fail when a free-form topic id is within two letters (edit distance two or less) of a controlled id, with a plain message naming the post and the controlled id it probably meant.
 - **FR-012**: A free-form topic MUST follow the existing topic id rules (lower-case letters, digits and hyphens, at most 40 characters, named once per post) so its address and label are stable.
 
 **Feed, home and About**
@@ -182,7 +183,7 @@ The feed's title and description name the two series. The home page's "Recent wr
 
 - **FR-016**: Every changed page MUST meet WCAG 2.2 AA, read fully with JavaScript turned off, ship no new client-side JavaScript, and stay within the existing performance budget.
 - **FR-017**: All new copy MUST follow `VOICE.md` and the constitution's plain-language rule: no hype, no filler.
-- **FR-018**: The visual baselines for every snapshotted page whose appearance changes (at least the Writing landing, `/writing/all/`, the topic page, the post page and the home page, including the series-coloured border on text-only cards of tagged posts) MUST be refreshed for both macOS and Linux. Any visual change this spec does not predict is a regression to fix, not a baseline to refresh.
+- **FR-018**: The visual baselines for every snapshotted page whose appearance changes (at least the Writing landing, `/writing/all/`, the topic page, the post page and the home page, including the series-coloured border on text-only cards of tagged posts, and the recoloured pills, banners and card borders of posts tagged Agentic AI or Technology teams) MUST be refreshed for both macOS and Linux. Any visual change this spec does not predict is a regression to fix, not a baseline to refresh.
 
 ### Key Entities
 
@@ -205,8 +206,8 @@ The feed's title and description name the two series. The home page's "Recent wr
 
 ## Assumptions
 
-- The four existing controlled topics stay as they are. The two series are the only additions to the controlled list.
-- Series colours follow the flux design theme (`.reference/flux`, whose palette the site already uses): Drift is `lavender` and Convergence is `sage`. These palettes are also the pill colours of the existing Agentic AI and Technology teams topics. The four existing topics stay as they are, so the series share those palettes, and the "Series:" label and outline tell them apart. The rule that topic colours are unique therefore covers only the ordinary controlled topics. Free-form pills use `dusk`, flux's neutral palette, in place of flux's default rust for other tags, because rust is the Compliant data topic's colour.
+- The four existing controlled topics keep their ids, names and descriptions. The only change to them is that Agentic AI is recoloured to `mauve` and Technology teams to `sand` (FR-010a). The two series are the only additions to the controlled list.
+- Series colours follow the flux design theme (`.reference/flux`, whose palette the site already uses): Drift is `lavender` and Convergence is `sage`. These palettes were the pill colours of the existing Agentic AI and Technology teams topics, so those two topics move to `mauve` and `sand`, the two flux palettes no topic used, and every controlled topic and series keeps a unique colour. Free-form pills use `dusk`, flux's neutral palette, in place of flux's default rust for other tags, because rust is the Compliant data topic's colour.
 - This is a major change under Constitution Principle III: the series marker and series banner change the design system and visual identity, and free-form topics change the content model. Auto-merge stays off, and the tasks MUST include a `[PREVIEW-CHECK]` task for Don to review the preview deployment before merge.
 - The landing framing copy is a shortened form of the About page's existing series descriptions. Don can revise wording in review.
 - A post still needs at least one topic; a series tag or a free-form topic counts.
@@ -216,7 +217,7 @@ The feed's title and description name the two series. The home page's "Recent wr
 ## Out of Scope
 
 - Rewriting posts.
-- Changing the four existing controlled topics.
+- Changing the four existing controlled topics, beyond recolouring Agentic AI to `mauve` and Technology teams to `sand` (FR-010a).
 - Forcing every post into a series.
 - A separate series setting in the post format, or a new route family beyond the two series addresses in FR-008.
 
