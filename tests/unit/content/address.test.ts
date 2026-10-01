@@ -1,6 +1,8 @@
 // Unit tests for page addresses (data-model.md "derived values" and invariants
 // 3 and 9; contracts/build-errors.md rows 13, 14, 17; FR-003, FR-008).
+import { globSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { futureDestinations } from "../../../src/config/navigation.ts";
 import {
   addressFromPath,
   assertUniqueAddresses,
@@ -114,5 +116,26 @@ describe("assertUniqueAddresses", () => {
 
   it("reports an invalid file name before checking for conflicts", () => {
     expect(() => check({ pageFiles: ["About_Me.mdx"] })).toThrow("lower-case letters, digits and hyphens");
+  });
+
+  it("row 14: page addresses against the real route files (/projects/ prefix)", () => {
+    // The same pattern as the pages route's import.meta.glob, minus the route itself.
+    const routeFiles = globSync("**/*.{astro,md,mdx,ts,js}", { cwd: "src/pages" })
+      .map((path) => path.replaceAll("\\", "/"))
+      .filter((path) => path !== "[...slug].astro");
+    const real = { routeFiles, reserved: futureDestinations };
+
+    const notFound = () => assertUniqueAddresses({ ...real, pageFiles: ["404.mdx"] });
+    expect(notFound).toThrow("src/content/pages/404.mdx");
+    expect(notFound).toThrow("src/pages/404.astro");
+    expect(notFound).toThrow("/404/");
+
+    const workshops = () => assertUniqueAddresses({ ...real, pageFiles: ["projects/workshops.mdx"] });
+    expect(workshops).toThrow("src/content/pages/projects/workshops.mdx");
+    expect(workshops).toThrow("src/pages/projects/[slug].astro");
+
+    const pageFiles = globSync("**/*.{md,mdx}", { cwd: "src/content/pages" }).map((path) => path.replaceAll("\\", "/"));
+    expect(pageFiles.length).toBeGreaterThan(0);
+    expect(() => assertUniqueAddresses({ ...real, pageFiles })).not.toThrow();
   });
 });

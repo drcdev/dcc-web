@@ -26,6 +26,14 @@ const full = {
 
 const rejects = (value: unknown) => expect(schema.safeParse(value).success).toBe(false);
 
+// Astro prints one line per issue as `**<path>**: <message>`; its errorMap is not public, so the
+// tests format zod's issues the same way and assert a build-errors.md row's phrase against it.
+const issueText = (value: unknown) => {
+  const result = schema.safeParse(value);
+  expect(result.success, "the schema should reject the value").toBe(false);
+  return (result.error?.issues ?? []).map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("\n");
+};
+
 describe("pageSchema", () => {
   it("accepts a minimal page and defaults draft to false", () => {
     const result = schema.safeParse(minimal);
@@ -75,6 +83,27 @@ describe("pageSchema", () => {
   it("names the misspelled key in the error", () => {
     const result = schema.safeParse({ ...minimal, titel: "Oops" });
     expect(JSON.stringify(result.error?.issues)).toContain("titel");
+  });
+
+  it("row 1: a missing title names title", () => {
+    expect(issueText({ description: "x" })).toContain("title");
+  });
+
+  it("row 2: a missing description names description", () => {
+    expect(issueText({ title: "x" })).toContain("description");
+  });
+
+  it("row 3: a wrong type for nav.position names position", () => {
+    expect(issueText({ ...minimal, nav: { position: "second" } })).toContain("position");
+  });
+
+  it("row 4: a misspelled key is named in the issue text", () => {
+    expect(issueText({ ...minimal, titel: "Oops" })).toContain("titel");
+  });
+
+  it("row 5: image and featureImage without alt name alt", () => {
+    expect(issueText({ ...minimal, image: { src: "./a.jpg" } })).toContain("alt");
+    expect(issueText({ ...minimal, featureImage: { src: "./a.jpg" } })).toContain("alt");
   });
 
   it.each(["photo", "name", "tagline", "bio", "cta"] as const)("rejects intro without %s", (key) => {

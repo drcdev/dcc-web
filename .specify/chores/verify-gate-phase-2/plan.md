@@ -145,7 +145,7 @@ and is proven once per collection by its schema sync run.
 
 ### W1 Page validation: unit moves and wiring runs
 
-- [ ] W1 done
+- [x] W1 done
 
 **Files:** `tests/build/page-validation.test.ts` (rewrite),
 `tests/unit/content/page-schema.test.ts`, `tests/unit/content/address.test.ts`, and unused
