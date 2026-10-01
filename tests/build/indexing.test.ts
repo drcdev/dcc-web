@@ -3,7 +3,9 @@
 // has no robots meta on public pages (the not-found page stays noindex) and names
 // https://doncoleman.ca everywhere; a branch build is noindex everywhere and names
 // its alias origin; _headers holds the host rules, not a site-wide noindex
-// (FR-010a, FR-010d, FR-017a, FR-019; contracts/indexing-and-origin.md).
+// (FR-010a, FR-010d, FR-017a, FR-019; contracts/indexing-and-origin.md). The main-branch build also
+// stands in for the production build the launch checks read (T012): setup/config.json `launch`
+// (data-model.md "SetupConfig") must match the repository's content and this build's sitemap.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { execFile } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
@@ -12,11 +14,13 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { topicHref, topics } from "../../src/config/topics.ts";
+import { configSchema } from "../../scripts/setup-check/schemas.ts";
 import { resolveSiteOrigin } from "../../src/lib/site-origin.ts";
 
 const run = promisify(execFile);
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const setupConfig = JSON.parse(readFileSync(join(root, "setup/config.json"), "utf-8"));
+const launchConfig = configSchema.parse(setupConfig);
 const themeInitSource = readFileSync(join(root, "src/scripts/theme-init.js"), "utf-8").trim();
 
 const BUILD_TIMEOUT = 300_000;
@@ -192,6 +196,18 @@ describe.each(environments)("astro build with the $label environment", ({ env })
     }
   });
 
+  // The launch paths are checked against the main-branch build: the production environment with the
+  // repository's real content.
+  it.runIf(env.WORKERS_CI_BRANCH === "main")("lists every launch.expectedPaths entry in the production sitemap", () => {
+    const index = readFileSync(join(outDir, "sitemap-index.xml"), "utf-8");
+    expect(index).toContain("https://doncoleman.ca/");
+    const sitemap = readFileSync(join(outDir, "sitemap-0.xml"), "utf-8");
+    const locs = new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]));
+    for (const path of launchConfig.launch!.expectedPaths) {
+      expect(locs.has(`https://doncoleman.ca${path}`), `the sitemap has no entry for ${path}`).toBe(true);
+    }
+  });
+
   it("places the pre-paint theme script before the stylesheet in the built home page", () => {
     const html = readFileSync(join(outDir, "index.html"), "utf-8");
     const head = html.slice(0, html.indexOf("</head>"));
@@ -208,5 +224,19 @@ describe.each(environments)("astro build with the $label environment", ({ env })
     expect(starBlock).not.toMatch(/x-robots-tag/i);
     expect(headers).toMatch(/^https:\/\/:worker\.:subdomain\.workers\.dev\/\*\s*\n\s+X-Robots-Tag:\s*noindex\s*$/m);
     expect(headers).toMatch(/^https:\/\/new\.doncoleman\.ca\/\*\s*\n\s+X-Robots-Tag:\s*noindex\s*$/m);
+  });
+});
+
+describe("launch.expectedPages and launch.expectedPaths", () => {
+  it("are declared in setup/config.json, and the review host is kept", () => {
+    expect(launchConfig.reviewHost).toBe("new.doncoleman.ca");
+    expect(launchConfig.launch?.expectedPages.length).toBeGreaterThan(0);
+    expect(launchConfig.launch?.expectedPaths.length).toBeGreaterThan(0);
+  });
+
+  it("names a file in src/content/pages/ for every expected page id", () => {
+    for (const id of launchConfig.launch!.expectedPages) {
+      expect(existsSync(join(root, `src/content/pages/${id}.mdx`)), `src/content/pages/${id}.mdx is missing`).toBe(true);
+    }
   });
 });

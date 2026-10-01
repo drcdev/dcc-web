@@ -433,7 +433,14 @@ option (D2: merge files). Merging keeps the config untouched.
 
 ### W5 Environment builds: drafts, blog listing, indexing, harness (D2)
 
-- [ ] W5 done
+- [x] W5 done (S1's renamed post is `valid/untagged.mdx` -> `renamed-post.mdx` with a `replace`, because
+  `valid/minimal.mdx` is also placed and the old "source name is absent" check needs a different
+  source; the "real posts left out" check now asserts every repository real post is absent from S1 and
+  only the two fixture posts remain besides `sample-*`. launch-paths' sitemap case runs inside the
+  main-branch `describe.each` (`it.runIf`); its two config cases are a top-level describe. The
+  `astro.config.mjs` assertion is "gives WORKERS_CI_BRANCH no default" in
+  `tests/unit/site/astro-config.test.ts`, next to the existing `optional: true` check. Deleted the
+  now unreferenced `tests/fixtures/posts/broken/p01-no-title.mdx`.)
 
 **Files:** new `tests/build/drafts.test.ts`, merging what is left of `production-drafts.test.ts`
 with the valid part of `project-drafts.test.ts`; delete both sources.

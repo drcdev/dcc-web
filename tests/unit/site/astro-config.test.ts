@@ -92,6 +92,14 @@ describe("astro.config.mjs site resolution", () => {
     }
   });
 
+  it("gives WORKERS_CI_BRANCH no default, so a Workers Builds build with no branch hands over undefined (FR-046)", async () => {
+    const config = (await importFreshConfig()) as unknown as {
+      env?: { schema?: Record<string, { default?: unknown }> };
+    };
+    expect(config.env?.schema?.WORKERS_CI_BRANCH).toBeDefined();
+    expect(config.env?.schema?.WORKERS_CI_BRANCH).not.toHaveProperty("default");
+  });
+
   it("registers the reading-time plugin through markdown.processor (research R6)", async () => {
     const config = (await importFreshConfig()) as unknown as {
       markdown?: { processor?: { name?: string; options?: { mdastPlugins?: Array<{ name?: string }> } } };
