@@ -116,6 +116,30 @@ describe("sample posts", () => {
   });
 });
 
+// FR-005: the four real series posts list their series id first and keep their other topics.
+describe("series tagging of the real posts (FR-005)", () => {
+  const topicsOf = (front: string): string[] => [
+    ...[...front.matchAll(/^ {2}- ([a-z0-9-]+)$/gm)].map((m) => m[1]!),
+    ...(/^topics: \[(.*)\]$/m.exec(front)?.[1]?.split(",").map((id) => id.trim()) ?? []),
+  ];
+  const real = load(dir, /\.mdx$/);
+  const topicsFor = (slug: string) => topicsOf(real.find((s) => s.name === `${slug}.mdx`)!.front);
+
+  it.each([
+    ["the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change", "convergence", "healthcare-leadership"],
+    ["starting-something-new", "convergence", "healthcare-leadership"],
+    ["building-focus-pocus-what-i-learned-about-ai-coding-and-integration", "drift", "agentic-ai"],
+    ["self-contained-development-for-ghost-themes", "drift", "technology-teams"],
+  ])("%s lists %s first and keeps %s", (slug, series, kept) => {
+    expect(topicsFor(slug)).toEqual([series, kept]);
+  });
+
+  it("leaves sample-everything out of both series", () => {
+    expect(topicsFor("sample-everything")).not.toContain("drift");
+    expect(topicsFor("sample-everything")).not.toContain("convergence");
+  });
+});
+
 // The fixture posts that stand in for the removed samples on the fixture site
 // (scripts/build-fixture-site.ts FIXTURE_POSTS; tests/e2e/blog-fixtures.spec.ts).
 describe("fixture posts for the fixture site", () => {

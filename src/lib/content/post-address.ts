@@ -2,12 +2,13 @@
 // (data-model.md "Post" derived values and invariant 1; contracts/build-errors.md
 // rows P13 to P17; FR-003). Pure functions: the route passes in the file list
 // from import.meta.glob, relative to src/content/posts/.
+import { seriesIds } from "../../config/topics.ts";
 import { postFileError, postFilesError } from "./errors.ts";
 
 const POSTS_DIR = "src/content/posts";
 const SLUG = /^[a-z0-9-]+$/;
 /** Addresses under /writing/ that belong to listing pages, so no post may use them. */
-const RESERVED = new Set(["all", "topics"]);
+const RESERVED = new Set<string>(["all", "topics", ...seriesIds]);
 
 /** The slug of a post file, given its path below src/content/posts/: the file name without `.mdx`. */
 export function slugFromPostPath(path: string): string {

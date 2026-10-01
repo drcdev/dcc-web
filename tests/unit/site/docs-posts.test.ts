@@ -30,6 +30,14 @@ describe("docs/posts.md", () => {
     expect(text).toContain("`all` and `topics`");
   });
 
+  it("explains series tags, free-form topics and the reserved series slugs", () => {
+    const text = guide();
+    expect(text).toMatch(/add `drift` or `convergence` to `topics`/);
+    expect(text).toMatch(/free-form/i);
+    expect(text).toMatch(/sentence[\s-]case/i);
+    expect(text).toContain("`drift`, `convergence`");
+  });
+
   it("explains how to add, rename and remove a topic", () => {
     const text = guide();
     expect(text).toContain("src/config/topics.ts");
@@ -73,7 +81,7 @@ describe("docs/posts.md", () => {
     ["P3", "`date` is missing"],
     ["P4", "`date` is not a real date"],
     ["P5", "no `topics`"],
-    ["P6", "not a topic"],
+    ["P6", "Did you mean"],
     ["P7", "same topic twice"],
     ["P8", "`featureImage` has no `alt`"],
     ["P9", "feature image file does not exist"],
@@ -88,8 +96,12 @@ describe("docs/posts.md", () => {
     ["P18", "level-1 heading"],
     ["P19", "not a section"],
     ["P20", "no content"],
-    ["P21", "topic that was removed"],
+    ["P21", "free-form topic"],
     ["P22", "image file in the body does not exist"],
+    ["P23", "both series"],
+    ["P24", "close to a controlled topic"],
+    ["P25", "`drift.mdx`"],
+    ["P26", "40 characters"],
   ];
   it.each(errors)("explains build error %s and how to fix it", (_id, phrase) => {
     expect(guide()).toContain(phrase);
