@@ -1,4 +1,4 @@
-// The 25-item setup registry (data-model.md "SetupItem"). This is the single
+// The setup registry (data-model.md "SetupItem"). This is the single
 // source of truth the setup check, the `/setup-walkthrough` skill and
 // `docs/setup.md` (drift-tested) all derive from. Each item's `check` field is
 // wired to its real implementation under `scripts/setup-check/checks/`
@@ -29,6 +29,8 @@ import { check as checkContactPreviewBuilds } from "./checks/contact-preview-bui
 import { check as checkContactTurnstileSiteKey } from "./checks/contact-turnstile-site-key.ts";
 import { check as checkContactPreviewDeploy } from "./checks/contact-preview-deploy.ts";
 import { check as checkContactProductionDeploy } from "./checks/contact-production-deploy.ts";
+import { check as checkLaunchContentReady } from "./checks/launch-content-ready.ts";
+import { check as checkLaunchMainChecks } from "./checks/launch-main-checks.ts";
 
 const checksById: Record<string, (ctx: ProviderContext) => ReturnType<SetupItem["check"]>> = {
   "local-tools": checkLocalTools,
@@ -56,6 +58,8 @@ const checksById: Record<string, (ctx: ProviderContext) => ReturnType<SetupItem[
   "contact-turnstile-site-key": checkContactTurnstileSiteKey,
   "contact-preview-deploy": checkContactPreviewDeploy,
   "contact-production-deploy": checkContactProductionDeploy,
+  "launch-content-ready": checkLaunchContentReady,
+  "launch-main-checks": checkLaunchMainChecks,
 };
 
 interface ItemSeed {
@@ -452,6 +456,36 @@ const seeds: ItemSeed[] = [
     dependsOn: ["contact-preview-deploy"],
     phase: "after-merge",
     deferredUntilMerge: true,
+  },
+  {
+    id: "launch-content-ready",
+    order: 26,
+    title: "Launch content ready",
+    purpose: "Every page the launch needs is published with real copy, and the privacy policy matches how the site works today.",
+    where:
+      "In the repository: replace placeholder text in src/content/pages/ and src/content/projects/, remove draft: true from each expected page, and make the privacy policy state that contact messages are stored in Cloudflare D1.",
+    confirmedBy:
+      "Every page in setup/config.json launch.expectedPages exists and is not a draft, no published page says \"placeholder copy\", no published project visual is marked placeholder, and the privacy policy states Cloudflare D1 storage and names none of Ghost, Supabase, Mailgun or Fly.io",
+    needsDon: true,
+    principles: ["VII"],
+    requirements: ["FR-003", "FR-003a"],
+    secrets: [],
+    dependsOn: [],
+    phase: "before-merge",
+  },
+  {
+    id: "launch-main-checks",
+    order: 27,
+    title: "Main branch checks passing",
+    purpose: "The newest commit on main passes the full verify gate before the domain switch.",
+    where: "GitHub -> Actions -> the verify check on main. If it failed, fix it and push a new commit to main.",
+    confirmedBy: "The newest verify check run on main has completed with conclusion success; pending while it is in progress",
+    needsDon: false,
+    principles: ["II"],
+    requirements: ["FR-003", "FR-004"],
+    secrets: [],
+    dependsOn: [],
+    phase: "after-merge",
   },
 ];
 

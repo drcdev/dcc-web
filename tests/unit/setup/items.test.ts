@@ -21,9 +21,17 @@ const CONTACT_IDS = [
 const secretNames = new Set(secretManifest.map((s) => s.name));
 
 describe("setupItems registry invariants", () => {
-  it("has exactly 25 items, the last seven being the contact-form items", () => {
-    expect(setupItems).toHaveLength(25);
-    expect(setupItems.slice(18).map((i) => i.id)).toEqual(CONTACT_IDS);
+  it("has exactly 27 items, the contact-form items at 19 to 25 and the launch items at 26 and 27", () => {
+    expect(setupItems).toHaveLength(27);
+    expect(setupItems.slice(18, 25).map((i) => i.id)).toEqual(CONTACT_IDS);
+    expect(setupItems.slice(25).map((i) => i.id)).toEqual(["launch-content-ready", "launch-main-checks"]);
+  });
+
+  it("item 26 is before-merge and needs Don, item 27 is after-merge (011-launch)", () => {
+    const item26 = setupItems[25]!;
+    expect(item26.phase).toBe("before-merge");
+    expect(item26.needsDon).toBe(true);
+    expect(setupItems[26]!.phase).toBe("after-merge");
   });
 
   it("contact items 19 to 24 are before-merge and item 25 is after-merge and deferred until merge (FR-028a)", () => {
@@ -111,8 +119,8 @@ describe("setupItems registry invariants", () => {
       expect(["before-merge", "after-merge"]).toContain(item.phase);
     }
     // Items 1-9 and 19-24 are before-merge, 10-18 and 25 are after-merge (plan.md walkthrough order).
-    const beforeMerge = setupItems.filter((i) => i.order <= 9 || (i.order >= 19 && i.order <= 24));
-    const afterMerge = setupItems.filter((i) => (i.order >= 10 && i.order <= 18) || i.order === 25);
+    const beforeMerge = setupItems.filter((i) => i.order <= 9 || (i.order >= 19 && i.order <= 24) || i.order === 26);
+    const afterMerge = setupItems.filter((i) => (i.order >= 10 && i.order <= 18) || i.order === 25 || i.order === 27);
     expect(beforeMerge.every((i) => i.phase === "before-merge")).toBe(true);
     expect(afterMerge.every((i) => i.phase === "after-merge")).toBe(true);
   });

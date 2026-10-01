@@ -4,11 +4,12 @@ This is the plain-language record of every account-side setup item this reposito
 what each item is for, where Don does it, how it is confirmed, which constitution principle it
 serves, and the names (never values) of any secrets involved. It is the no-agent fallback for
 the `/setup-walkthrough` Claude Code skill, and the two must never disagree — both read the same
-25-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
+27-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
 
-Run `pnpm setup:check` at any time to see which of the 25 items below are complete. Each item's
+Run `pnpm setup:check` at any time to see which of the 27 items below are complete. Each item's
 step number and anchor match the setup item table in `specs/001-setup-walkthrough/spec.md` (the first eighteen items) and
-`specs/007-contact-form/contracts/setup-items.md` (the last seven, the "Contact form" part at the end).
+`specs/007-contact-form/contracts/setup-items.md` (items 19 to 25, the "Contact form" part) and
+`specs/011-launch/contracts/setup-items.md` (items 26 and 27, the "Launch" part at the end).
 
 A few terms used below: a **nameserver** is the server that answers "where is doncoleman.ca's
 DNS?" — moving it to Cloudflare is what puts Cloudflare in charge of the domain's DNS records. A
@@ -713,6 +714,53 @@ fail the check.
 
 **Constitution principle**
 II (Automated Release Gate), VII (Private Data: Minimal and Protected) and VIII (Secure by Default).
+
+**Secrets**
+None.
+
+# Launch
+
+Items 26 and 27 confirm the site is ready to go live. The domain switch itself is walked through in
+`docs/launch.md`.
+
+## 26. Launch content ready {#launch-content-ready}
+
+**What it is for**
+Every page the launch needs is published with real copy, and the privacy policy matches how the site
+works today (messages stored in Cloudflare D1, none of the retired services).
+
+**Where to do it**
+In the repository: replace any placeholder text in `src/content/pages/` and `src/content/projects/`,
+remove `draft: true` from each page listed in `setup/config.json` under `launch.expectedPages`, and
+make `src/content/pages/privacy-policy.mdx` state that contact messages are stored in Cloudflare D1.
+
+**How it will be confirmed**
+`pnpm setup:check --item launch-content-ready` reports complete when every expected page exists and is
+not a draft, no published page says "placeholder copy", no published project visual is marked
+`placeholder: true`, and the privacy policy states Cloudflare D1 storage and names none of Ghost,
+Supabase, Mailgun or Fly.io. Spam protection accepting the bare domain is confirmed by item 20
+(`contact-turnstile-widget`).
+
+**Constitution principle**
+VII (Private Data: Minimal and Protected).
+
+**Secrets**
+None.
+
+## 27. Main branch checks passing {#launch-main-checks}
+
+**What it is for**
+The newest commit on `main` passes the full verify gate before the domain switch.
+
+**Where to do it**
+GitHub → Actions → the `verify` check on `main`. If it failed, fix it and push a new commit to `main`.
+
+**How it will be confirmed**
+`pnpm setup:check --item launch-main-checks` reports complete when the newest `verify` check run on
+`main` has finished with the conclusion `success`, and pending while it is still running.
+
+**Constitution principle**
+II (Automated Release Gate).
 
 **Secrets**
 None.

@@ -73,14 +73,14 @@ description: "Task list for launching the new doncoleman.ca"
 
 **Goal**: automatic readiness items 26 and 27 plus the FR-003 readiness rows (FR-003, FR-003a, FR-004).
 
-- [ ] T025 [P] [US1] Write failing tests in `tests/unit/setup-check/checks/launch-content-ready.test.ts` with repo-reader fixtures for the four rules in contracts/setup-items.md: complete; missing for a draft expected page; missing for `placeholder copy` in any letter case in a non-draft page; missing for a project with `placeholder: true`; missing when `src/content/pages/privacy-policy.mdx` does not state Cloudflare D1 storage or names any of Ghost, Supabase, Mailgun or Fly.io (FR-003); missing naming the config field when `launch.expectedPages` is absent; one detail line per problem with the exact `nextAction`.
-- [ ] T026 [P] [US1] Write failing tests in `tests/unit/setup-check/checks/launch-main-checks.test.ts` with GitHub fixtures in `tests/fixtures/providers/github/`: complete, pending while in progress, missing with the run URL for any other conclusion, could-not-check when there is no run or the read failed.
-- [ ] T027 [P] [US1] Write a test (derived, FR-003) in `tests/unit/setup-check/checks/contact-turnstile-widget.test.ts` pinning that the existing Turnstile item stays missing when the widget's hostnames lack `doncoleman.ca`, so readiness can cite `contact-turnstile-widget` for "spam protection accepts the bare domain".
-- [ ] T028 [US1] Implement `scripts/setup-check/checks/launch-content-ready.ts` (item 26, repository files only through `RepoReader`) so T025 passes.
-- [ ] T029 [US1] Implement `scripts/setup-check/checks/launch-main-checks.ts` (item 27) so T026 passes.
-- [ ] T030 [US1] Confirm T027 passes against the existing `scripts/setup-check/checks/contact-turnstile-widget.ts`; change it only if a hostname gap exists.
-- [ ] T031 [US1] Register items 26 (`before-merge`, `needsDon: yes`) and 27 (`after-merge`) in `scripts/setup-check/items.ts`, add their `docs/setup.md` section stubs, and update `tests/unit/setup/items.test.ts`.
-- [ ] T032 [US1] Re-run `tests/build/launch-paths.test.ts` (written in T012) and the new item tests together, and confirm item 26 reports missing for Services, Speaking and Focus Pocus on today's content.
+- [X] T025 [P] [US1] Write failing tests in `tests/unit/setup-check/checks/launch-content-ready.test.ts` with repo-reader fixtures for the four rules in contracts/setup-items.md: complete; missing for a draft expected page; missing for `placeholder copy` in any letter case in a non-draft page; missing for a project with `placeholder: true`; missing when `src/content/pages/privacy-policy.mdx` does not state Cloudflare D1 storage or names any of Ghost, Supabase, Mailgun or Fly.io (FR-003); missing naming the config field when `launch.expectedPages` is absent; one detail line per problem with the exact `nextAction`.
+- [X] T026 [P] [US1] Write failing tests in `tests/unit/setup-check/checks/launch-main-checks.test.ts` with GitHub fixtures in `tests/fixtures/providers/github/`: complete, pending while in progress, missing with the run URL for any other conclusion, could-not-check when there is no run or the read failed.
+- [X] T027 [P] [US1] Write a test (derived, FR-003) in `tests/unit/setup-check/checks/contact-turnstile-widget.test.ts` pinning that the existing Turnstile item stays missing when the widget's hostnames lack `doncoleman.ca`, so readiness can cite `contact-turnstile-widget` for "spam protection accepts the bare domain".
+- [X] T028 [US1] Implement `scripts/setup-check/checks/launch-content-ready.ts` (item 26, repository files only through `RepoReader`) so T025 passes.
+- [X] T029 [US1] Implement `scripts/setup-check/checks/launch-main-checks.ts` (item 27) so T026 passes.
+- [X] T030 [US1] Confirm T027 passes against the existing `scripts/setup-check/checks/contact-turnstile-widget.ts`; change it only if a hostname gap exists.
+- [X] T031 [US1] Register items 26 (`before-merge`, `needsDon: yes`) and 27 (`after-merge`) in `scripts/setup-check/items.ts`, add their `docs/setup.md` section stubs, and update `tests/unit/setup/items.test.ts`.
+- [X] T032 [US1] Re-run `tests/build/launch-paths.test.ts` (written in T012) and the new item tests together, and confirm item 26 reports missing for Services, Speaking and Focus Pocus on today's content.
 
 **Checkpoint**: item 26 (failing until Don replaces placeholders) and 27 report plainly.
 

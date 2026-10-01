@@ -43,6 +43,20 @@ describe("checks/contact-turnstile-widget", () => {
     expect(result.details.join("\n")).toMatch(/doncoleman\.ca/);
   });
 
+  it("stays missing when the hostnames only list subdomains of the bare domain, so launch readiness can cite it (FR-003)", async () => {
+    const result = await check(
+      contactContext({
+        cloudflare: {
+          listTurnstileWidgets: async () => [
+            { ...widget, domains: ["www.doncoleman.ca", "new.doncoleman.ca", "drc-dev.workers.dev"] },
+          ],
+        },
+      }),
+    );
+    expect(result.status).toBe("missing");
+    expect(result.details.join("\n")).toContain("do not include doncoleman.ca");
+  });
+
   it("is missing when drc-dev.workers.dev is absent and the preview site-key variable is not set (no fallback in use)", async () => {
     const result = await check(
       contactContext({
