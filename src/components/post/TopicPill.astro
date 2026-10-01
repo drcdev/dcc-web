@@ -1,18 +1,31 @@
 ---
 // One link to a topic page, in the topic's colour (contracts/blog-pages.md
 // "Post card"; FR-011, FR-017). The pill classes come from the static map in
-// topic-styles.ts because Tailwind needs whole class names in source.
-import { findTopic } from "../../config/topics.ts";
+// topic-styles.ts because Tailwind needs whole class names in source. An id that is not in
+// src/config/topics.ts is a free-form topic (spec 013 research R9): a neutral `dusk` pill with a
+// sentence-case label. A series links to its short address (topicHref); the series marker itself
+// is the Phase 5 work (spec 013 T037 to T039).
+import { findTopic, topicHref } from "../../config/topics.ts";
+import { topicLabel } from "../../lib/content/topic-ids.ts";
 import { topicStyle } from "./topic-styles.ts";
 
 export interface Props {
-  /** A topic id from src/config/topics.ts. */
+  /** A topic id: from src/config/topics.ts, or a free-form id. */
   topic: string;
 }
 
 const { topic: id } = Astro.props;
 const topic = findTopic(id);
-if (!topic) throw new Error(`TopicPill: "${id}" is not a topic in src/config/topics.ts.`);
 ---
 
-<a href={`/writing/topics/${topic.id}/`} data-topic-pill class={topicStyle(topic.colour).pill}>{topic.name}</a>
+{
+  topic ? (
+    <a href={topicHref(topic.id)} data-topic-pill class={topicStyle(topic.colour).pill}>
+      {topic.name}
+    </a>
+  ) : (
+    <a href={topicHref(id)} data-topic-pill data-free-form class={topicStyle("dusk").pill}>
+      {topicLabel(id)}
+    </a>
+  )
+}

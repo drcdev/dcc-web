@@ -1,0 +1,4 @@
+/writing/topics/drift /writing/drift/ 301
+/writing/topics/drift/* /writing/drift/:splat 301
+/writing/topics/convergence /writing/convergence/ 301
+/writing/topics/convergence/* /writing/convergence/:splat 301

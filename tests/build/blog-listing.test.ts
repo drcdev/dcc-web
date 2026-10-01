@@ -34,12 +34,15 @@ const post = (n: number, extra: { date?: string; title?: string; topics?: string
 beforeAll(async () => {
   const overrides: Record<string, string> = {};
   for (let n = 1; n <= COUNT; n += 1) {
-    const topics = n <= 2 ? ["agentic-ai", "technology-teams"] : ["agentic-ai"];
+    const topics = n <= 2 ? ["agentic-ai", "technology-teams", "drift"] : ["agentic-ai", "drift"];
     const updated = n === 3 ? "2026-07-15" : undefined;
     overrides[`src/content/posts/listing-post-${String(n).padStart(2, "0")}.mdx`] = post(n, { topics, updated });
   }
   // Same date as post 01 (2026-06-29); the title decides, ignoring case: "a tied post" sorts before "Listing post 01".
-  overrides["src/content/posts/tie-b.mdx"] = post(15, { date: "2026-06-29", title: "a tied post" });
+  overrides["src/content/posts/tie-b.mdx"] = post(15, { date: "2026-06-29", title: "a tied post", topics: ["agentic-ai", "drift"] });
+  // A visible free-form topic, and a free-form topic only a draft names (no page in production).
+  overrides["src/content/posts/free-form-post.mdx"] = post(16, { date: "2026-05-01", topics: ["cloud-cost"] });
+  overrides["src/content/posts/free-form-draft.mdx"] = post(17, { date: "2026-05-02", topics: ["draft-only-topic"] }).replace("---\n\nBody", "draft: true\n---\n\nBody");
   site = await buildFixtureSite([], {
     overrides,
     env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" },
@@ -53,7 +56,10 @@ afterAll(() => {
   previewSite?.cleanup();
 });
 
+/** Posts on agentic-ai and on drift (the 14 plus the tie post). */
 const TOTAL = COUNT + 1;
+/** Every visible post: those plus one with a free-form topic (the draft one is left out). */
+const ALL_POSTS = TOTAL + 1;
 const exists = (path: string) => existsSync(join(site.dist, path));
 const hrefs = (html: string) =>
   [...html.matchAll(/<h2[^>]*>\s*<a [^>]*href="(\/writing\/[a-z0-9-]+\/)"/g)].map((m) => m[1]);
@@ -65,7 +71,7 @@ describe("the listing pages of a site with more than 12 posts", () => {
 
   it("puts 12 posts on page 1 and the rest on page 2", () => {
     expect(hrefs(site.read("writing/all/index.html"))).toHaveLength(12);
-    expect(hrefs(site.read("writing/all/2/index.html"))).toHaveLength(TOTAL - 12);
+    expect(hrefs(site.read("writing/all/2/index.html"))).toHaveLength(ALL_POSTS - 12);
   });
 
   it("builds no /writing/all/1/ and no page past the last", () => {
@@ -82,7 +88,7 @@ describe("the listing pages of a site with more than 12 posts", () => {
   it("orders posts by date, then title ignoring case, across pages", () => {
     const all = [...hrefs(site.read("writing/all/index.html")), ...hrefs(site.read("writing/all/2/index.html"))];
     expect(all.slice(0, 3)).toEqual(["/writing/tie-b/", "/writing/listing-post-01/", "/writing/listing-post-02/"]);
-    expect(all.at(-1)).toBe("/writing/listing-post-14/");
+    expect(all.at(-1)).toBe("/writing/free-form-post/");
   });
 
   it("gives page 1 its bare address, title and canonical, with no page number", () => {
@@ -144,6 +150,59 @@ describe("topic pages", () => {
   });
 });
 
+describe("series pages (spec 013 US4; contracts/writing-pages.md)", () => {
+  it("builds /writing/drift/ and pages at /writing/drift/{n}/ with the series' posts only", () => {
+    const first = site.read("writing/drift/index.html");
+    expect(hrefs(first)).toHaveLength(12);
+    expect(hrefs(site.read("writing/drift/2/index.html"))).toHaveLength(TOTAL - 12);
+    expect(first).toContain('data-series-banner="drift"');
+    expect(first.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(first).toMatch(/<h1[^>]*>\s*Drift\s*<\/h1>/);
+    expect(first).toMatch(/<link[^>]+rel="canonical"[^>]+href="[^"]*\/writing\/drift\/"/);
+    expect(site.read("writing/drift/2/index.html")).toMatch(/<title>Drift, page 2 · /);
+    expect(exists("writing/drift/1/index.html")).toBe(false);
+    expect(exists("writing/drift/3/index.html")).toBe(false);
+  });
+
+  it("builds an empty /writing/convergence/ with the empty message", () => {
+    const html = site.read("writing/convergence/index.html");
+    expect(html).toContain("There are no posts in this series yet.");
+    expect(html).toContain('data-series-banner="convergence"');
+    expect(html).toContain('href="/writing/all/"');
+    expect(exists("writing/convergence/2/index.html")).toBe(false);
+  });
+
+  it("does not build the old series topic addresses", () => {
+    expect(exists("writing/topics/drift/index.html")).toBe(false);
+    expect(exists("writing/topics/drift/2/index.html")).toBe(false);
+    expect(exists("writing/topics/convergence/index.html")).toBe(false);
+  });
+
+  it("lists the series pages, and not the old addresses, in the sitemap", () => {
+    const sitemap = site.read("sitemap-0.xml");
+    expect(sitemap).toContain("/writing/drift/</loc>");
+    expect(sitemap).toContain("/writing/convergence/</loc>");
+    expect(sitemap).not.toContain("/writing/topics/drift/");
+    expect(sitemap).not.toContain("/writing/topics/convergence/");
+  });
+});
+
+describe("free-form topic pages (spec 013 research R9)", () => {
+  it("builds a plain banner and listing for a free-form id named by a visible post", () => {
+    const html = site.read("writing/topics/cloud-cost/index.html");
+    expect(hrefs(html)).toEqual(["/writing/free-form-post/"]);
+    expect(html).toContain("data-topic-banner");
+    expect(html).toContain("bg-dusk-100");
+    expect(html).toMatch(/<h1[^>]*>\s*Cloud cost\s*<\/h1>/);
+    expect(html).toMatch(/<title>Cloud cost · /);
+    expect(site.read("sitemap-0.xml")).toContain("/writing/topics/cloud-cost/</loc>");
+  });
+
+  it("builds no page for a free-form id that only a draft names, in production", () => {
+    expect(exists("writing/topics/draft-only-topic/index.html")).toBe(false);
+  });
+});
+
 describe("the feed (/writing/rss.xml)", () => {
   const items = (xml: string) => [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((m) => m[1]!);
   const field = (xml: string, name: string) => xml.match(new RegExp(`<${name}[^>]*>([^<]*)</${name}>`))?.[1];
@@ -159,10 +218,10 @@ describe("the feed (/writing/rss.xml)", () => {
 
   it("lists every published post, newest first, with the same tie order as the listings", () => {
     const links = items(site.read("writing/rss.xml")).map((item) => field(item, "link")!);
-    expect(links).toHaveLength(TOTAL);
+    expect(links).toHaveLength(ALL_POSTS);
     const path = (link: string) => new URL(link).pathname;
     expect(links.slice(0, 3).map(path)).toEqual(["/writing/tie-b/", "/writing/listing-post-01/", "/writing/listing-post-02/"]);
-    expect(path(links.at(-1)!)).toBe("/writing/listing-post-14/");
+    expect(path(links.at(-1)!)).toBe("/writing/free-form-post/");
   });
 
   it("uses absolute links against the build's own origin, and a permalink guid equal to the link", () => {

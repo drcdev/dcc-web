@@ -133,9 +133,7 @@ describe("build errors for post files (contracts/build-errors.md)", () => {
   );
 
   // Changed by 013 (research R9): ids outside the controlled list are free-form topics.
-  // Skipped until the pages render free-form topics (TopicPill T038, topic page T028, Phases 4 and 5):
-  // the schema accepts them now, but the build fails in TopicPill. Un-skip with those tasks.
-  it.skip("P21 (changed): a removed topic builds as a free-form topic", async () => {
+  it("P21 (changed): a removed topic builds as a free-form topic", async () => {
     result = await buildFixtureSite([], {
       posts: [broken("p21-removed-topic.mdx")],
       overrides: {
@@ -171,14 +169,7 @@ describe("posts that must build (contracts/build-errors.md)", () => {
     ["free-form only", "valid/free-form-only.mdx"],
     ["series plus others", "valid/series-and-free-form.mdx"],
   ] as const;
-  // Free-form rows are skipped until TopicPill and the topic page render free-form ids (T038, T028).
-  it.each(mustBuild.filter(([label]) => label === "untagged"))("builds a post that is %s, with a silent build", async (_label, file) => {
-    result = await buildFixtureSite([], { posts: [file] });
-    expect(result.ok, result.message).toBe(true);
-    expect(result.message).toBe("");
-  });
-
-  it.skip.each(mustBuild.filter(([label]) => label !== "untagged"))("builds a post that is %s, with a silent build", async (_label, file) => {
+  it.each(mustBuild)("builds a post that is %s, with a silent build", async (_label, file) => {
     result = await buildFixtureSite([], { posts: [file] });
     expect(result.ok, result.message).toBe(true);
     expect(result.message).toBe("");

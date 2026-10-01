@@ -1,0 +1,60 @@
+---
+// The shared body of the two series pages, /writing/{series}/ and /writing/{series}/{n}/
+// (spec 013 contracts/writing-pages.md "Series page"; FR-009). It opens with the series
+// banner (its `h1`), then the series' posts as a grid, paged like all posts, then the
+// pagination. There is no pill row. A series without posts shows a message and a link to all
+// posts; `paginate()` of an empty list still builds one page (spec 008 research, spike 2).
+import type { Page } from "astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import CardGrid from "./CardGrid.astro";
+import Pagination from "./Pagination.astro";
+import SeriesBanner from "./SeriesBanner.astro";
+import { blog } from "../../config/blog.ts";
+import { findTopic } from "../../config/topics.ts";
+import { getNavigation } from "../../lib/pages";
+import type { PostSummary } from "../../lib/content/post-summary.ts";
+
+export interface Props {
+  /** A series id from src/config/topics.ts. */
+  series: string;
+  /** The `paginate()` page of this series' posts. */
+  page: Page<PostSummary>;
+}
+
+const { series: id, page } = Astro.props;
+const series = findTopic(id);
+if (!series) throw new Error(`SeriesPage: no series "${id}" in src/config/topics.ts.`);
+const navigation = await getNavigation();
+const suffix = page.currentPage > 1 ? `, page ${page.currentPage}` : "";
+const feedHref = new URL("/writing/rss.xml", Astro.site).href;
+---
+
+<BaseLayout
+  title={`${series.name}${suffix}`}
+  description={`${series.description}${suffix ? ` (page ${page.currentPage})` : ""}`}
+  navigation={navigation}
+>
+  <link slot="head" rel="alternate" type="application/rss+xml" title={blog.feedTitle} href={feedHref} />
+  <div class="mx-auto max-w-screen-lg">
+    <SeriesBanner series={id} page={page.currentPage} />
+
+    {
+      page.data.length > 0 ? (
+        <CardGrid posts={page.data} data-topic-grid="" />
+      ) : (
+        <div>
+          <p class="text-lg text-dusk-700 dark:text-mist-300">There are no posts in this series yet.</p>
+          <p class="mt-4">
+            <a
+              href="/writing/all/"
+              class="inline-block px-1 py-1 font-medium text-dusk-900 underline underline-offset-4 hover:text-rust-700 dark:text-white dark:hover:text-rust-400"
+              >All posts</a
+            >
+          </p>
+        </div>
+      )
+    }
+
+    <Pagination currentPage={page.currentPage} lastPage={page.lastPage} base={`/writing/${id}/`} />
+  </div>
+</BaseLayout>

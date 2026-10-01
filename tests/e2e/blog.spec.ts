@@ -254,7 +254,7 @@ test.describe("landing page", () => {
     expect(await links.count()).toBeGreaterThanOrEqual(5);
     const hrefs = await links.evaluateAll((els) => els.map((a) => a.getAttribute("href")));
     expect(hrefs.at(-1)).toBe("/writing/all/");
-    for (const href of hrefs.slice(0, -1)) expect(href).toMatch(/^\/writing\/topics\/[a-z-]+\/$/);
+    for (const href of hrefs.slice(0, -1)) expect(href).toMatch(/^\/writing\/(topics\/)?[a-z-]+\/$/);
     const first = hrefs[0]!;
     await Promise.all([
       page.waitForURL(`**${first}`),
@@ -515,5 +515,74 @@ test.describe("home page recent writing (US7)", () => {
     await page.goto("/");
     await page.getByRole("link", { name: /Every kind of content a post can hold/ }).click();
     await expect(page).toHaveURL(/\/writing\/sample-everything\/$/);
+  });
+});
+
+// Series pages and redirects (spec 013 US4; contracts/writing-pages.md; SC-003). Drift holds Focus Pocus
+// (2025-08-16) and Ghost themes (08-07); Convergence holds the Wayfinder post (2025-08-27) and Starting
+// something new (03-15). The sample post has no series.
+const SERIES_POSTS = {
+  drift: { name: "Drift", other: "Convergence", otherPath: "/writing/convergence/", posts: [FOCUS_POCUS, GHOST_THEMES] },
+  convergence: { name: "Convergence", other: "Drift", otherPath: "/writing/drift/", posts: [WAYFINDER, STARTING] },
+} as const;
+
+test.describe("series pages", () => {
+  for (const [id, series] of Object.entries(SERIES_POSTS)) {
+    const path = `/writing/${id}/`;
+
+    test(`${id}: shows the banner and lists every post tagged with the series, and only those`, async ({ page }) => {
+      await page.goto(path);
+      const main = page.locator("main");
+      await expect(main.locator(`[data-series-banner="${id}"]`)).toBeVisible();
+      await expect(main.locator("h1")).toHaveText(series.name);
+      await expect(main.getByRole("navigation", { name: "Topics" })).toHaveCount(0);
+      const hrefs = await main
+        .locator("[data-post-card] h2 a")
+        .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+      expect(hrefs).toEqual(series.posts);
+      expect(await page.title()).toBe(`${series.name} · Don Coleman`);
+      await expect(page.locator("link[rel=canonical]")).toHaveAttribute("href", new RegExp(`${path}$`));
+    });
+
+    test(`${id}: the other-series link and the All writing link work`, async ({ page }) => {
+      await page.goto(path);
+      const banner = page.locator(`[data-series-banner="${id}"]`);
+      await banner.getByRole("link", { name: `Read ${series.other}` }).click();
+      await expect(page).toHaveURL(new RegExp(`${series.otherPath}$`));
+      await page.goto(path);
+      await banner.getByRole("link", { name: "All writing" }).click();
+      await expect(page).toHaveURL(/\/writing\/$/);
+    });
+  }
+
+  test("page 1 and a page past the last are not built", async ({ page }) => {
+    for (const path of ["/writing/drift/1/", "/writing/drift/99/"]) {
+      const response = await page.goto(path);
+      expect(response?.status(), path).toBe(404);
+    }
+  });
+});
+
+test.describe("redirects from the old series topic addresses (FR-008a)", () => {
+  const cases: Array<[string, string]> = [
+    ["/writing/topics/drift", "/writing/drift/"],
+    ["/writing/topics/drift/", "/writing/drift/"],
+    ["/writing/topics/drift/2/", "/writing/drift/2/"],
+    ["/writing/topics/convergence/", "/writing/convergence/"],
+  ];
+  for (const [from, to] of cases) {
+    test(`${from} answers 301 to ${to}`, async ({ request }) => {
+      const response = await request.get(from, { maxRedirects: 0 });
+      expect(response.status()).toBe(301);
+      expect(new URL(response.headers().location!, "http://127.0.0.1:4321").pathname).toBe(to);
+    });
+  }
+
+  test("following the redirect for a page past the last ends on the not-found page with status 404", async ({
+    request,
+  }) => {
+    const response = await request.get("/writing/topics/drift/99/");
+    expect(response.status()).toBe(404);
+    expect(new URL(response.url()).pathname).toBe("/writing/drift/99/");
   });
 });

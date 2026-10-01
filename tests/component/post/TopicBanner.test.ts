@@ -25,7 +25,18 @@ describe("TopicBanner", () => {
     expect(html).toContain("bg-rust-100");
   });
 
-  it("throws for an unknown topic", async () => {
-    await expect(container.renderToString(TopicBanner, { props: { topic: "nope" } })).rejects.toThrow(/nope/);
+  it("renders a free-form topic as a plain dusk banner with a sentence-case label and the same headings", async () => {
+    const html = await container.renderToString(TopicBanner, { props: { topic: "cloud-cost" } });
+    expect(tags(html).filter((t) => "data-topic-banner" in t.attrs)).toHaveLength(1);
+    expect(tags(html).filter((t) => t.name === "h1")).toHaveLength(1);
+    expect(textOf(html, "h1")).toBe("Cloud cost");
+    expect(textOf(html, "p")).toBe("Topic");
+    expect(html).toContain("bg-dusk-100");
+    expect(tags(html).filter((t) => t.name === "p")).toHaveLength(1);
+  });
+
+  it("adds the page number to a free-form topic's name", async () => {
+    const html = await container.renderToString(TopicBanner, { props: { topic: "cloud-cost", page: 2 } });
+    expect(textOf(html, "h1")).toBe("Cloud cost, page 2");
   });
 });

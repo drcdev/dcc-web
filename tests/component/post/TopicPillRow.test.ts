@@ -3,7 +3,7 @@
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, it } from "vitest";
 import TopicPillRow from "../../../src/components/post/TopicPillRow.astro";
-import { topics } from "../../../src/config/topics.ts";
+import { topicHref, topics } from "../../../src/config/topics.ts";
 import { byName, classList } from "../html.ts";
 
 let container: AstroContainer;
@@ -22,7 +22,7 @@ describe("TopicPillRow", () => {
   it("has one pill per topic in list order, including topics without posts", async () => {
     const html = await container.renderToString(TopicPillRow);
     const pills = byName(html, "a").filter((a) => "data-topic-pill" in a.attrs);
-    expect(pills.map((a) => a.attrs.href)).toEqual(topics.map((t) => `/writing/topics/${t.id}/`));
+    expect(pills.map((a) => a.attrs.href)).toEqual(topics.map((t) => topicHref(t.id)));
   });
 
   it('ends with a plain "All posts" link to /writing/all/ that is not a pill', async () => {

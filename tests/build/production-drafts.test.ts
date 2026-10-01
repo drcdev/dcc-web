@@ -7,7 +7,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { topics } from "../../src/config/topics.ts";
+import { topicHref, topics } from "../../src/config/topics.ts";
 import { buildFixtureSite, type FixtureSiteResult } from "./fixture-site.ts";
 
 const posts = ["valid/published.mdx", "valid/draft.mdx"];
@@ -64,7 +64,9 @@ describe.each([
     const sitemap = builds[key]!.read("sitemap-0.xml");
     expect(sitemap).toContain("/writing/</loc>");
     expect(sitemap).toContain("/writing/all/</loc>");
-    for (const topic of topics) expect(sitemap).toContain(`/writing/topics/${topic.id}/</loc>`);
+    for (const topic of topics) expect(sitemap).toContain(`${topicHref(topic.id)}</loc>`);
+    expect(sitemap).not.toContain("/writing/topics/drift/");
+    expect(sitemap).not.toContain("/writing/topics/convergence/");
   });
 
   it("adds no listing pages because of drafts (FR-012)", () => {
