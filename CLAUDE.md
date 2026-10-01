@@ -61,17 +61,21 @@ A visual diff the spec did not predict is a regression to fix, not a baseline to
 
 ## Orchestration skills
 
-`/deliver`, `/tweak` and `/squash` in `.claude/skills/` are the end-to-end pipelines Don uses
-for feature, small-change and bug work. They were ported from Don's `cadence` project, whose
-read-only clone lives at `.reference/cadence` (gitignored, like `.reference/flux` for the
-design theme). Diff against it when porting further changes.
+`/deliver`, `/tweak`, `/squash` and `/chore` in `.claude/skills/` are the end-to-end pipelines
+Don uses for feature, small-change, bug and maintenance work. The first three were ported from
+Don's `cadence` project, whose read-only clone lives at `.reference/cadence` (gitignored, like
+`.reference/flux` for the design theme). Diff against it when porting further changes.
+`/chore` is local to this repository: it has no spec phase (a chore changes no user-visible
+behaviour), plans into `.specify/chores/<slug>/` on a `chore/<slug>` branch, and adds a
+fresh-eyes review phase before verify.
 
-Keep the three pipelines aligned. A change to any of these goes into all three together:
+Keep the four pipelines aligned. A change to any of these goes into all four together:
 
 - the "Local toolchain" section;
 - the pre-PR major-change / merge-mode pause (one `AskUserQuestion` before `gh pr create`);
 - the `[PREVIEW-CHECK]` task marker;
-- the visual-baselines step.
+- the visual-baselines step;
+- the "PR author account" block (a unit test checks it is identical in all four).
 
 ## Spec Kit extensions
 
@@ -79,5 +83,6 @@ The Spec Kit `git` extension creates feature branches and auto-commits after eac
 conventional commit messages (`.specify/extensions/git/git-config.yml`). The `bug` extension
 used by `/squash` declares no hooks and `auto_commit.default` is `false`, so the
 `after_bug_assess`, `after_bug_fix` and `after_bug_test` events are enabled **by hand** in
-that config file. Do not remove them as unused, and re-add them if the git extension is ever
-reinstalled from its template.
+that config file, as are the `after_chore_plan`, `after_chore_implement` and
+`after_chore_review` events used by `/chore`. Do not remove them as unused, and re-add them if
+the git extension is ever reinstalled from its template.
