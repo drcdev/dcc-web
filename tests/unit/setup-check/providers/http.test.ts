@@ -20,15 +20,15 @@ async function failureOf(url: string): Promise<ProviderAccessError> {
 
 describe("providers/http.ts manual redirects (T005)", () => {
   it("follows redirects by default", async () => {
-    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => new Response("ok", { status: 200 }));
+    const fetchMock = vi.fn<typeof fetch>(async () => new Response("ok", { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
     await createHttpReader().get("https://doncoleman.ca/");
     expect(fetchMock.mock.calls[0]![1]).toMatchObject({ redirect: "follow" });
   });
 
   it("with { redirect: 'manual' } returns the redirect status and the raw Location header", async () => {
-    const fetchMock = vi.fn(
-      async (_url: string, _init?: RequestInit) => new Response(null, { status: 301, headers: { location: "https://doncoleman.ca/about/?launch-check=1" } }),
+    const fetchMock = vi.fn<typeof fetch>(
+      async () => new Response(null, { status: 301, headers: { location: "https://doncoleman.ca/about/?launch-check=1" } }),
     );
     vi.stubGlobal("fetch", fetchMock);
     const response = await createHttpReader().get("https://www.doncoleman.ca/about/?launch-check=1", { redirect: "manual" });

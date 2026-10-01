@@ -16,6 +16,9 @@ jobs:
   verify:
     name: verify
     runs-on: ubuntu-latest
+    permissions:
+      checks: read
+      contents: read
     steps:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -49,6 +52,15 @@ jobs:
       - name: Run the verify gate
         if: steps.changes.outputs.full != 'false'
         run: pnpm run verify
+
+      - name: Check the preview's sitemap and links
+        if: github.event_name == 'pull_request' && steps.changes.outputs.full != 'false'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: node scripts/site-check/preview.ts
 
       - name: Upload Playwright output on failure
         if: failure()

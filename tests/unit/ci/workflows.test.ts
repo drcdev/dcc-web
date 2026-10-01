@@ -258,6 +258,33 @@ describe(".github/workflows/visual-baselines.yml", () => {
   });
 });
 
+describe(".github/workflows/ci.yml preview crawl (011-launch FR-001a, FR-002a)", () => {
+  const contents = read(".github/workflows/ci.yml");
+  const verify = contents.slice(contents.indexOf("\n  verify:"));
+  const stepStart = verify.indexOf("- name: Check the preview's sitemap and links");
+  const step = stepStart === -1 ? "" : verify.slice(stepStart).split(/\n      - name: /)[0]!;
+
+  it("gives the verify job checks: read plus contents: read", () => {
+    const jobHeader = verify.slice(0, verify.indexOf("steps:"));
+    expect(jobHeader).toMatch(/permissions:\s*\n\s+checks:\s*read\s*\n\s+contents:\s*read/);
+  });
+
+  it("has the preview crawl step, after the verify gate", () => {
+    expect(stepStart).toBeGreaterThan(verify.indexOf("pnpm run verify"));
+    expect(step).toContain("node scripts/site-check/preview.ts");
+  });
+
+  it("runs only on pull_request", () => {
+    expect(step).toMatch(/if:.*github\.event_name == 'pull_request'/);
+  });
+
+  it("exposes only GITHUB_TOKEN as a secret, plus public refs", () => {
+    const secrets = step.match(/secrets\.[A-Za-z_]+/g) ?? [];
+    expect(new Set(secrets)).toEqual(new Set(["secrets.GITHUB_TOKEN"]));
+    expect(step).not.toMatch(/CLOUDFLARE|CF_/);
+  });
+});
+
 describe(".github/CODEOWNERS", () => {
   const contents = read(".github/CODEOWNERS");
   const majorPaths = [
