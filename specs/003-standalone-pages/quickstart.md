@@ -39,7 +39,7 @@ notice, the current-page marker on Services/Speaking/About, and 404 for `/cookie
 ## 3. One file publishes a page (US3, SC-002)
 
 ```sh
-pnpm exec vitest run tests/build/one-file-page.test.ts
+pnpm exec vitest run tests/build/local-site.test.ts
 ```
 
 Expected: the fixture site with only `workshops.mdx` added builds; `/workshops/` has its title,
@@ -55,8 +55,9 @@ By hand (optional): add `src/content/pages/workshops.mdx` with the minimal examp
 pnpm exec vitest run tests/build/page-validation.test.ts
 ```
 
-Expected: one passing test per row of [contracts/build-errors.md](./contracts/build-errors.md);
-each asserts the build rejected and the message names the file and problem.
+Expected: a passing wiring run per call site (sync or build) that rejects the broken file and
+names it. The row-by-row message assertions of [contracts/build-errors.md](./contracts/build-errors.md)
+live in `tests/unit/content`; `docs/testing.md` maps every row.
 
 By hand (optional): remove `description` from `src/content/pages/about.mdx`, run
 `pnpm run build`; it stops with an error naming `about.mdx` and `description`. Restore the file.

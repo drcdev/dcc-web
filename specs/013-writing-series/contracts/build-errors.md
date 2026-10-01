@@ -1,8 +1,7 @@
 # Contract: Post build errors added or changed by this feature
 
-Extends `specs/008-blog/contracts/build-errors.md`. Each row is one build-fixture test in
-`tests/build/post-validation.test.ts`, with a fixture in `tests/fixtures/posts/broken/` (or
-`valid/` for rows that must build). The message must contain every item in the last column.
+Extends `specs/008-blog/contracts/build-errors.md`. Where each row is asserted (unit, sync or build) is listed in `docs/testing.md`, "Contract-row
+mapping". The message must contain every item in the last column.
 
 ## New rows
 

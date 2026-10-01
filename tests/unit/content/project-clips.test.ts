@@ -35,6 +35,12 @@ describe("assertProjectImagesExist for clips", () => {
     );
   });
 
+  it("row 17: names the project file and the path of a missing image", () => {
+    const run = () => assertProjectImagesExist(root, "p.mdx", { visual: { src: "./images/nope.png" } });
+    expect(run).toThrow("Project file src/content/projects/p.mdx");
+    expect(run).toThrow("./images/nope.png");
+  });
+
   it("does not size-limit images", () => {
     writeFileSync(join(root, "images/huge.png"), new Uint8Array(MAX_CLIP_BYTES + 1));
     expect(() => assertProjectImagesExist(root, "p.mdx", { visual: { src: "./images/huge.png" } })).not.toThrow();

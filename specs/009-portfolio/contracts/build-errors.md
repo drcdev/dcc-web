@@ -3,8 +3,8 @@
 Every error stops `astro build` (so CI fails and nothing deploys) and names the file. Custom
 checks use `Project file <path>: <problem>` (or `Project files <a> and <b>: <problem>`); schema
 errors come through Astro's content validation, which names the entry, the file and the setting
-path. Each row has one broken fixture in `tests/fixtures/projects/broken/` and one assertion in
-`tests/build/project-validation.test.ts` (asserted phrase in quotes).
+path. Where each row is asserted (unit, sync or build) is listed in `docs/testing.md`, "Contract-row
+mapping".
 
 | # | FR-073 case | Source | Message must contain |
 |---|---|---|---|

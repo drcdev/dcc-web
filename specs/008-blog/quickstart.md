@@ -21,8 +21,8 @@ corepack pnpm run test
 
 Expect green for the new files under `tests/unit/` (post schema, topics, post order, reading
 time, build mode, Shiki classes, share links, feed items, navigation), `tests/component/post/`
-and `tests/build/` (post validation rows P1–P22, one-file post, listings and feed, production
-build without drafts).
+and `tests/build/` (post validation wiring runs, the local site, listings and feed, drafts; row-level
+validation is in `tests/unit/content`, see `docs/testing.md`).
 
 ## 2. Build and look
 

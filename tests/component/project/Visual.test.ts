@@ -28,7 +28,7 @@ describe("Visual", () => {
   });
 
   // A clip that resolves needs a real file under src/content/projects, which only a
-  // built site has; tests/build/project-clips.test.ts renders one (controls, muted,
+  // built site has; tests/build/local-site.test.ts renders one (controls, muted,
   // poster, no autoplay, description). Here the component's own failure is checked.
   it("throws naming the project file and the path for a clip that is not there", async () => {
     await expect(renderWithProject(Visual, { name: "walkthrough" })).rejects.toThrow(

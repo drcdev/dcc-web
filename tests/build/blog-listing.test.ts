@@ -2,14 +2,15 @@
 // FR-030, FR-048; contracts/blog-pages.md "Addresses"). A production-mode build
 // leaves the sample drafts out, so the only posts are the 14 written here: 14 on
 // `agentic-ai` (two listing pages) and two of them also on `technology-teams`.
-// Two posts share a date, to check the order of a tie (title, then slug).
+// Two posts share a date, to check the order of a tie (title, then slug). A throwaway route
+// prints getPostSummaries() so the production summaries are checked on the same build (tasks T017,
+// T020; research R3, R6). The preview and no-branch builds run in drafts.test.ts.
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildFixtureSite, type FixtureSiteResult } from "./fixture-site.ts";
 
 let site: FixtureSiteResult;
-let previewSite: FixtureSiteResult;
 
 const COUNT = 14;
 const post = (n: number, extra: { date?: string; title?: string; topics?: string[]; updated?: string } = {}) => {
@@ -31,6 +32,13 @@ const post = (n: number, extra: { date?: string; title?: string; topics?: string
   ].join("\n");
 };
 
+const summariesRoute = `import { getPostSummaries } from "../lib/posts.ts";
+export async function GET() {
+  const posts = await getPostSummaries();
+  return new Response(JSON.stringify(posts.map((p) => ({ slug: p.slug, draft: p.draft, minutesRead: p.minutesRead, href: p.href }))));
+}
+`;
+
 beforeAll(async () => {
   const overrides: Record<string, string> = {};
   for (let n = 1; n <= COUNT; n += 1) {
@@ -43,17 +51,15 @@ beforeAll(async () => {
   // A visible free-form topic, and a free-form topic only a draft names (no page in production).
   overrides["src/content/posts/free-form-post.mdx"] = post(16, { date: "2026-05-01", topics: ["cloud-cost"] });
   overrides["src/content/posts/free-form-draft.mdx"] = post(17, { date: "2026-05-02", topics: ["draft-only-topic"] }).replace("---\n\nBody", "draft: true\n---\n\nBody");
+  overrides["src/pages/summaries.json.ts"] = summariesRoute;
   site = await buildFixtureSite([], {
     overrides,
     env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" },
   });
-  // A preview build shows the sample drafts on its pages; the feed must still hold none of them.
-  previewSite = await buildFixtureSite([], { env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "preview-branch" } });
 }, 900_000);
 
 afterAll(() => {
   site?.cleanup();
-  previewSite?.cleanup();
 });
 
 /** Posts on agentic-ai and on drift (the 14 plus the tie post). */
@@ -242,14 +248,26 @@ describe("the feed (/writing/rss.xml)", () => {
     expect(field(withModified[0]!, "dcterms:modified")).toMatch(/^2026-07-15T/);
   });
 
-  it("holds no draft on a preview build, and is a valid empty channel when nothing is published", () => {
-    const xml = previewSite.read("writing/rss.xml");
-    expect(items(xml)).toHaveLength(0);
-    expect(xml).toMatch(/<channel>[\s\S]*<\/channel><\/rss>$/);
-    expect(previewSite.read("writing/index.html")).toContain("Draft");
-  });
-
   it("is not listed in the sitemap", () => {
     expect(site.read("sitemap-0.xml")).not.toContain("rss.xml");
+  });
+});
+
+describe("getPostSummaries in a production build", () => {
+  const summaries = () => JSON.parse(site.read("summaries.json")) as { slug: string; draft: boolean }[];
+
+  it("lists the 16 visible posts newest first, with the same tie order as the listings", () => {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const expected = ["tie-b", ...Array.from({ length: COUNT }, (_, i) => `listing-post-${pad(i + 1)}`), "free-form-post"];
+    expect(summaries().map((p) => p.slug)).toEqual(expected);
+    expect(expected).toHaveLength(ALL_POSTS);
+  });
+
+  it("leaves every draft out: no draft flag, the free-form draft and every sample post absent", () => {
+    const posts = summaries();
+    expect(posts.some((p) => p.draft)).toBe(false);
+    const slugs = posts.map((p) => p.slug);
+    expect(slugs).not.toContain("free-form-draft");
+    expect(slugs.filter((slug) => slug.startsWith("sample-"))).toEqual([]);
   });
 });
