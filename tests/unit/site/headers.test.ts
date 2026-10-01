@@ -93,7 +93,7 @@ describe("public/_headers", () => {
 
 // FR-020 regression guard: the X-Robots-Tag: noindex on previews must never
 // be hidden from crawlers by a robots.txt crawl block, per
-// docs/setup.md#review-address-noindex's "never block crawling with
+// docs/setup.md#preview-noindex's "never block crawling with
 // robots.txt" rule (T146).
 describe("public/robots.txt", () => {
   it("either does not exist, or contains no Disallow rule", () => {

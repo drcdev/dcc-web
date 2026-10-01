@@ -21,8 +21,8 @@ import { check as checkLiveDomainGhost } from "../../../scripts/setup-check/chec
 import { check as checkLocalCredentials } from "../../../scripts/setup-check/checks/local-credentials.ts";
 import { check as checkLocalTools } from "../../../scripts/setup-check/checks/local-tools.ts";
 import { check as checkPipelineSecrets } from "../../../scripts/setup-check/checks/pipeline-secrets.ts";
-import { check as checkReviewAddress } from "../../../scripts/setup-check/checks/review-address.ts";
-import { check as checkReviewAddressNoindex } from "../../../scripts/setup-check/checks/review-address-noindex.ts";
+import { check as checkReviewAddressRemoved } from "../../../scripts/setup-check/checks/review-address-removed.ts";
+import { check as checkPreviewNoindex } from "../../../scripts/setup-check/checks/preview-noindex.ts";
 import { check as checkWebAnalytics } from "../../../scripts/setup-check/checks/web-analytics.ts";
 import { check as checkWorkersBuilds } from "../../../scripts/setup-check/checks/workers-builds.ts";
 import { fakeProviderContext, envFrom, loadFixture, toCloudflareZone } from "./checks/test-helpers.ts";
@@ -47,6 +47,7 @@ const IMPERATIVE_VERBS = new Set([
   "Lower",
   "Open",
   "Push",
+  "Remove",
   "Record",
   "Restore",
   "Run",
@@ -205,7 +206,10 @@ const scenarios: Scenario[] = [
         fakeProviderContext({
           env: envFrom(CF_ENV),
           fs: { readJson: fsJson({ "setup/config.json": CONFIG }) },
-          cloudflare: { listDnsRecords: async () => [] },
+          cloudflare: {
+            listDnsRecords: async () => [],
+            listWorkerDomains: async () => loadFixture("cloudflare", "worker-domains-review-host"),
+          },
         }),
       ),
     couldNotCheck: () => checkDnsRecordsParity(fakeProviderContext({ env: envFrom({}) })),
@@ -230,8 +234,9 @@ const scenarios: Scenario[] = [
     missing: () =>
       checkLiveDomainGhost(
         fakeProviderContext({
-          env: envFrom({}),
+          env: envFrom(CF_ENV),
           fs: { readJson: fsJson({ "setup/config.json": CONFIG, "setup/dns-baseline.json": { originalNameservers: [], records: [] } }) },
+          cloudflare: { listWorkerDomains: async () => loadFixture("cloudflare", "worker-domains-review-host") },
         }),
       ),
   },
@@ -411,28 +416,23 @@ const scenarios: Scenario[] = [
       ),
   },
   {
-    name: "review-address",
+    name: "review-address-removed",
     missing: () =>
       dependenciesSatisfiedContext({
-        cloudflare: { listWorkerDomains: async () => loadFixture("cloudflare", "worker-domains-empty") },
-      }).then((ctx) => checkReviewAddress(ctx)),
+        cloudflare: { listWorkerDomains: async () => loadFixture("cloudflare", "worker-domains-apex-switched") },
+      }).then((ctx) => checkReviewAddressRemoved(ctx)),
     couldNotCheck: () =>
       dependenciesSatisfiedContext({
         env: envFrom({ CLOUDFLARE_API_TOKEN: CF_ENV.CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID: CF_ENV.CLOUDFLARE_ZONE_ID }),
-      }).then((ctx) => checkReviewAddress(ctx)),
+      }).then((ctx) => checkReviewAddressRemoved(ctx)),
   },
   {
-    name: "review-address-noindex",
+    name: "preview-noindex",
     missing: () =>
-      checkReviewAddressNoindex(
+      checkPreviewNoindex(
         fakeProviderContext({
-          env: envFrom(CF_ENV),
-          fs: {
-            readJson: fsJson({
-              "setup/config.json": CONFIG,
-              "setup/dns-baseline.json": { originalNameservers: [], records: [] },
-            }),
-          },
+          fs: { readJson: fsJson({ "setup/config.json": { ...CONFIG, workersSubdomain: "drc-dev" } }) },
+          http: { get: async () => ({ status: 200, headers: {}, body: "" }) },
         }),
       ),
   },

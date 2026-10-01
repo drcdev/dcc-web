@@ -23,8 +23,8 @@ const ITEM_IDS = [
   "github-major-label",
   "github-main-protection",
   "pipeline-secrets",
-  "review-address",
-  "review-address-noindex",
+  "review-address-removed",
+  "preview-noindex",
   "web-analytics",
   "contact-d1-databases",
   "contact-turnstile-widget",
@@ -104,8 +104,8 @@ describe("docs/setup.md edge-case content", () => {
     expect(section).toContain("drc-agents");
   });
 
-  it("review-address-noindex tells Don how to ask search engines to remove already-indexed pages, and never to block crawling with robots.txt", () => {
-    const section = extractSection(contents, "review-address-noindex").toLowerCase();
+  it("preview-noindex tells Don how to ask search engines to remove already-indexed pages, and never to block crawling with robots.txt", () => {
+    const section = extractSection(contents, "preview-noindex").toLowerCase();
     expect(section).toMatch(/search console|removal tool|request.*removal|remove.*already indexed/);
     expect(section).toContain("robots.txt");
     expect(section).toMatch(/never block crawling|must not.*block crawling|do not block crawling/);

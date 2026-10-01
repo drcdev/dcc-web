@@ -27,6 +27,17 @@ describe("setupItems registry invariants", () => {
     expect(setupItems.slice(25).map((i) => i.id)).toEqual(["launch-content-ready", "launch-main-checks"]);
   });
 
+  it("items 16 to 18 follow the switch (T051): review-address-removed, preview-noindex, web-analytics", () => {
+    expect(setupItems.slice(15, 18).map((i) => i.id)).toEqual(["review-address-removed", "preview-noindex", "web-analytics"]);
+    const [removed, noindex, analytics] = setupItems.slice(15, 18);
+    expect(removed!.postLaunch).toBe(true);
+    expect(removed!.dependsOn).toEqual(["dns-nameservers"]);
+    expect(noindex!.postLaunch).toBeUndefined();
+    expect(noindex!.dependsOn).toEqual([]);
+    expect(analytics!.dependsOn).toEqual([]);
+    expect(setupItems.find((i) => i.id === "live-domain-ghost")!.title).toBe("Live domain: Ghost or switched");
+  });
+
   it("item 26 is before-merge and needs Don, item 27 is after-merge (011-launch)", () => {
     const item26 = setupItems[25]!;
     expect(item26.phase).toBe("before-merge");

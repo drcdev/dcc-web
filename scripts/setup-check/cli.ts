@@ -4,8 +4,7 @@
 // (data-model.md dependsOn) needs no separate logic here: every check that
 // has a dependsOn prerequisite already evaluates it by calling the
 // prerequisite's own check function with the same context (see
-// checks/dns-nameservers.ts, review-address.ts, review-address-noindex.ts,
-// web-analytics.ts) — including when that item is requested directly with
+// checks/dns-nameservers.ts) — including when that item is requested directly with
 // `--item`.
 import { setupItems, getSetupItem } from "./items.ts";
 import { buildReport, collectSecretValues, formatHumanReport, formatJsonReport } from "./report.ts";

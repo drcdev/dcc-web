@@ -4,7 +4,7 @@ import { check } from "../../../../scripts/setup-check/checks/dns-nameservers.ts
 import type { CloudflareDnsRecord } from "../../../../scripts/setup-check/types.ts";
 import { fakeProviderContext, envFrom, loadFixture, toCloudflareZone } from "./test-helpers.ts";
 
-const ENV = { CLOUDFLARE_API_TOKEN: "cf-token-value", CLOUDFLARE_ZONE_ID: "zone-123" };
+const ENV = { CLOUDFLARE_API_TOKEN: "cf-token-value", CLOUDFLARE_ZONE_ID: "zone-123", CLOUDFLARE_ACCOUNT_ID: "account-123" };
 const CONFIG = { zone: "doncoleman.ca" };
 
 const completeBaselineFs = (extra: Record<string, unknown> = {}) =>
@@ -41,6 +41,7 @@ function contextWith(opts: {
     dns: { resolveNameservers: async () => opts.nameservers },
     cloudflare: {
       getZone: async () => opts.zone,
+      listWorkerDomains: async () => loadFixture("cloudflare", "worker-domains-review-host"),
       listDnsRecords: async () =>
         opts.cfRecords ?? [{ type: "A", name: "doncoleman.ca", content: "192.0.2.10", priority: null, ttl: 3600, proxied: false }],
     },

@@ -19,8 +19,8 @@ import { check as checkGithubCodeowners } from "./checks/github-codeowners.ts";
 import { check as checkGithubMajorLabel } from "./checks/github-major-label.ts";
 import { check as checkGithubMainProtection } from "./checks/github-main-protection.ts";
 import { check as checkPipelineSecrets } from "./checks/pipeline-secrets.ts";
-import { check as checkReviewAddress } from "./checks/review-address.ts";
-import { check as checkReviewAddressNoindex } from "./checks/review-address-noindex.ts";
+import { check as checkReviewAddressRemoved } from "./checks/review-address-removed.ts";
+import { check as checkPreviewNoindex } from "./checks/preview-noindex.ts";
 import { check as checkWebAnalytics } from "./checks/web-analytics.ts";
 import { check as checkContactD1Databases } from "./checks/contact-d1-databases.ts";
 import { check as checkContactTurnstileWidget } from "./checks/contact-turnstile-widget.ts";
@@ -48,8 +48,8 @@ const checksById: Record<string, (ctx: ProviderContext) => ReturnType<SetupItem[
   "github-major-label": checkGithubMajorLabel,
   "github-main-protection": checkGithubMainProtection,
   "pipeline-secrets": checkPipelineSecrets,
-  "review-address": checkReviewAddress,
-  "review-address-noindex": checkReviewAddressNoindex,
+  "review-address-removed": checkReviewAddressRemoved,
+  "preview-noindex": checkPreviewNoindex,
   "web-analytics": checkWebAnalytics,
   "contact-d1-databases": checkContactD1Databases,
   "contact-turnstile-widget": checkContactTurnstileWidget,
@@ -76,6 +76,7 @@ interface ItemSeed {
   dependsOn: string[];
   phase: ItemPhase;
   deferredUntilMerge?: boolean;
+  postLaunch?: boolean;
 }
 
 const seeds: ItemSeed[] = [
@@ -132,7 +133,7 @@ const seeds: ItemSeed[] = [
     where:
       "List every record from Squarespace's DNS screen into setup/dns-baseline.json (with its Squarespace TTL, for the audit trail) with a keep/drop decision, then create or import the keep records in Cloudflare as DNS only, leaving TTL on Cloudflare's Auto preset (the dashboard has no custom TTL option).",
     confirmedBy:
-      "Every keep record in setup/dns-baseline.json exists in the Cloudflare zone with identical type/name/content/priority and proxied: false (TTL is informational only); every record without a decision keeps the item missing",
+      "Every keep record in setup/dns-baseline.json exists in the Cloudflare zone with identical type/name/content/priority and proxied: false (TTL is informational only); every record without a decision keeps the item missing. Once the domain has switched, the Ghost web records are replaced on purpose and any other added, removed or changed record outside the apex and www is a problem",
     needsDon: true,
     principles: ["VI", "X"],
     requirements: ["FR-019", "FR-034", "FR-035", "FR-036", "FR-037"],
@@ -160,12 +161,12 @@ const seeds: ItemSeed[] = [
   {
     id: "live-domain-ghost",
     order: 6,
-    title: "Live domain still Ghost",
+    title: "Live domain: Ghost or switched",
     purpose:
-      "Throughout this setup, doncoleman.ca must keep serving the current Ghost site and mail unchanged; this item is the safety check that confirms that.",
-    where: "Nothing to do here directly; read-only confirmation. On a problem, follow the DNS nameservers rollback procedure.",
+      "Until the launch switch, doncoleman.ca must keep serving the current Ghost site; after a deliberate switch it must serve the new site. This item is the safety check that tells the two apart.",
+    where: "Nothing to do here directly; read-only confirmation. On a problem, follow the rollback in docs/launch.md.",
     confirmedBy:
-      "Public A/AAAA/CNAME answers for the apex and www equal the Ghost target records in the baseline; every keep MX and email TXT record resolves as in the baseline",
+      "Switched on purpose (Custom Domain doncoleman.ca on dcc-web), or before the switch the public A/AAAA/CNAME answers for the apex and www equal the Ghost target records in the baseline; the apex and www are reported separately",
     needsDon: false,
     principles: ["X"],
     requirements: ["FR-019", "FR-038", "SC-005"],
@@ -305,45 +306,49 @@ const seeds: ItemSeed[] = [
     phase: "after-merge",
   },
   {
-    id: "review-address",
+    id: "review-address-removed",
     order: 16,
-    title: "Review address",
-    purpose: "Gives Don a stable HTTPS address to view this slice's deployment before the real domain switches over.",
-    where: "Cloudflare dashboard -> Workers & Pages -> dcc-web -> Settings -> Domains & Routes -> Add Custom Domain -> new.doncoleman.ca.",
-    confirmedBy: "new.doncoleman.ca is a Custom Domain on dcc-web; https://new.doncoleman.ca/ returns 200 over HTTPS",
+    title: "Review address removed",
+    purpose: "Once the bare domain is live, the temporary review address new.doncoleman.ca must go away.",
+    where:
+      "Cloudflare dashboard -> Workers & Pages -> dcc-web -> Settings -> Domains & Routes -> delete the Custom Domain new.doncoleman.ca, after the switch.",
+    confirmedBy:
+      "Waiting before the switch; after it, no Custom Domain for new.doncoleman.ca exists and both public resolvers return no A/AAAA/CNAME answer for it (pending while cached answers expire)",
     needsDon: true,
     principles: ["X"],
-    requirements: ["FR-020"],
+    requirements: ["FR-012"],
     secrets: [],
-    dependsOn: ["dns-nameservers", "workers-builds"],
+    dependsOn: ["dns-nameservers"],
     phase: "after-merge",
+    postLaunch: true,
   },
   {
-    id: "review-address-noindex",
+    id: "preview-noindex",
     order: 17,
-    title: "Review address no-index",
-    purpose: "The review address must never be indexed by search engines while the real site is still doncoleman.ca.",
-    where: "Nothing new to do here; public/_headers sends X-Robots-Tag: noindex on every path.",
-    confirmedBy: "Response from https://new.doncoleman.ca/ has an X-Robots-Tag header containing noindex",
+    title: "Preview no-index",
+    purpose: "Preview addresses on workers.dev must never be indexed by search engines.",
+    where: "Nothing new to do here; public/_headers sends X-Robots-Tag: noindex for the workers.dev hosts.",
+    confirmedBy:
+      "Responses for / and /projects/ from both the dcc-web and dcc-web-preview workers.dev hosts have an X-Robots-Tag header containing noindex",
     needsDon: false,
     principles: ["X"],
-    requirements: ["FR-020"],
+    requirements: ["FR-012"],
     secrets: [],
-    dependsOn: ["review-address"],
+    dependsOn: [],
     phase: "after-merge",
   },
   {
     id: "web-analytics",
     order: 18,
     title: "Web Analytics",
-    purpose: "Gives Don basic, privacy-focused visitor statistics for the review address, with no cookies and no personal data.",
+    purpose: "Gives Don basic, privacy-focused visitor statistics for the site, with no cookies and no personal data.",
     where: "Cloudflare dashboard -> Analytics & Logs -> Web Analytics -> Add a site -> select doncoleman.ca (the dashboard offers the zone, not a hostname) -> Enable (automatic setup).",
-    confirmedBy: "Web Analytics site for new.doncoleman.ca or the doncoleman.ca zone exists with automatic setup on; served HTML references the Cloudflare beacon",
+    confirmedBy: "Web Analytics site for the doncoleman.ca zone (or the checked host) exists with automatic setup on; the served HTML of doncoleman.ca once switched, new.doncoleman.ca before, references the Cloudflare beacon",
     needsDon: true,
     principles: ["X"],
     requirements: ["FR-022"],
     secrets: [],
-    dependsOn: ["review-address"],
+    dependsOn: [],
     phase: "after-merge",
   },
   {
