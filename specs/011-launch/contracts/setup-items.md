@@ -17,7 +17,8 @@ the access problem.
 ## New status: `waiting`
 
 - Only items with `postLaunch: true` return it, and only while the phase is `before-switch`.
-- The summary starts with `Waiting for the switch: …`. The `nextAction` is
+- The summary starts with `Waiting for the switch: …`, printed as the word `waiting` (never by
+  colour or symbol alone, FR-017). The `nextAction` is
   `Nothing to do yet. Follow docs/launch.md Part C when the readiness checklist is complete.`
 - The report counts it in `counts.waiting`, the human output prints it as `waiting`, and
   `ok` does not count it as a failure.
@@ -26,11 +27,14 @@ the access problem.
 
 ### 4. `dns-records-parity`
 
-The existing rules are unchanged, with one exception. When the phase is `switched`, the Ghost
+The existing rules are unchanged before the switch. When the phase is `switched`, the Ghost
 web records are not expected in the zone. Each one adds a detail:
-`<TYPE> <name> <content>: replaced at launch, kept in the baseline for rollback`. Cloudflare
-records that the switch adds, such as `AAAA www 100::` (proxied), stay informational
-(`Cloudflare-only, not in baseline: …`). When the phase cannot be read, the item is
+`<TYPE> <name> <content>: replaced at launch, kept in the baseline for rollback`. The records
+the switch adds on the apex and `www` (the Custom Domain's managed apex record and
+`AAAA www 100::`, proxied) stay informational (`Cloudflare-only, not in baseline: …`). The
+comparison covers the whole zone (FR-010): once switched, any other added, removed or changed
+record, on any name other than the apex and `www`, is a difference and the item is missing
+(`Problem: …`), with the rollback `nextAction`. When the phase cannot be read, the item is
 `could-not-check`.
 
 ### 6. `live-domain-ghost`, titled "Live domain: Ghost or switched"
@@ -40,6 +44,7 @@ records that the switch adds, such as `AAAA www 100::` (proxied), stay informati
 | Phase `switched` | complete | `Switched to the new site on purpose (Custom Domain doncoleman.ca on dcc-web); the Ghost comparison applies again only during a rollback.` |
 | Phase `before-switch`, apex and `www` A/AAAA/CNAME answers equal the Ghost baseline | complete | `The live domain still resolves to the recorded Ghost targets.` |
 | Phase `before-switch`, any difference | missing | `Problem: the live domain does not match the recorded Ghost baseline.` The details list each difference. `nextAction` points to `docs/launch.md#rollback` |
+| Phase `switched` or `before-switch`, only one of the apex and `www` has left Ghost | as above | The details report the apex and `www` separately (`apex: …`, `www: …`), so a half-switched domain is visible (FR-010b) |
 | No Ghost web records in the baseline and phase `before-switch` | missing | Unchanged |
 
 The MX and TXT comparison is removed from this item and moves to item 32. The Ghost-marker
@@ -75,7 +80,7 @@ rest of the item is unchanged. `dependsOn` becomes `[]`.
 
 ### 26. `launch-content-ready`, titled "Launch content ready" (FR-003, FR-003a)
 
-This item reads repository files only, through `RepoReader`.
+This item reads repository files only, through `RepoReader`. It has four rules:
 
 - Every id in `setup/config.json` `launch.expectedPages` has a file
   `src/content/pages/<id>.mdx` whose frontmatter does not set `draft: true`.
@@ -83,13 +88,16 @@ This item reads repository files only, through `RepoReader`.
   (case-insensitive).
 - No non-draft file in `src/content/projects/*.mdx` has a frontmatter line
   `placeholder: true`.
+- `src/content/pages/privacy-policy.mdx` states that contact messages are stored in Cloudflare
+  D1 and names none of the retired services Ghost, Supabase, Mailgun or Fly.io (FR-003,
+  Principle VII).
 
 Results:
 
 | Condition | Status |
 |---|---|
-| All three rules pass | complete |
-| Any rule fails | missing. Summary: `<n> launch content problem(s).` The details have one line per problem, for example `services: page is still a draft`, `speaking: still says "placeholder copy"` or `focus-pocus: project visual marked placeholder`. `nextAction`: `Replace the placeholder copy and publish the page (draft: false), then run this check again.` |
+| All four rules pass | complete |
+| Any rule fails | missing. Summary: `<n> launch content problem(s).` The details have one line per problem, for example `services: page is still a draft`, `speaking: still says "placeholder copy"`, `focus-pocus: project visual marked placeholder` or `privacy-policy: names a retired service (Supabase)`. `nextAction`: `Replace the placeholder copy and publish the page (draft: false), then run this check again.` |
 | `launch.expectedPages` is missing | missing, naming the config field |
 
 ### 27. `launch-main-checks`, titled "Main branch checks passing" (FR-003, FR-004)
@@ -102,7 +110,7 @@ newest run.
 | The newest `verify` run on main is completed with conclusion `success` | complete |
 | The newest run is still in progress | pending |
 | Any other conclusion | missing, with the run URL |
-| No run, or the read failed | missing or could-not-check |
+| No run, or the read failed | could-not-check, naming the reason |
 
 ### 28. `live-apex`, titled "Bare domain serves the new site" (FR-013, FR-018, FR-010a)
 
@@ -125,6 +133,12 @@ newest run.
    `https://doncoleman.ca/`. If not, the item is missing, and `nextAction` is "turn on Always
    Use HTTPS".
 5. Otherwise → complete.
+
+**24-hour rule (FR-017, FR-011a), items 28 to 32.** The setup check does not store the switch
+date, so the rule lives in the text: every `pending` result from these items has a `nextAction`
+that ends `If this is still pending 24 hours after the switch, treat it as a problem and see
+docs/launch.md#rollback.` The walkthrough (L13, L14) applies the rule against the switch date
+Don notes at L11.
 
 ### 29. `live-www-redirect`, titled "www redirects to the bare domain" (FR-010a, FR-013)
 
@@ -176,11 +190,17 @@ as `priority:host`, TXT is joined and normalised, CNAME has no trailing dot and 
 | The resolvers disagree for a group, and one of them matches the baseline | pending |
 | Any other difference | missing (`Problem: mail records differ from the baseline.`), one detail per difference. `nextAction`: `Restore the record in Cloudflare → DNS exactly as listed; if the switch caused it, follow docs/launch.md#rollback.` |
 
+## Output privacy (FR-026)
+
+No launch item's summary, details or `nextAction` contains a token, account id, zone id,
+environment value, message content or personal detail. Every new or changed item's tests assert
+this with the shared redaction helper.
+
 ## Report and schema changes
 
 - `CheckStatus` adds `waiting`. `CheckReportCounts` adds `waiting`. `ok` treats `waiting` as
   not failing.
-- The human formatter prints `waiting` in its own colour and adds `<w> waiting for the switch`
+- The human formatter prints the word `waiting` (colour is extra, never the only signal) and adds `<w> waiting for the switch`
   to the summary line.
 - `--json` output follows the updated zod schema in `scripts/setup-check/schemas.ts`. That
   schema now supersedes `specs/001-setup-walkthrough/contracts/check-report.schema.json` for the

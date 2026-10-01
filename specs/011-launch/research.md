@@ -234,9 +234,9 @@ the developers.cloudflare.com pages read while planning.
 
 - **Decision**: Rollback reverses the switch, in this order:
   1. Remove the `doncoleman.ca` Custom Domain from `dcc-web`. Cloudflare deletes its DNS record.
-  2. Recreate `A doncoleman.ca 49.13.201.194` as DNS only.
+  2. Recreate `A doncoleman.ca 49.13.201.194` as DNS only, TTL 14400 (the baseline value).
   3. Delete `AAAA www 100::` and recreate `CNAME www drift-and-convergence.mymagic.page` as DNS
-     only.
+     only, TTL 14400.
   4. Turn off the www redirect rule.
 
   To confirm, `pnpm setup:check --item live-domain-ghost` reports complete ("still on Ghost")

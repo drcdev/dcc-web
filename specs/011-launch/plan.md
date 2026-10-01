@@ -54,7 +54,7 @@ preview sends `X-Robots-Tag: noindex`, and its pages carry the alias canonical).
 
 **Constraints**: Free plans only: Workers Custom Domains, 10 Single Redirect rules, Universal SSL and Web Analytics are all free. No step handles a secret in chat. The agent never changes DNS or accounts. Mail records are unchanged through the switch.
 
-**Scale/Scope**: About 30 public pages. 7 new setup items (26–32) and 4 changed items (4, 6, 16→`review-address-removed`, 17→`preview-noindex`, 18), giving a registry of 32 items. One new CI step and one new docs file.
+**Scale/Scope**: About 30 public pages. 7 new setup items (26–32) and 5 changed items (4, 6, 16→`review-address-removed`, 17→`preview-noindex`, 18), giving a registry of 32 items. One new CI step and one new docs file.
 
 No `NEEDS CLARIFICATION` remains. Research R1–R14 resolves every open technical choice.
 
@@ -90,26 +90,43 @@ The work runs in three phases.
    - the origin, indexing and `_headers` changes;
    - the `docs/setup.md` updates, then `docs/launch.md`;
    - the `/setup-walkthrough` skill update.
-2. **Implement, with Don, before the pull request.** These are the readiness steps that do not
-   need the merged code. The agent stops at each one and waits for Don's answer:
-   - L2: Don replaces the placeholder copy. These are his own words, so the agent does not draft
-     them unless asked.
-   - L3: Don confirms all Ghost posts are migrated.
-   - L8: Don confirms the Ghost records in the dashboard and saves a zone export.
-
-   The agent never signs in, creates accounts, changes DNS or handles credentials. Don never
-   pastes a secret.
+2. **Not in the pull request: Don's readiness steps.** The implement phase does not run any
+   step that needs Don (Clarifications, decision on switch timing). The readiness steps L2
+   (Don replaces the placeholder copy in his own words, through a normal small pull request to
+   `main`; the agent does not draft it unless asked), L3 (Ghost posts migrated), L5 (contact
+   test) and L8 (Ghost records and zone export) run after the merge, before the switch, as the
+   first post-merge manual tasks. Item 26 failing until then blocks the switch, not this pull
+   request. The agent never signs in, creates accounts, changes DNS or handles credentials. Don
+   never pastes a secret.
 3. **After the merge (Don, guided).** The switch can only happen once `main` serves the new
    origin and indexing rules. Before that, the live sitemap would name `new.doncoleman.ca` and
-   every page would be noindex. The rest of `docs/launch.md` therefore runs after the merge:
-   the switch, the post-launch checks, external links and removing the review address. It is
-   driven by `/setup-walkthrough`, which hands over to `docs/launch.md` at the Launch part.
-   Tasks for these steps are marked as post-merge manual tasks. The retirement steps follow two
+   every page would be noindex. All of `docs/launch.md` therefore runs after the merge: the
+   readiness gate, the switch, the post-launch checks, external links and removing the review
+   address. It is driven by `/setup-walkthrough`, which hands over to `docs/launch.md` at the
+   Launch part. Tasks for these steps are marked as post-merge manual tasks. The retirement steps follow two
    weeks later, with a small follow-up pull request:
    - set the baseline's `drop` decisions;
    - update `docs/design-source.md` to say Flux is archived;
    - remove the `new.doncoleman.ca` `_headers` rule;
    - optionally move the apex Custom Domain into `wrangler.jsonc`.
+
+## Requirements added when the checklists were resolved
+
+The checklist pass added or sharpened FR-003 (Turnstile and privacy-policy readiness rows),
+FR-003b, FR-010b, FR-011a, FR-015b, FR-016a, FR-017 (24-hour limit), FR-022, FR-023, FR-025b and
+FR-026 output privacy. They need no new module and no new dependency. They are covered here:
+
+| Requirement | Where it is designed |
+|---|---|
+| FR-003 privacy-policy row | Item 26's fourth rule (contracts/setup-items.md) |
+| FR-003 Turnstile row | Existing item `contact-turnstile-widget`, cited at L5 |
+| FR-003b production origin | L4 runs the site check with `--expect-origin https://doncoleman.ca` |
+| FR-010 whole-zone comparison, FR-010b per half | Items 4 and 6 (contracts/setup-items.md); L11–L12 one-sitting rule |
+| FR-011a rollback triggers, FR-017 24-hour limit | L13–L14; pending `nextAction` text on items 28–32 |
+| FR-015b "Launch test" messages | L5 and L14 |
+| FR-016a mail tests | L9, L14 and T4 |
+| FR-021a private records, FR-022, FR-023, FR-025, FR-025a, FR-025b | Part F steps T1–T9 (contracts/launch-walkthrough.md) |
+| FR-026 output privacy | Shared redaction assertion in every launch item's tests |
 
 ## Project Structure
 
@@ -126,7 +143,7 @@ specs/011-launch/
 │   ├── site-check.md            # Crawler module, CLI, CI step, output and exit codes
 │   ├── indexing-and-origin.md   # Site origin table, robots meta, _headers rules
 │   └── launch-walkthrough.md    # docs/launch.md structure and step list
-├── checklists/requirements.md
+├── checklists/              # requirements, launch-ops, accessibility, privacy-security
 └── tasks.md             # Phase 2 (/speckit-tasks)
 ```
 
@@ -165,7 +182,7 @@ scripts/
         ├── web-analytics.ts              # apex when switched, review host before
         ├── review-address-removed.ts     # NEW (replaces review-address.ts, item 16)
         ├── preview-noindex.ts            # NEW (replaces review-address-noindex.ts, item 17)
-        ├── launch-content-ready.ts       # NEW item 26
+        ├── launch-content-ready.ts       # NEW item 26 (four rules, incl. privacy policy)
         ├── launch-main-checks.ts         # NEW item 27
         ├── live-apex.ts                  # NEW item 28
         ├── live-www-redirect.ts          # NEW item 29
@@ -175,11 +192,14 @@ scripts/
 tests/
 ├── unit/site-check/                      # NEW: crawl, cli, preview waiter
 ├── unit/setup-check/checks/              # new/changed item tests + launch-phase
+├── unit/setup-check/redact.test.ts       # FR-026 shared redaction helper and assertions
 ├── unit/setup-check/providers/           # resolveEach, TLS kind, manual redirect
 ├── unit/setup/                           # docs-structure (32 items), launch-doc.test.ts (NEW), drift, schemas, skill-behaviour
 ├── unit/site/                            # site-origin, build-env, headers, sitemap, astro-config
 ├── unit/ci/workflows.test.ts             # preview crawl step
 ├── component/Seo.test.ts
+├── build/indexing.test.ts                # NEW: main vs branch origin and robots meta
+├── build/launch-paths.test.ts            # NEW: launch.expectedPages/Paths match the build
 ├── fixtures/providers/http|dns|cloudflare|github/  # live-domain fixtures
 ├── fixtures/site-check/                  # NEW: sitemap/page HTML fixtures incl. a broken link
 └── e2e/

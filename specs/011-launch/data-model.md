@@ -25,7 +25,8 @@ run time.
 
 - `waiting` is new (research R3). It is returned only by items flagged `postLaunch` in the
   registry, and only while the phase is `before-switch`. The summary starts with
-  `Waiting for the switch:`, and `nextAction` points to `docs/launch.md#switch`.
+  `Waiting for the switch:`, and `nextAction` points to Part C of `docs/launch.md` (exact text in
+  contracts/setup-items.md).
 - `CheckReportCounts` gains `waiting`.
 - `CheckReport.ok` is true when every result is `complete`, `waiting`, or a
   `deferredUntilMerge` item.
@@ -50,7 +51,7 @@ The registry order after this feature (32 items):
 | 16 | `review-address-removed` | Review address removed | after-merge | yes | **Replaces `review-address`.** Waiting before the switch. Complete when there is no Custom Domain for `reviewHost` and neither resolver answers for it |
 | 17 | `preview-noindex` | Preview addresses not indexed | after-merge | no | **Replaces `review-address-noindex`.** The workers.dev addresses of both Workers send `X-Robots-Tag: noindex`, checked on two paths |
 | 18 | `web-analytics` | Web Analytics | after-merge | yes | Checks the apex when switched and `reviewHost` before. `dependsOn` no longer includes `review-address` |
-| 26 | `launch-content-ready` | Launch content ready | before-merge | yes | NEW |
+| 26 | `launch-content-ready` | Launch content ready | before-merge | yes | NEW. Four rules: expected pages published, no "placeholder copy", no placeholder project, privacy policy names D1 and no retired service |
 | 27 | `launch-main-checks` | Main branch checks passing | after-merge | no | NEW |
 | 28 | `live-apex` | Bare domain serves the new site | after-merge | no | NEW, postLaunch |
 | 29 | `live-www-redirect` | www redirects to the bare domain | after-merge | yes | NEW, postLaunch |
@@ -143,12 +144,15 @@ The rows:
 
 | Row | Confirmed by |
 |---|---|
-| All expected pages present | Automatic: items 26 and 30 / the site check |
+| All expected pages present | Automatic: item 26 and the site check |
 | Ghost content migrated | Don |
 | Placeholders replaced | Automatic: item 26 |
+| Privacy policy states D1 storage and names no retired service | Automatic: item 26 |
 | No broken internal links | Automatic: the site check against the review address, plus the last pull request's CI crawl |
-| Contact form works end to end | Don sends a test message |
-| Main checks passing | Automatic: item 27 |
+| Production build from `main` names `https://doncoleman.ca` as its main address (FR-003b) | Automatic: the site check against the review address with `--expect-origin https://doncoleman.ca` |
+| Contact form works end to end | Don sends a "Launch test" message and deletes it once it arrives (FR-015b) |
+| Spam protection accepts the bare domain | Automatic: item `contact-turnstile-widget` |
+| Main checks passing, including accessibility and the performance budget | Automatic: item 27 |
 
 ## WalkthroughStep (`docs/launch.md`)
 
