@@ -73,11 +73,11 @@ siblings to these paths instead of new conventions.
 Test support for this structure:
 
 - `tests/build/` holds the fixture-site harness (`fixture-site.ts`, `run-astro.ts`) and the
-  build-level tests (`page-validation.test.ts`, `one-file-page.test.ts`). The harness copies the
-  site into `.cache/`, adds fixture page files and runs an Astro build or sync.
+  build-level tests (`page-validation.test.ts`, `local-site.test.ts`; see [testing.md](testing.md)).
+  The harness copies the site into `.cache/`, adds fixture page files and runs an Astro build or sync.
 - `tests/fixtures/pages/` holds the fixture pages: `sections.mdx`, `workshops.mdx`, and
-  `broken/` with one file per build error. `pnpm run build:fixtures` builds the site with the
-  sections fixture for the `sections` Playwright project.
+  `broken/` with the files that must fail the build. `pnpm run build:fixtures` builds the site with
+  the sections fixture for the `sections` Playwright project.
 
 ### Flux deviations
 

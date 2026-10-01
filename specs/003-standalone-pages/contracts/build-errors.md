@@ -4,8 +4,8 @@ Every rule below stops `astro build` (and therefore `pnpm run verify`, the CI `v
 the Cloudflare deploy) with a message that names the file and the problem in plain language
 (FR-007, FR-008, FR-009, SC-003). Messages produced by this feature start with `Page file` or
 `Page files`; schema messages come from Astro's content collection error, which names the entry
-and the key. Each row has one broken fixture in `tests/fixtures/pages/broken/` and one test case in
-`tests/build/page-validation.test.ts`.
+and the key. Where each row is asserted (unit, sync or build) is listed in `docs/testing.md`, "Contract-row
+mapping".
 
 | # | Mistake | Detected by | Message must contain |
 |---|---|---|---|

@@ -22,7 +22,7 @@ green, including the new project tests and the eight new visual baselines per pl
 |---|---|---|
 | Schema, body, themes, order, build mode | `pnpm exec vitest run tests/unit/content` | pass |
 | Building blocks and index pieces | `pnpm exec vitest run tests/component/project` | pass |
-| Broken files, one-file project, drafts, CSP | `pnpm exec vitest run --project build tests/build/project-*` | each broken fixture fails its build with the message in [contracts/build-errors.md](./contracts/build-errors.md) |
+| Broken-file wiring, one-file project, drafts, CSP | `pnpm exec vitest run --project build tests/build/project-validation.test.ts tests/build/local-site.test.ts tests/build/drafts.test.ts` | each broken fixture fails its build or sync with the message in [contracts/build-errors.md](./contracts/build-errors.md); the row-by-row mapping is in `docs/testing.md` |
 | Index, story, hand-off, motion, no-JS | `pnpm run build && pnpm exec playwright test --project=e2e tests/e2e/projects` | pass |
 | Filter and every-block fixtures | `pnpm exec playwright test --project=sections` | pass (fixture site on port 4322) |
 | Accessibility | `pnpm run test:a11y` | zero violations on `/projects/` and `/projects/focus-pocus/` |

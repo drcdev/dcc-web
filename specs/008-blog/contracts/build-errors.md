@@ -4,9 +4,9 @@ Every rule stops `astro build` (and so `pnpm run verify`, CI and the Cloudflare 
 message naming the file and the problem (FR-003, FR-018, FR-033, FR-043, FR-044, FR-052,
 SC-003). Messages written by
 this feature start with `Post file` or `Post files`; schema messages come from Astro's content
-collection error, which names the entry and the key. Each row has one broken fixture in
-`tests/fixtures/posts/broken/` and one case in `tests/build/post-validation.test.ts`. The build
-stops at the first error; tests use one broken file per run.
+collection error, which names the entry and the key. Where each row is asserted (unit, sync or build) is
+listed in `docs/testing.md`, "Contract-row mapping". The build stops at the first error; tests use
+one broken file per run.
 
 | # | Mistake | Detected by | Message must contain |
 |---|---|---|---|

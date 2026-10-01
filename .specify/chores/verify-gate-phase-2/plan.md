@@ -492,7 +492,7 @@ each changed file on its own.
 
 ### W6 `docs/testing.md`, contract cites, stale references, budget check
 
-- [ ] W6 done
+- [x] W6 done (budget recount from the real files: 19 full builds and 12 syncs, at or under the 20 target; local-site 5, drafts 2, blog-listing 1, indexing 2 via `describe.each`, page-validation 4+3, post-validation 3+4, project-validation 2+3, fixture-site 0+2. The mapping in `docs/testing.md` uses the titles the code has: row 18's phrase is `description`+`visual`, row 31 has three unit cases with inline inputs, the P23 call-site run is the sync draft case, the 013 must-build rows map to local-site's "posts that must build" `it.each`. Stale references fixed beyond the plan: the 003 quickstart command, the 008 and 009 quickstart lines naming deleted files and `project-*`. Historical `specs/*/tasks.md`, `research.md` and `plan.md` tick records left alone. `prettier --check` fails on `docs/testing.md` as it does on every existing doc: prettier is not a repo dependency or script, so it is not a gate. Project row 17 body-image half is still untested, as the plan said.)
 
 **Files:** new `docs/testing.md`; the intro line of `specs/003-standalone-pages/contracts/build-errors.md`
 (line 8), `specs/008-blog/contracts/build-errors.md` (line 8),
