@@ -7,8 +7,8 @@ did not.
 
 **Order of the parts.** Part A checks the site is ready. Part B prepares the switch. Part C does
 the switch. Part D checks the live site and tidies up. Part E is the rollback and is read before
-Part C starts. Part F (retirement of Ghost, Supabase and Mailgun) comes later and is added in a
-separate change.
+Part C starts. Part F retires Ghost, Supabase and Mailgun and starts no earlier than 2 weeks after
+the switch.
 
 **When.** The switch happens only after the pull request that adds this walkthrough has merged to
 `main`, because the live checks and the production build rules ship with it. After the switch,
@@ -495,3 +495,215 @@ A terminal in the repository: `pnpm setup:check`.
 DNS caches can take up to 4 hours to expire (the restored records' lifetime). Wait and run the
 checks again. If a check still reports a `Problem:` after that, compare the zone with the table at
 the top of this part and fix any difference.
+
+## Part F — Retirement, two weeks after the switch {#part-f}
+
+Start Part F no earlier than 2 weeks after the switch date Don wrote down in L11 and L18, and only
+when Don is satisfied with the live site. The steps are in order and several cannot be undone, so
+they are labelled **Irreversible** (cannot be undone) or **Reversible** (can be undone). Each
+irreversible step lists the evidence that must exist first, and the agent checks that evidence
+before it asks Don to act. The agent never signs in, never opens the exported files and never asks
+for a credential. The edits that follow the retirement are one small follow-up pull request,
+described in T9.
+
+### T1. Confirm you are satisfied with the live site {#t1}
+
+**What to do**
+Confirm the new site has served `doncoleman.ca` well for at least 2 weeks and that nothing is
+missing. **Rollback ends when Ghost is cancelled** (T3): Ghost's content and members cannot be
+recovered once the subscription ends. Read the private-records rules too. The members file and any
+exported contact submissions stay only on Don's machine, are deleted within 12 months of the
+export, and any request about personal data in them is answered by hand within 30 days.
+
+**Pause:** the agent stops here and waits for Don's answer: `Done — check it`, `Skip for now` or `Stop here`.
+
+**Where**
+Nowhere to act yet. Look at the live site, the setup check and the contact messages that arrived.
+
+**How to confirm**
+Don says he is satisfied and has read the two rules above. The agent does not go on without that.
+
+**If it does not confirm**
+If anything is wrong, do not continue. Fix it, or roll back with Part E while Ghost is still
+running, and start Part F again later.
+
+### T2. Export Ghost's content and members {#t2}
+
+**What to do**
+Export Ghost's content as JSON and its members as CSV to a folder outside the repository. These
+files are the only copy of the content and members once Ghost is cancelled. They are never copied
+into the repository, never committed and never opened in the chat.
+
+**Pause:** the agent stops here and waits for Don's answer: `Done — check it`, `Skip for now` or `Stop here`.
+
+**Where**
+Ghost Admin → Settings → Advanced → Import/Export → Export content (JSON). Then Members → Export
+all members (CSV).
+
+**How to confirm**
+Don gives the agent the two file paths. The agent runs `ls -l <path>` on each. Both files exist and
+are not empty. The agent never opens the members file, and never opens the content file in the chat.
+
+**If it does not confirm**
+If a file is missing or empty, export it again and check again. Do not go on to T3 until both files
+are confirmed.
+
+### T3. Cancel Ghost {#t3}
+
+**What to do**
+**Irreversible.** Evidence first: T1 is done and both T2 files are confirmed. Cancel the Ghost
+subscription with the Ghost host's billing. Then revoke any Ghost integration keys and remove
+leftover Ghost secrets from GitHub, Cloudflare and local untracked files.
+
+**Pause:** the agent stops here and waits for Don's answer: `Done — check it`, `Skip for now` or `Stop here`.
+
+**Where**
+The Ghost host's billing page; Ghost Admin → Settings → Advanced → Integrations for the keys; the
+GitHub repository secrets; Cloudflare Workers & Pages → `dcc-web` → Settings → Variables and
+Secrets; and `git status --ignored` locally for untracked files.
+
+**How to confirm**
+Don sees the cancellation confirmation. The agent confirms no Ghost key or secret remains in the
+places listed.
+
+**If it does not confirm**
+If the cancellation did not go through, try again or contact the Ghost host. If a leftover secret
+remains, remove it and look again. After the cancellation, rollback is no longer possible.
+
+### T4. Delete the Mailgun records {#t4}
+
+**What to do**
+**Irreversible.** Evidence first: Ghost is cancelled (T3), and Don confirms nothing other than
+Ghost's newsletter sends through Mailgun (the contact form sends no email). Delete all five Mailgun
+records for `mail.doncoleman.ca`: `MX mail.doncoleman.ca mxa.eu.mailgun.org`,
+`MX mail.doncoleman.ca mxb.eu.mailgun.org`, `TXT mail.doncoleman.ca "v=spf1 include:mailgun.org ~all"`,
+`TXT mta._domainkey.mail.doncoleman.ca` (DKIM) and `CNAME email.mail.doncoleman.ca eu.mailgun.org`
+(tracking). The iCloud records stay: do not touch them. Then delete the Mailgun sending domain and
+its API keys, and send an email to and from the domain address and confirm both arrive. Straight
+after the deletion the agent opens the follow-up pull request that sets those five baseline entries,
+and the Ghost web records, to `drop` with dated reasons in `setup/dns-baseline.json`. Retirement is
+not complete until `pnpm setup:check --item mail-records` passes against the updated baseline.
+
+**Pause:** the agent stops here and waits for Don's answer: `Done — check it`, `Skip for now` or `Stop here`.
+
+**Where**
+Cloudflare dashboard → the zone → DNS → Records; Mailgun dashboard → Sending → Domains, and
+Settings → API keys; Don's mail client for the email test.
+
+**How to confirm**
+`pnpm setup:check --item mail-records` is complete, showing iCloud only, and
+`pnpm setup:check --item dns-records-parity` is complete, both against the updated baseline.
+
+**If it does not confirm**
+If the mail test fails, check the iCloud records first: they must be unchanged. If a Mailgun record
+is left, delete it and run the checks again. If the baseline and the zone disagree, correct the
+baseline entry, never the iCloud records.
+
+### T5. Review and export the Supabase contact submissions {#t5}
+
+**What to do**
+Look at what the old Supabase project holds before it is deleted. The agent asks Don to read out
+the project's tables, their fields and the number of records in each. Don then exports the contact
+submissions he wants to keep as CSV to a folder outside the repository, opens the file himself, and
+checks that the number of records in it matches the number the project shows. Nothing from the file
+is shown in the chat.
+
+**Pause:** the agent stops here and waits for Don's answer: `Done — check it`, `Skip for now` or `Stop here`.
+
+**Where**
+Supabase dashboard → Table Editor → the table → Export to CSV. Don opens the file on his own
+machine.
+
+**How to confirm**
+The agent runs `ls -l <path>` on the path Don gives and sees a non-empty file. Don says the record
+count in the file matches the count shown in the project.
+
+**If it does not confirm**
+If the counts differ, export again (check the table filter and the page size) and compare again.
+Do not go on to T7 until they match.
+
+### T6. Confirm the Supabase project is Flux's {#t6}
+
+**What to do**
+Make sure the project about to be deleted is Flux's and not his other Supabase project. Don
+confirms two independent identifiers: the project name, and that the project reference matches the
+one in the Flux repository's Supabase configuration. Don also confirms it holds Flux's `contact`
+table and `contact` edge function.
+
+**Pause:** the agent stops here and waits for Don's answer: `Done — check it`, `Skip for now` or `Stop here`.
+
+**Where**
+Supabase dashboard → Project Settings → General (name and reference); the `drcdev/flux`
+repository's Supabase configuration file for its reference.
+
+**How to confirm**
+Don states the project name and that the reference matches the Flux repository's. The agent writes
+both down before T7.
+
+**If it does not confirm**
+If the name or the reference does not match, stop. Do not delete anything. Look for the right
+project, or leave Supabase alone and note it.
+
+### T7. Delete the Supabase project {#t7}
+
+**What to do**
+**Irreversible.** Evidence first: the T5 export is confirmed and the T6 identity is confirmed.
+Delete the project, then remove any leftover Supabase secrets from GitHub, Cloudflare and local
+untracked files.
+
+**Pause:** the agent stops here and waits for Don's answer: `Done — check it`, `Skip for now` or `Stop here`.
+
+**Where**
+Supabase dashboard → Project Settings → General → Delete project; then the GitHub repository
+secrets, Cloudflare Workers & Pages → `dcc-web` → Variables and Secrets, and `git status --ignored`
+locally.
+
+**How to confirm**
+The project is gone from the dashboard's project list, and no Supabase secret remains in the
+places listed.
+
+**If it does not confirm**
+If the project is still listed, reload and check it is not just paused. If the wrong project was
+targeted, stop and tell the agent at once. If a secret remains, remove it and look again.
+
+### T8. Scan and archive the Flux repository {#t8}
+
+**What to do**
+**Reversible.** Before archiving, scan `drcdev/flux` for committed secrets and personal data.
+Revoke any secret found and remove the personal data, or keep the repository private. Then archive
+the Flux repository. It can still be cloned, and GitHub can unarchive it.
+
+**Pause:** the agent stops here and waits for Don's answer: `Done — check it`, `Skip for now` or `Stop here`.
+
+**Where**
+The agent scans a local clone of `drcdev/flux` for secrets and personal data and reports file
+names only. Then GitHub → `drcdev/flux` → Settings → Archive this repository. Revoking a secret
+happens in the issuing service's dashboard.
+
+**How to confirm**
+`gh repo view drcdev/flux --json isArchived` shows `true`.
+
+**If it does not confirm**
+If the scan finds a secret, revoke it in its service and remove it before archiving. If the command
+shows `false`, repeat the archive in Settings and check again. Unarchiving in Settings undoes it.
+
+### T9. Follow-up pull request and final check {#t9}
+
+**What to do**
+The agent opens one small follow-up pull request. `docs/design-source.md` says Flux is archived
+but can still be cloned with the same `gh repo clone` command. `setup/dns-baseline.json` drops the
+records retired in T4. The `new.doncoleman.ca` rule in `_headers` is removed. Optionally, the apex
+Custom Domain moves into `wrangler.jsonc`. A final check confirms no DNS record points at Ghost,
+Mailgun or the review address. None of these edits are made before Part F.
+
+**Where**
+A pull request from the agent; the clone command in `docs/design-source.md`.
+
+**How to confirm**
+That pull request's `verify` check passes, and `pnpm setup:check --item mail-records` and
+`pnpm setup:check --item dns-records-parity` are complete.
+`gh repo clone drcdev/flux .reference/flux -- --depth 1` still works.
+
+**If it does not confirm**
+If `verify` fails, fix the baseline or docs change and push again. If a record still points at
+Ghost, Mailgun or the review address, Don deletes it in the dashboard and the checks run again.
