@@ -186,8 +186,8 @@ test.describe("home introduction card (FR-016 to FR-019, FR-028a)", () => {
   test("the text below the card says who Don helps and what he does", async ({ page }) => {
     await page.goto("/");
     const body = page.locator("#content-section");
-    await expect(body).toContainText(/helps/i);
-    await expect(body).toContainText(/what don does/i);
+    await expect(body).toContainText(/I help/);
+    await expect(body).toContainText(/what I do/i);
     // Recent writing's topic pills use a tinted rust background; only a button-style link is unwanted.
     await expect(
       body.locator("a.bg-rust-600, a[class*='bg-rust']:not([data-topic-pill])"),
