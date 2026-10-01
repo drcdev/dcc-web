@@ -164,11 +164,11 @@ description: "Task list for launching the new doncoleman.ca"
 
 ## Phase 10: Verify and PR readiness (7 tasks)
 
-- [ ] T082 Run the full gate from an agent shell with `ASTRO_PREVIEW_BACKGROUND=1 pnpm run verify` (see the verify-from-agent-shell notes; read the `VERIFY_EXIT=` line; port 4321 collisions with sibling worktrees mean wait and rerun; if only load-bound, push and let CI verify with Don's agreement).
-- [ ] T083 Confirm accessibility and performance gates pass unchanged (`tests/e2e/a11y.spec.ts`, `tests/e2e/budget.spec.ts`) and the visual project shows no diff. Do not refresh baselines.
-- [ ] T084 Run quickstart scenarios 1 to 6 (those needing no live domain) and note the results.
-- [ ] T085 Confirm no new dependency in `package.json` or the lockfile, no secret or `.env` content in any committed file, and no `specs/` path literal in tests (drift guard).
-- [ ] T086 Prepare the PR body (opened from `drc-agents`): major change under Principle III, label applied, auto-merge off; the post-merge switch runs separately from `docs/launch.md` (Phases 11 and 12); the open `[PREVIEW-CHECK]` items; expected monthly cost $0 with running costs going down.
+- [X] T082 Run the full gate from an agent shell with `ASTRO_PREVIEW_BACKGROUND=1 pnpm run verify` (see the verify-from-agent-shell notes; read the `VERIFY_EXIT=` line; port 4321 collisions with sibling worktrees mean wait and rerun; if only load-bound, push and let CI verify with Don's agreement).
+- [X] T083 Confirm accessibility and performance gates pass unchanged (`tests/e2e/a11y.spec.ts`, `tests/e2e/budget.spec.ts`) and the visual project shows no diff. Do not refresh baselines.
+- [X] T084 Run quickstart scenarios 1 to 6 (those needing no live domain) and note the results.
+- [X] T085 Confirm no new dependency in `package.json` or the lockfile, no secret or `.env` content in any committed file, and no `specs/` path literal in tests (drift guard).
+- [X] T086 Prepare the PR body (opened from `drc-agents`): major change under Principle III, label applied, auto-merge off; the post-merge switch runs separately from `docs/launch.md` (Phases 11 and 12); the open `[PREVIEW-CHECK]` items; expected monthly cost $0 with running costs going down.
 - [ ] T087 [PREVIEW-CHECK] Don checks the preview deployment (robots, canonical, 404 page, crawl step green) and approves the PR.
 - [ ] T088 [PREVIEW-CHECK] Confirm the first preview run shows `X-Robots-Tag: noindex` on the `workers.dev` host through the crawl step, proving the `_headers` host match that local `wrangler dev` cannot exercise.
 
