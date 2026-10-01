@@ -213,7 +213,7 @@ the rows it proves at this layer.
 
 ### W2 Post validation: unit moves and wiring runs
 
-- [ ] W2 done
+- [x] W2 done (p01-no-title.mdx kept: fixture-site.test.ts still uses it until W5)
 
 **Files:** `tests/build/post-validation.test.ts` (rewrite),
 `tests/unit/content/post-schema.test.ts`, and unused fixtures in `tests/fixtures/posts/broken/`.

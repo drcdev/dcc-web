@@ -78,7 +78,7 @@ describe("postSchema, valid posts", () => {
 });
 
 describe("postSchema, title and summary (P1, P2)", () => {
-  it.each(["title", "summary"] as const)("rejects a missing, empty or blank %s, naming the key", (key) => {
+  it.each(["title", "summary"] as const)("rejects a missing, empty or blank %s, naming the key (P1, P2)", (key) => {
     const without = omit(minimal, key);
     rejects(without);
     rejects({ ...minimal, [key]: "" });
@@ -89,7 +89,7 @@ describe("postSchema, title and summary (P1, P2)", () => {
 });
 
 describe("postSchema, date and updated (P3, P4)", () => {
-  it("rejects a missing date, naming date", () => {
+  it("rejects a missing date, naming date (P3)", () => {
     const without = omit(minimal, "date");
     rejects(without);
     expect(issues(without)).toContain("date");
@@ -151,6 +151,19 @@ describe("post front matter dates through the content YAML parser (P4, R1 fallba
     expect(run).toThrow("YYYY-MM-DD");
   });
 
+  // P4: the four contract inputs, asserting the file, the key and the value as found.
+  it.each([
+    ["next tuesday", "next tuesday"],
+    ['"2026-08-27"', "quotes"],
+    ["27/08/2026", "27/08/2026"],
+    ["2026-02-30", "2026-02-30"],
+  ])("rejects date: %s, naming the file, date and the value found (P4)", (value, found) => {
+    const run = () => assertPostDates(file, source(`date: ${value}`));
+    expect(run).toThrow(file);
+    expect(run).toThrow("date");
+    expect(run).toThrow(found);
+  });
+
   it("rejects the same mistakes in updated, naming updated", () => {
     for (const value of ['"2026-09-30"', "2026-02-30", "2026-09-30T00:00:00Z", "tomorrow"]) {
       const run = () => assertPostDates(file, source(`date: 2026-08-27\nupdated: ${value}`));
@@ -175,7 +188,7 @@ describe("post front matter dates through the content YAML parser (P4, R1 fallba
 });
 
 describe("postSchema, topics (P5 to P7)", () => {
-  it("rejects a missing or empty topics list, naming topics", () => {
+  it("rejects a missing or empty topics list, naming topics (P5)", () => {
     const without = omit(minimal, "topics");
     rejects(without);
     rejects({ ...minimal, topics: [] });
@@ -192,7 +205,7 @@ describe("postSchema, topics (P5 to P7)", () => {
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
   });
 
-  it("rejects the same topic twice, naming topics", () => {
+  it("rejects the same topic twice, naming topics (P7)", () => {
     rejects({ ...minimal, topics: ["agentic-ai", "agentic-ai"] });
     expect(issues({ ...minimal, topics: ["agentic-ai", "agentic-ai"] })).toContain("topics");
   });
@@ -203,9 +216,10 @@ describe("postSchema, topics (P5 to P7)", () => {
 });
 
 describe("postSchema, featureImage (P8, P9)", () => {
-  it("rejects a feature image without alt or with empty alt, saying alt text", () => {
+  it("rejects a feature image without alt or with empty alt, saying alt and alt text (P8)", () => {
     for (const featureImage of [{ src: "./a.png" }, { src: "./a.png", alt: "" }, { src: "./a.png", alt: "  " }]) {
       rejects({ ...minimal, featureImage });
+      expect(issues({ ...minimal, featureImage })).toContain("alt");
       expect(issues({ ...minimal, featureImage })).toContain("alt text");
     }
   });
@@ -236,13 +250,13 @@ describe("postSchema, featureImage (P8, P9)", () => {
 });
 
 describe("postSchema, updated and strictness (P10, P11)", () => {
-  it("rejects updated earlier than date, naming updated", () => {
+  it("rejects updated earlier than date, naming updated (P10)", () => {
     const value = { ...minimal, date: new Date("2026-08-27"), updated: new Date("2026-08-26") };
     rejects(value);
     expect(issues(value)).toContain("updated");
   });
 
-  it("rejects an unknown or misspelled setting, naming it", () => {
+  it("rejects an unknown or misspelled setting, naming it (P11)", () => {
     rejects({ ...minimal, sumary: "typo" });
     expect(issues({ ...minimal, sumary: "typo" })).toContain("sumary");
     rejects({ ...minimal, description: "a page setting" });
