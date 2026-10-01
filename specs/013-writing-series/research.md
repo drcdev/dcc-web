@@ -190,3 +190,19 @@ are not reopened here.
 
 - **Decision**: none required. `_redirects`, extra static pages and copy changes run inside
   the Workers free plan. **Expected new monthly cost: $0.**
+
+## R11. Computed colour contrast (FR-016c)
+
+Computed by `tests/unit/content/topics.test.ts` from the tokens in `src/styles/global.css`.
+Text pairs need 4.5:1; the 2px series-marker outline needs 3:1 against its fill and the page
+surface (white in light, `dusk-BASE` in dark). Marker outline is shade 700 (light) and 300 (dark).
+
+| Topic (colour) | Pill light / dark | Banner light / dark | Outline light: fill / surface | Outline dark: fill / surface |
+|---|---|---|---|---|
+| compliant-data (rust) | 13.77 / 13.77 | 15.65 / 15.32 | 5.96 / 7.36 | 8.70 / 8.74 |
+| technology-teams (sand) | 13.94 / 13.94 | 15.59 / 15.59 | 6.60 / 8.23 | 8.43 / 8.30 |
+| agentic-ai (mauve) | 13.96 / 13.96 | 15.45 / 15.73 | 6.99 / 8.83 | 8.14 / 7.89 |
+| healthcare-leadership (mist) | 10.79 / 13.96 | 11.93 / 15.74 | 5.44 / 8.90 | 8.11 / 7.85 |
+| drift (lavender, series) | 13.81 / 13.81 | 14.72 / 16.14 | 8.69 / 11.76 | 6.75 / 6.16 |
+| convergence (sage, series) | 13.69 / 13.69 | 16.21 / 14.81 | 4.99 / 5.82 | 9.80 / 10.48 |
+| free-form (dusk) | 13.95 / 10.92 | 15.09 / 12.54 | n/a | n/a |

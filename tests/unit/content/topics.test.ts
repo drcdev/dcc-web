@@ -5,7 +5,15 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { topicIds, topics } from "../../../src/config/topics.ts";
+import {
+  controlledIds,
+  otherSeries,
+  pillRowTopics,
+  seriesIds,
+  topicHref,
+  topicIds,
+  topics,
+} from "../../../src/config/topics.ts";
 import { draftLabel, featuredMark, topicStyles } from "../../../src/components/post/topic-styles.ts";
 
 const read = (path: string) => readFileSync(fileURLToPath(new URL(`../../../${path}`, import.meta.url)), "utf-8");
@@ -50,10 +58,16 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
   return [r + m, g + m, b + m];
 }
 
+function hexToRgb(hex: string): [number, number, number] {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => v / 255) as [number, number, number];
+}
+
 /** The rgb (0 to 1) of a token such as `rust-100`, `white` or `black`. */
 function colourOf(token: string): [number, number, number] {
   if (token === "white") return [1, 1, 1];
   if (token === "black") return [0, 0, 0];
+  if (token === "dusk-BASE") return hexToRgb(/--color-dusk-BASE:\s*(#[0-9a-fA-F]{6})/.exec(css)![1]!);
   const [, palette, shade] = /^([a-z]+)-(\d+)$/.exec(token) ?? [];
   const base = new RegExp(`--color-${palette}-BASE:\\s*(#[0-9a-fA-F]{6})`).exec(css)?.[1];
   const lightness = SHADE_LIGHTNESS[palette!]?.[Number(shade)];
@@ -91,14 +105,43 @@ function pairs(classes: string): { theme: string; bg: string; text: string }[] {
 }
 
 describe("topics", () => {
-  it("starts with the four agreed topics in order, each with its colour", () => {
+  it("lists the six controlled topics in the FR-010a order, each with its colour", () => {
     expect(topics.map((t) => [t.id, t.colour])).toEqual([
       ["compliant-data", "rust"],
-      ["technology-teams", "sage"],
-      ["agentic-ai", "lavender"],
+      ["technology-teams", "sand"],
+      ["agentic-ai", "mauve"],
       ["healthcare-leadership", "mist"],
+      ["drift", "lavender"],
+      ["convergence", "sage"],
     ]);
+    expect([...controlledIds]).toEqual(topics.map((t) => t.id));
     expect([...topicIds]).toEqual(topics.map((t) => t.id));
+  });
+
+  it("marks drift and convergence, and only those, as series", () => {
+    expect(topics.filter((t) => "series" in t && t.series).map((t) => t.id)).toEqual(["drift", "convergence"]);
+    expect([...seriesIds]).toEqual(["drift", "convergence"]);
+  });
+
+  it("leaves series out of the pill row", () => {
+    expect(pillRowTopics.map((t) => t.id)).toEqual([
+      "compliant-data",
+      "technology-teams",
+      "agentic-ai",
+      "healthcare-leadership",
+    ]);
+  });
+
+  it("addresses a series at /writing/{id}/ and any other topic at /writing/topics/{id}/", () => {
+    expect(topicHref("drift")).toBe("/writing/drift/");
+    expect(topicHref("convergence")).toBe("/writing/convergence/");
+    expect(topicHref("agentic-ai")).toBe("/writing/topics/agentic-ai/");
+    expect(topicHref("cloud-cost")).toBe("/writing/topics/cloud-cost/");
+  });
+
+  it("names the other series", () => {
+    expect(otherSeries("drift")).toBe("convergence");
+    expect(otherSeries("convergence")).toBe("drift");
   });
 
   it("uses ids of lower-case letters, digits and hyphens, at most 40 characters", () => {
@@ -135,13 +178,18 @@ describe("topics", () => {
   });
 });
 
-describe("colour contrast of the topic classes (FR-017)", () => {
+describe("colour contrast of the topic classes (FR-017, FR-010, FR-016c)", () => {
   const draftNotice = /class="([^"]*)"/.exec(read("src/components/page/DraftNotice.astro"))?.[1] ?? "";
   const cases: [string, string][] = [
     ...topics.flatMap((t) => [
       [`${t.id} pill`, topicStyles[t.colour]!.pill] as [string, string],
       [`${t.id} banner`, topicStyles[t.colour]!.banner] as [string, string],
     ]),
+    ...topics
+      .filter((t) => "series" in t && t.series)
+      .map((t) => [`${t.id} series marker`, topicStyles[t.colour]!.marker] as [string, string]),
+    ["free-form (dusk) pill", topicStyles.dusk!.pill],
+    ["plain (dusk) banner", topicStyles.dusk!.banner],
     ["Featured mark", featuredMark],
     ["Draft label", draftLabel],
     ["Draft notice", draftNotice],
@@ -155,5 +203,28 @@ describe("colour contrast of the topic classes (FR-017)", () => {
     for (const { theme, bg, text } of pairs(classes)) {
       expect(contrast(bg, text), `${theme}: ${text} on ${bg}`).toBeGreaterThanOrEqual(4.5);
     }
+  });
+});
+
+describe("series marker outline (FR-016c)", () => {
+  const series = topics.filter((t) => "series" in t && t.series);
+
+  it.each(series.map((t) => [t.id, t.colour] as [string, string]))("%s marker has a 2px outline in shade 700 light and 300 dark", (_id, colour) => {
+    const marker = topicStyles[colour as keyof typeof topicStyles]!.marker;
+    expect(marker).toMatch(/(^|\s)border-2(\s|$)/);
+    expect(marker).toContain(`border-${colour}-700`);
+    expect(marker).toContain(`dark:border-${colour}-300`);
+    expect(marker).toContain("font-semibold");
+    expect(marker).toContain("forced-colors:");
+  });
+
+  it.each(series.map((t) => [t.id, t.colour] as [string, string]))("%s outline has at least 3:1 against fill and surface", (_id, colour) => {
+    const marker = topicStyles[colour as keyof typeof topicStyles]!.marker;
+    const [lightFill] = pairs(marker).map((p) => p.bg);
+    const darkFill = pairs(marker)[1]!.bg;
+    expect(contrast(`${colour}-700`, lightFill!), "light fill").toBeGreaterThanOrEqual(3);
+    expect(contrast(`${colour}-700`, "white"), "light surface").toBeGreaterThanOrEqual(3);
+    expect(contrast(`${colour}-300`, darkFill), "dark fill").toBeGreaterThanOrEqual(3);
+    expect(contrast(`${colour}-300`, "dusk-BASE"), "dark surface").toBeGreaterThanOrEqual(3);
   });
 });

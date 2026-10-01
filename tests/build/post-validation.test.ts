@@ -110,7 +110,7 @@ describe("build errors for post files (contracts/build-errors.md)", () => {
     expectRejected([broken("p21-removed-topic.mdx")], ["technology-teams"], {
       overrides: {
         "src/config/topics.ts": (text) =>
-          text.replace(/\n  \{\n    id: "technology-teams",[\s\S]*?colour: "sage",\n  \},/, ""),
+          text.replace(/\n  \{\n    id: "technology-teams",[\s\S]*?colour: "sand",\n  \},/, ""),
       },
     }));
 

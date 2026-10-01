@@ -8,7 +8,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { topicIds } from "../../../src/config/topics.ts";
+import { pillRowTopics } from "../../../src/config/topics.ts";
 
 const dir = fileURLToPath(new URL("../../../src/content/posts/", import.meta.url));
 const fixtureDir = fileURLToPath(new URL("../../fixtures/posts/valid/", import.meta.url));
@@ -91,7 +91,8 @@ describe("sample posts", () => {
     expect(sample!.front).toMatch(/^updated: \d{4}-\d{2}-\d{2}$/m);
   });
 
-  // With the sample post, the real posts use every topic, so each topic page lists a post.
+  // With the sample post, the real posts use every non-series topic, so each topic page lists a
+  // post. The two series are covered by the series-tagging test below (FR-005).
   it("uses all four topics together with the real posts", () => {
     const posts = load(dir, /\.mdx$/);
     const used = new Set(
@@ -100,7 +101,7 @@ describe("sample posts", () => {
         ...(/^topics: \[(.*)\]$/m.exec(s.front)?.[1]?.split(",").map((id) => id.trim()) ?? []),
       ]),
     );
-    for (const id of topicIds) expect(used, id).toContain(id);
+    for (const { id } of pillRowTopics) expect(used, id).toContain(id);
   });
 
   // Only the sample post's pictures (sample-*): the real posts' photos are sized by the build.
