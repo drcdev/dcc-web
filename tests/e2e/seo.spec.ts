@@ -80,7 +80,10 @@ const TOPIC_PAGES = [
   "/writing/topics/technology-teams/",
 ];
 
-test("the sitemap lists exactly the built public pages, never /404", async ({ request }) => {
+// The two canonical series listing pages are built on every build (FR-008).
+const SERIES_PAGES = ["/writing/convergence/", "/writing/drift/"];
+
+test("the sitemap lists exactly the built public pages, the series pages, never /404", async ({ request }) => {
   const origin = await robotsOrigin(request);
   const entries = await sitemapEntries(request);
   expect([...entries].sort()).toEqual(
@@ -98,6 +101,7 @@ test("the sitemap lists exactly the built public pages, never /404", async ({ re
       "/writing/",
       "/writing/all/",
       ...TOPIC_PAGES,
+      ...SERIES_PAGES,
       ...POSTS,
     ]
       .map((path) => `${origin}${path}`)
@@ -124,12 +128,13 @@ test("robots.txt allows all crawling and points at the sitemap on the page origi
   expect(new URL(canonical!).origin).toBe(await robotsOrigin(request));
 });
 
-/** Post pages are articles; the landing, all posts and topic pages are ordinary pages (FR-030). */
+/** Post pages are articles; the landing, all posts, topic and series pages are ordinary pages (FR-030, FR-008). */
 const isPostPath = (path: string) =>
   path.startsWith("/writing/") &&
   path !== "/writing/" &&
   !path.startsWith("/writing/all/") &&
-  !path.startsWith("/writing/topics/");
+  !path.startsWith("/writing/topics/") &&
+  !SERIES_PAGES.some((series) => path.startsWith(series));
 
 test("every public page has complete, consistent metadata", async ({ page, request }) => {
   const origin = await robotsOrigin(request);
@@ -183,4 +188,12 @@ test("the project story has its own title, description, canonical, sharing image
   await expectSharedMetadata(page, origin);
   // Focus Pocus has no sharing image of its own, so it uses the site default (FR-080).
   expect(await attr(page, 'meta[property="og:image"]')).toContain("og-default");
+});
+
+test("the feed's title is Drift & Convergence and its description names both series (FR-013)", async ({ request }) => {
+  const xml = await (await request.get("/writing/rss.xml")).text();
+  expect(xml).toContain("<title>Drift &amp; Convergence</title>");
+  const description = /<channel>[\s\S]*?<description>([^<]*)<\/description>/.exec(xml)?.[1] ?? "";
+  expect(description).toContain("Convergence");
+  expect(description).toContain("Drift");
 });

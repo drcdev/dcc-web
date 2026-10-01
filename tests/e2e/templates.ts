@@ -23,6 +23,8 @@ export const TEMPLATES = [
   { name: "writing-landing", path: "/writing/", built: true },
   { name: "writing-all", path: "/writing/all/", built: true },
   { name: "writing-topic", path: "/writing/topics/technology-teams/", built: true },
+  { name: "writing-series-drift", path: "/writing/drift/", built: true },
+  { name: "writing-series-convergence", path: "/writing/convergence/", built: true },
   // Blog post pages. The sample post is a draft, so it also covers the draft post page (FR-039).
   { name: "writing-post", path: "/writing/sample-everything/", built: true },
   // A post with no feature image: the fixture post tests/fixtures/posts/valid/text-only.mdx, which

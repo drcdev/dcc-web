@@ -2,7 +2,6 @@
 // (data-model.md "PostSummary"). Types only, so components and pure functions can
 // import it without the content layer.
 import type { ImageMetadata } from "astro";
-import type { TopicId } from "../../config/topics.ts";
 
 export interface PostSummary {
   slug: string;
@@ -13,7 +12,7 @@ export interface PostSummary {
   date: Date;
   updated?: Date;
   /** The first topic is the main topic. */
-  topics: TopicId[];
+  topics: string[];
   featureImage?: { src: ImageMetadata; alt: string; caption?: string };
   featured: boolean;
   draft: boolean;

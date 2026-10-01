@@ -1,0 +1,20 @@
+---
+// The series marker: a pill-shaped link that reads "Series: Drift" or "Series: Convergence"
+// and goes to the series page (spec 013 FR-010, FR-016c, FR-016d). It differs from an ordinary
+// pill by its text, its semibold weight and its 2px outline, not by colour alone. The link text
+// is the full visible text, so there is no aria-label (WCAG 2.5.3). Classes come from the static
+// map in topic-styles.ts. Hover adds an underline only; there is no transition or animation.
+import { findTopic, topicHref } from "../../config/topics.ts";
+import { topicStyle } from "./topic-styles.ts";
+
+export interface Props {
+  /** A series id from src/config/topics.ts. */
+  series: string;
+}
+
+const { series } = Astro.props;
+const topic = findTopic(series);
+if (!topic || !("series" in topic)) throw new Error(`SeriesMarker: "${series}" is not a series.`);
+---
+
+<a href={topicHref(topic.id)} data-series-marker class={topicStyle(topic.colour).marker}>Series: {topic.name}</a>

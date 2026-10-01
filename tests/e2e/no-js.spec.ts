@@ -99,3 +99,13 @@ for (const template of TEMPLATES) {
     }
   });
 }
+
+test("the writing landing lead and both series links are present and usable without JavaScript", async ({ page }) => {
+  await page.goto("/writing/");
+  const lead = page.locator("main [data-series-intro]");
+  await expect(lead.getByRole("heading", { level: 2, name: "Drift & Convergence" })).toBeVisible();
+  await expect(lead.getByRole("link", { name: "Read Convergence" })).toBeVisible();
+  await lead.getByRole("link", { name: "Read Drift" }).click();
+  await expect(page).toHaveURL(/\/writing\/drift\/$/);
+  await expect(page.locator("main h1")).toHaveText("Drift");
+});

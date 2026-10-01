@@ -2,12 +2,15 @@
 // The introduction banner that opens a topic page: the topic's name as the page `h1`
 // and its description, on the topic's colour (contracts/blog-pages.md "Topic"; FR-013;
 // Direction A of docs/design/blog.md). Text and background pairs come from
-// topic-styles.ts, which is checked for AA contrast in both themes.
+// topic-styles.ts, which is checked for AA contrast in both themes. A free-form topic
+// (an id not in src/config/topics.ts, spec 013 research R9) gets a plain `dusk` banner
+// with its sentence-case label and no description.
 import { findTopic } from "../../config/topics.ts";
+import { topicLabel } from "../../lib/content/topic-ids.ts";
 import { topicStyle } from "./topic-styles.ts";
 
 export interface Props {
-  /** A topic id from src/config/topics.ts. */
+  /** A topic id: from src/config/topics.ts, or a free-form id. */
   topic: string;
   /** Adds ", page N" to the name on page 2 and later. */
   page?: number;
@@ -15,11 +18,11 @@ export interface Props {
 
 const { topic: id, page = 1 } = Astro.props;
 const topic = findTopic(id);
-if (!topic) throw new Error(`TopicBanner: "${id}" is not a topic in src/config/topics.ts.`);
+const name = topic?.name ?? topicLabel(id);
 ---
 
-<header data-topic-banner class:list={["mb-8 rounded-xl p-6 md:p-8", topicStyle(topic.colour).banner]}>
+<header data-topic-banner class:list={["mb-8 rounded-xl p-6 md:p-8", topicStyle(topic?.colour ?? "dusk").banner]}>
   <p class="m-0 text-xs font-semibold uppercase tracking-wider">Topic</p>
-  <h1 class="my-2 text-4xl font-bold break-words md:text-5xl">{topic.name}{page > 1 && `, page ${page}`}</h1>
-  <p class="m-0 max-w-prose text-lg">{topic.description}</p>
+  <h1 class="my-2 text-4xl font-bold break-words md:text-5xl">{name}{page > 1 && `, page ${page}`}</h1>
+  {topic && <p class="m-0 max-w-prose text-lg">{topic.description}</p>}
 </header>

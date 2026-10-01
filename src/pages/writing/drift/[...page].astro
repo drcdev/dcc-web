@@ -1,0 +1,24 @@
+---
+// The Drift series, /writing/drift/ and /writing/drift/{n}/ (spec 013 US4; contracts/writing-pages.md
+// "Series page"). A static route folder with `paginate()` at `blog.pageSize`; the body is shared in
+// SeriesPage.astro (docs.astro.build/en/guides/routing/#pagination).
+import type { GetStaticPaths } from "astro";
+import SeriesPage from "../../../components/post/SeriesPage.astro";
+import { blog } from "../../../config/blog.ts";
+import { getPostSummaries } from "../../../lib/posts";
+
+// getStaticPaths runs before the page's own code, so it names the series itself.
+const SERIES = "drift";
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = await getPostSummaries();
+  return paginate(
+    posts.filter((post) => post.topics.includes("drift")),
+    { pageSize: blog.pageSize },
+  );
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+---
+
+<SeriesPage series={SERIES} page={page} />

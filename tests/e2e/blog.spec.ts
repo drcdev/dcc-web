@@ -188,6 +188,7 @@ test.describe("landing page", () => {
       return [
         at("main h1"),
         at('main a[href$="rss.xml"]'),
+        at("[data-series-intro]"),
         at("[data-lead-story]"),
         at('main nav[aria-label="Topics"]'),
         heading("Featured"),
@@ -198,6 +199,45 @@ test.describe("landing page", () => {
     });
     expect(order.every((n) => n >= 0)).toBe(true);
     expect(order).toEqual([...order].sort((a, b) => a - b));
+  });
+
+  test("opens with a framing lead between the h1 and the lead story, with a link into each series", async ({
+    page,
+  }) => {
+    await page.goto(LANDING);
+    const intro = page.locator("main [data-series-intro]");
+    await expect(intro).toHaveCount(1);
+    await expect(intro.getByRole("heading", { level: 2, name: "Drift & Convergence" })).toBeVisible();
+    await expect(intro.getByRole("heading", { level: 3 })).toHaveText(["Convergence", "Drift"]);
+    const headings = await page.locator("main h1, main h2").evaluateAll((els) => els.map((el) => el.textContent?.trim()));
+    expect(headings.slice(0, 3)).toEqual(["Writing", "Drift & Convergence", LEAD_TITLE]);
+    // The pill row does not offer the series.
+    const pills = page.getByRole("navigation", { name: "Topics" });
+    await expect(pills.getByRole("link", { name: /^(Drift|Convergence)$/ })).toHaveCount(0);
+  });
+
+  test("reaches each series page from the lead", async ({ page }) => {
+    for (const [name, path] of [
+      ["Convergence", "/writing/convergence/"],
+      ["Drift", "/writing/drift/"],
+    ] as const) {
+      await page.goto(LANDING);
+      await page.locator("[data-series-intro]").getByRole("link", { name: `Read ${name}` }).click();
+      await expect(page).toHaveURL(new RegExp(`${path}$`));
+      await expect(page.locator("main h1")).toHaveText(name);
+    }
+  });
+
+  test("shows both series links on a desktop viewport without scrolling past the lead story", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(LANDING);
+    const leadTop = await page.locator("[data-lead-story]").evaluate((el) => el.getBoundingClientRect().top);
+    for (const name of ["Read Convergence", "Read Drift"]) {
+      const box = await page.locator("[data-series-intro]").getByRole("link", { name }).boundingBox();
+      expect(box).not.toBeNull();
+      expect(box!.y + box!.height).toBeLessThanOrEqual(800);
+      expect(box!.y + box!.height).toBeLessThanOrEqual(leadTop + 1);
+    }
   });
 
   test("shows no post twice: the lead story is not in Featured or Latest, and no Featured post is in Latest", async ({
@@ -254,7 +294,7 @@ test.describe("landing page", () => {
     expect(await links.count()).toBeGreaterThanOrEqual(5);
     const hrefs = await links.evaluateAll((els) => els.map((a) => a.getAttribute("href")));
     expect(hrefs.at(-1)).toBe("/writing/all/");
-    for (const href of hrefs.slice(0, -1)) expect(href).toMatch(/^\/writing\/topics\/[a-z-]+\/$/);
+    for (const href of hrefs.slice(0, -1)) expect(href).toMatch(/^\/writing\/(topics\/)?[a-z-]+\/$/);
     const first = hrefs[0]!;
     await Promise.all([
       page.waitForURL(`**${first}`),
@@ -515,5 +555,132 @@ test.describe("home page recent writing (US7)", () => {
     await page.goto("/");
     await page.getByRole("link", { name: /Every kind of content a post can hold/ }).click();
     await expect(page).toHaveURL(/\/writing\/sample-everything\/$/);
+  });
+});
+
+// Series pages and redirects (spec 013 US4; contracts/writing-pages.md; SC-003). Drift holds Focus Pocus
+// (2025-08-16) and Ghost themes (08-07); Convergence holds the Wayfinder post (2025-08-27) and Starting
+// something new (03-15). The sample post has no series.
+const SERIES_POSTS = {
+  drift: { name: "Drift", other: "Convergence", otherPath: "/writing/convergence/", posts: [FOCUS_POCUS, GHOST_THEMES] },
+  convergence: { name: "Convergence", other: "Drift", otherPath: "/writing/drift/", posts: [WAYFINDER, STARTING] },
+} as const;
+
+test.describe("series pages", () => {
+  for (const [id, series] of Object.entries(SERIES_POSTS)) {
+    const path = `/writing/${id}/`;
+
+    test(`${id}: shows the banner and lists every post tagged with the series, and only those`, async ({ page }) => {
+      await page.goto(path);
+      const main = page.locator("main");
+      await expect(main.locator(`[data-series-banner="${id}"]`)).toBeVisible();
+      await expect(main.locator("h1")).toHaveText(series.name);
+      await expect(main.getByRole("navigation", { name: "Topics" })).toHaveCount(0);
+      const hrefs = await main
+        .locator("[data-post-card] h2 a")
+        .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+      expect(hrefs).toEqual(series.posts);
+      expect(await page.title()).toBe(`${series.name} · Don Coleman`);
+      await expect(page.locator("link[rel=canonical]")).toHaveAttribute("href", new RegExp(`${path}$`));
+    });
+
+    test(`${id}: the other-series link and the All writing link work`, async ({ page }) => {
+      await page.goto(path);
+      const banner = page.locator(`[data-series-banner="${id}"]`);
+      await banner.getByRole("link", { name: `Read ${series.other}` }).click();
+      await expect(page).toHaveURL(new RegExp(`${series.otherPath}$`));
+      await page.goto(path);
+      await banner.getByRole("link", { name: "All writing" }).click();
+      await expect(page).toHaveURL(/\/writing\/$/);
+    });
+  }
+
+  test("page 1 and a page past the last are not built", async ({ page }) => {
+    for (const path of ["/writing/drift/1/", "/writing/drift/99/"]) {
+      const response = await page.goto(path);
+      expect(response?.status(), path).toBe(404);
+    }
+  });
+});
+
+test.describe("redirects from the old series topic addresses (FR-008a)", () => {
+  const cases: Array<[string, string]> = [
+    ["/writing/topics/drift", "/writing/drift/"],
+    ["/writing/topics/drift/", "/writing/drift/"],
+    ["/writing/topics/drift/2/", "/writing/drift/2/"],
+    ["/writing/topics/convergence/", "/writing/convergence/"],
+  ];
+  for (const [from, to] of cases) {
+    test(`${from} answers 301 to ${to}`, async ({ request }) => {
+      const response = await request.get(from, { maxRedirects: 0 });
+      expect(response.status()).toBe(301);
+      expect(new URL(response.headers().location!, "http://127.0.0.1:4321").pathname).toBe(to);
+    });
+  }
+
+  test("following the redirect for a page past the last ends on the not-found page with status 404", async ({
+    request,
+  }) => {
+    const response = await request.get("/writing/topics/drift/99/");
+    expect(response.status()).toBe(404);
+    expect(new URL(response.url()).pathname).toBe("/writing/drift/99/");
+  });
+});
+
+// Series markers on every page that shows topics (spec 013 US3; FR-010; SC-002). Tagged posts carry a
+// "Series: ..." marker; the sample post has no series and shows none.
+test.describe("series markers", () => {
+  const listings = [
+    ["the landing page", "/writing/"],
+    ["/writing/all/", "/writing/all/"],
+    ["a topic page", "/writing/topics/technology-teams/"],
+    ["a series page", "/writing/drift/"],
+    ["the home page's Recent writing", "/"],
+  ] as const;
+  for (const [name, path] of listings) {
+    test(`${name} shows markers on tagged cards`, async ({ page }) => {
+      await page.goto(path);
+      const markers = page.locator("[data-series-marker]");
+      expect(await markers.count()).toBeGreaterThan(0);
+      for (const text of await markers.allInnerTexts()) expect(text).toMatch(/^Series: (Drift|Convergence)$/);
+      const untagged = page.locator("[data-post-card], [data-lead-story]").filter({ has: page.locator(`a[href="${POST}"]`) });
+      for (let i = 0; i < (await untagged.count()); i += 1) {
+        await expect(untagged.nth(i).locator("[data-series-marker]")).toHaveCount(0);
+      }
+    });
+  }
+
+  test("the marker comes first in a card's topic list", async ({ page }) => {
+    await page.goto("/writing/all/");
+    const card = page.locator("[data-post-card]").filter({ has: page.locator(`a[href="${GHOST_THEMES}"]`) });
+    await expect(card.locator('ul[aria-label="Topics"] a').first()).toHaveText("Series: Drift");
+  });
+
+  test("a tagged post header shows a marker that links to the series page", async ({ page }) => {
+    await page.goto(GHOST_THEMES);
+    const link = page.locator("[data-series-marker]", { hasText: "Series: Drift" }).first();
+    await expect(link).toBeVisible();
+    await link.click();
+    await expect(page).toHaveURL(/\/writing\/drift\/$/);
+  });
+
+  test("an untagged post header has no marker", async ({ page }) => {
+    await page.goto(POST);
+    // Related posts below the post may carry markers; the header (everything outside them) has none.
+    const all = await page.locator("[data-series-marker]").count();
+    const inRelated = await page.locator("[data-related] [data-series-marker]").count();
+    expect(all - inRelated).toBe(0);
+  });
+
+  test("related posts show markers for tagged posts and none for untagged", async ({ page }) => {
+    await page.goto(POST);
+    const cards = page.locator("[data-related] [data-post-card]");
+    expect(await cards.count()).toBeGreaterThan(0);
+    for (let i = 0; i < (await cards.count()); i += 1) {
+      const card = cards.nth(i);
+      const href = await card.locator("h3 a").getAttribute("href");
+      const tagged = [GHOST_THEMES, FOCUS_POCUS, WAYFINDER, STARTING].includes(href ?? "");
+      await expect(card.locator("[data-series-marker]")).toHaveCount(tagged ? 1 : 0);
+    }
   });
 });

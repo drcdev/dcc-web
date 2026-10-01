@@ -183,9 +183,10 @@ describe("postSchema, topics (P5 to P7)", () => {
     expect(issues({ ...minimal, topics: [] })).toContain("topics");
   });
 
-  it("rejects an unknown topic, naming it and every allowed id in list order", () => {
+  it("rejects a near-miss of a controlled id, naming it, the intended id and every controlled id in list order (P6)", () => {
     const text = issues({ ...minimal, topics: ["agentic-a1"] });
     expect(text).toContain("agentic-a1");
+    expect(text).toContain('Did you mean \\"agentic-ai\\"?');
     const positions = topicIds.map((id) => text.indexOf(id));
     expect(positions.every((p) => p >= 0)).toBe(true);
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
@@ -250,5 +251,53 @@ describe("postSchema, updated and strictness (P10, P11)", () => {
   it("rejects featured and draft that are not true or false", () => {
     rejects({ ...minimal, featured: "yes" });
     rejects({ ...minimal, draft: "no" });
+  });
+});
+
+describe("postSchema, free-form topics and series (P23 to P26)", () => {
+  it("accepts free-form ids, alone or beside controlled ones", () => {
+    expect(schema.safeParse({ ...minimal, topics: ["cloud-cost"] }).success).toBe(true);
+    expect(schema.safeParse({ ...minimal, topics: ["drift", "cloud-cost", "agentic-ai"] }).success).toBe(true);
+    expect(schema.safeParse({ ...minimal, topics: ["a".repeat(40)] }).success).toBe(true);
+  });
+
+  it("rejects both series, naming both ids and one series (P23)", () => {
+    rejects({ ...minimal, topics: ["drift", "convergence"] });
+    const text = issues({ ...minimal, topics: ["drift", "convergence"] });
+    expect(text).toContain("drift");
+    expect(text).toContain("convergence");
+    expect(text).toContain("one series");
+  });
+
+  it("reports a repeated series by the named-once rule, not the both-series rule", () => {
+    const text = issues({ ...minimal, topics: ["drift", "drift"] });
+    expect(text).toContain("Name each topic once");
+    expect(text).not.toContain("one series");
+  });
+
+  it.each([
+    ["convergance", "convergence"],
+    ["drfit", "drift"],
+    ["agentic-a", "agentic-ai"],
+  ])("rejects the near-miss %s, naming %s (P24)", (id, meant) => {
+    rejects({ ...minimal, topics: [id] });
+    const text = issues({ ...minimal, topics: [id] });
+    expect(text).toContain(id);
+    expect(text).toContain(`Did you mean \\"${meant}\\"?`);
+  });
+
+  it.each([
+    ["agentic--ai", "agentic-ai"],
+    ["con-vergence", "convergence"],
+  ])("rejects the separator variant %s, naming %s", (id, meant) => {
+    rejects({ ...minimal, topics: [id] });
+    expect(issues({ ...minimal, topics: [id] })).toContain(`Did you mean \\"${meant}\\"?`);
+  });
+
+  it("rejects ids that break the id rules (P26)", () => {
+    rejects({ ...minimal, topics: ["Cloud Cost"] });
+    expect(issues({ ...minimal, topics: ["Cloud Cost"] })).toContain("lower-case letters, digits and hyphens");
+    rejects({ ...minimal, topics: ["a".repeat(41)] });
+    expect(issues({ ...minimal, topics: ["a".repeat(41)] })).toContain("40 characters");
   });
 });

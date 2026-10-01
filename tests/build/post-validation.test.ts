@@ -45,8 +45,11 @@ describe("build errors for post files (contracts/build-errors.md)", () => {
     expectRejected([broken(name)], [name.replace(/\.mdx$/, ""), "topics"]),
   );
 
-  it("P6: unknown topic names every allowed topic in list order", async () => {
-    await expectRejected([broken("p06-unknown-topic.mdx")], ["p06-unknown-topic", "agentic-a1"]);
+  it("P6: near-miss topic names the intended id and every controlled topic in list order", async () => {
+    await expectRejected(
+      [broken("p06-unknown-topic.mdx")],
+      ["p06-unknown-topic", "agentic-a1", 'Did you mean "agentic-ai"?'],
+    );
     expect(result!.message).toContain(topicIds.join(", "));
   });
 
@@ -106,13 +109,46 @@ describe("build errors for post files (contracts/build-errors.md)", () => {
   it("P20: empty body", () =>
     expectRejected([broken("p20-empty-body.mdx")], ["Post file", "p20-empty-body", "no content"]));
 
-  it("P21: a topic removed from the list while a post still names it", () =>
-    expectRejected([broken("p21-removed-topic.mdx")], ["technology-teams"], {
+  it("P23: both series in one post", () =>
+    expectRejected([broken("p23-both-series.mdx")], ["p23-both-series", "drift", "convergence", "one series"]));
+
+  it("P24: near-miss of a controlled id", () =>
+    expectRejected(
+      [broken("p24-near-miss.mdx")],
+      ["p24-near-miss", "convergance", 'Did you mean "convergence"?'],
+    ));
+
+  it.each(["drift", "convergence"])("P25: reserved series slug %s", (slug) =>
+    expectRejected(
+      [broken(`p25-reserved-${slug}.mdx`, `${slug}.mdx`)],
+      ["Post file", `${slug}.mdx`, `/writing/${slug}/`, "reserved"],
+    ),
+  );
+
+  it.each([
+    ["p26-bad-id-chars.mdx", "lower-case letters, digits and hyphens"],
+    ["p26-bad-id-long.mdx", "40 characters"],
+  ])("P26: topic id that breaks the id rules (%s)", (name, rule) =>
+    expectRejected([broken(name)], [name.replace(/\.mdx$/, ""), rule]),
+  );
+
+  // Changed by 013 (research R9): ids outside the controlled list are free-form topics.
+  it("P21 (changed): a removed topic builds as a free-form topic", async () => {
+    result = await buildFixtureSite([], {
+      posts: [broken("p21-removed-topic.mdx")],
       overrides: {
         "src/config/topics.ts": (text) =>
-          text.replace(/\n  \{\n    id: "technology-teams",[\s\S]*?colour: "sage",\n  \},/, ""),
+          text.replace(/\n  \{\n    id: "technology-teams",[\s\S]*?colour: "sand",\n  \},/, ""),
       },
-    }));
+    });
+    expect(result.ok, result.message).toBe(true);
+  });
+
+  it("validates drafts too (FR-012a)", () =>
+    expectRejected(
+      [{ from: "broken/p23-both-series.mdx", to: "draft-both.mdx", replace: ["topics:", "draft: true\ntopics:"] }],
+      ["draft-both", "one series"],
+    ));
 
   // Astro's own image import error names the post file and the image path (spike 3, research R1).
   it("P22: body image file that does not exist", () =>
@@ -124,5 +160,18 @@ describe("things that are not errors", () => {
     result = await buildFixtureSite([], { posts: ["valid/unknown-language.mdx"] });
     expect(result.message).toBe("");
     expect(result.read("writing/unknown-language/index.html")).toContain("text in a language nobody has heard of");
+  });
+});
+
+describe("posts that must build (contracts/build-errors.md)", () => {
+  const mustBuild = [
+    ["untagged", "valid/untagged.mdx"],
+    ["free-form only", "valid/free-form-only.mdx"],
+    ["series plus others", "valid/series-and-free-form.mdx"],
+  ] as const;
+  it.each(mustBuild)("builds a post that is %s, with a silent build", async (_label, file) => {
+    result = await buildFixtureSite([], { posts: [file] });
+    expect(result.ok, result.message).toBe(true);
+    expect(result.message).toBe("");
   });
 });

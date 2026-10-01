@@ -1,0 +1,39 @@
+---
+// The framing lead on the writing landing (spec 013 contracts/writing-pages.md "Landing";
+// FR-016a, FR-016b): a section labelled by its own `h2`, one sentence naming Drift & Convergence,
+// then each series (Convergence first) with its description and a link to its short address.
+// It renders even when a series has no posts. It adds no script.
+import { blog } from "../../config/blog.ts";
+import { findTopic, topicHref } from "../../config/topics.ts";
+import { topicStyle } from "./topic-styles.ts";
+
+const series = ["convergence", "drift"].map((id) => {
+  const topic = findTopic(id);
+  if (!topic) throw new Error(`SeriesIntro: "${id}" is not in src/config/topics.ts.`);
+  return topic;
+});
+// The link keeps the card's text colour, which the series palette already pairs with its fill.
+const linkClass = "inline-block px-1 py-1 font-medium underline underline-offset-4 hover:no-underline";
+---
+
+<section data-series-intro="" aria-labelledby="series-intro-heading" class="mb-8">
+  <h2 id="series-intro-heading" class="mb-2 mt-0 text-2xl font-bold text-dusk-900 dark:text-white">
+    {blog.sectionName}
+  </h2>
+  <p class="m-0 max-w-prose text-lg text-dusk-700 dark:text-mist-300">{blog.seriesIntro}</p>
+  <div class="mt-4 grid gap-4 md:grid-cols-2">
+    {
+      series.map((topic) => (
+        <div data-series-intro-item={topic.id} class:list={["rounded-xl p-5", topicStyle(topic.colour).banner]}>
+          <h3 class="m-0 text-xl font-bold">{topic.name}</h3>
+          <p class="mb-2 mt-2">{topic.description}</p>
+          <p class="m-0">
+            <a href={topicHref(topic.id)} class={linkClass}>
+              Read {topic.name}
+            </a>
+          </p>
+        </div>
+      ))
+    }
+  </div>
+</section>

@@ -8,7 +8,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { topicIds } from "../../../src/config/topics.ts";
+import { pillRowTopics } from "../../../src/config/topics.ts";
 
 const dir = fileURLToPath(new URL("../../../src/content/posts/", import.meta.url));
 const fixtureDir = fileURLToPath(new URL("../../fixtures/posts/valid/", import.meta.url));
@@ -91,7 +91,8 @@ describe("sample posts", () => {
     expect(sample!.front).toMatch(/^updated: \d{4}-\d{2}-\d{2}$/m);
   });
 
-  // With the sample post, the real posts use every topic, so each topic page lists a post.
+  // With the sample post, the real posts use every non-series topic, so each topic page lists a
+  // post. The two series are covered by the series-tagging test below (FR-005).
   it("uses all four topics together with the real posts", () => {
     const posts = load(dir, /\.mdx$/);
     const used = new Set(
@@ -100,7 +101,7 @@ describe("sample posts", () => {
         ...(/^topics: \[(.*)\]$/m.exec(s.front)?.[1]?.split(",").map((id) => id.trim()) ?? []),
       ]),
     );
-    for (const id of topicIds) expect(used, id).toContain(id);
+    for (const { id } of pillRowTopics) expect(used, id).toContain(id);
   });
 
   // Only the sample post's pictures (sample-*): the real posts' photos are sized by the build.
@@ -112,6 +113,30 @@ describe("sample posts", () => {
     for (const name of names) {
       expect(statSync(`${images}${name}`).size, name).toBeLessThan(60 * 1024);
     }
+  });
+});
+
+// FR-005: the four real series posts list their series id first and keep their other topics.
+describe("series tagging of the real posts (FR-005)", () => {
+  const topicsOf = (front: string): string[] => [
+    ...[...front.matchAll(/^ {2}- ([a-z0-9-]+)$/gm)].map((m) => m[1]!),
+    ...(/^topics: \[(.*)\]$/m.exec(front)?.[1]?.split(",").map((id) => id.trim()) ?? []),
+  ];
+  const real = load(dir, /\.mdx$/);
+  const topicsFor = (slug: string) => topicsOf(real.find((s) => s.name === `${slug}.mdx`)!.front);
+
+  it.each([
+    ["the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change", "convergence", "healthcare-leadership"],
+    ["starting-something-new", "convergence", "healthcare-leadership"],
+    ["building-focus-pocus-what-i-learned-about-ai-coding-and-integration", "drift", "agentic-ai"],
+    ["self-contained-development-for-ghost-themes", "drift", "technology-teams"],
+  ])("%s lists %s first and keeps %s", (slug, series, kept) => {
+    expect(topicsFor(slug)).toEqual([series, kept]);
+  });
+
+  it("leaves sample-everything out of both series", () => {
+    expect(topicsFor("sample-everything")).not.toContain("drift");
+    expect(topicsFor("sample-everything")).not.toContain("convergence");
   });
 });
 

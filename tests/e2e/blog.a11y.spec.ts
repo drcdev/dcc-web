@@ -5,6 +5,7 @@
 // are covered without editing this file. axe itself runs in a11y.spec.ts, which
 // loops the same rows.
 import { test, expect, type Page } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 import { TEMPLATES } from "./templates.ts";
 
 const THEMES = ["dark", "light"] as const;
@@ -136,6 +137,8 @@ for (const template of blogTemplates) {
           const small = await page.evaluate(() => {
             const selector = [
               "[data-topic-pill]",
+              "[data-series-banner] a",
+              "[data-series-intro] a",
               "[data-share] a",
               "[data-share] button",
               "figure[data-code-block] button",
@@ -304,3 +307,51 @@ for (const template of blogTemplates) {
     });
   });
 }
+
+// Series markers and reflow (spec 013 US3; FR-010, FR-016d). axe over these pages runs in
+// a11y.spec.ts; these checks cover the pages with markers present in both themes, and reflow.
+const MARKER_PAGES = ["/writing/", "/writing/all/", "/writing/self-contained-development-for-ghost-themes/"] as const;
+for (const theme of THEMES) {
+  for (const path of MARKER_PAGES) {
+    test(`${path} shows a series marker with readable text in the ${theme} theme`, async ({ page }) => {
+      await setTheme(page, theme);
+      await page.goto(path);
+      const marker = page.locator("[data-series-marker]").first();
+      await expect(marker).toBeVisible();
+      await expect(marker).toHaveText(/^Series: (Drift|Convergence)$/);
+      expect(await marker.getAttribute("aria-label")).toBeNull();
+      const box = await marker.boundingBox();
+      expect(box!.width).toBeGreaterThanOrEqual(24);
+      expect(box!.height).toBeGreaterThanOrEqual(24);
+    });
+  }
+}
+
+const REFLOW_PAGES = ["/writing/", "/writing/drift/", "/writing/self-contained-development-for-ghost-themes/", "/"] as const;
+for (const path of REFLOW_PAGES) {
+  test(`${path} reflows with no horizontal scroll at 320px`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto(path);
+    await noSidewaysScroll(page);
+  });
+
+  test(`${path} reflows with no horizontal scroll at 200% zoom`, async ({ page }) => {
+    // 200% zoom of a 1280px window is a 640px layout; the 320px case above is the narrowest.
+    await page.setViewportSize({ width: 640, height: 800 });
+    await page.goto(path);
+    await noSidewaysScroll(page);
+  });
+}
+
+test("the writing landing lead keeps heading levels in order and has no axe violations", async ({ page }) => {
+  await page.goto("/writing/");
+  const levels = await page
+    .locator("main h1, main h2, main h3")
+    .evaluateAll((els) => els.map((el) => Number(el.tagName.slice(1))));
+  expect(levels[0]).toBe(1);
+  for (let i = 1; i < levels.length; i++) expect(levels[i]! - levels[i - 1]!).toBeLessThanOrEqual(1);
+  const intro = page.locator("[data-series-intro]");
+  await expect(intro.getByRole("heading", { level: 3 })).toHaveCount(2);
+  const results = await new AxeBuilder({ page }).include("[data-series-intro]").analyze();
+  expect(results.violations).toEqual([]);
+});

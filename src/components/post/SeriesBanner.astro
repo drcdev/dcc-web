@@ -1,0 +1,33 @@
+---
+// The introduction banner of a series page (spec 013 contracts/writing-pages.md "Series page";
+// FR-009, FR-016a, FR-016b): an eyebrow, the series name as the page `h1`, its description, a
+// link to the other series and a link to all writing, on the series' colour. It adds no
+// landmark. Links use the short series address, never /writing/topics/{series}/.
+import { findTopic, otherSeries, topicHref } from "../../config/topics.ts";
+import { topicStyle } from "./topic-styles.ts";
+
+export interface Props {
+  /** A series id from src/config/topics.ts ("drift" or "convergence"). */
+  series: string;
+  /** Adds ", page N" to the name on page 2 and later. */
+  page?: number;
+}
+
+const { series: id, page = 1 } = Astro.props;
+const series = findTopic(id);
+if (!series || !("series" in series)) {
+  throw new Error(`SeriesBanner: "${id}" is not a series in src/config/topics.ts.`);
+}
+const other = findTopic(otherSeries(id))!;
+const linkClass = "inline-block px-1 py-1 font-medium underline underline-offset-4 hover:no-underline";
+---
+
+<header data-series-banner={id} class:list={["mb-8 rounded-xl p-6 md:p-8", topicStyle(series.colour).banner]}>
+  <p class="m-0 text-xs font-semibold uppercase tracking-wider">Series</p>
+  <h1 class="my-2 text-4xl font-bold break-words md:text-5xl">{series.name}{page > 1 && `, page ${page}`}</h1>
+  <p class="m-0 max-w-prose text-lg">{series.description}</p>
+  <p class="m-0 mt-4 flex flex-wrap gap-x-4 gap-y-1">
+    <a href={topicHref(other.id)} class={linkClass}>Read {other.name}</a>
+    <a href="/writing/" class={linkClass}>All writing</a>
+  </p>
+</header>

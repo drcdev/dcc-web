@@ -83,7 +83,8 @@ for (const size of WIDTHS) {
 }
 
 // The blog pages (spec 008): landing, all posts, one topic page and the richest
-// sample post, full page, both sizes and themes (16 images per platform).
+// sample post, plus the Drift series page (spec 013), full page, both sizes and
+// themes (20 images per platform).
 for (const size of WIDTHS) {
   for (const theme of THEMES) {
     for (const [name, path] of [
@@ -91,6 +92,7 @@ for (const size of WIDTHS) {
       ["writing-all", "/writing/all/"],
       ["writing-topic", "/writing/topics/technology-teams/"],
       ["writing-post", "/writing/sample-everything/"],
+      ["writing-series", "/writing/drift/"],
     ] as const) {
       test(`${name} — ${size.name} — ${theme}`, async ({ page }) => {
         await open(page, path, size.width, size.height, theme);

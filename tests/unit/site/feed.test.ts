@@ -51,6 +51,14 @@ describe("feedOptions", () => {
   });
 });
 
+describe("series in the feed (FR-013)", () => {
+  it("adds no category or series element for tagged or untagged posts", async () => {
+    const xml = await render([post({ topics: ["convergence"] } as never), post({ slug: "two" })]);
+    expect(xml).not.toMatch(/<category/i);
+    expect(xml.slice(xml.indexOf("<item>"))).not.toMatch(/series/i);
+  });
+});
+
 describe("the rendered feed", () => {
   it("is RSS 2.0 with the channel title, language and the dcterms namespace", async () => {
     const xml = await render([post()]);

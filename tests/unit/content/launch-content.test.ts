@@ -103,6 +103,16 @@ describe("About", () => {
     expect(body).toMatch(/^## (\*\*)?About me(\*\*)?$/im);
   });
 
+  it("links to both series pages, keeps the writing section short and the closing invitation (FR-015)", () => {
+    expect(body).toContain("](/writing/drift/)");
+    expect(body).toContain("](/writing/convergence/)");
+    const match = /^## About the writing$([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(body);
+    expect(match, "About the writing section").not.toBeNull();
+    const paragraphs = match![1]!.split(/\n\s*\n/).filter((p) => p.trim());
+    expect(paragraphs.every((p) => p.length < 400)).toBe(true);
+    expect(match![1]).toContain("(/contact/)");
+  });
+
   it("has a Recognition section that links to both CCHL articles", () => {
     const match = /^### Recognition$([\s\S]*?)(?=^#{1,3} |(?![\s\S]))/m.exec(body);
     expect(match, "Recognition section").not.toBeNull();

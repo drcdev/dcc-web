@@ -5,7 +5,13 @@ export const blog = {
   /** The blog's name, shown as the eyebrow above every blog page title. */
   sectionName: "Drift & Convergence",
   feedTitle: "Drift & Convergence",
-  feedDescription: "Writing by Don Coleman on compliant data, technology teams, agentic AI and healthcare leadership.",
+  feedDescription:
+    "Drift & Convergence is Don Coleman's writing in two series: Convergence on systems leadership and Drift on emerging technology and AI.",
+  /** The landing page's description (search results and link previews). Draft wording for Don to revise. */
+  landingDescription:
+    "Drift & Convergence is Don Coleman's writing on compliant data, technology teams, agentic AI and healthcare leadership, in two series: Convergence and Drift.",
+  /** The sentence that opens the series lead on the landing page. Draft wording for Don to revise. */
+  seriesIntro: "My writing runs in two series. Each has its own page, so you can start with the one that fits.",
   /** Posts on one listing page. */
   pageSize: 12,
   /** Featured posts on the landing page. */

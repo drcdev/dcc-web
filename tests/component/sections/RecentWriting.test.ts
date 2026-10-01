@@ -36,6 +36,21 @@ describe("RecentWriting", () => {
     expect(html).toContain("All writing");
   });
 
+  it("has one paragraph under the heading naming Drift & Convergence with links to both series", async () => {
+    const html = await render(RecentWriting, { posts: posts(3) });
+    const intro = html.slice(html.indexOf("</h2>"), html.indexOf("<ul"));
+    expect(intro).toContain("Drift &amp; Convergence");
+    expect(byName(intro, "p")).toHaveLength(1);
+    expect(byName(intro, "h3")).toHaveLength(0);
+    expect(intro).toMatch(/<a [^>]*href="\/writing\/convergence\/"[^>]*>\s*Convergence\s*<\/a>/);
+    expect(intro).toMatch(/<a [^>]*href="\/writing\/drift\/"[^>]*>\s*Drift\s*<\/a>/);
+  });
+
+  it("shows series markers on cards of tagged posts", async () => {
+    const html = await render(RecentWriting, { posts: posts(3).map((p) => ({ ...p, topics: ["drift"] })) });
+    expect(html).toContain("data-series-marker");
+  });
+
   it("renders nothing when there are no visible posts", async () => {
     const html = await render(RecentWriting, { posts: [] });
     expect(html.trim()).toBe("");

@@ -11,6 +11,7 @@ beforeAll(async () => {
   container = await AstroContainer.create();
 });
 const render = (extra = {}) => container.renderToString(PostMeta, { props: { post: summary("one", extra) } });
+const renderPost = (post: ReturnType<typeof summary>) => container.renderToString(PostMeta, { props: { post } });
 const text = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
 
 describe("PostMeta", () => {
@@ -44,5 +45,21 @@ describe("PostMeta", () => {
       "/writing/topics/compliant-data/",
     ]);
     expect(byName(html, "ul").some((u) => u.attrs["aria-label"] === "Topics")).toBe(true);
+  });
+
+  it("shows the series marker first, then the other topics in written order", async () => {
+    const html = await renderPost(summary("s", { topics: ["agentic-ai", "cloud-cost", "drift"] }));
+    const links = byName(html, "a").filter((a) => "data-topic-pill" in a.attrs || "data-series-marker" in a.attrs);
+    expect(links.map((a) => a.attrs.href)).toEqual([
+      "/writing/drift/",
+      "/writing/topics/agentic-ai/",
+      "/writing/topics/cloud-cost/",
+    ]);
+    expect("data-series-marker" in links[0]!.attrs).toBe(true);
+  });
+
+  it("shows no series marker for an untagged post", async () => {
+    const html = await renderPost(summary("u", { topics: ["agentic-ai"] }));
+    expect(html).not.toContain("data-series-marker");
   });
 });

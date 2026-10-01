@@ -33,4 +33,10 @@ describe("RelatedPosts", () => {
     const html = await render([]);
     expect(html.trim()).toBe("");
   });
+
+  it("shows the series marker on a related post that is in a series", async () => {
+    const html = await render([summary("a", { topics: ["agentic-ai", "drift"] }), summary("b")]);
+    const markers = byName(html, "a").filter((a) => "data-series-marker" in a.attrs);
+    expect(markers.map((a) => a.attrs.href)).toEqual(["/writing/drift/"]);
+  });
 });

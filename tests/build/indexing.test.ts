@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { topics } from "../../src/config/topics.ts";
+import { topicHref, topics } from "../../src/config/topics.ts";
 import { resolveSiteOrigin } from "../../src/lib/site-origin.ts";
 
 const run = promisify(execFile);
@@ -161,7 +161,7 @@ describe.each(environments)("astro build with the $label environment", ({ env })
       "/terms-of-use/",
       "/writing/",
       "/writing/all/",
-      ...topics.map((topic) => `/writing/topics/${topic.id}/`),
+      ...topics.map((topic) => topicHref(topic.id)),
     ];
     // Don's real posts (feature 010) are published, so every build lists them.
     const realPosts = [

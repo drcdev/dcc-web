@@ -110,6 +110,42 @@ test.describe("topic page on the fixture site", () => {
   });
 });
 
+// The oldest generated post, fixture-post-13, also carries the free-form topic `cloud-cost`
+// (scripts/build-fixture-site.ts). The empty series page needs a site with no posts, so it is
+// checked in blog-fixture.a11y.spec.ts (empty-site build) and in tests/build/blog-listing.test.ts.
+test.describe("free-form topic page on the fixture site", () => {
+  test("renders a plain banner and a listing of the posts that name the topic", async ({ page }) => {
+    await page.goto("/writing/topics/cloud-cost/");
+    const main = page.locator("main");
+    await expect(main.locator("[data-topic-banner]")).toBeVisible();
+    await expect(main.locator("h1")).toHaveText("Cloud cost");
+    await expect(main.getByRole("navigation", { name: "Topics" })).toHaveCount(0);
+    const hrefs = await main
+      .locator("[data-post-card] h2 a")
+      .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+    expect(hrefs).toEqual(["/writing/fixture-post-13/"]);
+    expect(await page.title()).toBe("Cloud cost · Don Coleman");
+  });
+
+  test("reaches the page from the neutral pill on the post's card", async ({ page }) => {
+    await page.goto("/writing/all/2/");
+    const pill = page.locator("main [data-post-card] a[data-topic-pill][data-free-form]");
+    await expect(pill).toHaveText("Cloud cost");
+    await pill.click();
+    await expect(page).toHaveURL(/\/writing\/topics\/cloud-cost\/$/);
+  });
+});
+
+test.describe("series lead on the fixture site", () => {
+  // No fixture post joins a series, so both series are empty here and the lead still links them.
+  test("links both series even though neither has a post", async ({ page }) => {
+    await page.goto(LANDING);
+    const lead = page.locator("[data-series-intro]");
+    await expect(lead.getByRole("link", { name: "Read Convergence" })).toHaveAttribute("href", "/writing/convergence/");
+    await expect(lead.getByRole("link", { name: "Read Drift" })).toHaveAttribute("href", "/writing/drift/");
+  });
+});
+
 test.describe("home page recent writing on the fixture site", () => {
   test("lists the 3 newest posts, including the long title and the text-only card", async ({ page }) => {
     await page.goto("/");

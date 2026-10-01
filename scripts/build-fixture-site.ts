@@ -27,6 +27,9 @@ export interface GeneratedPost {
  */
 export const FIXTURE_POSTS = ["text-only.mdx", "long-title.mdx"] as const;
 
+/** A free-form topic id (not in src/config/topics.ts) carried by the oldest generated post. */
+export const FREE_FORM_TOPIC = "cloud-cost";
+
 /** The fewest generated posts: 13 means a full first page of 12 and a second page of one. */
 const MINIMUM_POSTS = 13;
 
@@ -68,7 +71,12 @@ export function generateFixturePosts(count = MINIMUM_POSTS): GeneratedPost[] {
     const number = String(index + 1).padStart(2, "0");
     const slug = `fixture-post-${number}`;
     const date = new Date(Date.UTC(2026, 5, 30 - index)).toISOString().slice(0, 10);
-    const topics = ["agentic-ai", ...(index % 4 === 3 ? [] : [second[index % second.length]!])];
+    // The oldest post also carries a free-form topic, so the fixture site has a free-form topic page.
+    const topics = [
+      "agentic-ai",
+      ...(index % 4 === 3 ? [] : [second[index % second.length]!]),
+      ...(index === total - 1 ? [FREE_FORM_TOPIC] : []),
+    ];
     const name = `${slug}.png`;
     const hue = (index * 47) % 255;
     const source = [

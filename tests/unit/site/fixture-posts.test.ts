@@ -70,6 +70,13 @@ describe("generateFixturePosts", () => {
     expect(Math.max(...counts.values())).toBeGreaterThanOrEqual(13);
   });
 
+  it("gives exactly one post a free-form topic, so the fixture site has a free-form topic page", () => {
+    const named = posts.filter((post) =>
+      ((parseFrontmatter(post.source).frontmatter.topics ?? []) as string[]).includes("cloud-cost"),
+    );
+    expect(named).toHaveLength(1);
+  });
+
   it("gives every post a body with text, so reading time and the post page have content", () => {
     for (const post of posts) {
       const body = post.source.split(/^---$/m).at(-1) ?? "";

@@ -47,6 +47,12 @@ const TARGETS: Target[] = [
     url: "http://localhost:4322/writing/topics/agentic-ai/2/",
     title: `Agentic AI in legacy environments, page 2${SUFFIX}`,
   },
+  {
+    name: "free-form topic page (fixture site)",
+    url: "http://localhost:4322/writing/topics/cloud-cost/",
+    title: `Cloud cost${SUFFIX}`,
+  },
+  { name: "empty series page", url: `${EMPTY_ORIGIN}/writing/drift/`, title: `Drift${SUFFIX}`, dist: emptyDist },
   { name: "empty landing", url: `${EMPTY_ORIGIN}/writing/`, title: `Writing${SUFFIX}`, dist: emptyDist },
   { name: "empty all posts", url: `${EMPTY_ORIGIN}/writing/all/`, title: `All posts${SUFFIX}`, dist: emptyDist },
   {

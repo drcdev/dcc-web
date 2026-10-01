@@ -12,6 +12,8 @@ describe("blog settings", () => {
     expect(blog.feedTitle).toBe("Drift & Convergence");
     expect(blog.feedDescription.trim()).not.toBe("");
     expect(blog.feedDescription).not.toContain("\n");
+    expect(blog.feedDescription).toContain("Convergence");
+    expect(blog.feedDescription).toContain("Drift");
   });
 
   it("sets the page and list sizes", () => {
@@ -20,6 +22,17 @@ describe("blog settings", () => {
     expect(blog.latestMax).toBe(6);
     expect(blog.recentMax).toBe(3);
     expect(blog.relatedMax).toBe(3);
+  });
+
+  it("has a landing description that names Drift & Convergence and both series", () => {
+    expect(blog.landingDescription).toContain("Drift & Convergence");
+    expect(blog.landingDescription).toContain("Drift");
+    expect(blog.landingDescription).toContain("Convergence");
+    expect(blog.landingDescription).not.toContain("\n");
+  });
+
+  it("has the series intro copy", () => {
+    expect(blog.seriesIntro.trim()).not.toBe("");
   });
 
   it("has a non-empty views note", () => {
