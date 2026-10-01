@@ -21,6 +21,16 @@ Today only the About page explains this. A visitor who lands on `/writing/` sees
 
 This feature makes the two series the organising idea of the Writing pages, while keeping everything the blog feature (spec 008) built.
 
+## Clarifications
+
+### Session 2026-09-30
+
+- Q: How should a topic that is not on the controlled list (a free-form topic) work, and what should happen when a post misspells a controlled topic id such as `convergance`? → A: Each free-form topic gets its own plain listing page at `/writing/topics/{id}/` with a neutral pill and is left out of the landing pill row. The build fails when a free-form id is within two letters of a controlled id, and the error names the id it probably meant.
+- Q: Can a single post be tagged into both Drift and Convergence? → A: No. The build fails with a plain message naming the post, so each post shows at most one series marker.
+- Q: Should each series also get a short address (`/writing/drift/` and `/writing/convergence/`)? → A: Yes, and the short address is the canonical series page. `/writing/topics/drift/` and `/writing/topics/convergence/` redirect to it. The build fails if a post slug is ever `drift` or `convergence`.
+- Q: Which of the existing posts should be tagged into a series? → A: As proposed. Convergence: "The Systems Leadership Wayfinder" and "Starting something new". Drift: "Building Focus Pocus" and "Self-contained development for Ghost themes". The sample post stays untagged.
+- Q: Is this feature a major change under Constitution Principle III? → A: Yes (design system and visual identity, content model). Auto-merge stays off, and the tasks include a `[PREVIEW-CHECK]` task for Don to review the preview deployment before merge.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - A visitor understands the two series from the Writing landing (Priority: P1)
@@ -54,7 +64,7 @@ Don writes or edits a post and adds `drift` or `convergence` to its topics, the 
 1. **Given** a post whose topics include `drift`, **When** the site builds, **Then** the post appears on the Drift series page.
 2. **Given** a post whose topics include `convergence`, **When** the site builds, **Then** the post appears on the Convergence series page.
 3. **Given** a post with neither series tag, **When** the site builds, **Then** the build succeeds with no warning about the missing series, and the post renders with today's presentation.
-4. **Given** a post that misspells a series tag (for example `convergance`), **When** the site builds, **Then** the outcome follows FR-011 (free-form topics) rather than silently creating a third series.
+4. **Given** a post that misspells a series tag (for example `convergance`), **When** the site builds, **Then** the build fails with a plain message naming the post and the likely intended id (`convergence`), rather than silently creating a third series or a free-form topic (FR-011).
 
 ---
 
@@ -88,7 +98,7 @@ A visitor who follows a way into a series reaches a page that says what the seri
 
 1. **Given** the Drift series page, **When** a visitor opens it, **Then** it shows a banner that names Drift, describes it in one or two sentences, and carries more than an ordinary topic banner does: a link to the other series and a link back to the Writing landing.
 2. **Given** either series page, **When** a visitor reads the post list, **Then** it uses the same listing and pagination as other topic pages.
-3. **Given** the series page addresses decided under FR-008, **When** a visitor opens a short address, **Then** they reach the series page.
+3. **Given** the series page addresses in FR-008, **When** a visitor opens `/writing/drift/` or `/writing/convergence/`, **Then** they reach the series page; **When** they open `/writing/topics/drift/` or `/writing/topics/convergence/`, **Then** they are redirected to the matching series page.
 
 ---
 
@@ -110,7 +120,9 @@ The feed's title and description name the two series. The home page's "Recent wr
 
 ### Edge Cases
 
-- A post carries both `drift` and `convergence`: see FR-004.
+- A post carries both `drift` and `convergence`: the build fails with a plain message naming the post (FR-004).
+- A post's slug is `drift` or `convergence`: the build fails, because it would collide with a series address (FR-008).
+- A post names a free-form topic within two letters of a controlled id (for example `convergance`): the build fails, naming the id it probably meant (FR-011).
 - A post carries no series tag: valid, no build error, no empty marker slot and no visual gap where a marker would be.
 - A series has no visible posts (for example, only drafts): its page renders the existing empty-listing message, and the landing still links to it.
 - Production builds hide drafts: a draft tagged into a series must not appear on the series page, the landing or the feed.
@@ -128,8 +140,8 @@ The feed's title and description name the two series. The home page's "Recent wr
 - **FR-001**: The site MUST recognise exactly two series, Drift (id `drift`) and Convergence (id `convergence`), as entries in the controlled topic list, each with a name and a short description, and marked as a series.
 - **FR-002**: A post MUST join a series by listing the series id in its topics, the same way it names any other topic. No new post setting is added for series.
 - **FR-003**: A post with neither series tag MUST be valid: the build succeeds and the post renders with today's presentation.
-- **FR-004**: A post MAY belong to at most [NEEDS CLARIFICATION: may a post be tagged into both Drift and Convergence? Proposed default: no; the build fails with a plain message naming the post, so each post has at most one series marker] one series.
-- **FR-005**: Existing posts that clearly fit a series MUST be tagged; posts that do not clearly fit stay untagged. Proposed tagging, for Don to confirm in review: Convergence for "The Systems Leadership Wayfinder" and "Starting something new"; Drift for "Building Focus Pocus" and "Self-contained development for Ghost themes". The sample post stays untagged.
+- **FR-004**: A post MAY belong to at most one series. A post tagged with both `drift` and `convergence` MUST fail the build with a plain message naming the post, so each post shows at most one series marker.
+- **FR-005**: Existing posts that clearly fit a series MUST be tagged; posts that do not clearly fit stay untagged. Tagging: Convergence for "The Systems Leadership Wayfinder" and "Starting something new"; Drift for "Building Focus Pocus" and "Self-contained development for Ghost themes". The sample post stays untagged.
 
 **Writing landing**
 
@@ -138,7 +150,7 @@ The feed's title and description name the two series. The home page's "Recent wr
 
 **Series pages**
 
-- **FR-008**: Each series MUST have a page at its topic address (`/writing/topics/drift/` and `/writing/topics/convergence/`). [NEEDS CLARIFICATION: should each series also get a short address such as `/writing/drift/` and `/writing/convergence/`, and if so does it redirect to the topic address or replace it? Proposed default: add the short addresses as redirects, so the topic route stays the only listing route. Note `/writing/{slug}/` is the post address, so a short alias must not collide with a post slug.]
+- **FR-008**: Each series MUST have its canonical page at a short address, `/writing/drift/` and `/writing/convergence/` (later listing pages paginate under the same address). The topic addresses `/writing/topics/drift/` and `/writing/topics/convergence/`, including their paginated pages, MUST redirect to the matching series address. Every link to a series (landing, markers, series banners, About page) MUST point to the short address. Because `/writing/{slug}/` is the post address, the build MUST fail with a plain message if any post's slug is `drift` or `convergence`.
 - **FR-009**: A series page MUST open with a banner richer than an ordinary topic banner: the series name, its description, a link to the other series and a link back to the Writing landing.
 
 **Series markers**
@@ -147,7 +159,7 @@ The feed's title and description name the two series. The home page's "Recent wr
 
 **Free-form topics**
 
-- **FR-011**: Posts MUST be able to carry topics beyond the controlled list. Controlled topics (the four existing topics and the two series) keep their visual treatment: colours, banners and, for series, the series marker. Any other topic is used for filtering and shows only a minor, neutral visual identifier. [NEEDS CLARIFICATION: how does a free-form topic filter? (A) each free-form topic gets its own listing page with a plain banner, but is left out of the landing pill row; (B) free-form topics show as plain, unlinked labels with no page; (C) free-form topics get pages and also appear in a secondary row on the landing. This also decides whether a misspelt controlled id such as `convergance` becomes a free-form topic or fails the build. Proposed default: (A), and the build fails when a free-form topic is within two letters of a controlled id, naming the likely intended id.]
+- **FR-011**: Posts MUST be able to carry topics beyond the controlled list. Controlled topics (the four existing topics and the two series) keep their visual treatment: colours, banners and, for series, the series marker. Any other topic shows as a neutral pill that links to its own listing page at `/writing/topics/{id}/`, with a plain banner and the same listing and pagination as other topic pages. Free-form topics MUST NOT appear in the landing's topic pill row. The build MUST fail when a free-form topic id is within two letters (edit distance two or less) of a controlled id, with a plain message naming the post and the controlled id it probably meant.
 - **FR-012**: A free-form topic MUST follow the existing topic id rules (lower-case letters, digits and hyphens, at most 40 characters, named once per post) so its address and label are stable.
 
 **Feed, home and About**
@@ -164,9 +176,9 @@ The feed's title and description name the two series. The home page's "Recent wr
 
 ### Key Entities
 
-- **Series**: one of two named groupings of posts, Drift and Convergence. Has an id, a name, a short description and an address. Held as a controlled topic marked as a series.
+- **Series**: one of two named groupings of posts, Drift and Convergence. Has an id, a name, a short description and a short canonical address (`/writing/{id}/`). Held as a controlled topic marked as a series.
 - **Controlled topic**: a topic from the site's maintained list. Has an id, a name, a description and a colour. Drives coloured pills, banners and topic pages.
-- **Free-form topic**: a topic a post names that is not in the controlled list. Has only an id and a label derived from it. Used for filtering; shown with a neutral identifier.
+- **Free-form topic**: a topic a post names that is not in the controlled list. Has only an id and a label derived from it. Has its own plain listing page at `/writing/topics/{id}/`; shown as a neutral pill.
 - **Post**: unchanged, except that its topics may now include the two series ids and free-form topics.
 
 ## Success Criteria *(mandatory)*
@@ -185,7 +197,7 @@ The feed's title and description name the two series. The home page's "Recent wr
 
 - The four existing controlled topics stay as they are. The two series are the only additions to the controlled list.
 - Series markers use colours from the site's existing palettes (`sand`, `mauve` and `dusk` are unused by topics today); no new colours are added.
-- A distinct series marker and a richer series banner may count as a change to the design system or visual identity, which would make this a major change under Constitution Principle III. This spec treats it as possibly major; the pre-PR merge decision settles it.
+- This is a major change under Constitution Principle III: the series marker and series banner change the design system and visual identity, and free-form topics change the content model. Auto-merge stays off, and the tasks MUST include a `[PREVIEW-CHECK]` task for Don to review the preview deployment before merge.
 - The landing framing copy is a shortened form of the About page's existing series descriptions. Don can revise wording in review.
 - A post still needs at least one topic; a series tag or a free-form topic counts.
 - The feed keeps its address; only its title and description text change.
@@ -196,7 +208,7 @@ The feed's title and description name the two series. The home page's "Recent wr
 - Rewriting posts.
 - Changing the four existing controlled topics.
 - Forcing every post into a series.
-- A separate series setting in the post format, or a new route family beyond the optional short addresses in FR-008.
+- A separate series setting in the post format, or a new route family beyond the two series addresses in FR-008.
 
 ## Follow-up
 
