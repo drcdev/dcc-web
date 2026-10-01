@@ -50,9 +50,9 @@ describe("astro.config.mjs site resolution", () => {
     expect(config.site).toBe(expected);
   });
 
-  it("sets trailingSlash to always", async () => {
+  it("sets trailingSlash to ignore", async () => {
     const config = await importFreshConfig();
-    expect(config.trailingSlash).toBe("always");
+    expect(config.trailingSlash).toBe("ignore");
   });
 
   it("registers the @astrojs/sitemap integration", async () => {

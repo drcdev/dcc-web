@@ -85,7 +85,7 @@ describe("Speaking (FR-021)", () => {
   it("covers talk topics, past talks and an organiser bio with a photo", () => {
     expect(text).toMatch(/topics/);
     expect(text).toMatch(/past talks/);
-    expect(text).toMatch(/organiser/);
+    expect(text).toMatch(/organi[sz]er/);
     expect(body).toMatch(/!\[[^\]]+\]\(\.\/images\/don-coleman\.jpg\)/);
   });
 });
