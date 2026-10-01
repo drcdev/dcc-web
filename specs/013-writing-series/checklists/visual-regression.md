@@ -8,30 +8,30 @@
 
 ## Scope of Expected Change
 
-- [ ] CHK001 Is every snapshotted page expected to change listed by name (landing, all posts, topic, post, home, About, new series page)? [Completeness, Spec §FR-018]
-- [ ] CHK002 Does "at least" in FR-018 bound the set, or must the list be closed so unpredicted diffs are detectable? [Ambiguity, Spec §FR-018]
-- [ ] CHK003 Is each expected change attributed to a specific requirement (lead, marker, banner, recolour, text-only border, About rewrite, home intro line)? [Traceability, Spec §SC-007]
-- [ ] CHK004 Is it stated which snapshotted pages are expected not to change (for example Contact, Work, other About sections)? [Gap, Spec §SC-007]
-- [ ] CHK005 Is the new series page's snapshot requirement stated in the spec, not only in the plan? [Consistency, Spec §FR-018]
-- [ ] CHK006 Are the sizes and themes covered (both viewport sizes, light and dark) defined for each changed page? [Coverage, Gap]
+- [x] CHK001 Is every snapshotted page expected to change listed by name (landing, all posts, topic, post, home, About, new series page)? [Completeness, Spec §FR-018]
+- [x] CHK002 Does "at least" in FR-018 bound the set, or must the list be closed so unpredicted diffs are detectable? [Ambiguity, Spec §FR-018]
+- [x] CHK003 Is each expected change attributed to a specific requirement (lead, marker, banner, recolour, text-only border, About rewrite, home intro line)? [Traceability, Spec §SC-007]
+- [x] CHK004 Is it stated which snapshotted pages are expected not to change (for example Contact, Work, other About sections)? [Gap, Spec §SC-007]
+- [x] CHK005 Is the new series page's snapshot requirement stated in the spec, not only in the plan? [Consistency, Spec §FR-018]
+- [x] CHK006 Are the sizes and themes covered (both viewport sizes, light and dark) defined for each changed page? [Coverage, Gap]
 
 ## Recolour Effects
 
-- [ ] CHK007 Are the pages where Agentic AI and Technology teams appear (pills, banners, card borders) enumerated so the recolour diffs are predicted? [Completeness, Spec §FR-018]
-- [ ] CHK008 Is the expected colour of each recoloured element stated (mauve, sand) in both themes? [Clarity, Spec §FR-010a]
-- [ ] CHK009 Is the series-coloured border on text-only cards flagged as an intended diff for the four tagged posts only? [Clarity, Spec §Clarifications 2026-10-01]
+- [x] CHK007 Are the pages where Agentic AI and Technology teams appear (pills, banners, card borders) enumerated so the recolour diffs are predicted? [Completeness, Spec §FR-018]
+- [x] CHK008 Is the expected colour of each recoloured element stated (mauve, sand) in both themes? [Clarity, Spec §FR-010a]
+- [x] CHK009 Is the series-coloured border on text-only cards flagged as an intended diff for the four tagged posts only? [Clarity, Spec §Clarifications 2026-10-01]
 
 ## Baseline Refresh
 
-- [ ] CHK010 Is refreshing both macOS and Linux baselines required, with the mechanism for each named? [Completeness, Spec §FR-018]
-- [ ] CHK011 Is the order of work defined (refresh only after the intended appearance is final) and the Docker or CI-label fallback documented? [Gap]
-- [ ] CHK012 Is a rule stated that only `*-linux.png` files are taken from the CI artifact for the Linux set? [Gap]
-- [ ] CHK013 Is it stated that a baseline is never refreshed to silence a diff the spec did not predict? [Clarity, Spec §FR-018]
-- [ ] CHK014 Is reviewer evidence required (before and after images or a diff summary) so a human can confirm each diff matches the spec? [Measurability, Spec §SC-007]
+- [x] CHK010 Is refreshing both macOS and Linux baselines required, with the mechanism for each named? [Completeness, Spec §FR-018]
+- [x] CHK011 Is the order of work defined (refresh only after the intended appearance is final) and the Docker or CI-label fallback documented? [Gap]
+- [x] CHK012 Is a rule stated that only `*-linux.png` files are taken from the CI artifact for the Linux set? [Gap]
+- [x] CHK013 Is it stated that a baseline is never refreshed to silence a diff the spec did not predict? [Clarity, Spec §FR-018]
+- [x] CHK014 Is reviewer evidence required (before and after images or a diff summary) so a human can confirm each diff matches the spec? [Measurability, Spec §SC-007]
 
 ## Determinism and Fixtures
 
-- [ ] CHK015 Are the snapshot pages required to use fixed content, so tagging real posts or adding posts does not produce unrelated diffs? [Gap]
-- [ ] CHK016 Is snapshot content for a free-form topic and an empty series defined, or explicitly left to non-visual tests? [Coverage, Gap]
-- [ ] CHK017 Is the visual-review step tied to the `[PREVIEW-CHECK]` task that Don performs before merge? [Traceability, Spec §Assumptions]
-- [ ] CHK018 Are the home page and About page diffs, including the intro line and shortened About section, expected-change items in the spec? [Completeness, Spec §FR-014, §FR-015]
+- [x] CHK015 Are the snapshot pages required to use fixed content, so tagging real posts or adding posts does not produce unrelated diffs? [Gap]
+- [x] CHK016 Is snapshot content for a free-form topic and an empty series defined, or explicitly left to non-visual tests? [Coverage, Gap]
+- [x] CHK017 Is the visual-review step tied to the `[PREVIEW-CHECK]` task that Don performs before merge? [Traceability, Spec §Assumptions]
+- [x] CHK018 Are the home page and About page diffs, including the intro line and shortened About section, expected-change items in the spec? [Completeness, Spec §FR-014, §FR-015]

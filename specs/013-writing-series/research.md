@@ -126,7 +126,11 @@ are not reopened here.
   | sand | 13.94 | 13.94 | 15.59 | 15.59 | — | — |
   | dusk | 13.95 | 13.95 | 15.09 | 16.00 | — | — |
 
-  All text pairs exceed 4.5:1; marker outlines exceed the 3:1 non-text minimum. The existing
+  All text pairs exceed 4.5:1; marker outlines exceed the 3:1 non-text minimum against the
+  marker fill. The token-contrast unit test also computes each outline against the surfaces the
+  marker sits on (card `white` / `dusk-800`, page background) and records the values (spec
+  FR-010, FR-016c); if a pair falls under 3:1 the outline moves to another existing shade of
+  the same palette, never a new colour. The existing
   unit test's `PALETTES` already lists all seven palettes, so only its expected topic list
   and the new style entries change; the marker and the free-form pill join its contrast cases.
 - **Alternatives considered**: flux's rust for free-form tags (taken by Compliant data, and the

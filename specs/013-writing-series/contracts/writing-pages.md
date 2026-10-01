@@ -27,7 +27,9 @@ No other rule is added. Every link the site renders to a series uses the short a
 ## Series marker (`SeriesMarker`)
 
 - `<a href="/writing/{id}/" data-series-marker="{id}">Series: {name}</a>`, pill-shaped,
-  `font-semibold`, 2px outline in the series palette (700 light / 300 dark), pill colours of
+  `font-semibold` (ordinary pills are `font-medium`), 2px outline in the series palette (700
+light / 300 dark, at least 3:1 against the marker fill and the surrounding surface; kept in
+forced-colours mode), accessible name = visible text (no `aria-label`), pill colours of
   the series palette (lavender for Drift, sage for Convergence).
 - Wherever topics are listed (PostCard, LeadStory, PostMeta, related posts, RecentWriting),
   the marker is the first `<li>` of the topics list; the remaining topics follow in written
@@ -49,8 +51,10 @@ free-form topics.
 ## Landing `/writing/`
 
 Order: eyebrow, `h1` "Writing" and RSS link; **framing lead** (`SeriesIntro`,
-`data-series-intro`): one sentence naming Drift & Convergence, then for each series (Convergence
-first, then Drift) its name, description and a link to `/writing/{id}/`; lead story; pill row;
+`data-series-intro`, a `<section aria-labelledby>` whose `h2` reads "Drift & Convergence"):
+one sentence naming Drift & Convergence, then for each series (Convergence first, then Drift)
+its name as an `h3`, description and a link "Read Convergence" / "Read Drift" to
+`/writing/{id}/` (spec FR-016a, FR-016b); lead story; pill row;
 Featured; Latest; "All posts". The framing lead renders even when a series has no posts, and
 when there are no posts at all. Meta description = `blog.feedDescription`.
 
