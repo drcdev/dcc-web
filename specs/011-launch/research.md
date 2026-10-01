@@ -261,10 +261,10 @@ the developers.cloudflare.com pages read while planning.
   history readable, and item 4 does not report them as unaccounted for. From then on,
   `mail-records` checks only the iCloud records. A dropped record that still answers in public
   DNS is shown as a detail.
-- **Open point flagged for Don**: the baseline also holds `CNAME email.mail.doncoleman.ca →
-  eu.mailgun.org`. This is Mailgun's click-tracking host, used only by Ghost's newsletter. The
-  spec lists four Mailgun records: two MX, the SPF TXT and the DKIM TXT. The walkthrough adds
-  this CNAME as a fifth record to delete at the same time, marked as Don's decision. A CNAME
+- **Tracking CNAME (decided by Don after the plan)**: the baseline also holds `CNAME
+  email.mail.doncoleman.ca → eu.mailgun.org`. This is Mailgun's click-tracking host, used only
+  by Ghost's newsletter. It is deleted at the same time as the two MX, the SPF TXT and the DKIM
+  TXT, five records in all (spec FR-024). A CNAME
   left pointing at a Mailgun host Don no longer controls is a subdomain-takeover risk.
 
 ## R12. Main-branch site origin (FR-010a)

@@ -20,9 +20,14 @@ domain over: it proves the new site is ready, walks Don through the switch one c
 at a time, keeps a fast way back to Ghost for the first days, confirms the live site works, and
 then documents how to retire Ghost and the old theme's backend.
 
-This is a **major change** under Constitution Principle III (it changes infrastructure and DNS,
-retires external services, and changes CI). The pull request is labelled and waits for Don's
-approval.
+This is a **major change** under Constitution Principle III. The triggers met are: it changes CI
+(a new blocking check), deployment and infrastructure configuration (DNS, the site's main
+address, the indexing rules), and it removes external services (Ghost, the Flux Supabase
+project, the Mailgun records). The pull request is labelled, auto-merge stays off, and it waits
+for Don's approval after he has checked the preview. The preview check is: the preview's pages
+tell search engines not to index them, and their canonical links name the preview's own
+address. The DNS switch itself happens only after the pull request has merged (see
+Clarifications).
 
 ## Clarifications
 
@@ -44,6 +49,17 @@ approval.
   After cancelling, he deletes the `mail.doncoleman.ca` Mailgun records (two MX, the SPF TXT and
   the DKIM TXT), and the mail-records baseline is updated to match. The iCloud mail records stay
   untouched.
+- Q (Don, after the plan): When does the DNS switch happen relative to this feature's pull
+  request? → A: After the pull request merges. Production serves `main`, and `main` must first
+  carry the bare-domain main address and the new indexing rules. The pull request delivers the
+  checks, the crawler and the walkthrough. Once Don approves and merges it, the switch, the
+  post-launch checks and the removal of the review address are walked through with Don in the
+  same session, using the walkthrough. Success criteria that depend on the switch (SC-002,
+  SC-003, SC-007) are proven after the merge.
+- Q (Don, after the plan): Is the fifth Mailgun record, the tracking CNAME, deleted too? → A: Yes.
+  After cancelling Ghost, Don deletes the tracking CNAME `email.mail.doncoleman.ca` together with
+  the two MX, the SPF TXT and the DKIM TXT records for `mail.doncoleman.ca`: five records in all.
+  The iCloud records stay untouched.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -83,7 +99,8 @@ link makes the link check fail.
 
 ### User Story 2 - Switch the domain with a guided, confirmed walkthrough (Priority: P1)
 
-Don follows a numbered walkthrough for the switch. Each step says what to do, where to do it,
+After this feature's pull request has merged, Don follows a numbered walkthrough for the
+switch, in the same session as the merge. Each step says what to do, where to do it,
 and how to confirm it worked. The agent pauses at every step that needs Don and never performs
 account, sign-in, DNS or credential actions itself. Before the switch, the current DNS records
 that point the bare domain and `www` at Ghost are recorded in the walkthrough so they can be
@@ -175,8 +192,8 @@ listing the external places to update and how to confirm each link now lands on 
 ### User Story 6 - Retire Ghost and the old theme's services (Priority: P3)
 
 After the agreed period of 2 weeks, the walkthrough continues with clear steps to export
-Ghost's content and members, cancel the Ghost subscription, remove the Mailgun DNS records that
-only Ghost's newsletter used, retire the Flux Supabase project (after Don exports any contact submissions he
+Ghost's content and members, cancel the Ghost subscription, remove the five Mailgun DNS records
+that only Ghost's newsletter used, retire the Flux Supabase project (after Don exports any contact submissions he
 wants to keep and confirms it is the Flux project, not his other Supabase project), archive the
 Flux repository, and update the design-source document to say Flux is archived but can still be
 cloned.
@@ -194,14 +211,15 @@ and an explicit project-identity confirmation first.
    preceded by an export step and a step confirming the project is the Flux one.
 2. **Given** the Flux repository is archived, **When** someone reads the design-source document,
    **Then** it says Flux is archived and still cloneable with the same command.
-3. **Given** Ghost has been cancelled and the `mail.doncoleman.ca` Mailgun records deleted,
+3. **Given** Ghost has been cancelled and all five Mailgun records deleted,
    **When** the setup check compares mail records, **Then** it uses the updated baseline without
    the Mailgun records and reports the iCloud mail records unchanged.
 
 ### Edge Cases
 
-- A sitemap address that redirects rather than returning a page, or a link to a page that only
-  exists in drafts: the check treats a missing or error response as a failure and reports it.
+- A sitemap address that redirects rather than returning a page is a failure: sitemap addresses
+  must return a page directly. A link to a page that only exists in drafts gets a not-found
+  response and fails.
 - Links to other sites are not checked by the internal link check (external sites can be down
   for reasons outside the site's control).
 - DNS changes can take time to reach every resolver: post-launch checks report "pending" while
@@ -217,6 +235,15 @@ and an explicit project-identity confirmation first.
   not-found page; they are not redirected.
 - Rollback after Ghost has been cancelled is not possible; the walkthrough says so before the
   cancellation step.
+- Only one of the two domain records switches (for example the bare domain works but `www` does
+  not): the setup check reports each half separately, and Don either finishes the other half in
+  the same sitting or rolls both back (FR-010b).
+- A late problem after the review address has been removed: rollback does not need the review
+  address. If Don later wants to switch again, he restores the review address first and the
+  readiness checklist runs again (FR-011).
+- Search engines after a rollback: no indexing step is needed. The bare domain serves Ghost again
+  and search engines replace any new-site pages they picked up as they recrawl Ghost; the
+  preview addresses stay not indexable throughout.
 - Don has two Supabase projects: deleting the wrong one would lose unrelated data, so the step
   requires confirming the project name and contents first.
 - Contact submissions held only in the old Supabase project are lost when it is deleted unless
@@ -228,86 +255,251 @@ and an explicit project-identity confirmation first.
 
 **Readiness (before the switch)**
 
-- **FR-001**: The project MUST have an automated check, run in CI against the preview build,
-  that fails when any address in the site's own sitemap does not return a page.
+- **FR-001**: The project MUST have an automated check, run in CI against each pull request's
+  preview build, that fails when any address in the site's own sitemap does not return a page.
+  "Returns a page" means a successful (200) response served directly: a redirect, a not-found or
+  an error response is a failure. The content type is not part of the test. The check MUST also
+  fail when the sitemap names a main address other than the one expected for the build being
+  checked.
+- **FR-001a**: The check MUST fail closed. If the preview build fails, does not report within 20
+  minutes, or cannot be reached, the check fails with a plain message that says what it waited
+  for and how to run it again. It never passes because it could not run.
 - **FR-002**: The same check MUST fail when any link from one of the site's own pages to another
-  of its pages points to a page that does not exist, naming the broken target and the linking
-  page.
+  of its pages points to a page that does not exist. Only ordinary links between pages are
+  checked, not images, stylesheets, scripts or feeds. The part of a link after `#` is ignored and
+  the target page is checked. Email, telephone and script links, and links to other sites, are
+  ignored. A link may pass through up to 5 redirects within the site but must end on a page. Each
+  failure MUST be reported on its own line, naming the kind of failure, the broken address, the
+  problem (the status received or the network reason) and every page that links to it. The same
+  list MUST appear in the CI run's summary.
+- **FR-002a**: The CI check MUST use no secret beyond CI's own read-only access to the
+  repository, and MUST NOT expose any secret to code from a pull request, including one from a
+  fork.
 - **FR-003**: The walkthrough MUST include a readiness checklist covering: all expected pages
   present, Ghost content migrated (all posts are migrated), placeholder page copy and
-  placeholder projects replaced, no broken internal links, contact form working end to end, and
-  the automated checks passing on the main branch. Each item MUST say how it is confirmed.
-- **FR-003a**: An automated readiness check MUST fail while any public page still contains the
-  words "placeholder copy" or any public project is marked as a placeholder, naming each one.
-  Today this covers the Services and Speaking pages and the Focus Pocus project, which Don
-  replaces before the switch.
-- **FR-004**: The walkthrough MUST NOT proceed to the switch while any readiness item is not
+  placeholder projects replaced, no broken internal links, contact form working end to end, the
+  contact form's spam protection accepting the bare domain, the privacy policy stating where
+  contact messages are stored and naming no retired service, and the automated checks passing on
+  the main branch. The automated checks include the accessibility checks and the performance
+  budget, so a failing accessibility run blocks the switch. Each item MUST say how it is
   confirmed.
+- **FR-003a**: An automated readiness check MUST fail, naming each problem, while any of these is
+  true: a published (non-draft) page contains the phrase "placeholder copy" in any letter case; a
+  published project is flagged as a placeholder in its own details; or a page on the list of
+  expected pages is missing or still a draft. Today this covers the Services and Speaking pages
+  and the Focus Pocus project, which Don replaces before the switch.
+- **FR-003b**: The switch MUST NOT happen until this feature's pull request has merged and the
+  production site built from `main` serves the bare domain as its main address with the indexing
+  rules of FR-018. Before then the live domain would be told not to index and would name the
+  review address. The readiness checklist confirms this.
+- **FR-004**: The walkthrough MUST NOT proceed to the switch while any readiness item is not
+  confirmed. This is enforced by a readiness gate step that lists each item's result: the
+  assisting agent does not present any switch step until every item at the gate is confirmed,
+  and the setup check reports the result of each automatically confirmed item.
 
 **The walkthrough and manual steps**
 
-- **FR-005**: The walkthrough MUST be a numbered sequence in the project's setup documentation;
-  every step MUST state what to do, where, and how to confirm it worked.
-- **FR-006**: Every step that needs Don MUST be a pause: the assisting agent waits for Don and
-  never creates accounts, signs in, changes DNS or handles credentials.
-- **FR-007**: No step MAY require Don to paste a secret into the chat.
+- **FR-005**: The walkthrough MUST be a numbered sequence in the project's setup documentation.
+  Every step MUST state what to do, where, how to confirm it worked, and what to do when the
+  confirmation fails (try again, wait, go to the rollback, or stop). The walkthrough and the
+  setup check's summaries are written in plain language.
+- **FR-006**: Every step that needs Don MUST carry a visible pause marker and say who acts. The
+  assisting agent only runs read-only checks, checks that a file Don names exists, and prepares
+  repository changes. Don alone performs every action in a dashboard, account, DNS zone or
+  export. The agent waits for Don at each pause and never creates accounts, signs in, changes DNS
+  or handles credentials.
+- **FR-007**: No step MAY require Don to paste a secret into the chat. Exported files and their
+  contents MUST never be pasted into the chat, committed to the repository or written to any log.
 - **FR-008**: The setup check MUST be extended with this feature's new checks before the
   walkthrough that relies on them is written.
 
 **The switch and rollback**
 
 - **FR-009**: Before the switch, the walkthrough MUST record the current bare-domain and `www`
-  DNS records that point to Ghost (type, name, value, proxy setting), exactly enough to restore
-  them.
+  DNS records that point to Ghost (type, name, value, proxy setting and cache lifetime), exactly
+  enough to restore them. They are recorded in the walkthrough and in the committed DNS baseline,
+  and the two MUST agree. Before any change, Don also saves an export of the whole DNS zone on
+  his own machine.
 - **FR-010**: The switch MUST point the bare domain and `www` at the new site, leaving every
-  other DNS record, including mail records, unchanged.
-- **FR-010a**: The bare domain `https://doncoleman.ca` MUST be the site's main address: canonical
-  links, social sharing addresses, the sitemap and `robots.txt` on the live site MUST use it.
-  `www.doncoleman.ca` MUST permanently redirect to the same path on the bare domain.
-- **FR-011**: The walkthrough MUST include a rollback section that restores the recorded Ghost
-  records and confirms the domain serves Ghost again, usable for as long as Ghost is running
-  (2 weeks after the switch).
-- **FR-012**: After a deliberate switch, the setup check MUST no longer report the "Live domain
-  still Ghost" item as a problem, while still confirming Ghost correctly during a rollback.
+  other DNS record, including mail records, unchanged. This is confirmed by comparing the whole
+  zone, not only the mail records, against the committed DNS baseline: the only differences
+  allowed are the bare-domain and `www` records that the switch replaces.
+- **FR-010a**: The bare domain `https://doncoleman.ca` MUST be the site's main address:
+  canonical links, social sharing addresses, the sitemap, `robots.txt` and the writing feed on
+  the live site MUST use it. `www.doncoleman.ca` MUST permanently redirect, in a single 301
+  response, to the same path and query string on `https://doncoleman.ca`, unchanged (no trailing
+  slash added or removed), from both `http://` and `https://`, with a valid certificate on `www`
+  and no interstitial page or redirect loop. `http://doncoleman.ca` MUST permanently redirect to
+  `https://doncoleman.ca`.
+- **FR-010b**: The bare domain is switched first, then `www`, in one sitting. If one half cannot
+  be confirmed, Don either completes it in the same sitting or follows the rollback for both.
+  The setup check reports each half separately, so a half-switched domain is visible, and it is
+  not left in place when the sitting ends.
+- **FR-010c**: The records that replace Ghost's MUST have a cache lifetime of 5 minutes or less,
+  so that a switch or a rollback reaches most visitors within minutes.
+- **FR-010d**: The bare domain and `www` MUST be served over HTTPS only. The site keeps its
+  existing strict-transport policy (one year, for the bare domain only, with no subdomains and no
+  preload list). Rollback stays safe under it because Ghost also serves the domain over HTTPS.
+- **FR-011**: The walkthrough MUST include a rollback section that undoes every change the
+  switch made: it detaches the bare domain from the new site, removes the `www` redirect and its
+  placeholder record, restores the recorded Ghost records exactly, and confirms the domain serves
+  Ghost again. It is usable for as long as Ghost is running: from the switch date (the day the
+  bare domain is attached to the new site, written down in the walkthrough) until Ghost is
+  cancelled, no earlier than 2 weeks later. Rollback does not depend on the review address. If
+  it happens after the review address is removed and Don later wants to switch again, he
+  restores the review address first and the readiness checklist runs again.
+- **FR-011a**: Don decides whether to roll back. The walkthrough recommends rollback when a
+  post-launch check reports a problem (not pending) that cannot be fixed within the sitting, when
+  any mail record differs from the baseline, when a check is still pending 24 hours after the
+  switch, or when Don judges the live site unusable for readers.
+- **FR-012**: The setup check MUST recognise a deliberate switch only from Don's own act of
+  attaching the bare domain to the new site in the hosting account, never from public DNS
+  answers alone. Before that act, any departure from the Ghost records is reported as a problem,
+  so a broken DNS state is not mistaken for a switch. After a deliberate switch, the "Live domain
+  still Ghost" item MUST no longer report a problem. During and after a rollback (the bare
+  domain detached again), it confirms Ghost again and the post-launch items return to waiting.
 
 **After the switch**
 
 - **FR-013**: The setup check MUST confirm that the bare domain serves the new build over HTTPS
   and that `www` permanently redirects to the bare domain.
 - **FR-014**: The setup check MUST confirm that every address in the live sitemap returns a page.
-- **FR-015**: The setup check MUST confirm that the contact endpoint on the live domain responds.
+- **FR-015**: The setup check MUST confirm that the contact endpoint on the live domain responds,
+  using a request that cannot create a submission, store data or send a message: it expects the
+  endpoint's documented refusal of a request that is not a submission. The check runs only when
+  Don runs the setup check, sends one such request per run, never runs from CI, and does not
+  count toward the submission rate limit.
+- **FR-015a**: Launch MUST NOT change the contact protections. The endpoint accepts submissions
+  only from the address the form was served from: the bare domain after launch (`www` never
+  submits, because it redirects), the review address only while it exists, and each preview
+  address into preview storage. Spam-protection verification, rate-limit thresholds and the
+  retention period are unchanged. Production and preview submissions stay in separate stores.
+  The only personal data collected stays what a person types into the form.
+- **FR-015b**: Don's end-to-end test messages, on the review address and on the live domain,
+  MUST be marked as launch tests (starting "Launch test") and deleted by Don once he has
+  confirmed they arrived.
 - **FR-016**: The setup check MUST confirm that the domain's mail records are unchanged from the
-  recorded baseline. After the Mailgun records are removed (FR-024), the baseline is the updated
-  one without them.
+  committed DNS baseline, which is the source of truth. "Unchanged" means each public resolver
+  returns the same set of mail records (MX, TXT and DKIM records) by type, name, value and, for
+  MX, priority; order and cache lifetime are ignored. After the Mailgun records are removed
+  (FR-024), the baseline is the updated one without them.
+- **FR-016a**: Don MUST confirm that mail works by sending a message to and from his domain
+  address before the switch, after the switch, and after the Mailgun records are deleted.
 - **FR-017**: Post-launch checks MUST report "waiting for the switch" before the switch,
-  "pending" while DNS or certificates are still settling, and "Problem:" with a plain summary
-  on a real failure.
-- **FR-018**: The live domain MUST be indexable by search engines after launch, while the
-  per-branch preview addresses remain not indexable.
-- **FR-019**: Old addresses from the Ghost site MUST NOT be redirected; they return the new
-  site's not-found page.
-- **FR-019a**: After the switch, the walkthrough MUST remove the review address
-  `new.doncoleman.ca` completely (its custom domain and its DNS record), and confirm it no longer
-  resolves. The setup check's review-address items (16 and 17) MUST be retired or replaced so
-  that they no longer expect the review address to exist or to send "do not index".
+  "pending" while DNS or certificates are still settling, and "Problem:" with a plain summary on
+  a real failure. Each state is printed as a word, not shown by colour or symbol alone. A check
+  still pending 24 hours after the switch is treated as a problem by the walkthrough.
+- **FR-018**: The live bare domain MUST be indexable by search engines after launch. These MUST
+  stay not indexable, through a do-not-index response header: every branch preview address,
+  every per-version preview address, the hosting platform's default addresses for both the
+  production and the preview site, and the review address until it is removed. Branch previews
+  also carry do-not-index page metadata. Draft pages and the not-found page are never indexable,
+  and contact endpoint responses are never indexable on any address. Search engines are never
+  blocked from crawling, because that would hide the do-not-index signal.
+- **FR-019**: Old addresses from the Ghost site MUST NOT be redirected. Tag, author, feed and
+  admin addresses, and any old post address the new site does not have, return status 404 with
+  the site's not-found page and no redirect. This is an accepted risk: readers who follow an old
+  link to an address that changed land on the not-found page. The expected traffic is small (a
+  handful of external links), Don accepts the loss, and FR-020 covers the links he controls.
+- **FR-019a**: After the post-launch checks are complete and the external-links step is done, in
+  the same session as the switch, the walkthrough MUST remove the review address
+  `new.doncoleman.ca` completely (its custom domain and its DNS record) and confirm it no longer
+  resolves. Removal is not delayed to the end of the rollback window, because rollback does not
+  depend on it (FR-011). The setup check's review-address items (16 and 17) MUST be retired or
+  replaced so that they no longer expect the review address to exist or to send "do not index".
 - **FR-020**: Immediately after the post-launch checks, the walkthrough MUST remind Don to update
   external links (such as LinkedIn posts) that point to old blog addresses.
 
 **Retirement (after the agreed period)**
 
-- **FR-021**: The walkthrough MUST include steps, to be followed only after the agreed period of
-  2 weeks after the switch, for cancelling the Ghost subscription, stating first that rollback
-  ends with it. Before the cancellation, Don MUST export Ghost's content (JSON) and members
-  (CSV), and the walkthrough MUST confirm both files exist.
-- **FR-022**: The walkthrough MUST include steps for retiring the Flux Supabase project that
-  first have Don export any contact submissions he wants to keep, then confirm it is the Flux
-  project and not his other Supabase project, before deleting it.
-- **FR-023**: The walkthrough MUST include a step for archiving the Flux repository, and the
-  design-source document MUST be updated to say Flux is archived but still cloneable.
-- **FR-024**: After Ghost is cancelled, the walkthrough MUST have Don delete the
-  `mail.doncoleman.ca` Mailgun records that only Ghost's newsletter used (two MX records, the SPF
-  TXT record and the DKIM TXT record), and the mail-records baseline MUST be updated to match.
-  The iCloud mail records on the bare domain MUST stay untouched.
+- **FR-021**: The walkthrough MUST include steps, to be followed no earlier than 2 weeks after
+  the switch date, for cancelling the Ghost subscription. Before the cancellation it MUST state
+  that rollback ends with it and that Ghost's content and members cannot be recovered once the
+  subscription ends. At the switch, Don notes Ghost's next renewal date so that the cancellation
+  can avoid a further charge; 2 weeks is a minimum, not a deadline. Before the cancellation, Don
+  MUST export Ghost's content (JSON) and members (CSV) to his own machine, outside the
+  repository. The walkthrough confirms both files exist and are not empty from paths Don gives,
+  without opening them.
+- **FR-021a**: Ghost's members are not moved to the new site, which has no newsletter. The
+  members file and any exported contact submissions are private records: only Don keeps them, on
+  his own machine, and he deletes them within 12 months of the export, matching the site's
+  12-month retention for contact messages. Sending members a final notice that the newsletter is
+  ending is Don's choice and not required. Until each store or file is deleted, Don answers
+  requests to see or delete personal data held in Ghost, Supabase or the exports by hand within
+  30 days, as the privacy policy says.
+- **FR-022**: The walkthrough MUST include steps for retiring the Flux Supabase project, in this
+  order: show Don its tables, their fields and the number of records so he can decide what to
+  keep; have him export the contact submissions he wants to keep; have him confirm the export is
+  complete by checking that the file opens and its record count matches the project's; have him
+  confirm the project's identity with two independent identifiers (the project name, and a
+  project reference that matches the one in the Flux repository's Supabase configuration) and
+  that it holds Flux's contact table and contact function, so it is not his other Supabase
+  project; and only then delete it.
+- **FR-023**: The walkthrough MUST include a step for archiving the Flux repository. Before
+  archiving, the repository MUST be checked for committed secrets or personal data: any secret
+  found is revoked, and personal data is removed (or the repository kept private) before it
+  stays cloneable. The design-source document MUST be updated to say Flux is archived but still
+  cloneable.
+- **FR-024**: After Ghost is cancelled, the walkthrough MUST have Don delete all five Mailgun
+  records that only Ghost's newsletter used:
+  - MX `mail.doncoleman.ca` → `mxa.eu.mailgun.org` (priority 10);
+  - MX `mail.doncoleman.ca` → `mxb.eu.mailgun.org` (priority 10);
+  - TXT `mail.doncoleman.ca` `v=spf1 include:mailgun.org ~all` (SPF);
+  - TXT `mta._domainkey.mail.doncoleman.ca` (Mailgun's DKIM key);
+  - CNAME `email.mail.doncoleman.ca` → `eu.mailgun.org` (Mailgun's tracking address).
+
+  Before deleting, Don confirms that nothing other than Ghost's newsletter sends through Mailgun
+  (the site's contact form sends no email). The iCloud mail records on the bare domain MUST stay
+  untouched: MX `mx01.mail.icloud.com` and `mx02.mail.icloud.com`, the TXT `apple-domain`
+  verification, the TXT `v=spf1 include:icloud.com ~all`, and the DKIM CNAME
+  `sig1._domainkey.doncoleman.ca`. The mail-records baseline MUST be updated to match in the
+  retirement follow-up change straight after the deletion, and retirement is not complete until
+  the mail-records check passes against the updated baseline, so the zone and the baseline cannot
+  drift apart.
+- **FR-024a**: The bare domain's email authentication (the iCloud SPF and DKIM records) MUST stay
+  valid and unchanged. The domain has no DMARC policy today; adding one is follow-up work outside
+  this feature.
+- **FR-025**: Every irreversible step (Ghost cancellation, Supabase deletion, Mailgun record
+  deletion) MUST be labelled irreversible and list the evidence needed before it. Archiving the
+  Flux repository is labelled reversible.
+- **FR-025a**: After retirement, no DNS record for the domain MAY point at Ghost, Mailgun or the
+  removed review address, so no dangling record can be taken over.
+- **FR-025b**: When each service is retired, Don MUST revoke or delete its API keys where the
+  service still exists (for example Mailgun's sending domain and keys, and any Ghost integration
+  keys), and any leftover secret or environment value for a retired service MUST be removed from
+  GitHub, Cloudflare and local untracked files.
+- **FR-025c**: The retirement follow-up change (baseline update, design-source update, removal of
+  the review address's do-not-index rule) is a separate, small pull request that the agent
+  prepares once Don has completed the retirement steps, and Don approves it.
+
+**Security and privacy of the checks**
+
+- **FR-026**: The setup check MUST read the hosting account with read-only access only, using a
+  token Don keeps in his local untracked environment file. The token is never printed and never
+  used in CI. The output of the setup check and of the site check MUST never contain message
+  contents, personal details, tokens or environment values.
+
+**Accessibility, performance and analytics**
+
+- **FR-027**: WCAG 2.2 AA applies to every page this launch makes public, including the
+  replacement Services, Speaking and Focus Pocus content and the not-found page. The existing
+  automated accessibility checks (every WCAG 2.2 A and AA rule, run on every page template
+  including the not-found page, with zero violations allowed) MUST pass on `main` before the
+  switch, as part of readiness (FR-003). The main-address and indexing changes MUST NOT change
+  page titles, document language, headings, landmarks or visible markup; if any markup does
+  change, the same checks MUST still pass. Fixes for broken links keep descriptive link text. The
+  replacement content is prose inside existing templates that are already tested for keyboard
+  use and reflow at 320 CSS pixels, so no extra manual review is required beyond Don reading the
+  pages on the preview; new interactive content would need a manual keyboard and screen-reader
+  review.
+- **FR-027a**: The not-found page that old Ghost addresses now reach MUST say plainly that the
+  page does not exist and that older blog addresses were not carried over, link to the home page,
+  have one main heading inside the main content region, be fully usable by keyboard, and meet AA
+  contrast.
+- **FR-028**: The performance budget and Core Web Vitals "good" thresholds continue to apply,
+  unchanged, on the live domain. Analytics on the live domain is the site's existing
+  privacy-focused, cookie-free analytics only: no other third-party script and no new personal
+  data.
 
 ### Key Entities
 
@@ -316,8 +508,7 @@ and an explicit project-identity confirmation first.
 - **Ghost DNS records**: the bare-domain and `www` records that point to Ghost today; recorded
   before the switch and used for rollback.
 - **Mail records baseline**: the domain's mail records as recorded during setup; compared after
-  the switch. Updated once to drop the `mail.doncoleman.ca` Mailgun records after Ghost is
-  cancelled.
+  the switch. Updated once to drop the five Mailgun records after Ghost is cancelled.
 - **Walkthrough step**: a numbered step with what, where, how to confirm, and whether it pauses
   for Don.
 - **Post-launch check**: a setup check item run against the live domain, with states waiting,
@@ -327,41 +518,60 @@ and an explicit project-identity confirmation first.
 
 ### Measurable Outcomes
 
+SC-002, SC-003 and SC-007 depend on the switch, which happens after this feature's pull request
+merges (Clarifications), so they are proven after the merge, with Don, in the same session.
+
 - **SC-001**: The sitemap and internal link check passes on the preview build, with 100% of
-  sitemap addresses returning a page and zero broken internal links.
-- **SC-002**: The switch is completed with Don, following the walkthrough, with every step's
-  confirmation passing.
+  sitemap addresses returning a page and zero broken internal links. The CI check finishes
+  within 3 minutes once the preview is ready, and waits no more than 20 minutes for it.
+- **SC-002**: After the merge, the switch is completed with Don, following the walkthrough, with
+  every step's confirmation passing.
 - **SC-003**: After the switch, all post-launch checks in the setup check report complete: the
   bare domain serves the new site over HTTPS, `www` permanently redirects to it, 100% of live
-  sitemap addresses load, the contact
-  endpoint responds, and mail records are unchanged.
+  sitemap addresses load, the contact endpoint responds, and mail records are unchanged.
 - **SC-004**: Email for the domain keeps working through the switch, with no change to any mail
-  record; later, only the Ghost-only Mailgun records are removed and the iCloud records never
-  change.
+  record, and Don's test messages send and arrive before the switch, after it, and after the
+  Mailgun deletion. Later, only the five Ghost-only Mailgun records are removed and the iCloud
+  records never change.
 - **SC-005**: If rollback is needed, Don can restore Ghost in under 15 minutes of his own work by
-  following the rollback section alone.
+  following the rollback section alone. The time runs from opening the rollback section to
+  finishing its last dashboard action, and excludes the time DNS and certificates take to
+  settle.
 - **SC-006**: The walkthrough documents the retirement steps (export Ghost content and members,
-  cancel Ghost, remove the Mailgun records, retire the Flux Supabase project, archive Flux) for
-  after the 2-week period, each with a confirmation.
+  cancel Ghost, remove the five Mailgun records, retire the Flux Supabase project, archive Flux)
+  for after the 2-week period, each with a confirmation and each irreversible step labelled.
 - **SC-007**: After launch, `new.doncoleman.ca` no longer resolves and no setup check item
   expects it.
+- **SC-008**: After retirement, no DNS record for the domain points at Ghost, Mailgun or the
+  review address.
 
 ## Assumptions
 
 - The domain's DNS is already in Cloudflare and the new site is already deployed from main with
   a working review address (setup items 3 to 25).
-- Ghost keeps running unchanged during the 2-week rollback window; the Ghost records recorded before the
-  switch are enough to restore it.
+- Ghost keeps running unchanged during the 2-week rollback window; the Ghost records recorded
+  before the switch are enough to restore it. Ghost serves the domain over HTTPS, so the site's
+  strict-transport policy does not block a rollback.
 - The mail records baseline already recorded during setup is the reference for "unchanged".
 - The contact form is confirmed end to end on the live domain by Don submitting a test message,
   since that sends a real message.
+- The contact form itself (its error, success and rate-limited states, its spam-protection
+  widget, and its behaviour without JavaScript) is unchanged by this feature. Its accessibility
+  requirements belong to the contact feature's specification, and its automated checks keep
+  running in the release gate.
+- The walkthrough and the setup documentation live in the repository and are not published on
+  the site, so they are outside the site's WCAG scope. They still use headings, tables and plain
+  language.
 - Moving the drc.dev portfolio is out of scope (a later feature).
 - Old Ghost addresses are intentionally not redirected; broken inbound links are handled by the
   external-links reminder.
-- The retirement steps are documented in this feature but performed later, by Don, 2 weeks after
-  the switch; the feature is done when they are documented.
-- Cancelling Ghost and retiring Supabase reduce running costs; no step adds a recurring cost
-  (Principle IX).
+- The retirement steps are documented in this feature but performed later, by Don, no earlier
+  than 2 weeks after the switch; the feature is done when they are documented. The repository
+  changes that follow retirement come in a separate follow-up pull request (FR-025c).
+- Expected new monthly cost is $0 (Principle IX). The custom domain, the redirect, the
+  certificates and the analytics are free on the current plans, and the new CI check uses a few
+  minutes per pull request within the free CI allowance. Cancelling Ghost, retiring Supabase and
+  dropping Mailgun reduce running costs; no step adds a recurring cost.
 
 ## Technical Notes (hand-off to planning, not requirements)
 

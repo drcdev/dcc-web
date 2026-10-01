@@ -84,8 +84,8 @@ Two derived subsets are defined by name and type. No schema field is added:
 
 State transitions at retirement, all in the follow-up pull request:
 
-- The Mailgun records (`MX mail…` ×2, `TXT mail…` SPF, `TXT mta._domainkey.mail…`, and, if Don
-  agrees, `CNAME email.mail…`) change from `keep` to `drop`, with the reason
+- The Mailgun records (`MX mail…` ×2, `TXT mail…` SPF, `TXT mta._domainkey.mail…` and
+  `CNAME email.mail…`) change from `keep` to `drop`, with the reason
   `"Mailgun, used only by Ghost's newsletter; deleted after Ghost was cancelled (YYYY-MM-DD)"`.
 - The Ghost web records change from `keep` to `drop`, with the reason
   `"Ghost cancelled YYYY-MM-DD; rollback no longer possible"`.

@@ -216,8 +216,8 @@ the gate unchanged; the new e2e spec runs inside its existing `test:e2e`.
   taken from Cloudflare's docs. It cannot be exercised by local `wrangler dev` (an http
   localhost host), so the CI preview crawl's `--expect-noindex` is the proof, and the first
   preview run of this branch must show it.
-- **Mailgun tracking CNAME** (`email.mail.doncoleman.ca`). It is not in the spec's list of four
-  records. The walkthrough proposes deleting it too, marked as Don's decision (R11).
+- **Mailgun tracking CNAME** (`email.mail.doncoleman.ca`). Decided by Don after the plan: it is
+  deleted with the other four Mailgun records at retirement (spec FR-024, R11).
 - **Placeholder readiness blocks the switch, not the merge.** Item 26 fails until Don replaces
   the Services, Speaking and Focus Pocus placeholders. It is a setup item, not part of
   `verify`, so it does not block this pull request.
