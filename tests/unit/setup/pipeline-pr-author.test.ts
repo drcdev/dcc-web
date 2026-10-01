@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-const pipelines = ["deliver", "tweak", "squash"] as const;
+const pipelines = ["deliver", "tweak", "squash", "chore"] as const;
 
 function skillText(name: string): string {
   return readFileSync(
@@ -57,7 +57,7 @@ describe.each(pipelines)(".claude/skills/%s/SKILL.md PR author account", (name) 
 });
 
 describe("PR author account block alignment", () => {
-  it("is identical text in deliver, tweak and squash", () => {
+  it("is identical text in deliver, tweak, squash and chore", () => {
     const [first, ...rest] = pipelines.map(authorBlock);
     for (const other of rest) {
       expect(other).toBe(first);
