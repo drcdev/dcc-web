@@ -304,3 +304,38 @@ for (const template of blogTemplates) {
     });
   });
 }
+
+// Series markers and reflow (spec 013 US3; FR-010, FR-016d). axe over these pages runs in
+// a11y.spec.ts; these checks cover the pages with markers present in both themes, and reflow.
+const MARKER_PAGES = ["/writing/", "/writing/all/", "/writing/self-contained-development-for-ghost-themes/"] as const;
+for (const theme of THEMES) {
+  for (const path of MARKER_PAGES) {
+    test(`${path} shows a series marker with readable text in the ${theme} theme`, async ({ page }) => {
+      await setTheme(page, theme);
+      await page.goto(path);
+      const marker = page.locator("[data-series-marker]").first();
+      await expect(marker).toBeVisible();
+      await expect(marker).toHaveText(/^Series: (Drift|Convergence)$/);
+      expect(await marker.getAttribute("aria-label")).toBeNull();
+      const box = await marker.boundingBox();
+      expect(box!.width).toBeGreaterThanOrEqual(24);
+      expect(box!.height).toBeGreaterThanOrEqual(24);
+    });
+  }
+}
+
+const REFLOW_PAGES = ["/writing/", "/writing/drift/", "/writing/self-contained-development-for-ghost-themes/", "/"] as const;
+for (const path of REFLOW_PAGES) {
+  test(`${path} reflows with no horizontal scroll at 320px`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto(path);
+    await noSidewaysScroll(page);
+  });
+
+  test(`${path} reflows with no horizontal scroll at 200% zoom`, async ({ page }) => {
+    // 200% zoom of a 1280px window is a 640px layout; the 320px case above is the narrowest.
+    await page.setViewportSize({ width: 640, height: 800 });
+    await page.goto(path);
+    await noSidewaysScroll(page);
+  });
+}

@@ -1,15 +1,15 @@
 ---
-// The topic pill row: one pill per topic in list order (topics without posts
+// The topic pill row: one pill per non-series controlled topic in list order (topics without posts
 // included), then a plain "All posts" link that is not a pill (contracts/
 // blog-pages.md "Topic pill row"; FR-007, FR-012, FR-013). Shown on the landing
 // page and on the all-posts pages, not on topic pages.
-import { topics } from "../../config/topics.ts";
+import { pillRowTopics } from "../../config/topics.ts";
 import TopicPill from "./TopicPill.astro";
 ---
 
 <nav aria-label="Topics">
   <ul class="m-0 flex list-none flex-wrap items-center gap-x-3 gap-y-2 p-0">
-    {topics.map((topic) => <li><TopicPill topic={topic.id} /></li>)}
+    {pillRowTopics.map((topic) => <li><TopicPill topic={topic.id} /></li>)}
     <li>
       <a
         href="/writing/all/"

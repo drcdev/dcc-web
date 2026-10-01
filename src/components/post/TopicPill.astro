@@ -3,10 +3,10 @@
 // "Post card"; FR-011, FR-017). The pill classes come from the static map in
 // topic-styles.ts because Tailwind needs whole class names in source. An id that is not in
 // src/config/topics.ts is a free-form topic (spec 013 research R9): a neutral `dusk` pill with a
-// sentence-case label. A series links to its short address (topicHref); the series marker itself
-// is the Phase 5 work (spec 013 T037 to T039).
-import { findTopic, topicHref } from "../../config/topics.ts";
+// sentence-case label. A series id is shown as the series marker (SeriesMarker.astro; FR-010).
+import { findTopic, seriesIds, topicHref } from "../../config/topics.ts";
 import { topicLabel } from "../../lib/content/topic-ids.ts";
+import SeriesMarker from "./SeriesMarker.astro";
 import { topicStyle } from "./topic-styles.ts";
 
 export interface Props {
@@ -16,10 +16,13 @@ export interface Props {
 
 const { topic: id } = Astro.props;
 const topic = findTopic(id);
+const isSeries = (seriesIds as readonly string[]).includes(id);
 ---
 
 {
-  topic ? (
+  isSeries ? (
+    <SeriesMarker series={id} />
+  ) : topic ? (
     <a href={topicHref(topic.id)} data-topic-pill class={topicStyle(topic.colour).pill}>
       {topic.name}
     </a>

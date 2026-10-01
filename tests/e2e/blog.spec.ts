@@ -586,3 +586,61 @@ test.describe("redirects from the old series topic addresses (FR-008a)", () => {
     expect(new URL(response.url()).pathname).toBe("/writing/drift/99/");
   });
 });
+
+// Series markers on every page that shows topics (spec 013 US3; FR-010; SC-002). Tagged posts carry a
+// "Series: ..." marker; the sample post has no series and shows none.
+test.describe("series markers", () => {
+  const listings = [
+    ["the landing page", "/writing/"],
+    ["/writing/all/", "/writing/all/"],
+    ["a topic page", "/writing/topics/technology-teams/"],
+    ["a series page", "/writing/drift/"],
+    ["the home page's Recent writing", "/"],
+  ] as const;
+  for (const [name, path] of listings) {
+    test(`${name} shows markers on tagged cards`, async ({ page }) => {
+      await page.goto(path);
+      const markers = page.locator("[data-series-marker]");
+      expect(await markers.count()).toBeGreaterThan(0);
+      for (const text of await markers.allInnerTexts()) expect(text).toMatch(/^Series: (Drift|Convergence)$/);
+      const untagged = page.locator("[data-post-card], [data-lead-story]").filter({ has: page.locator(`a[href="${POST}"]`) });
+      for (let i = 0; i < (await untagged.count()); i += 1) {
+        await expect(untagged.nth(i).locator("[data-series-marker]")).toHaveCount(0);
+      }
+    });
+  }
+
+  test("the marker comes first in a card's topic list", async ({ page }) => {
+    await page.goto("/writing/all/");
+    const card = page.locator("[data-post-card]").filter({ has: page.locator(`a[href="${GHOST_THEMES}"]`) });
+    await expect(card.locator('ul[aria-label="Topics"] a').first()).toHaveText("Series: Drift");
+  });
+
+  test("a tagged post header shows a marker that links to the series page", async ({ page }) => {
+    await page.goto(GHOST_THEMES);
+    const link = page.locator("[data-series-marker]", { hasText: "Series: Drift" }).first();
+    await expect(link).toBeVisible();
+    await link.click();
+    await expect(page).toHaveURL(/\/writing\/drift\/$/);
+  });
+
+  test("an untagged post header has no marker", async ({ page }) => {
+    await page.goto(POST);
+    // Related posts below the post may carry markers; the header (everything outside them) has none.
+    const all = await page.locator("[data-series-marker]").count();
+    const inRelated = await page.locator("[data-related] [data-series-marker]").count();
+    expect(all - inRelated).toBe(0);
+  });
+
+  test("related posts show markers for tagged posts and none for untagged", async ({ page }) => {
+    await page.goto(POST);
+    const cards = page.locator("[data-related] [data-post-card]");
+    expect(await cards.count()).toBeGreaterThan(0);
+    for (let i = 0; i < (await cards.count()); i += 1) {
+      const card = cards.nth(i);
+      const href = await card.locator("h3 a").getAttribute("href");
+      const tagged = [GHOST_THEMES, FOCUS_POCUS, WAYFINDER, STARTING].includes(href ?? "");
+      await expect(card.locator("[data-series-marker]")).toHaveCount(tagged ? 1 : 0);
+    }
+  });
+});

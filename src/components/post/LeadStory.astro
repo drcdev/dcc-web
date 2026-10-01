@@ -10,6 +10,7 @@
 import { Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
 import { findTopic } from "../../config/topics.ts";
+import { mainTopic as pickMainTopic, orderTopics } from "../../lib/content/topic-ids.ts";
 import { formatDate, isoDate } from "../../lib/format-date.ts";
 import type { PostSummary } from "../../lib/content/post-summary.ts";
 import TopicPill from "./TopicPill.astro";
@@ -20,7 +21,7 @@ export interface Props {
 }
 
 const { post } = Astro.props;
-const mainTopic = findTopic(post.topics[0] ?? "");
+const mainTopic = findTopic(pickMainTopic(post.topics) ?? "");
 const textOnly = !post.featureImage;
 const flags = {
   ...(post.featured ? { "data-featured": "" } : {}),
@@ -70,7 +71,7 @@ const border =
       <time datetime={isoDate(post.date)}>{formatDate(post.date)}</time> · {post.minutesRead} min read
     </p>
     <ul aria-label="Topics" class="m-0 mt-auto flex list-none flex-wrap gap-2 p-0">
-      {post.topics.map((topic) => <li><TopicPill topic={topic} /></li>)}
+      {orderTopics(post.topics).map((topic) => <li><TopicPill topic={topic} /></li>)}
     </ul>
   </div>
 </article>

@@ -104,20 +104,20 @@ Controlled topic list, colour tokens and pure helpers that every story reads.
 
 ### Tests (write first, see fail)
 
-- [ ] T030 [P] [US3] New component test `tests/component/post/SeriesMarker.test.ts`: text "Series: Drift", link text is the full visible text with no `aria-label`, href is the short address, semibold and 2px outline classes, hover adds an underline and changes no colour, no transition or animation class, 24x24 target (FR-016c, FR-016d).
-- [ ] T031 [P] [US3] Extend `tests/component/post/TopicPill.test.ts`: series ids delegate to `SeriesMarker`; a free-form id renders a neutral `dusk` pill with sentence-case label linking `/writing/topics/{id}/`; controlled pills use mauve and sand.
-- [ ] T032 [P] [US3] Extend `tests/component/post/TopicPillRow.test.ts`: the row contains only non-series controlled topics, never free-form.
-- [ ] T033 [P] [US3] Extend `tests/component/post/PostCard.test.ts`, `LeadStory.test.ts`, `PostMeta.test.ts` and `RelatedPosts.test.ts`: series marker first then other topics in written order; a text-only card's border takes the series colour, otherwise the first controlled topic, and keeps the neutral `dusk` border when every topic is free-form; an untagged card is unchanged; the title stays the card's only link to the post; related posts show markers.
-- [ ] T034 [P] [US3] E2E tests in `tests/e2e/blog.spec.ts` for SC-002: marker present on the landing, `/writing/all/`, a topic page, a series page, the post header, home "Recent writing" and related posts for tagged posts, absent for untagged; the post-header marker links to the series page.
-- [ ] T035 [P] [US3] Accessibility tests in `tests/e2e/blog.a11y.spec.ts`: axe on a post page, `/writing/all/` and the landing with markers present, light and dark themes; reflow with no horizontal scroll at 320 px and 200% zoom on the landing, a series page, a post page and the home page (FR-016d).
-- [ ] T036 [P] [US3] Forced-colours E2E test in a new file `tests/e2e/blog-forced-colors.spec.ts` (no blog forced-colours spec exists yet; model it on the existing `tests/e2e/projects-forced-colors.spec.ts`; the name matches only the `e2e` Playwright project, which `tests/unit/site/config-files.test.ts` requires): with forced colours emulated the marker keeps a 2px outline and its "Series:" text and an ordinary pill keeps a 1px border (FR-016d).
+- [X] T030 [P] [US3] New component test `tests/component/post/SeriesMarker.test.ts`: text "Series: Drift", link text is the full visible text with no `aria-label`, href is the short address, semibold and 2px outline classes, hover adds an underline and changes no colour, no transition or animation class, 24x24 target (FR-016c, FR-016d).
+- [X] T031 [P] [US3] Extend `tests/component/post/TopicPill.test.ts`: series ids delegate to `SeriesMarker`; a free-form id renders a neutral `dusk` pill with sentence-case label linking `/writing/topics/{id}/`; controlled pills use mauve and sand.
+- [X] T032 [P] [US3] Extend `tests/component/post/TopicPillRow.test.ts`: the row contains only non-series controlled topics, never free-form.
+- [X] T033 [P] [US3] Extend `tests/component/post/PostCard.test.ts`, `LeadStory.test.ts`, `PostMeta.test.ts` and `RelatedPosts.test.ts`: series marker first then other topics in written order; a text-only card's border takes the series colour, otherwise the first controlled topic, and keeps the neutral `dusk` border when every topic is free-form; an untagged card is unchanged; the title stays the card's only link to the post; related posts show markers.
+- [X] T034 [P] [US3] E2E tests in `tests/e2e/blog.spec.ts` for SC-002: marker present on the landing, `/writing/all/`, a topic page, a series page, the post header, home "Recent writing" and related posts for tagged posts, absent for untagged; the post-header marker links to the series page.
+- [X] T035 [P] [US3] Accessibility tests in `tests/e2e/blog.a11y.spec.ts`: axe on a post page, `/writing/all/` and the landing with markers present, light and dark themes; reflow with no horizontal scroll at 320 px and 200% zoom on the landing, a series page, a post page and the home page (FR-016d).
+- [X] T036 [P] [US3] Forced-colours E2E test in a new file `tests/e2e/blog-forced-colors.spec.ts` (no blog forced-colours spec exists yet; model it on the existing `tests/e2e/projects-forced-colors.spec.ts`; the name matches only the `e2e` Playwright project, which `tests/unit/site/config-files.test.ts` requires): with forced colours emulated the marker keeps a 2px outline and its "Series:" text and an ordinary pill keeps a 1px border (FR-016d).
 
 ### Implementation
 
-- [ ] T037 [US3] Create `src/components/post/SeriesMarker.astro`. Makes T030 pass.
-- [ ] T038 [US3] Update `src/components/post/TopicPill.astro` (series delegates, free-form neutral) and `src/components/post/TopicPillRow.astro` (non-series controlled only). Makes T031 and T032 pass.
-- [ ] T039 [US3] Update `src/components/post/PostCard.astro`, `LeadStory.astro` and `PostMeta.astro` to use `orderTopics` and `mainTopic` (series first; series border on text-only cards). Makes T033 pass.
-- [ ] T040 [US3] Run T030 to T036; fix until green. Confirm no client JavaScript was added.
+- [X] T037 [US3] Create `src/components/post/SeriesMarker.astro`. Makes T030 pass.
+- [X] T038 [US3] Update `src/components/post/TopicPill.astro` (series delegates, free-form neutral) and `src/components/post/TopicPillRow.astro` (non-series controlled only). Makes T031 and T032 pass.
+- [X] T039 [US3] Update `src/components/post/PostCard.astro`, `LeadStory.astro` and `PostMeta.astro` to use `orderTopics` and `mainTopic` (series first; series border on text-only cards). Makes T033 pass.
+- [X] T040 [US3] Run T030 to T036; fix until green. Confirm no client JavaScript was added.
 
 ---
 

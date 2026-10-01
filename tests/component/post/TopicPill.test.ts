@@ -4,7 +4,7 @@ import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, it } from "vitest";
 import TopicPill from "../../../src/components/post/TopicPill.astro";
 import { topicStyles } from "../../../src/components/post/topic-styles.ts";
-import { topicHref, topics } from "../../../src/config/topics.ts";
+import { seriesIds, topicHref, topics } from "../../../src/config/topics.ts";
 import { byName, classList } from "../html.ts";
 
 let container: AstroContainer;
@@ -13,7 +13,7 @@ beforeAll(async () => {
 });
 
 describe("TopicPill", () => {
-  it.each(topics.map((t) => [t.id, t.name, t.colour] as const))(
+  it.each(topics.filter((t) => !seriesIds.includes(t.id)).map((t) => [t.id, t.name, t.colour] as const))(
     "links %s to its topic page with its name, in its colour",
     async (id, name, colour) => {
       const html = await container.renderToString(TopicPill, { props: { topic: id } });
@@ -37,5 +37,26 @@ describe("TopicPill", () => {
     expect("data-free-form" in links[0]!.attrs).toBe(true);
     expect(html.replace(/<[^>]+>/g, "").trim()).toBe("Cloud cost");
     for (const cls of topicStyles.dusk!.pill.split(/\s+/)) expect(classList(links[0]!)).toContain(cls);
+  });
+
+  it("delegates a series id to the series marker", async () => {
+    for (const id of seriesIds) {
+      const html = await container.renderToString(TopicPill, { props: { topic: id } });
+      const link = byName(html, "a")[0]!;
+      expect("data-series-marker" in link.attrs).toBe(true);
+      expect("data-topic-pill" in link.attrs).toBe(false);
+      expect(link.attrs.href).toBe(`/writing/${id}/`);
+      expect(html.replace(/<[^>]+>/g, "").trim()).toMatch(/^Series: /);
+    }
+  });
+
+  it("colours the recoloured controlled topics mauve and sand", async () => {
+    for (const [id, colour] of [
+      ["agentic-ai", "mauve"],
+      ["technology-teams", "sand"],
+    ] as const) {
+      const html = await container.renderToString(TopicPill, { props: { topic: id } });
+      for (const cls of topicStyles[colour]!.pill.split(/\s+/)) expect(classList(byName(html, "a")[0]!)).toContain(cls);
+    }
   });
 });

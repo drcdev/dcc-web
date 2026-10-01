@@ -4,6 +4,7 @@
 // reader and a machine can tell them apart.
 import { formatDate, isoDate } from "../../lib/format-date.ts";
 import type { PostSummary } from "../../lib/content/post-summary.ts";
+import { orderTopics } from "../../lib/content/topic-ids.ts";
 import TopicPill from "./TopicPill.astro";
 
 export interface Props {
@@ -25,5 +26,5 @@ const { post } = Astro.props;
   <span>{post.minutesRead} min read</span>
 </p>
 <ul aria-label="Topics" class="m-0 mt-3 flex list-none flex-wrap gap-2 p-0">
-  {post.topics.map((topic) => <li><TopicPill topic={topic} /></li>)}
+  {orderTopics(post.topics).map((topic) => <li><TopicPill topic={topic} /></li>)}
 </ul>

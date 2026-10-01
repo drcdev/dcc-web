@@ -57,4 +57,33 @@ describe("LeadStory", () => {
   it("marks a featured lead story", async () => {
     expect(await render(summary("one", { featured: true }))).toContain("data-featured-mark");
   });
+
+  it("shows the series marker first, then the other topics in written order", async () => {
+    const html = await render(summary("s", { topics: ["agentic-ai", "cloud-cost", "drift"] }));
+    const links = byName(html, "a").filter((a) => "data-topic-pill" in a.attrs || "data-series-marker" in a.attrs);
+    expect(links.map((a) => a.attrs.href)).toEqual([
+      "/writing/drift/",
+      "/writing/topics/agentic-ai/",
+      "/writing/topics/cloud-cost/",
+    ]);
+    expect("data-series-marker" in links[0]!.attrs).toBe(true);
+  });
+
+  it("shows no series marker for an untagged post", async () => {
+    const html = await render(summary("u", { topics: ["agentic-ai"] }));
+    expect(html).not.toContain("data-series-marker");
+  });
+
+  it("borders a text-only post in its series colour, else its first controlled topic, else neutral dusk", async () => {
+    const cases: [string[], string][] = [
+      [["agentic-ai", "convergence"], topicStyles.sage!.border],
+      [["cloud-cost", "technology-teams", "agentic-ai"], topicStyles.sand!.border],
+      [["cloud-cost"], "border-dusk-200 dark:border-dusk-700"],
+    ];
+    for (const [topics, border] of cases) {
+      const html = await render(summary("t", { topics }));
+      const article = byName(html, "article")[0]!;
+      for (const cls of border.split(/\s+/)) expect(classList(article)).toContain(cls);
+    }
+  });
 });
