@@ -4,12 +4,12 @@ This is the plain-language record of every account-side setup item this reposito
 what each item is for, where Don does it, how it is confirmed, which constitution principle it
 serves, and the names (never values) of any secrets involved. It is the no-agent fallback for
 the `/setup-walkthrough` Claude Code skill, and the two must never disagree — both read the same
-27-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
+32-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
 
-Run `pnpm setup:check` at any time to see which of the 27 items below are complete. Each item's
+Run `pnpm setup:check` at any time to see which of the 32 items below are complete. Each item's
 step number and anchor match the setup item table in `specs/001-setup-walkthrough/spec.md` (the first eighteen items) and
 `specs/007-contact-form/contracts/setup-items.md` (items 19 to 25, the "Contact form" part) and
-`specs/011-launch/contracts/setup-items.md` (items 26 and 27, the "Launch" part at the end).
+`specs/011-launch/contracts/setup-items.md` (items 26 to 32, the "Launch" part at the end).
 
 A few terms used below: a **nameserver** is the server that answers "where is doncoleman.ca's
 DNS?" — moving it to Cloudflare is what puts Cloudflare in charge of the domain's DNS records. A
@@ -740,7 +740,7 @@ None.
 
 # Launch
 
-Items 26 and 27 confirm the site is ready to go live. The domain switch itself is walked through in
+Items 26 and 27 confirm the site is ready to go live, item 32 guards the mail records throughout, and items 28 to 31 prove the live domain after the switch. The domain switch itself is walked through in
 `docs/launch.md`.
 
 ## 26. Launch content ready {#launch-content-ready}
@@ -781,6 +781,117 @@ GitHub → Actions → the `verify` check on `main`. If it failed, fix it and pu
 
 **Constitution principle**
 II (Automated Release Gate).
+
+**Secrets**
+None.
+
+## 28. Bare domain serves the new site {#live-apex}
+
+**What it is for**
+After the switch, `doncoleman.ca` serves the new site over https, is open to search engines, and plain
+http redirects to https. Until the switch the item reads `waiting`; while DNS or the certificate is
+still settling it reads `pending`.
+
+**Where to do it**
+Nothing to build. Turn on Always Use HTTPS in the Cloudflare dashboard (zone → SSL/TLS → Edge
+Certificates) as part of the switch steps in `docs/launch.md`.
+
+**How it will be confirmed**
+`pnpm setup:check --item live-apex` reports complete when `https://doncoleman.ca/` returns 200 with the
+canonical link `https://doncoleman.ca/`, carries no `noindex` header or meta tag and no Ghost marker, and
+`http://doncoleman.ca/` answers 301 or 308 to `https://doncoleman.ca/`. A `pending` result ends with the
+24-hour rule: if it is still pending 24 hours after the switch, treat it as a problem and follow the
+rollback in `docs/launch.md`.
+
+**Constitution principle**
+V (Static by Default).
+
+**Secrets**
+None.
+
+## 29. www redirects to the bare domain {#live-www-redirect}
+
+**What it is for**
+After the switch, `www.doncoleman.ca` sends every visitor to the same page on `doncoleman.ca` with one
+permanent redirect.
+
+**Where to do it**
+Cloudflare dashboard → the zone → Rules → Redirect Rules, the `www` rule described in
+`docs/launch.md` step L12.
+
+**How it will be confirmed**
+`pnpm setup:check --item live-www-redirect` reports complete when `https://www.doncoleman.ca/about/?launch-check=1`
+and its `http://` form each answer one 301 with `Location` exactly
+`https://doncoleman.ca/about/?launch-check=1`. `waiting` before the switch; a `pending` result ends with the
+24-hour rule (still pending 24 hours after the switch means rollback, see `docs/launch.md`).
+
+**Constitution principle**
+V (Static by Default).
+
+**Secrets**
+None.
+
+## 30. Live sitemap pages load {#live-sitemap}
+
+**What it is for**
+After the switch, every page the live sitemap lists returns a page, and every path the launch expects is
+listed.
+
+**Where to do it**
+Nothing to set up. Fix any page the details list and redeploy.
+
+**How it will be confirmed**
+`pnpm setup:check --item live-sitemap` crawls `https://doncoleman.ca/sitemap-index.xml` (without checking
+links) and reports complete when every page returns 200, `robots.txt` names that sitemap, and every
+`launch.expectedPaths` entry in `setup/config.json` is listed. `waiting` before the switch; a `pending`
+result ends with the 24-hour rule (still pending 24 hours after the switch means rollback, see
+`docs/launch.md`).
+
+**Constitution principle**
+V (Static by Default).
+
+**Secrets**
+None.
+
+## 31. Live contact endpoint responds {#live-contact-endpoint}
+
+**What it is for**
+After the switch, the Worker answers `/api/contact` on `doncoleman.ca`, proven without sending a message.
+
+**Where to do it**
+Nothing to set up: the Custom Domain on the `dcc-web` Worker routes `/api/*` to the contact form's API.
+
+**How it will be confirmed**
+`pnpm setup:check --item live-contact-endpoint` sends one GET (never a POST) to
+`https://doncoleman.ca/api/contact` and reports complete when it answers 405 with `Allow: POST` and the JSON
+`{ "ok": false, "error": "method_not_allowed" }`. `waiting` before the switch; a `pending` result ends with the
+24-hour rule (still pending 24 hours after the switch means rollback, see `docs/launch.md`).
+
+**Constitution principle**
+VII (Private Data: Minimal and Protected).
+
+**Secrets**
+None.
+
+## 32. Mail records unchanged {#mail-records}
+
+**What it is for**
+The domain's mail keeps working: every mail record recorded in `setup/dns-baseline.json` still answers
+unchanged, before and after the switch. The iCloud records must always match. The Mailgun records match
+while they are marked `keep`; once they move to `drop` (after Ghost is retired) they are information only.
+
+**Where to do it**
+Cloudflare dashboard → the zone → DNS. Restore any MX, TXT or DKIM CNAME record the details list, exactly as
+recorded in the baseline.
+
+**How it will be confirmed**
+`pnpm setup:check --item mail-records` asks both public resolvers (1.1.1.1 and 8.8.8.8) and reports complete
+when each returns the baseline MX, TXT and DKIM CNAME records for every group marked `keep` (order and TTL
+ignored). It is `pending` when only one resolver matches, with the 24-hour rule (still pending 24 hours after
+the switch means rollback, see `docs/launch.md`), and a `Problem:` otherwise.
+
+**Constitution principle**
+VII (Private Data: Minimal and Protected).
 
 **Secrets**
 None.

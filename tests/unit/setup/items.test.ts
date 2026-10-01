@@ -21,10 +21,18 @@ const CONTACT_IDS = [
 const secretNames = new Set(secretManifest.map((s) => s.name));
 
 describe("setupItems registry invariants", () => {
-  it("has exactly 27 items, the contact-form items at 19 to 25 and the launch items at 26 and 27", () => {
-    expect(setupItems).toHaveLength(27);
+  it("has exactly 32 items, the contact-form items at 19 to 25 and the launch items at 26 to 32", () => {
+    expect(setupItems).toHaveLength(32);
     expect(setupItems.slice(18, 25).map((i) => i.id)).toEqual(CONTACT_IDS);
-    expect(setupItems.slice(25).map((i) => i.id)).toEqual(["launch-content-ready", "launch-main-checks"]);
+    expect(setupItems.slice(25).map((i) => i.id)).toEqual([
+      "launch-content-ready",
+      "launch-main-checks",
+      "live-apex",
+      "live-www-redirect",
+      "live-sitemap",
+      "live-contact-endpoint",
+      "mail-records",
+    ]);
   });
 
   it("items 16 to 18 follow the switch (T051): review-address-removed, preview-noindex, web-analytics", () => {
@@ -43,6 +51,17 @@ describe("setupItems registry invariants", () => {
     expect(item26.phase).toBe("before-merge");
     expect(item26.needsDon).toBe(true);
     expect(setupItems[26]!.phase).toBe("after-merge");
+  });
+
+  it("items 28 to 31 are postLaunch and after-merge, item 32 always applies and is before-merge (T062)", () => {
+    for (const item of setupItems.slice(27, 31)) {
+      expect(item.postLaunch).toBe(true);
+      expect(item.phase).toBe("after-merge");
+    }
+    const mail = setupItems[31]!;
+    expect(mail.postLaunch).toBeUndefined();
+    expect(mail.phase).toBe("before-merge");
+    expect(setupItems.filter((i) => i.postLaunch).map((i) => i.order)).toEqual([16, 28, 29, 30, 31]);
   });
 
   it("contact items 19 to 24 are before-merge and item 25 is after-merge and deferred until merge (FR-028a)", () => {
@@ -130,8 +149,8 @@ describe("setupItems registry invariants", () => {
       expect(["before-merge", "after-merge"]).toContain(item.phase);
     }
     // Items 1-9 and 19-24 are before-merge, 10-18 and 25 are after-merge (plan.md walkthrough order).
-    const beforeMerge = setupItems.filter((i) => i.order <= 9 || (i.order >= 19 && i.order <= 24) || i.order === 26);
-    const afterMerge = setupItems.filter((i) => (i.order >= 10 && i.order <= 18) || i.order === 25 || i.order === 27);
+    const beforeMerge = setupItems.filter((i) => i.order <= 9 || (i.order >= 19 && i.order <= 24) || i.order === 26 || i.order === 32);
+    const afterMerge = setupItems.filter((i) => (i.order >= 10 && i.order <= 18) || i.order === 25 || (i.order >= 27 && i.order <= 31));
     expect(beforeMerge.every((i) => i.phase === "before-merge")).toBe(true);
     expect(afterMerge.every((i) => i.phase === "after-merge")).toBe(true);
   });

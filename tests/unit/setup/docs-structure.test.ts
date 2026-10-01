@@ -35,6 +35,11 @@ const ITEM_IDS = [
   "contact-production-deploy",
   "launch-content-ready",
   "launch-main-checks",
+  "live-apex",
+  "live-www-redirect",
+  "live-sitemap",
+  "live-contact-endpoint",
+  "mail-records",
 ];
 
 // Single-section extractor (distinct from extractSections below), matching
@@ -61,7 +66,7 @@ function extractSections(markdown: string): { id: string; body: string }[] {
 }
 
 describe("docs/setup.md structure", () => {
-  it("has exactly 27 item sections whose anchors are the spec's fixed item IDs in step order", () => {
+  it("has exactly 32 item sections whose anchors are the spec's fixed item IDs in step order", () => {
     const sections = extractSections(contents);
     expect(sections.map((s) => s.id)).toEqual(ITEM_IDS);
   });
@@ -115,7 +120,7 @@ describe("docs/setup.md edge-case content", () => {
 describe("docs/setup.md contact-form part (items 19 to 25)", () => {
   const registryLength = ITEM_IDS.length;
 
-  it("the intro counts items from the registry length (27) and no longer says 18", () => {
+  it("the intro counts items from the registry length (32) and no longer says 18", () => {
     const intro = contents.slice(0, contents.indexOf("## 1."));
     expect(intro).toContain(`${registryLength}-item registry`);
     expect(intro).toContain(`of the ${registryLength} items`);
