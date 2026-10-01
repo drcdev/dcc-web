@@ -108,3 +108,66 @@ changed-paths and docs-structure unit tests: 97 passed.
 
 - C1: added `row 14` build to `tests/build/page-validation.test.ts` (restored fixture `14-route-conflict.mdx` as `404.mdx`, asserts `404.mdx`, `404.astro`, `/404/`); `docs/testing.md` row 14 mapping and budget (page-validation 5, total 20 builds + 12 syncs) and plan.md W6 note updated. Test result: page-validation build file 8 passed.
 - C2: added `.toThrow("not in a subfolder")` to `tests/unit/content/project-address.test.ts` "rejects a nested file"; mapping noted in `docs/testing.md` row 26. Test result: unit files 44 passed.
+
+## Review round 2
+
+Fresh eyes on the fix commit e81c667 (`git log -3`, `git show HEAD`, `git diff main...HEAD`).
+
+### Status of round 1 findings
+
+- **C1: closed.** `tests/build/page-validation.test.ts:61-62` "row 14: the route checks addresses
+  over the src/pages route-file list (404.mdx against 404.astro)" builds one page at `404.mdx`
+  (fixture `tests/fixtures/pages/broken/14-route-conflict.mdx`, byte-identical to the one on
+  main) and asserts the build fails with `404.mdx`, `404.astro` and `/404/`. These are the same
+  three strings as `git show main:tests/build/page-validation.test.ts:70-71`. It exercises the
+  route-file half: there is only one page file, `src/pages/404.astro` exists, and
+  `futureDestinations` is empty (`src/config/navigation.ts:48`). So only the `routeFiles` list
+  passed at `src/pages/[...slug].astro:26-29` can raise the error. The row 14 line at
+  `docs/testing.md:93` names it as "row 14", the same short form the table uses for row 7. That
+  short form is a prefix of the real title. The reserved-address half is still unit-only, as it
+  was after round 1.
+- **C2: closed.** `tests/unit/content/project-address.test.ts:27` adds
+  `expect(() => slugFromPath("x/y.mdx")).toThrow("not in a subfolder")`. `slugFromPath` is the
+  function that raises that phrase (`src/lib/content/project-address.ts:12`). The row 26 line at
+  `docs/testing.md:186` names the real title, "rejects a nested file".
+
+### Budget recount
+
+Counted from the files, with `beforeAll`, `it.each` and `describe.each` expanded:
+
+- **Builds:** local-site 5 (l1, l2, l3, codeBaseline, codeBroken), drafts 2, blog-listing 1,
+  indexing 2 (`describe.each` over 2 environments, a real `astro build`), page-validation 5,
+  post-validation 3, project-validation 2. Total 20.
+- **Syncs:** page 3, post 4 (P23, P4, P9, P21), project 3, fixture-site 2. Total 12.
+
+This matches the table in `docs/testing.md` (20 + 12) and the plan's W6 note. 20 is at the
+target, not over it.
+
+### Scope and weakening
+
+- The fix commit touches only `plan.md`, `report.md`, `docs/testing.md`,
+  `page-validation.test.ts`, the restored fixture and `project-address.test.ts`.
+- `git diff main...HEAD` shows no change to `src/`, `.github/`, `.claude/`, `scripts/`,
+  `package.json`, the lockfile, `vitest.config.ts`, `wrangler.jsonc` or the constitution.
+- No assertion was removed or loosened. The commit adds one build case and one `expect`.
+- Principle III verdict (not major) still holds. The commit adds tests and docs only: no
+  dependency, CI, deployment, design or contact-data change.
+
+### New findings
+
+- **CRITICAL (0):** none.
+- **HIGH (0):** none.
+- **LOW (1):**
+  - L13 `docs/testing.md:74-76`. The "Call-site runs" list of build titles for page files
+    still names four builds and leaves out the new row 14 build. The table row at line 93
+    does name it. Fix: add "row 14: the route checks addresses over the src/pages
+    route-file list" to the list.
+
+### Test results
+
+Node v24.4.1 (`.nvmrc` 24). Load average at start: 10.08 / 15.69 / 20.46.
+
+- `corepack pnpm vitest run --project build tests/build/page-validation.test.ts` (under a
+  600 s alarm): 1 file, 8 passed, 74.5 s.
+- `corepack pnpm vitest run --project unit tests/unit/content` (under a 300 s alarm):
+  26 files, 594 passed, 1.2 s.
