@@ -23,8 +23,8 @@ const ITEM_IDS = [
   "github-major-label",
   "github-main-protection",
   "pipeline-secrets",
-  "review-address",
-  "review-address-noindex",
+  "review-address-removed",
+  "preview-noindex",
   "web-analytics",
   "contact-d1-databases",
   "contact-turnstile-widget",
@@ -33,6 +33,13 @@ const ITEM_IDS = [
   "contact-turnstile-site-key",
   "contact-preview-deploy",
   "contact-production-deploy",
+  "launch-content-ready",
+  "launch-main-checks",
+  "live-apex",
+  "live-www-redirect",
+  "live-sitemap",
+  "live-contact-endpoint",
+  "mail-records",
 ];
 
 // Single-section extractor (distinct from extractSections below), matching
@@ -59,7 +66,7 @@ function extractSections(markdown: string): { id: string; body: string }[] {
 }
 
 describe("docs/setup.md structure", () => {
-  it("has exactly 25 item sections whose anchors are the spec's fixed item IDs in step order", () => {
+  it("has exactly 32 item sections whose anchors are the spec's fixed item IDs in step order", () => {
     const sections = extractSections(contents);
     expect(sections.map((s) => s.id)).toEqual(ITEM_IDS);
   });
@@ -102,8 +109,8 @@ describe("docs/setup.md edge-case content", () => {
     expect(section).toContain("drc-agents");
   });
 
-  it("review-address-noindex tells Don how to ask search engines to remove already-indexed pages, and never to block crawling with robots.txt", () => {
-    const section = extractSection(contents, "review-address-noindex").toLowerCase();
+  it("preview-noindex tells Don how to ask search engines to remove already-indexed pages, and never to block crawling with robots.txt", () => {
+    const section = extractSection(contents, "preview-noindex").toLowerCase();
     expect(section).toMatch(/search console|removal tool|request.*removal|remove.*already indexed/);
     expect(section).toContain("robots.txt");
     expect(section).toMatch(/never block crawling|must not.*block crawling|do not block crawling/);
@@ -113,7 +120,7 @@ describe("docs/setup.md edge-case content", () => {
 describe("docs/setup.md contact-form part (items 19 to 25)", () => {
   const registryLength = ITEM_IDS.length;
 
-  it("the intro counts items from the registry length (25) and no longer says 18", () => {
+  it("the intro counts items from the registry length (32) and no longer says 18", () => {
     const intro = contents.slice(0, contents.indexOf("## 1."));
     expect(intro).toContain(`${registryLength}-item registry`);
     expect(intro).toContain(`of the ${registryLength} items`);
@@ -171,5 +178,19 @@ describe("docs/setup.md contact-form part (items 19 to 25)", () => {
     const last = extractSection(contents, "contact-production-deploy");
     expect(last).toContain("pnpm run deploy:production");
     expect(last.toLowerCase()).toContain("after");
+  });
+});
+
+describe("docs/setup.md launch part (items 26 to 32)", () => {
+  it("has a Launch part heading before section 26 and an intro linking docs/launch.md", () => {
+    expect(contents.indexOf("\n# Launch")).toBeGreaterThan(contents.indexOf("{#contact-production-deploy}"));
+    expect(contents.indexOf("\n# Launch")).toBeLessThan(contents.indexOf("{#launch-content-ready}"));
+    expect(contents.slice(0, contents.indexOf("## 1."))).toContain("docs/launch.md");
+  });
+
+  it("items 6, 16 and 18 describe the launch phase", () => {
+    expect(extractSection(contents, "live-domain-ghost")).toContain("docs/launch.md");
+    expect(extractSection(contents, "review-address-removed")).toMatch(/waiting/);
+    expect(extractSection(contents, "web-analytics")).toContain("launch switch");
   });
 });

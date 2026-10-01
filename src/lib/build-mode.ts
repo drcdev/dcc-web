@@ -29,3 +29,12 @@ export function includeDrafts(env: BuildEnv): boolean {
 export function isProductionBuild(env: BuildEnv): boolean {
   return !includeDrafts(env);
 }
+
+/**
+ * Whether search engines may index this build: only a Cloudflare Workers Builds build of
+ * `main`, which is served from the live domain. Fails toward noindex: no Workers Builds
+ * environment, or no readable branch, is not indexable (contracts/indexing-and-origin.md).
+ */
+export function isIndexableBuild(env: BuildEnv): boolean {
+  return env.WORKERS_CI === "1" && env.WORKERS_CI_BRANCH?.trim() === "main";
+}

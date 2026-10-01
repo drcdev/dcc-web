@@ -5,6 +5,8 @@
 // absolute address is built against Astro's `site`, which astro.config.mjs
 // resolves from the build environment (contracts/site-origin.md).
 import { site } from "../config/site.ts";
+import { WORKERS_CI, WORKERS_CI_BRANCH } from "astro:env/server";
+import { isIndexableBuild } from "../lib/build-mode.ts";
 import { isoDate } from "../lib/format-date.ts";
 
 export interface Props {
@@ -30,7 +32,7 @@ const {
   imageAlt = image === site.defaultImage ? site.defaultImageAlt : undefined,
   type = "website",
   canonical = true,
-  noindex = !site.indexable,
+  noindex = !isIndexableBuild({ WORKERS_CI, WORKERS_CI_BRANCH }),
   publishedTime,
   modifiedTime,
 } = Astro.props;

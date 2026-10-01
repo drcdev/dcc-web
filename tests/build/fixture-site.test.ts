@@ -110,12 +110,12 @@ describe("fixture-site harness, post fixtures (T025)", () => {
   });
 
   it("sets environment variables for the build (WORKERS_CI)", async () => {
-    // The site address depends on WORKERS_CI, so the built sitemap shows the variables arrived.
+    // The site address depends on WORKERS_CI and the branch (main serves doncoleman.ca), so the built sitemap shows the variables arrived.
     result = await buildFixtureSite(["workshops.mdx"], {
       env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" },
     });
     expect(result.message).toBe("");
-    expect(result.read("sitemap-0.xml")).toContain("https://new.doncoleman.ca/");
+    expect(result.read("sitemap-0.xml")).toContain("https://doncoleman.ca/");
   });
 
   it("does not leak WORKERS_CI from the test runner's own environment into a build", async () => {

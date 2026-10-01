@@ -1,7 +1,7 @@
 // Component tests for src/components/Seo.astro (contracts/head-metadata.md;
 // data-model.md PageMetadata/SiteConfig; FR-017, FR-017b, FR-017c, FR-019).
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import Seo from "../../src/components/Seo.astro";
 import { site } from "../../src/config/site.ts";
 import { byName, meta, textOf } from "./html.ts";
@@ -29,7 +29,6 @@ describe("site config defaults", () => {
     expect(site.defaultImage).toBe("/og-default.png");
     expect(site.defaultImageAlt).toBe("Don Coleman");
     expect(site.locale).toBe("en_CA");
-    expect(site.indexable).toBe(false);
     expect(site.copyrightName).toBe("Don Coleman");
   });
 });
@@ -65,7 +64,7 @@ describe("Seo with defaults", () => {
     expect(content(html, "property", "og:url")).toBe(`${ORIGIN}/about/`);
   });
 
-  it("asks search engines not to index the page (FR-019)", async () => {
+  it("asks search engines not to index the page in a build that is not production (FR-019)", async () => {
     const html = await render();
     expect(content(html, "name", "robots")).toBe("noindex");
   });
@@ -140,5 +139,36 @@ describe("Seo article times (FR-030)", () => {
     const html = await render({ publishedTime, modifiedTime });
     expect(meta(html, "property", "article:published_time")).toHaveLength(0);
     expect(meta(html, "property", "article:modified_time")).toHaveLength(0);
+  });
+});
+
+// The default follows the build decision (isIndexableBuild); an explicit noindex wins (FR-010d).
+describe("Seo robots meta follows the build", () => {
+  afterEach(() => {
+    vi.doUnmock("astro:env/server");
+    vi.resetModules();
+  });
+
+  async function renderIn(env: { WORKERS_CI?: string; WORKERS_CI_BRANCH?: string }, props: Record<string, unknown> = {}) {
+    vi.resetModules();
+    vi.doMock("astro:env/server", () => env);
+    const { default: FreshSeo } = await import("../../src/components/Seo.astro");
+    const container = await AstroContainer.create({ astroConfig: { site: ORIGIN } });
+    return container.renderToString(FreshSeo, { props, request: new Request(`${ORIGIN}/about/`) });
+  }
+
+  it("leaves the robots meta tag out of a main build", async () => {
+    const html = await renderIn({ WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" });
+    expect(meta(html, "name", "robots")).toHaveLength(0);
+  });
+
+  it("adds noindex to a preview branch build", async () => {
+    const html = await renderIn({ WORKERS_CI: "1", WORKERS_CI_BRANCH: "011-launch" });
+    expect(content(html, "name", "robots")).toBe("noindex");
+  });
+
+  it("lets an explicit noindex win in a main build (draft pages, not-found page)", async () => {
+    const html = await renderIn({ WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" }, { noindex: true });
+    expect(content(html, "name", "robots")).toBe("noindex");
   });
 });

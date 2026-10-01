@@ -29,11 +29,11 @@ describe("astro.config.mjs site resolution", () => {
     expect(config.site).toBe("https://doncoleman.ca");
   });
 
-  it("resolves to the reviewHost when WORKERS_CI=1 and branch is main", async () => {
+  it("resolves to https://doncoleman.ca when WORKERS_CI=1 and branch is main", async () => {
     process.env.WORKERS_CI = "1";
     process.env.WORKERS_CI_BRANCH = "main";
     const config = await importFreshConfig();
-    expect(config.site).toBe("https://new.doncoleman.ca");
+    expect(config.site).toBe("https://doncoleman.ca");
   });
 
   it("resolves via resolveSiteOrigin for a non-main branch", async () => {

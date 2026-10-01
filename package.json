@@ -29,6 +29,7 @@
     "types:worker": "wrangler types worker/worker-configuration.d.ts",
     "verify": "pnpm run lint:secrets && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build && pnpm run test:e2e",
     "setup:check": "node scripts/setup-check/cli.ts",
+    "site:check": "node scripts/site-check/cli.ts",
     "setup:dns-snapshot": "node scripts/setup-check/dns-snapshot.ts"
   },
   "dependencies": {

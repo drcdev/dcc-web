@@ -4,24 +4,16 @@
 // automatic setup registers the zone (ruleset.zone_name, host empty), not a
 // hostname, so a zone-level automatic site for the configured zone counts as
 // covering the review host; a JS-snippet site records the hostname instead.
-// Stays missing while review-address is not complete.
+// The host checked is the zone apex once the launch phase is `switched` and the review host before
+// (011-launch contracts/setup-items.md item 18); the item no longer depends on any other item.
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
-import { check as checkReviewAddress } from "./review-address.ts";
+import { detectLaunchPhase } from "./launch-phase.ts";
 import { complete, couldNotCheck, fromProviderError, missing } from "./shared.ts";
 
 const ITEM = { id: "web-analytics", order: 18 };
 const BEACON_MARKER = "static.cloudflareinsights.com/beacon";
 
 export async function check(ctx: ProviderContext): Promise<CheckResult> {
-  const reviewAddress = await checkReviewAddress(ctx);
-  if (reviewAddress.status !== "complete") {
-    return missing(
-      ITEM,
-      "Review address (step 16) is not complete yet.",
-      "Complete the review address first: finish step 16 (review address), then try Web Analytics.",
-    );
-  }
-
   if (!ctx.env.has("CLOUDFLARE_API_TOKEN")) {
     return couldNotCheck(
       ITEM,
@@ -41,10 +33,10 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
   }
 
   const config = ctx.fs.readJson<SetupConfig>("setup/config.json");
-  const reviewHost = config?.reviewHost ?? "new.doncoleman.ca";
   const zoneName = config?.zone ?? "doncoleman.ca";
 
   try {
+    const reviewHost = (await detectLaunchPhase(ctx)) === "switched" ? zoneName : (config?.reviewHost ?? "new.doncoleman.ca");
     const sites = await ctx.cloudflare.listWebAnalyticsSites(accountId);
     const site =
       sites.find((s) => s.host === reviewHost) ??
@@ -81,7 +73,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
   } catch (err) {
     return fromProviderError(
       ITEM,
-      `Could not confirm Web Analytics for ${reviewHost}.`,
+      "Could not confirm Web Analytics.",
       err,
       "Check the Cloudflare API token in .env is valid and has Account Settings: Read access, then try again.",
     );

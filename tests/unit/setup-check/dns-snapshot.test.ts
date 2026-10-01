@@ -11,6 +11,7 @@ function fakeResolver(answers: Record<string, DnsAnswer[]>): DnsReader {
     resolve: vi.fn(async (name: string, type: DnsRecordType) => {
       return answers[`${type}:${name}`] ?? [];
     }),
+    resolveEach: vi.fn(async () => []),
     resolveNameservers: vi.fn(async () => []),
   };
 }

@@ -28,7 +28,14 @@ export interface Props {
 const { title, description, navigation, image, imageAlt, featureImage, intro, draft = false, home = false } = Astro.props;
 ---
 
-<BaseLayout title={home ? undefined : title} description={description} image={image} imageAlt={imageAlt} navigation={navigation}>
+<BaseLayout
+  title={home ? undefined : title}
+  description={description}
+  image={image}
+  imageAlt={imageAlt}
+  navigation={navigation}
+  {...(draft ? { noindex: true } : {})}
+>
   <article class="mx-auto">
     {
       intro ? (

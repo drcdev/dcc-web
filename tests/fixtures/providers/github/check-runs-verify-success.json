@@ -1,0 +1,6 @@
+{
+  "check_runs": [
+    { "name": "verify", "status": "completed", "conclusion": "success", "started_at": "2026-09-29T10:00:00Z", "html_url": "https://github.com/drcdev/dcc-web/actions/runs/200/job/2" },
+    { "name": "verify", "status": "completed", "conclusion": "failure", "started_at": "2026-09-28T10:00:00Z", "html_url": "https://github.com/drcdev/dcc-web/actions/runs/100/job/1" }
+  ]
+}

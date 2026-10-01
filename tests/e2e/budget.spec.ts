@@ -123,6 +123,7 @@ for (const template of TEMPLATES) {
       await context.close();
     });
 
+    // The e2e build is a local build, not a main Workers Builds build, so it is noindex.
     test("has a noindex robots meta tag", async ({ page }) => {
       await page.goto(template.path);
       await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);

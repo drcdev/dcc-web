@@ -194,7 +194,7 @@ describe("checkReportSchema (--json report shape)", () => {
     const result = checkReportSchema.safeParse({
       generatedAt: new Date().toISOString(),
       ok: true,
-      counts: { complete: 1, missing: 0, pending: 0, couldNotCheck: 0, total: 1 },
+      counts: { complete: 1, missing: 0, pending: 0, couldNotCheck: 0, waiting: 0, total: 1 },
       results: [validResult],
     });
     expect(result.success).toBe(true);
@@ -204,7 +204,7 @@ describe("checkReportSchema (--json report shape)", () => {
     const result = checkReportSchema.safeParse({
       generatedAt: new Date().toISOString(),
       ok: false,
-      counts: { complete: 0, missing: 1, pending: 0, couldNotCheck: 0, total: 1 },
+      counts: { complete: 0, missing: 1, pending: 0, couldNotCheck: 0, waiting: 0, total: 1 },
       results: [{ ...validResult, status: "missing", nextAction: null }],
     });
     expect(result.success).toBe(false);
@@ -214,7 +214,7 @@ describe("checkReportSchema (--json report shape)", () => {
     const result = checkReportSchema.safeParse({
       generatedAt: new Date().toISOString(),
       ok: false,
-      counts: { complete: 0, missing: 0, pending: 0, couldNotCheck: 1, total: 1 },
+      counts: { complete: 0, missing: 0, pending: 0, couldNotCheck: 1, waiting: 0, total: 1 },
       results: [
         { ...validResult, status: "could-not-check", nextAction: "Do something.", reason: null },
       ],
@@ -226,9 +226,79 @@ describe("checkReportSchema (--json report shape)", () => {
     const result = checkReportSchema.safeParse({
       generatedAt: new Date().toISOString(),
       ok: false,
-      counts: { complete: 0, missing: 0, pending: 0, couldNotCheck: 0, total: 1 },
+      counts: { complete: 0, missing: 0, pending: 0, couldNotCheck: 0, waiting: 0, total: 1 },
       results: [{ ...validResult, status: "unknown" }],
     });
     expect(result.success).toBe(false);
+  });
+});
+
+describe("checkReportSchema: the waiting status (T004)", () => {
+  const waiting = {
+    id: "review-address-removed",
+    title: "Review address removed",
+    status: "waiting",
+    summary: "Waiting for the switch: new.doncoleman.ca stays until the bare domain is live.",
+    details: [],
+    nextAction: "Nothing to do yet. Follow docs/launch.md Part C when the readiness checklist is complete.",
+    step: "Step 16 of 32",
+    docs: "docs/setup.md#review-address-removed",
+    reason: null,
+    needsDon: true,
+  };
+  const report = (result: unknown) => ({
+    generatedAt: new Date().toISOString(),
+    ok: true,
+    counts: { complete: 0, missing: 0, pending: 0, couldNotCheck: 0, waiting: 1, total: 1 },
+    results: [result],
+  });
+
+  it("accepts a waiting result with a nextAction", () => {
+    expect(checkReportSchema.safeParse(report(waiting)).success).toBe(true);
+  });
+
+  it("rejects a waiting result without a nextAction", () => {
+    expect(checkReportSchema.safeParse(report({ ...waiting, nextAction: null })).success).toBe(false);
+  });
+
+  it("requires counts.waiting", () => {
+    const body = report(waiting);
+    delete (body.counts as Record<string, unknown>).waiting;
+    expect(checkReportSchema.safeParse(body).success).toBe(false);
+  });
+});
+
+describe("configSchema: the optional launch object (T007)", () => {
+  const valid = {
+    owner: "drcdev",
+    repo: "dcc-web",
+    machineAccount: "drc-agents",
+    workerName: "dcc-web",
+    zone: "doncoleman.ca",
+    reviewHost: "new.doncoleman.ca",
+    ghostMarker: "Ghost",
+  };
+  const launch = { expectedPages: ["index", "privacy-policy"], expectedPaths: ["/", "/about/", "/privacy-policy/"] };
+
+  it("accepts a config with no launch object", () => {
+    expect(configSchema.safeParse(valid).success).toBe(true);
+  });
+
+  it("accepts a valid launch object", () => {
+    expect(configSchema.safeParse({ ...valid, launch }).success).toBe(true);
+  });
+
+  it.each(["Index", "has space", "under_score", "", "a/b"])("rejects the expectedPages id %j", (id) => {
+    expect(configSchema.safeParse({ ...valid, launch: { ...launch, expectedPages: [id] } }).success).toBe(false);
+  });
+
+  it.each(["about", "/about", "/About/", "/a b/", "//", ""])("rejects the expectedPaths entry %j", (path) => {
+    expect(configSchema.safeParse({ ...valid, launch: { ...launch, expectedPaths: [path] } }).success).toBe(false);
+  });
+
+  it("rejects empty arrays and a missing array", () => {
+    expect(configSchema.safeParse({ ...valid, launch: { ...launch, expectedPages: [] } }).success).toBe(false);
+    expect(configSchema.safeParse({ ...valid, launch: { ...launch, expectedPaths: [] } }).success).toBe(false);
+    expect(configSchema.safeParse({ ...valid, launch: { expectedPages: launch.expectedPages } }).success).toBe(false);
   });
 });

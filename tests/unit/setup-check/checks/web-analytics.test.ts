@@ -83,16 +83,44 @@ async function reviewAddressCompleteContext(overrides: Parameters<typeof fakePro
 }
 
 describe("checks/web-analytics", () => {
-  it("is missing naming the review address when that prerequisite is not complete", async () => {
-    const ctx = fakeProviderContext({
-      env: envFrom(ENV),
-      fs: { readJson: fsWith({ baseline: { originalNameservers: [], records: [] } }) },
+  it("does not gate on any other item (dependsOn is empty)", () => {
+    expect(setupItems.find((i) => i.id === "web-analytics")!.dependsOn).toEqual([]);
+  });
+
+  it("checks the review host before the switch and the apex once switched (T048)", async () => {
+    const urls: string[] = [];
+    const get = async (url: string) => {
+      urls.push(url);
+      return loadFixture("http", "analytics-beacon-referenced") as never;
+    };
+    const before = await check(await reviewAddressCompleteContext({ http: { get } }));
+    expect(before.status).toBe("complete");
+    const after = await check(
+      await reviewAddressCompleteContext({
+        http: { get },
+        cloudflare: {
+          listWorkerDomains: async () => loadFixture("cloudflare", "worker-domains-apex-switched"),
+          listWebAnalyticsSites: async () => toWebAnalyticsSites(loadFixture("cloudflare", "web-analytics-site-zone-automatic")),
+        },
+      }),
+    );
+    expect(after.status).toBe("complete");
+    expect(urls).toEqual(["https://new.doncoleman.ca/", "https://doncoleman.ca/"]);
+    expect(after.summary).toContain("doncoleman.ca");
+  });
+
+  it("is could-not-check when the launch phase cannot be read", async () => {
+    const ctx = await reviewAddressCompleteContext({
+      cloudflare: {
+        listWorkerDomains: async () => {
+          throw new ProviderAccessError("Cloudflare rejected the API token (401)");
+        },
+      },
     });
 
     const result = await check(ctx);
 
-    expect(result.status).toBe("missing");
-    expect(result.nextAction?.toLowerCase()).toContain("review address");
+    expect(result.status).toBe("could-not-check");
   });
 
   it("is missing when no Web Analytics site exists for new.doncoleman.ca", async () => {

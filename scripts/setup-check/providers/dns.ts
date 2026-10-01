@@ -3,7 +3,13 @@
 // local or ISP resolver's cache (research). No write capability exists in
 // node:dns, so this module is read-only by construction.
 import { Resolver } from "node:dns/promises";
-import { ProviderAccessError, type DnsAnswer, type DnsReader, type DnsRecordType } from "../types.ts";
+import {
+  ProviderAccessError,
+  type DnsAnswer,
+  type DnsReader,
+  type DnsRecordType,
+  type DnsResolverAnswers,
+} from "../types.ts";
 
 const PUBLIC_RESOLVERS = ["1.1.1.1", "8.8.8.8"];
 const RESOLVE_TIMEOUT_MS = 10_000;
@@ -31,7 +37,13 @@ function isNoDataError(err: unknown): boolean {
   return code === "ENODATA" || code === "ENOTFOUND" || code === "NXDOMAIN" || code === "ESERVFAIL";
 }
 
-async function resolveOne(resolver: Resolver, name: string, type: DnsRecordType): Promise<DnsAnswer[]> {
+/** The Resolver methods this reader calls, so a test can supply a fake. */
+export type ResolverLike = Pick<
+  Resolver,
+  "resolve4" | "resolve6" | "resolveCname" | "resolveMx" | "resolveTxt" | "resolveNs" | "resolveCaa" | "resolveSrv"
+>;
+
+async function resolveOne(resolver: ResolverLike, name: string, type: DnsRecordType): Promise<DnsAnswer[]> {
   try {
     switch (type) {
       case "A": {
@@ -79,11 +91,28 @@ async function resolveOne(resolver: Resolver, name: string, type: DnsRecordType)
   }
 }
 
-export function createDnsReader(servers: string[] = PUBLIC_RESOLVERS): DnsReader {
+function createSingleServerResolver(server: string): ResolverLike {
+  const resolver = new Resolver();
+  resolver.setServers([server]);
+  return resolver;
+}
+
+export function createDnsReader(
+  servers: string[] = PUBLIC_RESOLVERS,
+  createResolver: (server: string) => ResolverLike = createSingleServerResolver,
+): DnsReader {
   const resolver = new Resolver();
   resolver.setServers(servers);
 
   return {
+    async resolveEach(name: string, type: DnsRecordType): Promise<DnsResolverAnswers[]> {
+      return Promise.all(
+        servers.map(async (server) => ({
+          resolver: server,
+          answers: await withTimeout(resolveOne(createResolver(server), name, type), RESOLVE_TIMEOUT_MS, `${type} ${name} at ${server}`),
+        })),
+      );
+    },
     async resolve(name: string, type: DnsRecordType): Promise<DnsAnswer[]> {
       return withTimeout(resolveOne(resolver, name, type), RESOLVE_TIMEOUT_MS, `${type} ${name}`);
     },

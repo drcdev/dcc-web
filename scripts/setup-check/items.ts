@@ -1,4 +1,4 @@
-// The 25-item setup registry (data-model.md "SetupItem"). This is the single
+// The setup registry (data-model.md "SetupItem"). This is the single
 // source of truth the setup check, the `/setup-walkthrough` skill and
 // `docs/setup.md` (drift-tested) all derive from. Each item's `check` field is
 // wired to its real implementation under `scripts/setup-check/checks/`
@@ -19,8 +19,8 @@ import { check as checkGithubCodeowners } from "./checks/github-codeowners.ts";
 import { check as checkGithubMajorLabel } from "./checks/github-major-label.ts";
 import { check as checkGithubMainProtection } from "./checks/github-main-protection.ts";
 import { check as checkPipelineSecrets } from "./checks/pipeline-secrets.ts";
-import { check as checkReviewAddress } from "./checks/review-address.ts";
-import { check as checkReviewAddressNoindex } from "./checks/review-address-noindex.ts";
+import { check as checkReviewAddressRemoved } from "./checks/review-address-removed.ts";
+import { check as checkPreviewNoindex } from "./checks/preview-noindex.ts";
 import { check as checkWebAnalytics } from "./checks/web-analytics.ts";
 import { check as checkContactD1Databases } from "./checks/contact-d1-databases.ts";
 import { check as checkContactTurnstileWidget } from "./checks/contact-turnstile-widget.ts";
@@ -29,6 +29,13 @@ import { check as checkContactPreviewBuilds } from "./checks/contact-preview-bui
 import { check as checkContactTurnstileSiteKey } from "./checks/contact-turnstile-site-key.ts";
 import { check as checkContactPreviewDeploy } from "./checks/contact-preview-deploy.ts";
 import { check as checkContactProductionDeploy } from "./checks/contact-production-deploy.ts";
+import { check as checkLaunchContentReady } from "./checks/launch-content-ready.ts";
+import { check as checkLaunchMainChecks } from "./checks/launch-main-checks.ts";
+import { check as checkLiveApex } from "./checks/live-apex.ts";
+import { check as checkLiveWwwRedirect } from "./checks/live-www-redirect.ts";
+import { check as checkLiveSitemap } from "./checks/live-sitemap.ts";
+import { check as checkLiveContactEndpoint } from "./checks/live-contact-endpoint.ts";
+import { check as checkMailRecords } from "./checks/mail-records.ts";
 
 const checksById: Record<string, (ctx: ProviderContext) => ReturnType<SetupItem["check"]>> = {
   "local-tools": checkLocalTools,
@@ -46,8 +53,8 @@ const checksById: Record<string, (ctx: ProviderContext) => ReturnType<SetupItem[
   "github-major-label": checkGithubMajorLabel,
   "github-main-protection": checkGithubMainProtection,
   "pipeline-secrets": checkPipelineSecrets,
-  "review-address": checkReviewAddress,
-  "review-address-noindex": checkReviewAddressNoindex,
+  "review-address-removed": checkReviewAddressRemoved,
+  "preview-noindex": checkPreviewNoindex,
   "web-analytics": checkWebAnalytics,
   "contact-d1-databases": checkContactD1Databases,
   "contact-turnstile-widget": checkContactTurnstileWidget,
@@ -56,6 +63,13 @@ const checksById: Record<string, (ctx: ProviderContext) => ReturnType<SetupItem[
   "contact-turnstile-site-key": checkContactTurnstileSiteKey,
   "contact-preview-deploy": checkContactPreviewDeploy,
   "contact-production-deploy": checkContactProductionDeploy,
+  "launch-content-ready": checkLaunchContentReady,
+  "launch-main-checks": checkLaunchMainChecks,
+  "live-apex": checkLiveApex,
+  "live-www-redirect": checkLiveWwwRedirect,
+  "live-sitemap": checkLiveSitemap,
+  "live-contact-endpoint": checkLiveContactEndpoint,
+  "mail-records": checkMailRecords,
 };
 
 interface ItemSeed {
@@ -72,6 +86,7 @@ interface ItemSeed {
   dependsOn: string[];
   phase: ItemPhase;
   deferredUntilMerge?: boolean;
+  postLaunch?: boolean;
 }
 
 const seeds: ItemSeed[] = [
@@ -128,7 +143,7 @@ const seeds: ItemSeed[] = [
     where:
       "List every record from Squarespace's DNS screen into setup/dns-baseline.json (with its Squarespace TTL, for the audit trail) with a keep/drop decision, then create or import the keep records in Cloudflare as DNS only, leaving TTL on Cloudflare's Auto preset (the dashboard has no custom TTL option).",
     confirmedBy:
-      "Every keep record in setup/dns-baseline.json exists in the Cloudflare zone with identical type/name/content/priority and proxied: false (TTL is informational only); every record without a decision keeps the item missing",
+      "Every keep record in setup/dns-baseline.json exists in the Cloudflare zone with identical type/name/content/priority and proxied: false (TTL is informational only); every record without a decision keeps the item missing. Once the domain has switched, the Ghost web records are replaced on purpose and any other added, removed or changed record outside the apex and www is a problem",
     needsDon: true,
     principles: ["VI", "X"],
     requirements: ["FR-019", "FR-034", "FR-035", "FR-036", "FR-037"],
@@ -156,12 +171,12 @@ const seeds: ItemSeed[] = [
   {
     id: "live-domain-ghost",
     order: 6,
-    title: "Live domain still Ghost",
+    title: "Live domain: Ghost or switched",
     purpose:
-      "Throughout this setup, doncoleman.ca must keep serving the current Ghost site and mail unchanged; this item is the safety check that confirms that.",
-    where: "Nothing to do here directly; read-only confirmation. On a problem, follow the DNS nameservers rollback procedure.",
+      "Until the launch switch, doncoleman.ca must keep serving the current Ghost site; after a deliberate switch it must serve the new site. This item is the safety check that tells the two apart.",
+    where: "Nothing to do here directly; read-only confirmation. On a problem, follow the rollback in docs/launch.md.",
     confirmedBy:
-      "Public A/AAAA/CNAME answers for the apex and www equal the Ghost target records in the baseline; every keep MX and email TXT record resolves as in the baseline",
+      "Switched on purpose (Custom Domain doncoleman.ca on dcc-web), or before the switch the public A/AAAA/CNAME answers for the apex and www equal the Ghost target records in the baseline; the apex and www are reported separately",
     needsDon: false,
     principles: ["X"],
     requirements: ["FR-019", "FR-038", "SC-005"],
@@ -301,45 +316,49 @@ const seeds: ItemSeed[] = [
     phase: "after-merge",
   },
   {
-    id: "review-address",
+    id: "review-address-removed",
     order: 16,
-    title: "Review address",
-    purpose: "Gives Don a stable HTTPS address to view this slice's deployment before the real domain switches over.",
-    where: "Cloudflare dashboard -> Workers & Pages -> dcc-web -> Settings -> Domains & Routes -> Add Custom Domain -> new.doncoleman.ca.",
-    confirmedBy: "new.doncoleman.ca is a Custom Domain on dcc-web; https://new.doncoleman.ca/ returns 200 over HTTPS",
+    title: "Review address removed",
+    purpose: "Once the bare domain is live, the temporary review address new.doncoleman.ca must go away.",
+    where:
+      "Cloudflare dashboard -> Workers & Pages -> dcc-web -> Settings -> Domains & Routes -> delete the Custom Domain new.doncoleman.ca, after the switch.",
+    confirmedBy:
+      "Waiting before the switch; after it, no Custom Domain for new.doncoleman.ca exists and both public resolvers return no A/AAAA/CNAME answer for it (pending while cached answers expire)",
     needsDon: true,
     principles: ["X"],
-    requirements: ["FR-020"],
+    requirements: ["FR-012"],
     secrets: [],
-    dependsOn: ["dns-nameservers", "workers-builds"],
+    dependsOn: ["dns-nameservers"],
     phase: "after-merge",
+    postLaunch: true,
   },
   {
-    id: "review-address-noindex",
+    id: "preview-noindex",
     order: 17,
-    title: "Review address no-index",
-    purpose: "The review address must never be indexed by search engines while the real site is still doncoleman.ca.",
-    where: "Nothing new to do here; public/_headers sends X-Robots-Tag: noindex on every path.",
-    confirmedBy: "Response from https://new.doncoleman.ca/ has an X-Robots-Tag header containing noindex",
+    title: "Preview no-index",
+    purpose: "Preview addresses on workers.dev must never be indexed by search engines.",
+    where: "Nothing new to do here; public/_headers sends X-Robots-Tag: noindex for the workers.dev hosts.",
+    confirmedBy:
+      "Responses for / and /projects/ from both the dcc-web and dcc-web-preview workers.dev hosts have an X-Robots-Tag header containing noindex",
     needsDon: false,
     principles: ["X"],
-    requirements: ["FR-020"],
+    requirements: ["FR-012"],
     secrets: [],
-    dependsOn: ["review-address"],
+    dependsOn: [],
     phase: "after-merge",
   },
   {
     id: "web-analytics",
     order: 18,
     title: "Web Analytics",
-    purpose: "Gives Don basic, privacy-focused visitor statistics for the review address, with no cookies and no personal data.",
+    purpose: "Gives Don basic, privacy-focused visitor statistics for the site, with no cookies and no personal data.",
     where: "Cloudflare dashboard -> Analytics & Logs -> Web Analytics -> Add a site -> select doncoleman.ca (the dashboard offers the zone, not a hostname) -> Enable (automatic setup).",
-    confirmedBy: "Web Analytics site for new.doncoleman.ca or the doncoleman.ca zone exists with automatic setup on; served HTML references the Cloudflare beacon",
+    confirmedBy: "Web Analytics site for the doncoleman.ca zone (or the checked host) exists with automatic setup on; the served HTML of doncoleman.ca once switched, new.doncoleman.ca before, references the Cloudflare beacon",
     needsDon: true,
     principles: ["X"],
     requirements: ["FR-022"],
     secrets: [],
-    dependsOn: ["review-address"],
+    dependsOn: [],
     phase: "after-merge",
   },
   {
@@ -452,6 +471,117 @@ const seeds: ItemSeed[] = [
     dependsOn: ["contact-preview-deploy"],
     phase: "after-merge",
     deferredUntilMerge: true,
+  },
+  {
+    id: "launch-content-ready",
+    order: 26,
+    title: "Launch content ready",
+    purpose: "Every page the launch needs is published with real copy, and the privacy policy matches how the site works today.",
+    where:
+      "In the repository: replace placeholder text in src/content/pages/ and src/content/projects/, remove draft: true from each expected page, and make the privacy policy state that contact messages are stored in Cloudflare D1.",
+    confirmedBy:
+      "Every page in setup/config.json launch.expectedPages exists and is not a draft, no published page says \"placeholder copy\", no published project visual is marked placeholder, and the privacy policy states Cloudflare D1 storage and names none of Ghost, Supabase, Mailgun or Fly.io",
+    needsDon: true,
+    principles: ["VII"],
+    requirements: ["FR-003", "FR-003a"],
+    secrets: [],
+    dependsOn: [],
+    phase: "before-merge",
+  },
+  {
+    id: "launch-main-checks",
+    order: 27,
+    title: "Main branch checks passing",
+    purpose: "The newest commit on main passes the full verify gate before the domain switch.",
+    where: "GitHub -> Actions -> the verify check on main. If it failed, fix it and push a new commit to main.",
+    confirmedBy: "The newest verify check run on main has completed with conclusion success; pending while it is in progress",
+    needsDon: false,
+    principles: ["II"],
+    requirements: ["FR-003", "FR-004"],
+    secrets: [],
+    dependsOn: [],
+    phase: "after-merge",
+  },
+  {
+    id: "live-apex",
+    order: 28,
+    title: "Bare domain serves the new site",
+    purpose: "After the switch, doncoleman.ca serves the new site over https, is indexable, and plain http redirects to https.",
+    where:
+      "Cloudflare dashboard -> the zone -> SSL/TLS -> Edge Certificates -> Always Use HTTPS; the rest follows the switch steps in docs/launch.md.",
+    confirmedBy:
+      "https://doncoleman.ca/ returns 200 with the canonical link https://doncoleman.ca/, no noindex header or meta tag and no Ghost marker, and http://doncoleman.ca/ answers 301 or 308 to https://doncoleman.ca/; waiting before the switch, pending while DNS or the certificate settles",
+    needsDon: false,
+    principles: ["V"],
+    requirements: ["FR-013", "FR-018", "FR-010a"],
+    secrets: [],
+    dependsOn: [],
+    phase: "after-merge",
+    postLaunch: true,
+  },
+  {
+    id: "live-www-redirect",
+    order: 29,
+    title: "www redirects to the bare domain",
+    purpose: "After the switch, www.doncoleman.ca sends every visitor to the same page on doncoleman.ca with one permanent redirect.",
+    where: "Cloudflare dashboard -> the zone -> Rules -> Redirect Rules (the www rule), as set out in docs/launch.md step L12.",
+    confirmedBy:
+      "https://www.doncoleman.ca/about/?launch-check=1 and the http:// form each answer one 301 with Location https://doncoleman.ca/about/?launch-check=1; waiting before the switch, pending while DNS or the certificate settles",
+    needsDon: true,
+    principles: ["V"],
+    requirements: ["FR-010a", "FR-013"],
+    secrets: [],
+    dependsOn: [],
+    phase: "after-merge",
+    postLaunch: true,
+  },
+  {
+    id: "live-sitemap",
+    order: 30,
+    title: "Live sitemap pages load",
+    purpose: "After the switch, every page in the live sitemap on doncoleman.ca returns a page and the sitemap lists every expected path.",
+    where: "Nothing to set up: fix any page listed in the details and redeploy.",
+    confirmedBy:
+      "Every page in https://doncoleman.ca/sitemap-index.xml returns 200, robots.txt names that sitemap, and every launch.expectedPaths entry is listed; waiting before the switch, pending while DNS or the certificate settles",
+    needsDon: false,
+    principles: ["V"],
+    requirements: ["FR-014", "FR-010a"],
+    secrets: [],
+    dependsOn: [],
+    phase: "after-merge",
+    postLaunch: true,
+  },
+  {
+    id: "live-contact-endpoint",
+    order: 31,
+    title: "Live contact endpoint responds",
+    purpose: "After the switch, the Worker answers /api/contact on doncoleman.ca, without a message being sent.",
+    where: "Nothing to set up: the Custom Domain on the dcc-web Worker routes /api/* to the contact form's API.",
+    confirmedBy:
+      'One GET https://doncoleman.ca/api/contact answers 405 with Allow: POST and the JSON { ok: false, error: "method_not_allowed" }; waiting before the switch, pending while the certificate settles',
+    needsDon: false,
+    principles: ["VII"],
+    requirements: ["FR-015"],
+    secrets: [],
+    dependsOn: [],
+    phase: "after-merge",
+    postLaunch: true,
+  },
+  {
+    id: "mail-records",
+    order: 32,
+    title: "Mail records unchanged",
+    purpose: "The domain's mail keeps working: every mail record recorded in the baseline still answers unchanged, before and after the switch.",
+    where:
+      "Cloudflare dashboard -> the zone -> DNS: restore any MX, TXT or DKIM CNAME record the details list, exactly as recorded in setup/dns-baseline.json.",
+    confirmedBy:
+      "Both public resolvers (1.1.1.1 and 8.8.8.8) return the baseline MX, TXT and DKIM CNAME records for every group marked keep; pending when only one resolver matches; records marked drop that still answer are information only",
+    needsDon: false,
+    principles: ["VII"],
+    requirements: ["FR-016", "SC-004"],
+    secrets: [],
+    dependsOn: [],
+    phase: "before-merge",
   },
 ];
 

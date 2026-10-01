@@ -7,5 +7,9 @@
   "zone": "doncoleman.ca",
   "reviewHost": "new.doncoleman.ca",
   "ghostMarker": "Ghost",
-  "workersSubdomain": "drc-dev"
+  "workersSubdomain": "drc-dev",
+  "launch": {
+    "expectedPages": ["index", "about", "services", "speaking", "technology", "contact", "privacy-policy", "terms-of-use"],
+    "expectedPaths": ["/", "/about/", "/services/", "/speaking/", "/technology/", "/writing/", "/projects/", "/contact/", "/privacy-policy/", "/terms-of-use/"]
+  }
 }

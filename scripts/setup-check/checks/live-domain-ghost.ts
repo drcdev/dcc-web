@@ -1,13 +1,15 @@
-// checks/live-domain-ghost.ts (setup item 6, data-model.md "live-domain-ghost"):
-// the one deciding signal (FR-038) is public A/AAAA/CNAME answers for the
-// apex and www equalling the Ghost target records recorded in the baseline
-// (only names present in the baseline are compared), plus every kept MX and
-// TXT (email) record resolving in public DNS exactly as in the baseline. Any
-// difference is `missing` with a summary starting "Problem:", never
-// `complete`. The Ghost generator marker is an informational detail only and
-// never decides the status.
+// checks/live-domain-ghost.ts (setup item 6, "Live domain: Ghost or switched"; 011-launch
+// contracts/setup-items.md, FR-010, FR-010b, FR-038). The launch phase comes from Cloudflare's
+// Custom Domain list, never from DNS answers, so a deliberate switch is told apart from an
+// accident. Switched: complete. Before the switch: public A/AAAA/CNAME answers for the apex and
+// www must equal the Ghost target records in the baseline; any difference is `missing` with a
+// summary starting "Problem:". The apex and www are reported separately so a half-switched domain
+// is visible. Mail records are compared by item 32, not here. The Ghost generator marker is an
+// informational detail only and never decides the status.
 import type { CheckResult, DnsAnswer, DnsBaseline, DnsBaselineRecord, DnsRecordType, ProviderContext, SetupConfig } from "../types.ts";
-import { complete, fromProviderError, missing, normalizeTxtContent } from "./shared.ts";
+import { detectLaunchPhase } from "./launch-phase.ts";
+import type { LaunchPhase } from "./launch-phase.ts";
+import { complete, fromProviderError, missing } from "./shared.ts";
 
 const ITEM = { id: "live-domain-ghost", order: 6 };
 const APEX_TYPES: DnsRecordType[] = ["A", "AAAA", "CNAME"];
@@ -17,14 +19,8 @@ function normName(name: string): string {
 }
 
 function normContent(type: DnsRecordType, content: string): string {
-  let value = content.trim();
-  if (type === "CNAME" || type === "MX" || type === "NS") {
-    value = value.replace(/\.$/, "").toLowerCase();
-  }
-  if (type === "TXT") {
-    value = normalizeTxtContent(value);
-  }
-  return value;
+  const value = content.trim();
+  return type === "CNAME" ? value.replace(/\.$/, "").toLowerCase() : value;
 }
 
 interface RecordGroup {
@@ -44,35 +40,84 @@ function groupByNameAndType(records: DnsBaselineRecord[]): RecordGroup[] {
   return [...map.values()];
 }
 
-function expectedSet(group: RecordGroup): Set<string> {
-  return new Set(
-    group.records.map((r) => (group.type === "MX" ? `${r.priority}:${normContent(r.type, r.content)}` : normContent(r.type, r.content))),
-  );
+function setsEqual(a: Set<string>, b: Set<string>): boolean {
+  return a.size === b.size && [...a].every((value) => b.has(value));
 }
 
 function actualSet(type: DnsRecordType, answers: DnsAnswer[]): Set<string> {
-  return new Set(
-    answers.map((a) => (type === "MX" ? `${a.priority ?? "none"}:${normContent(type, a.value)}` : normContent(type, a.value))),
-  );
+  return new Set(answers.map((a) => normContent(type, a.value)));
 }
 
-function setsEqual(a: Set<string>, b: Set<string>): boolean {
-  if (a.size !== b.size) return false;
-  for (const value of a) {
-    if (!b.has(value)) return false;
+/** One line per half (`apex: …`, `www: …`) saying whether it still resolves to the recorded Ghost targets. */
+async function compareHalves(
+  ctx: ProviderContext,
+  halves: Array<{ label: "apex" | "www"; groups: RecordGroup[] }>,
+): Promise<{ lines: string[]; differing: number }> {
+  const lines: string[] = [];
+  let differing = 0;
+  for (const half of halves) {
+    const differences: string[] = [];
+    for (const group of half.groups) {
+      const expected = new Set(group.records.map((r) => normContent(group.type, r.content)));
+      const actual = actualSet(group.type, await ctx.dns.resolve(group.name, group.type));
+      if (!setsEqual(expected, actual)) {
+        differences.push(
+          `${group.type} ${group.name}: expected ${[...expected].join(", ")}, found ${[...actual].join(", ") || "(none)"}`,
+        );
+      }
+    }
+    if (differences.length > 0) {
+      differing += 1;
+      lines.push(`${half.label}: differs from the Ghost baseline (${differences.join("; ")})`);
+    } else {
+      lines.push(`${half.label}: still resolves to the Ghost baseline`);
+    }
   }
-  return true;
+  return { lines, differing };
 }
 
 export async function check(ctx: ProviderContext): Promise<CheckResult> {
+  let phase: LaunchPhase;
+  try {
+    phase = await detectLaunchPhase(ctx);
+  } catch (err) {
+    return fromProviderError(
+      ITEM,
+      "Could not tell whether the domain has switched, so the live domain cannot be judged.",
+      err,
+      "Check CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in .env are set and valid, then try again.",
+    );
+  }
+
   const baseline = ctx.fs.readJson<DnsBaseline>("setup/dns-baseline.json") ?? { originalNameservers: [], records: [] };
   const config = ctx.fs.readJson<SetupConfig>("setup/config.json");
   const zone = config?.zone ?? "doncoleman.ca";
+  const workerName = config?.workerName ?? "dcc-web";
   const wwwName = `www.${zone}`;
 
   const ghostRecords = baseline.records.filter(
     (r) => r.decision === "keep" && APEX_TYPES.includes(r.type) && [normName(zone), normName(wwwName)].includes(normName(r.name)),
   );
+  const halves = (["apex", "www"] as const)
+    .map((label) => ({
+      label,
+      groups: groupByNameAndType(ghostRecords.filter((r) => normName(r.name) === normName(label === "apex" ? zone : wwwName))),
+    }))
+    .filter((half) => half.groups.length > 0);
+
+  if (phase === "switched") {
+    let details: string[] = [];
+    try {
+      details = (await compareHalves(ctx, halves)).lines;
+    } catch {
+      // The switch is deliberate, so a failed DNS read only costs the informational detail.
+    }
+    return complete(
+      ITEM,
+      `Switched to the new site on purpose (Custom Domain ${zone} on ${workerName}); the Ghost comparison applies again only during a rollback.`,
+      details,
+    );
+  }
 
   if (ghostRecords.length === 0) {
     return missing(
@@ -82,21 +127,9 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     );
   }
 
-  const emailRecords = baseline.records.filter((r) => r.decision === "keep" && (r.type === "MX" || r.type === "TXT"));
-  const groups = [...groupByNameAndType(ghostRecords), ...groupByNameAndType(emailRecords)];
-  const problems: string[] = [];
-
+  let comparison: { lines: string[]; differing: number };
   try {
-    for (const group of groups) {
-      const answers = await ctx.dns.resolve(group.name, group.type);
-      const expected = expectedSet(group);
-      const actual = actualSet(group.type, answers);
-      if (!setsEqual(expected, actual)) {
-        problems.push(
-          `${group.type} ${group.name}: expected ${[...expected].join(", ") || "(none)"}, found ${[...actual].join(", ") || "(none)"}`,
-        );
-      }
-    }
+    comparison = await compareHalves(ctx, halves);
   } catch (err) {
     return fromProviderError(
       ITEM,
@@ -106,16 +139,16 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     );
   }
 
-  if (problems.length > 0) {
+  if (comparison.differing > 0) {
     return missing(
       ITEM,
       "Problem: the live domain does not match the recorded Ghost baseline.",
-      "Restore the Ghost DNS records from the recorded baseline in Cloudflare straight away; if it cannot be fixed within minutes, follow the nameserver rollback procedure.",
-      problems,
+      "Restore the Ghost DNS records from the recorded baseline in Cloudflare straight away; if it cannot be fixed within minutes, follow the rollback in docs/launch.md#rollback.",
+      comparison.lines,
     );
   }
 
-  const details: string[] = [];
+  const details = [...comparison.lines];
   const marker = config?.ghostMarker;
   if (marker) {
     try {

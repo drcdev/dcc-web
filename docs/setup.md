@@ -4,11 +4,16 @@ This is the plain-language record of every account-side setup item this reposito
 what each item is for, where Don does it, how it is confirmed, which constitution principle it
 serves, and the names (never values) of any secrets involved. It is the no-agent fallback for
 the `/setup-walkthrough` Claude Code skill, and the two must never disagree — both read the same
-25-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
+32-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
 
-Run `pnpm setup:check` at any time to see which of the 25 items below are complete. Each item's
+Run `pnpm setup:check` at any time to see which of the 32 items below are complete. Each item's
 step number and anchor match the setup item table in `specs/001-setup-walkthrough/spec.md` (the first eighteen items) and
-`specs/007-contact-form/contracts/setup-items.md` (the last seven, the "Contact form" part at the end).
+`specs/007-contact-form/contracts/setup-items.md` (items 19 to 25, the "Contact form" part) and
+`specs/011-launch/contracts/setup-items.md` (items 26 to 32, the "Launch" part at the end).
+
+The domain switch itself, its rollback and the later retirement of the old services are not
+setup items; they are walked through step by step in `docs/launch.md`, which the `/setup-walkthrough`
+skill hands over to once items 1 to 25 are done.
 
 A few terms used below: a **nameserver** is the server that answers "where is doncoleman.ca's
 DNS?" — moving it to Cloudflare is what puts Cloudflare in charge of the domain's DNS records. A
@@ -112,6 +117,16 @@ detail and does not block completion. It stays `missing` with "record the Square
 first" while the baseline has no records or no original nameservers, so parity can never pass
 vacuously before the nameserver switch.
 
+After the launch switch (Custom Domain `doncoleman.ca` on `dcc-web`, see `docs/launch.md`) the
+check changes in three ways. The Ghost web records (A, AAAA and CNAME on the apex and `www`) are
+no longer expected in the zone; each shows a detail "replaced at launch, kept in the baseline for
+rollback". The records the switch adds on the apex and `www` (the Custom Domain's managed apex
+record and `AAAA www 100::`) stay informational. And the whole zone is compared: any other added,
+removed or changed record, on any name other than the apex and `www`, is a difference and reports
+`missing` with a summary starting "Problem:" and the rollback next action. If the launch phase
+cannot be read (no `CLOUDFLARE_ACCOUNT_ID`, or Cloudflare cannot be reached) it reports
+`could-not-check`.
+
 **Constitution principle**
 VI (Content as Files) and X (Accessible, Fast and Private) — the baseline is a committed,
 reviewed file, not a one-time manual comparison.
@@ -168,26 +183,30 @@ Original Squarespace nameservers (recorded from `setup/dns-baseline.json`'s
 - `ns-cloud-b3.googledomains.com`
 - `ns-cloud-b4.googledomains.com`
 
-## 6. Live domain still Ghost {#live-domain-ghost}
+## 6. Live domain: Ghost or switched {#live-domain-ghost}
 
 **What it is for**
-Throughout this setup, and especially right after the nameserver switch, `doncoleman.ca` must
-keep serving the current Ghost site and mail unchanged — this item is the safety check that
-confirms that.
+Until the launch switch, `doncoleman.ca` must keep serving the current Ghost site; after a
+deliberate switch it must serve the new site. This item is the safety check that tells the two
+apart, so an accident is never mistaken for the plan.
 
 **Where to do it**
 Nothing to do here directly; this item is a read-only confirmation. If it reports a problem,
-follow the rollback procedure in "DNS nameservers" above right away.
+follow the rollback in `docs/launch.md#rollback` right away.
 
 **How it will be confirmed**
-`pnpm setup:check --item live-domain-ghost` reports complete when the public A/AAAA/CNAME answers
-for the apex and `www` equal the Ghost target records recorded in the baseline, and every kept MX
-and email TXT record resolves as in the baseline. Any difference — including the domain pointing
-at Cloudflare's proxy or the new Worker — reports `missing` with a summary starting "Problem:".
+`pnpm setup:check --item live-domain-ghost` reads Cloudflare's Custom Domain list to learn whether
+the switch has happened. It never decides that from DNS answers. Once `doncoleman.ca` is a Custom
+Domain on `dcc-web` it reports complete ("Switched to the new site on purpose"). Before the switch
+it reports complete when the public A/AAAA/CNAME answers for the apex and `www` equal the Ghost
+target records in the baseline, and after a rollback it confirms Ghost again. Any difference
+reports `missing` with a summary starting "Problem:". The details report the apex and `www`
+separately (`apex: …`, `www: …`), so a half-switched domain is visible. Mail records are checked
+by item 32, not here. If the phase cannot be read it reports `could-not-check`.
 
 **Constitution principle**
 X (Accessible, Fast and Private), via success criterion SC-005 — the live domain must not change
-behaviour mid-setup.
+behaviour except on purpose.
 
 **Secrets**
 None.
@@ -412,19 +431,21 @@ VII (Private Data) and the minimum-scope-credentials rule (FR-021).
 **Secrets**
 None defined for GitHub Actions in this slice.
 
-## 16. Review address {#review-address}
+## 16. Review address removed {#review-address-removed}
 
 **What it is for**
-Gives Don a stable HTTPS address to view this slice's deployment before the real domain switches
-over.
+Once the bare domain is live, the temporary review address `new.doncoleman.ca` goes away so only
+one address serves the site.
 
 **Where to do it**
-Cloudflare dashboard → Workers & Pages → `dcc-web` → Settings → Domains & Routes → Add Custom
-Domain → `new.doncoleman.ca`.
+After the switch: Cloudflare dashboard → Workers & Pages → `dcc-web` → Settings → Domains &
+Routes → delete the Custom Domain `new.doncoleman.ca`. Before the switch there is nothing to do.
 
 **How it will be confirmed**
-`pnpm setup:check --item review-address` reports complete when `new.doncoleman.ca` is a Custom
-Domain on Worker `dcc-web` and `https://new.doncoleman.ca/` returns 200 over HTTPS.
+`pnpm setup:check --item review-address-removed` reports `waiting` before the switch. After it, the
+item is `missing` while a Custom Domain for `new.doncoleman.ca` still exists, `pending` while a
+public resolver still answers for it (cached answers expire within the record's TTL), and complete
+when there is no Custom Domain and both resolvers return no answer.
 
 **Constitution principle**
 X (Accessible, Fast and Private).
@@ -432,20 +453,20 @@ X (Accessible, Fast and Private).
 **Secrets**
 None.
 
-## 17. Review address no-index {#review-address-noindex}
+## 17. Preview no-index {#preview-noindex}
 
 **What it is for**
-The review address must never be indexed by search engines while the real site is still
-`doncoleman.ca`.
+Preview addresses on `workers.dev` must never be indexed by search engines, so only
+`doncoleman.ca` appears in search results.
 
 **Where to do it**
-Nothing new to do here; `public/_headers` (part of this slice) sends `X-Robots-Tag: noindex` on
-every path. This item confirms it is actually being served.
+Nothing new to do here; `public/_headers` sends `X-Robots-Tag: noindex` for the `workers.dev`
+hosts. This item confirms it is actually being served.
 
 Never block crawling with `robots.txt` (a `Disallow` rule in `public/robots.txt`) as a substitute
 for this — a crawl block can hide the no-index header's problem instead of fixing it, and search
-engines that already indexed a page can still show it in results even when it is disallowed. If
-`new.doncoleman.ca` was ever indexed before this header was in place, ask for those pages to be
+engines that already indexed a page can still show it in results even when it is disallowed. If a
+preview address was ever indexed before this header was in place, ask for those pages to be
 removed directly: submit the URL through Google Search Console's Removals tool (and the
 equivalent tool for any other search engine that indexed it), rather than waiting for the
 crawler to notice the `noindex` header on its own. This is a manual step outside `pnpm
@@ -453,8 +474,10 @@ setup:check`'s reach — the check can only confirm the header is being served, 
 already in a search index has been removed from it.
 
 **How it will be confirmed**
-`pnpm setup:check --item review-address-noindex` reports complete when the response from
-`https://new.doncoleman.ca/` has an `X-Robots-Tag` header containing `noindex`.
+`pnpm setup:check --item preview-noindex` reports complete when the responses for `/` and
+`/projects/` from both the `dcc-web` and `dcc-web-preview` `workers.dev` hosts have an
+`X-Robots-Tag` header containing `noindex`. It does not depend on the launch phase; when a
+response lacks the header, the details list each host and path.
 
 **Constitution principle**
 X (Accessible, Fast and Private).
@@ -465,22 +488,24 @@ None.
 ## 18. Web Analytics {#web-analytics}
 
 **What it is for**
-Gives Don basic, privacy-focused visitor statistics for the review address (and later the live
-site) with no cookies and no personal data collected.
+Gives Don basic, privacy-focused visitor statistics for the site with no cookies and no personal
+data collected.
 
 **Where to do it**
 Cloudflare dashboard → Analytics & Logs → Web Analytics → Add a site → select `doncoleman.ca`
 → Enable (automatic setup). The dashboard offers the zone, not an individual hostname, and
-records the site against the zone; that still only reaches `new.doncoleman.ca`, because
-automatic setup injects the beacon only into responses Cloudflare proxies for the zone. The
-live `doncoleman.ca` records are DNS-only (step 4) and branch previews live on `workers.dev`,
-outside the zone, so neither gets the beacon. Injection starts up to half an hour after
-enabling, and only for requests that accept HTML (as every browser's page request does).
+records the site against the zone. Automatic setup injects the beacon only into responses
+Cloudflare proxies for the zone, so it reaches `new.doncoleman.ca` (a Custom Domain) and, once
+the switch is done, `doncoleman.ca`. Branch previews live on `workers.dev`, outside the zone, and
+never get the beacon. Injection starts up to half an hour after enabling, and only for requests
+that accept HTML (as every browser's page request does).
 
 **How it will be confirmed**
 `pnpm setup:check --item web-analytics` reports complete when a Web Analytics site with
-automatic setup on exists for `new.doncoleman.ca` or for the `doncoleman.ca` zone, and the served
-page references the Cloudflare beacon.
+automatic setup on exists for the host being checked or for the `doncoleman.ca` zone, and the
+served page references the Cloudflare beacon. The host checked is `doncoleman.ca` once the
+launch switch has happened and `new.doncoleman.ca` before. The item does not depend on any other
+item.
 
 **Constitution principle**
 X (Accessible, Fast and Private) — Cloudflare Web Analytics is the constitution's named
@@ -713,6 +738,164 @@ fail the check.
 
 **Constitution principle**
 II (Automated Release Gate), VII (Private Data: Minimal and Protected) and VIII (Secure by Default).
+
+**Secrets**
+None.
+
+# Launch
+
+Items 26 and 27 confirm the site is ready to go live, item 32 guards the mail records throughout, and items 28 to 31 prove the live domain after the switch. The domain switch itself is walked through in
+`docs/launch.md`.
+
+## 26. Launch content ready {#launch-content-ready}
+
+**What it is for**
+Every page the launch needs is published with real copy, and the privacy policy matches how the site
+works today (messages stored in Cloudflare D1, none of the retired services).
+
+**Where to do it**
+In the repository: replace any placeholder text in `src/content/pages/` and `src/content/projects/`,
+remove `draft: true` from each page listed in `setup/config.json` under `launch.expectedPages`, and
+make `src/content/pages/privacy-policy.mdx` state that contact messages are stored in Cloudflare D1.
+
+**How it will be confirmed**
+`pnpm setup:check --item launch-content-ready` reports complete when every expected page exists and is
+not a draft, no published page says "placeholder copy", no published project visual is marked
+`placeholder: true`, and the privacy policy states Cloudflare D1 storage and names none of Ghost,
+Supabase, Mailgun or Fly.io. Spam protection accepting the bare domain is confirmed by item 20
+(`contact-turnstile-widget`).
+
+**Constitution principle**
+VII (Private Data: Minimal and Protected).
+
+**Secrets**
+None.
+
+## 27. Main branch checks passing {#launch-main-checks}
+
+**What it is for**
+The newest commit on `main` passes the full verify gate before the domain switch.
+
+**Where to do it**
+GitHub → Actions → the `verify` check on `main`. If it failed, fix it and push a new commit to `main`.
+
+**How it will be confirmed**
+`pnpm setup:check --item launch-main-checks` reports complete when the newest `verify` check run on
+`main` has finished with the conclusion `success`, and pending while it is still running.
+
+**Constitution principle**
+II (Automated Release Gate).
+
+**Secrets**
+None.
+
+## 28. Bare domain serves the new site {#live-apex}
+
+**What it is for**
+After the switch, `doncoleman.ca` serves the new site over https, is open to search engines, and plain
+http redirects to https. Until the switch the item reads `waiting`; while DNS or the certificate is
+still settling it reads `pending`.
+
+**Where to do it**
+Nothing to build. Turn on Always Use HTTPS in the Cloudflare dashboard (zone → SSL/TLS → Edge
+Certificates) as part of the switch steps in `docs/launch.md`.
+
+**How it will be confirmed**
+`pnpm setup:check --item live-apex` reports complete when `https://doncoleman.ca/` returns 200 with the
+canonical link `https://doncoleman.ca/`, carries no `noindex` header or meta tag and no Ghost marker, and
+`http://doncoleman.ca/` answers 301 or 308 to `https://doncoleman.ca/`. A `pending` result ends with the
+24-hour rule: if it is still pending 24 hours after the switch, treat it as a problem and follow the
+rollback in `docs/launch.md`.
+
+**Constitution principle**
+V (Static by Default).
+
+**Secrets**
+None.
+
+## 29. www redirects to the bare domain {#live-www-redirect}
+
+**What it is for**
+After the switch, `www.doncoleman.ca` sends every visitor to the same page on `doncoleman.ca` with one
+permanent redirect.
+
+**Where to do it**
+Cloudflare dashboard → the zone → Rules → Redirect Rules, the `www` rule described in
+`docs/launch.md` step L12.
+
+**How it will be confirmed**
+`pnpm setup:check --item live-www-redirect` reports complete when `https://www.doncoleman.ca/about/?launch-check=1`
+and its `http://` form each answer one 301 with `Location` exactly
+`https://doncoleman.ca/about/?launch-check=1`. `waiting` before the switch; a `pending` result ends with the
+24-hour rule (still pending 24 hours after the switch means rollback, see `docs/launch.md`).
+
+**Constitution principle**
+V (Static by Default).
+
+**Secrets**
+None.
+
+## 30. Live sitemap pages load {#live-sitemap}
+
+**What it is for**
+After the switch, every page the live sitemap lists returns a page, and every path the launch expects is
+listed.
+
+**Where to do it**
+Nothing to set up. Fix any page the details list and redeploy.
+
+**How it will be confirmed**
+`pnpm setup:check --item live-sitemap` crawls `https://doncoleman.ca/sitemap-index.xml` (without checking
+links) and reports complete when every page returns 200, `robots.txt` names that sitemap, and every
+`launch.expectedPaths` entry in `setup/config.json` is listed. `waiting` before the switch; a `pending`
+result ends with the 24-hour rule (still pending 24 hours after the switch means rollback, see
+`docs/launch.md`).
+
+**Constitution principle**
+V (Static by Default).
+
+**Secrets**
+None.
+
+## 31. Live contact endpoint responds {#live-contact-endpoint}
+
+**What it is for**
+After the switch, the Worker answers `/api/contact` on `doncoleman.ca`, proven without sending a message.
+
+**Where to do it**
+Nothing to set up: the Custom Domain on the `dcc-web` Worker routes `/api/*` to the contact form's API.
+
+**How it will be confirmed**
+`pnpm setup:check --item live-contact-endpoint` sends one GET (never a POST) to
+`https://doncoleman.ca/api/contact` and reports complete when it answers 405 with `Allow: POST` and the JSON
+`{ "ok": false, "error": "method_not_allowed" }`. `waiting` before the switch; a `pending` result ends with the
+24-hour rule (still pending 24 hours after the switch means rollback, see `docs/launch.md`).
+
+**Constitution principle**
+VII (Private Data: Minimal and Protected).
+
+**Secrets**
+None.
+
+## 32. Mail records unchanged {#mail-records}
+
+**What it is for**
+The domain's mail keeps working: every mail record recorded in `setup/dns-baseline.json` still answers
+unchanged, before and after the switch. The iCloud records must always match. The Mailgun records match
+while they are marked `keep`; once they move to `drop` (after Ghost is retired) they are information only.
+
+**Where to do it**
+Cloudflare dashboard → the zone → DNS. Restore any MX, TXT or DKIM CNAME record the details list, exactly as
+recorded in the baseline.
+
+**How it will be confirmed**
+`pnpm setup:check --item mail-records` asks both public resolvers (1.1.1.1 and 8.8.8.8) and reports complete
+when each returns the baseline MX, TXT and DKIM CNAME records for every group marked `keep` (order and TTL
+ignored). It is `pending` when only one resolver matches, with the 24-hour rule (still pending 24 hours after
+the switch means rollback, see `docs/launch.md`), and a `Problem:` otherwise.
+
+**Constitution principle**
+VII (Private Data: Minimal and Protected).
 
 **Secrets**
 None.

@@ -1,0 +1,4 @@
+[
+  { "hostname": "doncoleman.ca", "service": "dcc-web", "environment": "production" },
+  { "hostname": "new.doncoleman.ca", "service": "dcc-web", "environment": "production" }
+]

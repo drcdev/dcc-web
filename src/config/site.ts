@@ -11,12 +11,6 @@ export interface SiteConfig {
   defaultImageAlt: string;
   /** Open Graph locale; the page language is `en`. */
   locale: string;
-  /**
-   * Whether search engines may index the site. Off on every deployment until the
-   * domain switch (FR-019); the domain-switch follow-up turns it on together with
-   * removing `X-Robots-Tag: noindex` from public/_headers.
-   */
-  indexable: boolean;
   /** Name in the footer copyright line. */
   copyrightName: string;
 }
@@ -27,6 +21,5 @@ export const site: SiteConfig = {
   defaultImage: "/og-default.png",
   defaultImageAlt: "Don Coleman",
   locale: "en_CA",
-  indexable: false,
   copyrightName: "Don Coleman",
 };

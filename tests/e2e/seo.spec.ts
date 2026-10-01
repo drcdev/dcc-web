@@ -34,6 +34,8 @@ const attr = (page: Page, selector: string, name = "content") =>
 async function expectSharedMetadata(page: Page, origin: string, type: "website" | "article" = "website") {
   const description = await attr(page, 'meta[name="description"]');
   expect(description?.trim()).toBeTruthy();
+  // The e2e server serves a local build, which is not a Workers Builds build of main, so the
+  // build decision (isIndexableBuild) is noindex; a main build has no robots meta (FR-010d).
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex");
   await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", /\S/);
   await expect(page.locator('meta[property="og:description"]')).toHaveAttribute("content", description!);
