@@ -253,3 +253,4 @@ The feed's title and description name the two series. The home page's "Recent wr
 ## Follow-up
 
 - If free-form topics grow numerous, a topics index page may earn its own feature.
+- Fixture builds inherit `NODE_ENV=test` from Vitest, so `import.meta.env.DEV` is true in them and they are not exact production output; consider passing `NODE_ENV: "production"` in `tests/build/fixture-site.ts` `runAstro` in a later slice.

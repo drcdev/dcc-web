@@ -134,6 +134,20 @@ describe("caption on the fence's meta string", () => {
   });
 });
 
+describe("deterministic tokenising", () => {
+  it("tokenises a line fully even when Shiki's time limit would cut it short", async () => {
+    const force = {
+      name: "force-timeout",
+      preprocess(_code: string, options: { tokenizeTimeLimit?: number }) {
+        options.tokenizeTimeLimit = -1;
+      },
+    };
+    const html = await highlight("const { title, summary } = entry.data;\n", "ts", undefined, [force, shikiClassTransformer]);
+    expect(html).toMatch(/class="[^"]*\bhl-variable\b/);
+    expect(html).toMatch(/class="[^"]*\bhl-punctuation\b/);
+  });
+});
+
 describe("build guards", () => {
   it("fails, naming the colour, when a token colour has no class", async () => {
     const partial = { ...highlightClasses } as Record<string, string>;

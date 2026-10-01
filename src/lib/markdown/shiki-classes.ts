@@ -36,6 +36,11 @@ function captionOf(meta: string | undefined): string | undefined {
 export function createClassTransformer(classes: Record<string, string> = highlightClasses): Transformer {
   return {
     name: "dcc-highlight-classes",
+    preprocess(code, options) {
+      // 0 = no limit: deterministic highlighting under load (Astro does not pass tokenizeTimeLimit through).
+      options.tokenizeTimeLimit = 0;
+      return code;
+    },
     pre(node) {
       delete node.properties.style;
       const caption = captionOf(this.options.meta?.__raw);
