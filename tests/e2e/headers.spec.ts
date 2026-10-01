@@ -1,11 +1,10 @@
 // Security headers on every response `wrangler dev` serves from the production
 // build, and the page CSP meta tag on every HTML page
-// (contracts/http-responses.md; research R8; FR-019, FR-024, FR-024a, FR-024c).
+// (contracts/http-responses.md; research R8; FR-010d, FR-024, FR-024a, FR-024c).
 import { test, expect } from "@playwright/test";
 import { cspViolations, recordCspViolations } from "./csp-violations.ts";
 
 const HEADERS: Record<string, string> = {
-  "x-robots-tag": "noindex",
   "content-security-policy": "frame-ancestors 'none'; object-src 'none'; base-uri 'self'",
   "x-content-type-options": "nosniff",
   "referrer-policy": "strict-origin-when-cross-origin",
@@ -47,6 +46,9 @@ for (const { path, status } of RESPONSES) {
     for (const [name, value] of Object.entries(HEADERS)) {
       expect(headers[name], name).toBe(value);
     }
+    // The noindex header is a host rule for workers.dev previews and the review host in
+    // public/_headers; this host (wrangler dev on 127.0.0.1) is neither (FR-010d).
+    expect(headers["x-robots-tag"]).toBeUndefined();
     expect(headers["set-cookie"]).toBeUndefined();
   });
 }

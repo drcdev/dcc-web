@@ -8,9 +8,12 @@ import { futureDestinations } from "../../src/config/navigation.ts";
 
 // Retired Ghost blog addresses that this rebuild does not carry over
 // (docs/design-source.md "Current live URLs" / "What doesn't carry over").
-const RETIRED_ADDRESSES = ["/drift/2025/x/", "/convergence/", "/news/", "/topic/x/", "/author/x/"] as const;
+const RETIRED_ADDRESSES = ["/drift/2025/x/", "/convergence/", "/news/", "/topic/x/"] as const;
 
-const NOT_FOUND_ADDRESSES = [...RETIRED_ADDRESSES, ...futureDestinations, "/cookie-policy/"] as const;
+// Ghost-only addresses (FR-019, FR-027a): no redirect, the site's own not-found page.
+const GHOST_ADDRESSES = ["/tag/x/", "/author/x/", "/rss/", "/ghost/", "/2024/05/an-old-ghost-post/"] as const;
+
+const NOT_FOUND_ADDRESSES = [...RETIRED_ADDRESSES, ...GHOST_ADDRESSES, ...futureDestinations, "/cookie-policy/"] as const;
 
 // Addresses that are built and must keep returning 200 (robots.txt: T083).
 const BUILT_ADDRESSES = ["/", "/services/", "/speaking/", "/about/", "/privacy-policy/", "/terms-of-use/", "/technology/", "/contact/", "/robots.txt"] as const;
@@ -47,4 +50,25 @@ test.describe("not-found content", () => {
     await expect(page.locator("html")).not.toHaveClass(/\bdark\b/);
     await expect(page.getByRole("heading", { level: 1, name: "Page not found" })).toBeVisible();
   });
+});
+
+test.describe("old Ghost addresses (FR-019, FR-027a)", () => {
+  for (const path of GHOST_ADDRESSES) {
+    test(`${path} is a 404 with no redirect`, async ({ request }) => {
+      const response = await request.get(path, { maxRedirects: 0 });
+      expect(response.status()).toBe(404);
+      expect(response.headers()["location"]).toBeUndefined();
+    });
+
+    test(`${path} explains the page does not exist, links home and has one main heading`, async ({ page }) => {
+      await page.goto(path);
+      const main = page.getByRole("main");
+      await expect(main.getByRole("heading", { level: 1 })).toHaveCount(1);
+      await expect(main.getByRole("heading", { level: 1, name: "Page not found" })).toBeVisible();
+      await expect(main).toContainText(/nothing here/i);
+      await expect(main).toContainText(/older blog addresses/i);
+      await expect(main).toContainText(/not carried over/i);
+      await expect(main.getByRole("link", { name: "Go to the home page" })).toHaveAttribute("href", "/");
+    });
+  }
 });

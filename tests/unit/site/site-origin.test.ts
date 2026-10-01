@@ -17,9 +17,20 @@ describe("FALLBACK_ORIGIN", () => {
 });
 
 describe("resolveSiteOrigin", () => {
-  it("resolves to the reviewHost when WORKERS_CI=1 and branch is main", () => {
+  it("resolves to https://doncoleman.ca when WORKERS_CI=1 and branch is main (FR-010a)", () => {
     const origin = resolveSiteOrigin({ WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" }, baseConfig);
-    expect(origin).toBe("https://new.doncoleman.ca");
+    expect(origin).toBe("https://doncoleman.ca");
+  });
+
+  it("no longer reads reviewHost for a main build", () => {
+    const { reviewHost, ...withoutReviewHost } = baseConfig;
+    void reviewHost;
+    expect(resolveSiteOrigin({ WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" }, withoutReviewHost)).toBe(
+      "https://doncoleman.ca",
+    );
+    expect(
+      resolveSiteOrigin({ WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" }, { ...baseConfig, reviewHost: "elsewhere.example" }),
+    ).toBe("https://doncoleman.ca");
   });
 
   it("resolves to the aliased workers.dev origin for another branch when workersSubdomain is set", () => {
@@ -71,10 +82,10 @@ describe("resolveSiteOrigin", () => {
     );
   });
 
-  it("falls back on an invalid config (bad reviewHost)", () => {
+  it("falls back on an invalid config (bad workerName)", () => {
     const origin = resolveSiteOrigin(
-      { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" },
-      { ...baseConfig, reviewHost: "" },
+      { WORKERS_CI: "1", WORKERS_CI_BRANCH: "feature-x" },
+      { ...baseConfig, workerName: "" },
     );
     expect(origin).toBe(FALLBACK_ORIGIN);
   });

@@ -1,3 +1,6 @@
+// public/_headers (contracts/indexing-and-origin.md "HTTP header (by host)"; contracts/http-responses.md;
+// research R8; FR-010d, FR-019, FR-024, FR-024c): the security headers on every path, and the
+// X-Robots-Tag: noindex only on the hosts that are not the live domain.
 import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -5,41 +8,46 @@ import { fileURLToPath } from "node:url";
 const headersPath = fileURLToPath(new URL("../../../public/_headers", import.meta.url));
 const robotsPath = fileURLToPath(new URL("../../../public/robots.txt", import.meta.url));
 
-
-/** Header name (lowercase) → value for the `/*` rule. */
-function starRule(): Map<string, string> {
-  const lines = readFileSync(headersPath, "utf-8").split("\n");
-  const start = lines.findIndex((line) => line.trim() === "/*");
-  expect(start).toBeGreaterThanOrEqual(0);
-  const rule = new Map<string, string>();
-  for (const line of lines.slice(start + 1)) {
+/** Header name (lowercase) → value for each rule, keyed by the rule's path or host pattern. */
+function rules(): Map<string, Map<string, string>> {
+  const result = new Map<string, Map<string, string>>();
+  let current: Map<string, string> | undefined;
+  for (const line of readFileSync(headersPath, "utf-8").split("\n")) {
     if (line.trim() === "" || line.trim().startsWith("#")) continue;
-    if (!/^\s/.test(line)) break;
+    if (!/^\s/.test(line)) {
+      current = new Map();
+      result.set(line.trim(), current);
+      continue;
+    }
     const colon = line.indexOf(":");
-    rule.set(line.slice(0, colon).trim().toLowerCase(), line.slice(colon + 1).trim());
+    current!.set(line.slice(0, colon).trim().toLowerCase(), line.slice(colon + 1).trim());
   }
-  return rule;
+  return result;
 }
 
-describe("public/_headers", () => {
-  it("sets X-Robots-Tag: noindex on /*", () => {
-    const contents = readFileSync(headersPath, "utf-8");
-    const lines = contents.split("\n").map((line) => line.trim());
-    const starIndex = lines.findIndex((line) => line === "/*");
-    expect(starIndex).toBeGreaterThanOrEqual(0);
+const starRule = () => rules().get("/*") ?? new Map<string, string>();
 
-    const followingLines = lines.slice(starIndex + 1).filter((line) => line.length > 0);
-    const robotsLine = followingLines.find((line) =>
-      line.toLowerCase().startsWith("x-robots-tag:"),
-    );
-    expect(robotsLine).toBeDefined();
-    expect(robotsLine?.toLowerCase()).toContain("noindex");
+const WORKERS_DEV_RULE = "https://:worker.:subdomain.workers.dev/*";
+const REVIEW_HOST_RULE = "https://new.doncoleman.ca/*";
+
+describe("public/_headers", () => {
+  it("has exactly three rules: every path, workers.dev previews and the review host", () => {
+    expect([...rules().keys()]).toEqual(["/*", WORKERS_DEV_RULE, REVIEW_HOST_RULE]);
+  });
+
+  it("does not set X-Robots-Tag on /* (the live domain is indexable, FR-010d)", () => {
+    expect(starRule().has("x-robots-tag")).toBe(false);
+  });
+
+  it.each([WORKERS_DEV_RULE, REVIEW_HOST_RULE])("sets X-Robots-Tag: noindex, and nothing else, on %s", (host) => {
+    const rule = rules().get(host);
+    expect(rule).toBeDefined();
+    expect([...rule!.entries()]).toEqual([["x-robots-tag", "noindex"]]);
   });
 
   // The full FR-024 header set on every path (contracts/http-responses.md
-  // "Headers on every response"; research R8; FR-019, FR-024, FR-024c).
+  // "Headers on every response"; research R8; FR-024, FR-024c).
   it.each([
-    ["X-Robots-Tag", "noindex"],
     ["Content-Security-Policy", "frame-ancestors 'none'; object-src 'none'; base-uri 'self'"],
     ["X-Content-Type-Options", "nosniff"],
     ["Referrer-Policy", "strict-origin-when-cross-origin"],
@@ -51,7 +59,7 @@ describe("public/_headers", () => {
     expect(starRule().get(name.toLowerCase())).toBe(value);
   });
 
-  it("sets exactly the current header set on /* (no header added or removed; blog guard, FR-053)", () => {
+  it("sets exactly the security header set on /* (no header added or removed; blog guard, FR-053)", () => {
     expect([...starRule().keys()].sort()).toEqual(
       [
         "content-security-policy",
@@ -61,7 +69,6 @@ describe("public/_headers", () => {
         "strict-transport-security",
         "x-content-type-options",
         "x-frame-options",
-        "x-robots-tag",
       ].sort(),
     );
   });
@@ -84,7 +91,7 @@ describe("public/_headers", () => {
   });
 });
 
-// FR-020 regression guard: public/_headers' X-Robots-Tag: noindex must never
+// FR-020 regression guard: the X-Robots-Tag: noindex on previews must never
 // be hidden from crawlers by a robots.txt crawl block, per
 // docs/setup.md#review-address-noindex's "never block crawling with
 // robots.txt" rule (T146).

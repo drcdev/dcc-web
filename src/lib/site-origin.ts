@@ -14,7 +14,8 @@ export interface SiteOriginEnv {
 }
 
 export interface SiteOriginConfig {
-  reviewHost: string;
+  /** No longer read: a main build is served from the live domain (FR-010a). Kept for the review-address setup items. */
+  reviewHost?: string;
   workerName: string;
   /** The preview Worker (`dcc-web-preview`); non-main branch builds are served from it. */
   previewWorkerName?: string;
@@ -64,14 +65,12 @@ function isValidHost(host: unknown): host is string {
  */
 export function resolveSiteOrigin(env: SiteOriginEnv, config: SiteOriginConfig): string {
   if (env.WORKERS_CI !== "1") return FALLBACK_ORIGIN;
-  if (!isValidHost(config.reviewHost) || !isValidHost(config.workerName)) return FALLBACK_ORIGIN;
+  if (!isValidHost(config.workerName)) return FALLBACK_ORIGIN;
 
   const branch = env.WORKERS_CI_BRANCH;
   if (!branch) return FALLBACK_ORIGIN;
 
-  if (branch === "main") {
-    return `https://${config.reviewHost}`;
-  }
+  if (branch === "main") return FALLBACK_ORIGIN;
 
   if (!isValidHost(config.previewWorkerName)) return FALLBACK_ORIGIN;
 
