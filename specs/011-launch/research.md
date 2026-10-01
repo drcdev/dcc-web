@@ -135,6 +135,8 @@ the developers.cloudflare.com pages read while planning.
 - **Astro docs**: typed environment variables
   (docs.astro.build/en/guides/environment-variables/#type-safe-environment-variables). This is
   the same pattern `src/lib/posts.ts` already uses.
+  Confirmed through the `astro-docs` MCP at implement time. Note the guide's limitation:
+  `astro:env` cannot be used in `astro.config.mjs`, which reads `process.env` instead.
 - **Alternatives considered**: (a) a robots.txt `Disallow`. This is ruled out by the existing
   rule in `docs/setup.md` item 17 and in `src/pages/robots.txt.ts`: a crawl block hides the
   noindex signal. (b) A Worker that adds the header by host. It would need `run_worker_first`
@@ -277,6 +279,9 @@ the developers.cloudflare.com pages read while planning.
 - **Astro docs**: `site` drives canonical URLs, the sitemap and `Astro.site`
   (docs.astro.build/en/reference/configuration-reference/#site;
   docs.astro.build/en/guides/integrations-guide/sitemap/).
+  Confirmed through the `astro-docs` MCP at implement time: `site` is also what the sitemap
+  integration uses for its full URLs, and its `filter()` receives each page's full URL
+  (docs.astro.build/en/guides/configuring-astro/#common-new-project-tasks).
 - **Consequence**: Between the merge and the switch, `new.doncoleman.ca` serves pages whose
   canonical link, sitemap and robots.txt all name `https://doncoleman.ca`. This does no harm,
   because the review address still sends `X-Robots-Tag: noindex` (R6). The readiness crawl of

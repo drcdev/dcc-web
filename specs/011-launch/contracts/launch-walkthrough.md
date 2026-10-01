@@ -29,7 +29,7 @@
 |---|---|---|
 | L1 | Pull `main` and run the full setup check. Items 1–25 are complete, except item 16, which reports `waiting`. | `pnpm setup:check` |
 | L2 | **Pause.** Don replaces the Services and Speaking placeholder copy and the Focus Pocus placeholders, and publishes the pages (`draft: false`), through a normal small pull request to `main`. The same item confirms the privacy policy states D1 storage and names no retired service. | `pnpm setup:check --item launch-content-ready` |
-| L3 | **Pause.** Don confirms that every Ghost post is on the new site: the Ghost Admin post list compared with `/blog/`. | Don |
+| L3 | **Pause.** Don confirms that every Ghost post is on the new site: the Ghost Admin post list compared with `/writing/`. | Don |
 | L4 | Check that no internal link points to a missing page on the review address, and that the production build from `main` names the bare domain as its main address (FR-003b). | `pnpm run site:check -- --base https://new.doncoleman.ca --expect-origin https://doncoleman.ca` exits 0, and the last merged pull request's `verify` (with its preview crawl) passed |
 | L5 | **Pause.** Don sends a test message starting "Launch test" from `https://new.doncoleman.ca/contact/`, confirms it arrived using his usual retrieval method, then deletes it (FR-015b). He types any token only into his own terminal. Spam protection accepting the bare domain is confirmed here too. | Don; `pnpm setup:check --item contact-turnstile-widget` is complete |
 | L6 | Main branch checks are passing, including the accessibility checks and the performance budget. | `pnpm setup:check --item launch-main-checks` |

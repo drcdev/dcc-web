@@ -17,6 +17,12 @@ export const configSchema = z.object({
   reviewHost: z.string().min(1),
   ghostMarker: z.string().min(1),
   workersSubdomain: dnsLabelSchema.optional(),
+  launch: z
+    .object({
+      expectedPages: z.array(z.string().regex(/^[a-z0-9-]+$/)).min(1),
+      expectedPaths: z.array(z.string().regex(/^\/([a-z0-9-]+\/)*$/)).min(1),
+    })
+    .optional(),
 });
 
 const dnsRecordTypeSchema = z.enum(["A", "AAAA", "CNAME", "MX", "TXT", "SRV", "CAA", "NS"]);
@@ -96,7 +102,7 @@ export const githubRulesetSchema = z.object({
 });
 
 // contracts/check-report.schema.json, mirrored as a zod schema.
-const checkStatusSchema = z.enum(["complete", "missing", "pending", "could-not-check"]);
+const checkStatusSchema = z.enum(["complete", "missing", "pending", "could-not-check", "waiting"]);
 
 const checkReportResultSchema = z
   .object({
@@ -139,6 +145,7 @@ export const checkReportSchema = z.object({
     missing: z.number().int().min(0),
     pending: z.number().int().min(0),
     couldNotCheck: z.number().int().min(0),
+    waiting: z.number().int().min(0),
     total: z.number().int().min(0),
   }),
   results: z.array(checkReportResultSchema),

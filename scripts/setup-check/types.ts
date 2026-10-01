@@ -2,7 +2,7 @@
 // Nothing here stores state; the registry and manifest are committed source and
 // results are computed fresh on every run.
 
-export type CheckStatus = "complete" | "missing" | "pending" | "could-not-check";
+export type CheckStatus = "complete" | "missing" | "pending" | "could-not-check" | "waiting";
 
 /** The raw result a per-item check function returns. */
 export interface CheckResult {
@@ -33,6 +33,8 @@ export interface CheckReportCounts {
   missing: number;
   pending: number;
   couldNotCheck: number;
+  /** Post-launch items that cannot be checked until the switch (011-launch research R3). */
+  waiting: number;
   total: number;
 }
 
@@ -87,6 +89,8 @@ export interface SetupItem {
   phase: ItemPhase;
   /** True for an after-merge item that is reported but must not fail the check before the merge (FR-028a). */
   deferredUntilMerge?: boolean;
+  /** True for an item whose check returns `waiting` before the switch (011-launch data-model.md). */
+  postLaunch?: boolean;
   check: (ctx: ProviderContext) => Promise<CheckResult>;
 }
 
@@ -138,6 +142,13 @@ export interface SetupConfig {
    * secret. Absent until it is read from the account (T023); previews then
    * fall back to the production origin. */
   workersSubdomain?: string;
+  /** What must be live at launch (011-launch data-model.md). */
+  launch?: {
+    /** Page content ids (file names in `src/content/pages/` without `.mdx`). */
+    expectedPages: string[];
+    /** Site paths that must appear in the sitemap. */
+    expectedPaths: string[];
+  };
 }
 
 export interface MajorGateReview {
@@ -168,13 +179,18 @@ export interface MajorGateDecision {
  * absent, expired or lacks read access). Checks map this to `could-not-check`
  * with `reason` (never `complete` or silence — spec Story 1 scenario 4).
  */
+export type ProviderAccessErrorKind = "tls" | "timeout" | "network";
+
 export class ProviderAccessError extends Error {
   readonly reason: string;
+  /** Set by the HTTP reader so a post-launch check can tell a certificate not yet issued (`tls`) from other failures. */
+  readonly kind?: ProviderAccessErrorKind;
 
-  constructor(reason: string) {
+  constructor(reason: string, kind?: ProviderAccessErrorKind) {
     super(reason);
     this.name = "ProviderAccessError";
     this.reason = reason;
+    this.kind = kind;
   }
 }
 
@@ -287,9 +303,18 @@ export interface DnsAnswer {
   priority?: number;
 }
 
+/** The answers one public resolver gave. */
+export interface DnsResolverAnswers {
+  /** The resolver's address, e.g. "1.1.1.1". */
+  resolver: string;
+  answers: DnsAnswer[];
+}
+
 export interface DnsReader {
   /** Resolves every record type the setup check needs for one name (empty array when NXDOMAIN/no data). */
   resolve(name: string, type: DnsRecordType): Promise<DnsAnswer[]>;
+  /** Like `resolve`, but asks each public resolver (1.1.1.1, then 8.8.8.8) separately so a caller can tell a settling answer from a settled one. */
+  resolveEach(name: string, type: DnsRecordType): Promise<DnsResolverAnswers[]>;
   /** Public nameservers for a domain, from an NS lookup at the root/TLD resolvers. */
   resolveNameservers(name: string): Promise<string[]>;
 }
@@ -300,8 +325,13 @@ export interface HttpResponseSummary {
   body: string;
 }
 
+export interface HttpGetOptions {
+  /** `manual` returns a redirect response as it is (status and raw `Location` header) instead of following it. Default `follow`. */
+  redirect?: "follow" | "manual";
+}
+
 export interface HttpReader {
-  get(url: string): Promise<HttpResponseSummary>;
+  get(url: string, options?: HttpGetOptions): Promise<HttpResponseSummary>;
   head(url: string): Promise<HttpResponseSummary>;
 }
 

@@ -47,7 +47,7 @@ The types `CrawlOptions`, `CrawlResult` and `CrawlFailure` are defined in data-m
 | `--json` | Print the `CrawlResult` as JSON instead of lines |
 
 Output: a heading line (`Checked <p> pages and <l> links on <base>`), then one line per failure,
-for example `link  /blog/missing/  returned 404  (linked from /blog/, /about/)`.
+for example `link  /writing/missing/  returned 404  (linked from /writing/, /about/)`.
 
 Exit codes:
 

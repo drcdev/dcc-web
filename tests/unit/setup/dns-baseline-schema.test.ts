@@ -58,3 +58,29 @@ describe("dnsBaselineSchema record-level rules", () => {
     expect(result.success).toBe(false);
   });
 });
+
+describe("setup/dns-baseline.json: launch subsets derivable by name and type (T007)", () => {
+  type Record_ = { type: string; name: string; content: string; decision: string | null };
+  const baseline = readBaseline() as { records: Record_[] };
+  const zone = "doncoleman.ca";
+
+  it("has Ghost web records: kept A, AAAA and CNAME records on the apex or www", () => {
+    const ghostWeb = baseline.records.filter(
+      (r) => r.decision === "keep" && ["A", "AAAA", "CNAME"].includes(r.type) && (r.name === zone || r.name === `www.${zone}`),
+    );
+    expect(ghostWeb.map((r) => `${r.type} ${r.name} ${r.content}`).sort()).toEqual([
+      "A doncoleman.ca 49.13.201.194",
+      "CNAME www.doncoleman.ca drift-and-convergence.mymagic.page",
+    ]);
+  });
+
+  it("has mail records: kept MX and TXT records plus _domainkey CNAMEs, including the iCloud MX hosts", () => {
+    const mail = baseline.records.filter(
+      (r) => r.decision === "keep" && (r.type === "MX" || r.type === "TXT" || (r.type === "CNAME" && r.name.includes("._domainkey."))),
+    );
+    expect(mail.length).toBeGreaterThan(0);
+    expect(mail.some((r) => r.type === "MX" && r.content === "mx01.mail.icloud.com")).toBe(true);
+    // No Ghost web record is a mail record.
+    expect(mail.every((r) => r.type !== "A" && r.type !== "AAAA")).toBe(true);
+  });
+});

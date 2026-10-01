@@ -117,3 +117,12 @@ describe("setupItems registry invariants", () => {
     expect(afterMerge.every((i) => i.phase === "after-merge")).toBe(true);
   });
 });
+
+describe("package.json scripts for the launch (T002)", () => {
+  it("has a site:check script that runs the site check CLI, with no new dependency", () => {
+    const pkg = JSON.parse(readFileSync(fileURLToPath(new URL("../../../package.json", import.meta.url)), "utf-8")) as {
+      scripts: Record<string, string>;
+    };
+    expect(pkg.scripts["site:check"]).toBe("node scripts/site-check/cli.ts");
+  });
+});

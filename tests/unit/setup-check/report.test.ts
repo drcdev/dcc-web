@@ -244,3 +244,55 @@ describe("setup-check/report", () => {
     expect(formatHumanReport(report)).not.toContain(leaked);
   });
 });
+
+describe("setup-check/report: the waiting status (T004)", () => {
+  function waitingResult(id: string, order: number): CheckResult {
+    return {
+      id,
+      status: "waiting",
+      summary: "Waiting for the switch: new.doncoleman.ca stays until the bare domain is live.",
+      details: [],
+      nextAction: "Nothing to do yet. Follow docs/launch.md Part C when the readiness checklist is complete.",
+      step: `Step ${order} of 18`,
+      docs: `docs/setup.md#${id}`,
+      reason: null,
+    };
+  }
+
+  it("counts waiting results in counts.waiting", () => {
+    const items = [item("a", 1), item("b", 2), item("c", 3)];
+    const report = buildReport([complete("a", 1), waitingResult("b", 2), waitingResult("c", 3)], items);
+    expect(report.counts.waiting).toBe(2);
+    expect(report.counts.complete).toBe(1);
+    expect(report.counts.total).toBe(3);
+    expect(report.counts.missing).toBe(0);
+  });
+
+  it("keeps ok true when every result is complete or waiting, and false once something is missing", () => {
+    const items = [item("a", 1), item("b", 2), item("c", 3)];
+    expect(buildReport([complete("a", 1), waitingResult("b", 2), complete("c", 3)], items).ok).toBe(true);
+    expect(buildReport([complete("a", 1), waitingResult("b", 2), missing("c", 3)], items).ok).toBe(false);
+  });
+
+  it("prints the word waiting beside the symbol, never colour alone", () => {
+    const items = [item("a", 1)];
+    const report = buildReport([waitingResult("a", 1)], items);
+    const plain = formatHumanReport(report, { color: false });
+    expect(plain).toMatch(/\[[^\]]+\] waiting\s+Step 1 of 18/);
+    expect(plain).toMatch(/^\s*Next: Nothing to do yet\./m);
+  });
+
+  it("adds '<w> waiting for the switch' to the summary line", () => {
+    const items = [item("a", 1), item("b", 2), item("c", 3)];
+    const report = buildReport([complete("a", 1), waitingResult("b", 2), waitingResult("c", 3)], items);
+    const human = formatHumanReport(report);
+    expect(human).toContain("1 of 3 complete");
+    expect(human).toContain("2 waiting for the switch");
+  });
+
+  it("validates a waiting result against the report schema, and counts.waiting is part of the schema", () => {
+    const items = [item("a", 1)];
+    const report = buildReport([waitingResult("a", 1)], items);
+    expect(checkReportSchema.safeParse(JSON.parse(formatJsonReport(report))).success).toBe(true);
+  });
+});

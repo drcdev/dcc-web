@@ -5,7 +5,7 @@
 // file itself (no .test.ts suffix), so vitest's include glob skips it.
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { vi } from "vitest";
+import { expect, vi } from "vitest";
 import type {
   CloudflareDnsRecord,
   CloudflareReader,
@@ -90,6 +90,7 @@ export function fakeProviderContext(overrides: FakeProviderOverrides = {}): Prov
   };
   const dns: DnsReader = {
     resolve: notConfigured("dns.resolve"),
+    resolveEach: notConfigured("dns.resolveEach"),
     resolveNameservers: notConfigured("dns.resolveNameservers"),
     ...overrides.dns,
   };
@@ -135,7 +136,28 @@ export function envFrom(values: Record<string, string | undefined>): Partial<Env
   };
 }
 
-export const cloudflareDnsRecordsAllPresent = () => loadFixture<CloudflareDnsRecord[]>("cloudflare", "dns-records-matching-baseline");
+/**
+ * FR-026: asserts that a check result, report text or thrown error never contains any of the given
+ * secret values (a token, account id, zone id, environment value or message content). Looks at the
+ * JSON form of a result and at both `message` and `reason` of an error.
+ */
+export function expectRedacted(subject: unknown, secrets: string[]): void {
+  const texts: string[] = [];
+  if (subject instanceof Error) {
+    texts.push(subject.message, String((subject as { reason?: unknown }).reason ?? ""));
+  } else if (typeof subject === "string") {
+    texts.push(subject);
+  } else {
+    texts.push(JSON.stringify(subject));
+  }
+  for (const secret of secrets) {
+    for (const text of texts) {
+      expect(text, "output must not contain a secret value").not.toContain(secret);
+    }
+  }
+}
+
+export const cloudflareDnsRecordsAllPresent =() => loadFixture<CloudflareDnsRecord[]>("cloudflare", "dns-records-matching-baseline");
 
 export type {
   CloudflareDnsRecord,

@@ -15,6 +15,7 @@ const STATUS_SYMBOL: Record<CheckResult["status"], string> = {
   missing: "[!]",
   pending: "[~]",
   "could-not-check": "[?]",
+  waiting: "[-]",
 };
 
 const STATUS_WORD: Record<CheckResult["status"], string> = {
@@ -22,6 +23,7 @@ const STATUS_WORD: Record<CheckResult["status"], string> = {
   missing: "missing",
   pending: "pending",
   "could-not-check": "could not check",
+  waiting: "waiting",
 };
 
 const STATUS_ANSI: Record<CheckResult["status"], string> = {
@@ -29,6 +31,7 @@ const STATUS_ANSI: Record<CheckResult["status"], string> = {
   missing: "\u001b[31m", // red
   pending: "\u001b[33m", // yellow
   "could-not-check": "\u001b[36m", // cyan
+  waiting: "\u001b[34m", // blue
 };
 const ANSI_RESET = "\u001b[0m";
 
@@ -80,14 +83,15 @@ export function buildReport(results: CheckResult[], items: SetupItem[], options:
     missing: entries.filter((e) => e.status === "missing").length,
     pending: entries.filter((e) => e.status === "pending").length,
     couldNotCheck: entries.filter((e) => e.status === "could-not-check").length,
+    waiting: entries.filter((e) => e.status === "waiting").length,
     total: entries.length,
   };
 
   return {
     generatedAt: options.generatedAt ?? new Date().toISOString(),
-    // A deferred-until-merge item (FR-028a) is reported but does not fail the check before the merge.
+    // A waiting item (011-launch R3) and a deferred-until-merge item (FR-028a) are reported but do not fail the check.
     ok: entries.every(
-      (e) => e.status === "complete" || items.find((i) => i.id === e.id)?.deferredUntilMerge === true,
+      (e) => e.status === "complete" || e.status === "waiting" || items.find((i) => i.id === e.id)?.deferredUntilMerge === true,
     ),
     counts,
     results: entries,
@@ -131,7 +135,8 @@ export function formatHumanReport(report: CheckReport, options: FormatHumanOptio
 
   lines.push(
     `  ${report.counts.complete} of ${report.counts.total} complete · ${report.counts.missing} missing · ` +
-      `${report.counts.pending} pending · ${report.counts.couldNotCheck} could not check`,
+      `${report.counts.pending} pending · ${report.counts.couldNotCheck} could not check · ` +
+      `${report.counts.waiting} waiting for the switch`,
   );
 
   return lines.join("\n");

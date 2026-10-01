@@ -67,7 +67,7 @@ Completion conditions are in [contracts/setup-items.md](./contracts/setup-items.
 |---|---|---|
 | `reviewHost` | string | Kept. It now names the address being **removed** at launch. `src/lib/site-origin.ts` no longer reads it |
 | `launch.expectedPages` | string[] | Page content ids (file names in `src/content/pages/` without `.mdx`) that must exist and be `draft: false` for launch. Initial value: `index`, `about`, `services`, `speaking`, `technology`, `contact`, `privacy-policy`, `terms-of-use` |
-| `launch.expectedPaths` | string[] | Site paths that must appear in the sitemap: `/`, `/about/`, `/services/`, `/speaking/`, `/technology/`, `/blog/`, `/projects/`, `/contact/`, `/privacy-policy/`, `/terms-of-use/`. The implement phase confirms these against the build |
+| `launch.expectedPaths` | string[] | Site paths that must appear in the sitemap: `/`, `/about/`, `/services/`, `/speaking/`, `/technology/`, `/writing/`, `/projects/`, `/contact/`, `/privacy-policy/`, `/terms-of-use/`. The implement phase confirms these against the build |
 
 Validation: `configSchema` in `scripts/setup-check/schemas.ts` gains an optional `launch` object
 with non-empty string arrays. Ids match `^[a-z0-9-]+$` and paths match `^/([a-z0-9-]+/)*$`.
@@ -106,7 +106,7 @@ interface CrawlOptions {
 
 interface CrawlFailure {
   kind: "sitemap" | "page" | "link" | "origin" | "noindex";
-  target: string;               // path relative to the site, e.g. /blog/missing/
+  target: string;               // path relative to the site, e.g. /writing/missing/
   status: number | null;        // null for a network failure
   reason: string;               // plain language, e.g. "returned 404", "redirected to /x/"
   linkedFrom: string[];         // pages that link to the target (kind "link"), sorted
