@@ -67,6 +67,13 @@ const ok = (value: unknown) => expect(schema.safeParse(value).success).toBe(true
 const rejects = (value: unknown) => expect(schema.safeParse(value).success).toBe(false);
 const omit = (value: object, key: string) => Object.fromEntries(Object.entries(value).filter(([k]) => k !== key));
 const without = (key: string) => omit(minimal, key);
+// The text Astro prints for a schema failure: one `path: message` line per issue. The file name comes from
+// Astro and is proven by the sync run in tests/build/project-validation.test.ts.
+const issueText = (value: unknown) => {
+  const result = schema.safeParse(value);
+  expect(result.success, "the schema should reject the value").toBe(false);
+  return (result.error?.issues ?? []).map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("\n");
+};
 
 describe("projectSchema", () => {
   it("accepts a minimal project and defaults draft to false", () => {
@@ -274,4 +281,130 @@ describe("projectSchema", () => {
       ok({ ...minimal, visual: { kind: "diagram", src: "./a.svg", alt: "x", description: "d" } });
     });
   });
+});
+
+// One case per schema row of contracts/build-errors.md (009): the message carries the contract phrase.
+// The inputs are the ones the deleted broken fixtures used.
+describe("projectSchema messages (contracts/build-errors.md)", () => {
+  const one = { ...comparison.options[1], fit: { "macos-only": "meets", dates: "meets" } };
+  const withComparison = (c: unknown) => ({ ...minimal, comparison: c });
+  const goodOption = (over: Record<string, unknown>) => ({
+    id: "a",
+    name: "A",
+    summary: "s",
+    fit: { "macos-only": "meets", dates: "meets" },
+    ...over,
+  });
+
+  it("row 01: a missing title names title", () => expect(issueText(without("title"))).toContain("title"));
+  it("row 02: a missing problem names problem", () => expect(issueText(without("problem"))).toContain("problem"));
+  it("row 03: an unknown status names status and lists the allowed values", () => {
+    const text = issueText({ ...minimal, status: "finished" });
+    for (const phrase of ["status", "shipped", "experiment", "in-progress"]) expect(text).toContain(phrase);
+  });
+  it.each([
+    ["none", []],
+    ["more than four", ["a", "b", "c", "d", "e"]],
+    ["a duplicate", ["AI integration", "ai   Integration"]],
+  ])("row 04: %s themes name themes", (_name, themes) => expect(issueText({ ...minimal, themes })).toContain("themes"));
+  it("row 05: an index visual without alt names visual and alt", () => {
+    const text = issueText({ ...minimal, visual: { kind: "image", src: "./images/sample.png" } });
+    expect(text).toContain("visual");
+    expect(text).toContain("alt");
+  });
+  it.each(["first", 0, -1, 1.5])("row 06: order %s names order", (order) =>
+    expect(issueText({ ...minimal, order })).toContain("order"));
+  it("row 07: a misspelled setting is named", () => expect(issueText({ ...minimal, titel: "Oops" })).toContain("titel"));
+  it("row 08: a long problem asks for one sentence of at most 140 characters", () => {
+    const text = issueText({ ...minimal, problem: `${"word ".repeat(40)}end.` });
+    expect(text).toContain("problem");
+    expect(text).toContain("one sentence of at most 140 characters");
+  });
+  it("row 12: no chosen option says exactly one option must be chosen", () =>
+    expect(issueText(withComparison({ ...comparison, options: [goodOption({})] }))).toContain(
+      "exactly one option must be chosen",
+    ));
+  it("row 13: a chosen option without a reason names reason", () =>
+    expect(issueText(withComparison({ ...comparison, options: [goodOption({ chosen: true })] }))).toContain("reason"));
+  it("row 14: an option missing a fit names the option and the constraint", () => {
+    const text = issueText(
+      withComparison({
+        ...comparison,
+        options: [goodOption({ id: "script", chosen: true, reason: "r", fit: { "macos-only": "meets" } })],
+      }),
+    );
+    expect(text).toContain("script");
+    expect(text).toContain("dates");
+  });
+  it.each([
+    ["no options", { ...comparison, options: [] }],
+    ["no constraints", { ...comparison, constraints: [] }],
+  ])("row 15: a comparison with %s names comparison", (_name, c) =>
+    expect(issueText(withComparison(c))).toContain("comparison"));
+  it("row 18: a diagram without a description names alt or description", () => {
+    const text = issueText({ ...minimal, visual: { kind: "diagram", src: "./a.svg", alt: "x" } });
+    expect(text).toContain("visual");
+    expect(text).toContain("description");
+  });
+  it("row 19: a clip without a description names description", () => {
+    const clip = omit(full.visuals.walkthrough, "description");
+    expect(issueText({ ...minimal, visuals: { walk: clip } })).toContain("description");
+  });
+  it("row 20: a demo address off drc.dev names href and drc.dev", () => {
+    const text = issueText({ ...minimal, demo: { href: "https://example.com/demo" } });
+    expect(text).toContain("href");
+    expect(text).toContain("drc.dev");
+  });
+  it.each([
+    ["source", { source: "http://github.com/drcdev/thing" }],
+    ["standIn.href", { standIn: { href: "http://example.com/x" } }],
+  ])("row 21: %s that is not https names the setting and https://", (key, extra) => {
+    const text = issueText({ ...minimal, ...extra });
+    expect(text).toContain(key);
+    expect(text).toContain("https://");
+  });
+  it("row 22: demo and standIn together say demo or standIn, not both", () =>
+    expect(
+      issueText({ ...minimal, demo: { href: "https://demo.drc.dev/x" }, standIn: { href: "https://example.com/x" } }),
+    ).toContain("demo or standIn, not both"));
+  it("row 31: a fit naming an unknown constraint names comparison and the id", () => {
+    const text = issueText(
+      withComparison({
+        ...comparison,
+        options: [{ ...one, chosen: true, reason: "r", fit: { "macos-only": "meets", dates: "meets", ghost: "meets" } }],
+      }),
+    );
+    expect(text).toContain("comparison");
+    expect(text).toContain("ghost");
+  });
+  it("row 31: a reason on an unchosen option names comparison and the option id", () => {
+    const text = issueText(
+      withComparison({
+        ...comparison,
+        options: [goodOption({ id: "a", chosen: true, reason: "r" }), goodOption({ id: "b", reason: "no" })],
+      }),
+    );
+    expect(text).toContain("comparison");
+    expect(text).toContain("b");
+  });
+  it("row 31: a duplicate id names comparison and the id", () => {
+    const text = issueText(
+      withComparison({
+        ...comparison,
+        options: [goodOption({ id: "dup", chosen: true, reason: "r" }), goodOption({ id: "dup" })],
+      }),
+    );
+    expect(text).toContain("comparison");
+    expect(text).toContain("dup");
+  });
+  it.each([
+    ["a bad shape", "Bad_Name"],
+    ["the reserved name demo", "demo"],
+  ])("row 32: a visual name with %s names visuals and the name", (_name, key) => {
+    const text = issueText({ ...minimal, visuals: { [key]: { kind: "image", src: "./a.png", alt: "x" } } });
+    expect(text).toContain("visuals");
+    expect(text).toContain(key);
+  });
+  it("row 32: a clip as the index visual names visual", () =>
+    expect(issueText({ ...minimal, visual: full.visuals.walkthrough })).toContain("visual"));
 });

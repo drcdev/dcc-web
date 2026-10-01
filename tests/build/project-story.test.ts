@@ -1,6 +1,6 @@
 // US1 and FR-080: the story route builds /projects/<slug>/ from a project file
-// on the fixture site, and a broken body fails the build (contracts/pages-dom.md,
-// contracts/build-errors.md).
+// on the fixture site (contracts/pages-dom.md). Broken bodies are asserted in
+// project-body.test.ts (unit) and project-validation.test.ts (build).
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildFixtureSite, type FixtureSiteResult } from "./fixture-site.ts";
 
@@ -56,31 +56,4 @@ describe("the story of a valid every-setting project", () => {
     const scripts = (page: string) => count(page, /<script\b/g);
     expect(scripts(html)).toBe(scripts(about));
   });
-});
-
-describe("a broken project body", () => {
-  it("fails the build and names the file", async () => {
-    const result = await buildFixtureSite([], {
-      projects: [{ from: "minimal.mdx", replace: ['<Chapter stage="lessons">', '<Chapter stage="bogus">'] }],
-    });
-    try {
-      expect(result.ok).toBe(false);
-      expect(result.message).toContain("minimal");
-      expect(result.message).toContain("stage");
-    } finally {
-      result.cleanup();
-    }
-  }, 240_000);
-
-  it("fails for a broken draft as well (FR-073)", async () => {
-    const result = await buildFixtureSite([], {
-      projects: [{ from: "draft.mdx", replace: ['<Chapter stage="lessons">', '<Chapter stage="bogus">'] }],
-    });
-    try {
-      expect(result.ok).toBe(false);
-      expect(result.message).toContain("draft");
-    } finally {
-      result.cleanup();
-    }
-  }, 240_000);
 });

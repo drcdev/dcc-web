@@ -116,3 +116,49 @@ describe("validateProjectBody", () => {
     expect(() => check("Just text.")).toThrow(FILE);
   });
 });
+
+// Each row of contracts/build-errors.md asserts the file and the contract phrase together (the build run in
+// tests/build/project-validation.test.ts proves the route calls this check; see docs/testing.md).
+describe("validateProjectBody messages (contracts/build-errors.md)", () => {
+  const inProblem = (inner: string) => valid((s) => (s === "problem" ? chapter(s, inner) : undefined));
+  const swapped = [...stageIds];
+  [swapped[3], swapped[4]] = [swapped[4]!, swapped[3]!];
+  const cases: [string, string, Settings, string[]][] = [
+    [
+      "row 09: a missing chapter",
+      stageIds.filter((s) => s !== "lessons").map((s) => chapter(s)).join("\n\n"),
+      {},
+      ["is missing the chapter", "lessons"],
+    ],
+    ["row 10: chapters out of order", swapped.map((s) => chapter(s)).join("\n\n"), {}, ["out of order", stageIds[4]!]],
+    ["row 11: a repeated chapter", valid() + "\n\n" + chapter("outcome"), {}, ["more than once", "outcome"]],
+    [
+      "row 16: no OptionComparison block",
+      valid((s) => (s === "options" ? chapter(s, "Text.") : undefined)),
+      {},
+      ["OptionComparison"],
+    ],
+    ["row 23: an unknown block lists the blocks", inProblem("<Timeline />"), {}, ["<Timeline>", ...storyBlockNames]],
+    ["row 24: an unknown visual name", valid((s) => (s === "problem" ? chapter(s, undefined, ' visual="ghost"') : undefined)), {}, ["ghost"]],
+    [
+      "row 25: the demo visual without embed",
+      valid((s) => (s === "built" ? chapter(s, "<Demo />", ' visual="demo"') : undefined)),
+      { demoLinks: true },
+      ["embed"],
+    ],
+    ["row 28: a level-two heading", inProblem("## Sub"), {}, ["use ### for headings"]],
+    ["row 29: a body image without alt text", inProblem("![](./a.png)"), {}, ["alt text"]],
+    [
+      "row 30: the Invitation block missing",
+      valid((s) => (s === "invitation" ? chapter(s, "Text.") : undefined)),
+      {},
+      ["Invitation"],
+    ],
+    ["row 30: the Demo block missing when demo links are set", valid(), { demoLinks: true }, ["Demo"]],
+  ];
+  it.each(cases)("%s names the file and the phrase", (_name, body, settings, phrases) => {
+    const run = () => check(body, settings);
+    expect(run).toThrow(FILE);
+    for (const phrase of phrases) expect(run).toThrow(phrase);
+  });
+});

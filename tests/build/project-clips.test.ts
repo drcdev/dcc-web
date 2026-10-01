@@ -1,6 +1,4 @@
-// US6 and build-errors.md row 19: a clip is checked before it is bundled (it must
-// exist and be 5 MB or less, and the error names the file and the clip path), and
-// a valid clip renders with its poster, controls, muted and no autoplay.
+// US6: a valid clip renders with its poster, controls, muted and no autoplay.
 import { statSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildFixtureSite, type FixtureSiteResult } from "./fixture-site.ts";
@@ -40,34 +38,4 @@ describe("a project with a clip", () => {
     expect(src).toMatch(/^\/_astro\/.+\.webm$/);
     expect(statSync(`${result.dist}${src}`).isFile()).toBe(true);
   });
-});
-
-describe("a broken clip", () => {
-  it("fails the build for a missing clip, naming the file and the path", async () => {
-    const result = await buildFixtureSite([], {
-      projects: [{ from: "every-setting.mdx", replace: ["./images/clip.webm", "./images/missing-clip.webm"] }],
-    });
-    try {
-      expect(result.ok).toBe(false);
-      expect(result.message).toContain("every-setting");
-      expect(result.message).toContain("./images/missing-clip.webm");
-    } finally {
-      result.cleanup();
-    }
-  }, 240_000);
-
-  it("fails the build for a clip over 5 MB, naming the file and the path", async () => {
-    const result = await buildFixtureSite([], {
-      projects: ["every-setting.mdx"],
-      write: { "src/content/projects/images/clip.webm": new Uint8Array(5 * 1024 * 1024 + 1) },
-    });
-    try {
-      expect(result.ok).toBe(false);
-      expect(result.message).toContain("every-setting");
-      expect(result.message).toContain("./images/clip.webm");
-      expect(result.message).toContain("5 MB");
-    } finally {
-      result.cleanup();
-    }
-  }, 240_000);
 });

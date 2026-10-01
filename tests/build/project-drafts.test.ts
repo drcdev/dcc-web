@@ -1,6 +1,6 @@
 // US7 and FR-073: a draft is built and marked on preview and local builds, and is
-// absent from the production build (index, route, sitemap, files) while a broken
-// draft still fails it. The draft here uses its own image, poster and clip so
+// absent from the production build (index, route, sitemap, files). A broken draft
+// failing the build is asserted in project-validation.test.ts. The draft here uses its own image, poster and clip so
 // their absence from dist/ proves draft-only assets are dropped.
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -95,33 +95,4 @@ describe("a preview build", () => {
     expect(names.some((name) => name.includes("draft-only") && !name.endsWith(".webm"))).toBe(true);
     expect(result.read("projects/minimal/index.html")).not.toContain("data-draft-notice");
   });
-});
-
-describe("a broken draft", () => {
-  it("fails the production build naming the file (FR-073)", async () => {
-    const result = await buildFixtureSite([], {
-      projects: [{ from: "draft.mdx", replace: ['<Chapter stage="lessons">', '<Chapter stage="bogus">'] }],
-      env: production,
-    });
-    try {
-      expect(result.ok).toBe(false);
-      expect(result.message).toContain("draft");
-    } finally {
-      result.cleanup();
-    }
-  }, 240_000);
-
-  it("fails the production build for an invalid setting, naming the file", async () => {
-    const result = await buildFixtureSite([], {
-      projects: [{ from: "draft.mdx", replace: ["status: in-progress", "status: nonsense"] }],
-      env: production,
-    });
-    try {
-      expect(result.ok).toBe(false);
-      expect(result.message).toContain("draft");
-      expect(result.message).toContain("status");
-    } finally {
-      result.cleanup();
-    }
-  }, 240_000);
 });

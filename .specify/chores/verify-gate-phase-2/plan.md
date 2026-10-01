@@ -285,7 +285,7 @@ listing for a free-form id named by a visible post". The "things that are not er
 
 ### W3 Project validation: unit moves and wiring runs; absorb project failure builds
 
-- [ ] W3 done
+- [x] W3 done (project fixtures 17, 26, 27 kept; every other broken project fixture deleted)
 
 **Files:** `tests/build/project-validation.test.ts` (rewrite);
 `tests/build/project-routes.test.ts` (delete);
