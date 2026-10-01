@@ -36,7 +36,7 @@ const themeInitHash = `sha256-${createHash("sha256").update(themeInitSource).dig
 // https://astro.build/config
 export default defineConfig({
   site,
-  trailingSlash: "always",
+  trailingSlash: "ignore",
 
   vite: {
     plugins: [tailwindcss()],

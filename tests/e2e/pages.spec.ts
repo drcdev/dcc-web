@@ -233,7 +233,7 @@ test.describe("home recent writing keeps the introduction intact (US7)", () => {
     await expect(page.locator("h1")).toHaveCount(1);
     const order = await page.evaluate(() => {
       const titles = [...document.querySelectorAll("h2")].map((h) => h.textContent?.trim());
-      return { recent: titles.indexOf("Recent writing"), what: titles.indexOf("What Don does") };
+      return { recent: titles.indexOf("Recent writing"), what: titles.indexOf("What I do") };
     });
     expect(order.what).toBeGreaterThanOrEqual(0);
     expect(order.recent).toBeGreaterThan(order.what);
