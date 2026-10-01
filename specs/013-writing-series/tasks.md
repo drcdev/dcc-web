@@ -174,15 +174,25 @@ Run once, after the appearance is final and Phases 3 to 7 pass (FR-018a).
 - [X] T059 Run `pnpm run test:visual` on macOS and confirm the only failing snapshots are `writing-landing`, `writing-all`, `writing-topic`, `writing-post`, `home`, `about` and the new `writing-series`. Any other diff (header, footer, mobile menu, not-found, contact, sections fixture, projects, project story) is a regression to fix, not a baseline to refresh.
 - [X] T060 Run `pnpm run test:visual:update` (macOS baselines) and review each changed image against the FR-018 table in `specs/013-writing-series/spec.md`: framing lead and markers on the landing; markers and mauve/sand on all-posts; sand banner on `writing-topic`; mauve pill and related-post markers on `writing-post`; the home line; the shortened About; the new series banner.
 - [X] T061 Run `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, ask Don to start it, and fall back to the `visual-baselines` PR label and the `visual-baselines-linux` artifact only after asking; from the artifact take only `*-linux.png`). Review the Linux diffs against the same FR-018 table.
-- [ ] T062 Build the per-snapshot list for the PR body: each refreshed snapshot with the requirement it traces to (FR-018a).
+- [X] T062 Build the per-snapshot list for the PR body: each refreshed snapshot with the requirement it traces to (FR-018a).
+
+  Per-snapshot list (each at phone and desktop, light and dark, macOS and Linux = 8 images per snapshot):
+
+  - `writing-landing` (`/writing/`): framing lead, series markers on lead story and cards, mauve and sand pills, no series in the pill row. FR-006, FR-010, FR-010a.
+  - `writing-all` (`/writing/all/`): series markers first on cards, recoloured Agentic AI and Technology teams pills. FR-010, FR-010a.
+  - `writing-topic` (`/writing/topics/technology-teams/`): sand banner and pills, series markers on cards. FR-010, FR-010a.
+  - `writing-post` (`/writing/sample-everything/`): mauve Agentic AI pill, series markers on related-post cards. FR-010, FR-010a.
+  - `home` (`/`): Drift & Convergence line under "Recent writing", markers and recoloured pills on cards. FR-010, FR-010a, FR-014.
+  - `about` (`/about/`): shortened "About the writing" with series links. FR-015.
+  - `writing-series` (new, `/writing/drift/`): series banner and Drift listing. FR-008, FR-009.
 
 ---
 
 ## Phase 9: Polish and cross-cutting
 
 - [ ] T063 [P] Run the full gate: `ASTRO_PREVIEW_BACKGROUND=1 pnpm run verify` (unit, component, build, lint, types, E2E, a11y, budget, visual); confirm budget thresholds are unchanged (SC-006). A verify that is red only from local load may be pushed for CI to verify.
-- [ ] T064 [P] Walk `specs/013-writing-series/quickstart.md` against the built site and fix drift between it and the implementation.
-- [ ] T065 [P] Confirm no new dependency, no new client JavaScript and no new colour token beyond `mauve`, `sand` and `dusk`; confirm no test references a `specs/` path.
+- [X] T064 [P] Walk `specs/013-writing-series/quickstart.md` against the built site and fix drift between it and the implementation.
+- [X] T065 [P] Confirm no new dependency, no new client JavaScript and no new colour token beyond `mauve`, `sand` and `dusk`; confirm no test references a `specs/` path.
 - [ ] T066 PR body note: state this is a major change under Principle III and auto-merge is off, list the refreshed snapshots (T062), and list the `[PREVIEW-CHECK]` items.
 - [ ] T067 [PREVIEW-CHECK] Don walks the preview deployment (URL in the Cloudflare PR comment) and ticks each item. Not a subagent task. Items: (a) Writing landing lead and its Convergence and Drift links; (b) both series pages at `/writing/drift/` and `/writing/convergence/`, their banner links and post lists; (c) `/writing/topics/drift/` and `/writing/topics/convergence/` return 301 to the series pages, including a paginated address, and Back returns to the previous page; (d) series markers on cards and post headers, in light and dark themes; (e) Agentic AI (mauve) and Technology teams (sand) pills recoloured; (f) the home "Recent writing" line and its two links; (g) About section links; (h) RSS title "Drift & Convergence" and description; (i) screen-reader wording of the marker and series links (FR-016e); (j) the visual diffs from T060 and T061 match the FR-018 table; (k) Linux baselines pass in CI.
 
