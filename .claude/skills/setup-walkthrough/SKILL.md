@@ -20,6 +20,9 @@ confirmation logic (FR-010): every "is this step done?" question is answered by 
 3. Walk the steps in order. For each step:
    - If it is already `complete`, print one line — "Step N — already done, skipping" — and move
      on (FR-011).
+   - If it is `waiting` (an item that only applies after the launch switch), treat it like a
+     completed step: print one line — "Step N — waiting for the launch switch, skipping" — and
+     move on, with no pause and no `AskUserQuestion`.
    - If its prerequisites (`dependsOn`) are not all `complete`, show it as **blocked**, name the
      prerequisite step, and do not ask Don to act on it or run its confirmation.
    - Otherwise, show **What it is for**, **Where to do it**, **How it will be confirmed** — each
@@ -51,6 +54,28 @@ confirmation logic (FR-010): every "is this step done?" question is answered by 
 6. End with the full report (`pnpm setup:check`) and its summary line ("`N` of `T` complete",
    where `T` is the registry length: the number of items `setup:check` reports, never a fixed number).
 
+## Launch hand-over (item 26 onwards)
+
+Items 1 to 25 are the account setup. At item 26 (`launch-content-ready`) the walkthrough hands over
+to `docs/launch.md`, the launch walkthrough, which is the single place that covers readiness, the
+domain switch, the rollback and the after-launch checks. Items 26 to 32 stay in the registry and
+`pnpm setup:check`, but the skill does not re-explain them one by one:
+
+1. When every item before 26 is `complete` (item 16 may be `waiting`), say that the account setup is
+   done and that the next part is `docs/launch.md`, starting at Part A.
+2. Follow `docs/launch.md` step by step (L1, L2, ...). Show each step's **What to do**, **Where** and
+   **How to confirm**, then stop at every **Pause:** line with the standard `AskUserQuestion`
+   answers: `Done — check it`, `Skip for now`, `Stop here`. The same halt rule as above applies.
+3. The readiness gate is step L7. If any of L1 to L6 is not confirmed, stop there: do not show Part B
+   or any later step. The confirmations are the commands the step names (for example
+   `pnpm setup:check --json --item launch-content-ready`), never the skill's own judgement.
+4. Show Part E (rollback) before Part C is offered, and again straight away if any check reports a
+   `Problem:` or the 24-hour pending limit passes.
+5. The skill never signs in, never creates accounts, never changes DNS and never handles or asks for
+   a credential. Don alone acts in the Cloudflare dashboard, the DNS zone, an account or an export.
+   The skill only runs the read-only commands listed under "Allowed commands", including, for step
+   L4, `pnpm run site:check -- --base https://new.doncoleman.ca --expect-origin https://doncoleman.ca`.
+
 ## Secret handling (FR-012, FR-024)
 
 - Never ask Don to type, paste or reveal a secret value in the chat.
@@ -68,6 +93,7 @@ The skill runs only these read-only commands:
 
 - `pnpm setup:check` (with `--json`, `--item <id>`, or `--no-network`)
 - `pnpm setup:dns-snapshot`
+- `pnpm run site:check -- --base <url> [--expect-origin <url>]` (read-only crawl, launch step L4)
 - `gh auth status`
 - `node --version`
 - `pnpm --version`

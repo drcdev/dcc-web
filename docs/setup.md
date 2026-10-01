@@ -11,6 +11,10 @@ step number and anchor match the setup item table in `specs/001-setup-walkthroug
 `specs/007-contact-form/contracts/setup-items.md` (items 19 to 25, the "Contact form" part) and
 `specs/011-launch/contracts/setup-items.md` (items 26 to 32, the "Launch" part at the end).
 
+The domain switch itself, its rollback and the later retirement of the old services are not
+setup items; they are walked through step by step in `docs/launch.md`, which the `/setup-walkthrough`
+skill hands over to once items 1 to 25 are done.
+
 A few terms used below: a **nameserver** is the server that answers "where is doncoleman.ca's
 DNS?" — moving it to Cloudflare is what puts Cloudflare in charge of the domain's DNS records. A
 **ruleset** is GitHub's mechanism for protecting a branch (blocking force-pushes, requiring

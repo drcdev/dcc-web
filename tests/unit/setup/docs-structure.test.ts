@@ -180,3 +180,17 @@ describe("docs/setup.md contact-form part (items 19 to 25)", () => {
     expect(last.toLowerCase()).toContain("after");
   });
 });
+
+describe("docs/setup.md launch part (items 26 to 32)", () => {
+  it("has a Launch part heading before section 26 and an intro linking docs/launch.md", () => {
+    expect(contents.indexOf("\n# Launch")).toBeGreaterThan(contents.indexOf("{#contact-production-deploy}"));
+    expect(contents.indexOf("\n# Launch")).toBeLessThan(contents.indexOf("{#launch-content-ready}"));
+    expect(contents.slice(0, contents.indexOf("## 1."))).toContain("docs/launch.md");
+  });
+
+  it("items 6, 16 and 18 describe the launch phase", () => {
+    expect(extractSection(contents, "live-domain-ghost")).toContain("docs/launch.md");
+    expect(extractSection(contents, "review-address-removed")).toMatch(/waiting/);
+    expect(extractSection(contents, "web-analytics")).toContain("launch switch");
+  });
+});

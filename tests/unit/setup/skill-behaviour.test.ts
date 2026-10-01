@@ -184,4 +184,25 @@ describe(".claude/skills/setup-walkthrough/SKILL.md", () => {
     expect(contents.toLowerCase()).toContain("after-merge");
     expect(contents.toLowerCase()).toMatch(/by name only|names only/);
   });
+
+  it("treats a waiting step like a completed one: one line, no pause", () => {
+    expect(contents).toMatch(/`waiting`[\s\S]{0,200}like a\s+completed step[\s\S]{0,200}one line[\s\S]{0,200}no pause/i);
+  });
+
+  it("hands over to docs/launch.md at item 26 and gates on the readiness checks", () => {
+    expect(contents).toContain("## Launch hand-over");
+    const section = contents.slice(contents.indexOf("## Launch hand-over"));
+    expect(section).toContain("docs/launch.md");
+    expect(section).toContain("launch-content-ready");
+    expect(section).toMatch(/item 26/);
+    expect(section.toLowerCase()).toMatch(/readiness gate/);
+    for (const answer of ["Done — check it", "Skip for now", "Stop here"]) expect(section).toContain(answer);
+  });
+
+  it("never signs in, changes DNS or handles credentials", () => {
+    const lower = contents.toLowerCase();
+    expect(lower).toMatch(/never signs in/);
+    expect(lower).toMatch(/never changes dns/);
+    expect(lower).toMatch(/never[^.]*credential/);
+  });
 });
