@@ -31,6 +31,14 @@ This feature makes the two series the organising idea of the Writing pages, whil
 - Q: Which of the existing posts should be tagged into a series? → A: As proposed. Convergence: "The Systems Leadership Wayfinder" and "Starting something new". Drift: "Building Focus Pocus" and "Self-contained development for Ghost themes". The sample post stays untagged.
 - Q: Is this feature a major change under Constitution Principle III? → A: Yes (design system and visual identity, content model). Auto-merge stays off, and the tasks include a `[PREVIEW-CHECK]` task for Don to review the preview deployment before merge.
 
+### Session 2026-10-01
+
+- Q: How should a series marker look different from an ordinary topic pill, apart from colour? → A: By a label prefix. The marker is pill-shaped and reads "Series: Drift" or "Series: Convergence", in a heavier weight with a visible outline. The difference is in the text, so it holds in forced-colours mode and for screen readers.
+- Q: Which colour should each series use, and which should a free-form topic pill use? → A: Use the flux design theme's colours (`.reference/flux`, the theme the site's palette was ported from). Flux assigns Drift to lavender and Convergence to sage, and the series markers and banners use those palettes. Flux colours other tags rust, but the site's free-form pills must be neutral and rust already belongs to a controlled topic, so free-form pills use flux's neutral dusk palette. Flux is the source of truth for these assignments, and no new colours are added.
+- Q: On a text-only post card (no feature image), which topic should colour the card's border when the post is in a series? → A: The series colour. This is an intended visual change for tagged posts, and the FR-018 baseline refresh covers it.
+- Q: How should a free-form topic's display label be made from its id? → A: Sentence case. Hyphens become spaces and the first letter is capitalised (`cloud-cost` → "Cloud cost").
+- Q: How should the home page's "Recent writing" section name Drift & Convergence? → A: Keep the "Recent writing" heading and add one short line under it that names Drift & Convergence and links to both series pages.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - A visitor understands the two series from the Writing landing (Priority: P1)
@@ -81,8 +89,9 @@ Wherever a post's topic pills are shown (the landing, `/writing/all/`, topic pag
 1. **Given** a post tagged `convergence` and `healthcare-leadership`, **When** its card appears on the landing, `/writing/all/`, a topic page or the home page, **Then** the Convergence marker is visually distinct from the Healthcare pill and appears before it.
 2. **Given** the same post, **When** a visitor opens the post, **Then** a series marker appears beside the topic pills in the post header and links to the series page.
 3. **Given** a post with no series tag, **When** it appears on any of these pages, **Then** its pills look exactly as they did before this feature.
-4. **Given** forced-colours mode, or a visitor who cannot tell colours apart, **When** they view a series marker, **Then** they can still tell it is a series and not an ordinary topic (by its label or shape, not colour alone).
+4. **Given** forced-colours mode, a screen reader, or a visitor who cannot tell colours apart, **When** they meet a series marker, **Then** they can still tell it is a series and not an ordinary topic, because its text reads "Series: Drift" or "Series: Convergence".
 5. **Given** any page with a series marker, **When** an automated accessibility check runs, **Then** it reports no WCAG 2.2 AA failures, and the marker's text meets 4.5:1 contrast in both light and dark themes.
+6. **Given** a post tagged into a series with no feature image, **When** its text-only card appears on any listing, **Then** the card's border is in the series colour (lavender for Drift, sage for Convergence).
 
 ---
 
@@ -113,7 +122,7 @@ The feed's title and description name the two series. The home page's "Recent wr
 **Acceptance Scenarios**:
 
 1. **Given** the built feed, **When** a feed reader reads it, **Then** its title is "Drift & Convergence" and its description names both series in plain language.
-2. **Given** the home page, **When** a visitor reaches "Recent writing", **Then** the section names Drift & Convergence, and each post card shows its series marker if it has one.
+2. **Given** the home page, **When** a visitor reaches "Recent writing", **Then** the section keeps its "Recent writing" heading, a short line under it names Drift & Convergence and links to both series pages, and each post card shows its series marker if it has one.
 3. **Given** the About page, **When** a visitor reaches "About the writing", **Then** it introduces Drift & Convergence briefly, links to the Drift and Convergence series pages, and no longer carries a long paragraph describing each series.
 
 ---
@@ -155,30 +164,31 @@ The feed's title and description name the two series. The home page's "Recent wr
 
 **Series markers**
 
-- **FR-010**: Wherever a post's topics are shown (landing lead story and cards, `/writing/all/`, topic and series pages, post headers, home "Recent writing", related posts), a series tag MUST render as a series marker that is distinct from ordinary topic pills by more than colour, appears before the other topics, and links to its series page. Posts without a series tag MUST look the same as before this feature.
+- **FR-010**: Wherever a post's topics are shown (landing lead story and cards, `/writing/all/`, topic and series pages, post headers, home "Recent writing", related posts), a series tag MUST render as a series marker that appears before the other topics and links to its series page. The marker is pill-shaped, reads "Series: Drift" or "Series: Convergence", and has a heavier weight and a visible outline, so it differs from ordinary topic pills by its text and not by colour alone. The series is the post's main topic: a text-only card (no feature image) for a post in a series takes its border colour from the series. Posts without a series tag MUST look the same as before this feature.
+- **FR-010a**: Series colours MUST come from the flux design theme's palette assignments: Drift uses `lavender` and Convergence uses `sage`, for markers, banners and text-only card borders. Free-form topic pills use the neutral `dusk` palette. Every text and background pair meets 4.5:1 contrast in both themes. No new colours are added.
 
 **Free-form topics**
 
-- **FR-011**: Posts MUST be able to carry topics beyond the controlled list. Controlled topics (the four existing topics and the two series) keep their visual treatment: colours, banners and, for series, the series marker. Any other topic shows as a neutral pill that links to its own listing page at `/writing/topics/{id}/`, with a plain banner and the same listing and pagination as other topic pages. Free-form topics MUST NOT appear in the landing's topic pill row. The build MUST fail when a free-form topic id is within two letters (edit distance two or less) of a controlled id, with a plain message naming the post and the controlled id it probably meant.
+- **FR-011**: Posts MUST be able to carry topics beyond the controlled list. Controlled topics (the four existing topics and the two series) keep their visual treatment: colours, banners and, for series, the series marker. Any other topic shows as a neutral (`dusk`) pill, labelled in sentence case from its id (hyphens become spaces and the first letter is capitalised, so `cloud-cost` reads "Cloud cost"), that links to its own listing page at `/writing/topics/{id}/`, with a plain banner and the same listing and pagination as other topic pages. Free-form topics MUST NOT appear in the landing's topic pill row. The build MUST fail when a free-form topic id is within two letters (edit distance two or less) of a controlled id, with a plain message naming the post and the controlled id it probably meant.
 - **FR-012**: A free-form topic MUST follow the existing topic id rules (lower-case letters, digits and hyphens, at most 40 characters, named once per post) so its address and label are stable.
 
 **Feed, home and About**
 
 - **FR-013**: The feed title MUST be "Drift & Convergence" and its description MUST name both series in plain language.
-- **FR-014**: The home page "Recent writing" section MUST name Drift & Convergence and show each post's series marker.
+- **FR-014**: The home page "Recent writing" section MUST keep its heading and add one short line under it that names Drift & Convergence and links to both series pages (`/writing/drift/` and `/writing/convergence/`). Each post card MUST show its series marker.
 - **FR-015**: The About page "About the writing" section MUST keep a short introduction to Drift & Convergence and link to both series pages, replacing the two long series paragraphs. The closing invitation to get in touch stays.
 
 **Quality**
 
 - **FR-016**: Every changed page MUST meet WCAG 2.2 AA, read fully with JavaScript turned off, ship no new client-side JavaScript, and stay within the existing performance budget.
 - **FR-017**: All new copy MUST follow `VOICE.md` and the constitution's plain-language rule: no hype, no filler.
-- **FR-018**: The visual baselines for every snapshotted page whose appearance changes (at least the Writing landing, `/writing/all/`, the topic page, the post page and the home page) MUST be refreshed for both macOS and Linux. Any visual change this spec does not predict is a regression to fix, not a baseline to refresh.
+- **FR-018**: The visual baselines for every snapshotted page whose appearance changes (at least the Writing landing, `/writing/all/`, the topic page, the post page and the home page, including the series-coloured border on text-only cards of tagged posts) MUST be refreshed for both macOS and Linux. Any visual change this spec does not predict is a regression to fix, not a baseline to refresh.
 
 ### Key Entities
 
-- **Series**: one of two named groupings of posts, Drift and Convergence. Has an id, a name, a short description and a short canonical address (`/writing/{id}/`). Held as a controlled topic marked as a series.
+- **Series**: one of two named groupings of posts, Drift and Convergence. Has an id, a name, a short description, a colour from the flux theme (Drift `lavender`, Convergence `sage`) and a short canonical address (`/writing/{id}/`). Held as a controlled topic marked as a series.
 - **Controlled topic**: a topic from the site's maintained list. Has an id, a name, a description and a colour. Drives coloured pills, banners and topic pages.
-- **Free-form topic**: a topic a post names that is not in the controlled list. Has only an id and a label derived from it. Has its own plain listing page at `/writing/topics/{id}/`; shown as a neutral pill.
+- **Free-form topic**: a topic a post names that is not in the controlled list. Has only an id and a sentence-case label derived from it (`cloud-cost` → "Cloud cost"). Has its own plain listing page at `/writing/topics/{id}/`; shown as a neutral pill.
 - **Post**: unchanged, except that its topics may now include the two series ids and free-form topics.
 
 ## Success Criteria *(mandatory)*
@@ -196,7 +206,7 @@ The feed's title and description name the two series. The home page's "Recent wr
 ## Assumptions
 
 - The four existing controlled topics stay as they are. The two series are the only additions to the controlled list.
-- Series markers use colours from the site's existing palettes (`sand`, `mauve` and `dusk` are unused by topics today); no new colours are added.
+- Series colours follow the flux design theme (`.reference/flux`, whose palette the site already uses): Drift is `lavender` and Convergence is `sage`. These palettes are also the pill colours of the existing Agentic AI and Technology teams topics. The four existing topics stay as they are, so the series share those palettes, and the "Series:" label and outline tell them apart. The rule that topic colours are unique therefore covers only the ordinary controlled topics. Free-form pills use `dusk`, flux's neutral palette, in place of flux's default rust for other tags, because rust is the Compliant data topic's colour.
 - This is a major change under Constitution Principle III: the series marker and series banner change the design system and visual identity, and free-form topics change the content model. Auto-merge stays off, and the tasks MUST include a `[PREVIEW-CHECK]` task for Don to review the preview deployment before merge.
 - The landing framing copy is a shortened form of the About page's existing series descriptions. Don can revise wording in review.
 - A post still needs at least one topic; a series tag or a free-form topic counts.
