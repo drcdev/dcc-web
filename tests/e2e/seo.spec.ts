@@ -184,3 +184,11 @@ test("the project story has its own title, description, canonical, sharing image
   // Focus Pocus has no sharing image of its own, so it uses the site default (FR-080).
   expect(await attr(page, 'meta[property="og:image"]')).toContain("og-default");
 });
+
+test("the feed's title is Drift & Convergence and its description names both series (FR-013)", async ({ request }) => {
+  const xml = await (await request.get("/writing/rss.xml")).text();
+  expect(xml).toContain("<title>Drift &amp; Convergence</title>");
+  const description = /<channel>[\s\S]*?<description>([^<]*)<\/description>/.exec(xml)?.[1] ?? "";
+  expect(description).toContain("Convergence");
+  expect(description).toContain("Drift");
+});

@@ -12,6 +12,8 @@ describe("blog settings", () => {
     expect(blog.feedTitle).toBe("Drift & Convergence");
     expect(blog.feedDescription.trim()).not.toBe("");
     expect(blog.feedDescription).not.toContain("\n");
+    expect(blog.feedDescription).toContain("Convergence");
+    expect(blog.feedDescription).toContain("Drift");
   });
 
   it("sets the page and list sizes", () => {

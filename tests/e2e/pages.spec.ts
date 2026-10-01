@@ -239,3 +239,16 @@ test.describe("home recent writing keeps the introduction intact (US7)", () => {
     expect(order.recent).toBeGreaterThan(order.what);
   });
 });
+
+test("home Recent writing names the series and links to both; About links to both (US5)", async ({ page }) => {
+  await page.goto("/");
+  const recent = page.locator("[data-recent-writing]");
+  await expect(recent.getByRole("link", { name: "Convergence", exact: true })).toHaveAttribute(
+    "href",
+    "/writing/convergence/",
+  );
+  await expect(recent.getByRole("link", { name: "Drift", exact: true })).toHaveAttribute("href", "/writing/drift/");
+  await page.goto("/about/");
+  await expect(page.locator("main a[href='/writing/convergence/']")).toHaveCount(1);
+  await expect(page.locator("main a[href='/writing/drift/']")).toHaveCount(1);
+});

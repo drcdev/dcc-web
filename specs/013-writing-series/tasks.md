@@ -151,18 +151,18 @@ Controlled topic list, colour tokens and pure helpers that every story reads.
 
 ### Tests (write first, see fail)
 
-- [ ] T049 [P] [US5] Unit test in `tests/unit/content/blog-config.test.ts`: feed title is "Drift & Convergence" (already true; keep it pinned), description names both series. In `tests/unit/site/feed.test.ts`: feed items for tagged and untagged posts carry no category or series element (FR-013).
-- [ ] T050 [P] [US5] Component test `tests/component/sections/RecentWriting.test.ts`: heading unchanged, one paragraph (not a heading) under it naming Drift & Convergence with links "Convergence" and "Drift" to the short addresses; cards show markers.
-- [ ] T051 [P] [US5] Add an assertion in the existing `describe("About")` block of `tests/unit/content/launch-content.test.ts` that `src/content/pages/about.mdx` links to `/writing/drift/` and `/writing/convergence/`, no longer carries two long series paragraphs, and keeps the closing invitation; fix any existing test that pins the old About text.
-- [ ] T052 [P] [US5] E2E tests: feed title and description (`tests/e2e/seo.spec.ts`); home line and links, About links (`tests/e2e/pages.spec.ts`); `tests/e2e/site-links.spec.ts` covers the new addresses.
-- [ ] T053 [P] [US5] Accessibility test in `tests/e2e/a11y.spec.ts`: axe on home and About; link text names the series (FR-016b).
+- [X] T049 [P] [US5] Unit test in `tests/unit/content/blog-config.test.ts`: feed title is "Drift & Convergence" (already true; keep it pinned), description names both series. In `tests/unit/site/feed.test.ts`: feed items for tagged and untagged posts carry no category or series element (FR-013).
+- [X] T050 [P] [US5] Component test `tests/component/sections/RecentWriting.test.ts`: heading unchanged, one paragraph (not a heading) under it naming Drift & Convergence with links "Convergence" and "Drift" to the short addresses; cards show markers.
+- [X] T051 [P] [US5] Add an assertion in the existing `describe("About")` block of `tests/unit/content/launch-content.test.ts` that `src/content/pages/about.mdx` links to `/writing/drift/` and `/writing/convergence/`, no longer carries two long series paragraphs, and keeps the closing invitation; fix any existing test that pins the old About text.
+- [X] T052 [P] [US5] E2E tests: feed title and description (`tests/e2e/seo.spec.ts`); home line and links, About links (`tests/e2e/pages.spec.ts`); `tests/e2e/site-links.spec.ts` covers the new addresses.
+- [X] T053 [P] [US5] Accessibility test in `tests/e2e/a11y.spec.ts`: axe on home and About; link text names the series (FR-016b).
 
 ### Implementation
 
-- [ ] T054 [P] [US5] Update `feedDescription` in `src/config/blog.ts` (`feedTitle` is already "Drift & Convergence"; `src/lib/feed.ts` reads both, so no route change). Makes T049 pass.
-- [ ] T055 [P] [US5] Add the one-line paragraph with series links to `src/components/sections/RecentWriting.astro`. Makes T050 pass.
-- [ ] T056 [P] [US5] Rewrite "About the writing" in `src/content/pages/about.mdx` per FR-015: short introduction, links to both series pages, closing invitation kept. If PR #25 changes the section first, apply FR-015 to the landed text. Makes T051 pass.
-- [ ] T057 [US5] Run T049 to T053; fix until green.
+- [X] T054 [P] [US5] Update `feedDescription` in `src/config/blog.ts` (`feedTitle` is already "Drift & Convergence"; `src/lib/feed.ts` reads both, so no route change). Makes T049 pass.
+- [X] T055 [P] [US5] Add the one-line paragraph with series links to `src/components/sections/RecentWriting.astro`. Makes T050 pass.
+- [X] T056 [P] [US5] Rewrite "About the writing" in `src/content/pages/about.mdx` per FR-015: short introduction, links to both series pages, closing invitation kept. If PR #25 changes the section first, apply FR-015 to the landed text. Makes T051 pass.
+- [X] T057 [US5] Run T049 to T053; fix until green.
 
 ---
 
