@@ -89,3 +89,14 @@ auto_commit:
   after_bug_test:
     enabled: true
     message: "[Spec Kit] Add bug verification report"
+  # Chore pipeline events (used by /chore). No extension declares these
+  # either, so they are enabled here the same way as the bug events.
+  after_chore_plan:
+    enabled: true
+    message: "[Spec Kit] Add chore plan"
+  after_chore_implement:
+    enabled: true
+    message: "[Spec Kit] Chore implementation progress"
+  after_chore_review:
+    enabled: true
+    message: "[Spec Kit] Add chore review report"

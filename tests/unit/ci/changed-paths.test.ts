@@ -23,6 +23,7 @@ const UNSAFE = [
   ".claude/skills/deliver/SKILL.md",
   ".claude/skills/tweak/SKILL.md",
   ".claude/skills/squash/SKILL.md",
+  ".claude/skills/chore/SKILL.md",
   ".specify/memory/constitution.md",
   "docs/setup.md",
   "docs/pages.md",
