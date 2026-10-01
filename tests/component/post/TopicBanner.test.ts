@@ -17,7 +17,7 @@ describe("TopicBanner", () => {
     expect(tags(html).filter((t) => "data-topic-banner" in t.attrs)).toHaveLength(1);
     expect(tags(html).filter((t) => t.name === "h1")).toHaveLength(1);
     expect(textOf(html, "h1")).toBe(topic.name);
-    expect(html).toContain(topic.description);
+    expect(textOf(html.slice(html.indexOf("</h1>")), "p")).toBe(topic.description);
   });
 
   it("uses the topic's colour classes", async () => {
