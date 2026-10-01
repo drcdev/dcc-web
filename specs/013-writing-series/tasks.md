@@ -170,10 +170,10 @@ Controlled topic list, colour tokens and pure helpers that every story reads.
 
 Run once, after the appearance is final and Phases 3 to 7 pass (FR-018a).
 
-- [ ] T058 Update `tests/e2e/visual.spec.ts`: add the `writing-series` snapshot (`/writing/drift/`) at both sizes and both themes. Run it and see it fail for lack of a baseline.
-- [ ] T059 Run `pnpm run test:visual` on macOS and confirm the only failing snapshots are `writing-landing`, `writing-all`, `writing-topic`, `writing-post`, `home`, `about` and the new `writing-series`. Any other diff (header, footer, mobile menu, not-found, contact, sections fixture, projects, project story) is a regression to fix, not a baseline to refresh.
-- [ ] T060 Run `pnpm run test:visual:update` (macOS baselines) and review each changed image against the FR-018 table in `specs/013-writing-series/spec.md`: framing lead and markers on the landing; markers and mauve/sand on all-posts; sand banner on `writing-topic`; mauve pill and related-post markers on `writing-post`; the home line; the shortened About; the new series banner.
-- [ ] T061 Run `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, ask Don to start it, and fall back to the `visual-baselines` PR label and the `visual-baselines-linux` artifact only after asking; from the artifact take only `*-linux.png`). Review the Linux diffs against the same FR-018 table.
+- [X] T058 Update `tests/e2e/visual.spec.ts`: add the `writing-series` snapshot (`/writing/drift/`) at both sizes and both themes. Run it and see it fail for lack of a baseline.
+- [X] T059 Run `pnpm run test:visual` on macOS and confirm the only failing snapshots are `writing-landing`, `writing-all`, `writing-topic`, `writing-post`, `home`, `about` and the new `writing-series`. Any other diff (header, footer, mobile menu, not-found, contact, sections fixture, projects, project story) is a regression to fix, not a baseline to refresh.
+- [X] T060 Run `pnpm run test:visual:update` (macOS baselines) and review each changed image against the FR-018 table in `specs/013-writing-series/spec.md`: framing lead and markers on the landing; markers and mauve/sand on all-posts; sand banner on `writing-topic`; mauve pill and related-post markers on `writing-post`; the home line; the shortened About; the new series banner.
+- [X] T061 Run `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, ask Don to start it, and fall back to the `visual-baselines` PR label and the `visual-baselines-linux` artifact only after asking; from the artifact take only `*-linux.png`). Review the Linux diffs against the same FR-018 table.
 - [ ] T062 Build the per-snapshot list for the PR body: each refreshed snapshot with the requirement it traces to (FR-018a).
 
 ---
