@@ -56,7 +56,9 @@ export function assertPostFiles(files: readonly string[]): void {
     if (RESERVED.has(slug)) {
       throw postFileError(
         file,
-        `the address ${postHref(slug)} is reserved for a listing page. Rename the file.`,
+        `the address ${postHref(slug)} is reserved for ${
+          (seriesIds as readonly string[]).includes(slug) ? "the series page" : "a listing page"
+        }. Rename the file.`,
       );
     }
   }

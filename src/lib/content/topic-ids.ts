@@ -37,7 +37,7 @@ export function nearMiss(id: string, controlled: readonly string[]): string | un
 
 /** The display label of a free-form id: hyphens become spaces, first letter capitalised. */
 export function topicLabel(id: string): string {
-  const spaced = id.replaceAll("-", " ");
+  const spaced = id.replace(/-+/g, " ");
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 

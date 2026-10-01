@@ -30,10 +30,10 @@ describe("SeriesIntro", () => {
     const h3 = byName(html, "h3");
     expect(h3).toHaveLength(2);
     expect(textOf(html, "h3")).toBe("Convergence");
-    expect(html.indexOf(findTopic("convergence")!.description)).toBeLessThan(
-      html.indexOf(findTopic("drift")!.description),
+    expect(html.indexOf(findTopic("convergence")!.description.replaceAll("'", "&#39;"))).toBeLessThan(
+      html.indexOf(findTopic("drift")!.description.replaceAll("'", "&#39;")),
     );
-    for (const id of ["convergence", "drift"]) expect(html).toContain(findTopic(id)!.description);
+    for (const id of ["convergence", "drift"]) expect(html).toContain(findTopic(id)!.description.replaceAll("'", "&#39;"));
     expect(html).toContain(blog.seriesIntro);
   });
 
@@ -44,6 +44,10 @@ describe("SeriesIntro", () => {
     expect(html).toContain("Read Drift");
     expect(html).not.toContain("/writing/topics/");
     expect(tags(html).filter((t) => "role" in t.attrs)).toHaveLength(0);
+  });
+
+  it("has no transition, animate or duration class on the lead or its links", () => {
+    expect(html).not.toMatch(/class="[^"]*\b(transition|animate|duration)[\w-]*/);
   });
 
   it("uses plain wording with no hype words", () => {

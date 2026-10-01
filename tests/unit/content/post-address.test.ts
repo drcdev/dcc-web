@@ -60,7 +60,11 @@ describe("assertPostFiles", () => {
     const run = check(`${slug}.mdx`);
     expect(run).toThrow(`src/content/posts/${slug}.mdx`);
     expect(run).toThrow(`/writing/${slug}/`);
-    expect(run).toThrow("reserved");
+    expect(run).toThrow("reserved for the series page");
+  });
+
+  it.each(["all", "topics"])("says listing page for %s", (slug) => {
+    expect(check(`${slug}.mdx`)).toThrow("reserved for a listing page");
   });
 
   it("rejects two files with one slug, naming both files and the address (P17)", () => {

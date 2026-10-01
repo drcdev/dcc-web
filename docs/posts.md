@@ -47,7 +47,7 @@ draft: false
 | `summary` | yes | Shown on cards, in search results and in link previews. One or two sentences read best. |
 | `date` | yes | The publication date, written `YYYY-MM-DD` with no quotes and no time. Posts are listed newest first. A future date is published like any other: there is no scheduling. |
 | `updated` | no | The date of the last change, `YYYY-MM-DD`, on or after `date`. The post then shows "Updated" with this date. |
-| `topics` | yes | One or more topic identifiers, each once (see Topics below). A series id goes first. At most one series. The first topic sets the colour of a card with no picture. |
+| `topics` | yes | One or more topic identifiers, each once (see Topics below). A series id goes first. At most one series. A text-only card takes its colour from the series, else the first controlled topic, else stays neutral. |
 | `featureImage` | no | A picture at the top of the post and on its cards: `src` (a file in `images/`), `alt` (required) and `caption` (optional). Without it the post has a text-only card and no picture area. |
 | `featured` | no | `true` shows the post in the Featured area of the writing page. Default `false`. |
 | `draft` | no | `true` keeps the post off the live site (see Drafts below). Default `false`. |

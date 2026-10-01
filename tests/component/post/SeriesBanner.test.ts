@@ -23,7 +23,7 @@ describe("SeriesBanner", () => {
     expect(tags(html).filter((t) => t.attrs["data-series-banner"] === id)).toHaveLength(1);
     expect(byName(html, "h1")).toHaveLength(1);
     expect(textOf(html, "h1")).toBe(series.name);
-    expect(html).toContain(series.description);
+    expect(html).toContain(series.description.replaceAll("'", "&#39;"));
     const links = byName(html, "a").map((a) => a.attrs.href);
     expect(links).toEqual([otherHref, "/writing/"]);
     expect(html).toContain(`Read ${otherName}`);
@@ -51,6 +51,11 @@ describe("SeriesBanner", () => {
     const html = await render({ series: "convergence" });
     expect(html).toContain("bg-sage-100");
     expect(html).not.toContain("/writing/topics/");
+  });
+
+  it("has no transition, animate or duration class on the banner or its links", async () => {
+    const html = await render({ series: "drift" });
+    expect(html).not.toMatch(/class="[^"]*\b(transition|animate|duration)[\w-]*/);
   });
 
   it("throws for an id that is not a series", async () => {

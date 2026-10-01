@@ -1,6 +1,7 @@
 // The controlled list of post topics (data-model.md "Topic"; research R2;
 // FR-016). A post names topics by `id`; the post schema accepts only these ids,
-// so a typo or a removed topic fails the build. The id is the topic's address,
+// so a typo of a controlled id fails the build; an id that is not controlled and not a near miss
+// builds as a free-form topic (FR-011). The id is the topic's address,
 // /writing/topics/{id}/, so keep an id once a post uses it.
 //
 // To add a topic: add one entry below and, if its colour is not yet in
@@ -55,7 +56,7 @@ export const topics = [
     id: "drift",
     name: "Drift",
     description:
-      "Writing about how systems, teams and plans move away from what was intended, and how to notice it early enough to act.",
+      "Hands-on exploration of emerging technology: trying new tools, building real projects and writing up what worked and what didn't.",
     colour: "lavender",
     series: true,
   },
@@ -63,7 +64,7 @@ export const topics = [
     id: "convergence",
     name: "Convergence",
     description:
-      "Writing about how people, practices and technology come together, and what it takes to make that happen on purpose.",
+      "Systems leadership: how to create alignment, work through complexity and lead change when the path forward isn't clear.",
     colour: "sage",
     series: true,
   },

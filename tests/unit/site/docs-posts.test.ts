@@ -30,6 +30,11 @@ describe("docs/posts.md", () => {
     expect(text).toContain("`all` and `topics`");
   });
 
+  it("says in the topics row how a text-only card takes its colour", () => {
+    const row = guide().split("\n").find((line) => line.startsWith("| `topics` |"))!;
+    expect(row).toMatch(/text-only card takes its colour from the series, else the first controlled topic, else stays neutral/);
+  });
+
   it("explains series tags, free-form topics and the reserved series slugs", () => {
     const text = guide();
     expect(text).toMatch(/add `drift` or `convergence` to `topics`/);

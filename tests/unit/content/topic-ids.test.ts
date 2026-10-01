@@ -37,11 +37,19 @@ describe("nearMiss", () => {
   });
 });
 
+describe("nearMiss ties", () => {
+  it("names the controlled id earlier in the list when two are equally near", () => {
+    expect(nearMiss("cat", ["bat", "hat"])).toBe("bat");
+    expect(nearMiss("cat", ["hat", "bat"])).toBe("hat");
+  });
+});
+
 describe("topicLabel", () => {
   it("turns hyphens into spaces and capitalises the first letter", () => {
     expect(topicLabel("cloud-cost")).toBe("Cloud cost");
     expect(topicLabel("security")).toBe("Security");
     expect(topicLabel("a-b-c")).toBe("A b c");
+    expect(topicLabel("cloud--cost")).toBe("Cloud cost");
   });
 });
 

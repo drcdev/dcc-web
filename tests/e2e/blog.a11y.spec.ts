@@ -137,6 +137,8 @@ for (const template of blogTemplates) {
           const small = await page.evaluate(() => {
             const selector = [
               "[data-topic-pill]",
+              "[data-series-banner] a",
+              "[data-series-intro] a",
               "[data-share] a",
               "[data-share] button",
               "figure[data-code-block] button",

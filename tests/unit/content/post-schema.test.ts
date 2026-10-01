@@ -286,6 +286,14 @@ describe("postSchema, free-form topics and series (P23 to P26)", () => {
     expect(text).toContain(`Did you mean \\"${meant}\\"?`);
   });
 
+  it.each([
+    ["agentic--ai", "agentic-ai"],
+    ["con-vergence", "convergence"],
+  ])("rejects the separator variant %s, naming %s", (id, meant) => {
+    rejects({ ...minimal, topics: [id] });
+    expect(issues({ ...minimal, topics: [id] })).toContain(`Did you mean \\"${meant}\\"?`);
+  });
+
   it("rejects ids that break the id rules (P26)", () => {
     rejects({ ...minimal, topics: ["Cloud Cost"] });
     expect(issues({ ...minimal, topics: ["Cloud Cost"] })).toContain("lower-case letters, digits and hyphens");

@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   controlledIds,
+  findTopic,
   otherSeries,
   pillRowTopics,
   seriesIds,
@@ -116,6 +117,15 @@ describe("topics", () => {
     ]);
     expect([...controlledIds]).toEqual(topics.map((t) => t.id));
     expect([...topicIds]).toEqual(topics.map((t) => t.id));
+  });
+
+  it("pins the series descriptions to the agreed copy (R8)", () => {
+    expect(findTopic("convergence")?.description).toBe(
+      "Systems leadership: how to create alignment, work through complexity and lead change when the path forward isn't clear.",
+    );
+    expect(findTopic("drift")?.description).toBe(
+      "Hands-on exploration of emerging technology: trying new tools, building real projects and writing up what worked and what didn't.",
+    );
   });
 
   it("marks drift and convergence, and only those, as series", () => {
