@@ -16,6 +16,8 @@ drift guard); cite requirement ids in test names only.
 
 **Format**: `- [ ] T### [P?] [Story?] Description with file path`. `[P]` = different files, no dependency on an incomplete task.
 
+**Task ids**: T068 to T070 were added by `/speckit-analyze` and sit in the phase where they run, so ids are not in numeric order there. Execute tasks in the order they appear.
+
 **Toolchain reminders**: run `node -v` first (must match `.nvmrc`); `pnpm` runs via `corepack pnpm`; bound long runs with `perl -e 'alarm N; exec @ARGV' <cmd>`.
 
 ## Phase 1: Setup
@@ -30,12 +32,12 @@ drift guard); cite requirement ids in test names only.
 Controlled topic list, colour tokens and pure helpers that every story reads.
 
 - [ ] T003 [P] Write failing unit tests in `tests/unit/content/topics.test.ts`: six controlled entries in the FR-010a order; `drift` and `convergence` have `series: true`; colours Compliant data `rust`, Technology teams `sand`, Agentic AI `mauve`, Healthcare leadership `mist`, Drift `lavender`, Convergence `sage`, all unique; `pillRowTopics` excludes series; `topicHref` and `otherSeries` behave per data-model.md.
-- [ ] T004 [P] Write failing unit tests in `tests/unit/content/topic-ids.test.ts` for new `src/lib/content/topic-ids.ts`: `editDistance`, `nearMiss` (names the controlled id), `topicLabel` (`cloud-cost` to "Cloud cost"), `orderTopics` (series first, others in written order), `mainTopic` (series, else first topic).
-- [ ] T005 [P] Write a failing contrast unit test in `tests/unit/content/topic-contrast.test.ts` that reads the theme tokens from `src/styles/global.css` and asserts 4.5:1 for every controlled pill, series marker, controlled banner, series banner, the `dusk` free-form pill and `dusk` plain banner in light and dark, and 3:1 for the 2px marker outline (shade 700 light / 300 dark) against fill and surface (FR-010, FR-010a, FR-016c).
-- [ ] T006 Add `mauve` and `sand` palette tokens (same shade pattern as existing palettes, both themes) to `src/styles/global.css`, taking values from `.reference/flux`; confirm `dusk` already exists. No other new colours.
+- [ ] T004 [P] Write failing unit tests in new `tests/unit/content/topic-ids.test.ts` for new `src/lib/content/topic-ids.ts`: `editDistance`, `nearMiss` (names the controlled id), `topicLabel` (`cloud-cost` to "Cloud cost"), `orderTopics` (series first, others in written order), `mainTopic` (the series id, else the first controlled id, else `undefined` for a post whose topics are all free-form).
+- [ ] T005 Extend the existing "colour contrast of the topic classes" block in `tests/unit/content/topics.test.ts` (it already computes contrast from the theme tokens in `src/styles/global.css`; same file as T003, so run after it, not in parallel) so it fails until the new classes exist, asserting 4.5:1 for every controlled pill, series marker, controlled banner, series banner, the `dusk` free-form pill and `dusk` plain banner in light and dark, and 3:1 for the 2px marker outline (shade 700 light / 300 dark) against fill and surface (FR-010, FR-010a, FR-016c).
+- [ ] T006 Confirm the `mauve`, `sand` and `dusk` palette tokens already exist in `src/styles/global.css` (they do, ported from `.reference/flux`, and `Palette` in `src/config/topics.ts` already names them). Do not add or change any token; no new colours (FR-010a). The new work is the `topic-styles.ts` entries in T009.
 - [ ] T007 Update `src/config/topics.ts`: add `drift` and `convergence` (`series: true`, descriptions from the About copy, flux colours), recolour `agentic-ai` to `mauve` and `technology-teams` to `sand`, and export `controlledIds`, `seriesIds`, `pillRowTopics`, `topicHref`, `otherSeries`. Makes T003 pass.
 - [ ] T008 Create `src/lib/content/topic-ids.ts` with `editDistance`, `nearMiss`, `topicLabel`, `orderTopics`, `mainTopic` (pure, no dependency). Makes T004 pass.
-- [ ] T009 Add `mauve`, `sand`, `dusk` entries and series-marker classes (semibold, 2px solid border in shade 700 light / 300 dark; forced-colours keeps the 2px outline in the system text colour) to `src/components/post/topic-styles.ts`. Makes T005 pass; record the computed contrast values in `specs/013-writing-series/research.md` (FR-016c).
+- [ ] T009 Add `mauve`, `sand`, `dusk` entries (same shade pattern as the existing entries) and series-marker classes (semibold, 2px solid border in shade 700 light / 300 dark; forced-colours keeps the 2px outline in the system text colour) to `src/components/post/topic-styles.ts`. Makes T005 pass; update the file's header comment, which points at the contrast test; record the computed contrast values in `specs/013-writing-series/research.md` (FR-016c).
 
 **Checkpoint**: topic list, tokens and helpers pass their unit tests.
 
@@ -51,14 +53,17 @@ Controlled topic list, colour tokens and pure helpers that every story reads.
 
 - [ ] T010 [P] [US2] Extend `tests/unit/content/post-schema.test.ts`: free-form ids accepted; `[drift, convergence]` rejected naming both ids and "one series" (P23); `[drift, drift]` rejected by the named-once rule, not the both-series rule; near-miss `convergance`, `drfit`, `agentic-a` rejected naming the intended id (P24); bad ids `Cloud Cost` and 41+ chars rejected with the id-rule message (P26); revised P6 (`agentic-a1` says `Did you mean "agentic-ai"?` and lists controlled ids in list order).
 - [ ] T011 [P] [US2] Extend `tests/unit/content/post-address.test.ts`: `drift` and `convergence` slugs rejected, message names the file, `/writing/drift/` (or convergence) and "reserved" (P25); `all` and `topics` still reserved.
-- [ ] T012 [P] [US2] Extend `tests/build/post-validation.test.ts` with fixture-build rows P23 to P26, revised P6 and P21 (removed topic id now builds as free-form), and the must-build cases: untagged post builds with a silent build (no warning output), free-form-only post builds, series plus others builds; assert drafts are validated too (FR-012a).
+- [ ] T012 [P] [US2] Extend `tests/build/post-validation.test.ts` with fixture-build rows P23 to P26, revised P6 and P21 (removed topic id now builds as free-form; this is the recorded contract change in `contracts/build-errors.md` and research R9, and the existing P21 test is rewritten, not deleted), and the must-build cases: untagged post builds with a silent build (no warning output), free-form-only post builds, series plus others builds; assert drafts are validated too (FR-012a).
+- [ ] T068 [P] [US2] Extend `tests/unit/content/sample-posts.test.ts` (it already reads the real posts' `topics`) with the FR-005 tagging: the two Convergence and two Drift posts by slug list the series id first and keep their existing topics; `sample-everything` names no series. Fails until T015.
+- [ ] T069 [P] [US2] Extend `tests/unit/site/docs-posts.test.ts` for the post guide `docs/posts.md`: it explains joining a series by adding `drift` or `convergence` to `topics`, free-form topics and their sentence-case label, the reserved slugs `drift` and `convergence`, and build errors P23 to P26; change the P21 row's phrase to the new free-form behaviour and the P6 row to the "Did you mean" message (the 008 phrase "topic that was removed" no longer describes a failure).
 
 ### Implementation
 
 - [ ] T013 [US2] Update `src/content/schemas/post.ts`: accept free-form ids, keep the id-format rules, and in `superRefine` fail on both series and on near-miss ids with the contract messages (uses `topic-ids.ts`). Makes T010 pass.
 - [ ] T014 [US2] Add the series ids to `RESERVED` in `src/lib/content/post-address.ts` and make `assertPostFiles` raise the P25 message. Makes T011 pass.
-- [ ] T015 [US2] Tag the four posts in `src/content/posts/*.mdx` with the series id first in `topics` (FR-005): Convergence for `the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change` and `starting-something-new`; Drift for `building-focus-pocus-what-i-learned-about-ai-coding-and-integration` and `self-contained-development-for-ghost-themes`. Leave `sample-everything` untouched. Update `tests/unit/content/sample-posts.test.ts` if it pins topics.
-- [ ] T016 [US2] Run T010 to T012 and the full Vitest suite; fix until green.
+- [ ] T015 [US2] Tag the four posts in `src/content/posts/*.mdx` with the series id first in `topics` (FR-005): Convergence for `the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change` and `starting-something-new`; Drift for `building-focus-pocus-what-i-learned-about-ai-coding-and-integration` and `self-contained-development-for-ghost-themes`. Leave `sample-everything` untouched. Makes T068 pass.
+- [ ] T070 [US2] Update `docs/posts.md` (Topics section, front-matter table and build-error table) for series tags, free-form topics, the reserved series slugs, P23 to P26 and the revised P6 and P21 rows. Makes T069 pass.
+- [ ] T016 [US2] Run T010 to T012, T068, T069 and the full Vitest suite; fix until green.
 
 **Checkpoint**: content model complete; US2 independently testable.
 
@@ -72,21 +77,21 @@ Controlled topic list, colour tokens and pure helpers that every story reads.
 
 ### Tests (write first, see fail)
 
-- [ ] T017 [P] [US4] Component test `tests/component/post/SeriesBanner.test.ts`: one `h1` with the series name, "Series" eyebrow is a `p`, description, links "Read {other series}" and "All writing", no new landmark, short-address hrefs.
+- [ ] T017 [P] [US4] New component test `tests/component/post/SeriesBanner.test.ts`: one `h1` with the series name, "Series" eyebrow is a `p`, description, links "Read {other series}" and "All writing", no new landmark, short-address hrefs.
 - [ ] T018 [P] [US4] Extend `tests/component/post/TopicBanner.test.ts`: a free-form topic renders a plain `dusk` banner with sentence-case label and the same heading structure as a controlled topic.
-- [ ] T019 [P] [US4] Unit test `tests/unit/site/redirects.test.ts` for `public/_redirects`: 301 rules for `/writing/topics/drift/`, `/writing/topics/drift/:page/`, and the same for convergence; targets use the short address; no rule targets a redirected address (no loop); rule count under Cloudflare limits.
-- [ ] T020 [P] [US4] Build test in `tests/build/blog-listing.test.ts`: `/writing/drift/` and `/writing/convergence/` exist and paginate at `/writing/{id}/2/`; `/writing/topics/drift/` and `/writing/topics/convergence/` are NOT built; a free-form topic page is built from the fixture posts; a free-form id used only by a draft gets no page in production; an empty series page shows the existing empty-listing message.
-- [ ] T021 [P] [US4] E2E tests in `tests/e2e/blog.spec.ts`: a series page lists only posts tagged with that series and shows the banner links; the other-series link and "All writing" link work. E2E tests in `tests/e2e/blog-fixtures.spec.ts` (fixture site): a free-form topic page renders a plain banner and listing; an empty series page shows the empty message.
-- [ ] T022 [US4] E2E redirect test in `tests/e2e/blog.spec.ts` using `request.get(url, { maxRedirects: 0 })`: `/writing/topics/drift/`, `/writing/topics/drift/2/` and `/writing/topics/convergence/` return status 301 with a `Location` header on the short address. The default `e2e` project runs against `wrangler dev` (see `playwright.config.ts`), which serves `dist/` and `public/_redirects`, so this test runs locally. Do not place it in the fixture-site project: that one uses `astro preview`, which ignores `_redirects`, so a redirect assertion there could only pass on the Worker. If the E2E server is ever changed to `astro preview`, mark this test `[PREVIEW-CHECK]` and cover it with T019 locally.
+- [ ] T019 [P] [US4] Unit test `tests/unit/site/redirects.test.ts` (new; model on `tests/unit/site/headers.test.ts`) for `public/_redirects`: 301 rules covering every request row of the Redirects table in `contracts/writing-pages.md` (`/writing/topics/drift` with and without the trailing slash, and `/writing/topics/drift/{n}/` to `/writing/drift/{n}/`), and the same for convergence; targets use the short address; no rule targets a redirected address (no loop); rule count under Cloudflare limits.
+- [ ] T020 [P] [US4] Build test in `tests/build/blog-listing.test.ts`: `/writing/drift/` and `/writing/convergence/` exist and paginate at `/writing/{id}/2/`; `/writing/topics/drift/` and `/writing/topics/convergence/` are NOT built; a free-form topic page is built from the fixture posts; a free-form id used only by a draft gets no page in production; an empty series page shows the existing empty-listing message. Update the existing sitemap expectations in `tests/build/indexing.test.ts` and `tests/build/production-drafts.test.ts`, which build `/writing/topics/{id}/` for every controlled topic, to use `topicHref` (series at `/writing/{id}/`, no `/writing/topics/drift/` or `/writing/topics/convergence/` in the sitemap).
+- [ ] T021 [P] [US4] E2E tests in `tests/e2e/blog.spec.ts`: a series page lists only posts tagged with that series and every visible post with that tag (SC-003), and shows the banner links; the other-series link and "All writing" link work. E2E tests in `tests/e2e/blog-fixtures.spec.ts` (fixture site): a free-form topic page renders a plain banner and listing; an empty series page shows the empty message.
+- [ ] T022 [US4] E2E redirect test in `tests/e2e/blog.spec.ts` using `request.get(url, { maxRedirects: 0 })`: `/writing/topics/drift`, `/writing/topics/drift/`, `/writing/topics/drift/2/` and `/writing/topics/convergence/` return status 301 with a `Location` header on the short address; following the redirect for a page beyond the series' last page (`/writing/topics/drift/99/`) ends on the not-found page with status 404 (FR-008a). The default `e2e` project runs against `wrangler dev` (see `playwright.config.ts`), which serves `dist/` and `public/_redirects`, so this test runs locally. Do not place it in the fixture-site project: that one uses `astro preview`, which ignores `_redirects`, so a redirect assertion there could only pass on the Worker. If the E2E server is ever changed to `astro preview`, mark this test `[PREVIEW-CHECK]` and cover it with T019 locally.
 - [ ] T023 [P] [US4] Accessibility tests in `tests/e2e/blog.a11y.spec.ts`: axe on `/writing/drift/`, `/writing/convergence/`, a controlled topic page; in `tests/e2e/blog-fixture.a11y.spec.ts`: axe on a free-form topic page and an empty series page; heading order has no skipped level.
 
 ### Implementation
 
 - [ ] T024 [P] [US4] Create `src/components/post/SeriesBanner.astro` (FR-009, FR-016a, FR-016b). Makes T017 pass.
 - [ ] T025 [P] [US4] Update `src/components/post/TopicBanner.astro` to render a plain `dusk` banner for free-form ids. Makes T018 pass.
-- [ ] T026 [P] [US4] Create `public/_redirects` with the two static and two splat 301 rules (research R3, contracts/writing-pages.md). Makes T019 pass.
+- [ ] T026 [P] [US4] Create `public/_redirects` with static and splat 301 rules for both series that cover every row of the contract's Redirects table (research R3, contracts/writing-pages.md); no other rule. Makes T019 pass.
 - [ ] T027 [US4] Create `src/components/post/SeriesPage.astro` (shared body: banner, listing, pagination) and routes `src/pages/writing/drift/[...page].astro` and `src/pages/writing/convergence/[...page].astro` using `paginate()` at `blog.pageSize`.
-- [ ] T028 [US4] Update `src/pages/writing/topics/[topic]/[...page].astro`: exclude series ids, add free-form ids from visible posts, plain banner for them. Makes T020 pass.
+- [ ] T028 [US4] Update `src/pages/writing/topics/[topic]/[...page].astro`: exclude series ids, add free-form ids from visible posts, plain banner for them. Makes T020 pass (with T027).
 - [ ] T029 [US4] Run `pnpm run build`, then T017 to T023 against the built site (`wrangler dev` serves it); fix until green.
 
 ---
@@ -99,13 +104,13 @@ Controlled topic list, colour tokens and pure helpers that every story reads.
 
 ### Tests (write first, see fail)
 
-- [ ] T030 [P] [US3] Component test `tests/component/post/SeriesMarker.test.ts`: text "Series: Drift", link text is the full visible text with no `aria-label`, href is the short address, semibold and 2px outline classes, 24x24 target.
+- [ ] T030 [P] [US3] New component test `tests/component/post/SeriesMarker.test.ts`: text "Series: Drift", link text is the full visible text with no `aria-label`, href is the short address, semibold and 2px outline classes, hover adds an underline and changes no colour, no transition or animation class, 24x24 target (FR-016c, FR-016d).
 - [ ] T031 [P] [US3] Extend `tests/component/post/TopicPill.test.ts`: series ids delegate to `SeriesMarker`; a free-form id renders a neutral `dusk` pill with sentence-case label linking `/writing/topics/{id}/`; controlled pills use mauve and sand.
 - [ ] T032 [P] [US3] Extend `tests/component/post/TopicPillRow.test.ts`: the row contains only non-series controlled topics, never free-form.
-- [ ] T033 [P] [US3] Extend `tests/component/post/PostCard.test.ts`, `LeadStory.test.ts`, `PostMeta.test.ts` and `RelatedPosts.test.ts`: series marker first then other topics in written order; a text-only card's border takes the series colour, otherwise the first topic; an untagged card is unchanged; the title stays the card's only link to the post; related posts show markers.
+- [ ] T033 [P] [US3] Extend `tests/component/post/PostCard.test.ts`, `LeadStory.test.ts`, `PostMeta.test.ts` and `RelatedPosts.test.ts`: series marker first then other topics in written order; a text-only card's border takes the series colour, otherwise the first controlled topic, and keeps the neutral `dusk` border when every topic is free-form; an untagged card is unchanged; the title stays the card's only link to the post; related posts show markers.
 - [ ] T034 [P] [US3] E2E tests in `tests/e2e/blog.spec.ts` for SC-002: marker present on the landing, `/writing/all/`, a topic page, a series page, the post header, home "Recent writing" and related posts for tagged posts, absent for untagged; the post-header marker links to the series page.
-- [ ] T035 [P] [US3] Accessibility tests in `tests/e2e/blog.a11y.spec.ts`: axe on a post page, `/writing/all/` and the landing with markers present, light and dark themes; reflow with no horizontal scroll at 320 px and 200% zoom.
-- [ ] T036 [P] [US3] Forced-colours E2E test in new `tests/e2e/blog-forced-colors.spec.ts` (model on `tests/e2e/projects-forced-colors.spec.ts`): with forced colours emulated the marker keeps a 2px outline and its "Series:" text and an ordinary pill keeps a 1px border (FR-016d).
+- [ ] T035 [P] [US3] Accessibility tests in `tests/e2e/blog.a11y.spec.ts`: axe on a post page, `/writing/all/` and the landing with markers present, light and dark themes; reflow with no horizontal scroll at 320 px and 200% zoom on the landing, a series page, a post page and the home page (FR-016d).
+- [ ] T036 [P] [US3] Forced-colours E2E test in a new file `tests/e2e/blog-forced-colors.spec.ts` (no blog forced-colours spec exists yet; model it on the existing `tests/e2e/projects-forced-colors.spec.ts`; the name matches only the `e2e` Playwright project, which `tests/unit/site/config-files.test.ts` requires): with forced colours emulated the marker keeps a 2px outline and its "Series:" text and an ordinary pill keeps a 1px border (FR-016d).
 
 ### Implementation
 
@@ -124,7 +129,7 @@ Controlled topic list, colour tokens and pure helpers that every story reads.
 
 ### Tests (write first, see fail)
 
-- [ ] T041 [P] [US1] Component test `tests/component/post/SeriesIntro.test.ts`: `section` labelled by its `h2` "Drift & Convergence", an `h3` per series, links "Read Convergence" and "Read Drift" to the short addresses, copy follows `VOICE.md` (no hype words).
+- [ ] T041 [P] [US1] New component test `tests/component/post/SeriesIntro.test.ts`: `section` labelled by its `h2` "Drift & Convergence", an `h3` per series, links "Read Convergence" and "Read Drift" to the short addresses, copy follows `VOICE.md` (no hype words).
 - [ ] T042 [P] [US1] Unit test in `tests/unit/content/blog-config.test.ts`: the landing description names Drift & Convergence and both series (FR-007), and the series intro copy exists in `src/config/blog.ts`.
 - [ ] T043 [P] [US1] E2E tests in `tests/e2e/blog.spec.ts`: the lead sits between the `h1` "Writing" and the lead story `h2`; each link reaches its series page; lead story, pill row (without series), Featured, Latest and "All posts" still render; both series links are visible on a desktop viewport without scrolling past the lead story (SC-001). In `tests/e2e/blog-fixtures.spec.ts`: an empty series is still linked.
 - [ ] T044 [P] [US1] E2E test in `tests/e2e/no-js.spec.ts`: with JavaScript disabled the landing lead and both links are present and usable.
@@ -146,15 +151,15 @@ Controlled topic list, colour tokens and pure helpers that every story reads.
 
 ### Tests (write first, see fail)
 
-- [ ] T049 [P] [US5] Unit test in `tests/unit/content/blog-config.test.ts`: feed title is "Drift & Convergence", description names both series; feed items carry no category or series element.
+- [ ] T049 [P] [US5] Unit test in `tests/unit/content/blog-config.test.ts`: feed title is "Drift & Convergence" (already true; keep it pinned), description names both series. In `tests/unit/site/feed.test.ts`: feed items for tagged and untagged posts carry no category or series element (FR-013).
 - [ ] T050 [P] [US5] Component test `tests/component/sections/RecentWriting.test.ts`: heading unchanged, one paragraph (not a heading) under it naming Drift & Convergence with links "Convergence" and "Drift" to the short addresses; cards show markers.
-- [ ] T051 [P] [US5] Add an assertion (in `tests/unit/content/launch-content.test.ts` or a new test beside it) that `src/content/pages/about.mdx` links to `/writing/drift/` and `/writing/convergence/`, no longer carries two long series paragraphs, and keeps the closing invitation; fix any existing test that pins the old About text.
+- [ ] T051 [P] [US5] Add an assertion in the existing `describe("About")` block of `tests/unit/content/launch-content.test.ts` that `src/content/pages/about.mdx` links to `/writing/drift/` and `/writing/convergence/`, no longer carries two long series paragraphs, and keeps the closing invitation; fix any existing test that pins the old About text.
 - [ ] T052 [P] [US5] E2E tests: feed title and description (`tests/e2e/seo.spec.ts`); home line and links, About links (`tests/e2e/pages.spec.ts`); `tests/e2e/site-links.spec.ts` covers the new addresses.
 - [ ] T053 [P] [US5] Accessibility test in `tests/e2e/a11y.spec.ts`: axe on home and About; link text names the series (FR-016b).
 
 ### Implementation
 
-- [ ] T054 [P] [US5] Update feed title and description in `src/config/blog.ts` (and the RSS route only if it hard-codes copy). Makes T049 pass.
+- [ ] T054 [P] [US5] Update `feedDescription` in `src/config/blog.ts` (`feedTitle` is already "Drift & Convergence"; `src/lib/feed.ts` reads both, so no route change). Makes T049 pass.
 - [ ] T055 [P] [US5] Add the one-line paragraph with series links to `src/components/sections/RecentWriting.astro`. Makes T050 pass.
 - [ ] T056 [P] [US5] Rewrite "About the writing" in `src/content/pages/about.mdx` per FR-015: short introduction, links to both series pages, closing invitation kept. If PR #25 changes the section first, apply FR-015 to the landed text. Makes T051 pass.
 - [ ] T057 [US5] Run T049 to T053; fix until green.
@@ -192,8 +197,8 @@ Run once, after the appearance is final and Phases 3 to 7 pass (FR-018a).
 
 ## Parallel examples
 
-- Phase 2 tests: T003, T004, T005 together.
-- Phase 3 tests: T010, T011, T012 together.
+- Phase 2 tests: T003 and T004 together; T005 after T003 (same file).
+- Phase 3 tests: T010, T011, T012, T068, T069 together.
 - Phase 5 component tests: T030 to T033 together; implementation T037 to T039 follows in order.
 - Phase 7: T049 to T053 together, then T054 to T056 together.
 

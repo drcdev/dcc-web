@@ -100,7 +100,7 @@ MCP (research.md). All site copy follows `VOICE.md`.
 
 | Layer | Tool | What it covers here |
 |---|---|---|
-| Unit / schema | Vitest | `topics.ts` (6 entries, series flag, unique colours incl. mauve/sand, contrast of pill/banner/marker/dusk pill in both themes); `topic-ids.ts` (edit distance, near-miss, sentence-case label, ordering series first, main topic); `postSchema` (free-form accepted, both series rejected, near-miss rejected naming the intended id, bad free-form id rejected); `assertPostFiles` (reserved `drift`/`convergence`); `public/_redirects` rules; `blog.ts` feed copy. |
+| Unit / schema | Vitest | `topics.ts` (6 entries, series flag, unique colours incl. mauve/sand, contrast of pill/banner/marker/dusk pill in both themes, in the existing `topics.test.ts` contrast block); FR-005 tagging of the real posts; `docs/posts.md` covers series, free-form topics and the new build errors; `topic-ids.ts` (edit distance, near-miss, sentence-case label, ordering series first, main topic); `postSchema` (free-form accepted, both series rejected, near-miss rejected naming the intended id, bad free-form id rejected); `assertPostFiles` (reserved `drift`/`convergence`); `public/_redirects` rules; `blog.ts` feed copy. |
 | Build (fixture site) | Vitest + `buildFixtureSite` | New rows P23 to P26 of contracts/build-errors.md; P6 and P21 revised; a free-form-only post builds; series and free-form pages exist, `/writing/topics/drift/` is not built. |
 | Component | Vitest + Astro Container API | `SeriesMarker`, `TopicPill` (free-form neutral pill), `SeriesBanner`, `SeriesIntro`, `TopicPillRow` (no series), `PostCard`/`LeadStory` (series first, series border), `PostMeta`, `RecentWriting` line and links, plain free-form `TopicBanner`. |
 | E2E | Playwright (`e2e`) | Landing → each series page; series page lists only its posts and links to the other series and to `/writing/`; 301 + `Location` for `/writing/topics/drift/`, `/writing/topics/drift/2/`, `/writing/topics/convergence/`; marker on every page type (SC-002); home and About links; feed title/description; no-JS readability. |
@@ -130,14 +130,14 @@ specs/013-writing-series/
 ```text
 src/
 ├── config/
-│   ├── topics.ts              # + drift, convergence (series: true); agentic-ai → mauve; technology-teams → sand; helpers
+│   ├── topics.ts              # + drift, convergence (series: true); agentic-ai → mauve; technology-teams → sand; controlledIds, seriesIds, pillRowTopics, topicHref, otherSeries
 │   └── blog.ts                # feedDescription, series intro copy
 ├── content/
 │   ├── schemas/post.ts        # free-form ids; both-series and near-miss guards
 │   ├── posts/*.mdx            # FR-005 tagging (4 posts)
 │   └── pages/about.mdx        # "About the writing" shortened, links to series pages
 ├── lib/content/
-│   ├── topic-ids.ts           # NEW: editDistance, nearMiss, topicLabel, orderTopics, mainTopic, topicHref
+│   ├── topic-ids.ts           # NEW: editDistance, nearMiss, topicLabel, orderTopics, mainTopic
 │   └── post-address.ts        # RESERVED gains series ids
 ├── components/post/
 │   ├── topic-styles.ts        # + sand, mauve, dusk entries; series marker classes
@@ -157,13 +157,18 @@ src/
     └── topics/[topic]/[...page].astro      # excludes series; adds free-form ids
 public/_redirects                           # NEW: 301s from topic addresses of the series
 
+docs/posts.md                               # post guide: series tags, free-form topics, new build errors, P6/P21
+
 tests/
-├── unit/content/{topics,topic-ids,post-schema,post-address,blog-config}.test.ts
+├── unit/content/{topics,topic-ids,post-schema,post-address,blog-config,sample-posts,launch-content}.test.ts
+│                                           # topics.test.ts also holds the token contrast checks
 ├── unit/site/redirects.test.ts             # NEW
-├── build/{post-validation,blog-listing}.test.ts + tests/fixtures/posts/{broken,valid}/…
-├── component/post/{SeriesMarker,SeriesBanner,SeriesIntro,TopicPill,TopicPillRow,PostCard,LeadStory,PostMeta}.test.ts
+├── unit/site/{feed,docs-posts}.test.ts
+├── build/{post-validation,blog-listing,indexing,production-drafts}.test.ts + tests/fixtures/posts/{broken,valid}/…
+├── component/post/{SeriesMarker,SeriesBanner,SeriesIntro,TopicPill,TopicPillRow,TopicBanner,PostCard,LeadStory,PostMeta,RelatedPosts}.test.ts
 ├── component/sections/RecentWriting.test.ts
-└── e2e/{blog,blog-fixtures,blog.a11y,no-js,site-links,visual}.spec.ts
+└── e2e/{blog,blog-fixtures,blog.a11y,blog-fixture.a11y,a11y,no-js,pages,seo,site-links,visual}.spec.ts
+    + e2e/blog-forced-colors.spec.ts        # NEW
 ```
 
 **Structure Decision**: Single Astro project; the feature extends the spec 008 blog modules in

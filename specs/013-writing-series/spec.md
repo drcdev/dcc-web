@@ -239,7 +239,8 @@ The feed's title and description name the two series. The home page's "Recent wr
 - This is a major change under Constitution Principle III: the series marker and series banner change the design system and visual identity, and free-form topics change the content model. Auto-merge stays off, and the tasks MUST include a `[PREVIEW-CHECK]` task for Don to review the preview deployment before merge.
 - The landing framing copy is a shortened form of the About page's existing series descriptions. Don can revise wording in review.
 - A post still needs at least one topic; a series tag or a free-form topic counts.
-- The feed keeps its address; only its title and description text change.
+- The feed keeps its address and title; only its description text changes.
+- Spec 008's build-error row P21 (a topic removed from the controlled list fails the build) no longer holds: under FR-011 such an id builds as a free-form topic. This is a deliberate contract change, recorded in this feature's `contracts/build-errors.md` and research notes; the near-miss rule still fails it when it is within two letters of a remaining controlled id. The post guide `docs/posts.md` is updated to match.
 - This branch stacks on `012-content-cleanup`; if that PR changes the About section before merging, FR-015 applies to whatever text lands.
 
 ## Out of Scope
