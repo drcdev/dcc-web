@@ -130,7 +130,7 @@ test("the projects index and every story answer 200", async ({ request }) => {
   }
 });
 
-test("the sitemap lists the eight pages, the listing pages, the real posts, the sample post and the projects, and neither the not-found page nor the cookie policy", async ({ request }) => {
+test("the sitemap lists the eight pages, the listing pages, the series pages, the real posts, the sample post and the projects, and neither the not-found page nor the cookie policy", async ({ request }) => {
   const index = await (await request.get("/sitemap-index.xml")).text();
   const first = /<loc>[^<]*(\/sitemap-[^<]+\.xml)<\/loc>/.exec(index)?.[1];
   const sitemap = await (await request.get(first!)).text();
@@ -151,6 +151,8 @@ test("the sitemap lists the eight pages, the listing pages, the real posts, the 
     "/writing/",
     "/writing/all/",
     "/writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/",
+    "/writing/convergence/",
+    "/writing/drift/",
     "/writing/sample-everything/",
     "/writing/self-contained-development-for-ghost-themes/",
     "/writing/starting-something-new/",
