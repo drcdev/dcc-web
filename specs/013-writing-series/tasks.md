@@ -129,17 +129,17 @@ Controlled topic list, colour tokens and pure helpers that every story reads.
 
 ### Tests (write first, see fail)
 
-- [ ] T041 [P] [US1] New component test `tests/component/post/SeriesIntro.test.ts`: `section` labelled by its `h2` "Drift & Convergence", an `h3` per series, links "Read Convergence" and "Read Drift" to the short addresses, copy follows `VOICE.md` (no hype words).
-- [ ] T042 [P] [US1] Unit test in `tests/unit/content/blog-config.test.ts`: the landing description names Drift & Convergence and both series (FR-007), and the series intro copy exists in `src/config/blog.ts`.
-- [ ] T043 [P] [US1] E2E tests in `tests/e2e/blog.spec.ts`: the lead sits between the `h1` "Writing" and the lead story `h2`; each link reaches its series page; lead story, pill row (without series), Featured, Latest and "All posts" still render; both series links are visible on a desktop viewport without scrolling past the lead story (SC-001). In `tests/e2e/blog-fixtures.spec.ts`: an empty series is still linked.
-- [ ] T044 [P] [US1] E2E test in `tests/e2e/no-js.spec.ts`: with JavaScript disabled the landing lead and both links are present and usable.
-- [ ] T045 [P] [US1] Accessibility test in `tests/e2e/blog.a11y.spec.ts`: axe on `/writing/` with the lead; heading levels not skipped.
+- [X] T041 [P] [US1] New component test `tests/component/post/SeriesIntro.test.ts`: `section` labelled by its `h2` "Drift & Convergence", an `h3` per series, links "Read Convergence" and "Read Drift" to the short addresses, copy follows `VOICE.md` (no hype words).
+- [X] T042 [P] [US1] Unit test in `tests/unit/content/blog-config.test.ts`: the landing description names Drift & Convergence and both series (FR-007), and the series intro copy exists in `src/config/blog.ts`.
+- [X] T043 [P] [US1] E2E tests in `tests/e2e/blog.spec.ts`: the lead sits between the `h1` "Writing" and the lead story `h2`; each link reaches its series page; lead story, pill row (without series), Featured, Latest and "All posts" still render; both series links are visible on a desktop viewport without scrolling past the lead story (SC-001). In `tests/e2e/blog-fixtures.spec.ts`: an empty series is still linked.
+- [X] T044 [P] [US1] E2E test in `tests/e2e/no-js.spec.ts`: with JavaScript disabled the landing lead and both links are present and usable.
+- [X] T045 [P] [US1] Accessibility test in `tests/e2e/blog.a11y.spec.ts`: axe on `/writing/` with the lead; heading levels not skipped.
 
 ### Implementation
 
-- [ ] T046 [US1] Add the series intro copy and landing description to `src/config/blog.ts` (plain language, `VOICE.md`).
-- [ ] T047 [US1] Create `src/components/post/SeriesIntro.astro` and insert it in `src/pages/writing/index.astro` between the page header and the lead story; keep series out of the pill row. Makes T041 to T043 pass.
-- [ ] T048 [US1] Run T041 to T045; fix until green.
+- [X] T046 [US1] Add the series intro copy and landing description to `src/config/blog.ts` (plain language, `VOICE.md`).
+- [X] T047 [US1] Create `src/components/post/SeriesIntro.astro` and insert it in `src/pages/writing/index.astro` between the page header and the lead story; keep series out of the pill row. Makes T041 to T043 pass.
+- [X] T048 [US1] Run T041 to T045; fix until green.
 
 ---
 

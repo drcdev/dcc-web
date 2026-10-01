@@ -136,6 +136,16 @@ test.describe("free-form topic page on the fixture site", () => {
   });
 });
 
+test.describe("series lead on the fixture site", () => {
+  // No fixture post joins a series, so both series are empty here and the lead still links them.
+  test("links both series even though neither has a post", async ({ page }) => {
+    await page.goto(LANDING);
+    const lead = page.locator("[data-series-intro]");
+    await expect(lead.getByRole("link", { name: "Read Convergence" })).toHaveAttribute("href", "/writing/convergence/");
+    await expect(lead.getByRole("link", { name: "Read Drift" })).toHaveAttribute("href", "/writing/drift/");
+  });
+});
+
 test.describe("home page recent writing on the fixture site", () => {
   test("lists the 3 newest posts, including the long title and the text-only card", async ({ page }) => {
     await page.goto("/");

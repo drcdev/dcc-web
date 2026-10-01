@@ -5,6 +5,7 @@
 // are covered without editing this file. axe itself runs in a11y.spec.ts, which
 // loops the same rows.
 import { test, expect, type Page } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
 import { TEMPLATES } from "./templates.ts";
 
 const THEMES = ["dark", "light"] as const;
@@ -339,3 +340,16 @@ for (const path of REFLOW_PAGES) {
     await noSidewaysScroll(page);
   });
 }
+
+test("the writing landing lead keeps heading levels in order and has no axe violations", async ({ page }) => {
+  await page.goto("/writing/");
+  const levels = await page
+    .locator("main h1, main h2, main h3")
+    .evaluateAll((els) => els.map((el) => Number(el.tagName.slice(1))));
+  expect(levels[0]).toBe(1);
+  for (let i = 1; i < levels.length; i++) expect(levels[i]! - levels[i - 1]!).toBeLessThanOrEqual(1);
+  const intro = page.locator("[data-series-intro]");
+  await expect(intro.getByRole("heading", { level: 3 })).toHaveCount(2);
+  const results = await new AxeBuilder({ page }).include("[data-series-intro]").analyze();
+  expect(results.violations).toEqual([]);
+});

@@ -1,7 +1,7 @@
 ---
 // The blog landing page, `/writing/` (spec 008 US2; contracts/blog-pages.md
 // "Landing"; Direction A of docs/design/blog.md; FR-006 to FR-010, FR-047, FR-048).
-// In order: eyebrow, `h1` and feed link; the lead story (the newest visible post);
+// In order: eyebrow, `h1` and feed link; the series lead (spec 013 US1); the lead story (the newest visible post);
 // the topic pill row; Featured (up to three, never the lead story); Latest (up to
 // six not already shown) with a link to all posts. Sections with nothing to show
 // are left out. With no visible posts a plain message replaces them and the pill
@@ -11,6 +11,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import CardGrid from "../../components/post/CardGrid.astro";
 import FeaturedGrid from "../../components/post/FeaturedGrid.astro";
 import LeadStory from "../../components/post/LeadStory.astro";
+import SeriesIntro from "../../components/post/SeriesIntro.astro";
 import TopicPillRow from "../../components/post/TopicPillRow.astro";
 import { blog } from "../../config/blog.ts";
 import { selectLanding } from "../../lib/content/post-order.ts";
@@ -22,7 +23,7 @@ const { lead, featured, latest } = selectLanding(await getPostSummaries());
 const feedHref = new URL("/writing/rss.xml", Astro.site).href;
 ---
 
-<BaseLayout title="Writing" description={blog.feedDescription} navigation={navigation}>
+<BaseLayout title="Writing" description={blog.landingDescription} navigation={navigation}>
   <link slot="head" rel="alternate" type="application/rss+xml" title={blog.feedTitle} href={feedHref} />
   <div class="mx-auto max-w-screen-lg">
     <header class="mb-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
@@ -38,6 +39,8 @@ const feedHref = new URL("/writing/rss.xml", Astro.site).href;
         >Subscribe (RSS)</a
       >
     </header>
+
+    <SeriesIntro />
 
     {lead && <LeadStory post={lead} />}
 

@@ -188,6 +188,7 @@ test.describe("landing page", () => {
       return [
         at("main h1"),
         at('main a[href$="rss.xml"]'),
+        at("[data-series-intro]"),
         at("[data-lead-story]"),
         at('main nav[aria-label="Topics"]'),
         heading("Featured"),
@@ -198,6 +199,45 @@ test.describe("landing page", () => {
     });
     expect(order.every((n) => n >= 0)).toBe(true);
     expect(order).toEqual([...order].sort((a, b) => a - b));
+  });
+
+  test("opens with a framing lead between the h1 and the lead story, with a link into each series", async ({
+    page,
+  }) => {
+    await page.goto(LANDING);
+    const intro = page.locator("main [data-series-intro]");
+    await expect(intro).toHaveCount(1);
+    await expect(intro.getByRole("heading", { level: 2, name: "Drift & Convergence" })).toBeVisible();
+    await expect(intro.getByRole("heading", { level: 3 })).toHaveText(["Convergence", "Drift"]);
+    const headings = await page.locator("main h1, main h2").evaluateAll((els) => els.map((el) => el.textContent?.trim()));
+    expect(headings.slice(0, 3)).toEqual(["Writing", "Drift & Convergence", LEAD_TITLE]);
+    // The pill row does not offer the series.
+    const pills = page.getByRole("navigation", { name: "Topics" });
+    await expect(pills.getByRole("link", { name: /^(Drift|Convergence)$/ })).toHaveCount(0);
+  });
+
+  test("reaches each series page from the lead", async ({ page }) => {
+    for (const [name, path] of [
+      ["Convergence", "/writing/convergence/"],
+      ["Drift", "/writing/drift/"],
+    ] as const) {
+      await page.goto(LANDING);
+      await page.locator("[data-series-intro]").getByRole("link", { name: `Read ${name}` }).click();
+      await expect(page).toHaveURL(new RegExp(`${path}$`));
+      await expect(page.locator("main h1")).toHaveText(name);
+    }
+  });
+
+  test("shows both series links on a desktop viewport without scrolling past the lead story", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(LANDING);
+    const leadTop = await page.locator("[data-lead-story]").evaluate((el) => el.getBoundingClientRect().top);
+    for (const name of ["Read Convergence", "Read Drift"]) {
+      const box = await page.locator("[data-series-intro]").getByRole("link", { name }).boundingBox();
+      expect(box).not.toBeNull();
+      expect(box!.y + box!.height).toBeLessThanOrEqual(800);
+      expect(box!.y + box!.height).toBeLessThanOrEqual(leadTop + 1);
+    }
   });
 
   test("shows no post twice: the lead story is not in Featured or Latest, and no Featured post is in Latest", async ({
