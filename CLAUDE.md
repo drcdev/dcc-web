@@ -75,7 +75,9 @@ Keep the four pipelines aligned. A change to any of these goes into all four tog
 - the pre-PR major-change / merge-mode pause (one `AskUserQuestion` before `gh pr create`);
 - the `[PREVIEW-CHECK]` task marker;
 - the visual-baselines step;
-- the "PR author account" block (a unit test checks it is identical in all four).
+- the "PR author account" block (a unit test checks it is identical in all four);
+- the "Inner loop and gate" paragraph and the `verify:quick` sentence in the implement or fix
+  phase (a unit test checks both are identical in all four).
 
 ## Spec Kit extensions
 

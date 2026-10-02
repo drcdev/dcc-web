@@ -219,7 +219,10 @@ phase:
    green. For a test move, add the destination assertion **before**
    removing the source one, and run both files. Run the targeted vitest
    files or Playwright projects for the changed paths, under the perl
-   alarm. Follow the tool's documented practice the plan cites and prefer
+   alarm. Then run `pnpm run verify:quick` under the perl alarm as the
+   inner-loop check; only the full `pnpm run verify`, which the
+   orchestrator runs before the PR, counts as the gate. Follow the
+   tool's documented practice the plan cites and prefer
    first-party features over custom code. If the change alters what a
    snapshotted page looks like, stop — that breaks triage — and say so. If
    the plan is wrong about this item, stop and say so plainly rather than
@@ -251,11 +254,16 @@ After the review subagent returns:
 
 ## Verify
 
-There is no scoped or tiered E2E in this project: `pnpm run verify` runs
-the whole gate (secret lint, lint, type check, unit and component tests,
-build, and every Playwright project — E2E, accessibility, performance
-budget and visual). A `src/` change simply means the whole suite runs
-again. A chore that changes the gate itself still proves itself with the
+**Inner loop and gate.** `pnpm run verify:quick` runs secret lint, lint, type check, the unit
+and component tests, the worker tests and the real `astro build`. It is the inner-loop check
+for implement and fix subagents. It leaves out the build-fixture tests and every Playwright
+project, so it never counts as the gate. The full `pnpm run verify` runs the whole gate
+(secret lint, lint, type check, unit, component, build-fixture and worker tests, build, and
+every Playwright project — E2E, accessibility, sections, performance budget and visual), and
+it is the only check that counts before a PR. There is no scoped or tiered local gate: a
+`src/` change means the whole suite runs again. CI runs the same gate as parallel jobs and
+narrows it only by the changed paths, as `docs/testing.md` describes.
+A chore that changes the gate itself still proves itself with the
 gate as it is **after** the change.
 
 1. Run `pnpm run verify` yourself, in the **foreground with an explicit

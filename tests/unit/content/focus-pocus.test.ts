@@ -1,11 +1,12 @@
 // US9 and FR-082: Focus Pocus is the first real project, a plain project file
 // with its draft chapters and placeholders marked, and no site code names it.
+// It moved from the build project because it reads files and builds nothing (issue #26 phase 4).
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const root = fileURLToPath(new URL("../../", import.meta.url));
+const root = fileURLToPath(new URL("../../../", import.meta.url));
 const file = resolve(root, "src/content/projects/focus-pocus.mdx");
 const source = () => readFileSync(file, "utf-8");
 const stageIds = ["problem", "constraints", "options", "built", "outcome", "lessons", "invitation"];

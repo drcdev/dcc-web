@@ -154,7 +154,7 @@ phase:
 | 2   | clarify   | `speckit-clarify`   | opus   | **One round only, two steps — see below.**                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | 3   | plan      | `speckit-plan`      | opus   | The Constitution Check is not optional here; address every principle, briefly. Every Astro choice cites its docs page via the Astro Docs MCP (Principle IV). Confirm in the plan that no Principle III criterion fires — if one does, say so plainly so the orchestrator can promote to `/deliver`. If the plan rules out a plausible alternative (say, a CSS-only fix vs. a component change), record the decision and the rejected option in plan.md. Skip `research.md`, `data-model.md` and `contracts/` unless the change genuinely needs them. |
 | 4   | tasks     | `speckit-tasks`     | sonnet | Tests are **mandatory**, not optional, and ordered before the implementation they cover: unit/component tests for the changed code, an E2E or accessibility case where the change is visible in the browser. If the change alters what a snapshotted page looks like, include a task to update the macOS and Linux visual baselines (`pnpm run test:visual:update`, then `pnpm run test:visual:update:linux`, which needs Docker Desktop) after the implementation. Tasks a subagent cannot verify locally (needs the preview deployment or Don's eyes) get the suffix `[PREVIEW-CHECK]`. |
-| 5   | implement | `speckit-implement` | sonnet | Execute the whole task list unless it has more than one `## Phase` heading, in which case take one phase per subagent as `/deliver` does. Work test-first: write the tests, run them and see them fail, then implement until they pass. Never mark a task done on a red suite. Follow the Astro docs and prefer first-party features over custom code. Leave `[PREVIEW-CHECK]` tasks unchecked and list them in your summary. Commit via `speckit-git-commit` (event `after_implement`). |
+| 5   | implement | `speckit-implement` | sonnet | Execute the whole task list unless it has more than one `## Phase` heading, in which case take one phase per subagent as `/deliver` does. Work test-first: write the tests, run them and see them fail, then implement until they pass. Then run `pnpm run verify:quick` under the perl alarm as the inner-loop check; only the full `pnpm run verify`, which the orchestrator runs before the PR, counts as the gate. Never mark a task done on a red suite. Follow the Astro docs and prefer first-party features over custom code. Leave `[PREVIEW-CHECK]` tasks unchecked and list them in your summary. Commit via `speckit-git-commit` (event `after_implement`). |
 
 ### Phase 2: clarify (the one mid-pipeline user pause)
 
@@ -186,11 +186,15 @@ checklists by design; note it in the final report and continue.
 
 ## Verify
 
-There is no scoped or tiered E2E in this project: `pnpm run verify` runs
-the whole gate (secret lint, lint, type check, unit and component tests,
-build, and every Playwright project — E2E, accessibility, performance
-budget and visual). A `src/` change simply means the whole suite runs
-again.
+**Inner loop and gate.** `pnpm run verify:quick` runs secret lint, lint, type check, the unit
+and component tests, the worker tests and the real `astro build`. It is the inner-loop check
+for implement and fix subagents. It leaves out the build-fixture tests and every Playwright
+project, so it never counts as the gate. The full `pnpm run verify` runs the whole gate
+(secret lint, lint, type check, unit, component, build-fixture and worker tests, build, and
+every Playwright project — E2E, accessibility, sections, performance budget and visual), and
+it is the only check that counts before a PR. There is no scoped or tiered local gate: a
+`src/` change means the whole suite runs again. CI runs the same gate as parallel jobs and
+narrows it only by the changed paths, as `docs/testing.md` describes.
 
 1. Run `pnpm run verify` yourself, in the **foreground with an explicit
    time limit** (10 minutes, via the `perl` alarm above — never background

@@ -5,7 +5,9 @@ layer of the gate is for, where a new test goes, where every build-error row of 
 contracts is asserted today, and how many Astro builds the `build` Vitest project may run.
 It came out of [issue #26](https://github.com/drcdev/dcc-web/issues/26) (phases 1 and 2); the
 numbers are the budget that the build project is held to. CI runs the same scripts split
-across parallel jobs (see "CI jobs"); phase 3 of #26 added that.
+across parallel jobs (see "CI jobs"); phase 3 of #26 added that. Phase 4 added a content-only
+tier for changes that touch nothing but content files, and `pnpm run verify:quick` for the
+inner loop (see "Change tiers" and "Inner loop: `verify:quick`").
 
 ## Layers
 
@@ -17,7 +19,7 @@ across parallel jobs (see "CI jobs"); phase 3 of #26 added that.
 | Build, `sync` | `pnpm run test:build`, Vitest `build` project, `buildFixtureSite(..., { mode: "sync" })` | That Astro runs a `src/content.config.ts` call site (collection schema, glob loader `generateId`) on real files and names the file in the error. About a second per run. | One broken file per run | Keep. Preferred over `build` wherever no HTML is read. |
 | Build, `build` | `pnpm run test:build`, Vitest `build` project, `buildFixtureSite(...)` (default mode) | What the real build does: route generation, `getStaticPaths()` checks, render-time component checks, Astro's own errors (body image import), draft exclusion per environment, CSP and indexing output, code highlighting, cross-page output. Tens of seconds per run. | One build per fixture set, many assertions read from it | Thin to what only a build can show. |
 | Worker integration | `pnpm run test:worker`, `vitest-pool-workers` | The contact API against local D1 | Per endpoint | Keep. |
-| Real `astro build` | `tests/build/indexing.test.ts`, which runs `astro build` on the repository's own content in the main-branch and preview environments, plus `pnpm run build`, which runs in the `e2e` job in CI and in the local `verify` script | That the real site builds and that its sitemap, robots and headers match the environment | Two environments | Keep. |
+| Real `astro build` | `tests/build/indexing.test.ts`, which runs `astro build` on the repository's own content in the main-branch and preview environments, plus `pnpm run build`, which runs in the `e2e` job in CI and in the local `verify` script. `indexing.test.ts` also runs on content-only changes, through `pnpm run test:build:content`. | That the real site builds and that its sitemap, robots and headers match the environment | Two environments | Keep. |
 | E2E | Playwright `e2e` and sibling projects, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Journeys in a real browser: navigation, theme, menu, contact submission, not-found, behaviour without JavaScript | Journeys, plus the template matrix | Keep journeys; review matrices (issue #26, D8). |
 | Accessibility | Playwright `a11y` projects (axe), `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | WCAG 2.2 AA per template, both widths, both themes | Full template matrix | Keep (Principle X). |
 | Visual | Playwright `visual` project, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Pixel baselines of the shell, not-found page and sections fixture | Per platform | Keep. The only guard on design regressions. |
@@ -31,9 +33,9 @@ dependencies, and the `verify` job is the one check that branch protection requi
 
 | Job | Scripts | When it runs |
 |---|---|---|
-| `changes` | `node scripts/ci/changed-paths.ts` | Always. Decides whether the change is skip-safe. |
+| `changes` | `node scripts/ci/changed-paths.ts` | Always. Decides the tier: skip-safe, content-only or full, and writes the outputs `full` and `content_only`. |
 | `static` | `pnpm run lint:secrets`, then `pnpm run lint`, `pnpm run typecheck`, `pnpm run test:unit`, `pnpm run test:worker` | Always. On a skip-safe change only secretlint runs. |
-| `build-tests` | `pnpm run test:build` | Unless the change is skip-safe. |
+| `build-tests` | `pnpm run test:build`; on a content-only change `pnpm run test:build:content` instead | Unless the change is skip-safe. |
 | `e2e` | `pnpm run build`, `pnpm run test:e2e:parallel`, `pnpm run test:budget`, and on pull requests `node scripts/site-check/preview.ts` | Unless the change is skip-safe. |
 | `verify` | `node scripts/ci/verify-needs.ts` | Always, after the others finish. |
 
@@ -44,7 +46,54 @@ dependencies, and the `verify` job is the one check that branch protection requi
   own, after the parallel projects, at one worker (`test:budget` passes `--workers=1`),
   because it measures timing and would be skewed by sibling tests competing for the CPU.
 - The `verify` job passes when every job succeeded, or when `build-tests` and `e2e` were
-  skipped on a skip-safe change. A failed, cancelled or unexpectedly skipped job fails it.
+  skipped on a skip-safe change. A failed, cancelled or unexpectedly skipped job fails it. On a
+  content-only change `build-tests` runs and must succeed; only the skip-safe tier skips jobs.
+
+### Change tiers
+
+`scripts/ci/changed-paths.ts` sorts each pull request into one of three tiers and writes two
+outputs, `full` and `content_only`. A push to `main` and a missing or empty diff are full; otherwise the first matching row wins.
+
+| Tier | What counts | What runs | What is skipped |
+|---|---|---|---|
+| Skip-safe | Every changed file is on the skip-safe allowlist: `CLAUDE.md`, and `.md`, `.yml`, `.yaml`, `.json`, `.sh`, `.py` and `.ps1` files under `.claude/`, `.specify/` and `specs/`, except the files a test or check reads (the four pipeline `SKILL.md` files, `setup-walkthrough`'s `SKILL.md` and the constitution). `full=false`. | secretlint only (`static`) and `verify` | `build-tests` and `e2e`, and the lint, type-check and unit steps of `static` |
+| Content-only | Every changed file is either skip-safe or an `.mdx` file or an image or video file under `src/content/pages`, `src/content/posts` or `src/content/projects`. `.md` files, schemas, `src/content.config.ts` and `public/` are not content-only. `full=true`, `content_only=true`. | The whole gate, except that `build-tests` runs `pnpm run test:build:content` (`indexing.test.ts` and `local-site.test.ts`, the two build files that read real content by name) | The other build files (listed below) |
+| Full | Everything else, every push to `main`, an empty diff, and any failure to compute the diff. `full=true`, `content_only=false`. | Every job and the whole `test:build` project | Nothing |
+
+The rule fails closed: a path that is not positively recognised runs the full gate, and an
+unset `content_only` runs the full `test:build`.
+
+**Coverage on a content-only change.** Each skipped file, and where its guarantee lives:
+
+| Skipped on content-only | Why the guarantee holds |
+|---|---|
+| `drafts.test.ts`, `blog-listing.test.ts`, `page-validation.test.ts`, `post-validation.test.ts`, `project-validation.test.ts` | They test the schema, loader, route and render machinery with fixture files. That machinery lives in `src/content/schemas/**`, `src/content.config.ts`, `src/lib/**`, components and pages. None of those is content-only, so a change to them runs the full gate. That the real content still builds is proven by `pnpm run build` in `e2e`, and the unit tests that read the real content files still run in `test:unit`. |
+| `fixture-site.test.ts` | Harness tests (`tests/build/fixture-site.ts`, not content-only). Its sync of the real posts is covered by the real `pnpm run build` in `e2e`. |
+
+`focus-pocus.test.ts` moved from `tests/build/` to `tests/unit/content/` in phase 4. It never
+ran a build, so it runs in `test:unit` on every non-skip-safe change.
+
+The build tests that read real content by name are the ones listed in `test:build:content`.
+`tests/unit/ci/content-tier.test.ts` fails when `test:build:content` names a missing file, or
+when a build test outside that list names a real content entry. A dynamic read, such as
+`realPostNames` in `fixture-site.test.ts`, escapes the guard; it is harness-only. A real-content
+build assertion belongs in a file listed in `test:build:content`.
+
+Residual risk: fixture builds copy the real `src/`, so the real pages and projects are present
+in them. A content edit whose text collides with a fixture assertion's string would show only
+on the push run on `main`, which always runs the full gate. That is a test-isolation flaw to
+fix, not a gap in the gate. One known case: `drafts.test.ts` reads the home page built from the
+real `src/content/pages/index.mdx` (its `<RecentWriting />` assertions, "mentions no draft ... home
+page" and "leaves the Recent writing section off the home page"), so a literal collision in that
+file would show only on the `main` push run.
+
+## Inner loop: `verify:quick`
+
+`pnpm run verify:quick` is the check to run after a change while working. It runs
+`lint:secrets`, `lint`, `typecheck`, `test:unit`, `test:worker` and `build`, and takes about
+33 s locally. It leaves out the `build` Vitest project and every Playwright project (E2E,
+accessibility, visual and budget). The implement and fix subagents of the pipelines run it
+after a change. It never replaces the gate: only the full `pnpm run verify` counts before a PR.
 
 ## Where a test goes
 
@@ -258,7 +307,10 @@ Counted on 2026-10-01 after phase 2:
 | `post-validation.test.ts` | 3 | 4 |
 | `project-validation.test.ts` | 2 | 3 |
 | `fixture-site.test.ts` | 0 | 2 |
-| `focus-pocus.test.ts` | 0 | 0 |
 | **Total** | **20** | **12** |
 
 Before phase 2 the project ran 144 runs: 132 full builds and 12 syncs.
+
+On a content-only change the project runs only `indexing.test.ts` (2) and `local-site.test.ts`
+(5): 7 builds and 0 syncs. `focus-pocus.test.ts` (0 and 0) moved to `tests/unit/content/` in
+phase 4.

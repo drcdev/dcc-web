@@ -20,6 +20,7 @@ jobs:
       contents: read
     outputs:
       full: ${{ steps.changes.outputs.full }}
+      content_only: ${{ steps.changes.outputs.content_only }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -100,7 +101,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run the build tests
+        if: needs.changes.outputs.content_only != 'true'
         run: pnpm run test:build
+
+      - name: Run the build tests that read the real content
+        if: needs.changes.outputs.content_only == 'true'
+        run: pnpm run test:build:content
 
   e2e:
     name: e2e
