@@ -24,6 +24,31 @@ async function open(page: Page, path: string, width: number, height: number, the
   }, theme);
   await page.goto(path);
   await expect(page.locator("html")).toHaveClass(theme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
+  await settleImages(page);
+}
+
+// Astro renders Markdown images with loading="lazy", so an image below the
+// first viewport only starts loading when a full-page screenshot enlarges the
+// viewport. Under CPU load (4 Playwright workers in CI) that load can outlast
+// the screenshot's stability window, and the image is captured as its
+// container's background. Make every image eager, then wait for each one to
+// load and decode, so a screenshot is never taken before its images paint.
+async function settleImages(page: Page) {
+  await page.evaluate(async () => {
+    const images = Array.from(document.images);
+    for (const img of images) img.loading = "eager";
+    await Promise.all(
+      images.map(async (img) => {
+        if (!img.complete) {
+          await new Promise<void>((done) => {
+            img.addEventListener("load", () => done(), { once: true });
+            img.addEventListener("error", () => done(), { once: true });
+          });
+        }
+        await img.decode().catch(() => undefined);
+      }),
+    );
+  });
 }
 
 for (const size of WIDTHS) {
