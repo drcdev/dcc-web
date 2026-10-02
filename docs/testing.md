@@ -52,11 +52,11 @@ dependencies, and the `verify` job is the one check that branch protection requi
 ### Change tiers
 
 `scripts/ci/changed-paths.ts` sorts each pull request into one of three tiers and writes two
-outputs, `full` and `content_only`. The checks are in this order, and the first match wins.
+outputs, `full` and `content_only`. A push to `main` and a missing or empty diff are full; otherwise the first matching row wins.
 
 | Tier | What counts | What runs | What is skipped |
 |---|---|---|---|
-| Skip-safe | Every changed file is on the skip-safe allowlist: `CLAUDE.md`, and `.md`, `.yml`, `.yaml`, `.json`, `.sh`, `.py` and `.ps1` files under `.claude/`, `.specify/` and `specs/`, except the files a test or check reads (the five pipeline `SKILL.md` files and the constitution). `full=false`. | secretlint only (`static`) and `verify` | `build-tests` and `e2e`, and the lint, type-check and unit steps of `static` |
+| Skip-safe | Every changed file is on the skip-safe allowlist: `CLAUDE.md`, and `.md`, `.yml`, `.yaml`, `.json`, `.sh`, `.py` and `.ps1` files under `.claude/`, `.specify/` and `specs/`, except the files a test or check reads (the four pipeline `SKILL.md` files, `setup-walkthrough`'s `SKILL.md` and the constitution). `full=false`. | secretlint only (`static`) and `verify` | `build-tests` and `e2e`, and the lint, type-check and unit steps of `static` |
 | Content-only | Every changed file is either skip-safe or an `.mdx` file or an image or video file under `src/content/pages`, `src/content/posts` or `src/content/projects`. `.md` files, schemas, `src/content.config.ts` and `public/` are not content-only. `full=true`, `content_only=true`. | The whole gate, except that `build-tests` runs `pnpm run test:build:content` (`indexing.test.ts` and `local-site.test.ts`, the two build files that read real content by name) | The other build files (listed below) |
 | Full | Everything else, every push to `main`, an empty diff, and any failure to compute the diff. `full=true`, `content_only=false`. | Every job and the whole `test:build` project | Nothing |
 
@@ -82,7 +82,10 @@ build assertion belongs in a file listed in `test:build:content`.
 Residual risk: fixture builds copy the real `src/`, so the real pages and projects are present
 in them. A content edit whose text collides with a fixture assertion's string would show only
 on the push run on `main`, which always runs the full gate. That is a test-isolation flaw to
-fix, not a gap in the gate.
+fix, not a gap in the gate. One known case: `drafts.test.ts` reads the home page built from the
+real `src/content/pages/index.mdx` (its `<RecentWriting />` assertions, "mentions no draft ... home
+page" and "leaves the Recent writing section off the home page"), so a literal collision in that
+file would show only on the `main` push run.
 
 ## Inner loop: `verify:quick`
 

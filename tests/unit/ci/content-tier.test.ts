@@ -6,7 +6,9 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf-8"));
 const script: string = pkg.scripts["test:build:content"] ?? "";
-const listed = script.split(/\s+/).filter((a) => a.startsWith("tests/build/"));
+const words = script.split(/\s+/);
+const positional = words.slice(words.indexOf("build") + 1).filter((a) => !a.startsWith("-"));
+const listed = positional.filter((a) => a.startsWith("tests/build/"));
 
 function walk(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
@@ -33,6 +35,9 @@ function contentSlugs(): string[] {
 describe("content-only tier guard", () => {
   it("test:build:content names existing build test files", () => {
     expect(listed.length).toBeGreaterThan(0);
+    for (const arg of positional) {
+      expect(arg.startsWith("tests/build/"), arg).toBe(true);
+    }
     for (const file of listed) {
       expect(file.endsWith(".test.ts"), file).toBe(true);
       expect(existsSync(join(root, file)), file).toBe(true);
@@ -40,9 +45,9 @@ describe("content-only tier guard", () => {
   });
 
   const slugs = contentSlugs();
-  const others = readdirSync(join(root, "tests/build")).filter(
-    (f) => f.endsWith(".test.ts") && !listed.includes(`tests/build/${f}`),
-  );
+  const others = readdirSync(join(root, "tests/build"), { recursive: true })
+    .map((f) => String(f).split("\\").join("/"))
+    .filter((f) => f.endsWith(".test.ts") && !listed.includes(`tests/build/${f}`));
 
   it("finds real content entries and sees them in a listed file", () => {
     expect(slugs.length).toBeGreaterThan(0);

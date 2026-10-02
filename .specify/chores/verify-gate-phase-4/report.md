@@ -120,3 +120,13 @@ The local after-measurement is 33 s for `verify:quick` against 5 min 17 s for th
 - From #30: make local `test:e2e` mirror CI.
 - From #30: move the preview crawl to its own job.
 - Out of scope for this run: phase 5 of #26 (**D7**, governance cross-reference) and **D8** (review the e2e and a11y matrices). The PR body says `Part of #26`.
+
+## Fix round
+
+- L1 fixed: `tests/unit/content/focus-pocus.test.ts` (space after the comma).
+- L2 fixed: `tests/unit/ci/content-tier.test.ts` (guard lists `tests/build` recursively).
+- L3 fixed: `tests/unit/ci/content-tier.test.ts` (every positional argument after `--project build` must start with `tests/build/`).
+- L4 fixed: `docs/testing.md` (four pipeline `SKILL.md` files plus `setup-walkthrough`).
+- L5 fixed: `docs/testing.md` (tier-order sentence now states the full-first cases).
+- L6 fixed: `docs/testing.md` (residual-risk paragraph names the `drafts.test.ts` home-page reads).
+- L7 fixed: `.claude/skills/chore/SKILL.md` and `.claude/skills/deliver/SKILL.md` (line breaks only).

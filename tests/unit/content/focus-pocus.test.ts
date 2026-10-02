@@ -6,7 +6,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const root = fileURLToPath(new URL("../../../",import.meta.url));
+const root = fileURLToPath(new URL("../../../", import.meta.url));
 const file = resolve(root, "src/content/projects/focus-pocus.mdx");
 const source = () => readFileSync(file, "utf-8");
 const stageIds = ["problem", "constraints", "options", "built", "outcome", "lessons", "invitation"];

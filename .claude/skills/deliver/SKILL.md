@@ -182,7 +182,10 @@ re-run the phase 4b grep gate before implement.
    were fully resolved in phase 4b; if the skill reports incomplete
    checklist items anyway, proceed but flag it in your summary. Work
    test-first: write the tests for a task, run them and see them fail, then
-   implement until they pass. Then run `pnpm run verify:quick` under the perl alarm as the inner-loop check; only the full `pnpm run verify`, which the orchestrator runs before the PR, counts as the gate. Never mark a task done on a red suite. Follow
+   implement until they pass. Then run `pnpm run verify:quick` under the
+   perl alarm as the inner-loop check; only the full `pnpm run verify`,
+   which the orchestrator runs before the PR, counts as the gate. Never
+   mark a task done on a red suite. Follow
    Astro's documented practices and prefer first-party features over custom
    code. Stay inside the slice's scope; note anything out of scope in
    spec.md as follow-up. Commit via speckit-git-commit (event

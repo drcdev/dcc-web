@@ -219,7 +219,10 @@ phase:
    green. For a test move, add the destination assertion **before**
    removing the source one, and run both files. Run the targeted vitest
    files or Playwright projects for the changed paths, under the perl
-   alarm. Then run `pnpm run verify:quick` under the perl alarm as the inner-loop check; only the full `pnpm run verify`, which the orchestrator runs before the PR, counts as the gate. Follow the tool's documented practice the plan cites and prefer
+   alarm. Then run `pnpm run verify:quick` under the perl alarm as the
+   inner-loop check; only the full `pnpm run verify`, which the
+   orchestrator runs before the PR, counts as the gate. Follow the
+   tool's documented practice the plan cites and prefer
    first-party features over custom code. If the change alters what a
    snapshotted page looks like, stop — that breaks triage — and say so. If
    the plan is wrong about this item, stop and say so plainly rather than
