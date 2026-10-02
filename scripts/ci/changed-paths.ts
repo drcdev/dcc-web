@@ -2,9 +2,12 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
 
 /**
- * Decides whether a pull request can skip the heavy part of the verify gate.
- * A path is skip-safe only when no check reads it. Anything not positively
- * recognised runs the full gate (fail closed).
+ * Decides which tier of the verify gate a pull request runs. There are three:
+ * skip-safe only (secretlint only), content-only (the full gate, but the build
+ * tests that read real content by name instead of the whole build project) and
+ * full. A path is skip-safe only when no check reads it, and content-only only
+ * when it is an `.mdx` file or an image under a content collection. Anything
+ * not positively recognised runs the full gate (fail closed).
  */
 
 export const SKIP_SAFE_FILES: readonly string[] = ["CLAUDE.md"];
@@ -36,6 +39,16 @@ export function isSkipSafe(path: string): boolean {
   return SKIP_SAFE_EXTENSIONS.some((ext) => path.endsWith(ext));
 }
 
+export const CONTENT_FILE =
+  /^src\/content\/(pages|posts|projects)\/(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+\.mdx$/;
+export const CONTENT_IMAGE =
+  /^src\/content\/(pages|posts|projects)\/images\/(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+\.(avif|gif|jpe?g|mp4|png|svg|webm|webp)$/;
+
+export function isContentOnly(path: string): boolean {
+  if (path.includes("..") || path.startsWith("/") || path.includes("\\")) return false;
+  return CONTENT_FILE.test(path) || CONTENT_IMAGE.test(path);
+}
+
 export interface ChangeInput {
   /** GITHUB_EVENT_NAME */
   event: string;
@@ -46,32 +59,46 @@ export interface ChangeInput {
 export interface ChangeDecision {
   /** true means run the full verify gate */
   full: boolean;
+  /** true means run only the build tests that read real content (implies full) */
+  contentOnly: boolean;
   reason: string;
 }
 
 export function decide(input: ChangeInput): ChangeDecision {
   if (input.event !== "pull_request") {
-    return { full: true, reason: `event "${input.event}" always runs the full gate` };
+    return { full: true, contentOnly: false, reason: `event "${input.event}" always runs the full gate` };
   }
   if (input.files === null) {
-    return { full: true, reason: "could not compute the changed files, running the full gate" };
+    return { full: true, contentOnly: false, reason: "could not compute the changed files, running the full gate" };
   }
   const files = input.files.map((f) => f.trim()).filter((f) => f.length > 0);
   if (files.length === 0) {
-    return { full: true, reason: "empty diff, running the full gate" };
+    return { full: true, contentOnly: false, reason: "empty diff, running the full gate" };
   }
-  const unsafe = files.find((f) => !isSkipSafe(f));
-  if (unsafe !== undefined) {
-    return { full: true, reason: `${unsafe} is not skip-safe, running the full gate` };
+  if (files.every((f) => isSkipSafe(f))) {
+    return {
+      full: false,
+      contentOnly: false,
+      reason: `all ${files.length} changed file(s) are skip-safe, running secretlint only`,
+    };
+  }
+  const other = files.find((f) => !isSkipSafe(f) && !isContentOnly(f));
+  if (other === undefined) {
+    return {
+      full: true,
+      contentOnly: true,
+      reason: `content-only change (${files.length} file(s)), running the build tests that read real content only`,
+    };
   }
   return {
-    full: false,
-    reason: `all ${files.length} changed file(s) are skip-safe, running secretlint only`,
+    full: true,
+    contentOnly: false,
+    reason: `${other} is neither skip-safe nor content-only, running the full gate`,
   };
 }
 
 export function toOutput(decision: ChangeDecision): string {
-  return `full=${decision.full ? "true" : "false"}\n`;
+  return `full=${decision.full ? "true" : "false"}\ncontent_only=${decision.contentOnly ? "true" : "false"}\n`;
 }
 
 function main(): void {
@@ -89,7 +116,7 @@ function main(): void {
     }
   }
   const decision = decide({ event, files });
-  console.log(`full=${decision.full}: ${decision.reason}`);
+  console.log(`full=${decision.full} content_only=${decision.contentOnly}: ${decision.reason}`);
   if (files) console.log(`Changed files:\n${files.filter(Boolean).join("\n")}`);
   const outputFile = process.env.GITHUB_OUTPUT;
   if (outputFile) appendFileSync(outputFile, toOutput(decision));
@@ -100,7 +127,8 @@ if (isMainModule) {
   try {
     main();
   } catch (error) {
-    // Never fail the job over a detection problem: an unset output runs the full gate.
+    // Never fail the job over a detection problem: an unset output runs every check, and the
+    // verify aggregate fails closed on the missing full output.
     console.error(error instanceof Error ? error.message : String(error));
   }
 }

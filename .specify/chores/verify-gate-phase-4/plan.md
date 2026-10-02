@@ -243,7 +243,7 @@ truth for "build tests that read real content". The guard in W3 reads its file l
 
 ### W1 Content-only tier in `scripts/ci/changed-paths.ts`
 
-- [ ] W1 done
+- [x] W1 done
 
 **Files:** `scripts/ci/changed-paths.ts`, `tests/unit/ci/changed-paths.test.ts`.
 

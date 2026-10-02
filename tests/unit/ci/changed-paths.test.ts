@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { decide, isSkipSafe, toOutput } from "../../../scripts/ci/changed-paths.ts";
+import { decide, isContentOnly, isSkipSafe, toOutput } from "../../../scripts/ci/changed-paths.ts";
+import type { ChangeInput } from "../../../scripts/ci/changed-paths.ts";
 
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 
@@ -60,21 +61,95 @@ describe("isSkipSafe()", () => {
   });
 });
 
+const CONTENT_TRUE = [
+  "src/content/pages/about.mdx",
+  "src/content/pages/legal/index.mdx",
+  "src/content/posts/starting-something-new.mdx",
+  "src/content/projects/focus-pocus.mdx",
+  "src/content/pages/images/about-feature.webp",
+  "src/content/posts/images/wayfinder-hero.jpg",
+  "src/content/posts/images/focus-pocus-hero.png",
+  "src/content/projects/images/focus-pocus/architecture.svg",
+  "src/content/projects/images/clip.webm",
+];
+
+const CONTENT_FALSE = [
+  "src/content/schemas/post.ts",
+  "src/content.config.ts",
+  "src/content/posts/x.md",
+  "src/content/pages/about.ts",
+  "src/content/pages/images/x.ts",
+  "src/content/pages/images/notes.txt",
+  "src/content/other/x.mdx",
+  "src/content/x.mdx",
+  "src/content/../pages/x.mdx",
+  "/src/content/pages/a.mdx",
+  "src\\content\\pages\\a.mdx",
+  "src/content/pages/a b.mdx",
+  "public/og-default.png",
+  "src/pages/index.astro",
+  "tests/build/indexing.test.ts",
+  "CLAUDE.md",
+];
+
+describe("isContentOnly()", () => {
+  it.each(CONTENT_TRUE)("treats %s as content-only", (p) => {
+    expect(isContentOnly(p)).toBe(true);
+  });
+  it.each(CONTENT_FALSE)("treats %s as not content-only", (p) => {
+    expect(isContentOnly(p)).toBe(false);
+  });
+});
+
 describe("decide()", () => {
   it("skips when every changed file is skip-safe on a pull_request", () => {
     const d = decide({ event: "pull_request", files: ["CLAUDE.md", ".claude/skills/other/SKILL.md"] });
     expect(d.full).toBe(false);
+    expect(d.contentOnly).toBe(false);
   });
   it("runs everything and names the first unsafe file", () => {
     const d = decide({ event: "pull_request", files: ["CLAUDE.md", "src/pages/index.astro"] });
     expect(d.full).toBe(true);
+    expect(d.contentOnly).toBe(false);
     expect(d.reason).toContain("src/pages/index.astro");
   });
+  it("picks the content-only tier for a single content file", () => {
+    const d = decide({ event: "pull_request", files: ["src/content/posts/starting-something-new.mdx"] });
+    expect(d.full).toBe(true);
+    expect(d.contentOnly).toBe(true);
+  });
+  it("picks the content-only tier for content plus skip-safe files", () => {
+    const d = decide({
+      event: "pull_request",
+      files: [
+        "src/content/posts/starting-something-new.mdx",
+        "src/content/posts/images/wayfinder-hero.jpg",
+        "CLAUDE.md",
+        ".specify/chores/x/plan.md",
+      ],
+    });
+    expect(d.full).toBe(true);
+    expect(d.contentOnly).toBe(true);
+  });
+  it("runs the full tier when content changes with a schema", () => {
+    const d = decide({
+      event: "pull_request",
+      files: ["src/content/posts/starting-something-new.mdx", "src/content/schemas/post.ts"],
+    });
+    expect(d.full).toBe(true);
+    expect(d.contentOnly).toBe(false);
+    expect(d.reason).toContain("src/content/schemas/post.ts");
+  });
   it.each([[[]], [["", "  "]], [null]] as const)("fails closed for %j", (files) => {
-    expect(decide({ event: "pull_request", files: files as string[] | null }).full).toBe(true);
+    const d = decide({ event: "pull_request", files: files as string[] | null });
+    expect(d.full).toBe(true);
+    expect(d.contentOnly).toBe(false);
   });
   it.each(["push", "workflow_dispatch", "pull_request_target"])("always runs everything for %s", (event) => {
     expect(decide({ event, files: ["CLAUDE.md"] }).full).toBe(true);
+    const d = decide({ event, files: ["src/content/posts/starting-something-new.mdx"] });
+    expect(d.full).toBe(true);
+    expect(d.contentOnly).toBe(false);
   });
   it.each(["deliver", "tweak", "squash"])("runs everything when the %s skill changes", (name) => {
     expect(decide({ event: "pull_request", files: [`.claude/skills/${name}/SKILL.md`] }).full).toBe(true);
@@ -82,12 +157,27 @@ describe("decide()", () => {
   it("runs everything when a deny-listed file changes", () => {
     expect(decide({ event: "pull_request", files: [".specify/memory/constitution.md"] }).full).toBe(true);
   });
+  it("never reports contentOnly without full", () => {
+    const inputs: ChangeInput[] = [
+      { event: "pull_request", files: ["CLAUDE.md"] },
+      { event: "pull_request", files: ["src/content/pages/about.mdx"] },
+      { event: "pull_request", files: ["src/content/pages/about.mdx", "package.json"] },
+      { event: "pull_request", files: null },
+      { event: "pull_request", files: [] },
+      { event: "push", files: ["src/content/pages/about.mdx"] },
+    ];
+    for (const input of inputs) {
+      const d = decide(input);
+      expect(!d.contentOnly || d.full).toBe(true);
+    }
+  });
 });
 
 describe("toOutput()", () => {
-  it("renders the GITHUB_OUTPUT line", () => {
-    expect(toOutput({ full: true, reason: "" })).toBe("full=true\n");
-    expect(toOutput({ full: false, reason: "" })).toBe("full=false\n");
+  it("renders the GITHUB_OUTPUT lines", () => {
+    expect(toOutput({ full: true, contentOnly: false, reason: "" })).toBe("full=true\ncontent_only=false\n");
+    expect(toOutput({ full: false, contentOnly: false, reason: "" })).toBe("full=false\ncontent_only=false\n");
+    expect(toOutput({ full: true, contentOnly: true, reason: "" })).toBe("full=true\ncontent_only=true\n");
   });
 });
 
