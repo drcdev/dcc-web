@@ -376,7 +376,7 @@ literal (drift guard).
 
 ### W4 Wire the tier into `ci.yml` and its workflow tests
 
-- [ ] W4 done
+- [x] W4 done
 
 **Files:** `.github/workflows/ci.yml`, `tests/unit/ci/workflows.test.ts`.
 

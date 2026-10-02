@@ -140,12 +140,25 @@ describe(".github/workflows/ci.yml change detection and job topology", () => {
     expect(stepBlock(changes, "actions/checkout@")).toMatch(/fetch-depth:\s*2\b/);
   });
 
-  it("detects changes in changes, after setup-node, and exposes the full output", () => {
+  it("detects changes in changes, after setup-node, and exposes the full and content_only outputs", () => {
     const step = stepBlock(changes, "node scripts/ci/changed-paths.ts");
     expect(step).toMatch(/id:\s*changes/);
     expect(changes.indexOf("node scripts/ci/changed-paths.ts")).toBeGreaterThan(changes.indexOf("actions/setup-node@"));
     expect(changes).toMatch(/outputs:\s*\n\s+full:\s*\$\{\{\s*steps\.changes\.outputs\.full\s*\}\}/);
+    expect(changes).toMatch(/^\s+content_only:\s*\$\{\{\s*steps\.changes\.outputs\.content_only\s*\}\}\s*$/m);
     expect(changes).not.toContain("pnpm install");
+  });
+
+  it("runs exactly one build-test step in build-tests, chosen by content_only and failing closed to test:build", () => {
+    const buildTests = job(contents, "build-tests");
+    expect(stepBlock(buildTests, "run: pnpm run test:build\n")).toContain("if: needs.changes.outputs.content_only != 'true'");
+    expect(stepBlock(buildTests, "run: pnpm run test:build:content")).toContain(
+      "if: needs.changes.outputs.content_only == 'true'",
+    );
+    expect(runCount(contents, "pnpm run test:build:content")).toBe(1);
+    expect(count(contents, "needs.changes.outputs.content_only")).toBe(2);
+    expect(job(contents, "static")).not.toContain("content_only");
+    expect(job(contents, "e2e")).not.toContain("content_only");
   });
 
   it("makes static, build-tests and e2e need changes, so every installing job waits for it", () => {
