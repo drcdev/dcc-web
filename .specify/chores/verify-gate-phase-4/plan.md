@@ -289,7 +289,7 @@ practice.
 
 ### W2 Move `focus-pocus.test.ts` to the `unit` project
 
-- [ ] W2 done
+- [x] W2 done
 
 **Files:** `tests/build/focus-pocus.test.ts` (removed),
 `tests/unit/content/focus-pocus.test.ts` (new).
