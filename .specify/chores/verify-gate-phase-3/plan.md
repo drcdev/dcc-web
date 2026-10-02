@@ -238,7 +238,7 @@ verify (needs: changes, static, build-tests, e2e; if: always()) → node scripts
 
 ### W1 Aggregate decision: `scripts/ci/verify-needs.ts`
 
-- [ ] W1 done
+- [x] W1 done
 
 **Files:** `scripts/ci/verify-needs.ts` (new), `tests/unit/ci/verify-needs.test.ts` (new).
 
