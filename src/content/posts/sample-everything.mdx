@@ -14,7 +14,7 @@ featured: true
 draft: true
 ---
 
-This post exists only to check how the blog looks. Nothing in it is advice. It has one of each kind of content, so a page, a card and the reading time can be checked against real material.
+This post exists only to check how the blog looks. Nothing in it is advice. It has one of each kind of content, from the site's own image and code sections to every ordinary Markdown element, so a page, a card and the reading time can be checked against real material.
 
 ## A captioned image
 
@@ -70,8 +70,176 @@ curl --silent --show-error --fail --location --header "Accept: application/json"
 
 ## A wide table
 
+The cells hold inline formatting. Column alignment markers are left out on purpose: they render as inline styles, which the page's content security policy blocks.
+
 | Quarter | Region | Team | Budget | Spent | Left | Owner | Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Q1 | North | Data | 120 | 100 | 20 | Alex | On track | Nothing to report |
-| Q2 | South | Platform | 200 | 180 | 20 | Sam | On track | Waiting on a review |
-| Q3 | East | Integration | 150 | 160 | -10 | Jo | Over | Cost of a late change |
+| Q1 | North | Data | 120 | 100 | 20 | Alex | **On track** | Nothing to report |
+| Q2 | South | Platform | 200 | 180 | 20 | Sam | **On track** | Waiting on a *review* |
+| Q3 | East | Integration | 150 | 160 | -10 | Jo | ~~On track~~ **Over** | Cost of a late change, see `change-log.md` or [the notes](https://example.com/) |
+
+## Inline formatting
+
+This paragraph holds **bold text**, *italic text*, ***bold italic text***, ~~struck-through text~~ and `inline code`. The same emphasis written with underscores, __bold__ and _italic_, looks identical. A code span can hold backticks, like `` `this` ``, and a long one, like `const value = readSettings(entry).withEveryOptionTurnedOn(true, false, null)`, wraps or scrolls with the text.
+
+Links come in several forms: a [plain link](https://example.com/), a [link with a title](https://example.com/ "A title shown on hover"), a [link to another page on this site](/writing/), a [link to a heading on this page](#a-wide-table) and a bare address that becomes a link by itself, https://example.com/a/bare/address. A footnote reference sits at the end of this sentence.[^1]
+
+Smart punctuation turns "straight double quotes" and 'straight single quotes' into curly ones, two hyphens -- like these -- into an en dash, three hyphens --- like these --- into an em dash, and three dots... into an ellipsis. Characters that would otherwise be Markdown can be escaped: \*not italic\*, \_not italic\_, \# not a heading, \[not a link\] and 1\. not a list. Entities work too: &copy; 2026, 10&nbsp;km, caf&eacute;.
+
+Inline HTML covers what Markdown has no syntax for: H<sub>2</sub>O and E = mc<sup>2</sup>; the <abbr title="Content Security Policy">CSP</abbr> abbreviation; keyboard keys like <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>; <mark>highlighted text</mark>; <small>small print</small>; <ins>inserted text</ins> and <del>deleted text</del>; and <cite>a cited work</cite>.
+
+A hard line break ends this line with a backslash,\
+so the next sentence starts on a new line inside the same paragraph.\
+And one more line after that.
+
+A very long unbroken word, such as Pneumonoultramicroscopicsilicovolcanoconiosissupercalifragilisticexpialidocious_with_a_tail_on_the_end, wraps inside the column instead of pushing the page sideways.
+
+### A heading with `code`, *emphasis*, **bold** and a [link](https://example.com/)
+
+#### A long heading that has enough words in it to wrap onto a second line on a phone and probably on a desktop screen as well
+
+## Block quotes
+
+> A short quote of a single paragraph, with **bold**, *italic* and `code` inside it.
+
+> A longer quote of more than one paragraph. The first paragraph sets up the thought and runs long enough to wrap onto a second line in the column.
+>
+> The second paragraph finishes it, and the quote ends with an attribution line.
+>
+> &mdash; Someone Quotable, *The Book of Samples*
+
+> A quote with a nested quote inside it.
+>
+> > The inner quote sits one level deeper.
+> >
+> > > And a third level, for good measure.
+>
+> Back to the outer quote after the nested ones.
+
+> A quote that holds other blocks:
+>
+> - a list item
+> - another list item
+>
+> ```js
+> console.log("code inside a quote");
+> ```
+>
+> 1. and an ordered item
+> 2. with a second entry
+
+## Lists
+
+### An unordered list
+
+- A plain item
+- An item with **bold**, *italic*, `code` and a [link](https://example.com/)
+- An item that runs long enough to wrap onto a second line in the column, so the hanging indent of the bullet can be checked against the wrapped text
+- An item with nested items
+  - A nested item
+  - Another nested item
+    - A third level
+    - And a sibling at the third level
+      - A fourth level, which is as deep as any real post should go
+  - Back to the second level
+- The last top-level item
+
+### An ordered list
+
+1. The first step
+2. The second step, with **bold**, *italic*, `code` and a [link](https://example.com/)
+3. The third step, which runs long enough to wrap onto a second line in the column so the hanging indent of the number can be checked against the wrapped text
+4. A step with nested steps
+   1. A nested step
+   2. Another nested step
+      1. A third level
+      2. And a sibling at the third level
+   3. Back to the second level
+5. The last step
+
+### An ordered list that starts at ten
+
+10. Ten
+11. Eleven
+12. Twelve, where the two-digit numbers test the width of the counter column
+
+### A loose list with more than one paragraph in an item
+
+- The first item has two paragraphs.
+
+  This is the second paragraph of the first item.
+
+- The second item holds a code block.
+
+  ```sh
+  echo "code inside a list item"
+  ```
+
+- The third item holds a quote.
+
+  > A quote inside a list item.
+
+- The fourth item holds a nested unordered list and an ordered list.
+
+  - A nested item
+  - Another nested item
+
+  1. A nested ordered item
+  2. Another nested ordered item
+
+### Mixed nesting
+
+1. An ordered item with an unordered list inside it
+   - A nested bullet
+   - Another nested bullet
+     1. An ordered item inside the bullet
+     2. And another
+2. A second ordered item
+   - With one nested bullet
+
+## A definition list
+
+<dl>
+  <dt>Term</dt>
+  <dd>The definition of the term, long enough to wrap onto a second line so the indent of the definition can be checked against the term above it.</dd>
+
+  <dt>A second term</dt>
+  <dd>Its first definition.</dd>
+  <dd>Its second definition, because a term can have more than one.</dd>
+
+  <dt>A third term</dt>
+  <dt>A fourth term that shares the definition</dt>
+  <dd>The one definition shared by both terms.</dd>
+</dl>
+
+## A horizontal rule
+
+The paragraph above the rule.
+
+---
+
+The paragraph below the rule. A second rule, written with asterisks, follows this paragraph.
+
+***
+
+The paragraph below the second rule.
+
+## A plain image without a figure
+
+A Markdown image on its own, with no caption and no section component around it:
+
+![Two plain boxes joined by a line, shown without a caption](./images/sample-figure.png)
+
+The same image inside a link, so the whole picture is clickable:
+
+[![Two plain boxes joined by a line, linked to the writing index](./images/sample-figure.png)](/writing/)
+
+## Footnote references
+
+Footnotes are referenced in the text and gathered at the end of the post.[^2] A footnote can hold more than one paragraph, and the same footnote can be referenced twice.[^1]
+
+[^1]: The first footnote, a single short sentence.
+
+[^2]: The second footnote has more than one paragraph.
+
+    This is the second paragraph of the second footnote, with **bold**, *italic*, `code` and a [link](https://example.com/).
