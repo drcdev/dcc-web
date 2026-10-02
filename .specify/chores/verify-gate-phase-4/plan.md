@@ -486,7 +486,7 @@ Changes:
 
 ### W6 Pipeline wording: four skills, alignment test and CLAUDE.md list
 
-- [ ] W6 done
+- [x] W6 done
 
 **Files:**
 

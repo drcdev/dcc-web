@@ -114,7 +114,7 @@ phase:
 | --- | ------- | -------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | explore | — (no skill)         | sonnet | **Read-only.** Locate the code paths implicated by the report: grep error strings, symbols, component names, routes, test IDs; read the candidate files; run (don't write) any existing vitest or Playwright specs that exercise them. Return: candidate files/lines with one-line justifications, a root-cause hunch with confidence, and any reproduction evidence. Cap the final message at ~25 lines — it is pasted into the assess prompt. |
 | 2   | assess  | `speckit-bug-assess` | opus   | Pass the bug report (and source URL if any), `slug=<slug>`, and the exploration notes verbatim as leads to verify — trust the codebase over the notes where they disagree. Commit with event `after_bug_assess`. Return: verdict, severity, and any `[NEEDS CLARIFICATION]` items verbatim.                                                                                                                                                                                       |
-| 3   | fix     | `speckit-bug-fix`    | sonnet | Pass `slug=<slug>`. First add a failing test that reproduces the symptom (unit, component or E2E — whichever layer the bug lives in), see it fail, then apply the preferred remediation minimally until it passes. Run the targeted vitest files or Playwright specs for the changed paths. If the assessment turns out wrong, stop per the skill and say so plainly — that triggers the failure loop, not a stall. If the fix changes what a snapshotted page looks like, update the macOS visual baselines (`pnpm run test:visual:update`) and say so; the orchestrator regenerates the Linux ones in Verify. Commit with event `after_bug_fix`. Return: status, files changed, tests added, and whether any page's appearance changed. |
+| 3   | fix     | `speckit-bug-fix`    | sonnet | Pass `slug=<slug>`. First add a failing test that reproduces the symptom (unit, component or E2E — whichever layer the bug lives in), see it fail, then apply the preferred remediation minimally until it passes. Run the targeted vitest files or Playwright specs for the changed paths. Then run `pnpm run verify:quick` under the perl alarm as the inner-loop check; only the full `pnpm run verify`, which the orchestrator runs before the PR, counts as the gate. If the assessment turns out wrong, stop per the skill and say so plainly — that triggers the failure loop, not a stall. If the fix changes what a snapshotted page looks like, update the macOS visual baselines (`pnpm run test:visual:update`) and say so; the orchestrator regenerates the Linux ones in Verify. Commit with event `after_bug_fix`. Return: status, files changed, tests added, and whether any page's appearance changed. |
 | 4   | test    | `speckit-bug-test`   | sonnet | Pass `slug=<slug>`. Exercise the original reproduction, the new tests, and the regression suite for the changed modules. Commit with event `after_bug_test`. Return: result (verified / partial / failed) and any residual risks.                                                                                                                                                                                                                                                  |
 
 ### Verdict gate (after assess)
@@ -152,11 +152,15 @@ cannot resolve it.
 
 ## Verify
 
-There is no scoped or tiered E2E in this project: `pnpm run verify` runs
-the whole gate (secret lint, lint, type check, unit and component tests,
-build, and every Playwright project — E2E, accessibility, performance
-budget and visual). A `src/` change simply means the whole suite runs
-again.
+**Inner loop and gate.** `pnpm run verify:quick` runs secret lint, lint, type check, the unit
+and component tests, the worker tests and the real `astro build`. It is the inner-loop check
+for implement and fix subagents. It leaves out the build-fixture tests and every Playwright
+project, so it never counts as the gate. The full `pnpm run verify` runs the whole gate
+(secret lint, lint, type check, unit, component, build-fixture and worker tests, build, and
+every Playwright project — E2E, accessibility, sections, performance budget and visual), and
+it is the only check that counts before a PR. There is no scoped or tiered local gate: a
+`src/` change means the whole suite runs again. CI runs the same gate as parallel jobs and
+narrows it only by the changed paths, as `docs/testing.md` describes.
 
 1. Run `pnpm run verify` yourself, in the **foreground with an explicit
    time limit** (10 minutes, via the `perl` alarm above — never background

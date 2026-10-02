@@ -182,7 +182,7 @@ re-run the phase 4b grep gate before implement.
    were fully resolved in phase 4b; if the skill reports incomplete
    checklist items anyway, proceed but flag it in your summary. Work
    test-first: write the tests for a task, run them and see them fail, then
-   implement until they pass. Never mark a task done on a red suite. Follow
+   implement until they pass. Then run `pnpm run verify:quick` under the perl alarm as the inner-loop check; only the full `pnpm run verify`, which the orchestrator runs before the PR, counts as the gate. Never mark a task done on a red suite. Follow
    Astro's documented practices and prefer first-party features over custom
    code. Stay inside the slice's scope; note anything out of scope in
    spec.md as follow-up. Commit via speckit-git-commit (event
@@ -217,8 +217,16 @@ if the second implement pass still leaves gaps, stop and report them.
 - If a run hits the timeout, treat it as red: report it, do not retry in a
   loop.
 - E2E runs in a real browser (Playwright, per Principle I) both locally and
-  in CI. There are no device tiers; a `src/` change simply means the whole
-  suite runs again.
+  in CI. There are no device tiers.
+- **Inner loop and gate.** `pnpm run verify:quick` runs secret lint, lint, type check, the unit
+  and component tests, the worker tests and the real `astro build`. It is the inner-loop check
+  for implement and fix subagents. It leaves out the build-fixture tests and every Playwright
+  project, so it never counts as the gate. The full `pnpm run verify` runs the whole gate
+  (secret lint, lint, type check, unit, component, build-fixture and worker tests, build, and
+  every Playwright project — E2E, accessibility, sections, performance budget and visual), and
+  it is the only check that counts before a PR. There is no scoped or tiered local gate: a
+  `src/` change means the whole suite runs again. CI runs the same gate as parallel jobs and
+  narrows it only by the changed paths, as `docs/testing.md` describes.
 - **Visual baselines.** The visual project compares each snapshotted page
   against committed per-platform images. If the slice altered a page's
   appearance on purpose, the implement phase updates the macOS baselines
