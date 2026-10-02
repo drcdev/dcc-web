@@ -322,7 +322,8 @@ None.
 
 **What it is for**
 Confirms the automated `verify` gate is actually running in GitHub Actions on every pull request
-and on `main`, not just locally.
+and on `main`, not just locally. The workflow runs `changes`, `static`, `build-tests` and `e2e`
+in parallel, and a final `verify` job reports the result that branch protection requires.
 
 **Where to do it**
 Nothing new to do here; `.github/workflows/ci.yml` and `.github/workflows/major-change.yml` are
@@ -335,8 +336,8 @@ registered until the file is on the default branch), and afterwards `gh workflow
 The same baselines can be regenerated locally with `pnpm run test:visual:update:linux`, which
 runs the job's steps in the matching Playwright Docker image and needs Docker Desktop running.
 A pull request that changes only skip-safe paths (agent instructions and Spec Kit documents that
-no check reads, listed in `scripts/ci/changed-paths.ts`) runs secretlint and skips the rest of the
-gate; `verify` still reports a result. Pushes to `main` always run the full gate.
+no check reads, listed in `scripts/ci/changed-paths.ts`) runs secretlint in the `static` job and skips `build-tests`
+and `e2e`; the `verify` job still reports success. Pushes to `main` always run the full gate.
 
 **How it will be confirmed**
 `pnpm setup:check --item github-ci-workflow` reports complete when both workflow files exist on

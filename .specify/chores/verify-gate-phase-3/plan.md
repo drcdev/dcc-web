@@ -382,7 +382,7 @@ The `major-change.yml`, `visual-baselines.yml` and CODEOWNERS describes are not 
 
 ### W5 Docs: `docs/testing.md` and `docs/setup.md`
 
-- [ ] W5 done
+- [x] W5 done
 
 **Files:** `docs/testing.md`, `docs/setup.md`.
 
