@@ -4,24 +4,47 @@
 layer of the gate is for, where a new test goes, where every build-error row of the content
 contracts is asserted today, and how many Astro builds the `build` Vitest project may run.
 It came out of [issue #26](https://github.com/drcdev/dcc-web/issues/26) (phases 1 and 2); the
-numbers are the budget that the build project is held to.
+numbers are the budget that the build project is held to. CI runs the same scripts split
+across parallel jobs (see "CI jobs"); phase 3 of #26 added that.
 
 ## Layers
 
 | Layer | Tool and command | What only it can show | Depth | Verdict |
 |---|---|---|---|---|
 | secretlint, lint, typecheck | `pnpm run lint:secrets`, `pnpm run lint`, `pnpm run typecheck` | Leaked secrets, lint errors, type drift | Whole repository | Keep. Cheap. |
-| Unit and schema | Vitest `unit` project, `tests/unit/**` | Logic and content schemas in isolation: does this input produce this message | Rule by rule, milliseconds per case | Keep. This is where rule-by-rule depth belongs. |
-| Component | Vitest `unit` project, `tests/component/**` | One Astro component rendered through the container API | One component per file | Keep. |
-| Build, `sync` | Vitest `build` project, `buildFixtureSite(..., { mode: "sync" })` | That Astro runs a `src/content.config.ts` call site (collection schema, glob loader `generateId`) on real files and names the file in the error. About a second per run. | One broken file per run | Keep. Preferred over `build` wherever no HTML is read. |
-| Build, `build` | Vitest `build` project, `buildFixtureSite(...)` (default mode) | What the real build does: route generation, `getStaticPaths()` checks, render-time component checks, Astro's own errors (body image import), draft exclusion per environment, CSP and indexing output, code highlighting, cross-page output. Tens of seconds per run. | One build per fixture set, many assertions read from it | Thin to what only a build can show. |
+| Unit and schema | `pnpm run test:unit`, Vitest `unit` project, `tests/unit/**` | Logic and content schemas in isolation: does this input produce this message | Rule by rule, milliseconds per case | Keep. This is where rule-by-rule depth belongs. |
+| Component | `pnpm run test:unit`, Vitest `unit` project, `tests/component/**` | One Astro component rendered through the container API | One component per file | Keep. |
+| Build, `sync` | `pnpm run test:build`, Vitest `build` project, `buildFixtureSite(..., { mode: "sync" })` | That Astro runs a `src/content.config.ts` call site (collection schema, glob loader `generateId`) on real files and names the file in the error. About a second per run. | One broken file per run | Keep. Preferred over `build` wherever no HTML is read. |
+| Build, `build` | `pnpm run test:build`, Vitest `build` project, `buildFixtureSite(...)` (default mode) | What the real build does: route generation, `getStaticPaths()` checks, render-time component checks, Astro's own errors (body image import), draft exclusion per environment, CSP and indexing output, code highlighting, cross-page output. Tens of seconds per run. | One build per fixture set, many assertions read from it | Thin to what only a build can show. |
 | Worker integration | `pnpm run test:worker`, `vitest-pool-workers` | The contact API against local D1 | Per endpoint | Keep. |
-| Real `astro build` | `tests/build/indexing.test.ts`, which runs `astro build` on the repository's own content in the main-branch and preview environments, plus `pnpm run build` in `verify` | That the real site builds and that its sitemap, robots and headers match the environment | Two environments | Keep. |
-| E2E | Playwright `e2e` and sibling projects, `pnpm run test:e2e` | Journeys in a real browser: navigation, theme, menu, contact submission, not-found, behaviour without JavaScript | Journeys, plus the template matrix | Keep journeys; review matrices (issue #26, D8). |
-| Accessibility | Playwright `a11y` projects (axe) | WCAG 2.2 AA per template, both widths, both themes | Full template matrix | Keep (Principle X). |
-| Visual | Playwright `visual` project | Pixel baselines of the shell, not-found page and sections fixture | Per platform | Keep. The only guard on design regressions. |
-| Budget | Playwright `budget` project | LCP, CLS, long tasks and bytes under throttling | Per template, serial | Keep. Slow by design. |
-| Preview site-check | `scripts/site-check`, run against the preview deployment | Sitemap and links on the deployed preview | Once per PR | Keep. |
+| Real `astro build` | `tests/build/indexing.test.ts`, which runs `astro build` on the repository's own content in the main-branch and preview environments, plus `pnpm run build`, which runs in the `e2e` job in CI and in the local `verify` script | That the real site builds and that its sitemap, robots and headers match the environment | Two environments | Keep. |
+| E2E | Playwright `e2e` and sibling projects, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Journeys in a real browser: navigation, theme, menu, contact submission, not-found, behaviour without JavaScript | Journeys, plus the template matrix | Keep journeys; review matrices (issue #26, D8). |
+| Accessibility | Playwright `a11y` projects (axe), `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | WCAG 2.2 AA per template, both widths, both themes | Full template matrix | Keep (Principle X). |
+| Visual | Playwright `visual` project, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Pixel baselines of the shell, not-found page and sections fixture | Per platform | Keep. The only guard on design regressions. |
+| Budget | Playwright `budget` project, `pnpm run test:budget` | LCP, CLS, long tasks and bytes under throttling | Per template, own invocation with one worker (`pnpm run test:budget`) | Keep. Slow by design. |
+| Preview site-check | `scripts/site-check`, run against the preview deployment | Sitemap and links on the deployed preview | Once per PR; the crawl runs in the `e2e` job on pull requests | Keep. |
+
+## CI jobs
+
+`.github/workflows/ci.yml` runs the layers above as parallel jobs. Each job installs its own
+dependencies, and the `verify` job is the one check that branch protection requires.
+
+| Job | Scripts | When it runs |
+|---|---|---|
+| `changes` | `node scripts/ci/changed-paths.ts` | Always. Decides whether the change is skip-safe. |
+| `static` | `pnpm run lint:secrets`, then `pnpm run lint`, `pnpm run typecheck`, `pnpm run test:unit`, `pnpm run test:worker` | Always. On a skip-safe change only secretlint runs. |
+| `build-tests` | `pnpm run test:build` | Unless the change is skip-safe. |
+| `e2e` | `pnpm run build`, `pnpm run test:e2e:parallel`, `pnpm run test:budget`, and on pull requests `node scripts/site-check/preview.ts` | Unless the change is skip-safe. |
+| `verify` | `node scripts/ci/verify-needs.ts` | Always, after the others finish. |
+
+- A new script, or a new Playwright or Vitest project, must be added to one of these jobs. The
+  config tests (the per-layer script and project-coverage guards and the workflow tests) fail
+  when a project runs in no job.
+- Playwright runs at 4 workers in CI (`playwright.config.ts`). The budget project runs on its
+  own, after the parallel projects, at one worker (`test:budget` passes `--workers=1`),
+  because it measures timing and would be skewed by sibling tests competing for the CPU.
+- The `verify` job passes when every job succeeded, or when `build-tests` and `e2e` were
+  skipped on a skip-safe change. A failed, cancelled or unexpectedly skipped job fails it.
 
 ## Where a test goes
 

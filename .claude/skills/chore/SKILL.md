@@ -347,9 +347,11 @@ gate as it is **after** the change.
 6. **Watch the release gate.** Run `gh pr checks --watch` with a time limit
    (20 minutes). Red → dispatch a fix subagent on the branch, which fixes
    the cause (never the check), commits and pushes; watch again. For a
-   chore whose acceptance is a CI measurement, read the `verify` job's
-   duration from `gh run view` once it is green and record it as the CI
-   after-measurement.
+   chore whose acceptance is a CI measurement, read the wall time of
+   the workflow run once `verify` is green (the aggregate `verify` job only
+   lasts seconds, so its own duration is not the measurement). Take it from
+   `gh run view <id> --json jobs`: the earliest job `startedAt` to the
+   `verify` job's `completedAt`. Record it as the CI after-measurement.
 7. Final report to the user: the goal, the before/after measurement (local
    and CI), work items done, test counts, PR link, the merge mode chosen,
    the `[PREVIEW-CHECK]` items awaiting Don, and the follow-ups and
