@@ -289,8 +289,40 @@ describe("package.json scripts", () => {
 
   it("adds test:a11y, test:budget and test:visual, each running one project", () => {
     expect(pkg.scripts["test:a11y"]).toBe("playwright test --project=a11y");
-    expect(pkg.scripts["test:budget"]).toBe("playwright test --project=budget");
+    expect(pkg.scripts["test:budget"]).toBe("playwright test --project=budget --workers=1");
     expect(pkg.scripts["test:visual"]).toBe("playwright test --project=visual");
+  });
+
+  it("adds the per-layer scripts CI calls", () => {
+    expect(pkg.scripts["test:unit"]).toBe("vitest run --project unit");
+    expect(pkg.scripts["test:build"]).toBe("vitest run --project build");
+    expect(pkg.scripts["test:worker"]).toBe("pnpm --filter ./worker test");
+    expect(pkg.scripts["test:e2e:parallel"]).toBe(
+      "playwright test --project=e2e --project=a11y --project=visual --project=sections",
+    );
+  });
+
+  const projectFlags = (script: string): string[] =>
+    [...script.matchAll(/--project[= ](\S+)/g)].map((m) => m[1] as string);
+
+  it("covers every Vitest project from test:unit and test:build", async () => {
+    const source = readFileSync(fileURLToPath(new URL("../../../vitest.config.ts", import.meta.url)), "utf-8");
+    const declared = [...source.matchAll(/\bname:\s*"([^"]+)"/g)].map((m) => m[1]).sort();
+    const scripted = [...projectFlags(pkg.scripts["test:unit"]), ...projectFlags(pkg.scripts["test:build"])].sort();
+    expect(declared.length).toBeGreaterThan(0);
+    expect(scripted).toEqual(declared);
+  });
+
+  it("covers every Playwright project exactly once across test:e2e:parallel and test:budget", async () => {
+    const config = (await import("../../../playwright.config.ts")).default as unknown as {
+      projects: { name: string }[];
+    };
+    const declared = config.projects.map((p) => p.name).sort();
+    const scripted = [
+      ...projectFlags(pkg.scripts["test:e2e:parallel"]),
+      ...projectFlags(pkg.scripts["test:budget"]),
+    ].sort();
+    expect(scripted).toEqual(declared);
   });
 
   it("adds test:visual:update running the visual project with --update-snapshots", () => {
@@ -400,7 +432,7 @@ describe("worker workspace and tooling wiring (007 contact form)", () => {
     expect(pkg.scripts.typecheck).toBe(
       "astro check && tsc -p worker && wrangler types worker/worker-configuration.d.ts --check",
     );
-    expect(pkg.scripts.test).toBe("vitest run && pnpm --filter ./worker test");
+    expect(pkg.scripts.test).toBe("vitest run && pnpm run test:worker");
     expect(pkg.scripts["types:worker"]).toBe("wrangler types worker/worker-configuration.d.ts");
     expect(pkg.scripts["deploy:production"]).toBeTruthy();
   });

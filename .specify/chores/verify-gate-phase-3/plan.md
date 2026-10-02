@@ -289,7 +289,7 @@ no `specs/` path literals (drift guard).
 
 ### W2 Per-layer package scripts and project-coverage guards
 
-- [ ] W2 done
+- [x] W2 done
 
 **Files:** `package.json`, `tests/unit/site/config-files.test.ts`.
 
