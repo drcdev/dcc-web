@@ -1,0 +1,131 @@
+---
+title: Flux
+problem: Run two newsletters on one Ghost site without the theme treating them as a single stream.
+description: How Flux, a custom Ghost theme, gives two newsletters their own look and adds AI reading aids to each post.
+themes: [Publishing, AI integration, Web]
+status: shipped
+visual:
+  kind: image
+  src: ./images/flux/index.png
+  alt: A split screen showing the Flux Ghost theme in dark mode on one side and light mode on the other
+order: 3
+standIn:
+  href: https://www.doncoleman.ca
+  label: Flux running on doncoleman.ca
+source: https://github.com/drcdev/flux
+draft: true
+visuals:
+  screenshot:
+    kind: image
+    src: ./images/flux/index.png
+    alt: A split screen showing the Flux Ghost theme in dark mode on one side and light mode on the other
+  architecture:
+    kind: diagram
+    src: ./images/flux/architecture.svg
+    alt: Three boxes joined by arrows, from Ghost to the Flux theme to an optional AI analysis service on Supabase
+    description: Ghost renders the Flux theme. When AI analysis is switched on, the theme calls Supabase Edge Functions that ask a model for critical questions and related topics about the post.
+comparison:
+  caption: The three ways to get a two-newsletter Ghost site that were considered
+  constraints:
+    - id: two-streams
+      label: Two newsletters, two looks
+      detail: Convergence and Drift each need their own colour, archive and subscribe button.
+    - id: hosted-ghost
+      label: Works on hosted Ghost
+      detail: The site runs on Magic Pages, so the theme cannot depend on server changes or plugins.
+    - id: dark-mode
+      label: Dark mode done properly
+      detail: Light, dark and system choices, with no flash of the wrong theme on load.
+    - id: safe-ai
+      label: Safe AI additions
+      detail: AI-generated text must be sanitised, and the page must keep a strict content security policy.
+  options:
+    - id: stock-casper
+      name: Ghost's stock Casper theme
+      summary: Use the default theme and separate the newsletters with tags and settings.
+      fit: { two-streams: misses, hosted-ghost: meets, dark-mode: partly, safe-ai: misses }
+      pros: [Maintained by Ghost and always compatible with new releases.]
+      cons: [One accent colour and one archive for everything., No place to add AI features.]
+    - id: marketplace-theme
+      name: A marketplace theme, customised
+      summary: Buy a theme close to the goal and fork it for the two streams.
+      fit: { two-streams: partly, hosted-ghost: meets, dark-mode: partly, safe-ai: misses }
+      pros: [A finished design to start from.]
+      cons: [Every change fights the original's structure., Updates from the vendor become merges.]
+    - id: custom-theme
+      name: A theme built from scratch
+      summary: Write a Handlebars theme with Tailwind v4 and a build step for minified, hashed assets.
+      fit: { two-streams: meets, hosted-ghost: meets, dark-mode: meets, safe-ai: meets }
+      pros: [Every part of the design serves the two newsletters., Security headers and sanitising can be built in from the start.]
+      cons: [Ghost's theme rules and routes have to be learned the hard way.]
+      chosen: true
+      reason: It was the only route that gave each newsletter its own identity on hosted Ghost and left room for the AI features and the security defaults.
+---
+
+{/* DRAFT FOR REVIEW: written by Claude from the old drc.dev project entry, the flux repository README and CLAUDE.md, and the post "Self-contained development for Ghost themes". The facts (Handlebars, Tailwind v4, Drift and Convergence streams with lavender and sage colours, three-state dark mode, CSP and SRI, DOMPurify, Supabase Edge Functions with OpenRouter, member tiers for models, Magic Pages hosting, Codespaces workflow) come from those sources. The old entry also described an Express.js AI gateway on Fly.io; the repository now shows Supabase Edge Functions instead, so the story follows the repository. The constraints, the options and the lessons are inferred and need Don's correction. Themes, status and order are placeholders. The picture is the split-screen image from the Ghost themes post. */}
+
+<Chapter stage="problem" visual="screenshot" draft>
+
+Two newsletters, Convergence and Drift, share one Ghost site. A stock theme shows them as one list of posts with one colour and one subscribe button.
+
+The aim was a theme where each newsletter has its own look and its own archive, and where a post can offer the reader more than the text.
+
+</Chapter>
+
+<Chapter stage="constraints" draft>
+
+Each newsletter needed its own colour, timeline and subscribe button, driven by Ghost's own settings rather than a hard-coded list.
+
+The site runs on Magic Pages, a hosted Ghost service, so everything had to live in the theme and in Ghost's routes and redirects files.
+
+Dark mode had to offer light, dark and follow-the-system, and switch without a flash of the wrong theme.
+
+AI-generated text on a page is a risk, so anything a model writes had to be sanitised, and the theme had to keep content security policy headers and integrity hashes on its scripts.
+
+</Chapter>
+
+<Chapter stage="options" draft>
+
+Three routes were open. Only one of them could give the two newsletters their own identity without working against the theme.
+
+<OptionComparison />
+
+</Chapter>
+
+<Chapter stage="built" visual="architecture" draft>
+
+Flux is a Ghost theme written in Handlebars with Tailwind v4. Drift is lavender and Convergence is sage, each with its own archive, timeline and subscribe button, and other tags take their accent colour from Ghost.
+
+A Node.js build minifies the scripts and stamps them with subresource integrity hashes. AI-generated content passes through DOMPurify before it reaches the page.
+
+AI reading aids are optional. A Supabase Edge Function asks a model for critical questions and related topics about a post, and members can regenerate them with higher-tier models.
+
+Development runs in a GitHub Codespace that starts a local Ghost, pulls real content from production and deploys the theme through GitHub Actions.
+
+<Demo />
+
+</Chapter>
+
+<Chapter stage="outcome" draft>
+
+Flux has been the live theme on doncoleman.ca since 2025. Each newsletter reads as its own publication, and the dark mode toggle holds its state across pages.
+
+The Codespaces workflow means a new environment with real content is a few minutes away, which is described in the post on self-contained development for Ghost themes.
+
+</Chapter>
+
+<Chapter stage="lessons" draft>
+
+A hosted Ghost site cannot run a server, so the AI backend had to live somewhere else. It moved from an Express.js gateway to Supabase Edge Functions, which was less to run.
+
+Content security headers and integrity hashes were worth adding early. Retrofitting them to a theme that already loaded scripts freely would have been slower.
+
+</Chapter>
+
+<Chapter stage="invitation" draft>
+
+If your publication or site needs a design that follows its structure rather than a template, tell me about it.
+
+<Invitation />
+
+</Chapter>
