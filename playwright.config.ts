@@ -8,6 +8,11 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
+  // CI runs 4 workers (the verify-gate split runs these projects in their own job);
+  // locally Playwright's default applies. The `budget` project is the exception: it
+  // measures timing, so `pnpm run test:budget` passes `--workers=1`. The CLI flag
+  // overrides this config value, which keeps budget runs free of contention.
+  workers: process.env.CI ? 4 : undefined,
   reporter: "list",
   retries: 0,
   webServer: [

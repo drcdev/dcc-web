@@ -325,7 +325,7 @@ New and changed assertions in the "package.json scripts" describe of `config-fil
 
 ### W3 Playwright workers in CI
 
-- [ ] W3 done
+- [x] W3 done
 
 **Files:** `playwright.config.ts`, `tests/unit/site/config-files.test.ts`.
 

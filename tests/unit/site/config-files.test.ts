@@ -197,6 +197,24 @@ describe("playwright.config.ts", () => {
     return config as unknown as TestPlaywrightConfig;
   }
 
+  it("runs 4 workers in CI and Playwright's default locally (workers is read at import)", async () => {
+    const saved = process.env.CI;
+    // A computed specifier keeps the cache-busting query out of TypeScript's module resolution.
+    const load = async (tag: string) =>
+      (await import(/* @vite-ignore */ `../../../playwright.config.ts?${tag}`)).default as { workers?: number };
+    try {
+      process.env.CI = "true";
+      const ci = await load("workers-ci");
+      expect(ci.workers).toBe(4);
+      delete process.env.CI;
+      const local = await load("workers-local");
+      expect(local.workers).toBeUndefined();
+    } finally {
+      if (saved === undefined) delete process.env.CI;
+      else process.env.CI = saved;
+    }
+  });
+
   function matchesPattern(pattern: unknown, filePath: string): boolean {
     const patterns = Array.isArray(pattern) ? pattern : pattern ? [pattern] : [];
     return patterns.some((p) => (p instanceof RegExp ? p.test(filePath) : false));
