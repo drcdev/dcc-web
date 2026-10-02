@@ -343,7 +343,7 @@ config, and say why. Nothing else in the config changes: `webServer`, the projec
 
 ### W4 Split `ci.yml` into parallel jobs and rewrite its workflow tests
 
-- [ ] W4 done
+- [x] W4 done
 
 **Files:** `.github/workflows/ci.yml`, `tests/unit/ci/workflows.test.ts`.
 

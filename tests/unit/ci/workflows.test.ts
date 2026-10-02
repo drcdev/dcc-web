@@ -10,6 +10,35 @@ function read(path: string): string {
 
 const USES_PATTERN = /uses:\s*([^\s@]+)@([^\s#]+)/g;
 
+const CI_JOB_IDS = ["changes", "static", "build-tests", "e2e", "verify"] as const;
+
+/** The text of one job: from `\n  <id>:` to the next two-space-indented job key, or the end of the file. */
+function job(contents: string, id: string): string {
+  const start = contents.indexOf(`\n  ${id}:`);
+  expect(start, `expected ci.yml to define job ${id}`).toBeGreaterThan(-1);
+  const rest = contents.slice(start + 1);
+  const next = rest.slice(1).search(/\n {2}[A-Za-z0-9_-]+:/);
+  return next === -1 ? rest : rest.slice(0, next + 1);
+}
+
+/** The step of a job that contains `needle`: from its `- ` marker to the next step. */
+function stepBlock(jobText: string, needle: string): string {
+  const i = jobText.indexOf(needle);
+  expect(i, `expected the job to contain ${needle}`).toBeGreaterThan(-1);
+  const start = jobText.lastIndexOf("\n      - ", i);
+  const next = jobText.indexOf("\n      - ", i);
+  return jobText.slice(start, next === -1 ? undefined : next);
+}
+
+/** Occurrences of `run: <command>` as a whole line, so `lint` does not match `lint:secrets`. */
+function runCount(contents: string, command: string): number {
+  return contents.split("\n").filter((l) => l.trim() === `run: ${command}`).length;
+}
+
+function count(haystack: string, needle: string): number {
+  return haystack.split(needle).length - 1;
+}
+
 describe(".github/workflows/ci.yml", () => {
   const contents = read(".github/workflows/ci.yml");
 
@@ -17,9 +46,18 @@ describe(".github/workflows/ci.yml", () => {
     expect(contents).toMatch(/^name:\s*CI\s*$/m);
   });
 
-  it("has job verify", () => {
+  it("has the jobs changes, static, build-tests, e2e and the aggregate verify, with unique names", () => {
     expect(contents).toMatch(/^\s{2}verify:/m);
-    expect(contents).toMatch(/name:\s*verify/);
+    const names: string[] = [];
+    for (const id of CI_JOB_IDS) {
+      const m = job(contents, id).match(/^\s{4}name:\s*(\S+)\s*$/m);
+      expect(m, `expected job ${id} to have a name`).toBeTruthy();
+      expect(m![1]).toBe(id);
+      names.push(m![1]!);
+    }
+    expect(new Set(names).size).toBe(names.length);
+    expect(contents).not.toMatch(/name:\s*major-change-approval\b/);
+    expect(contents).not.toMatch(/^\s{2}major-change-approval:/m);
   });
 
   it("triggers on pull_request and push to main", () => {
@@ -32,8 +70,24 @@ describe(".github/workflows/ci.yml", () => {
     expect(contents).toMatch(/permissions:\s*\n\s*contents:\s*read/);
   });
 
-  it("has a step running pnpm run verify", () => {
-    expect(contents).toMatch(/pnpm run verify/);
+  it("cancels superseded runs", () => {
+    expect(contents).toMatch(/concurrency:[\s\S]*?cancel-in-progress:\s*true/);
+  });
+
+  it("runs every verify member exactly once, in the job that owns it", () => {
+    const owners: Record<string, string[]> = {
+      static: ["pnpm run lint:secrets", "pnpm run lint", "pnpm run typecheck", "pnpm run test:unit", "pnpm run test:worker"],
+      "build-tests": ["pnpm run test:build"],
+      e2e: ["pnpm run build", "pnpm run test:e2e:parallel", "pnpm run test:budget"],
+    };
+    for (const [id, commands] of Object.entries(owners)) {
+      const text = job(contents, id);
+      for (const command of commands) {
+        expect(runCount(contents, command), `${command} must appear exactly once in ci.yml`).toBe(1);
+        expect(runCount(text, command), `${command} must run in ${id}`).toBe(1);
+      }
+    }
+    expect(contents).not.toMatch(/pnpm run verify/);
   });
 
   it("installs with --frozen-lockfile", () => {
@@ -57,67 +111,108 @@ describe(".github/workflows/ci.yml", () => {
     }
   });
 
-  it("uploads Playwright output on failure, after the verify step, pinned to a full SHA (FR-005b, FR-027a, FR-031)", () => {
-    const verifyStepIndex = contents.indexOf("pnpm run verify");
-    expect(verifyStepIndex).toBeGreaterThan(0);
+  it("uploads Playwright output on failure in e2e, after the budget step, pinned to a full SHA (FR-005b, FR-027a, FR-031)", () => {
+    const e2e = job(contents, "e2e");
+    const budgetIndex = e2e.indexOf("pnpm run test:budget");
+    expect(budgetIndex).toBeGreaterThan(0);
 
-    const afterVerify = contents.slice(verifyStepIndex);
-    const uploadMatch = afterVerify.match(
-      /if:\s*failure\(\)[\s\S]*?uses:\s*actions\/upload-artifact@([0-9a-f]{40})/,
-    );
-    expect(uploadMatch, "expected an if: failure() step using a SHA-pinned actions/upload-artifact after the verify step").toBeTruthy();
+    const afterBudget = e2e.slice(budgetIndex);
+    expect(
+      afterBudget,
+      "expected an if: failure() step using a SHA-pinned actions/upload-artifact after the budget step",
+    ).toMatch(/if:\s*failure\(\)[\s\S]*?uses:\s*actions\/upload-artifact@[0-9a-f]{40}/);
 
-    const uploadStepIndex = afterVerify.search(/if:\s*failure\(\)/);
-    const uploadStep = afterVerify.slice(uploadStepIndex, uploadStepIndex + 600);
+    const uploadStep = stepBlock(afterBudget, "actions/upload-artifact@");
+    expect(uploadStep).toMatch(/if:\s*failure\(\)/);
     expect(uploadStep).toContain("playwright-report/");
     expect(uploadStep).toContain("test-results/");
     expect(uploadStep).toContain("tests/e2e/**/*-snapshots/**");
+    expect(count(contents, "upload-artifact@")).toBe(1);
   });
 });
 
-describe(".github/workflows/ci.yml change detection", () => {
+describe(".github/workflows/ci.yml change detection and job topology", () => {
   const contents = read(".github/workflows/ci.yml");
-  const idx = (needle: string): number => {
-    const i = contents.indexOf(needle);
-    expect(i, `expected ci.yml to contain ${needle}`).toBeGreaterThan(-1);
-    return i;
-  };
-  const stepBlock = (needle: string): string => {
-    const i = idx(needle);
-    const start = contents.lastIndexOf("\n      - ", i);
-    const next = contents.indexOf("\n      - ", i);
-    return contents.slice(start, next === -1 ? undefined : next);
-  };
+  const changes = job(contents, "changes");
+  const gated = "if: needs.changes.outputs.full != 'false'";
 
-  it("checks out two commits so HEAD^1 exists", () => {
-    expect(stepBlock("actions/checkout@")).toMatch(/fetch-depth:\s*2\b/);
+  it("checks out two commits in changes so HEAD^1 exists", () => {
+    expect(stepBlock(changes, "actions/checkout@")).toMatch(/fetch-depth:\s*2\b/);
   });
 
-  it("detects changes after setup-node and before install", () => {
-    const step = stepBlock("node scripts/ci/changed-paths.ts");
+  it("detects changes in changes, after setup-node, and exposes the full output", () => {
+    const step = stepBlock(changes, "node scripts/ci/changed-paths.ts");
     expect(step).toMatch(/id:\s*changes/);
-    expect(idx("node scripts/ci/changed-paths.ts")).toBeGreaterThan(idx("actions/setup-node@"));
-    expect(idx("node scripts/ci/changed-paths.ts")).toBeLessThan(idx("pnpm install --frozen-lockfile"));
+    expect(changes.indexOf("node scripts/ci/changed-paths.ts")).toBeGreaterThan(changes.indexOf("actions/setup-node@"));
+    expect(changes).toMatch(/outputs:\s*\n\s+full:\s*\$\{\{\s*steps\.changes\.outputs\.full\s*\}\}/);
+    expect(changes).not.toContain("pnpm install");
   });
 
-  it("gates the Playwright install and the verify gate on full != 'false'", () => {
-    for (const needle of ["playwright install --with-deps chromium", "pnpm run verify"]) {
-      expect(stepBlock(needle)).toContain("if: steps.changes.outputs.full != 'false'");
+  it("makes static, build-tests and e2e need changes, so every installing job waits for it", () => {
+    for (const id of ["static", "build-tests", "e2e"]) {
+      expect(job(contents, id), `${id} must need changes`).toMatch(/^\s{4}needs:\s*changes\s*$/m);
     }
   });
 
-  it("runs secretlint on the skip path, after install", () => {
-    expect(stepBlock("pnpm run lint:secrets")).toContain("if: steps.changes.outputs.full == 'false'");
-    expect(idx("pnpm run lint:secrets")).toBeGreaterThan(idx("pnpm install --frozen-lockfile"));
+  it("gates build-tests and e2e at job level on full != 'false'", () => {
+    for (const id of ["build-tests", "e2e"]) {
+      const text = job(contents, id);
+      const header = text.slice(0, text.indexOf("steps:"));
+      expect(header, id).toContain(`    ${gated}\n`);
+    }
   });
 
-  it("installs unconditionally", () => {
-    expect(stepBlock("pnpm install --frozen-lockfile")).not.toMatch(/\bif:/);
+  it("has no job-level if: on static, and gates its non-secretlint steps on full != 'false'", () => {
+    const staticJob = job(contents, "static");
+    expect(staticJob.slice(0, staticJob.indexOf("steps:"))).not.toMatch(/^\s{4}if:/m);
+    for (const command of ["pnpm run lint", "pnpm run typecheck", "pnpm run test:unit", "pnpm run test:worker"]) {
+      expect(stepBlock(staticJob, `run: ${command}\n`), command).toContain(gated);
+    }
   });
 
-  it("has no job-level if:, so verify always reports", () => {
-    const job = contents.slice(idx("  verify:"), idx("    steps:"));
-    expect(job).not.toMatch(/^\s{4}if:/m);
+  it("runs secretlint in static on every path, after install", () => {
+    const staticJob = job(contents, "static");
+    expect(stepBlock(staticJob, "pnpm run lint:secrets")).not.toMatch(/\bif:/);
+    expect(staticJob.indexOf("pnpm run lint:secrets")).toBeGreaterThan(staticJob.indexOf("pnpm install --frozen-lockfile"));
+  });
+
+  it("installs unconditionally in static, build-tests and e2e", () => {
+    for (const id of ["static", "build-tests", "e2e"]) {
+      expect(stepBlock(job(contents, id), "pnpm install --frozen-lockfile"), id).not.toMatch(/\bif:/);
+    }
+  });
+
+  it("installs the Playwright browser only in e2e, before the build and the Playwright runs", () => {
+    expect(count(contents, "playwright install")).toBe(1);
+    const e2e = job(contents, "e2e");
+    const install = e2e.indexOf("playwright install --with-deps chromium");
+    expect(install).toBeGreaterThan(e2e.indexOf("pnpm install --frozen-lockfile"));
+    for (const later of ["pnpm run build", "pnpm run test:e2e:parallel", "pnpm run test:budget"]) {
+      expect(e2e.indexOf(later), later).toBeGreaterThan(install);
+    }
+    expect(e2e.indexOf("pnpm run test:budget")).toBeGreaterThan(e2e.indexOf("pnpm run test:e2e:parallel"));
+  });
+
+  it("makes verify the aggregate: always runs, needs exactly the four jobs, feeds toJSON(needs) to the script", () => {
+    const verify = job(contents, "verify");
+    expect(verify).toMatch(/^\s{4}if:\s*always\(\)\s*$/m);
+    const needs = verify.match(/^\s{4}needs:\s*\[([^\]]*)\]\s*$/m);
+    expect(needs, "expected an inline needs list").toBeTruthy();
+    expect(needs![1]!.split(",").map((s) => s.trim()).sort()).toEqual(["build-tests", "changes", "e2e", "static"]);
+    const step = stepBlock(verify, "node scripts/ci/verify-needs.ts");
+    expect(step).toMatch(/NEEDS:\s*\$\{\{\s*toJSON\(needs\)\s*\}\}/);
+    expect(verify).not.toContain("pnpm install");
+  });
+
+  it("gives e2e checks: read plus contents: read, and every other job contents: read only", () => {
+    const e2e = job(contents, "e2e");
+    expect(e2e).toMatch(/permissions:\s*\n\s+checks:\s*read\s*\n\s+contents:\s*read/);
+    for (const id of ["changes", "static", "build-tests", "verify"]) {
+      const text = job(contents, id);
+      const header = text.slice(0, text.indexOf("steps:"));
+      expect(header, id).toMatch(/permissions:\s*\n\s+contents:\s*read\s*\n/);
+      expect(header, id).not.toContain("checks:");
+    }
   });
 
   it("does not use paths or paths-ignore filters", () => {
@@ -260,18 +355,12 @@ describe(".github/workflows/visual-baselines.yml", () => {
 
 describe(".github/workflows/ci.yml preview crawl (011-launch FR-001a, FR-002a)", () => {
   const contents = read(".github/workflows/ci.yml");
-  const verify = contents.slice(contents.indexOf("\n  verify:"));
-  const stepStart = verify.indexOf("- name: Check the preview's sitemap and links");
-  const step = stepStart === -1 ? "" : verify.slice(stepStart).split(/\n      - name: /)[0]!;
+  const e2e = job(contents, "e2e");
+  const step = stepBlock(e2e, "node scripts/site-check/preview.ts");
 
-  it("gives the verify job checks: read plus contents: read", () => {
-    const jobHeader = verify.slice(0, verify.indexOf("steps:"));
-    expect(jobHeader).toMatch(/permissions:\s*\n\s+checks:\s*read\s*\n\s+contents:\s*read/);
-  });
-
-  it("has the preview crawl step, after the verify gate", () => {
-    expect(stepStart).toBeGreaterThan(verify.indexOf("pnpm run verify"));
-    expect(step).toContain("node scripts/site-check/preview.ts");
+  it("has the preview crawl step in e2e, after the budget run", () => {
+    expect(e2e.indexOf("node scripts/site-check/preview.ts")).toBeGreaterThan(e2e.indexOf("pnpm run test:budget"));
+    expect(count(contents, "node scripts/site-check/preview.ts")).toBe(1);
   });
 
   it("runs only on pull_request", () => {
