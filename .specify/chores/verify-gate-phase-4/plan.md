@@ -430,7 +430,7 @@ adds one.
 
 ### W5 `docs/testing.md`: the content-only tier and `verify:quick`
 
-- [ ] W5 done
+- [x] W5 done
 
 **Files:** `docs/testing.md`.
 
