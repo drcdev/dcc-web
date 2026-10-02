@@ -6,9 +6,8 @@ themes: [AI integration, Automation, macOS]
 status: experiment
 visual:
   kind: image
-  src: ./images/focus-pocus/index.svg
-  alt: Placeholder for a screenshot of Claude Desktop answering a question about OmniFocus tasks
-  placeholder: true
+  src: ./images/focus-pocus/tools.png
+  alt: Claude Desktop's tools panel listing the Focus Pocus tools for OmniFocus
 order: 1
 standIn:
   href: https://drc.dev/projects/focus-pocus
@@ -18,9 +17,12 @@ draft: false
 visuals:
   screenshot:
     kind: image
-    src: ./images/focus-pocus/screenshot.svg
-    alt: Placeholder for a screenshot of a Claude Desktop chat asking for the tasks due this week
-    placeholder: true
+    src: ./images/focus-pocus/tools.png
+    alt: Claude Desktop's tools panel listing the Focus Pocus tools for OmniFocus
+  packing-list:
+    kind: image
+    src: ./images/focus-pocus/packing-list.png
+    alt: A Claude Desktop conversation creating a France packing list as projects and tasks in OmniFocus through the Focus Pocus tool
   architecture:
     kind: diagram
     src: ./images/focus-pocus/architecture.svg
@@ -70,7 +72,7 @@ comparison:
       reason: It was the most complete route that could read and change OmniFocus in the background and return structured results, and MCP let Claude Desktop find and use the tools without any custom integration.
 ---
 
-{/* DRAFT FOR REVIEW: written by Claude from the public sources (the post "Building Focus Pocus" on this site, the old drc.dev project entry and github.com/drcdev/focus-pocus). Revised on 2 October 2026 against the blog post: the problem is now the TaskPaper import friction the post describes, the options include the TaskPaper route and the URL scheme and Actions route the post rules out, the outcome is the France packing-list test, and the lessons are the post's four lessons. The facts (MCP server, TypeScript and Node.js, 3,800+ lines, JXA, 35+ tools, 39 JXA scripts, natural-language dates, bulk operations, caching and pagination for a 1,600-task database, the safeGet pattern, macOS 10.15+ and Node 18+, install script) come from those pages. Themes and status are placeholders. The screenshots are placeholders: two real Claude Desktop screenshots from the blog post could replace them, but the unit test for this file requires placeholders until it is changed. The stand-in link points at the old drc.dev, which will go away when the domain switches. */}
+{/* DRAFT FOR REVIEW: written by Claude from the public sources (the post "Building Focus Pocus" on this site, the old drc.dev project entry and github.com/drcdev/focus-pocus). Revised on 2 October 2026 against the blog post: the problem is now the TaskPaper import friction the post describes, the options include the TaskPaper route and the URL scheme and Actions route the post rules out, the outcome is the France packing-list test, and the lessons are the post's four lessons. The facts (MCP server, TypeScript and Node.js, 3,800+ lines, JXA, 35+ tools, 39 JXA scripts, natural-language dates, bulk operations, caching and pagination for a 1,600-task database, the safeGet pattern, macOS 10.15+ and Node 18+, install script) come from those pages. Themes and status are placeholders. The two screenshots are the ones from the blog post. The stand-in link points at the old drc.dev, which will go away when the domain switches. */}
 
 <Chapter stage="problem" visual="screenshot" draft>
 
@@ -114,7 +116,7 @@ Every script uses a safeGet pattern: if the normal way to read a value fails, tr
 
 </Chapter>
 
-<Chapter stage="outcome" draft>
+<Chapter stage="outcome" visual="packing-list" draft>
 
 The real test was a packing list for a trip to France: multiple projects, subtasks and natural-language dates, created in OmniFocus from one conversation. It worked with one small hiccup on dates and little clean-up.
 

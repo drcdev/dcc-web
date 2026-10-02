@@ -97,7 +97,7 @@ test.describe("the Focus Pocus story", () => {
     await expect(region.getByRole("columnheader", { name: /Chosen/ })).toHaveCount(1);
   });
 
-  test("has a stand-in link, draft marks and placeholder marks", async ({ page }) => {
+  test("has a stand-in link, draft marks and no placeholder marks", async ({ page }) => {
     await page.goto(STORY);
     await expect(page.getByRole("link", { name: "Focus Pocus on drc.dev" })).toHaveAttribute(
       "href",
@@ -105,7 +105,8 @@ test.describe("the Focus Pocus story", () => {
     );
     await expect(page.getByText("This is not a live demo.")).toBeVisible();
     await expect(page.locator("[data-draft-mark]")).toHaveCount(7);
-    expect(await page.locator("[data-placeholder]").count()).toBeGreaterThan(0);
+    // The pictures are real captures from the blog post, so no "Placeholder" mark shows.
+    await expect(page.locator("[data-placeholder]")).toHaveCount(0);
   });
 
   test("the invitation opens the contact form about the project, with no cookie and no new origin", async ({

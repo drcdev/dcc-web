@@ -53,6 +53,14 @@ describe("public/_redirects", () => {
     }
   });
 
+  // The app store listings for Tempo and Plunge Buddy point at the first drc.dev's
+  // per-project privacy addresses, which the project story route cannot serve.
+  it.each(["tempo", "plunge-buddy"])("sends the old %s privacy address to the app's privacy page with 301", (slug) => {
+    for (const request of [`/projects/${slug}/privacy`, `/projects/${slug}/privacy/`]) {
+      expect(resolve(request), request).toEqual({ status: 301, location: `/privacy/${slug}/` });
+    }
+  });
+
   it("does not touch any other address", () => {
     for (const path of [
       "/writing/topics/agentic-ai/",
@@ -60,6 +68,9 @@ describe("public/_redirects", () => {
       "/writing/drift/",
       "/writing/convergence/2/",
       "/writing/all/",
+      "/projects/tempo/",
+      "/projects/focus-pocus/privacy/",
+      "/privacy/tempo/",
     ]) {
       expect(resolve(path), path).toBeUndefined();
     }
@@ -70,8 +81,8 @@ describe("public/_redirects", () => {
     expect(all.length).toBeGreaterThan(0);
     for (const rule of all) {
       expect(rule.status).toBe(301);
-      expect(rule.from.startsWith("/writing/topics/")).toBe(true);
-      expect(rule.to).toMatch(/^\/writing\/(drift|convergence)\//);
+      expect(rule.from).toMatch(/^\/(writing\/topics\/|projects\/[a-z0-9-]+\/privacy\/?$)/);
+      expect(rule.to).toMatch(/^\/(writing\/(drift|convergence)|privacy\/[a-z0-9-]+)\//);
     }
   });
 

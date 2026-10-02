@@ -9,9 +9,6 @@ visual:
   src: ./images/flux/index.png
   alt: A split screen showing the Flux Ghost theme in dark mode on one side and light mode on the other
 order: 3
-standIn:
-  href: https://www.doncoleman.ca
-  label: Flux running on doncoleman.ca
 source: https://github.com/drcdev/flux
 draft: true
 visuals:
@@ -62,7 +59,7 @@ comparison:
       reason: It was the only route that gave each newsletter its own identity on hosted Ghost and left room for the AI features and the security defaults.
 ---
 
-{/* DRAFT FOR REVIEW: written by Claude from the old drc.dev project entry, the flux repository README and CLAUDE.md, and the post "Self-contained development for Ghost themes". The facts (Handlebars, Tailwind v4, Drift and Convergence streams with lavender and sage colours, three-state dark mode, CSP and SRI, DOMPurify, Supabase Edge Functions with OpenRouter, member tiers for models, Magic Pages hosting, Codespaces workflow) come from those sources. The old entry also described an Express.js AI gateway on Fly.io; the repository now shows Supabase Edge Functions instead, so the story follows the repository. The constraints, the options and the lessons are inferred and need Don's correction. Themes, status and order are placeholders. The picture is the split-screen image from the Ghost themes post. */}
+{/* DRAFT FOR REVIEW: written by Claude from the old drc.dev project entry, the flux repository README and CLAUDE.md, and the post "Self-contained development for Ghost themes". The facts (Handlebars, Tailwind v4, Drift and Convergence streams with lavender and sage colours, three-state dark mode, CSP and SRI, DOMPurify, Supabase Edge Functions with OpenRouter, member tiers for models, Magic Pages hosting, Codespaces workflow) come from those sources. The old entry also described an Express.js AI gateway on Fly.io; the repository now shows Supabase Edge Functions instead, so the story follows the repository. The constraints, the options and the lessons are inferred and need Don's correction. Themes, status and order are placeholders. The picture is the split-screen image from the Ghost themes post. There is no stand-in link: doncoleman.ca becomes this site at launch (docs/launch.md), and the build test rejects links to the site's own host at another origin. */}
 
 <Chapter stage="problem" visual="screenshot" draft>
 
@@ -110,7 +107,9 @@ Development runs in a GitHub Codespace that starts a local Ghost, pulls real con
 
 Flux has been the live theme on doncoleman.ca since 2025. Each newsletter reads as its own publication, and the dark mode toggle holds its state across pages.
 
-The Codespaces workflow means a new environment with real content is a few minutes away, which is described in the post on self-contained development for Ghost themes.
+The Codespaces workflow means a new environment with real content is a few minutes away, which is described in the post on [self-contained development for Ghost themes](/writing/self-contained-development-for-ghost-themes/).
+
+This site replaces the Ghost blog, so Flux retires with it. The split-screen picture above is its record, and the lessons carried over into the design of this site.
 
 </Chapter>
 

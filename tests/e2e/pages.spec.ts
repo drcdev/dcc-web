@@ -12,9 +12,26 @@ const PAGES = [
   ["/privacy-policy/", "Privacy policy", true],
   ["/terms-of-use/", "Terms of use", true],
   ["/technology/", "Technology", true],
+  // The app privacy policies moved from the first drc.dev are published as they were.
+  ["/privacy/tempo/", "Tempo privacy policy", false],
+  ["/privacy/plunge-buddy/", "Plunge Buddy privacy policy", false],
 ] as const;
 
 const NOT_BUILT = ["/cookie-policy/"] as const;
+
+// The app store listings point at the first drc.dev's per-project privacy addresses,
+// which public/_redirects sends to the app privacy pages with a real 301.
+test.describe("redirects from the first drc.dev's app privacy addresses", () => {
+  for (const slug of ["tempo", "plunge-buddy"]) {
+    for (const from of [`/projects/${slug}/privacy`, `/projects/${slug}/privacy/`]) {
+      test(`${from} answers 301 to /privacy/${slug}/`, async ({ request }) => {
+        const response = await request.get(from, { maxRedirects: 0 });
+        expect(response.status()).toBe(301);
+        expect(new URL(response.headers().location!, "http://127.0.0.1:4321").pathname).toBe(`/privacy/${slug}/`);
+      });
+    }
+  }
+});
 
 for (const [path, title, draft] of PAGES) {
   test.describe(`${path}`, () => {
