@@ -24,6 +24,34 @@ async function open(page: Page, path: string, width: number, height: number, the
   }, theme);
   await page.goto(path);
   await expect(page.locator("html")).toHaveClass(theme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
+  await settleImages(page);
+}
+
+// Astro renders images with loading="lazy", so an image below the first
+// viewport only starts loading when a full-page screenshot enlarges the
+// viewport, and whether it has painted by the time the screenshot is taken
+// depends on timing (under 4 Playwright workers in CI it often has not). Make
+// every image eager, wait for each one to load and decode, then wait for two
+// animation frames so the paint has happened, and finally assert that every
+// image has pixels. A screenshot is then never taken before its images paint.
+async function settleImages(page: Page) {
+  await page.evaluate(async () => {
+    const images = Array.from(document.images);
+    for (const img of images) img.loading = "eager";
+    await Promise.all(
+      images.map(async (img) => {
+        if (!img.complete) {
+          await new Promise<void>((done) => {
+            img.addEventListener("load", () => done(), { once: true });
+            img.addEventListener("error", () => done(), { once: true });
+          });
+        }
+        await img.decode().catch(() => undefined);
+      }),
+    );
+    await new Promise<void>((frame) => requestAnimationFrame(() => requestAnimationFrame(() => frame())));
+  });
+  await page.waitForFunction(() => Array.from(document.images).every((img) => img.complete && img.naturalWidth > 0));
 }
 
 for (const size of WIDTHS) {
