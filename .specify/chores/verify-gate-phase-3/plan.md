@@ -421,7 +421,7 @@ The `major-change.yml`, `visual-baselines.yml` and CODEOWNERS describes are not 
 
 ### W6 Chore skill: CI measurement wording
 
-- [ ] W6 done
+- [x] W6 done
 
 **Files:** `.claude/skills/chore/SKILL.md` (Ship step 6 only).
 
