@@ -8,8 +8,7 @@ visual:
   kind: image
   src: ./images/flux/index.png
   alt: A split screen showing the Flux Ghost theme in dark mode on one side and light mode on the other
-order: 3
-source: https://github.com/drcdev/flux
+date: 2025-02-24
 draft: true
 visuals:
   screenshot:
@@ -59,7 +58,7 @@ comparison:
       reason: It was the only route that gave each newsletter its own identity on hosted Ghost and left room for the AI features and the security defaults.
 ---
 
-{/* DRAFT FOR REVIEW: written by Claude from the old drc.dev project entry, the flux repository README and CLAUDE.md, and the post "Self-contained development for Ghost themes". The facts (Handlebars, Tailwind v4, Drift and Convergence streams with lavender and sage colours, three-state dark mode, CSP and SRI, DOMPurify, Supabase Edge Functions with OpenRouter, member tiers for models, Magic Pages hosting, Codespaces workflow) come from those sources. The old entry also described an Express.js AI gateway on Fly.io; the repository now shows Supabase Edge Functions instead, so the story follows the repository. The constraints, the options and the lessons are inferred and need Don's correction. Themes, status and order are placeholders. The picture is the split-screen image from the Ghost themes post. There is no stand-in link: doncoleman.ca becomes this site at launch (docs/launch.md), and the build test rejects links to the site's own host at another origin. */}
+{/* DRAFT FOR REVIEW: written by Claude from the old drc.dev project entry, the flux repository README and CLAUDE.md, and the post "Self-contained development for Ghost themes". The facts (Handlebars, Tailwind v4, Drift and Convergence streams with lavender and sage colours, three-state dark mode, CSP and SRI, DOMPurify, Supabase Edge Functions with OpenRouter, member tiers for models, Magic Pages hosting, Codespaces workflow) come from those sources. The old entry also described an Express.js AI gateway on Fly.io; the repository now shows Supabase Edge Functions instead, so the story follows the repository. The constraints, the options and the lessons are inferred and need Don's correction. Themes are placeholders. The date is the repository's creation date. The picture is the split-screen image from the Ghost themes post. There is no source link because the repository is private, and no stand-in link: doncoleman.ca becomes this site at launch (docs/launch.md), and the build test rejects links to the site's own host at another origin. */}
 
 <Chapter stage="problem" visual="screenshot" draft>
 
@@ -98,8 +97,6 @@ A Node.js build minifies the scripts and stamps them with subresource integrity 
 AI reading aids are optional. A Supabase Edge Function asks a model for critical questions and related topics about a post, and members can regenerate them with higher-tier models.
 
 Development runs in a GitHub Codespace that starts a local Ghost, pulls real content from production and deploys the theme through GitHub Actions.
-
-<Demo />
 
 </Chapter>
 

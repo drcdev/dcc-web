@@ -152,15 +152,22 @@ test("the sitemap lists the eight pages, the listing pages, the series pages, th
   const first = /<loc>[^<]*(\/sitemap-[^<]+\.xml)<\/loc>/.exec(index)?.[1];
   const sitemap = await (await request.get(first!)).text();
   const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]!).pathname).sort();
-  // The sample post is a draft: built outside production, left out of a production build. The
-  // four real posts are published. Sorted by code point, so the sample sits among the real posts.
+  // The sample post and the four projects migrated from the first drc.dev are drafts: built
+  // outside production, left out of a production build. The four real posts, Focus Pocus and the
+  // two app privacy pages are published. Sorted by code point, so drafts sit among the rest.
   expect(paths).toEqual([
     "/",
     "/about/",
     "/contact/",
     "/privacy-policy/",
+    "/privacy/plunge-buddy/",
+    "/privacy/tempo/",
     "/projects/",
+    "/projects/drcdev-github-io/",
+    "/projects/flux/",
     "/projects/focus-pocus/",
+    "/projects/plunge-buddy/",
+    "/projects/tempo/",
     "/services/",
     "/speaking/",
     "/technology/",

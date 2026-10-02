@@ -8,8 +8,7 @@ visual:
   kind: image
   src: ./images/tempo/index.jpg
   alt: The Tempo timer screen during a push-up step, showing round 2 of 3, rep 4 of 10, 18 seconds left and the next step, Plank Hold
-order: 2
-source: https://github.com/drcdev/tempo
+date: 2020-06-23
 draft: true
 visuals:
   screenshot:
@@ -59,7 +58,7 @@ comparison:
       reason: It was the only route that met all four constraints with one codebase, and it built on Flutter experience from earlier projects.
 ---
 
-{/* DRAFT FOR REVIEW: written by Claude from the old drc.dev project entry and the tempo repository README and ARCHITECTURE.md. The facts (Flutter, Riverpod, Drift, optional Supabase sync with magic links, Apple Health and Health Connect logging, offline first, bilateral steps, duplicate and reverse, version 0.11.0) come from those sources. The problem, the constraints, the options and the lessons are inferred and need Don's correction. Themes, status and order are placeholders. The screenshot is the one from the old site; a second screenshot and a store link would help. */}
+{/* DRAFT FOR REVIEW: written by Claude from the old drc.dev project entry and the tempo repository README and ARCHITECTURE.md. The facts (Flutter, Riverpod, Drift, optional Supabase sync with magic links, Apple Health and Health Connect logging, offline first, bilateral steps, duplicate and reverse, version 0.11.0) come from those sources. The problem, the constraints, the options and the lessons are inferred and need Don's correction. Themes are placeholders. The date is the repository's creation date, which puts Tempo last on the index; a release date would be better. The repository is private, so there is no source link. The screenshot is the one from the old site; a second screenshot and a store link would help. */}
 
 <Chapter stage="problem" visual="screenshot" draft>
 
@@ -96,8 +95,6 @@ Tempo is a Flutter app for iOS, Android and the web. Routines are built from ste
 Everything is stored on the device in a Drift SQLite database, so the app is fully usable offline. State and dependencies are managed with Riverpod, and the interface uses a custom glassmorphism design system called FLXIT.
 
 Cloud sync is optional. Signing in with a magic link syncs routines, history and preferences through Supabase, with changes queued while offline. Workouts can also be written to Apple Health or Health Connect when that is switched on. The [privacy policy](/privacy/tempo/) sets out what stays on the device.
-
-<Demo />
 
 </Chapter>
 

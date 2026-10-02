@@ -1,19 +1,22 @@
 // The projects index on the fixture site (port 4322, playwright.config.ts project
-// `sections`): five projects (Focus Pocus and the four fixtures) so filtering,
-// clearing, sharing and the unknown-theme message have something to work on
-// (US4; contracts/filter-island.md; FR-014).
+// `sections`): the repository's projects (Focus Pocus and the four drafts migrated
+// from the first drc.dev) plus the four fixtures, so filtering, clearing, sharing and
+// the unknown-theme message have something to work on (US4; contracts/filter-island.md;
+// FR-014).
 import { expect, test, type Page } from "@playwright/test";
 import { cspViolations, recordCspViolations } from "./csp-violations.ts";
 
 const INDEX = "/projects/";
+// Five repository projects and four fixtures. A new project in src/content/projects/ adds one.
+const ALL = 9;
 const rows = (page: Page) => page.locator("[data-project]:not([hidden])");
 const status = (page: Page) => page.locator("[data-filter-status]");
 
 test("lists every project, with the controls ready", async ({ page }) => {
   await page.goto(INDEX);
   await expect(page.locator("project-filter[data-ready]")).toHaveCount(1);
-  await expect(rows(page)).toHaveCount(5);
-  await expect(status(page)).toHaveText("Showing all 5 projects.");
+  await expect(rows(page)).toHaveCount(ALL);
+  await expect(status(page)).toHaveText(`Showing all ${ALL} projects.`);
   await expect(page.getByRole("group", { name: "Filter by theme" })).toBeVisible();
   await expect(page.locator("[data-filter-all]")).toHaveAttribute("aria-pressed", "true");
 });
@@ -33,9 +36,9 @@ test("filters by theme, announces the count and clears", async ({ page }) => {
   await expect(page).toHaveURL(/\/projects\/\?theme=tooling$/);
   await expect(page.locator('button[data-theme="tooling"]')).toHaveAttribute("aria-pressed", "true");
   await page.locator("[data-filter-all]").click();
-  await expect(rows(page)).toHaveCount(5);
+  await expect(rows(page)).toHaveCount(ALL);
   await expect(page).toHaveURL(/\/projects\/$/);
-  await expect(status(page)).toHaveText("Showing all 5 projects.");
+  await expect(status(page)).toHaveText(`Showing all ${ALL} projects.`);
 });
 
 test("keeps focus on the pressed button", async ({ page }) => {
@@ -62,7 +65,7 @@ test("an unknown theme lists nothing, says so and keeps the address until cleare
   await expect(status(page)).toHaveText("No projects match this theme.");
   await expect(page).toHaveURL(/\?theme=nonsense$/);
   await page.getByRole("button", { name: "Show all projects" }).click();
-  await expect(rows(page)).toHaveCount(5);
+  await expect(rows(page)).toHaveCount(ALL);
   await expect(page).toHaveURL(/\/projects\/$/);
   await expect(page.locator("[data-filter-empty]")).toBeHidden();
   await expect(page.locator("[data-filter-all]")).toBeFocused();
