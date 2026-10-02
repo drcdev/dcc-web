@@ -27,12 +27,13 @@ async function open(page: Page, path: string, width: number, height: number, the
   await settleImages(page);
 }
 
-// Astro renders Markdown images with loading="lazy", so an image below the
-// first viewport only starts loading when a full-page screenshot enlarges the
-// viewport. Under CPU load (4 Playwright workers in CI) that load can outlast
-// the screenshot's stability window, and the image is captured as its
-// container's background. Make every image eager, then wait for each one to
-// load and decode, so a screenshot is never taken before its images paint.
+// Astro renders images with loading="lazy", so an image below the first
+// viewport only starts loading when a full-page screenshot enlarges the
+// viewport, and whether it has painted by the time the screenshot is taken
+// depends on timing (under 4 Playwright workers in CI it often has not). Make
+// every image eager, wait for each one to load and decode, then wait for two
+// animation frames so the paint has happened, and finally assert that every
+// image has pixels. A screenshot is then never taken before its images paint.
 async function settleImages(page: Page) {
   await page.evaluate(async () => {
     const images = Array.from(document.images);
@@ -48,7 +49,9 @@ async function settleImages(page: Page) {
         await img.decode().catch(() => undefined);
       }),
     );
+    await new Promise<void>((frame) => requestAnimationFrame(() => requestAnimationFrame(() => frame())));
   });
+  await page.waitForFunction(() => Array.from(document.images).every((img) => img.complete && img.naturalWidth > 0));
 }
 
 for (const size of WIDTHS) {
