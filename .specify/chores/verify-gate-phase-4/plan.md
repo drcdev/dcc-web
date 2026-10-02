@@ -316,7 +316,7 @@ that every test file is matched by exactly one project must stay green.
 
 ### W3 Scripts `test:build:content` and `verify:quick`, and the content-tier guard
 
-- [ ] W3 done
+- [x] W3 done
 
 **Files:** `package.json`, `tests/unit/site/config-files.test.ts`,
 `tests/unit/ci/content-tier.test.ts` (new).

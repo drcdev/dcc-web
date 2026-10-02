@@ -301,6 +301,34 @@ describe("package.json scripts", () => {
     );
   });
 
+  it("adds test:build:content, running only the build tests that read real content", () => {
+    expect(pkg.scripts["test:build:content"]).toBe(
+      "vitest run --project build tests/build/indexing.test.ts tests/build/local-site.test.ts",
+    );
+  });
+
+  it("adds verify:quick: the gate without the build-fixture tests and Playwright", () => {
+    const quick: string = pkg.scripts["verify:quick"];
+    expect(quick).toBe(
+      "pnpm run lint:secrets && pnpm run lint && pnpm run typecheck && pnpm run test:unit && pnpm run test:worker && pnpm run build",
+    );
+    const runs = (script: string): string[] => [...script.matchAll(/pnpm run (\S+)/g)].map((m) => m[1] as string);
+    const members = runs(quick);
+    for (const name of members) {
+      expect(pkg.scripts[name], `${name} is a defined script`).toBeTypeOf("string");
+    }
+    expect(members).toEqual(["lint:secrets", "lint", "typecheck", "test:unit", "test:worker", "build"]);
+    // Every member is also run by verify, directly or through test (vitest run + test:worker).
+    expect(pkg.scripts.test).toBe("vitest run && pnpm run test:worker");
+    const verifyMembers = runs(pkg.scripts.verify);
+    const testMembers = runs(pkg.scripts.test);
+    for (const name of members) {
+      const direct = verifyMembers.includes(name);
+      const viaTest = verifyMembers.includes("test") && (testMembers.includes(name) || name === "test:unit");
+      expect(direct || viaTest, `${name} is run by verify`).toBe(true);
+    }
+  });
+
   it("runs all four Playwright projects from test:e2e", () => {
     expect(pkg.scripts["test:e2e"]).toBe("playwright test");
   });

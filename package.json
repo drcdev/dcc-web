@@ -19,6 +19,7 @@
     "test": "vitest run && pnpm run test:worker",
     "test:unit": "vitest run --project unit",
     "test:build": "vitest run --project build",
+    "test:build:content": "vitest run --project build tests/build/indexing.test.ts tests/build/local-site.test.ts",
     "test:worker": "pnpm --filter ./worker test",
     "test:e2e": "playwright test",
     "test:e2e:parallel": "playwright test --project=e2e --project=a11y --project=visual --project=sections",
@@ -32,6 +33,7 @@
     "deploy:production": "node scripts/deploy/production.ts",
     "types:worker": "wrangler types worker/worker-configuration.d.ts",
     "verify": "pnpm run lint:secrets && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build && pnpm run test:e2e",
+    "verify:quick": "pnpm run lint:secrets && pnpm run lint && pnpm run typecheck && pnpm run test:unit && pnpm run test:worker && pnpm run build",
     "setup:check": "node scripts/setup-check/cli.ts",
     "site:check": "node scripts/site-check/cli.ts",
     "setup:dns-snapshot": "node scripts/setup-check/dns-snapshot.ts"
