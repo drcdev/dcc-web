@@ -159,3 +159,25 @@ None.
   - move the preview crawl into its own job if waiting for the preview build adds to the wall time;
   - later phases of #26: D5, D6, D7 and D8.
 - Merge mode: MAJOR, auto-merge off, waiting for Don's approval.
+
+## Review round 2
+
+Reviewed fix commit `6e61443` against the round-1 findings. Read-only.
+
+- **C1 closed.** `git show --stat HEAD` touches only `5.py` (deleted, 0 lines), `docs/setup.md` (+3/-2) and `docs/testing.md` (+1/-1). `git ls-files 5.py` is empty and the file is not on disk.
+- **L4 closed.** The `docs/testing.md:20` "Real `astro build`" row now says `pnpm run build` "runs in the `e2e` job in CI and in the local `verify` script". This matches `.github/workflows/ci.yml`, where `pnpm run build` is at line 133, inside the `e2e` job (lines 105–160).
+- **L5 closed.** `git diff HEAD~1 -- docs/setup.md` only rewraps the item 11 paragraph. The words are the same and the substance is unchanged. Lines 336–341 are now 93–98 columns wide.
+- **Scope.** `git diff main...HEAD --name-only` lists 12 files, all inside plan scope:
+  - `.claude/skills/chore/SKILL.md`
+  - `.github/workflows/ci.yml`
+  - `.specify/chores/verify-gate-phase-3/{plan,report}.md`
+  - `docs/setup.md`, `docs/testing.md`
+  - `package.json`, `playwright.config.ts`
+  - `scripts/ci/verify-needs.ts`
+  - `tests/unit/ci/{verify-needs,workflows}.test.ts`
+  - `tests/unit/site/config-files.test.ts`
+- **No drift.** `git diff HEAD~1` is empty for `ci.yml`, `playwright.config.ts`, `package.json` and `scripts/ci/verify-needs.ts`.
+- **Tests.** `vitest run --project unit` over `tests/unit/ci/`, `tests/unit/setup/` and `tests/unit/site/config-files.test.ts` passed: 14 files, 469 tests, 0 failures, 2.9 s. The build project, Playwright and the full gate were not run.
+- **Still open, accepted:** L1 (fail-closed `verify` vs. the `changed-paths.ts` comment), L2 (budget run restarts the web servers in CI) and L3 (`test:build` runs in its own job for the first time). These are watch items for the first CI run.
+
+Totals after round 2: CRITICAL 0, HIGH 0, LOW 3. Ready for the verify phase.
