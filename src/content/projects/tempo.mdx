@@ -9,86 +9,50 @@ visual:
   src: ./images/tempo/index.jpg
   alt: The Tempo timer screen during a push-up step, showing round 2 of 3, rep 4 of 10, 18 seconds left and the next step, Plank Hold
 date: 2020-06-23
-draft: true
 visuals:
   screenshot:
     kind: image
     src: ./images/tempo/index.jpg
     alt: The Tempo timer screen during a push-up step, showing round 2 of 3, rep 4 of 10, 18 seconds left and the next step, Plank Hold
+    part: problem
   architecture:
     kind: diagram
     src: ./images/tempo/architecture.svg
     alt: Four boxes, the Tempo app pointing to on-device data, which points to optional Supabase sync and optional Apple Health or Health Connect
     description: The app keeps every routine and workout in a Drift database on the device. Sync to Supabase and logging to Apple Health or Health Connect are both optional and off by default.
-comparison:
-  caption: The three ways to get a guided routine timer that were considered
-  constraints:
-    - id: offline
-      label: Works with no connection
-      detail: A workout in a basement or a park cannot depend on a signal or an account.
-    - id: every-platform
-      label: Runs on iPhone, Android and the web
-      detail: One routine should be usable on whatever device is nearest.
-    - id: hands-free
-      label: Hands-free guidance
-      detail: Transitions and countdowns are spoken, so the phone can stay on the floor.
-    - id: sides-and-reps
-      label: Sides, reps and rounds
-      detail: A step can repeat, switch between left and right, and sit inside a round that repeats too.
-  options:
-    - id: existing-app
-      name: An existing interval timer app
-      summary: Use one of the many HIIT or interval timers already in the app stores.
-      fit: { offline: meets, every-platform: partly, hands-free: partly, sides-and-reps: misses }
-      pros: [Nothing to build or maintain.]
-      cons: [None found that handled left and right sides or nested rounds the way the routines needed., Voice cues were often an upgrade or an afterthought.]
-    - id: native-swift
-      name: A native iPhone app in Swift
-      summary: Build the timer once for iOS with SwiftUI.
-      fit: { offline: meets, every-platform: misses, hands-free: meets, sides-and-reps: meets }
-      pros: [The best fit with the phone's speech and health features.]
-      cons: [No Android or web version without a second codebase.]
-    - id: flutter
-      name: A Flutter app
-      summary: One Dart codebase that builds for iOS, Android and the web.
-      fit: { offline: meets, every-platform: meets, hands-free: meets, sides-and-reps: meets }
-      pros: [One codebase for all three platforms., Mature packages for local SQL, text to speech and health logging.]
-      cons: [Platform features such as Apple Health need plugins and some per-platform care.]
-      chosen: true
-      reason: It was the only route that met all four constraints with one codebase, and it built on Flutter experience from earlier projects.
+    part: build
+invitation: "If a routine, a drill or a procedure in your work needs to be followed by voice rather than by screen, tell me about it."
+draft: true
 ---
 
 {/* DRAFT FOR REVIEW: written by Claude from the old drc.dev project entry and the tempo repository README and ARCHITECTURE.md. The facts (Flutter, Riverpod, Drift, optional Supabase sync with magic links, Apple Health and Health Connect logging, offline first, bilateral steps, duplicate and reverse, version 0.11.0) come from those sources. The problem, the constraints, the options and the lessons are inferred and need Don's correction. Themes are placeholders. The date is the repository's creation date, which puts Tempo last on the index; a release date would be better. The repository is private, so there is no source link. The screenshot is the one from the old site; a second screenshot and a store link would help. */}
 
-<Chapter stage="problem" visual="screenshot" draft>
+## Problem
 
 A routine with rounds, reps, left and right sides and rest periods is hard to follow from a stopwatch. The eyes end up on the screen instead of on form.
 
 The aim was a timer that speaks each transition and countdown, so a routine can run from start to finish without touching the phone.
 
-</Chapter>
-
-<Chapter stage="constraints" draft>
-
-A workout happens wherever there is floor space, so the app had to work with no connection and no account.
-
-The same routine should be usable on an iPhone, an Android phone or in a browser, and a change on one device should be able to reach the others.
-
-Bilateral steps are the awkward part. A step can run for the left side, then the right side, repeat for a number of reps, and sit inside a round that repeats as well.
-
-Recovery periods needed their own countdown, with a way to skip one when the rest is not needed.
-
-</Chapter>
-
-<Chapter stage="options" draft>
+## Options
 
 Three routes were open. The first two would have been less work, but neither handled sides and reps on every platform.
 
-<OptionComparison />
+Bilateral steps are the awkward part. A step can run for the left side, then the right side, repeat for a number of reps, and sit inside a round that repeats as well. Recovery periods needed their own countdown, with a way to skip one when the rest is not needed. A change on one device should be able to reach the others.
 
-</Chapter>
+- **Works with no connection**: A workout in a basement or a park cannot depend on a signal or an account.
+- **Runs on iPhone, Android and the web**: One routine should be usable on whatever device is nearest.
+- **Hands-free guidance**: Transitions and countdowns are spoken, so the phone can stay on the floor.
+- **Sides, reps and rounds**: A step can repeat, switch between left and right, and sit inside a round that repeats too.
 
-<Chapter stage="built" visual="architecture" draft>
+| Option | Works with no connection | Runs on iPhone, Android and the web | Hands-free guidance | Sides, reps and rounds |
+| --- | --- | --- | --- | --- |
+| An existing interval timer app | Yes | Partly | Partly | No |
+| A native iPhone app in Swift | Yes | No | Yes | Yes |
+| **A Flutter app** | Yes | Yes | Yes | Yes |
+
+Why a Flutter app won: it was the only route that met all four constraints with one codebase, and it built on Flutter experience from earlier projects.
+
+## Build
 
 Tempo is a Flutter app for iOS, Android and the web. Routines are built from steps, each with its own duration, reps, sides and recovery, and the timer announces every transition by text to speech.
 
@@ -96,28 +60,12 @@ Everything is stored on the device in a Drift SQLite database, so the app is ful
 
 Cloud sync is optional. Signing in with a magic link syncs routines, history and preferences through Supabase, with changes queued while offline. Workouts can also be written to Apple Health or Health Connect when that is switched on. The [privacy policy](/privacy/tempo/) sets out what stays on the device.
 
-</Chapter>
-
-<Chapter stage="outcome" draft>
-
 A routine can be started and finished without looking at the phone. The voice calls each step, each side and each rest, and the progress bars show where the routine is up to.
 
 Routines can be duplicated, run in reverse and reviewed in a history with analytics. The current version is 0.11.0, which added cloud sync.
 
-</Chapter>
-
-<Chapter stage="lessons" draft>
+## Lessons
 
 Offline first made sync harder later. Every change had to be queued and replayed, and deleted records are kept for 90 days so devices can agree.
 
 A timer needs tighter control than generated state providers give, so the timer engine ended up as a hand-written provider while everything else stayed generated.
-
-</Chapter>
-
-<Chapter stage="invitation" draft>
-
-If a routine, a drill or a procedure in your work needs to be followed by voice rather than by screen, tell me about it.
-
-<Invitation />
-
-</Chapter>

@@ -19,7 +19,7 @@
     "test": "vitest run && pnpm run test:worker",
     "test:unit": "vitest run --project unit",
     "test:build": "vitest run --project build",
-    "test:build:content": "vitest run --project build tests/build/indexing.test.ts tests/build/local-site.test.ts",
+    "test:build:content": "vitest run --project build tests/build/indexing.test.ts tests/build/local-site.test.ts tests/build/project-template.test.ts",
     "test:worker": "pnpm --filter ./worker test",
     "test:e2e": "playwright test",
     "test:e2e:parallel": "playwright test --project=e2e --project=a11y --project=visual --project=sections",

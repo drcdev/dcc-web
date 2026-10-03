@@ -8,7 +8,7 @@
 // the production build here runs the same includeDrafts call, and
 // tests/unit/site/astro-config.test.ts checks the one build-only factor (astro:env hands over
 // `undefined` for a missing branch). A broken draft failing the build is asserted in
-// project-validation.test.ts. The draft project uses its own image, poster and clip, so their
+// project-validation.test.ts. The draft project uses its own image, so its
 // absence from dist/ proves draft-only assets are dropped. The local or test build (no
 // environment) runs in local-site.test.ts.
 import { existsSync, readdirSync, statSync } from "node:fs";
@@ -23,9 +23,8 @@ const draftWithAssets: FixtureFile = {
     ["src: ./images/sample.png", "src: ./images/draft-only.png"],
     [
       "draft: true\n",
-      "draft: true\nvisuals:\n  clip:\n    kind: clip\n    src: ./images/draft-only.webm\n    poster: ./images/draft-only-poster.png\n    label: A draft clip\n    description: Only in the draft.\n",
+      "draft: true\nvisuals:\n  shot:\n    kind: image\n    src: ./images/draft-only.png\n    alt: A draft picture\n    part: build\n",
     ],
-    ['<Chapter stage="built">', '<Chapter stage="built" visual="clip">'],
   ],
 };
 const projects = ["minimal.mdx", draftWithAssets];
@@ -170,6 +169,31 @@ describe("a production build (Workers Builds, main)", () => {
     expect(build().read("projects/minimal/index.html")).not.toContain("data-draft-notice");
   });
 
+  // FR-002, FR-025: only the real MDX compile proves the plugin's output reaches `<Content components>`.
+  it("builds a project page as one article in main: header with the heading, four parts in order, the table, the invitation last", () => {
+    const html = build().read("projects/minimal/index.html");
+    const main = /<main[\s>][\s\S]*<\/main>/.exec(html)?.[0] ?? "";
+    expect(main).not.toBe("");
+    expect(main.match(/<article[\s>]/g)).toHaveLength(1);
+    const article = /<article[\s>][\s\S]*<\/article>/.exec(main)?.[0] ?? "";
+    expect(article).not.toBe("");
+    const header = /<header[^>]*data-story-header[^>]*>[\s\S]*?<\/header>/.exec(article)?.[0] ?? "";
+    expect(header).toMatch(/<h1[^>]*>\s*Minimal project\s*<\/h1>/);
+    const parts = [...article.matchAll(/<section[^>]*\sdata-part="([a-z]+)"/g)];
+    expect(parts.map((m) => m[1])).toEqual(["problem", "options", "build", "lessons"]);
+    expect(article.indexOf("data-story-header")).toBeLessThan(parts[0]!.index!);
+    // The Options table is drawn by the component, inside the Options part.
+    const options = article.slice(parts[1]!.index, parts[2]!.index);
+    expect(options).toMatch(/<div[^>]*data-options-table[^>]*>\s*<table[\s>]/);
+    expect(options).toContain("data-chosen");
+    expect(article.match(/<table[\s>]/g)).toHaveLength(1);
+    // The invitation follows the last part and closes the article.
+    const invitation = article.indexOf("data-invitation-block");
+    expect(invitation).toBeGreaterThan(parts[3]!.index!);
+    expect(article.indexOf("data-part=", invitation)).toBe(-1);
+    expect(article).not.toMatch(/data-chapter|data-reveal|data-story-contents|Chapter \d/);
+  });
+
   // Moved from the fixture-site harness test: the build got WORKERS_CI and the main branch.
   it("sets the site address from WORKERS_CI and the branch, so main serves doncoleman.ca", () => {
     expect(build().read("sitemap-0.xml")).toContain("https://doncoleman.ca/");
@@ -231,10 +255,8 @@ describe("a preview build (Workers Builds, another branch)", () => {
     expect(build().read("sitemap-0.xml")).toContain("/projects/draft/");
   });
 
-  it("emits the draft project's own image and clip, and leaves the published project unmarked", () => {
-    const names = builtNames(build());
-    expect(names.some((name) => name.includes("draft-only") && name.endsWith(".webm"))).toBe(true);
-    expect(names.some((name) => name.includes("draft-only") && !name.endsWith(".webm"))).toBe(true);
+  it("emits the draft project's own image, and leaves the published project unmarked", () => {
+    expect(builtNames(build()).some((name) => name.includes("draft-only"))).toBe(true);
     expect(build().read("projects/minimal/index.html")).not.toContain("data-draft-notice");
   });
 });

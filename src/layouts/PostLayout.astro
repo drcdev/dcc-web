@@ -16,6 +16,7 @@ import Share from "../components/post/Share.astro";
 import ViewsNote from "../components/post/ViewsNote.astro";
 import { featuredMark } from "../components/post/topic-styles.ts";
 import { blog } from "../config/blog.ts";
+import { proseClasses } from "../lib/prose.ts";
 import type { NavigationItem } from "../config/navigation";
 import type { PostSummary } from "../lib/content/post-summary.ts";
 
@@ -67,10 +68,7 @@ const seo: Partial<ComponentProps<typeof BaseLayout>> = {
       {post.featured && <p class="m-0 mb-3"><span data-featured-mark class={featuredMark}>Featured</span></p>}
       <PostMeta post={post} />
     </div>
-    <div
-      data-post-body
-      class="prose lg:prose-lg dark:prose-invert prose-accent mx-auto mt-8 max-w-3xl"
-    >
+    <div data-post-body class:list={[proseClasses, "mx-auto mt-8 max-w-3xl"]}>
       <slot />
     </div>
     <div class="mx-auto mt-8 max-w-3xl">

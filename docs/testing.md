@@ -58,7 +58,7 @@ outputs, `full` and `content_only`. A push to `main` and a missing or empty diff
 | Tier | What counts | What runs | What is skipped |
 |---|---|---|---|
 | Skip-safe | Every changed file is on the skip-safe allowlist: `CLAUDE.md`, and `.md`, `.yml`, `.yaml`, `.json`, `.sh`, `.py` and `.ps1` files under `.claude/`, `.specify/` and `specs/`, except the files a test or check reads (the four pipeline `SKILL.md` files, `setup-walkthrough`'s `SKILL.md` and the constitution). `full=false`. | secretlint only (`static`) and `verify` | `build-tests` and `e2e`, and the lint, type-check and unit steps of `static` |
-| Content-only | Every changed file is either skip-safe or an `.mdx` file or an image or video file under `src/content/pages`, `src/content/posts` or `src/content/projects`. `.md` files, schemas, `src/content.config.ts` and `public/` are not content-only. `full=true`, `content_only=true`. | The whole gate, except that `build-tests` runs `pnpm run test:build:content` (`indexing.test.ts` and `local-site.test.ts`, the two build files that read real content by name) | The other build files (listed below) |
+| Content-only | Every changed file is either skip-safe or an `.mdx` file or an image or video file under `src/content/pages`, `src/content/posts` or `src/content/projects`. `.md` files, schemas, `src/content.config.ts` and `public/` are not content-only. `full=true`, `content_only=true`. | The whole gate, except that `build-tests` runs `pnpm run test:build:content` (`indexing.test.ts`, `local-site.test.ts` and `project-template.test.ts`, the build files that read real content by name) | The other build files (listed below) |
 | Full | Everything else, every push to `main`, an empty diff, and any failure to compute the diff. `full=true`, `content_only=false`. | Every job and the whole `test:build` project | Nothing |
 
 The rule fails closed: a path that is not positively recognised runs the full gate, and an
@@ -214,58 +214,38 @@ Not rows, but kept: an unknown code-fence language builds as plain text
 build (`build/local-site.test.ts` "fails the build, naming the colour, when a token colour has
 no class", with the transformer logic in `unit/markdown/shiki-classes.test.ts`).
 
-### Project files: `specs/009-portfolio/contracts/build-errors.md`
+### Project files: `specs/014-project-four-part-story/contracts/build-errors.md`
 
 Every run in `build/project-validation.test.ts` sets `env: { PROJECT_VALIDATION_CANARY }` and
 asserts that the message does not contain it (no environment value or secret in a message).
 Call-site runs:
 
 - **sync**: "validates drafts too: the projects schema is wired and Astro names the file (row 03,
-  FR-073)" (production environment); "row 17: generateId runs assertProjectImagesExist (and
-  the clip check of row 19)"; "row 27: generateId runs slugFromPath (and rejects a nested file
-  the same way)".
-- **build**: "row 26: the route runs assertUniqueProjectFiles"; "rows 09 to 11: the route runs
-  validateProjectBody on a draft in a production build".
+  FR-073)" (production environment); "row 17: generateId runs assertProjectImagesExist";
+  "row 27: generateId runs slugFromPath (and rejects a nested file the same way)"; "R01: a
+  removed setting in a draft fails at sync under production".
+- **build**: "row 26: the route runs assertUniqueProjectFiles"; "a malformed options table in a
+  draft fails a production build" (T06) and "an MDX element in a draft fails a production
+  build" (R05): `validateProjectStory` runs on every entry, drafts included.
+- **template**: `build/project-template.test.ts` "X01: _template.mdx is excluded" and "X02: a renamed copy
+  of the template builds with four parts, links and the invitation" (in `test:build:content`).
 
-Schema rows are asserted in `unit/project-schema.test.ts`, describe "projectSchema messages
-(contracts/build-errors.md)", with the row id in the title. The body rows are one `it.each`
-in `unit/project-body.test.ts`, describe "validateProjectBody messages (contracts/build-errors.md)",
-titled "%s names the file and the phrase" (each row asserts the file and the phrase).
+Schema rows are asserted in `unit/project-schema.test.ts` (the row id is in each title). Body
+rows are asserted in `unit/project-story.test.ts`, one `it` per row id. The template itself
+is checked by `unit/project-template.test.ts`, and the guide by `unit/projects-guide.test.ts`.
 
-| Row | Rule | Primary assertion | Call-site run |
+| Rows (contract ids) | Rule | Primary assertion | Call-site run |
 |---|---|---|---|
-| 01 | Missing title | `unit/project-schema.test.ts` "row 01" | schema sync (row 03 run) |
-| 02 | Missing problem | "row 02" | schema sync |
-| 03 | Missing or unknown status | "row 03: an unknown status names status and lists the allowed values" | schema sync |
-| 04 | Theme count or duplicate | "row 04: %s themes name themes" | schema sync |
-| 05 | Index visual or alt missing | "row 05: an index visual without alt names visual and alt" | schema sync |
-| 06 | Wrong-kind or out-of-range `order` | "row 06: order %s names order" | schema sync |
-| 07 | Unknown setting | "row 07: a misspelled setting is named" | schema sync |
-| 08 | Problem too long | "row 08: a long problem asks for one sentence of at most 140 characters" | schema sync |
-| 09 | Missing chapter | `unit/project-body.test.ts` "row 09: a missing chapter names the file and the phrase" | build, rows 09 to 11 |
-| 10 | Chapters out of order | "row 10: chapters out of order ..." | build, rows 09 to 11 |
-| 11 | Repeated chapter | "row 11: a repeated chapter ..." | build, rows 09 to 11 |
-| 12 | Not exactly one chosen option | `unit/project-schema.test.ts` "row 12" | schema sync |
-| 13 | Chosen option without reason | "row 13" | schema sync |
-| 14 | Option missing a fit | "row 14: an option missing a fit names the option and the constraint" | schema sync |
-| 15 | Comparison empty | "row 15: a comparison with %s names comparison" | schema sync |
-| 16 | `<OptionComparison />` misplaced | `unit/project-body.test.ts` "row 16: no OptionComparison block ..." | build, rows 09 to 11 |
-| 17 | Missing image | `unit/project-clips.test.ts` "row 17: names the project file and the path of a missing image" | sync, row 17. Only the frontmatter case is tested; the body-image half of the row (the same Astro import mechanism as P22) has no test yet. |
-| 18 | Visual without alt or description | `unit/project-schema.test.ts` "row 18" | schema sync |
-| 19 | Clip problems | description: `unit/project-schema.test.ts` "row 19"; missing clip and clip over 5 MB: `unit/project-clips.test.ts` "names the file and the path of a missing clip" and "names the file, the path and the limit of a clip over 5 MB" | schema sync; sync, row 17 (same function) |
-| 20 | Demo address | `unit/project-schema.test.ts` "row 20" | schema sync |
-| 21 | Source or stand-in address | "row 21: %s that is not https names the setting and https://" | schema sync |
-| 22 | Demo and stand-in both set | "row 22" | schema sync |
-| 23 | Unknown building block | `unit/project-body.test.ts` "row 23: an unknown block lists the blocks ..." | build, rows 09 to 11 |
-| 24 | Unknown visual name | "row 24" | build, rows 09 to 11 |
-| 25 | `visual="demo"` without embed | "row 25" | build, rows 09 to 11 |
-| 26 | Duplicate slug, nested file | `unit/project-address.test.ts` "names both files when .md and .mdx share a slug" and "rejects a nested file" (including the phrase "not in a subfolder") | build, row 26 (duplicate); sync, row 27 (nested file, same `slugFromPath`) |
-| 27 | Bad file name | `unit/project-address.test.ts` "rejects %s with the file name and the naming rule" | sync, row 27 |
-| 28 | Level-1 or level-2 heading | `unit/project-body.test.ts` "row 28" | build, rows 09 to 11 |
-| 29 | Body image without alt | "row 29" | build, rows 09 to 11 |
-| 30 | Invitation or Demo misplaced | "row 30: the Invitation block missing" and "row 30: the Demo block missing when demo links are set" | build, rows 09 to 11 |
-| 31 | Comparison id problems | `unit/project-schema.test.ts` three "row 31" cases (unknown constraint, reason on an unchosen option, duplicate id) | schema sync |
-| 32 | Visual name or kind | "row 32: a visual name with %s names visuals and the name" and "row 32: a clip as the index visual names visual" | schema sync |
+| S01 to S08 | Required settings, status, themes, pictures, unknown setting, problem length, addresses, picture name | `unit/project-schema.test.ts` "S01" to "S08" | schema sync (row 03 run) |
+| S09 | Missing picture file | `build/project-validation.test.ts` "row 17" (the check has no unit test of its own) | sync, row 17 |
+| S10 | Bad file name, nested file | `unit/project-address.test.ts` "rejects %s with the file name and the naming rule" | sync, row 27 |
+| S11 | Two files, one slug | `unit/project-address.test.ts` "names both files when .md and .mdx share a slug" | build, row 26 |
+| R01 to R04 | Removed settings: `order`, `demo.embed`, a clip picture, `comparison` | `unit/project-schema.test.ts` "R01" to "R04" | sync, "R01" run |
+| R05, R06 | MDX element, import or export in the body | `unit/project-story.test.ts` "R05", "R06" | build, "an MDX element in a draft" |
+| N01 to N03 | `part` value, one picture per part, `invitation` text | `unit/project-schema.test.ts` "N01" to "N03" | schema sync |
+| P01 to P07 | The four parts, heading level, body images, text before the first part | `unit/project-story.test.ts` "P01" to "P07" | build, "a malformed options table in a draft" run (same call) |
+| T01 to T13 | The Options constraint list, table, bold option and "Why" line | `unit/project-story.test.ts` "T01" to "T13" | build, "a malformed options table in a draft" |
+| X01, X02 | The template is excluded; a renamed copy builds | `unit/project-template.test.ts`; `build/project-template.test.ts` "X01", "X02" | build |
 
 A page file under `/projects/...` fails through the page address check:
 `unit/address.test.ts` "fails for a page file under the projects story route's prefix" and
@@ -315,8 +295,8 @@ Counted on 2026-10-01 after phase 2:
 
 Before phase 2 the project ran 144 runs: 132 full builds and 12 syncs.
 
-On a content-only change the project runs only `indexing.test.ts` (2) and `local-site.test.ts`
-(5): 7 builds and 0 syncs. `focus-pocus.test.ts` (0 and 0) moved to `tests/unit/content/` in
+On a content-only change the project runs only `indexing.test.ts` (2), `local-site.test.ts`
+(5) and `project-template.test.ts` (2): 9 builds and 0 syncs. `focus-pocus.test.ts` (0 and 0) moved to `tests/unit/content/` in
 phase 4.
 
 ## Measured gate times

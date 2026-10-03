@@ -59,6 +59,12 @@ export interface FixtureSiteOptions {
    * copied site. Default false: they are removed, so the only posts are the sample and fixtures.
    */
   realPosts?: boolean;
+  /**
+   * Leave out the repository's real projects (every src/content/projects/*.md and *.mdx not starting
+   * with `_`) from the copied site, so a build holds only the fixtures in `projects`. Their pictures stay,
+   * unreferenced. Default false.
+   */
+  withoutRealProjects?: boolean;
   /** Extra files to write into the site, keyed by path relative to the site root (for example an oversized clip). */
   write?: Readonly<Record<string, string | Uint8Array>>;
 }
@@ -156,6 +162,15 @@ export async function buildFixtureSite(
     if (existsSync(copiedPosts)) {
       for (const name of readdirSync(copiedPosts)) {
         if (/\.mdx?$/.test(name) && !name.startsWith("sample-")) rmSync(resolve(copiedPosts, name));
+      }
+    }
+  }
+
+  if (options.withoutRealProjects) {
+    const copiedProjects = resolve(root, "src/content/projects");
+    if (existsSync(copiedProjects)) {
+      for (const name of readdirSync(copiedProjects)) {
+        if (/\.mdx?$/.test(name) && !name.startsWith("_")) rmSync(resolve(copiedProjects, name));
       }
     }
   }

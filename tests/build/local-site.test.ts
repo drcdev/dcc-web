@@ -4,14 +4,13 @@
 // describes were separate files before; each keeps the contract it was written for:
 //   - a page that is one file (SC-002, US3), a post that is one file, a project that is one file (SC-004, US7)
 //   - class-based syntax highlighting under the page policy (008-blog T003, T031; FR-053)
-//   - the page policy of project pages (US6, FR-041, FR-047)
-//   - a story that uses every block (FR-075, US8), the story of an every-setting project (US1, FR-080),
-//     and a project with a clip (US6)
+//   - the page policy of project pages (FR-047; no frame source since 014)
+//   - a story with a picture on every part (014), the story of an every-setting project (US1, FR-080)
 //   - `getPostSummaries` in a real build (T017, T020; R3, R6)
 //   - things that are not errors, and posts that must build (contracts/build-errors.md)
 //   - drafts in a local or test build (SC-004, FR-032, FR-045, FR-046)
 //   - the harness does not leak the runner's WORKERS_CI into a build
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildFixtureSite, type FixtureSiteOptions, type FixtureSiteResult } from "./fixture-site.ts";
@@ -47,7 +46,7 @@ const l1Options: FixtureSiteOptions = {
     "valid/series-and-free-form.mdx",
     { from: "valid/published.mdx", to: "future-post.mdx", replace: ["2026-08-27", "2099-01-01"] },
   ],
-  projects: ["minimal.mdx", "every-setting.mdx", "every-block.mdx"],
+  projects: ["minimal.mdx", "every-setting.mdx", "every-part.mdx"],
   overrides: { "src/pages/summaries.json.ts": route },
 };
 
@@ -277,28 +276,19 @@ describe("class-based syntax highlighting with the production configuration", ()
 });
 
 describe("the page policy of project pages", () => {
-  const FRAME_SRC = "frame-src https://drc.dev https://*.drc.dev";
-
   it("builds", () => {
     expect(l1.message).toBe("");
   });
 
-  it("gives the embed page frame-src for drc.dev and its subdomains, and no other frame source", () => {
-    const policy = policyOf(l1.read("projects/every-setting/index.html"));
-    expect(policy).toContain(FRAME_SRC);
-    expect(policy).toContain("default-src 'self'");
+  it("leaves every project page, the index and other pages on the site policy, with no frame source", () => {
+    for (const path of ["projects/every-setting/index.html", "projects/minimal/index.html", "projects/index.html", "about/index.html"]) {
+      const policy = policyOf(l1.read(path));
+      expect(policy, path).not.toContain("frame-src");
+      expect(policy, path).toContain("default-src 'self'");
+    }
   });
 
-  it("leaves a link-only story on the site policy", () => {
-    expect(policyOf(l1.read("projects/minimal/index.html"))).not.toContain("frame-src");
-  });
-
-  it("leaves the index and other pages on the site policy", () => {
-    expect(policyOf(l1.read("projects/index.html"))).not.toContain("frame-src");
-    expect(policyOf(l1.read("about/index.html"))).not.toContain("frame-src");
-  });
-
-  it("does not put the frame source in public/_headers", () => {
+  it("does not put a frame source in public/_headers", () => {
     const headers = readFileSync(new URL("../../public/_headers", import.meta.url), "utf-8");
     expect(headers).not.toContain("frame-src");
     expect(headers).not.toContain("drc.dev");
@@ -311,43 +301,41 @@ describe("the page policy of project pages", () => {
     }
   });
 
-  it("renders the embedded demo as one lazy frame on the embed page only", () => {
-    expect(l1.read("projects/every-setting/index.html").match(/<iframe\b/g)).toHaveLength(1);
-    expect(l1.read("projects/minimal/index.html")).not.toContain("<iframe");
+  it("renders no frame on any project page", () => {
+    for (const [path, html] of l1.htmlFiles()) {
+      if (!path.startsWith("projects/")) continue;
+      expect(html, path).not.toContain("<iframe");
+    }
   });
 });
 
-describe("a story that uses every block", () => {
+describe("a story with a picture on every part", () => {
   let html = "";
   beforeAll(() => {
-    html = l1.read("projects/every-block/index.html");
+    html = l1.read("projects/every-part/index.html");
   });
 
   it("builds", () => expect(l1.message).toBe(""));
 
-  it("renders the seven chapters, the comparison, the demo link and the invitation", () => {
-    expect(html.match(/data-chapter(?=[\s>])/g)).toHaveLength(7);
-    expect(html).toContain("data-comparison");
-    expect(html).toContain("Every block stand-in");
-    expect(html).toContain("/contact/?project=every-block");
+  it("renders four parts, a picture beside each, the table, the stand-in and source links and the invitation", () => {
+    expect(count(html, /<section[^>]*\sdata-part="/g)).toBe(4);
+    expect(count(html, /data-part-picture/g)).toBe(4);
+    expect(html).toContain("data-options-table");
+    expect(html).toContain("Every part stand-in");
+    expect(html).toContain("This is not a live demo.");
+    expect(html).toContain("Source code for Every part");
+    expect(html).toContain("If you have a problem shaped like this one, tell me about it.");
+    expect(html).toContain("/contact/?project=every-part");
   });
 
-  it("renders the visual block, the placeholder mark and the draft mark", () => {
-    expect(html).toContain("A placeholder screenshot");
+  it("renders the placeholder mark and a sub-heading inside its part, and leaves the Build table a plain table", () => {
     expect(html).toContain("data-placeholder");
-    expect(html).toContain("Draft for review");
-  });
-
-  it("renders the page sections inside chapters", () => {
-    expect(html).toContain("An intro paragraph inside a chapter.");
-    expect(html).toContain("A titled block");
-    expect(html).toContain("A figure inside a chapter");
-    expect(html).toContain("See the source");
+    expect(html).toContain("A sub-heading");
+    expect(count(html, /<table[\s>]/g)).toBe(2);
   });
 });
 
 describe("the story of a valid every-setting project", () => {
-  const stageIds = ["problem", "constraints", "options", "built", "outcome", "lessons", "invitation"];
   let html = "";
   beforeAll(() => {
     html = l1.read("projects/every-setting/index.html");
@@ -358,20 +346,21 @@ describe("the story of a valid every-setting project", () => {
     expect(l1.ok).toBe(true);
   });
 
-  it("has one h1 with the title and seven chapters with h2 headings", () => {
+  it("has one h1 with the title and four parts with h2 headings", () => {
     expect(count(html, /<h1[\s>]/g)).toBe(1);
     expect(html).toMatch(/<h1[^>]*>\s*Every setting\s*<\/h1>/);
-    expect(count(html, /<h2[\s>]/g)).toBe(7);
+    expect(count(html, /<h2[\s>]/g)).toBe(4);
   });
 
-  it("has the seven chapters in order, with their ids and numbers", () => {
-    const ids = [...html.matchAll(/<section[^>]*\sid="([a-z]+)"[^>]*data-stage="/g)].map((m) => m[1]);
-    expect(ids).toEqual(stageIds);
-    for (let n = 1; n <= 7; n++) expect(html).toContain(`Chapter ${n} of 7`);
-    expect(html).toMatch(/<nav[^>]+aria-label="In this story"/);
+  it("has the four parts in order, with no contents list or chapter numbers", () => {
+    const names = [...html.matchAll(/<section[^>]*\sdata-part="([a-z]+)"/g)].map((m) => m[1]);
+    expect(names).toEqual(["problem", "options", "build", "lessons"]);
+    expect(html).not.toMatch(/In this story|data-chapter|Chapter \d/);
   });
 
-  it("links the invitation to the contact form with the project", () => {
+  it("links the live demo and shows its own invitation sentence with the contact link", () => {
+    expect(html).toContain("Open the Every setting demo");
+    expect(html).toContain("If a setting here looks like your problem, tell me about it.");
     expect(html).toContain('href="/contact/?project=every-setting"');
   });
 
@@ -392,39 +381,6 @@ describe("the story of a valid every-setting project", () => {
     const about = l1.read("about/index.html");
     const scripts = (page: string) => count(page, /<script\b/g);
     expect(scripts(html)).toBe(scripts(about));
-  });
-});
-
-describe("the committed clip fixture", () => {
-  it("is tiny", () => {
-    const clipFixture = new URL("../fixtures/projects/images/clip.webm", import.meta.url);
-    expect(statSync(clipFixture).size).toBeLessThan(10 * 1024);
-  });
-});
-
-describe("a project with a clip", () => {
-  let html = "";
-  beforeAll(() => {
-    html = l1.read("projects/every-setting/index.html");
-  });
-
-  it("renders a video with poster and controls, muted, deferred and never autoplaying", () => {
-    expect(l1.message).toBe("");
-    const video = html.match(/<video\b[^>]*>/)?.[0] ?? "";
-    expect(video).toContain("controls");
-    expect(video).toContain("muted");
-    expect(video).toContain("playsinline");
-    expect(video).toContain('preload="none"');
-    expect(video).toMatch(/poster="\/_astro\/[^"]+"/);
-    expect(video).not.toMatch(/autoplay/i);
-    expect(video).not.toMatch(/\bloop\b/i);
-    expect(html).toContain("Shows the flow from start to finish.");
-  });
-
-  it("points the video at a built clip file that exists", () => {
-    const src = html.match(/<source[^>]+src="([^"]+)"/)?.[1] ?? "";
-    expect(src).toMatch(/^\/_astro\/.+\.webm$/);
-    expect(statSync(`${l1.dist}${src}`).isFile()).toBe(true);
   });
 });
 

@@ -12,6 +12,7 @@ import { satteri } from "@astrojs/markdown-satteri";
 import { pruneDraftAssets } from "./src/lib/prune-unreferenced-assets.ts";
 import { resolveSiteOrigin } from "./src/lib/site-origin.ts";
 import { readingTimePlugin } from "./src/lib/markdown/reading-time.ts";
+import { projectPartsPlugin } from "./src/lib/markdown/project-parts.ts";
 import { shikiClassTransformer } from "./src/lib/markdown/shiki-classes.ts";
 import { shikiTheme } from "./src/lib/markdown/shiki-theme.ts";
 
@@ -40,17 +41,12 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
-    build: {
-      // A project clip is always a file, never a data: address: the page policy has
-      // no media-src for data:, and a small clip would otherwise be inlined
-      // (vite.dev/config/build-options#build-assetsinlinelimit; specs/009-portfolio).
-      assetsInlineLimit: (file) => (/\.(webm|mp4)$/i.test(file) ? false : undefined),
-    },
   },
 
   // Sätteri is Astro's default Markdown processor; it is named here only to add
   // the reading-time plugin, which stores `minutesRead` for posts
-  // (docs.astro.build/en/recipes/reading-time/; specs/008-blog/research.md R6).
+  // (docs.astro.build/en/recipes/reading-time/; specs/008-blog/research.md R6), and the
+  // project parts plugin (specs/014-project-four-part-story/research.md R2).
   //
   // Code is highlighted with Astro's Shiki, using a semantic theme and a
   // transformer that turns every token colour into a class, so no inline style
@@ -58,7 +54,7 @@ export default defineConfig({
   // 'unsafe-inline' for styles (docs.astro.build/en/guides/syntax-highlighting/;
   // specs/008-blog/research.md R7). The colours are in src/styles/global.css.
   markdown: {
-    processor: satteri({ mdastPlugins: [readingTimePlugin] }),
+    processor: satteri({ mdastPlugins: [readingTimePlugin, projectPartsPlugin] }),
     shikiConfig: { theme: shikiTheme, transformers: [shikiClassTransformer] },
   },
 

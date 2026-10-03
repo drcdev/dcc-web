@@ -1,37 +1,67 @@
-// The projects pages on the production build (contracts/pages-dom.md). The story
-// part is here; the index part comes with Phase 6.
-import { expect, test } from "@playwright/test";
+// The projects pages on the production build (specs/014-project-four-part-story/contracts/pages-dom.md).
+// The story part is here; the index part follows.
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const STORY = "/projects/focus-pocus/";
-const CHAPTERS = [
-  ["problem", "The problem"],
-  ["constraints", "What made it hard"],
-  ["options", "Options considered"],
-  ["built", "What I built"],
-  ["outcome", "How it turned out"],
-  ["lessons", "What I'd do differently"],
-  ["invitation", "Have a problem like this?"],
+const POST = "/writing/sample-everything/";
+const PARTS = [
+  ["problem", "Problem"],
+  ["options", "Options"],
+  ["build", "Build"],
+  ["lessons", "Lessons"],
 ] as const;
 
+/** True when the element's top edge is on screen, below the progress bar, and nothing else covers its centre. */
+async function isVisibleAndUncovered(page: Page, target: Locator): Promise<{ ok: boolean; info: string }> {
+  const result = await target.evaluate((el) => {
+    const rect = el.getBoundingClientRect();
+    const bar = document.querySelector("[data-progress]")?.getBoundingClientRect();
+    const barBottom = bar && getComputedStyle(document.querySelector("[data-progress]")!).display !== "none" ? bar.bottom : 0;
+    const hit = document.elementFromPoint(rect.left + Math.min(rect.width / 2, 40), rect.top + Math.min(rect.height / 2, 10));
+    const covered = !hit || !(hit === el || el.contains(hit) || hit.contains(el));
+    return {
+      top: rect.top,
+      bottom: rect.bottom,
+      barBottom,
+      innerHeight: window.innerHeight,
+      covered,
+      hit: hit?.outerHTML.slice(0, 100) ?? "nothing",
+    };
+  });
+  const ok = result.top >= result.barBottom && result.bottom <= result.innerHeight && !result.covered;
+  return { ok, info: JSON.stringify(result) };
+}
+
 test.describe("the Focus Pocus story", () => {
-  test("answers 200 with one h1 and the seven chapters in order", async ({ page }) => {
+  test("answers 200 with one h1 and the four parts in order, with no contents list or chapter numbers", async ({ page }) => {
     const response = await page.goto(STORY);
     expect(response?.status()).toBe(200);
     await expect(page.locator("h1")).toHaveCount(1);
     await expect(page.locator("h1")).toHaveText("Focus Pocus");
-    await expect(page.locator("main h2")).toHaveText(CHAPTERS.map(([, heading]) => heading));
-    const ids = await page.locator("main section[data-stage]").evaluateAll((els) => els.map((el) => el.id));
-    expect(ids).toEqual(CHAPTERS.map(([id]) => id));
+    await expect(page.locator("main article")).toHaveCount(1);
+    await expect(page.locator("main article > header h1")).toHaveCount(1);
+    await expect(page.locator("main h2")).toHaveText(PARTS.map(([, heading]) => heading));
+    const ids = await page.locator("main section[data-part]").evaluateAll((els) => els.map((el) => el.getAttribute("data-part")));
+    expect(ids).toEqual(PARTS.map(([id]) => id));
+    for (const [id] of PARTS) {
+      await expect(page.locator(`section[data-part="${id}"]`)).toHaveAttribute("aria-labelledby", id);
+      await expect(page.locator(`section[data-part="${id}"] h2#${id}`)).toHaveCount(1);
+    }
+    await expect(page.getByRole("navigation", { name: "In this story" })).toHaveCount(0);
+    await expect(page.locator("[data-chapter], [data-reveal], [data-story-contents]")).toHaveCount(0);
+    await expect(page.getByText(/Chapter \d of/)).toHaveCount(0);
   });
 
-  test("the 'In this story' links jump to each chapter", async ({ page }) => {
+  test("no part is sized to fill the screen (FR-004)", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto(STORY);
-    const nav = page.getByRole("navigation", { name: "In this story" });
-    await expect(nav.getByRole("link")).toHaveCount(7);
-    for (const [id, heading] of CHAPTERS) {
-      await nav.getByRole("link", { name: heading }).click();
-      await expect(page).toHaveURL(new RegExp(`#${id}$`));
-      await expect(page.locator(`#${id}-heading`)).toBeInViewport();
+    for (const part of await page.locator("section[data-part]").all()) {
+      const { minHeight, height } = await part.evaluate((el) => ({
+        minHeight: getComputedStyle(el).minHeight,
+        height: el.getBoundingClientRect().height,
+      }));
+      expect(minHeight).toMatch(/^(0px|auto|normal)$/);
+      expect(height).toBeGreaterThan(0);
     }
   });
 
@@ -39,74 +69,68 @@ test.describe("the Focus Pocus story", () => {
     { width: 1280, height: 800 },
     { width: 390, height: 844 },
   ]) {
-    test(`an 'In this story' link leaves the chapter heading uncovered and moves focus on at ${size.width}px (FR-027)`, async ({
-      page,
-    }) => {
+    test(`a part heading is the same size as a post heading at ${size.width}px (FR-003)`, async ({ page }) => {
       await page.setViewportSize(size);
+      await page.goto(POST);
+      const postSize = await page.locator("main .prose h2").first().evaluate((el) => getComputedStyle(el).fontSize);
       await page.goto(STORY);
-      const nav = page.getByRole("navigation", { name: "In this story" });
-      for (const [id, heading] of CHAPTERS) {
-        await nav.getByRole("link", { name: heading }).click();
-        await expect(page).toHaveURL(new RegExp(`#${id}$`));
-        // Let the smooth scroll bring the heading into view and settle before measuring.
-        await expect(page.locator(`#${id}-heading`)).toBeInViewport();
-        await page.evaluate(
-          () =>
-            new Promise<void>((resolve) => {
-              let last = -1;
-              let steady = 0;
-              const tick = () => {
-                steady = window.scrollY === last ? steady + 1 : 0;
-                last = window.scrollY;
-                if (steady >= 10) resolve();
-                else requestAnimationFrame(tick);
-              };
-              tick();
-            }),
-        );
-        const covered = await page.evaluate((headingId) => {
-          const el = document.getElementById(headingId)!;
-          const rect = el.getBoundingClientRect();
-          const hit = document.elementFromPoint(rect.left + 4, rect.top + 2);
-          return { top: rect.top, inside: !!hit && (hit === el || el.contains(hit)), info: hit?.outerHTML.slice(0, 120), rect: [rect.left, rect.top, rect.width, rect.height] };
-        }, `${id}-heading`);
-        expect(covered.top, `${id} heading top edge is in the viewport`).toBeGreaterThanOrEqual(0);
-        expect(covered.inside, `${id} heading top edge is not covered ${JSON.stringify(covered)}`).toBe(true);
-        await page.keyboard.press("Tab");
-        const focus = await page.evaluate((chapterId) => {
-          const chapter = document.getElementById(chapterId)!;
-          const active = document.activeElement as HTMLElement;
-          const position = chapter.compareDocumentPosition(active);
-          const inside = chapter.contains(active);
-          const after = !!(position & Node.DOCUMENT_POSITION_FOLLOWING);
-          return { inside, after, isBody: active === document.body };
-        }, id);
-        expect(focus.isBody, `${id}: focus is not reset to the page`).toBe(false);
-        expect(focus.inside || focus.after, `${id}: focus is in or after the chapter`).toBe(true);
+      for (const [id] of PARTS) {
+        await expect(page.locator(`section[data-part="${id}"] h2`)).toHaveCSS("font-size", postSize);
       }
     });
   }
 
-  test("the comparison region can be reached and scrolled by keyboard", async ({ page }) => {
+  test("a part's picture sits beside its text at 1280px and below it at 390px (FR-005)", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(STORY);
-    const region = page.getByRole("region", { name: /ways to reach OmniFocus/ });
+    const part = page.locator('section[data-part][data-has-picture="true"]').first();
+    await expect(part).toHaveCount(1);
+    const wide = {
+      text: (await part.locator("[data-part-text]").boundingBox())!,
+      picture: (await part.locator("[data-part-picture]").boundingBox())!,
+    };
+    expect(wide.picture.x).toBeGreaterThanOrEqual(wide.text.x + wide.text.width - 1);
+    await page.setViewportSize({ width: 390, height: 844 });
+    const narrow = {
+      text: (await part.locator("[data-part-text]").boundingBox())!,
+      picture: (await part.locator("[data-part-picture]").boundingBox())!,
+    };
+    expect(narrow.picture.y).toBeGreaterThanOrEqual(narrow.text.y + narrow.text.height - 1);
+  });
+
+  test("has the comparison as a keyboard-reachable table region with the chosen row marked in words", async ({ page }) => {
+    await page.goto(STORY);
+    const region = page.locator("[data-options-table]");
     await expect(region).toHaveCount(1);
+    await expect(region).toHaveAttribute("role", "region");
     await region.focus();
     await expect(region).toBeFocused();
     await expect(region.getByRole("table")).toBeVisible();
-    await expect(region.getByRole("columnheader", { name: /Chosen/ })).toHaveCount(1);
+    await expect(region.getByRole("rowheader").filter({ hasText: "Chosen" })).toHaveCount(1);
+    await expect(region.locator("tr[data-chosen]")).toHaveCount(1);
+    for (const cell of await region.locator("td[data-fit]").all()) await expect(cell).toHaveText(/Yes|Partly|No/);
   });
 
-  test("has a stand-in link, draft marks and no placeholder marks", async ({ page }) => {
+  test("has a stand-in link and a draft notice, and no iframe", async ({ page }) => {
     await page.goto(STORY);
     await expect(page.getByRole("link", { name: "Focus Pocus on drc.dev" })).toHaveAttribute(
       "href",
       "https://drc.dev/projects/focus-pocus",
     );
     await expect(page.getByText("This is not a live demo.")).toBeVisible();
-    await expect(page.locator("[data-draft-mark]")).toHaveCount(7);
-    // The pictures are real captures from the blog post, so no "Placeholder" mark shows.
-    await expect(page.locator("[data-placeholder]")).toHaveCount(0);
+    await expect(page.locator("[data-draft-notice]")).toHaveCount(1);
+    await expect(page.locator("iframe")).toHaveCount(0);
+  });
+
+  test("ends with the invitation, after the four parts", async ({ page }) => {
+    await page.goto(STORY);
+    const order = await page.evaluate(() => {
+      const lessons = document.querySelector('section[data-part="lessons"]')!;
+      const block = document.querySelector("[data-invitation-block]")!;
+      return lessons.compareDocumentPosition(block);
+    });
+    expect(order & 4 /* DOCUMENT_POSITION_FOLLOWING */).toBeTruthy();
+    await expect(page.locator("[data-invitation-text]")).toHaveCount(1);
   });
 
   test("the invitation opens the contact form about the project, with no cookie and no new origin", async ({
@@ -125,6 +149,67 @@ test.describe("the Focus Pocus story", () => {
     expect(await context.cookies()).toEqual(beforeCookies);
     expect([...origins]).toEqual(["http://127.0.0.1:4321"]);
   });
+
+  test.describe("with motion allowed", () => {
+    test.use({ reducedMotion: "no-preference", viewport: { width: 1440, height: 900 } });
+
+    test("shows a progress bar that fills as the page scrolls", async ({ page }) => {
+      await page.goto(STORY);
+      const bar = page.locator("[data-progress]");
+      await expect(bar).toHaveCSS("display", "block");
+      const width = () => bar.evaluate((el) => el.getBoundingClientRect().width);
+      expect(await width()).toBeLessThan(2);
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      await expect.poll(width).toBeGreaterThan(1400);
+    });
+
+    test("names the title for the view transition so it carries over from the list", async ({ page }) => {
+      await page.goto(STORY);
+      await expect(page.locator("h1")).toHaveCSS("view-transition-name", "project-focus-pocus");
+      await expect(page.locator("h1")).toHaveAttribute("data-title-slug", "focus-pocus");
+    });
+  });
+
+  // FR-027: when focus reaches these, the browser scrolls them into view; the fixed progress bar must not sit over them.
+  for (const size of [
+    { width: 1280, height: 800 },
+    { width: 390, height: 844 },
+  ]) {
+    test(`keyboard focus on the Build links, the table region and the invitation link is visible and uncovered at ${size.width}px (FR-027)`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(size);
+      await page.goto(STORY);
+      const targets: [string, Locator][] = [
+        ["a Build link", page.locator("[data-build-links] a").first()],
+        ["the table region", page.locator("[data-options-table]")],
+        ["the invitation link", page.locator("[data-invitation]")],
+      ];
+      for (const [name, target] of targets) {
+        await target.focus();
+        await expect(target, name).toBeFocused();
+        // The page scrolls smoothly when motion is allowed, so wait for the scroll to settle before measuring.
+        await page.evaluate(
+          () =>
+            new Promise<void>((resolve) => {
+              let last = -1;
+              let still = 0;
+              const tick = () => {
+                still = window.scrollY === last ? still + 1 : 0;
+                last = window.scrollY;
+                if (still >= 10) resolve();
+                else requestAnimationFrame(tick);
+              };
+              requestAnimationFrame(tick);
+            }),
+        );
+        const { ok, info } = await isVisibleAndUncovered(page, target);
+        expect(ok, `${name}: ${info}`).toBe(true);
+        const outline = await target.evaluate((el) => getComputedStyle(el).outlineStyle);
+        expect(outline, `${name} shows a focus outline`).not.toBe("none");
+      }
+    });
+  }
 });
 
 test.describe("the projects index", () => {

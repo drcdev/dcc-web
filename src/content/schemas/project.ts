@@ -1,9 +1,9 @@
-// The `projects` collection schema (data-model.md "Project", "Demo and StandIn",
-// "Comparison", "IndexVisual / Visual"). Called with the `image` helper from the
-// collection schema context
+// The `projects` collection schema (specs/014-project-four-part-story/data-model.md "Project",
+// "PartPicture"). Called with the `image` helper from the collection schema context
 // (docs.astro.build/en/guides/images/#images-in-content-collections). Every
-// object is strict, so an unknown or misspelled setting fails the build.
+// object is strict, so an unknown, misspelled or removed setting fails the build naming it.
 import { z } from "astro/zod";
+import { partIds } from "../../lib/content/parts.ts";
 import { themeKey } from "../../lib/content/themes.ts";
 import { requiredText as text, type ImageValidator } from "./shared.ts";
 
@@ -13,64 +13,15 @@ const httpsUrl = z.url({ protocol: /^https$/, error: "use an address that starts
 const DRC_DEV = /^https:\/\/([a-z0-9-]+\.)*drc\.dev(\/[^\s]*)?$/;
 
 const idPattern = /^[a-z][a-z0-9-]*$/;
-const id = z.string().regex(idPattern, "use lower-case letters, digits and hyphens, starting with a letter");
 
 const problem = text
   .max(140, "write the problem as one sentence of at most 140 characters")
   .regex(/[.?!]$/, "write the problem as one sentence of at most 140 characters that ends with . ? or !")
   .refine((value) => !/[.?!]\s+\S/.test(value), "write the problem as one sentence of at most 140 characters, not several sentences");
 
-const fit = z.enum(["meets", "partly", "misses"]);
+const part = z.enum(partIds, { error: `part must be one of ${partIds.join(", ")}` });
 
-const constraint = z.strictObject({ id, label: text, detail: text.optional() });
-
-const option = z.strictObject({
-  id,
-  name: text,
-  summary: text,
-  fit: z.record(z.string(), fit),
-  pros: z.array(text).optional(),
-  cons: z.array(text).optional(),
-  chosen: z.boolean().optional(),
-  reason: text.optional(),
-});
-
-const comparison = z
-  .strictObject({
-    caption: text.optional(),
-    constraints: z.array(constraint).min(1, "list at least one constraint"),
-    options: z.array(option).min(1, "list at least one option"),
-  })
-  .superRefine((value, ctx) => {
-    const issue = (path: (string | number)[], message: string) => ctx.addIssue({ code: "custom", path, message });
-    const constraintIds = value.constraints.map((c) => c.id);
-    const seenConstraints = new Set<string>();
-    value.constraints.forEach((c, index) => {
-      if (seenConstraints.has(c.id)) issue(["constraints", index, "id"], `the constraint id ${c.id} is used twice`);
-      seenConstraints.add(c.id);
-    });
-    const seenOptions = new Set<string>();
-    value.options.forEach((o, index) => {
-      if (seenOptions.has(o.id)) issue(["options", index, "id"], `the option id ${o.id} is used twice`);
-      seenOptions.add(o.id);
-      for (const cid of constraintIds) {
-        if (!(cid in o.fit)) issue(["options", index, "fit"], `the option ${o.id} needs a fit for the constraint ${cid}`);
-      }
-      for (const key of Object.keys(o.fit)) {
-        if (!seenConstraints.has(key)) issue(["options", index, "fit", key], `the option ${o.id} names ${key}, which is not a constraint id`);
-      }
-      if (!o.chosen && o.reason !== undefined) {
-        issue(["options", index, "reason"], `the option ${o.id} is not chosen, so remove its reason`);
-      }
-      if (o.chosen && o.reason === undefined) {
-        issue(["options", index, "reason"], `the chosen option ${o.id} needs a reason`);
-      }
-    });
-    const chosen = value.options.filter((o) => o.chosen).length;
-    if (chosen !== 1) issue(["options"], `exactly one option must be chosen (found ${chosen}); add chosen: true to one option`);
-  });
-
-/** A visual of the kinds allowed on the index and in the story. */
+/** A picture of the kinds allowed on the list and in the story. */
 function pictureVisuals(image: ImageValidator) {
   return [
     z.strictObject({
@@ -91,18 +42,12 @@ function pictureVisuals(image: ImageValidator) {
 
 export function projectSchema({ image }: { image: ImageValidator }) {
   const [imageVisual, diagramVisual] = pictureVisuals(image);
-  const clipVisual = z.strictObject({
-    kind: z.literal("clip"),
-    src: z.string().regex(/\.(webm|mp4)$/i, "use a .webm or .mp4 file"),
-    poster: image(),
-    label: text,
-    description: text,
-    placeholder: z.boolean().optional(),
-  });
+  // A picture in the story also says which part it sits beside (optional: none means kept but not shown).
+  const storyImage = imageVisual.extend({ part: part.optional() });
+  const storyDiagram = diagramVisual.extend({ part: part.optional() });
   const visualName = z
     .string()
-    .regex(idPattern, "use lower-case letters, digits and hyphens, starting with a letter")
-    .refine((name) => name !== "demo", "demo is reserved for the embedded demo");
+    .regex(idPattern, "use lower-case letters, digits and hyphens, starting with a letter");
 
   return z
     .strictObject({
@@ -111,22 +56,25 @@ export function projectSchema({ image }: { image: ImageValidator }) {
       description: text,
       themes: z.array(text).min(1, "list at least one theme").max(4, "list at most four themes"),
       status: z.enum(["shipped", "experiment", "in-progress"]),
+      date: z.coerce.date(),
       visual: z.discriminatedUnion("kind", [imageVisual, diagramVisual]),
-      order: z.number().int().min(1).optional(),
-      date: z.coerce.date().optional(),
+      visuals: z.record(visualName, z.discriminatedUnion("kind", [storyImage, storyDiagram])).optional(),
       demo: z
         .strictObject({
           href: z.string().regex(DRC_DEV, "use an https:// address on drc.dev, with no port or user name"),
           title: text.optional(),
-          embed: z.boolean().default(false),
         })
         .optional(),
       standIn: z.strictObject({ href: httpsUrl, label: text.optional() }).optional(),
       source: httpsUrl.optional(),
       image: z.strictObject({ src: image(), alt: text }).optional(),
+      // Trimmed; empty text means the standard sentence (no value).
+      invitation: z
+        .string()
+        .trim()
+        .transform((value) => (value === "" ? undefined : value))
+        .optional(),
       draft: z.boolean().default(false),
-      visuals: z.record(visualName, z.discriminatedUnion("kind", [imageVisual, diagramVisual, clipVisual])).optional(),
-      comparison,
     })
     .superRefine((value, ctx) => {
       if (value.demo && value.standIn) {
@@ -138,6 +86,20 @@ export function projectSchema({ image }: { image: ImageValidator }) {
         if (seen.has(key)) ctx.addIssue({ code: "custom", path: ["themes", index], message: `${theme} repeats a theme` });
         seen.add(key);
       });
+      const byPart = new Map<string, string>();
+      for (const [name, picture] of Object.entries(value.visuals ?? {})) {
+        if (!picture.part) continue;
+        const first = byPart.get(picture.part);
+        if (first === undefined) {
+          byPart.set(picture.part, name);
+          continue;
+        }
+        ctx.addIssue({
+          code: "custom",
+          path: ["visuals", name, "part"],
+          message: `the pictures ${first} and ${name} both use the part ${picture.part}; give each part at most one picture`,
+        });
+      }
     });
 }
 

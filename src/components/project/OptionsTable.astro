@@ -1,0 +1,45 @@
+---
+// The Options table of a project story, drawn from the comparison the story check read out of the
+// writer's Markdown table (Astro.locals.project.comparison; research R6). A plain data table with the
+// full content in the HTML and no script. It scrolls inside a keyboard-reachable, named region at
+// narrow widths. Each answer is written out, with a decorative mark; the chosen option is marked in
+// words, never by colour alone.
+import { PageContentError } from "../../lib/content/errors.ts";
+import "./portfolio.css";
+
+const project = Astro.locals.project;
+if (!project) throw new PageContentError("<OptionsTable> can only be used inside a project story (no project is set)");
+const { optionHeader, constraints, options } = project.comparison;
+const answer = { yes: "Yes", partly: "Partly", no: "No" } as const;
+const mark = { yes: "✓ ", partly: "~ ", no: "✗ " } as const;
+---
+
+<div role="region" aria-labelledby="options-caption" tabindex="0" data-options-table>
+  <table>
+    <caption id="options-caption">How the options compare for {project.data.title}</caption>
+    <thead>
+      <tr>
+        <th scope="col">{optionHeader}</th>
+        {constraints.map((constraint) => <th scope="col">{constraint.label}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {
+        options.map((option) => (
+          <tr data-chosen={option.chosen ? "" : undefined}>
+            <th scope="row">
+              {option.name}
+              {option.chosen && <span data-chosen-label>Chosen</span>}
+            </th>
+            {option.fits.map((fit) => (
+              <td data-fit={fit}>
+                <span aria-hidden="true">{mark[fit]}</span>
+                {answer[fit]}
+              </td>
+            ))}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>

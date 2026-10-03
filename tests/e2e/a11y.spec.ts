@@ -384,13 +384,15 @@ test.describe("contact form states", () => {
 });
 
 // Portfolio states the TEMPLATES loop does not reach (FR-080, FR-081; T072).
-// The every-block story and the filtered and empty index states live on the
+// The every-part and every-setting stories and the filtered and empty index states live on the
 // fixture site (port 4322, playwright.config.ts), which every run serves.
 const FIXTURE = "http://localhost:4322";
 
 test.describe("portfolio states", () => {
   const states = [
-    { name: "the every-block fixture story", path: "/projects/every-block/" },
+    { name: "the every-part fixture story", path: "/projects/every-part/" },
+    // A live demo link cannot share a page with a stand-in link, so it has its own story (SC-006).
+    { name: "the every-setting fixture story", path: "/projects/every-setting/" },
     { name: "the filtered index", path: "/projects/?theme=tooling" },
     { name: "the empty index (unknown theme)", path: "/projects/?theme=nonsense" },
   ];
@@ -413,11 +415,11 @@ test.describe("portfolio states", () => {
     }
   }
 
-  test("every-block story survives 400% zoom (320 px) with text spacing: no sideways scroll, headings and comparison visible", async ({
+  test("every-part story survives 400% zoom (320 px) with text spacing: no sideways scroll, headings and comparison visible", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 320, height: 640 });
-    await page.goto(`${FIXTURE}/projects/every-block/`);
+    await page.goto(`${FIXTURE}/projects/every-part/`);
     await page.evaluate(() => {
       const sheet = new CSSStyleSheet();
       sheet.replaceSync(`* {
@@ -429,7 +431,7 @@ test.describe("portfolio states", () => {
       document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
     });
     await expectNoHorizontalScroll(page);
-    const headings = page.locator("[data-chapter-heading]");
+    const headings = page.locator("section[data-part] h2");
     const count = await headings.count();
     expect(count).toBeGreaterThan(0);
     for (let i = 0; i < count; i += 1) {
@@ -442,17 +444,17 @@ test.describe("portfolio states", () => {
       });
       expect(fits, `heading ${i}`).toBe(true);
     }
-    const comparison = page.locator("[data-comparison]");
+    const comparison = page.locator("[data-options-table]");
     await comparison.scrollIntoViewIfNeeded();
     await expect(comparison).toBeVisible();
     expect(await comparison.evaluate((el) => el.getBoundingClientRect().right <= document.documentElement.clientWidth + 1)).toBe(true);
     await expectNoHorizontalScroll(page);
   });
 
-  test("Tab reaches the comparison region on the every-block story", async ({ page }) => {
+  test("Tab reaches the comparison region on the every-part story", async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });
-    await page.goto(`${FIXTURE}/projects/every-block/`);
-    const region = page.locator("[data-comparison]");
+    await page.goto(`${FIXTURE}/projects/every-part/`);
+    const region = page.locator("[data-options-table]");
     for (let i = 0; i < 80; i += 1) {
       await page.keyboard.press("Tab");
       if (await region.evaluate((el) => el === document.activeElement)) break;

@@ -303,7 +303,7 @@ describe("package.json scripts", () => {
 
   it("adds test:build:content, running only the build tests that read real content", () => {
     expect(pkg.scripts["test:build:content"]).toBe(
-      "vitest run --project build tests/build/indexing.test.ts tests/build/local-site.test.ts",
+      "vitest run --project build tests/build/indexing.test.ts tests/build/local-site.test.ts tests/build/project-template.test.ts",
     );
   });
 

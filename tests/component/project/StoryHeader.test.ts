@@ -28,23 +28,14 @@ describe("StoryHeader", () => {
     expect(byName(html, "h1")[0]!.attrs["data-title-slug"]).toBe("focus-pocus");
   });
 
-  it("lists the seven chapters in an 'In this story' navigation as an ordered list of in-page links", async () => {
+  it("has no contents list, chapter numbers or in-page links", async () => {
     const html = await render(StoryHeader, props);
-    const nav = byName(html, "nav");
-    expect(nav).toHaveLength(1);
-    expect(nav[0]!.attrs["aria-label"]).toBe("In this story");
-    expect(byName(html, "ol")).toHaveLength(1);
-    expect(byName(html, "a").map((t) => t.attrs.href)).toEqual([
-      "#problem",
-      "#constraints",
-      "#options",
-      "#built",
-      "#outcome",
-      "#lessons",
-      "#invitation",
-    ]);
-    expect(html).toContain("The problem");
-    expect(html).toContain("Have a problem like this?");
+    expect(byName(html, "nav")).toHaveLength(0);
+    expect(byName(html, "ol")).toHaveLength(0);
+    expect(byName(html, "a")).toHaveLength(0);
+    expect(html).not.toContain("In this story");
+    expect(html).not.toContain("data-story-contents");
+    expect(html).not.toMatch(/data-chapter|Chapter \d/);
   });
 
   it("shows the draft notice only for a draft", async () => {

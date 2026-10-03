@@ -1,53 +1,36 @@
 ---
-title: Minimal project
-problem: A small problem needed a small tool.
-description: The smallest project file that passes validation.
+title: Broken story
+problem: A project used to prove a build check.
+description: A project file that passes validation.
 themes: [Tooling]
-status: shipped
+status: in-progress
+date: 2026-01-01
 visual:
   kind: image
   src: ./images/sample.png
   alt: A sample picture
-comparison:
-  constraints:
-    - { id: simple, label: Simple to run }
-  options:
-    - id: script
-      name: A script
-      summary: One file.
-      fit: { simple: meets }
-      chosen: true
-      reason: It is the simplest thing that works.
+  placeholder: true
+draft: false
 ---
 
-<Chapter stage="problem">
-Who had the problem and what it was.
-</Chapter>
+## Problem
 
-<Chapter stage="constraints">
-What made it hard.
-</Chapter>
+Who had the problem.
 
-<Chapter stage="options">
-Short framing.
+## Options
 
-<OptionComparison />
-</Chapter>
+- **Simple:** easy to run
 
-<Chapter stage="built">
+| Option | Simple |
+| --- | --- |
+| **A script** | yes |
+
+Why a script: it is the simplest thing that works.
+
+## Build
+
 What was built.
-</Chapter>
 
-<Chapter stage="outcome">
-How it turned out.
-</Chapter>
+## Lessons
 
-<Chapter stage="lessons">
 What was learned.
-</Chapter>
-
-<Chapter stage="invitation">
-If you have a problem like this, tell me about it.
-
-<Invitation />
-</Chapter>
