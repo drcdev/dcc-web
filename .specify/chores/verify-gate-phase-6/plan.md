@@ -24,8 +24,8 @@ Mechanical criteria for this chore:
    pole, and the method for both numbers. No existing heading is renamed, moved or removed:
    `grep -n '^## \|^### ' docs/testing.md` shows the same lines as on `main`, plus the new one at
    the end.
-2. The local figure is the orchestrator's measurement (`LOCAL_GATE_SECONDS` and the test counts),
-   copied as given. No subagent re-runs the gate to get it.
+2. The local figure is the orchestrator's measurement, copied as given (see "Local measurement"
+   below). No subagent re-runs the gate to get it.
 3. `tests/unit/setup` and `tests/unit/ci` stay green. They read `docs/testing.md` and the
    pipelines (`pipeline-test-placement.test.ts`, `pipeline-verify-wording.test.ts`, and the drift
    guard in `changed-paths.test.ts`).
@@ -38,7 +38,7 @@ Issue #26 acceptance, with the before and final measurements:
 | Criterion | Target | Before (2026-10-01) | Final | Status |
 |---|---|---|---|---|
 | (a) CI `verify` on `main` | ≤ 10 min | 31 min (run 36814114154) | **6 min 15 s** (run 37090465334, #36 merge, full tier). Every `main` run since #31 is 6:15 to 7:59 | met |
-| (b) Local `pnpm run verify`, Mac | ≤ 4 min | 8 to 10 min (issue text); 6 min 36 s after phases 1 and 2 | `LOCAL_GATE_SECONDS` from the orchestrator. Earlier phases: 317 s (phase 3), 5 min 17 s (phase 4), 6 min 0 s (phase 5) | not met unless the figure is ≤ 240 s; see `[NEEDS DECISION]` N1 |
+| (b) Local `pnpm run verify`, Mac | ≤ 4 min | 8 to 10 min (issue text); 6 min 36 s after phases 1 and 2 | **5 min 39 s** (339 s, VERIFY_EXIT=0, commit 75e73fc). Earlier phases: 317 s (phase 3), 5 min 17 s (phase 4), 6 min 0 s (phase 5) | 4 min not met (1 min 39 s over); target revised to ≤ 6 min (decision N1, below), and 4 min moves to the D8 follow-up issue as its own target |
 | (c) No coverage lost without a line in `docs/testing.md` | — | — | "Contract-row mapping" and "Build budget" (phase 2), "Change tiers" coverage table (phase 4) | met |
 | (d) Pipelines name the layer per test task | — | — | #36 (D7), guarded by `pipeline-test-placement.test.ts` | met |
 
@@ -58,6 +58,20 @@ anomaly, probably a rerun.
 
 Per-job time in run 37090465334: `changes` 15 s, `static` 93 s, `build-tests` 338 s, `e2e`
 341 s, `verify` 13 s. `e2e` is the long pole, with `build-tests` close behind.
+
+**Local measurement** (orchestrator, 2026-10-02): one `pnpm run verify` in this worktree on
+commit 75e73fc, timed with `date +%s` under a perl alarm with `ASTRO_PREVIEW_BACKGROUND=1`.
+Result: **339 s (5 min 39 s)**, VERIFY_EXIT=0. Stage breakdown:
+
+- Vitest (`vitest run`, the unit and build projects together): 180 files, 2570 passed and
+  1 skipped, 156.45 s.
+- Worker tests: 12 files, 132 passed, 3.47 s.
+- `astro build`: as usual.
+- Playwright (all projects, including `budget`): 1388 passed in 2.4 min (144 s).
+
+Locally the Vitest stage (156 s, mostly the `build` project) is slightly longer than Playwright
+(144 s). In CI, `e2e` is the long pole. Both facts go in the record, so the follow-up issue
+measures both stages and does not assume Playwright alone.
 
 This PR's own CI run will also be a full-tier run, because `docs/` is not skip-safe. Its number
 goes in the PR body as a cross-check, not in the record. A PR run includes the preview
@@ -107,8 +121,8 @@ site-check, so it is not comparable with a `main` push.
   - `ci.yml`, deploy and infrastructure config are untouched; only a doc describes them.
   - The constitution is not amended.
 
-  Verdict: **not major**. Auto-merge applies unless N1 resolves to option C. That option edits
-  Playwright test config, and it would need re-checking. The orchestrator re-checks the verdict
+  Verdict: **not major**, so auto-merge applies. Don chose N1 option A, so no Playwright config
+  changes in this run. The orchestrator re-checks the verdict
   against the real diff at Finish.
 - **IV. First-Party Before Custom:** issue and PR operations use the `gh` CLI
   (`gh issue comment`, `gh issue create`, `gh run view --json jobs`). No script is written, and
@@ -123,25 +137,18 @@ site-check, so it is not comparable with a `main` push.
 - **XI. Spec Kit Workflow:** chore pipeline on a `chore/` branch, with the plan in
   `.specify/chores/verify-gate-phase-6/` and the `after_chore_*` commits.
 
-## [NEEDS DECISION]
+## Decisions
 
-**N1. The local ≤ 4 min target (issue #26 acceptance (b)) is not met.** The local gate was 5.3
-to 6 min in phases 3 to 5. The orchestrator's measurement now is `LOCAL_GATE_SECONDS`. `e2e`
-(Playwright) is the long pole, and D8 deliberately left the a11y and no-js matrices alone.
+**N1. The local ≤ 4 min target (issue #26 acceptance (b)) is not met. Resolved: option A
+(Don, 2026-10-02).** The measured local gate is 5 min 39 s, 1 min 39 s over 4 min. D8
+deliberately left the a11y and no-js matrices alone.
 
-- **A (Recommended).** Record the target as revised to the achieved figure, rounded up to the
-  next whole minute (for example ≤ 6 min if the figure is 5 min 40 s). Close #26 (`Closes #26`).
-  The D8 follow-up issue carries the remaining Playwright work and restates 4 min as its own
-  target. This follows D8 as ticked, and keeps (b)'s shortfall visible instead of dropping it.
-- **B.** Keep the 4 min target open. The PR says `Part of #26`, #26 stays open with this
-  comment as its status, and no follow-up issue is opened. The remaining work then lives in #26.
-- **C.** Reduce the matrices now in this chore (no-js to a 3-template sample plus one full nav
-  pass; axe at one width for non-shell content). This reverses D8's ticked option. It changes
-  Playwright test config and coverage. It needs `docs/testing.md` coverage lines and probably
-  falls under Principle III. Not recommended.
-
-If `LOCAL_GATE_SECONDS` ≤ 240, N1 is moot. In that case W1 records (b) as met, W2 says so, and
-W3 is still opened, because CI `e2e` remains the long pole.
+- **Chosen, A.** The target is revised to the achieved figure, rounded up to the next whole
+  minute: **≤ 6 min**. The record still says 4 min was not met. #26 closes (`Closes #26`). The D8
+  follow-up issue carries the remaining Playwright and build-test work, with 4 min restated as
+  its own target.
+- Not chosen, B: keep 4 min open and leave #26 open (`Part of #26`).
+- Not chosen, C: reduce the matrices now, which would reverse D8.
 
 ## Work items
 
@@ -151,8 +158,8 @@ W3 is still opened, because CI `e2e` remains the long pole.
 
 **Files:** `docs/testing.md`.
 
-**Inputs from the orchestrator:** `LOCAL_GATE_SECONDS`, the unit, worker and e2e test counts,
-the N1 outcome, and `FOLLOWUP_ISSUE=<n>` if W3 has been opened.
+**Inputs:** the local measurement and test counts in Acceptance ("Local measurement"), N1
+option A, and `FOLLOWUP_ISSUE=<n>` from the orchestrator if W3 has been opened.
 
 **Test:** `no behaviour: n/a (documentation of measured figures; nothing reads them)`. Before and
 after the edit, run
@@ -169,14 +176,17 @@ The guards that read this file and the drift guard must stay green. Then run
   targets.
   - CI: 31 min (run 36814114154, 2026-10-01) → 6 min 15 s (run 37090465334), with the range
     6:15 to 7:59 across the `main` runs since #31.
-  - Local: 8 to 10 min → the figure from `LOCAL_GATE_SECONDS`, in m:ss.
-  - Target column: CI ≤ 10 min, met. Local per N1: under A, "≤ 4 min, revised to ≤ N min;
-    remaining work in #FOLLOWUP_ISSUE". Under B, "≤ 4 min, not met; open in #26".
+  - Local: 8 to 10 min → 5 min 39 s (339 s).
+  - Target column: CI ≤ 10 min, met. Local: "≤ 4 min not met; revised to ≤ 6 min, met; the
+    4 min target moves to #FOLLOWUP_ISSUE" (or "to the D8 follow-up issue" if no number yet).
 - The per-job table of run 37090465334: `changes` 15 s, `static` 93 s, `build-tests` 338 s,
   `e2e` 341 s, `verify` 13 s. One sentence follows it: `e2e` is the long pole in every `main`
   run (341 to 451 s), `build-tests` is next (338 to 393 s on the full tier), and the matrices
   were left alone under D8.
-- The local test counts as given (unit files and tests, worker tests, Playwright tests).
+- The local stage table: Vitest 180 files, 2570 passed and 1 skipped, 156.45 s; worker 12
+  files, 132 passed, 3.47 s; Playwright 1388 passed, 144 s (2.4 min); total 339 s. One sentence
+  follows it: locally Vitest (mostly the `build` project) is slightly longer than Playwright,
+  while in CI `e2e` is the long pole.
 - **Method**, one short list:
   - CI wall time = the earliest job `startedAt` to the `verify` job's `completedAt`, from
     `gh run view <id> --json jobs`, on a push to `main` (always the full tier; PR runs add the
@@ -207,13 +217,14 @@ is open so its number can be cited. Content, in the format of the phase 5 commen
 - **Phase 6: re-measure and record (#PR).** Final figures recorded in `docs/testing.md`
   "Measured gate times".
 - The acceptance table from this plan with the final column filled in. (a) met at 6 min 15 s
-  (run 37090465334; `main` range 6:15 to 7:59, from 31 min). (b) gives the local figure and the
-  N1 outcome. (c) met. (d) met (#36).
-- Per-job shape of run 37090465334, and the sentence that `e2e` is still the long pole.
+  (run 37090465334; `main` range 6:15 to 7:59, from 31 min). (b): local 5 min 39 s
+  (339 s), so 4 min is not met. By Don's decision the target is revised to ≤ 6 min, which is
+  met, and 4 min moves to #FOLLOWUP_ISSUE. (c) met. (d) met (#36).
+- Per-job shape of run 37090465334, and the sentence that `e2e` is still the long pole in CI.
+  Add the local stage split: Vitest 156 s, worker 3.5 s, Playwright 144 s.
 - Phase list: #29, #30, #31, #32, #36 and this PR, with one line each.
-- D8: "Playwright is still the long pole, so per D8 the follow-up is #FOLLOWUP_ISSUE." Under N1
-  option B, say instead that the work stays in this issue.
-- Under option A, a closing line: "Closed by #PR."
+- D8: "Playwright is still the long pole in CI, so per D8 the follow-up is #FOLLOWUP_ISSUE."
+- A closing line: "Closed by #PR."
 
 ### W3 `[ORCHESTRATOR]` Open the D8 follow-up issue
 
@@ -221,9 +232,8 @@ is open so its number can be cited. Content, in the format of the phase 5 commen
 
 **Files:** none (GitHub). **Test:** n/a (not repository work).
 
-Only under N1 option A (or when N1 is moot). Open it with
-`gh issue create --title ... --body-file <tmp>` once N1 is answered. Open it before W1 runs if
-possible, so W1 can link the number. Draft:
+Opened under N1 option A with `gh issue create --title ... --body-file <tmp>`. Open it before
+W1 runs if possible, so W1 can link the number. Draft:
 
 **Title:** `Playwright is the long pole of verify: measure, then trim the a11y and no-js matrices`
 
@@ -232,7 +242,8 @@ possible, so W1 can link the number. Draft:
 > Follow-up to #26 (decision D8). After phases 1 to 5, CI `verify` on `main` takes 6 min 15 s
 > (run 37090465334; range 6:15 to 7:59), down from 31 min. The `e2e` job is the long pole in
 > every run (341 to 451 s), with `build-tests` next (338 to 393 s). The local `pnpm run verify`
-> takes <LOCAL figure>, against #26's original 4 min target. See "Measured gate times" in
+> takes 5 min 39 s (Vitest 156 s, Playwright 144 s, worker 3.5 s). #26 revised its local target
+> to ≤ 6 min. This issue carries the original 4 min target. See "Measured gate times" in
 > `docs/testing.md`.
 >
 > ## Measure first
@@ -243,6 +254,8 @@ possible, so W1 can link the number. Draft:
 > - Time spent in the two web servers (`pnpm run build` preview and `build:fixtures`) against
 >   time spent in tests.
 > - The share of the a11y and no-js template matrices in that total.
+> - Locally, Vitest (mostly the `build` project) is slightly longer than Playwright. Reaching
+>   4 min locally needs both stages measured, not only Playwright.
 >
 > ## Decisions
 >
@@ -271,9 +284,12 @@ possible, so W1 can link the number. Draft:
 > - The pipelines now diverge from `.reference/cadence` on test placement.
 >
 > ## Acceptance
-> - `e2e` job ≤ <target> on a `main` run, and local `pnpm run verify` ≤ 4 min on the Mac, or a
+> - `e2e` job ≤ 5 min (300 s) on a `main` run, and local `pnpm run verify` ≤ 4 min on the Mac, or a
 >   recorded reason why not.
 > - No template or a11y combination loses coverage without a line in `docs/testing.md`.
+
+Judgment call: the `e2e` target of ≤ 300 s sits just under today's best `build-tests` (338 s).
+At that point Playwright is no longer the long pole. The orchestrator may adjust it.
 
 Judgment call: the four #36 governance items go into this issue instead of a separate one. They
 are small, and listing them stops them being lost when #26 closes. The orchestrator may split
@@ -287,7 +303,7 @@ them out if Don prefers.
 
 The PR body covers:
 
-- `Closes #26` (`Part of #26` under N1 option B);
+- `Closes #26`;
 - the acceptance table;
 - the CI number from this PR's own run, marked as a PR run (it includes the site-check);
 - the follow-ups list from Scope;
