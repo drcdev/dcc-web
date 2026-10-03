@@ -154,7 +154,7 @@ deliberately left the a11y and no-js matrices alone.
 
 ### W1 `docs/testing.md`: "Measured gate times" section
 
-- [ ] W1 done
+- [x] W1 done
 
 **Files:** `docs/testing.md`.
 
