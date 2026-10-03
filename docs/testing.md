@@ -7,7 +7,8 @@ It came out of [issue #26](https://github.com/drcdev/dcc-web/issues/26) (phases 
 numbers are the budget that the build project is held to. CI runs the same scripts split
 across parallel jobs (see "CI jobs"); phase 3 of #26 added that. Phase 4 added a content-only
 tier for changes that touch nothing but content files, and `pnpm run verify:quick` for the
-inner loop (see "Change tiers" and "Inner loop: `verify:quick`").
+inner loop (see "Change tiers" and "Inner loop: `verify:quick`"). Phase 6 recorded the final
+gate times (see "Measured gate times").
 
 ## Layers
 
@@ -20,7 +21,7 @@ inner loop (see "Change tiers" and "Inner loop: `verify:quick`").
 | Build, `build` | `pnpm run test:build`, Vitest `build` project, `buildFixtureSite(...)` (default mode) | What the real build does: route generation, `getStaticPaths()` checks, render-time component checks, Astro's own errors (body image import), draft exclusion per environment, CSP and indexing output, code highlighting, cross-page output. Tens of seconds per run. | One build per fixture set, many assertions read from it | Thin to what only a build can show. |
 | Worker integration | `pnpm run test:worker`, `vitest-pool-workers` | The contact API against local D1 | Per endpoint | Keep. |
 | Real `astro build` | `tests/build/indexing.test.ts`, which runs `astro build` on the repository's own content in the main-branch and preview environments, plus `pnpm run build`, which runs in the `e2e` job in CI and in the local `verify` script. `indexing.test.ts` also runs on content-only changes, through `pnpm run test:build:content`. | That the real site builds and that its sitemap, robots and headers match the environment | Two environments | Keep. |
-| E2E | Playwright `e2e` and sibling projects, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Journeys in a real browser: navigation, theme, menu, contact submission, not-found, behaviour without JavaScript | Journeys, plus the template matrix | Keep journeys; review matrices (issue #26, D8). |
+| E2E | Playwright `e2e` and sibling projects, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Journeys in a real browser: navigation, theme, menu, contact submission, not-found, behaviour without JavaScript | Journeys, plus the template matrix | Keep journeys; review matrices (#37, from D8 in #26). |
 | Accessibility | Playwright `a11y` projects (axe), `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | WCAG 2.2 AA per template, both widths, both themes | Full template matrix | Keep (Principle X). |
 | Visual | Playwright `visual` project, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Pixel baselines of the shell, not-found page and sections fixture | Per platform | Keep. The only guard on design regressions. |
 | Budget | Playwright `budget` project, `pnpm run test:budget` | LCP, CLS, long tasks and bytes under throttling | Per template, own invocation with one worker (`pnpm run test:budget`) | Keep. Slow by design. |
@@ -317,3 +318,48 @@ Before phase 2 the project ran 144 runs: 132 full builds and 12 syncs.
 On a content-only change the project runs only `indexing.test.ts` (2) and `local-site.test.ts`
 (5): 7 builds and 0 syncs. `focus-pocus.test.ts` (0 and 0) moved to `tests/unit/content/` in
 phase 4.
+
+## Measured gate times
+
+Measured on 2026-10-02, after phase 5 (#36), at commit 75e73fc.
+
+| Gate | Before (2026-10-01) | Final | Target |
+|---|---|---|---|
+| CI `verify` on `main` | 31 min (run 36814114154) | 6 min 15 s (run 37090465334); range 6:15 to 7:59 across the `main` runs since #31 | 10 min or less, met |
+| Local `pnpm run verify`, Mac | 8 to 10 min | 5 min 39 s (339 s) | 4 min or less, not met; revised to 6 min or less, met; the 4 min target moves to #37 |
+
+Per-job time in run 37090465334, the push of the #36 merge to `main` (full tier, every job
+succeeded):
+
+| Job | Time |
+|---|---|
+| `changes` | 15 s |
+| `static` | 93 s |
+| `build-tests` | 338 s |
+| `e2e` | 341 s |
+| `verify` | 13 s |
+
+`e2e` is the long pole in every `main` run (341 to 451 s). `build-tests` is next (245 to 393 s).
+`e2e` is longer than `build-tests` in every run. The a11y and no-js matrices were left alone
+under D8.
+
+Local stages, one `pnpm run verify` on commit 75e73fc:
+
+| Stage | Result | Time |
+|---|---|---|
+| Vitest (unit and build projects) | 180 files, 2570 passed, 1 skipped | 156.45 s |
+| Worker tests | 12 files, 132 passed | 3.47 s |
+| Playwright (all projects, including `budget`) | 1388 passed | 144 s (2.4 min) |
+| Total | VERIFY_EXIT=0 | 339 s |
+
+Locally, Vitest (mostly the `build` project) is slightly longer than Playwright, while in CI
+`e2e` is the long pole.
+
+Method:
+
+- CI wall time is the earliest job `startedAt` to the `verify` job's `completedAt`, from
+  `gh run view <id> --json jobs`, on a push to `main`. A push to `main` is always the full tier;
+  PR runs add the preview site-check.
+- Local time is `date +%s` around one `pnpm run verify` on the Mac, under `perl -e 'alarm N'`,
+  with the agent-shell setup and nothing else running.
+- Re-measure when a layer or job changes, and add a dated row rather than overwrite.
