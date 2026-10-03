@@ -463,7 +463,7 @@ says the file also covers the fixture pages:
 
 ### W3 V5: theme tokens per component, both themes (`tests/e2e/theme-tokens.spec.ts`)
 
-- [ ] W3 done
+- [x] W3 done
 
 **Files:** `tests/e2e/theme-tokens.spec.ts` (new). No config change: the `e2e` project's
 `testIgnore` does not match the name, so `e2e` runs it. Every address is absolute on
