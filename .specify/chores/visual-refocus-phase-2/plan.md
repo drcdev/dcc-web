@@ -690,7 +690,7 @@ Snapshot names are `<prefix>-${size.name}-${theme}.png`, so files are
 
 ### W5 macOS baselines for the new subjects, and the content-edit proof
 
-- [ ] W5 done
+- [x] W5 done
 
 **Files:** `tests/e2e/visual.spec.ts-snapshots/` (32 new `*-darwin.png`). **Test:** the W4
 tests, which go green here. This is the visual layer's normal baseline step. Linux is not done
@@ -729,6 +729,18 @@ here.
      Never commit these edits.
    - Record the result in the implement summary.
 6. `verify:quick`. Commit only the 32 darwin PNGs.
+
+**W5 notes (implement run):**
+
+- `test:visual:update` wrote 32 new `*-darwin.png` files and modified none of the 36 existing
+  baselines. `--project=visual` passed 50 of 50, and `--repeat-each=3` passed 150 of 150.
+- Content-edit proof: the word "edited" was added to the `summary` of
+  `src/content/posts/sample-everything.mdx` and to the `problem` of
+  `src/content/projects/tempo.mdx`. `dist` was rebuilt and `--project=visual` passed 50 of 50.
+  Both edits were reverted with `git checkout -- src/content/`, `git status --porcelain src/` was
+  empty, and `dist` was rebuilt again.
+- The plan's " Edited." sentence suffix does not work for `problem`: the schema rejects a second
+  sentence, so the build fails. Add a word before the closing full stop instead.
 
 The Linux baselines are **not** made by an implement subagent. W7 has the orchestrator make
 them after the review phase.
