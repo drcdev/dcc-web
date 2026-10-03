@@ -14,7 +14,8 @@ import { storyBlockComponents } from "../../components/project/blocks/index";
 import { sectionComponents } from "../../components/sections/index";
 import { allowDemoFrames } from "../../lib/content/demo-csp";
 import { assertUniqueProjectFiles } from "../../lib/content/project-address";
-import { validateProjectBody } from "../../lib/content/project-body";
+import { validateProjectStory } from "../../lib/content/project-story";
+import type { OptionsComparison } from "../../lib/content/options-comparison";
 import { fileOfProject, getPublishedProjects } from "../../lib/projects";
 import { getNavigation } from "../../lib/pages";
 
@@ -27,22 +28,19 @@ export async function getStaticPaths() {
     ),
   );
   // A broken draft must fail the production build too, so every entry is checked
-  // before drafts are filtered out.
+  // before drafts are filtered out. The checked Options table travels to the page as a prop.
+  const comparisons = new Map<string, OptionsComparison>();
   for (const entry of await getCollection("projects")) {
-    validateProjectBody(fileOfProject(entry), entry.body ?? "", {
-      visualNames: Object.keys(entry.data.visuals ?? {}),
-      demoEmbed: entry.data.demo?.embed === true,
-      hasDemoLinks: Boolean(entry.data.demo || entry.data.standIn || entry.data.source),
-    });
+    comparisons.set(entry.id, validateProjectStory(fileOfProject(entry), entry.body ?? ""));
   }
   const projects = await getPublishedProjects(process.env);
-  return projects.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+  return projects.map((entry) => ({ params: { slug: entry.id }, props: { entry, comparison: comparisons.get(entry.id)! } }));
 }
 
-const { entry } = Astro.props;
+const { entry, comparison } = Astro.props;
 const { data } = entry;
 // The story blocks read the project from here (src/env.d.ts) and name its file in errors.
-Astro.locals.project = { slug: entry.id, file: fileOfProject(entry), data };
+Astro.locals.project = { slug: entry.id, file: fileOfProject(entry), data, comparison };
 Astro.locals.pageFile = Astro.locals.project.file;
 // A story that embeds a demo allows drc.dev frames in its page policy. This has to
 // run here, before the layout renders the policy; a story that only links to its
