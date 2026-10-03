@@ -37,6 +37,7 @@
   and invitation) is for the plan, not the spec.
 - Choices made without asking (recorded in Assumptions): the four heading words are exact; the
   constraint list must match the table headings in name and order; cell answers are
-  case-insensitive; a missing or out-of-order part fails the build; the invitation wording is
-  shared; list order falls back to date then name once display order is removed.
+  case-insensitive; a missing or out-of-order part fails the build; the invitation keeps a
+  standard sentence (clarify later added an optional per-project sentence); list order falls
+  back to date then name once display order is removed.
 - Validation passed on the first iteration.

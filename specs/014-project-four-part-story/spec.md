@@ -211,6 +211,8 @@ has a page.
 - **A part is missing, renamed, repeated or out of order**: the build fails naming the file
   and saying which of Problem, Options, Build and Lessons is wrong, since a page with three or
   five parts would not match the design.
+- **Text before the Problem heading**: the build fails naming the file; only review notes
+  (comments) may sit there.
 - **Extra headings inside a part**: smaller sub-headings within a part are allowed and do not
   count as parts.
 - **A picture is assigned to a part that does not exist, or two pictures to one part**: the
@@ -258,6 +260,8 @@ has a page.
   heading in the body is not allowed. Writers start sub-headings at level 3 and do not skip
   levels, so the outline runs title (level 1), parts (level 2), sub-headings (level 3 and
   below); the automated accessibility checks catch a skipped level on the pages they check.
+  Nothing but review notes (comments) may come before the Problem heading; any other text
+  there fails the build naming the file.
 - **FR-003**: Part headings MUST be the same size as section headings on a writing post. The
   page MUST NOT show a table of contents, chapter numbers, or any animation on part headings,
   whatever the visitor's motion preference; nothing in a part moves.
@@ -301,8 +305,9 @@ has a page.
   shown before the standard contact link; otherwise a standard sentence MUST be shown. The
   link text names the project ("Tell me about a problem like <name>"). The invitation sentence
   is plain text on one line: surrounding spaces are trimmed, Markdown in it is shown as
-  written rather than formatted, an empty or space-only sentence counts as absent, and no
-  length limit is enforced beyond keeping it to one sentence.
+  written rather than formatted, and an empty or space-only sentence counts as absent. The
+  build enforces no length or sentence-count limit; keeping it to one sentence is the writer's
+  job, checked at review.
 - **FR-010**: The thin reading progress bar at the top of the page MUST remain, and the project
   title MUST still carry over from the list to the page when a story is opened from the list.
   Both stay as they are today: visual effects only, needing no script. The progress bar is
@@ -481,7 +486,9 @@ has a page.
   preview build lists and builds all five.
 - **SC-006**: Every project page and the project list pass the site's automated accessibility
   checks and stay within the existing performance budget. The checks cover a project page
-  with a picture in every part, an options table, all three kinds of link and the invitation;
+  with a picture in every part, an options table, a stand-in link and a source link (a live
+  link and a stand-in cannot be set together, so the live link is checked on another fixture
+  page) and the invitation;
   the Focus Pocus page; and the project list, including its filtered and empty states (the
   production empty state, unchanged by this feature, keeps its existing component test).
 - **SC-007**: Don has reviewed the project list and each of the five project pages on the

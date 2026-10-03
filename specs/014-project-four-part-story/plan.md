@@ -117,13 +117,13 @@ One primary layer per behaviour; a second layer only with the reason given.
 | Wiring: route runs `validateProjectStory` on a draft in a production build (P/T/R05–R06 call site, US3-7) | build | `tests/build/project-validation.test.ts` (one run; the logic rows stay unit) |
 | Wiring: generateId image check S09, file name S10, duplicate slug S11 | build | `tests/build/project-validation.test.ts` (kept) |
 | Template excluded (X01) and a renamed copy builds with four parts, links and invitation (X02, SC-003) | build | `tests/build/project-validation.test.ts` (reason for build layer: only the real loader and route show exclusion and a clean build) |
-| Plugin + components wiring: built story HTML has four `section[data-part]` in order and the table markup (FR-002) | build | `tests/build/drafts.test.ts` fixture build, one assertion on `projects/minimal/index.html` (reason: only the real MDX compile proves the plugin output reaches `<Content components>`) |
+| Plugin + components wiring: built story HTML is one `article` in `main` with the heading in a `header`, four `section[data-part]` in order, the table markup and the invitation last (FR-002, FR-025) | build | `tests/build/drafts.test.ts` fixture build, one assertion on `projects/minimal/index.html` (reason: only the real MDX compile proves the plugin output reaches `<Content components>`) |
 | Production: drafts absent, empty list state, no sitemap entries, Focus Pocus a draft (US4-3, US5-2, SC-005) | build | `tests/build/drafts.test.ts`, `tests/build/indexing.test.ts` (Focus Pocus moved to the draft list) |
-| Story journey: heading, four parts in order, no contents / chapter numbers / reveal, part `h2` computed size equals a post `h2`, picture beside at 1280 px and below at 390 px, links, invitation, progress bar, title carry-over (US1) | e2e | `tests/e2e/projects.spec.ts` (rewritten) and `projects-motion.spec.ts` (reveal cases removed, progress bar kept) |
+| Story journey: heading, four parts in order, no contents / chapter numbers / reveal, no part `min-height`, part `h2` computed size equals a post `h2`, picture beside at 1280 px and below at 390 px, links, invitation, progress bar, title carry-over, focus on the Build links, invitation link and table region visible and not under the progress bar (US1, FR-004, FR-027) | e2e | `tests/e2e/projects.spec.ts` (rewritten) and `projects-motion.spec.ts` (reveal cases removed, progress bar kept) |
 | No-JS readability (FR-011) | e2e | `tests/e2e/projects-no-js.spec.ts` (updated selectors) |
 | Forced colours on the table and chosen row (FR-007) | e2e | `tests/e2e/projects-forced-colors.spec.ts` (updated selectors) |
-| List: rows and filter unchanged, newest first (US4-1, FR-018, FR-021) | e2e | `tests/e2e/projects-fixtures.spec.ts` (order assertion added; count stays 9) |
-| Template accessibility (story and list) | a11y | `tests/e2e/a11y.spec.ts` entries for `/projects/`, `/projects/focus-pocus/` and the `every-part` fixture story (renamed from `every-block`) |
+| List: rows and filter unchanged, newest first, row links and filter buttons at least 24 by 24 px after the spacing change (US4-1, FR-018, FR-021, FR-027) | e2e | `tests/e2e/projects-fixtures.spec.ts` (order assertion added; count stays 9) |
+| Template accessibility (story and list), including the existing reflow at 320 px and 200% checks (FR-011, FR-026) | a11y | `tests/e2e/a11y.spec.ts` entries for `/projects/`, `/projects/focus-pocus/`, the `every-part` fixture story (renamed from `every-block`) and the `every-setting` fixture story (live demo link, SC-006) |
 | Template appearance; row spacing smaller (US4-2) | visual | `tests/e2e/visual.spec.ts`: `projects` and `project-story` baselines refreshed |
 | Performance budget | budget | `tests/e2e/budget.spec.ts`, unchanged |
 | Migration adds no claim; dropped text (pros, cons, option summaries, caption, repeated constraint prose) listed per project (FR-022) | manual review | PR body list, checked by Don at the preview review (SC-007); a test cannot judge whether a sentence is a new claim |
@@ -139,7 +139,7 @@ diff is a regression.
 
 **Fixtures** (`tests/fixtures/projects/`): `minimal.mdx`, `draft.mdx`, `every-setting.mdx`
 rewritten to four parts; `every-block.mdx` becomes `every-part.mdx` (a picture on every part,
-all three links, `invitation`, a sub-heading, a table outside Options); clip and poster files
+a stand-in and a source link, `invitation`, a sub-heading, a table outside Options); clip and poster files
 removed; `broken/` keeps the image, duplicate-slug and file-name cases. `tests/component/project/helpers.ts`
 drops `comparison` and clips and adds `part`, `invitation`, `date` and a parsed `comparison`.
 
@@ -175,7 +175,7 @@ src/content/projects/
 src/lib/content/
 ├── parts.ts                             # new: part ids and headings
 ├── project-story.ts                     # new: validateProjectStory (replaces project-body.ts)
-├── project-order.ts                     # date then title
+├── project-order.ts                     # date, then title, then slug (file name)
 ├── project-images.ts                    # clip check removed
 ├── project-body.ts, stages.ts, demo-csp.ts   # deleted
 src/lib/markdown/project-parts.ts        # new: Sätteri mdast plugin
@@ -215,9 +215,9 @@ major-change classification (III) stands on visual identity and `astro.config.mj
   negated pattern, and the template is checked by tests instead of by the collection.
 - **"Existing comparison colours" (R6)**: today's table has no per-answer colours. The plan
   uses existing palette tokens (sage / sand / rust); Don sees them in the preview review.
-- **Extra rules not spelled out in the spec**: body images rejected (P06), text before
-  `## Problem` rejected (P07), `date` made required. Each follows from FR-002, FR-005 / FR-016
-  and FR-018; tasks should keep them unless Don objects at review.
+- **Rules settled at resolve, now written into the spec**: body images rejected (P06, FR-005),
+  text before `## Problem` rejected (P07, FR-002 and Edge Cases), `date` required (FR-012,
+  FR-018). Don can still object at review.
 - **Linux baselines**: if local Docker baselines differ from CI (seen before for unusual
   glyphs; the table uses ✓ ~ ✗), use the label-and-artifact fallback.
 
