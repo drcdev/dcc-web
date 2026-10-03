@@ -84,7 +84,8 @@ Option {
 ```
 
 Invariants (each a contract row): at least one constraint and one option; every row has
-exactly `1 + constraints.length` cells; exactly one `chosen`; the constraint list before the
+exactly `1 + constraints.length` cells; option names unique and constraint labels unique;
+exactly one `chosen`; the constraint list before the
 table has the same labels in the same order; the first block after the table is a paragraph
 starting "Why". The explanation after each label and the "Why" sentence stay ordinary Markdown
 and are rendered as written.
@@ -94,13 +95,15 @@ and are rendered as written.
 A Project file with `draft: true`, placeholder text in every required field, one example
 diagram in `visuals` with `part: build` (image file `src/content/projects/images/template/diagram.svg`),
 an example `invitation`, the four parts, a two-item constraint list and a two-option table with
-one bold option and a "Why" line. Excluded from the collection by the loader's `!**/_*`
+one bold option and a "Why" line. Placeholder text is written as instructions, links use
+example.com addresses, and MDX comments name the optional details and what to replace or
+delete. Excluded from the collection by the loader's `!**/_*`
 pattern; checked by a unit test and by a fixture build of a renamed copy.
 
 ## Derived: published projects and order
 
 `selectPublishedProjects(entries, env)`: drops drafts in the production build only (unchanged),
-then sorts by `date` descending, then `title` ascending (`order` removed).
+then sorts by `date` descending, then `title` ascending, then slug (`order` removed).
 
 ## State: draft to published
 

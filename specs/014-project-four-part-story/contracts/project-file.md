@@ -27,12 +27,13 @@ visuals:
 standIn:
   href: https://example.com/
   label: Example project on drc.dev
-source: https://github.com/drcdev/example
+source: https://example.com/source
 invitation: If you have a problem like this one, tell me about it.
 draft: true
 ---
 
 {/* Notes to yourself are MDX comments like this one. They are never shown. */}
+{/* Optional details: visuals, standIn (or demo), source, image, invitation. Delete any you do not need. */}
 
 ## Problem
 
@@ -69,8 +70,8 @@ Rules a writer has to know (each enforced by the build):
    the part it sits beside (at most one per part).
 3. In Options: a constraint list (each item a **bold label**, a colon, an explanation), then one
    table whose first column names the options and whose other column headings are the bold
-   labels in the same order, every cell `yes`, `partly` or `no`, exactly one option name fully
-   in bold, then a line starting `Why`.
+   labels in the same order, every cell `yes`, `partly` or `no`, no name used twice, exactly
+   one option name fully in bold, then a paragraph starting with the word `Why`.
 4. Links and the closing invitation are added by the page. `invitation:` is optional; without
    it a standard sentence is used.
 5. A file whose name starts with `_` is not a project.

@@ -70,9 +70,11 @@ comments allowed, so review notes stay, FR-024); no body image (pictures go in `
 `part`, FR-005 / FR-016); in Options exactly one table; first header cell names the option
 column (any text, non-empty); remaining header cells are the constraints; every body cell after
 the first is `yes` / `partly` / `no`, case-insensitive; exactly one row whose first cell is
-**entirely** one `strong` node; the first block after the table is a paragraph whose text
-starts with `Why`; a list exists before the table in Options whose every item starts with a
-`strong` label followed by `:`, and the labels equal the constraint headers in name and order.
+**entirely** one `strong` node; the first block after the table (skipping MDX comments) is a paragraph whose text
+starts with the word `Why`; option names and constraint headers are each unique; the last list
+before the table in Options is the constraint list, whose every item starts with a `strong`
+label followed by `:` (inside or just after the bold), and the labels equal the constraint
+headers in name and order (spec FR-013, FR-014 give the exact matching rules).
 A table in another part is not checked.
 
 ## R2. Wrapping plain headed text into parts on the page
@@ -166,7 +168,7 @@ keeping `date` optional (a dateless project would sort by a rule the spec does n
 ## R5. Ordering
 
 **Decision**: `selectPublishedProjects` sorts by `date` descending, then `title`
-(`localeCompare`). The `order` branch is deleted. Sorting is done by hand, as the docs require
+(`localeCompare`), then slug. The `order` branch is deleted. Sorting is done by hand, as the docs require
 (docs.astro.build/en/guides/content-collections/#querying-build-time-collections: "The sort
 order of generated collections is non-deterministic").
 

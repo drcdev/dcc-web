@@ -88,7 +88,7 @@ Guarantees:
 
 ## Project list `/projects/`
 
-Unchanged markup and filter behaviour. Rows are ordered by `date` (newest first), then title.
+Unchanged markup and filter behaviour. Rows are ordered by `date` (newest first), then title, then slug.
 `[data-project]` vertical padding and the gap between its columns are smaller than before
 (R8 in research.md). With no published project (production while all five are drafts) the
 existing `[data-projects-empty]` state is shown.

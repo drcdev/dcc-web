@@ -73,14 +73,16 @@ comments anywhere; a table in Problem, Build or Lessons.
 | T06 | A cell that is not yes, partly or no | story | file, the option, the constraint, "yes, partly or no" |
 | T07 | No option in bold, or more than one | story | file, "exactly one option must be in bold" (and the count) |
 | T08 | An option bolded only in part | story | file, the option, "exactly one option must be in bold" |
-| T09 | No line starting "Why" straight after the table | story | file, "Why" |
-| T10 | No constraint list before the table | story | file, "constraint list" |
-| T11 | A constraint list item with no bold label | story | file, the item text, "bold label" |
-| T12 | Bold labels differ from the column headings in name or order | story | file, both lists of names, "same names, in the same order" |
+| T09 | The first block after the table (skipping blank lines and MDX comments) is not a paragraph starting with the word "Why" | story | file, "Why" |
+| T10 | No list before the table in Options (the constraint list is the last list before it) | story | file, "constraint list" |
+| T11 | A constraint list item with no bold label, or no colon after it | story | file, the item text, "bold label" |
+| T12 | Bold labels differ from the column headings in name or order (exact text, colon and inner formatting ignored) | story | file, both lists of names, "same names, in the same order" |
+| T13 | Two options with the same name, or two constraint headings the same | story | file, the repeated name, "more than once" |
 
 Allowed, and asserted as passing: `Yes` / `PARTLY` (case-insensitive); a one-option table
 whose only row is bold; a multi-sentence "Why" line; a missing or multi-line explanation after
-a label.
+a label; the colon inside the bold label; bold or a link inside an answer cell; an MDX comment
+between the table and the "Why" line.
 
 ## Template (FR-019, FR-020)
 

@@ -100,12 +100,12 @@ One primary layer per behaviour; a second layer only with the reason given.
 | Behaviour (story / FR) | Primary layer | Test (new or rewritten) |
 |---|---|---|
 | Part rules P01–P07, allowed sub-headings and comments (US3, FR-002, FR-015) | unit | `tests/unit/content/project-story.test.ts` |
-| Table rules T01–T12 and the allowed cases (US3, FR-013, FR-014) | unit | `tests/unit/content/project-story.test.ts` |
+| Table rules T01–T13 and the allowed cases (US3, FR-013, FR-014) | unit | `tests/unit/content/project-story.test.ts` |
 | Body tags / import / export rejected R05–R06 (FR-017) | unit | `tests/unit/content/project-story.test.ts` |
 | Schema: removed settings R01–R04, `part` N01–N02, `invitation` N03, `date` required, carried rows S01–S08 (US5-3, FR-012, FR-017) | unit | `tests/unit/content/project-schema.test.ts` (rewritten) |
-| Order by date then title (FR-018) | unit | `tests/unit/content/project-order.test.ts` (rewritten) |
+| Order by date, then title, then file name (FR-018) | unit | `tests/unit/content/project-order.test.ts` (rewritten) |
 | Parts plugin groups parts, replaces only the Options table, ignores non-project files (FR-002, FR-016) | unit | `tests/unit/markdown/project-parts.test.ts` (compiles small MDX with `satteri` and the plugin) |
-| Template exists, is a draft, passes schema and story check, has example picture with `part` and an `invitation` (US2-1, FR-019, FR-020) | unit | `tests/unit/content/project-template.test.ts` |
+| Template exists, is a draft, passes schema and story check, has example picture with `part` and an `invitation`, notes naming the optional details, only example.com links (US2-1, FR-019, FR-020) | unit | `tests/unit/content/project-template.test.ts` |
 | The five projects: all `draft: true`, review comments kept, no removed setting, current invitation sentence moved to `invitation` (US5-1/2, FR-022–FR-024) | unit | `tests/unit/content/projects-content.test.ts` (replaces `focus-pocus.test.ts`) |
 | Author guide names every setting, part and allowed answer (FR-012) | unit | `tests/unit/content/projects-guide.test.ts` (updated for parts, no blocks or stages) |
 | `ProjectPart`: section, `aria-labelledby`, picture column only when assigned, eager first picture, Build links only when set (FR-005, FR-008) | component | `tests/component/project/ProjectPart.test.ts` |
@@ -126,6 +126,7 @@ One primary layer per behaviour; a second layer only with the reason given.
 | Template accessibility (story and list) | a11y | `tests/e2e/a11y.spec.ts` entries for `/projects/`, `/projects/focus-pocus/` and the `every-part` fixture story (renamed from `every-block`) |
 | Template appearance; row spacing smaller (US4-2) | visual | `tests/e2e/visual.spec.ts`: `projects` and `project-story` baselines refreshed |
 | Performance budget | budget | `tests/e2e/budget.spec.ts`, unchanged |
+| Migration adds no claim; dropped text (pros, cons, option summaries, caption, repeated constraint prose) listed per project (FR-022) | manual review | PR body list, checked by Don at the preview review (SC-007); a test cannot judge whether a sentence is a new claim |
 | Pages shorter at phone width (SC-002) | manual measurement | quickstart step 0, numbers recorded in the PR body (a permanent test would pin content length, not behaviour) |
 | Don's review on preview (SC-007) | `[PREVIEW-CHECK]` | tasks.md |
 

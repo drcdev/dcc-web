@@ -6,7 +6,7 @@ use` in the same command as the tool). Bound long runs with `perl -e 'alarm N; e
 ## 0. Before changing anything: record page heights (SC-002)
 
 On the current `main` build, record the full page height at phone width (390 px) of each of
-the five project pages, for example with a throwaway Playwright script or the browser's device
+the five project pages (full document height, light theme, non-production build), for example with a throwaway Playwright script or the browser's device
 toolbar, and note the numbers in the PR body. Repeat after the change; each must be smaller.
 
 ## 1. Inner loop

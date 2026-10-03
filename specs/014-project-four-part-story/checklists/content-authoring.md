@@ -8,47 +8,47 @@
 
 ## Project File Shape
 
-- [ ] CHK001 Are all required and optional details at the top of a project file listed with types and which are mandatory? [Completeness, Spec §FR-012, §Key Entities]
-- [ ] CHK002 Is the allowed set of part names and their matching rule (exact words, case, surrounding whitespace, heading level) defined? [Clarity, Spec §FR-002, §Assumptions]
-- [ ] CHK003 Is the heading level of the four parts, and the permitted levels for sub-headings that do not count as parts, specified? [Gap, Spec §Edge Cases]
-- [ ] CHK004 Are the rules for a picture's part assignment (valid part names, at most one per part, unassigned allowed) complete and consistent between FR-005 and the edge cases? [Consistency, Spec §FR-005, §Edge Cases]
-- [ ] CHK005 Are the status field's allowed values and how they are displayed in the heading stated? [Gap, Spec §FR-001]
-- [ ] CHK006 Are the invitation sentence's constraints (length, markup, empty string treated as absent) defined? [Clarity, Spec §FR-009, §Edge Cases]
+- [x] CHK001 Are all required and optional details at the top of a project file listed with types and which are mandatory? [Completeness, Spec §FR-012, §Key Entities]
+- [x] CHK002 Is the allowed set of part names and their matching rule (exact words, case, surrounding whitespace, heading level) defined? [Clarity, Spec §FR-002, §Assumptions]
+- [x] CHK003 Is the heading level of the four parts, and the permitted levels for sub-headings that do not count as parts, specified? [Gap, Spec §Edge Cases]
+- [x] CHK004 Are the rules for a picture's part assignment (valid part names, at most one per part, unassigned allowed) complete and consistent between FR-005 and the edge cases? [Consistency, Spec §FR-005, §Edge Cases]
+- [x] CHK005 Are the status field's allowed values and how they are displayed in the heading stated? [Gap, Spec §FR-001]
+- [x] CHK006 Are the invitation sentence's constraints (length, markup, empty string treated as absent) defined? [Clarity, Spec §FR-009, §Edge Cases]
 
 ## Options Table Rules
 
-- [ ] CHK007 Is "first column names the options" defined precisely, including the expected heading text of that column? [Ambiguity, Spec §FR-013, §US3-1]
-- [ ] CHK008 Is "exactly one option in bold" defined for whole-cell bold versus partial bold, and for emphasis styles other than bold? [Clarity, Spec §FR-013, §Edge Cases]
-- [ ] CHK009 Are duplicate option names and duplicate constraint headings addressed? [Gap, Spec §FR-013]
-- [ ] CHK010 Are the minimum and maximum size of the table (options and constraints) stated, including the one-option case and a zero-constraint case? [Gap, Spec §Edge Cases]
-- [ ] CHK011 Is cell answer matching defined for whitespace, trailing punctuation, bold or links inside a cell, and an empty cell? [Gap, Spec §US3-2, §Edge Cases]
-- [ ] CHK012 Is the "line beginning Why" rule defined for what counts as the first line after the table (blank lines, paragraph versus list, capitalisation of "Why")? [Ambiguity, Spec §FR-013, §US3-4]
-- [ ] CHK013 Is the rule for "exactly one table in the Options part" consistent with the allowance for tables in other parts? [Consistency, Spec §US3-6, §Edge Cases]
-- [ ] CHK014 Are the constraint list's location (between the paragraph and the table) and its list type defined, and what happens if it is missing? [Gap, Spec §FR-006, §FR-014]
-- [ ] CHK015 Is label matching defined for case, trailing colon, inner formatting and punctuation differences between list label and table heading? [Clarity, Spec §FR-014, §US3-5]
+- [x] CHK007 Is "first column names the options" defined precisely, including the expected heading text of that column? [Ambiguity, Spec §FR-013, §US3-1]
+- [x] CHK008 Is "exactly one option in bold" defined for whole-cell bold versus partial bold, and for emphasis styles other than bold? [Clarity, Spec §FR-013, §Edge Cases]
+- [x] CHK009 Are duplicate option names and duplicate constraint headings addressed? [Gap, Spec §FR-013]
+- [x] CHK010 Are the minimum and maximum size of the table (options and constraints) stated, including the one-option case and a zero-constraint case? [Gap, Spec §Edge Cases]
+- [x] CHK011 Is cell answer matching defined for whitespace, trailing punctuation, bold or links inside a cell, and an empty cell? [Gap, Spec §US3-2, §Edge Cases]
+- [x] CHK012 Is the "line beginning Why" rule defined for what counts as the first line after the table (blank lines, paragraph versus list, capitalisation of "Why")? [Ambiguity, Spec §FR-013, §US3-4]
+- [x] CHK013 Is the rule for "exactly one table in the Options part" consistent with the allowance for tables in other parts? [Consistency, Spec §US3-6, §Edge Cases]
+- [x] CHK014 Are the constraint list's location (between the paragraph and the table) and its list type defined, and what happens if it is missing? [Gap, Spec §FR-006, §FR-014]
+- [x] CHK015 Is label matching defined for case, trailing colon, inner formatting and punctuation differences between list label and table heading? [Clarity, Spec §FR-014, §US3-5]
 
 ## Build Check Behaviour
 
-- [ ] CHK016 Does each rule have a required error message content (file name plus the specific rule, and for cells the option and constraint)? [Measurability, Spec §FR-015, §SC-004]
-- [ ] CHK017 Is it stated whether the check reports the first failure or all failures in a file and across files? [Gap, Spec §FR-015]
-- [ ] CHK018 Is the check's scope explicit for drafts, the template and production versus preview builds? [Completeness, Spec §US3-7, §FR-020]
-- [ ] CHK019 Is the rejection of removed settings (display order, demo, clip, pros and cons, structured comparison, chapter wrappers) specified with the message form naming the setting? [Completeness, Spec §FR-017, §US5-3]
-- [ ] CHK020 Is the interaction between the part check and the table check defined when both fail in one file? [Gap, Spec §FR-015]
-- [ ] CHK021 Are the check's requirements independent of how the page renders, so a passing build cannot hide a wrong table? [Consistency, Spec §FR-015]
+- [x] CHK016 Does each rule have a required error message content (file name plus the specific rule, and for cells the option and constraint)? [Measurability, Spec §FR-015, §SC-004]
+- [x] CHK017 Is it stated whether the check reports the first failure or all failures in a file and across files? [Gap, Spec §FR-015]
+- [x] CHK018 Is the check's scope explicit for drafts, the template and production versus preview builds? [Completeness, Spec §US3-7, §FR-020]
+- [x] CHK019 Is the rejection of removed settings (display order, demo, clip, pros and cons, structured comparison, chapter wrappers) specified with the message form naming the setting? [Completeness, Spec §FR-017, §US5-3]
+- [x] CHK020 Is the interaction between the part check and the table check defined when both fail in one file? [Gap, Spec §FR-015]
+- [x] CHK021 Are the check's requirements independent of how the page renders, so a passing build cannot hide a wrong table? [Consistency, Spec §FR-015]
 
 ## Template
 
-- [ ] CHK022 Is the template's exclusion from the list, pages, site map and navigation specified by a stated rule rather than only "its file name"? [Clarity, Spec §FR-020, §Assumptions]
-- [ ] CHK023 Is it required that the template satisfy every check rule and that a fresh copy builds without edits beyond renaming? [Measurability, Spec §FR-020, §SC-003]
-- [ ] CHK024 Are the template's placeholder details and example content specified so none can be mistaken for real content when copied? [Gap, Spec §FR-019]
-- [ ] CHK025 Is it stated how a writer is told which fields the template makes optional and what to delete? [Gap, Spec §US2]
+- [x] CHK022 Is the template's exclusion from the list, pages, site map and navigation specified by a stated rule rather than only "its file name"? [Clarity, Spec §FR-020, §Assumptions]
+- [x] CHK023 Is it required that the template satisfy every check rule and that a fresh copy builds without edits beyond renaming? [Measurability, Spec §FR-020, §SC-003]
+- [x] CHK024 Are the template's placeholder details and example content specified so none can be mistaken for real content when copied? [Gap, Spec §FR-019]
+- [x] CHK025 Is it stated how a writer is told which fields the template makes optional and what to delete? [Gap, Spec §US2]
 
 ## Migration of Existing Projects
 
-- [ ] CHK026 Is the mapping from current text to the four parts defined for each project, including any project whose current structure lacks distinct Build or Lessons text? [Coverage, Spec §FR-022]
-- [ ] CHK027 Is "no new claims" measurable, and is how dropped pros and cons text is recorded stated? [Measurability, Spec §FR-022, §US5-1]
-- [ ] CHK028 Is the derivation of yes, partly and no cell answers from the existing structured comparison data specified, including how the chosen option is identified? [Gap, Spec §FR-022]
-- [ ] CHK029 Are the preservation requirements for review notes and per-project invitation sentences consistent with the draft status of all five? [Consistency, Spec §FR-023, §FR-024]
-- [ ] CHK030 Is the page-height comparison (before versus after at phone width) defined with a baseline source and measurement method? [Measurability, Spec §SC-002]
-- [ ] CHK031 Are requirements for the empty production list, home page, navigation, site map and any links to project pages once all projects are drafts explicit? [Coverage, Spec §US4-3, §Edge Cases]
-- [ ] CHK032 Is ordering by date then name defined for ties, missing dates and drafts shown on the preview? [Clarity, Spec §FR-018]
+- [x] CHK026 Is the mapping from current text to the four parts defined for each project, including any project whose current structure lacks distinct Build or Lessons text? [Coverage, Spec §FR-022]
+- [x] CHK027 Is "no new claims" measurable, and is how dropped pros and cons text is recorded stated? [Measurability, Spec §FR-022, §US5-1]
+- [x] CHK028 Is the derivation of yes, partly and no cell answers from the existing structured comparison data specified, including how the chosen option is identified? [Gap, Spec §FR-022]
+- [x] CHK029 Are the preservation requirements for review notes and per-project invitation sentences consistent with the draft status of all five? [Consistency, Spec §FR-023, §FR-024]
+- [x] CHK030 Is the page-height comparison (before versus after at phone width) defined with a baseline source and measurement method? [Measurability, Spec §SC-002]
+- [x] CHK031 Are requirements for the empty production list, home page, navigation, site map and any links to project pages once all projects are drafts explicit? [Coverage, Spec §US4-3, §Edge Cases]
+- [x] CHK032 Is ordering by date then name defined for ties, missing dates and drafts shown on the preview? [Clarity, Spec §FR-018]
