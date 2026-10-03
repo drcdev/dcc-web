@@ -125,3 +125,11 @@ Tests and fixtures first (T013-T020, each test seen to fail), then the code that
 ## Strategy
 
 Deliver in phase order; US3 + US1 + US2 form the MVP (writer-safe four-part pages). Nothing merges before T041 and T042.
+
+---
+
+## Phase 9: Convergence
+
+- [ ] T043 [US3] Add unit tests (primary layer: unit) to `tests/unit/content/project-story.test.ts` that a chosen option written bold-and-italic as `***Name***` and as `_**Name**_` is accepted as the one bold option (`chosen: true`, name without markers), while `*Name*` (italic only) still fails "exactly one option must be in bold". See them fail: today both bold-italic forms parse as emphasis wrapping strong and are rejected with "found 0" per FR-013 (partial)
+- [ ] T044 [US3] In `checkOptions` in `src/lib/content/project-story.ts`, treat a first cell whose only child is an `emphasis` holding exactly one `strong` (and nothing else) as fully bold, the same as `strong` holding `emphasis`; keep the partly-bold rule (T08) unchanged. Make T043 pass per FR-013 (partial)
+- [ ] T045 Delete the orphaned per-chapter draft mark `src/components/project/DraftMark.astro` and its test `tests/component/project/DraftMark.test.ts` (its only user, `blocks/Chapter.astro`, is gone), and drop it from the `Pill` row in `docs/design-source.md`; run the component project to confirm nothing else imports it per spec Assumptions "the per-chapter draft marks go away with the chapters" and plan: blocks deleted (unrequested)
