@@ -1,9 +1,11 @@
-// Visual baselines for the shell (FR-005a, FR-005b; research R13): the header,
-// the footer and the full not-found page at phone (390) and desktop (1280)
-// widths, and the open mobile menu at phone width only, each in dark and light
-// themes — 14 images per platform. Comparison settings (maxDiffPixelRatio
-// 0.001, animations disabled, caret hidden) and updateSnapshots "none" (a
-// missing baseline fails) come from playwright.config.ts.
+// Visual baselines for the design system only: the header, the footer and the
+// open mobile menu from `/`, the full not-found page, and the sections fixture
+// page on the fixture site (port 4322). Phone (390) and desktop (1280) widths,
+// dark and light themes (the menu at phone width only) - 18 images per
+// platform. It never snapshots real content, so a content edit cannot fail it
+// (issue #40, V1 and V2). Comparison settings (maxDiffPixelRatio 0.001,
+// animations disabled, caret hidden) and updateSnapshots "none" (a missing
+// baseline fails) come from playwright.config.ts.
 import { test, expect, type Page } from "@playwright/test";
 
 const WIDTHS = [
@@ -73,22 +75,6 @@ for (const size of WIDTHS) {
   }
 }
 
-// The pages: home (with the introduction card), about and contact, full page.
-for (const size of WIDTHS) {
-  for (const theme of THEMES) {
-    for (const [name, path] of [
-      ["home", "/"],
-      ["about", "/about/"],
-      ["contact", "/contact/"],
-    ] as const) {
-      test(`${name} page — ${size.name} — ${theme}`, async ({ page }) => {
-        await open(page, path, size.width, size.height, theme);
-        await expect(page).toHaveScreenshot(`${name}-${size.name}-${theme}.png`, { fullPage: true });
-      });
-    }
-  }
-}
-
 for (const theme of THEMES) {
   test(`mobile menu open — phone — ${theme}`, async ({ page }) => {
     await open(page, "/", 390, 844, theme);
@@ -107,51 +93,5 @@ for (const size of WIDTHS) {
       await open(page, "http://localhost:4322/sections/", size.width, size.height, theme);
       await expect(page).toHaveScreenshot(`sections-${size.name}-${theme}.png`, { fullPage: true });
     });
-  }
-}
-
-// The blog pages (spec 008): landing, all posts, one topic page and the richest
-// sample post, plus the Drift series page (spec 013), full page, both sizes and
-// themes (20 images per platform).
-for (const size of WIDTHS) {
-  for (const theme of THEMES) {
-    for (const [name, path] of [
-      ["writing-landing", "/writing/"],
-      ["writing-all", "/writing/all/"],
-      ["writing-topic", "/writing/topics/technology-teams/"],
-      ["writing-post", "/writing/sample-everything/"],
-      ["writing-series", "/writing/drift/"],
-    ] as const) {
-      test(`${name} — ${size.name} — ${theme}`, async ({ page }) => {
-        await open(page, path, size.width, size.height, theme);
-        if (name === "writing-post") {
-          await expect(page.locator("button", { hasText: "Copy" }).first()).toBeVisible();
-        }
-        // Below-the-fold images are lazy: load them all so a full-page shot shows every card image.
-        await page.evaluate(async () => {
-          const images = Array.from(document.images);
-          for (const img of images) img.loading = "eager";
-          await Promise.all(images.map((img) => img.decode().catch(() => undefined)));
-        });
-        await expect(page).toHaveScreenshot(`${name}-${size.name}-${theme}.png`, { fullPage: true });
-      });
-    }
-  }
-}
-
-// The projects index and the Focus Pocus story (FR-084), full page, both sizes
-// and themes, with reduced motion emulated so every chapter is in its final state.
-for (const size of WIDTHS) {
-  for (const theme of THEMES) {
-    for (const [name, path] of [
-      ["projects", "/projects/"],
-      ["project-story", "/projects/focus-pocus/"],
-    ] as const) {
-      test(`${name} page — ${size.name} — ${theme}`, async ({ page }) => {
-        await page.emulateMedia({ reducedMotion: "reduce" });
-        await open(page, path, size.width, size.height, theme);
-        await expect(page).toHaveScreenshot(`${name}-${size.name}-${theme}.png`, { fullPage: true });
-      });
-    }
   }
 }

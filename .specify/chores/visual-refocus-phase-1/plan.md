@@ -245,7 +245,7 @@ spurious failures; if that happens, wait and rerun.
 
 ### W2 Remove the ten real-content snapshot subjects and their baselines
 
-- [ ] W2 done
+- [x] W2 done
 
 **Files:** `tests/e2e/visual.spec.ts`; `tests/e2e/visual.spec.ts-snapshots/` (80 deletions).
 
