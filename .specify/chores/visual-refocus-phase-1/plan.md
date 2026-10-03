@@ -378,7 +378,7 @@ are in `READ_BY_CHECKS`) and `run.sh 120 pnpm run lint`.
 
 ### W4 `docs/testing.md`: Visual row, coverage mapping, gate-time entry
 
-- [ ] W4 done
+- [x] W4 done
 
 **Files:** `docs/testing.md`.
 
