@@ -375,8 +375,8 @@ Method:
 
 | Measure | Before (run 37136029981, `main` push of #39) | After |
 |---|---|---|
-| `e2e` job | 473 s | pending (#40 phase 1 PR run) |
-| `test:e2e:parallel` step | 335 s | pending (#40 phase 1 PR run) |
+| `e2e` job | 473 s | 353 s (5 min 53 s), run 37140329856 (PR #41, first run) |
+| `test:e2e:parallel` step | 335 s | 241 s (4 min 1 s), same run |
 | Visual tests | 58 | 18 |
 | E2E tests | 583 | 619 |
 

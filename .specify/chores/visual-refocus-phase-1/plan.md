@@ -428,7 +428,7 @@ are in `READ_BY_CHECKS`) and `run.sh 120 pnpm run lint`.
 
 ### W5 `[ORCHESTRATOR]` After-measurement and PR body
 
-- [ ] W5 done
+- [x] W5 done (run 37140329856: e2e 353 s, step 241 s, whole run 376 s)
 
 **Files:** `docs/testing.md` (two cells). **Test:** n/a (records a measurement).
 
