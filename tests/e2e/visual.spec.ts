@@ -10,7 +10,9 @@
 //     contact form.
 // Every fixture subject is an element shot, because the pages around it also
 // show real posts and real project rows (Related posts, the real draft rows),
-// and a full-page shot would pin the shell a second time. So a content edit
+// and a full-page shot would pin the shell a second time. The project-row
+// subjects also remove the real rows first, because their position would
+// otherwise move the fixture row. So a content edit
 // cannot fail this project (issue #40, V1, V2 and V3). Comparison settings
 // (maxDiffPixelRatio 0.001, animations disabled, caret hidden) and
 // updateSnapshots "none" (a missing baseline fails) come from
@@ -109,10 +111,24 @@ for (const size of WIDTHS) {
 // of a template on frozen content is what only a snapshot shows. What these
 // pages do is asserted elsewhere (blog-fixtures, projects-fixtures, contact,
 // projects and theme-tokens specs); this block adds only the pixels. Each shot
-// is the element, not the page, so Related posts, real draft rows and the
+// is the element, not the page, so Related posts, real project rows and the
 // footer's build-time year stay out of it. Reduced motion puts the story in its
 // resting state (chapters final, no reading-progress bar).
 const FIXTURE = "http://localhost:4322";
+
+// The fixture index also lists the real projects, newest first, so a real project
+// added or removed above a fixture row moves that row by a fraction of a pixel
+// and changes its rendering. Removing the real rows once the filter island is
+// ready leaves each row's position set by the four fixtures alone (PR #42).
+const FIXTURE_PROJECTS = ["draft", "minimal", "every-part", "every-setting"];
+
+async function onlyFixtureRows(page: Page) {
+  await expect(page.locator("project-filter[data-ready]")).toHaveCount(1);
+  await page
+    .locator("li[data-project]")
+    .evaluateAll((rows, keep) => rows.filter((row) => !keep.includes(row.getAttribute("data-project") ?? "")).forEach((row) => row.remove()), FIXTURE_PROJECTS);
+  await expect(page.locator("li[data-project]")).toHaveCount(FIXTURE_PROJECTS.length);
+}
 
 const FIXTURE_SUBJECTS = [
   {
@@ -160,18 +176,14 @@ const FIXTURE_SUBJECTS = [
     title: "fixture project row, minimal",
     path: "/projects/",
     locator: (page: Page) => page.locator('li[data-project="minimal"]'),
-    wait: async (page: Page) => {
-      await expect(page.locator("project-filter[data-ready]")).toHaveCount(1);
-    },
+    wait: onlyFixtureRows,
   },
   {
     prefix: "project-row-every-setting",
     title: "fixture project row, every setting",
     path: "/projects/",
     locator: (page: Page) => page.locator('li[data-project="every-setting"]'),
-    wait: async (page: Page) => {
-      await expect(page.locator("project-filter[data-ready]")).toHaveCount(1);
-    },
+    wait: onlyFixtureRows,
   },
   {
     prefix: "contact-form",
