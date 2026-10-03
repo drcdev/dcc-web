@@ -198,3 +198,44 @@ Only finding 3 weakens a check.
 6. Noticed: content-only changes still run the whole `e2e` job, including `visual`. Narrowing that is a CI change under Principle III and is not part of #40.
 7. Noticed: the geometry test overlaps the no-JS check (no sideways scroll with JS off) and the 320 px reflow check. Fold them together if phase 3 shows `e2e` is still long.
 8. The LOW items (4 to 9).
+
+## Review round 2
+
+Reviewed fix commit 33dda68 with fresh eyes. `git show --stat` shows only `docs/testing.md`, `tests/unit/ci/changed-paths.test.ts` and the "Round 1 fixes" note in `plan.md`. Nothing else changed.
+
+**Findings still open:** CRITICAL 0, HIGH 0, LOW 8.
+
+### Round 1 HIGH findings
+
+1. **HIGH 1, fixed.** The `contact` row no longer cites the sections fixture. It says the form's pixels have no snapshot because the fixture does not render `ContactForm` (confirmed: no `ContactForm` in `tests/fixtures/pages/`). The true parts remain: shell, geometry, `a11y` and `contact.spec.ts`.
+2. **HIGH 2, fixed.**
+   - The rows now mark these as gaps: the listing card and lead story (landing, all, topic), the series banner, the projects index rows and the home intro card. The post and story rows read "gap until the #40 V3 fixture … snapshot lands".
+   - The gap sentence lists every unguarded surface, separates "until V3" from "no planned replacement", and leaves it to Don to widen V3 or accept the gaps.
+   - None of the rows says phase 2 already covers something.
+   - Spot checks of the claims that remain:
+     - home: `pages.spec.ts:192-269` (intro card, CTA, copy, photo, targets);
+     - projects: `projects.spec.ts:248` (two columns at 1280 px, one at 390 px), and `projects-fixtures.spec.ts` exists;
+     - writing-post: `blog.spec.ts:31-156` (code, table region, Copy button), and `blog.a11y.spec.ts`, `blog-fixture.a11y.spec.ts` and `blog-forced-colors.spec.ts` exist;
+     - project-story: `projects.spec.ts:83-136`;
+     - series: `blog.spec.ts:569-598`.
+   - All true.
+3. **HIGH 3, fixed.**
+   - `changed-paths.test.ts:149` now uses `.specify/feature.json`.
+   - In `isSkipSafe`, that file is not in `READ_BY_CHECKS`, sits under the `.specify/` prefix and ends in `.json`, so it is skip-safe.
+   - Mutation check: without the `event !== "pull_request"` rule, `decide()` would reach the all-skip-safe branch and return `full: false`, so the case would fail. The check works again.
+
+### Checks re-run
+
+| Check | Result |
+|---|---|
+| `vitest run --project unit tests/unit/ci tests/unit/setup` | 60 files, 898 passed, EXIT=0 (node v24.4.1) |
+
+### New LOW findings
+
+10. **Gap sentence grammar.** In `docs/testing.md` ("After this PR these pixels have no snapshot. Until #40 V3 adds …, the post and story templates."), the second sentence has no verb. It reads like a list after a colon. Suggest: "These pixels have no snapshot after this PR: until #40 V3 adds …, the post and story templates; with no planned replacement, …".
+11. **Leftover `CLAUDE.md` case.** `changed-paths.test.ts:162`, in the "never reports contentOnly without full" case, still uses `CLAUDE.md`. That case only asserts an invariant, so nothing is weakened. Round 1 offered this swap as optional, for clarity.
+
+### Carried forward
+
+- LOW 4 to 9 from round 1 are unchanged. The fix made none of them worse.
+- The Principle III recommendation stands. The `changed-paths.ts` tier change is CI configuration: ask Don whether it is major, and name it in the PR body.
