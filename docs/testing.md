@@ -21,9 +21,9 @@ gate times (see "Measured gate times").
 | Build, `build` | `pnpm run test:build`, Vitest `build` project, `buildFixtureSite(...)` (default mode) | What the real build does: route generation, `getStaticPaths()` checks, render-time component checks, Astro's own errors (body image import), draft exclusion per environment, CSP and indexing output, code highlighting, cross-page output. Tens of seconds per run. | One build per fixture set, many assertions read from it | Thin to what only a build can show. |
 | Worker integration | `pnpm run test:worker`, `vitest-pool-workers` | The contact API against local D1 | Per endpoint | Keep. |
 | Real `astro build` | `tests/build/indexing.test.ts`, which runs `astro build` on the repository's own content in the main-branch and preview environments, plus `pnpm run build`, which runs in the `e2e` job in CI and in the local `verify` script. `indexing.test.ts` also runs on content-only changes, through `pnpm run test:build:content`. | That the real site builds and that its sitemap, robots and headers match the environment | Two environments | Keep. |
-| E2E | Playwright `e2e` and sibling projects, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Journeys in a real browser: navigation, theme, menu, contact submission, not-found, behaviour without JavaScript | Journeys, plus the template matrix | Keep journeys; review matrices (#37, from D8 in #26). |
+| E2E | Playwright `e2e` and sibling projects, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Journeys in a real browser: navigation, theme, menu, contact submission, not-found, behaviour without JavaScript, layout geometry per template (no sideways scroll, no element wider than the viewport, header and footer clear of the main content) | Journeys, plus the template matrix | Keep journeys; review matrices (#40). |
 | Accessibility | Playwright `a11y` projects (axe), `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | WCAG 2.2 AA per template, both widths, both themes | Full template matrix | Keep (Principle X). |
-| Visual | Playwright `visual` project, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Pixel baselines of the shell, not-found page and sections fixture | Per platform | Keep. The only guard on design regressions. |
+| Visual | Playwright `visual` project, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Pixel baselines of the design system: the shell (header, footer, open mobile menu), the not-found page and the sections fixture on the fixture site. Never real content. | Per platform | Keep, blocking. A diff is a design-system change (Principle III). Real-content shots removed in #40 phase 1; see "Visual coverage". |
 | Budget | Playwright `budget` project, `pnpm run test:budget` | LCP, CLS, long tasks and bytes under throttling | Per template, own invocation with one worker (`pnpm run test:budget`) | Keep. Slow by design. |
 | Preview site-check | `scripts/site-check`, run against the preview deployment | Sitemap and links on the deployed preview | Once per PR; the crawl runs in the `e2e` job on pull requests | Keep. |
 
@@ -57,7 +57,7 @@ outputs, `full` and `content_only`. A push to `main` and a missing or empty diff
 
 | Tier | What counts | What runs | What is skipped |
 |---|---|---|---|
-| Skip-safe | Every changed file is on the skip-safe allowlist: `CLAUDE.md`, and `.md`, `.yml`, `.yaml`, `.json`, `.sh`, `.py` and `.ps1` files under `.claude/`, `.specify/` and `specs/`, except the files a test or check reads (the four pipeline `SKILL.md` files, `setup-walkthrough`'s `SKILL.md` and the constitution). `full=false`. | secretlint only (`static`) and `verify` | `build-tests` and `e2e`, and the lint, type-check and unit steps of `static` |
+| Skip-safe | Every changed file is on the skip-safe allowlist: `.md`, `.yml`, `.yaml`, `.json`, `.sh`, `.py` and `.ps1` files under `.claude/`, `.specify/` and `specs/`, except the files a test or check reads (the four pipeline `SKILL.md` files, `setup-walkthrough`'s `SKILL.md`, `CLAUDE.md` and the constitution). `full=false`. | secretlint only (`static`) and `verify` | `build-tests` and `e2e`, and the lint, type-check and unit steps of `static` |
 | Content-only | Every changed file is either skip-safe or an `.mdx` file or an image or video file under `src/content/pages`, `src/content/posts` or `src/content/projects`. `.md` files, schemas, `src/content.config.ts` and `public/` are not content-only. `full=true`, `content_only=true`. | The whole gate, except that `build-tests` runs `pnpm run test:build:content` (`indexing.test.ts`, `local-site.test.ts` and `project-template.test.ts`, the build files that read real content by name) | The other build files (listed below) |
 | Full | Everything else, every push to `main`, an empty diff, and any failure to compute the diff. `full=true`, `content_only=false`. | Every job and the whole `test:build` project | Nothing |
 
@@ -111,6 +111,33 @@ names its layer and gives the reason for any second layer.
 
 The test title or a comment carries the contract row id (`row 7`, `P13`), so a search for the
 id finds the test.
+
+### Visual coverage
+
+The `visual` project snapshots the design system only: the shell (header, footer and the open
+mobile menu), the not-found page and the sections fixture page. The real-content shots were
+removed in #40 phase 1, so a content edit cannot fail it. The geometry smoke test in
+`tests/e2e/geometry.spec.ts`, the shell snapshots, the sections fixture snapshot, the `a11y`
+contrast checks and the existing e2e and build content tests took over what each one guarded.
+
+| Removed subject (4 images per platform) | Where its coverage lives now |
+|---|---|
+| `home` | Header, footer and menu: the kept shell snapshots, taken on `/`. Layout breakage: the geometry test. Contrast in both themes: `a11y` (axe on every template, both widths and themes). Introduction card and copy: `pages.spec.ts` and the build tests. Home intro card pixels have no snapshot (gap). |
+| `about` | Shell snapshots; geometry test; `a11y`; About sections and Recognition links: `pages.spec.ts`. |
+| `contact` | Shell snapshots; geometry test; `a11y`; the form and its states: `contact.spec.ts`. The contact form's pixels have no snapshot (gap): the `sections` fixture does not render `ContactForm`. |
+| `writing-landing` | Shell snapshots; geometry test; `a11y`; listing behaviour: `blog.spec.ts` and the `sections` project's `blog-fixtures.spec.ts` and `blog-pagination.spec.ts`. Listing card and lead-story pixels have no snapshot (gap): the planned fixture post and story shots do not render them. |
+| `writing-all` | As `writing-landing`, including the card gap. Pagination: `blog-pagination.spec.ts`. |
+| `writing-topic` | As `writing-landing`, including the card gap. |
+| `writing-post` | Shell snapshots; geometry test (includes the code block and table scroll containers); `a11y` (`blog.a11y.spec.ts`, `blog-fixture.a11y.spec.ts`); Copy button and table region: `blog.spec.ts`; forced colours: `blog-forced-colors.spec.ts`. Post template pixels: gap until the #40 V3 fixture post snapshot lands. |
+| `writing-series` | Shell snapshots; geometry test; `a11y`; series intro and links: `blog.spec.ts`. Series banner pixels have no snapshot (gap). |
+| `projects` | Shell snapshots; geometry test; `a11y`; two-column and one-column rows: `projects.spec.ts`; fixture listings: `projects-fixtures.spec.ts`. Projects index row pixels have no snapshot (gap). |
+| `project-story` | Shell snapshots; geometry test (reduced motion, final state); `a11y`; part layout at 390 and 1280, comparison region and invitation: `projects.spec.ts`; motion: `projects-motion.spec.ts`; forced colours: `projects-forced-colors.spec.ts`; no-JS: `projects-no-js.spec.ts`. Story template pixels: gap until the #40 V3 fixture story snapshot lands. |
+
+After this PR these pixels have no snapshot. Until #40 V3 adds one fixture post and one fixture
+story snapshot, the post and story templates. With no planned replacement, the listing cards
+and lead story, the series banner, the projects index rows, the home intro card and the contact
+form: V3's fixtures do not render them. They are gaps to either widen V3 to cover or accept,
+which the PR body raises for Don. Review alone guards them meanwhile.
 
 ### Check functions and call sites
 
@@ -306,7 +333,7 @@ Measured on 2026-10-02, after phase 5 (#36), at commit 75e73fc.
 | Gate | Before (2026-10-01) | Final | Target |
 |---|---|---|---|
 | CI `verify` on `main` | 31 min (run 36814114154) | 6 min 15 s (run 37090465334); range 6:15 to 7:59 across the `main` runs since #31 | 10 min or less, met |
-| Local `pnpm run verify`, Mac | 8 to 10 min | 5 min 39 s (339 s) | 4 min or less, not met; revised to 6 min or less, met; the 4 min target moves to #37 |
+| Local `pnpm run verify`, Mac | 8 to 10 min | 5 min 39 s (339 s) | 4 min or less, not met; revised to 6 min or less, met; the 4 min target moved to #37, now replaced by #40 |
 
 Per-job time in run 37090465334, the push of the #36 merge to `main` (full tier, every job
 succeeded):
@@ -343,3 +370,15 @@ Method:
 - Local time is `date +%s` around one `pnpm run verify` on the Mac, under `perl -e 'alarm N'`,
   with the agent-shell setup and nothing else running.
 - Re-measure when a layer or job changes, and add a dated row rather than overwrite.
+
+### Visual refocus, #40 phase 1 (2026-10-03)
+
+| Measure | Before (run 37136029981, `main` push of #39) | After |
+|---|---|---|
+| `e2e` job | 473 s | 353 s (5 min 53 s), run 37140329856 (PR #41, first run) |
+| `test:e2e:parallel` step | 335 s | 241 s (4 min 1 s), same run |
+| Visual tests | 58 | 18 |
+| E2E tests | 583 | 619 |
+
+After figures are from this PR's CI run, which adds the preview site-check; the
+`test:e2e:parallel` step is the comparable number.

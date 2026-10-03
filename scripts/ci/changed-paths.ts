@@ -28,6 +28,7 @@ export const READ_BY_CHECKS: readonly string[] = [
   ".claude/skills/setup-walkthrough/SKILL.md",
   ".claude/skills/squash/SKILL.md",
   ".claude/skills/tweak/SKILL.md",
+  "CLAUDE.md",
   ".specify/memory/constitution.md",
 ];
 

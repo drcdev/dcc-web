@@ -8,7 +8,6 @@ import type { ChangeInput } from "../../../scripts/ci/changed-paths.ts";
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 
 const SAFE = [
-  "CLAUDE.md",
   ".claude/skills/other/SKILL.md",
   ".specify/bugs/x/assessment.md",
   ".specify/extensions/git/git-config.yml",
@@ -20,6 +19,7 @@ const SAFE = [
 ];
 
 const UNSAFE = [
+  "CLAUDE.md",
   ".claude/skills/setup-walkthrough/SKILL.md",
   ".claude/skills/deliver/SKILL.md",
   ".claude/skills/tweak/SKILL.md",
@@ -103,12 +103,12 @@ describe("isContentOnly()", () => {
 
 describe("decide()", () => {
   it("skips when every changed file is skip-safe on a pull_request", () => {
-    const d = decide({ event: "pull_request", files: ["CLAUDE.md", ".claude/skills/other/SKILL.md"] });
+    const d = decide({ event: "pull_request", files: [".specify/feature.json", ".claude/skills/other/SKILL.md"] });
     expect(d.full).toBe(false);
     expect(d.contentOnly).toBe(false);
   });
   it("runs everything and names the first unsafe file", () => {
-    const d = decide({ event: "pull_request", files: ["CLAUDE.md", "src/pages/index.astro"] });
+    const d = decide({ event: "pull_request", files: [".specify/feature.json", "src/pages/index.astro"] });
     expect(d.full).toBe(true);
     expect(d.contentOnly).toBe(false);
     expect(d.reason).toContain("src/pages/index.astro");
@@ -124,7 +124,7 @@ describe("decide()", () => {
       files: [
         "src/content/posts/starting-something-new.mdx",
         "src/content/posts/images/wayfinder-hero.jpg",
-        "CLAUDE.md",
+        ".specify/feature.json",
         ".specify/chores/x/plan.md",
       ],
     });
@@ -146,7 +146,7 @@ describe("decide()", () => {
     expect(d.contentOnly).toBe(false);
   });
   it.each(["push", "workflow_dispatch", "pull_request_target"])("always runs everything for %s", (event) => {
-    expect(decide({ event, files: ["CLAUDE.md"] }).full).toBe(true);
+    expect(decide({ event, files: [".specify/feature.json"] }).full).toBe(true);
     const d = decide({ event, files: ["src/content/posts/starting-something-new.mdx"] });
     expect(d.full).toBe(true);
     expect(d.contentOnly).toBe(false);
