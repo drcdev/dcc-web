@@ -1,0 +1,19 @@
+---
+// The closing invitation of a project story: one sentence (the project's own, or the standard one) and a
+// link to the contact form that carries only the project slug (FR-015; Principle VII). Plain markup,
+// no script.
+import { contactHref } from "../../lib/content/contact-link.ts";
+import { PageContentError } from "../../lib/content/errors.ts";
+import "./portfolio.css";
+
+const STANDARD = "If you are working on a similar problem, I would like to hear about it.";
+
+const project = Astro.locals.project;
+if (!project) throw new PageContentError("<ProjectInvitation> can only be used inside a project story (no project is set)");
+const sentence = project.data.invitation?.trim() || STANDARD;
+---
+
+<footer data-invitation-block>
+  <p data-invitation-text>{sentence}</p>
+  <p><a href={contactHref(project.slug)} data-invitation>Tell me about a problem like {project.data.title}</a></p>
+</footer>

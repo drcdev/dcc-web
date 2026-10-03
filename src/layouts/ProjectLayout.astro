@@ -1,9 +1,10 @@
 ---
-// A project story: reading-progress bar, story header, then the seven chapters,
+// A project story: reading-progress bar, story header, then the four parts and the invitation,
 // inside BaseLayout (Direction C, docs/design/portfolio.md; contracts/pages-dom.md).
 import type { ComponentProps } from "astro/types";
 import BaseLayout from "./BaseLayout.astro";
 import ReadingProgress from "../components/project/ReadingProgress.astro";
+import ProjectInvitation from "../components/project/ProjectInvitation.astro";
 import StoryHeader from "../components/project/StoryHeader.astro";
 import TitleTransition from "../components/project/TitleTransition.astro";
 import type { NavigationItem } from "../config/navigation";
@@ -35,5 +36,6 @@ Astro.csp?.insertStyleHash(transitionHash([slug]));
   <article data-story class="mx-auto">
     <StoryHeader title={title} problem={problem} status={status} themes={themes} draft={draft} slug={slug} />
     <slot />
+    <ProjectInvitation />
   </article>
 </BaseLayout>

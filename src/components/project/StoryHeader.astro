@@ -1,8 +1,6 @@
 ---
 // The top of a project story: the title as the page's one h1, the problem line,
-// status and themes, and the "In this story" list of in-page links to the seven
-// chapters (contracts/pages-dom.md). A draft shows a notice in plain text.
-import { stages } from "../../lib/content/stages.ts";
+// status and themes (contracts/pages-dom.md). A draft shows a notice in plain text.
 import StatusPill from "./StatusPill.astro";
 import ThemePills from "./ThemePills.astro";
 import "./portfolio.css";
@@ -35,16 +33,4 @@ const { title, problem, status, themes, draft = false, slug } = Astro.props;
     <StatusPill status={status} />
     <ThemePills themes={themes} />
   </div>
-  <nav aria-label="In this story" data-story-contents>
-    <p data-story-contents-label aria-hidden="true">In this story</p>
-    <ol>
-      {
-        stages.map((stage) => (
-          <li>
-            <a href={`#${stage.id}`}>{stage.heading}</a>
-          </li>
-        ))
-      }
-    </ol>
-  </nav>
 </header>

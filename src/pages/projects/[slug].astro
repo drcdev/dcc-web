@@ -3,16 +3,15 @@
 // FR-073). getStaticPaths() checks the body of every project, drafts included,
 // then makes one path per published project
 // (docs.astro.build/en/guides/content-collections/#generating-routes-from-content).
-// The body is rendered with render() from astro:content and the story blocks are
-// handed to <Content /> so MDX needs no imports
+// The body is rendered with render() from astro:content; the parts plugin wraps its parts in
+// ProjectPart and OptionsTable, which are handed to <Content /> so MDX needs no imports
 // (docs.astro.build/en/guides/integrations-guide/mdx/#passing-components-to-mdx-content).
 import { getCollection, render } from "astro:content";
 import { getImage } from "astro:assets";
 import type { ImageMetadata } from "astro";
 import ProjectLayout from "../../layouts/ProjectLayout.astro";
-import { storyBlockComponents } from "../../components/project/blocks/index";
-import { sectionComponents } from "../../components/sections/index";
-import { allowDemoFrames } from "../../lib/content/demo-csp";
+import OptionsTable from "../../components/project/OptionsTable.astro";
+import ProjectPart from "../../components/project/ProjectPart.astro";
 import { assertUniqueProjectFiles } from "../../lib/content/project-address";
 import { validateProjectStory } from "../../lib/content/project-story";
 import type { OptionsComparison } from "../../lib/content/options-comparison";
@@ -39,13 +38,9 @@ export async function getStaticPaths() {
 
 const { entry, comparison } = Astro.props;
 const { data } = entry;
-// The story blocks read the project from here (src/env.d.ts) and name its file in errors.
+// The story components read the project from here (src/env.d.ts) and name its file in errors.
 Astro.locals.project = { slug: entry.id, file: fileOfProject(entry), data, comparison };
 Astro.locals.pageFile = Astro.locals.project.file;
-// A story that embeds a demo allows drc.dev frames in its page policy. This has to
-// run here, before the layout renders the policy; a story that only links to its
-// demo keeps the site policy (research R10).
-if (data.demo?.embed) allowDemoFrames(Astro.csp);
 const { Content } = await render(entry);
 const navigation = await getNavigation();
 
@@ -66,5 +61,5 @@ const share = data.image ? await getImage({ src: data.image.src as ImageMetadata
   draft={data.draft}
   slug={entry.id}
 >
-  <Content components={{ ...sectionComponents, ...storyBlockComponents }} />
+  <Content components={{ ProjectPart, OptionsTable }} />
 </ProjectLayout>

@@ -1,0 +1,40 @@
+---
+// The links of the Build part: an open-demo link, or a stand-in link with the not-a-live-demo note,
+// and the source-code link. Plain same-tab links that name the project (FR-008). Nothing is drawn
+// when the project has none of them.
+import { PageContentError } from "../../lib/content/errors.ts";
+import "./portfolio.css";
+
+const project = Astro.locals.project;
+if (!project) throw new PageContentError("<BuildLinks> can only be used inside a project story (no project is set)");
+const { title, demo, standIn, source } = project.data;
+---
+
+{
+  (demo || standIn || source) && (
+    <ul data-build-links>
+      {
+        demo && (
+          <li>
+            <a href={demo.href}>Open the {demo.title ?? title} demo</a>
+          </li>
+        )
+      }
+      {
+        standIn && (
+          <li>
+            <a href={standIn.href}>{standIn.label ?? `${title} on drc.dev`}</a>{" "}
+            <span data-demo-note>This is not a live demo.</span>
+          </li>
+        )
+      }
+      {
+        source && (
+          <li>
+            <a href={source}>Source code for {title}</a>
+          </li>
+        )
+      }
+    </ul>
+  )
+}

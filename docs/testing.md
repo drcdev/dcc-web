@@ -225,11 +225,11 @@ Call-site runs:
   the clip check of row 19)"; "row 27: generateId runs slugFromPath (and rejects a nested file
   the same way)".
 - **build**: "row 26: the route runs assertUniqueProjectFiles"; "rows 09 to 11: the route runs
-  validateProjectBody on a draft in a production build".
+  validateProjectStory on a draft in a production build".
 
 Schema rows are asserted in `unit/project-schema.test.ts`, describe "projectSchema messages
 (contracts/build-errors.md)", with the row id in the title. The body rows are one `it.each`
-in `unit/project-body.test.ts`, describe "validateProjectBody messages (contracts/build-errors.md)",
+in `unit/project-story.test.ts`, describe "validateProjectStory messages (contracts/build-errors.md)",
 titled "%s names the file and the phrase" (each row asserts the file and the phrase).
 
 | Row | Rule | Primary assertion | Call-site run |
@@ -242,26 +242,26 @@ titled "%s names the file and the phrase" (each row asserts the file and the phr
 | 06 | Wrong-kind or out-of-range `order` | "row 06: order %s names order" | schema sync |
 | 07 | Unknown setting | "row 07: a misspelled setting is named" | schema sync |
 | 08 | Problem too long | "row 08: a long problem asks for one sentence of at most 140 characters" | schema sync |
-| 09 | Missing chapter | `unit/project-body.test.ts` "row 09: a missing chapter names the file and the phrase" | build, rows 09 to 11 |
+| 09 | Missing chapter | `unit/project-story.test.ts` "row 09: a missing chapter names the file and the phrase" | build, rows 09 to 11 |
 | 10 | Chapters out of order | "row 10: chapters out of order ..." | build, rows 09 to 11 |
 | 11 | Repeated chapter | "row 11: a repeated chapter ..." | build, rows 09 to 11 |
 | 12 | Not exactly one chosen option | `unit/project-schema.test.ts` "row 12" | schema sync |
 | 13 | Chosen option without reason | "row 13" | schema sync |
 | 14 | Option missing a fit | "row 14: an option missing a fit names the option and the constraint" | schema sync |
 | 15 | Comparison empty | "row 15: a comparison with %s names comparison" | schema sync |
-| 16 | `<OptionComparison />` misplaced | `unit/project-body.test.ts` "row 16: no OptionComparison block ..." | build, rows 09 to 11 |
+| 16 | `<OptionComparison />` misplaced | `unit/project-story.test.ts` "row 16: no OptionComparison block ..." | build, rows 09 to 11 |
 | 17 | Missing image | `unit/project-clips.test.ts` "row 17: names the project file and the path of a missing image" | sync, row 17. Only the frontmatter case is tested; the body-image half of the row (the same Astro import mechanism as P22) has no test yet. |
 | 18 | Visual without alt or description | `unit/project-schema.test.ts` "row 18" | schema sync |
 | 19 | Clip problems | description: `unit/project-schema.test.ts` "row 19"; missing clip and clip over 5 MB: `unit/project-clips.test.ts` "names the file and the path of a missing clip" and "names the file, the path and the limit of a clip over 5 MB" | schema sync; sync, row 17 (same function) |
 | 20 | Demo address | `unit/project-schema.test.ts` "row 20" | schema sync |
 | 21 | Source or stand-in address | "row 21: %s that is not https names the setting and https://" | schema sync |
 | 22 | Demo and stand-in both set | "row 22" | schema sync |
-| 23 | Unknown building block | `unit/project-body.test.ts` "row 23: an unknown block lists the blocks ..." | build, rows 09 to 11 |
+| 23 | Unknown building block | `unit/project-story.test.ts` "row 23: an unknown block lists the blocks ..." | build, rows 09 to 11 |
 | 24 | Unknown visual name | "row 24" | build, rows 09 to 11 |
 | 25 | `visual="demo"` without embed | "row 25" | build, rows 09 to 11 |
 | 26 | Duplicate slug, nested file | `unit/project-address.test.ts` "names both files when .md and .mdx share a slug" and "rejects a nested file" (including the phrase "not in a subfolder") | build, row 26 (duplicate); sync, row 27 (nested file, same `slugFromPath`) |
 | 27 | Bad file name | `unit/project-address.test.ts` "rejects %s with the file name and the naming rule" | sync, row 27 |
-| 28 | Level-1 or level-2 heading | `unit/project-body.test.ts` "row 28" | build, rows 09 to 11 |
+| 28 | Level-1 or level-2 heading | `unit/project-story.test.ts` "row 28" | build, rows 09 to 11 |
 | 29 | Body image without alt | "row 29" | build, rows 09 to 11 |
 | 30 | Invitation or Demo misplaced | "row 30: the Invitation block missing" and "row 30: the Demo block missing when demo links are set" | build, rows 09 to 11 |
 | 31 | Comparison id problems | `unit/project-schema.test.ts` three "row 31" cases (unknown constraint, reason on an unchosen option, duplicate id) | schema sync |

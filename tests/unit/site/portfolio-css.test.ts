@@ -49,17 +49,17 @@ const NO_PREFERENCE = "prefers-reduced-motion: no-preference";
 describe("portfolio.css motion", () => {
   it("guards every scroll-driven animation by no-preference and animation-timeline support", () => {
     const driven = withProperty("animation-timeline");
-    expect(driven.length).toBeGreaterThanOrEqual(2);
+    expect(driven.length).toBeGreaterThanOrEqual(1);
     for (const rule of driven) {
       expect(rule.guards.join(" ")).toContain(NO_PREFERENCE);
       expect(rule.guards.join(" ")).toContain("@supports (animation-timeline: view())");
     }
   });
 
-  it("drives the progress bar from the root scroll and the heading from its own view", () => {
+  it("drives the progress bar from the root scroll and nothing else", () => {
     const timelines = withProperty("animation-timeline").map((r) => r.body);
     expect(timelines.some((b) => /scroll\(root\)/.test(b))).toBe(true);
-    expect(timelines.some((b) => /view\(\)/.test(b))).toBe(true);
+    expect(timelines.every((b) => /scroll\(root\)/.test(b))).toBe(true);
   });
 
   it("keeps each timeline out of the rule that holds the animation shorthand, which would reset or fold it", () => {
@@ -79,12 +79,9 @@ describe("portfolio.css motion", () => {
     expect(bar.indexOf(print!)).toBeGreaterThan(bar.indexOf(shown!));
   });
 
-  it("makes the visual panel sticky only at 80rem and above with motion allowed", () => {
-    const sticky = rules.filter((r) => /position:\s*sticky/.test(r.body));
-    expect(sticky).toHaveLength(1);
-    const guard = sticky[0]!.guards.join(" ");
-    expect(guard).toContain("min-width: 80rem");
-    expect(guard).toContain(NO_PREFERENCE);
+  it("has no sticky panel and no heading reveal: a part is plain flowing content (FR-004)", () => {
+    expect(rules.filter((r) => /position:\s*sticky/.test(r.body))).toHaveLength(0);
+    expect(source).not.toMatch(/portfolio-uncover|data-reveal/);
   });
 
   it("opts in to cross-document view transitions once, only where motion is allowed", () => {

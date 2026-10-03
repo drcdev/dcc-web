@@ -1,0 +1,37 @@
+---
+// A picture from the project's `visuals`, shown beside the part it names (data-model.md
+// "Visual"; contracts/pages-dom.md). Images carry alt text, diagrams a visible description, and a
+// placeholder carries a visible mark. Only the first picture on a page is eager.
+import { Image } from "astro:assets";
+import { PageContentError, projectFileError } from "../../lib/content/errors.ts";
+import "./portfolio.css";
+
+export interface Props {
+  name: string;
+  eager?: boolean;
+}
+
+const project = Astro.locals.project;
+if (!project) throw new PageContentError("<PartPicture> can only be used inside a project story (no project is set)");
+const { name, eager = false } = Astro.props;
+const picture = project.data.visuals?.[name];
+if (!picture) {
+  const known = Object.keys(project.data.visuals ?? {});
+  throw projectFileError(project.file, `the picture "${name}" is not in visuals (${known.length ? known.join(", ") : "none defined"}).`);
+}
+const describedBy = `picture-${name}-description`;
+---
+
+<figure data-part-picture data-visual={picture.kind} data-visual-name={name}>
+  {picture.placeholder && <p data-placeholder data-visual-mark class="text-sm font-semibold"><strong>Placeholder</strong></p>}
+  <Image
+    src={picture.src as ImageMetadata}
+    alt={picture.alt}
+    loading={eager ? "eager" : "lazy"}
+    decoding={eager ? "sync" : "async"}
+    widths={[480, 800]}
+    sizes="(min-width: 64rem) 26rem, 100vw"
+    aria-describedby={picture.kind === "diagram" ? describedBy : undefined}
+  />
+  {picture.kind === "diagram" && <figcaption id={describedBy}>{picture.description}</figcaption>}
+</figure>
