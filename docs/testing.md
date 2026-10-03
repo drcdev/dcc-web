@@ -398,11 +398,13 @@ After figures are from this PR's CI run, which adds the preview site-check; the
 
 | Measure | Before (run 37141574364, `main` push of #41) | After |
 |---|---|---|
-| `e2e` job | 305 s | pending (#40 phase 2 PR run) |
-| `test:e2e:parallel` step | 208 s | pending (#40 phase 2 PR run) |
+| `e2e` job | 305 s | 447 s (7 min 27 s), run 37146856024 (`main` push of #43) |
+| `test:e2e:parallel` step | 208 s | 318 s (5 min 18 s), same run |
 | Visual tests | 18 | 50 |
 | Visual PNGs | 36 | 100 |
 | E2E tests | 619 | 625 |
 
-Before is a `main` push run; after figures are from this PR's CI run, which adds the preview
-site-check, so the `test:e2e:parallel` step is the comparable number.
+Before and after are both `main` push runs, so they compare directly. The PR's own run
+(37146278538) had 437 s for the job and 311 s for the step. Across the whole of #40, the `e2e` job
+went from 473 s to 447 s and the run (first job start to `verify` end) from 500 s to 465 s.
+Each figure is a single run.
