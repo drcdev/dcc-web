@@ -122,19 +122,22 @@ contrast checks and the existing e2e and build content tests took over what each
 
 | Removed subject (4 images per platform) | Where its coverage lives now |
 |---|---|
-| `home` | Header, footer and menu: the kept shell snapshots, taken on `/`. Layout breakage: the geometry test. Contrast in both themes: `a11y` (axe on every template, both widths and themes). Introduction card and copy: `pages.spec.ts` and the build tests. Content pixels: deliberately unguarded. |
+| `home` | Header, footer and menu: the kept shell snapshots, taken on `/`. Layout breakage: the geometry test. Contrast in both themes: `a11y` (axe on every template, both widths and themes). Introduction card and copy: `pages.spec.ts` and the build tests. Home intro card pixels have no snapshot (gap). |
 | `about` | Shell snapshots; geometry test; `a11y`; About sections and Recognition links: `pages.spec.ts`. |
-| `contact` | Shell snapshots; geometry test; `a11y`; the form and its states: `contact.spec.ts`. The section components: the `sections` fixture snapshot. |
-| `writing-landing` | Shell snapshots; geometry test; `a11y`; listing behaviour: `blog.spec.ts` and the `sections` project's `blog-fixtures.spec.ts` and `blog-pagination.spec.ts`. Card and lead-story templates: phase 2 fixture template shots and the build tests. |
-| `writing-all` | As `writing-landing`. Pagination: `blog-pagination.spec.ts`. |
-| `writing-topic` | As `writing-landing`. |
-| `writing-post` | Shell snapshots; geometry test (includes the code block and table scroll containers); `a11y` (`blog.a11y.spec.ts`, `blog-fixture.a11y.spec.ts`); Copy button and table region: `blog.spec.ts`; forced colours: `blog-forced-colors.spec.ts`. Post template pixels: phase 2 fixture post snapshot. |
-| `writing-series` | Shell snapshots; geometry test; `a11y`; series intro and links: `blog.spec.ts`. |
-| `projects` | Shell snapshots; geometry test; `a11y`; two-column and one-column rows: `projects.spec.ts`; fixture listings: `projects-fixtures.spec.ts`. |
-| `project-story` | Shell snapshots; geometry test (reduced motion, final state); `a11y`; part layout at 390 and 1280, comparison region and invitation: `projects.spec.ts`; motion: `projects-motion.spec.ts`; forced colours: `projects-forced-colors.spec.ts`; no-JS: `projects-no-js.spec.ts`. Story template pixels: phase 2 fixture story snapshot. |
+| `contact` | Shell snapshots; geometry test; `a11y`; the form and its states: `contact.spec.ts`. The contact form's pixels have no snapshot (gap): the `sections` fixture does not render `ContactForm`. |
+| `writing-landing` | Shell snapshots; geometry test; `a11y`; listing behaviour: `blog.spec.ts` and the `sections` project's `blog-fixtures.spec.ts` and `blog-pagination.spec.ts`. Listing card and lead-story pixels have no snapshot (gap): the planned fixture post and story shots do not render them. |
+| `writing-all` | As `writing-landing`, including the card gap. Pagination: `blog-pagination.spec.ts`. |
+| `writing-topic` | As `writing-landing`, including the card gap. |
+| `writing-post` | Shell snapshots; geometry test (includes the code block and table scroll containers); `a11y` (`blog.a11y.spec.ts`, `blog-fixture.a11y.spec.ts`); Copy button and table region: `blog.spec.ts`; forced colours: `blog-forced-colors.spec.ts`. Post template pixels: gap until the #40 V3 fixture post snapshot lands. |
+| `writing-series` | Shell snapshots; geometry test; `a11y`; series intro and links: `blog.spec.ts`. Series banner pixels have no snapshot (gap). |
+| `projects` | Shell snapshots; geometry test; `a11y`; two-column and one-column rows: `projects.spec.ts`; fixture listings: `projects-fixtures.spec.ts`. Projects index row pixels have no snapshot (gap). |
+| `project-story` | Shell snapshots; geometry test (reduced motion, final state); `a11y`; part layout at 390 and 1280, comparison region and invitation: `projects.spec.ts`; motion: `projects-motion.spec.ts`; forced colours: `projects-forced-colors.spec.ts`; no-JS: `projects-no-js.spec.ts`. Story template pixels: gap until the #40 V3 fixture story snapshot lands. |
 
-Until #40 phase 2 adds fixture post and story template snapshots, the pixels of the post and
-story templates are guarded by review alone. That gap is accepted.
+After this PR these pixels have no snapshot. Until #40 V3 adds one fixture post and one fixture
+story snapshot, the post and story templates. With no planned replacement, the listing cards
+and lead story, the series banner, the projects index rows, the home intro card and the contact
+form: V3's fixtures do not render them. They are gaps to either widen V3 to cover or accept,
+which the PR body raises for Don. Review alone guards them meanwhile.
 
 ### Check functions and call sites
 

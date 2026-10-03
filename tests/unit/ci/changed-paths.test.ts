@@ -146,7 +146,7 @@ describe("decide()", () => {
     expect(d.contentOnly).toBe(false);
   });
   it.each(["push", "workflow_dispatch", "pull_request_target"])("always runs everything for %s", (event) => {
-    expect(decide({ event, files: ["CLAUDE.md"] }).full).toBe(true);
+    expect(decide({ event, files: [".specify/feature.json"] }).full).toBe(true);
     const d = decide({ event, files: ["src/content/posts/starting-something-new.mdx"] });
     expect(d.full).toBe(true);
     expect(d.contentOnly).toBe(false);

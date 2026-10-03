@@ -493,3 +493,9 @@ No Astro decision is made, so the Astro Docs MCP is not consulted.
   visual tests, so the gate gets shorter. Nothing in `verify`'s scripts changes.
 - **Coverage gap until phase 2.** The post and story templates have no pixel guard between this
   PR and phase 2. It is accepted in #40's ordering and stated in `docs/testing.md`.
+
+## Round 1 fixes
+
+- HIGH 1: the `contact` mapping row in `docs/testing.md` now states the form's pixels are a gap.
+- HIGH 2: the listing, series, projects and home rows are relabelled as gaps and the gap sentence lists every unguarded surface.
+- HIGH 3: the push-forces-full case in `changed-paths.test.ts` uses `.specify/feature.json`, a skip-safe file, so it asserts the event rule again.
