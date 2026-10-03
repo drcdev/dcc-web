@@ -22,12 +22,13 @@
 
 **Purpose**: Shared part ids, the new schema and ordering.
 
-- [ ] T003 [P] Write unit tests (primary layer: unit) for schema rows R01-R04 (removed `order`, `comparison`, `demo.embed`, clip kind each fail naming the key), N01-N02 (`visuals.<name>.part` enum, at most one picture per part), N03 (`invitation` trimmed, empty means standard), `date` required, and carried rows S01-S08 by rewriting `tests/unit/content/project-schema.test.ts`; delete `tests/unit/content/project-clips.test.ts`. Run and see them fail.
-- [ ] T004 [P] Write unit tests (unit) for ordering by `date` descending, then title, then file name (slug) by rewriting `tests/unit/content/project-order.test.ts` (no `order`). See fail.
-- [ ] T005 Create `src/lib/content/parts.ts` (`partIds`, `partHeadings`: problem/Problem, options/Options, build/Build, lessons/Lessons) per data-model.md; its values are asserted through the T003 `part` enum cases.
-- [ ] T006 Update `src/content/schemas/project.ts` per data-model.md (drop `order`, `comparison`, `demo.embed`, clip kind; `date` required; add `part` and `invitation`; strict). Remove the clip check from `src/lib/content/project-images.ts`. Make T003 pass.
-- [ ] T007 Update `src/lib/content/project-order.ts` to date, title, slug; make T004 pass. Delete `src/lib/content/stages.ts`, `src/lib/content/demo-csp.ts` and their tests (`tests/unit/content/stages.test.ts`, demo CSP tests) as the behaviour is removed, not disabled.
-- [ ] T008 [P] Update `tests/component/project/helpers.ts` (drop `comparison` and clips; add `part`, `invitation`, `date`, parsed `comparison`) and `src/env.d.ts` (`App.Locals.project` gains `comparison`).
+- [x] T003 [P] Write unit tests (primary layer: unit) for schema rows R01-R04 (removed `order`, `comparison`, `demo.embed`, clip kind each fail naming the key), N01-N02 (`visuals.<name>.part` enum, at most one picture per part), N03 (`invitation` trimmed, empty means standard), `date` required, and carried rows S01-S08 by rewriting `tests/unit/content/project-schema.test.ts`; delete `tests/unit/content/project-clips.test.ts`. Run and see them fail.
+- [x] T004 [P] Write unit tests (unit) for ordering by `date` descending, then title, then file name (slug) by rewriting `tests/unit/content/project-order.test.ts` (no `order`). See fail.
+- [x] T005 Create `src/lib/content/parts.ts` (`partIds`, `partHeadings`: problem/Problem, options/Options, build/Build, lessons/Lessons) per data-model.md; its values are asserted through the T003 `part` enum cases.
+- [x] T006 Update `src/content/schemas/project.ts` per data-model.md (drop `order`, `comparison`, `demo.embed`, clip kind; `date` required; add `part` and `invitation`; strict). Remove the clip check from `src/lib/content/project-images.ts`. Make T003 pass.
+- [x] T007 Update `src/lib/content/project-order.ts` to date, title, slug; make T004 pass. Delete `src/lib/content/stages.ts`, `src/lib/content/demo-csp.ts` and their tests (`tests/unit/content/stages.test.ts`, demo CSP tests) as the behaviour is removed, not disabled.
+  - Note: `stages.ts`, `demo-csp.ts` and `stages.test.ts` are kept until Phase 4 (T025), because `StoryHeader`, `blocks/`, `project-body.ts`, the route and several old tests still import them; delete them with those files.
+- [x] T008 [P] Update `tests/component/project/helpers.ts` (drop `comparison` and clips; add `part`, `invitation`, `date`, parsed `comparison`) and `src/env.d.ts` (`App.Locals.project` gains `comparison`).
 
 ---
 

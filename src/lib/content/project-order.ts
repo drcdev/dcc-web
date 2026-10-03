@@ -1,23 +1,20 @@
-// Which projects are published, and in what order (data-model.md "Derived:
-// published projects and order"; FR-016). Pure: src/lib/projects.ts passes in the
-// collection entries.
+// Which projects are published, and in what order (data-model.md "Derived: published projects and
+// order"). Pure: src/lib/projects.ts passes in the collection entries.
 import { isProductionBuild } from "../build-mode.ts";
 
 interface Orderable {
-  data: { title: string; order?: number | undefined; date?: Date | undefined; draft: boolean };
+  id: string;
+  data: { title: string; date: Date; draft: boolean };
 }
 
 function compare(a: Orderable, b: Orderable): number {
-  const [ao, bo] = [a.data.order, b.data.order];
-  if (ao !== undefined && bo !== undefined && ao !== bo) return ao - bo;
-  if ((ao === undefined) !== (bo === undefined)) return ao === undefined ? 1 : -1;
-  const [ad, bd] = [a.data.date?.getTime(), b.data.date?.getTime()];
-  if (ad !== undefined && bd !== undefined && ad !== bd) return bd - ad;
-  if ((ad === undefined) !== (bd === undefined)) return ad === undefined ? 1 : -1;
-  return a.data.title.localeCompare(b.data.title);
+  const byDate = b.data.date.getTime() - a.data.date.getTime();
+  if (byDate !== 0) return byDate;
+  const byTitle = a.data.title.localeCompare(b.data.title);
+  return byTitle !== 0 ? byTitle : a.id.localeCompare(b.id);
 }
 
-/** Drafts leave the production build only; the rest is sorted by order, then date (newest first), then title. */
+/** Drafts leave the production build only; the rest is sorted by date (newest first), then title, then file name. */
 export function selectPublishedProjects<T extends Orderable>(
   entries: readonly T[],
   env: Readonly<Record<string, string | undefined>>,
