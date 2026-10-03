@@ -124,7 +124,7 @@ phase:
 | --- | ------- | -------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | explore | — (no skill)         | sonnet | **Read-only.** Locate the code paths implicated by the report: grep error strings, symbols, component names, routes, test IDs; read the candidate files; run (don't write) any existing vitest or Playwright specs that exercise them. Return: candidate files/lines with one-line justifications, a root-cause hunch with confidence, and any reproduction evidence. Cap the final message at ~25 lines — it is pasted into the assess prompt. |
 | 2   | assess  | `speckit-bug-assess` | opus   | Pass the bug report (and source URL if any), `slug=<slug>`, and the exploration notes verbatim as leads to verify — trust the codebase over the notes where they disagree. Name the layer the reproducing test belongs at. Commit with event `after_bug_assess`. Return: verdict, severity, and any `[NEEDS CLARIFICATION]` items verbatim.                                                                                                                                                                                       |
-| 3   | fix     | `speckit-bug-fix`    | sonnet | Pass `slug=<slug>`. First add a failing test that reproduces the symptom at its one primary layer, the cheapest layer that can observe the symptom ("Where a test goes" in `docs/testing.md`), see it fail, then apply the preferred remediation minimally until it passes. Run the targeted vitest files or Playwright specs for the changed paths. Then run `pnpm run verify:quick` under the perl alarm as the inner-loop check; only the full `pnpm run verify`, which the orchestrator runs before the PR, counts as the gate. If the assessment turns out wrong, stop per the skill and say so plainly — that triggers the failure loop, not a stall. If the fix changes what a snapshotted page looks like, update the macOS visual baselines (`pnpm run test:visual:update`) and say so; the orchestrator regenerates the Linux ones in Verify. Commit with event `after_bug_fix`. Return: status, files changed, tests added with the layer of each and the reason for any second layer, and whether any page's appearance changed. |
+| 3   | fix     | `speckit-bug-fix`    | sonnet | Pass `slug=<slug>`. First add a failing test that reproduces the symptom at its one primary layer, the cheapest layer that can observe the symptom ("Where a test goes" in `docs/testing.md`), see it fail, then apply the preferred remediation minimally until it passes. Run the targeted vitest files or Playwright specs for the changed paths. Then run `pnpm run verify:quick` under the perl alarm as the inner-loop check; only the full `pnpm run verify`, which the orchestrator runs before the PR, counts as the gate. If the assessment turns out wrong, stop per the skill and say so plainly — that triggers the failure loop, not a stall. If the fix alters the shell, a template or the design system (what the visual project snapshots), update the macOS visual baselines (`pnpm run test:visual:update`) and say so; the orchestrator regenerates the Linux ones in Verify. Commit with event `after_bug_fix`. Return: status, files changed, tests added with the layer of each and the reason for any second layer, and whether any page's appearance changed. |
 | 4   | test    | `speckit-bug-test`   | sonnet | Pass `slug=<slug>`. Exercise the original reproduction, the new tests, and the regression suite for the changed modules. Commit with event `after_bug_test`. Return: result (verified / partial / failed) and any residual risks.                                                                                                                                                                                                                                                  |
 
 ### Verdict gate (after assess)
@@ -180,23 +180,22 @@ narrows it only by the changed paths, as `docs/testing.md` describes.
 2. Red → dispatch a fix subagent on the branch (fix the cause, never the
    check), then run verify again. A failure the fix subagent cannot resolve
    enters the failure loop. Never proceed red.
-3. **Visual baselines.** The visual project compares each snapshotted page
-   against committed per-platform images. A bug fix usually changes no
-   appearance, so a visual diff is a regression to look at, not a baseline
-   to refresh. If the fix phase reported an intended appearance change, it
-   updated the macOS baselines; the **Linux** baselines are what CI
-   compares against and are regenerated with `pnpm run test:visual:update:linux`
-   (the same steps as the
-   `update-baselines` CI job, run in the matching Playwright Docker image;
-   needs Docker Desktop). If `docker info` fails, ask Don to start Docker
-   Desktop with an `AskUserQuestion` whose question text carries the
-   instruction, then run it, review the diff, commit the images and push —
-   before opening the PR, so `verify` is green. Fallback only if Docker
-   cannot be started: after the PR is open, add the `visual-baselines`
-   label, wait for the `update-baselines` job, download its
-   `visual-baselines-linux` artifact with `gh run download`, review, commit
-   and push; until that lands the `verify` check on the PR is expected to
-   be red on visual only — say so in the PR body.
+3. **Visual baselines.** The visual project snapshots only the shell (header, footer and open mobile menu), the
+   not-found page and the fixture site, never real content, so a content edit cannot fail it.
+   Its per-platform baselines change only when the shell, a template or the design system
+   changes, which is a major change under Principle III in any case.
+   A bug fix rarely changes one of those; if the fix phase reported an intended change, it
+   updated the macOS baselines.
+   Regenerate the Linux baselines (what CI compares against) with
+   `pnpm run test:visual:update:linux` (needs Docker Desktop). If `docker info`
+   fails, ask Don to start it with an `AskUserQuestion` whose question text
+   carries the instruction. Commit and push the images before opening the PR,
+   so `verify` is green. Fallback only if Docker cannot be started: after the
+   PR is open, add the `visual-baselines` label, wait for the `update-baselines`
+   job, download its `visual-baselines-linux` artifact with `gh run download`,
+   review, commit and push; until that lands the `verify` check on the PR is
+   expected to be red on visual only, so say so in the PR body.
+   A visual diff nobody predicted up front is a regression to fix, not a baseline to refresh.
 
 ## Finish
 

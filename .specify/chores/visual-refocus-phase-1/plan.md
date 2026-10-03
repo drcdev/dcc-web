@@ -300,7 +300,7 @@ against the untouched baselines. Count the remaining PNGs: `ls tests/e2e/visual.
 
 ### W3 One baselines text in CLAUDE.md and the four pipelines, with a guard
 
-- [ ] W3 done
+- [x] W3 done
 
 **Files:** `tests/unit/setup/pipeline-visual-baselines.test.ts` (new); `CLAUDE.md`;
 `.claude/skills/deliver/SKILL.md`, `.claude/skills/tweak/SKILL.md`,

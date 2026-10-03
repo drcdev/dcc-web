@@ -120,7 +120,7 @@ phase:
 | 3   | plan      | `speckit-plan`      | opus   | The Constitution Check must address every principle. For each capability, name the Astro / Cloudflare / Fly.io first-party option and use it, or say why it falls short (Principle IV). State the expected monthly cost of anything new (Principle IX). Flag whether the slice is a **major change** under Principle III and why. If `package.json` has no `verify` script yet, the plan must add one that runs the whole local gate.                          |
 | 4   | checklist | `speckit-checklist` | sonnet | Generate the checklist(s) the spec's risk areas call for; always include accessibility (WCAG 2.2 AA) and, if the slice touches the contact form or API, privacy/security. **Generation only — do not evaluate or check off items.**                                                                                                                                                                                       |
 | 4b  | resolve   | — (no skill)        | opus   | **Resolve every checklist item — see below.**                                                                                                                                                                                                                                                                                                                                                                              |
-| 5   | tasks     | `speckit-tasks`     | sonnet | Tests are **mandatory**, not optional: every story gets the test tasks its behaviour needs, ordered before the implementation they cover. Each test task names its one primary layer, the cheapest layer that can observe the behaviour ("Where a test goes" in `docs/testing.md`), and gives the reason for any second layer in the task text. If the slice alters what a snapshotted page looks like, include a task to update the macOS and Linux visual baselines (`pnpm run test:visual:update`, then `pnpm run test:visual:update:linux`, which needs Docker Desktop) after the implementation. Tasks a subagent cannot verify locally (needs the preview deployment or Don's eyes) get the suffix `[PREVIEW-CHECK]`.                                                                                                     |
+| 5   | tasks     | `speckit-tasks`     | sonnet | Tests are **mandatory**, not optional: every story gets the test tasks its behaviour needs, ordered before the implementation they cover. Each test task names its one primary layer, the cheapest layer that can observe the behaviour ("Where a test goes" in `docs/testing.md`), and gives the reason for any second layer in the task text. If the slice alters the shell, a template or the design system (what the visual project snapshots), include a task to update the macOS and Linux visual baselines (`pnpm run test:visual:update`, then `pnpm run test:visual:update:linux`, which needs Docker Desktop) after the implementation. Tasks a subagent cannot verify locally (needs the preview deployment or Don's eyes) get the suffix `[PREVIEW-CHECK]`.                                                                                                     |
 | 6   | analyze   | `speckit-analyze`   | opus   | The skill is read-only and ends by offering remediation and telling you not to apply it. **Override for this pipeline: apply the concrete remediation edits yourself, re-run the consistency check on the edited artifacts, and commit.** Your summary must account for **every** finding as fixed or deferred-with-reason (CRITICAL findings, which include every constitution violation, may never be deferred).           |
 | 7   | implement | `speckit-implement` | sonnet | **Chunked per task phase — see below.**                                                                                                                                                                                                                                                                                                                                                                                   |
 | 8   | converge  | `speckit-converge`  | opus   | **One pass — see below.**                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -240,23 +240,22 @@ if the second implement pass still leaves gaps, stop and report them.
   it is the only check that counts before a PR. There is no scoped or tiered local gate: a
   `src/` change means the whole suite runs again. CI runs the same gate as parallel jobs and
   narrows it only by the changed paths, as `docs/testing.md` describes.
-- **Visual baselines.** The visual project compares each snapshotted page
-  against committed per-platform images. If the slice altered a page's
-  appearance on purpose, the implement phase updates the macOS baselines
-  (`pnpm run test:visual:update`); the **Linux** baselines are what CI
-  compares against and are regenerated with `pnpm run test:visual:update:linux`
-  (the same steps as the
-  `update-baselines` CI job, run in the matching Playwright Docker image;
-  needs Docker Desktop). If `docker info` fails, ask Don to start Docker
-  Desktop with an `AskUserQuestion` whose question text carries the
-  instruction, then run it, review the diff, commit the images and push —
-  before opening the PR, so `verify` is green. Fallback only if Docker
-  cannot be started: after the PR is open, add the `visual-baselines`
-  label, wait for the `update-baselines` job, download its
-  `visual-baselines-linux` artifact with `gh run download`, review, commit
-  and push; until that lands the `verify` check on the PR is expected to
-  be red on visual only — say so in the PR body. A visual diff
-  the spec did not predict is a regression, not a baseline to refresh.
+- **Visual baselines.** The visual project snapshots only the shell (header, footer and open mobile menu), the
+  not-found page and the fixture site, never real content, so a content edit cannot fail it.
+  Its per-platform baselines change only when the shell, a template or the design system
+  changes, which is a major change under Principle III in any case.
+  If the slice altered one of those on purpose, the implement phase updated the macOS
+  baselines (`pnpm run test:visual:update`).
+  Regenerate the Linux baselines (what CI compares against) with
+  `pnpm run test:visual:update:linux` (needs Docker Desktop). If `docker info`
+  fails, ask Don to start it with an `AskUserQuestion` whose question text
+  carries the instruction. Commit and push the images before opening the PR,
+  so `verify` is green. Fallback only if Docker cannot be started: after the
+  PR is open, add the `visual-baselines` label, wait for the `update-baselines`
+  job, download its `visual-baselines-linux` artifact with `gh run download`,
+  review, commit and push; until that lands the `verify` check on the PR is
+  expected to be red on visual only, so say so in the PR body.
+  A visual diff nobody predicted up front is a regression to fix, not a baseline to refresh.
 
 ## Finish
 

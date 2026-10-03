@@ -285,25 +285,23 @@ gate as it is **after** the change.
 2. Red → dispatch a fix subagent on the branch (fix the cause, never the
    check), then run verify again. A failure the fix subagent cannot resolve
    stops the pipeline. Never proceed red.
-3. **Visual baselines.** The visual project compares each snapshotted page
-   against committed per-platform images. A chore changes no appearance by
-   definition, so a visual diff is a regression to look at (or a broken
-   triage condition), never a baseline to refresh. The one exception is a
-   chore that is itself about the baselines — a Playwright or browser
-   upgrade — where the plan said so up front: then the implement phase
-   updates the macOS baselines (`pnpm run test:visual:update`); the
-   **Linux** baselines are what CI compares against and are regenerated
-   with `pnpm run test:visual:update:linux` (the same steps as the
-   `update-baselines` CI job, run in the matching Playwright Docker image;
-   needs Docker Desktop). If `docker info` fails, ask Don to start Docker
-   Desktop with an `AskUserQuestion` whose question text carries the
-   instruction, then run it, review the diff, commit the images and push —
-   before opening the PR, so `verify` is green. Fallback only if Docker
-   cannot be started: after the PR is open, add the `visual-baselines`
-   label, wait for the `update-baselines` job, download its
-   `visual-baselines-linux` artifact with `gh run download`, review, commit
-   and push; until that lands the `verify` check on the PR is expected to
-   be red on visual only — say so in the PR body.
+3. **Visual baselines.** The visual project snapshots only the shell (header, footer and open mobile menu), the
+   not-found page and the fixture site, never real content, so a content edit cannot fail it.
+   Its per-platform baselines change only when the shell, a template or the design system
+   changes, which is a major change under Principle III in any case.
+   A chore changes none of them by definition. The one exception is a chore about the
+   baselines themselves, a Playwright or browser upgrade, where the plan said so up front and
+   the implement phase updated the macOS baselines.
+   Regenerate the Linux baselines (what CI compares against) with
+   `pnpm run test:visual:update:linux` (needs Docker Desktop). If `docker info`
+   fails, ask Don to start it with an `AskUserQuestion` whose question text
+   carries the instruction. Commit and push the images before opening the PR,
+   so `verify` is green. Fallback only if Docker cannot be started: after the
+   PR is open, add the `visual-baselines` label, wait for the `update-baselines`
+   job, download its `visual-baselines-linux` artifact with `gh run download`,
+   review, commit and push; until that lands the `verify` check on the PR is
+   expected to be red on visual only, so say so in the PR body.
+   A visual diff nobody predicted up front is a regression to fix, not a baseline to refresh.
 
 ## Finish
 

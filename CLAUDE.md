@@ -21,19 +21,20 @@ the constitution wins.
 
 ## Visual baselines
 
-The visual Playwright project compares each snapshotted page against committed per-platform
-images in `tests/e2e/visual.spec.ts-snapshots/`. An intended appearance change needs both sets
-refreshed:
+The visual project snapshots only the shell (header, footer and open mobile menu), the
+not-found page and the fixture site, never real content, so a content edit cannot fail it. Its per-platform baselines change only when the shell, a template or the design system
+changes, which is a major change under Principle III in any case.
+The baselines are committed in `tests/e2e/visual.spec.ts-snapshots/`, and a change to them
+refreshes both sets:
 
 - **macOS:** `pnpm run test:visual:update`.
-- **Linux (what CI compares against):** `pnpm run test:visual:update:linux`. It runs the same
-  steps as the `update-baselines` CI job inside the Playwright Docker image that matches the
-  installed `@playwright/test` version, and needs Docker Desktop running. Fallback when Docker
-  is unavailable: add the `visual-baselines` label to the open PR, download the
-  `visual-baselines-linux` artifact from the `update-baselines` run with `gh run download`,
-  and commit the images.
+- **Linux (what CI compares against):** `pnpm run test:visual:update:linux`, which needs Docker
+  Desktop and runs in the Docker image matching the installed `@playwright/test` version.
+  Fallback when Docker is unavailable: add the `visual-baselines` label to the open PR, which
+  runs `update-baselines`, download the `visual-baselines-linux` artifact with
+  `gh run download`, and commit the images.
 
-A visual diff the spec did not predict is a regression to fix, not a baseline to refresh.
+A visual diff nobody predicted up front is a regression to fix, not a baseline to refresh.
 
 ## Merging
 
@@ -74,7 +75,8 @@ Keep the four pipelines aligned. A change to any of these goes into all four tog
 - the "Local toolchain" section;
 - the pre-PR major-change / merge-mode pause (one `AskUserQuestion` before `gh pr create`);
 - the `[PREVIEW-CHECK]` task marker;
-- the visual-baselines step;
+- the visual-baselines step and the "Visual baselines" section above (a unit test checks their
+  shared sentences are identical in all five);
 - the "PR author account" block (a unit test checks it is identical in all four);
 - the "Inner loop and gate" paragraph and the `verify:quick` sentence in the implement or fix
   phase (a unit test checks both are identical in all four).
