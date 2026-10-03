@@ -119,6 +119,28 @@ JSX element is not resolved: a hast plugin (`defineHastPlugin`) wraps parts in
 `<section data-part>` and the route overrides `section` and `table` through the same
 `components` prop.
 
+**Spike outcome (T002, 2026-10-02): the mdast route works; the hast fallback is not needed.**
+A scratch plugin registered in `satteri({ mdastPlugins: [readingTimePlugin, projectPartsPlugin] })`
+was run through one real `astro build` against a scratch MDX file (intro paragraph, then
+Problem, Options with a table, Build) rendered by a scratch page with
+`<Content components={{ ProjectPart, OptionsTable }} />`. The output had
+`<section data-part="problem|options|build">` each holding its `<h2 id>` and siblings, the
+Options table replaced by the `OptionsTable` component, and text before the first heading left
+outside any part. Existing project pages built unchanged. How it was done, for T021:
+- the plugin is a factory `(ctx) => ctx.fileURL?.pathname.includes("/src/content/projects/") ? defineMdastPlugin({...}) : null`;
+- the work happens in a `before(root, context)` hook: it walks `root.children`, groups each
+  `heading` of depth 2 with its following siblings, builds `{ type: "mdxJsxFlowElement", name,
+  attributes: [{ type: "mdxJsxAttribute", name, value }], children }` nodes, swaps the first
+  `table` in the Options group for an attribute-less `OptionsTable` element, and writes the
+  result back with `context.setProperty(root, "children", grouped)`;
+- grouping by `context.textContent(heading)` lower-cased gives the part name, so no heading
+  ids are needed in the plugin.
+Docs pages used: docs.astro.build/en/recipes/reading-time/ (plugin shape) and
+docs.astro.build/en/guides/integrations-guide/mdx/#passing-components-to-mdx-content
+(`components` prop); the node-mutation calls come from the `satteri` 0.10.5 type definitions
+(`MdastVisitorContext.setProperty`), as predicted above. The spike code itself was discarded;
+T021 rewrites it test-first after T016 fails.
+
 ## R3. Keeping `_template.mdx` out of the collection
 
 **Decision**: Change the loader pattern to `["**/*.{md,mdx}", "!**/_*"]` and the route's
