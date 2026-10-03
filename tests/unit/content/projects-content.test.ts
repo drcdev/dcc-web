@@ -1,5 +1,5 @@
-// US5 and FR-022, FR-023, FR-082: the four real projects are in the four-part shape, all drafts,
-// and no site code names one. Unit layer: it reads the files and the schema, and builds nothing.
+// US5 and FR-022, FR-023, FR-082: the four real projects are in the four-part shape, drafts until
+// Don publishes them, and no site code names one. Unit layer: it reads the files and the schema, and builds nothing.
 import { createRequire } from "node:module";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -16,6 +16,8 @@ const { parseFrontmatter } = (await import(
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const slugs = ["focus-pocus", "drcdev-github-io", "flux", "tempo"];
+// Projects Don has reviewed and published: no longer drafts, and the review comment is gone.
+const published = ["drcdev-github-io"];
 const read = (slug: string) => {
   const path = resolve(root, `src/content/projects/${slug}.mdx`);
   const source = readFileSync(path, "utf-8");
@@ -26,9 +28,11 @@ const removed = ["order", "comparison", "demo", "clips", "pros", "cons"];
 describe.each(slugs)("the %s project file", (slug) => {
   const { source, frontmatter, content } = read(slug);
 
-  it("is a draft and keeps its review comment", () => {
-    expect(frontmatter.draft).toBe(true);
-    expect(content).toMatch(/\{\/\*\s*DRAFT FOR REVIEW:/);
+  it("is a draft with its review comment until Don publishes it", () => {
+    const isPublished = published.includes(slug);
+    expect(frontmatter.draft).toBe(!isPublished);
+    if (isPublished) expect(content).not.toMatch(/DRAFT FOR REVIEW/);
+    else expect(content).toMatch(/\{\/\*\s*DRAFT FOR REVIEW:/);
   });
 
   it("passes the schema and has none of the removed settings", () => {
