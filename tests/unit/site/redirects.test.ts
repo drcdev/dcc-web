@@ -53,9 +53,9 @@ describe("public/_redirects", () => {
     }
   });
 
-  // The app store listings for Tempo and Plunge Buddy point at the first drc.dev's
+  // The app store listing for Tempo points at the first drc.dev's
   // per-project privacy addresses, which the project story route cannot serve.
-  it.each(["tempo", "plunge-buddy"])("sends the old %s privacy address to the app's privacy page with 301", (slug) => {
+  it.each(["tempo"])("sends the old %s privacy address to the app's privacy page with 301", (slug) => {
     for (const request of [`/projects/${slug}/privacy`, `/projects/${slug}/privacy/`]) {
       expect(resolve(request), request).toEqual({ status: 301, location: `/privacy/${slug}/` });
     }

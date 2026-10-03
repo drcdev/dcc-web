@@ -1,5 +1,5 @@
 // The projects index on the fixture site (port 4322, playwright.config.ts project
-// `sections`): the repository's projects (Focus Pocus and the four drafts migrated
+// `sections`): the repository's projects (Focus Pocus and the three drafts migrated
 // from the first drc.dev) plus the four fixtures, so filtering, clearing, sharing and
 // the unknown-theme message have something to work on (US4; contracts/filter-island.md;
 // FR-014).
@@ -7,8 +7,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { cspViolations, recordCspViolations } from "./csp-violations.ts";
 
 const INDEX = "/projects/";
-// Five repository projects and four fixtures. A new project in src/content/projects/ adds one.
-const ALL = 9;
+// Four repository projects and four fixtures. A new project in src/content/projects/ adds one.
+const ALL = 8;
 const rows = (page: Page) => page.locator("[data-project]:not([hidden])");
 const status = (page: Page) => page.locator("[data-filter-status]");
 
