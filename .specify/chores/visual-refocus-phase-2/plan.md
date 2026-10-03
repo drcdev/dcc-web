@@ -607,7 +607,7 @@ theme. Record this in the implement summary.
 
 ### W4 V3: eight fixture subjects in `tests/e2e/visual.spec.ts`
 
-- [ ] W4 done
+- [x] W4 done
 
 **Files:** `tests/e2e/visual.spec.ts`.
 
