@@ -2,7 +2,7 @@
 
 These are three ways to present a project on the portfolio: a story page that walks through one project, and an index page that lists them all. Each direction has both pages. This document compares them so Don can choose one; it does not choose for him.
 
-The sample project is Focus Pocus. Its story is draft content written for Don's review, and every stage is marked as a draft in the pages. The screenshots and demo clips inside the stories are labelled placeholders, not real captures. Focus Pocus has no live demo, so its page on drc.dev stands in as the demo link. The other four index entries (Tempo, Flux, drc.dev and Plunge Buddy) are sample entries with no story page.
+The sample project is Focus Pocus. Its story is draft content written for Don's review, and every stage is marked as a draft in the pages. The screenshots and demo clips inside the stories are labelled placeholders, not real captures. Focus Pocus has no live demo, so its page on drc.dev stands in as the demo link. The other three index entries (Tempo, Flux and drc.dev) are sample entries with no story page.
 
 The screenshots in this document are full-page captures of each page at 390 px (phone) and 1280 px (desktop) in light and dark themes, taken with reduced motion requested so every stage is in its final state. There are 24 of them: three directions, two pages, two widths and two themes.
 

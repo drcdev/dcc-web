@@ -92,7 +92,6 @@ test("the sitemap lists exactly the built public pages, the series pages, never 
       "/about/",
       "/contact/",
       "/privacy-policy/",
-      "/privacy/plunge-buddy/",
       "/privacy/tempo/",
       "/projects/",
       "/projects/focus-pocus/",
@@ -100,7 +99,6 @@ test("the sitemap lists exactly the built public pages, the series pages, never 
       // outside production, like the sample post.
       "/projects/drcdev-github-io/",
       "/projects/flux/",
-      "/projects/plunge-buddy/",
       "/projects/tempo/",
       "/services/",
       "/speaking/",
