@@ -23,7 +23,6 @@ const BUILT_ADDRESSES = [
   "/about/",
   "/privacy-policy/",
   "/privacy/tempo/",
-  "/privacy/plunge-buddy/",
   "/terms-of-use/",
   "/technology/",
   "/contact/",
