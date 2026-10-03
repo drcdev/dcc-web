@@ -111,14 +111,14 @@ test.describe("the Focus Pocus story", () => {
     for (const cell of await region.locator("td[data-fit]").all()) await expect(cell).toHaveText(/Yes|Partly|No/);
   });
 
-  test("has a stand-in link and a draft notice, and no iframe", async ({ page }) => {
+  test("has a stand-in link, no draft notice and no iframe", async ({ page }) => {
     await page.goto(STORY);
     await expect(page.getByRole("link", { name: "Focus Pocus on drc.dev" })).toHaveAttribute(
       "href",
       "https://drc.dev/projects/focus-pocus",
     );
     await expect(page.getByText("This is not a live demo.")).toBeVisible();
-    await expect(page.locator("[data-draft-notice]")).toHaveCount(1);
+    await expect(page.locator("[data-draft-notice]")).toHaveCount(0);
     await expect(page.locator("iframe")).toHaveCount(0);
   });
 
@@ -219,8 +219,7 @@ test.describe("the projects index", () => {
     const response = await page.goto(INDEX);
     expect(response?.status()).toBe(200);
     await expect(page.locator("h1")).toHaveText("Projects");
-    // Focus Pocus is the one published project; the stories migrated from the first
-    // drc.dev are drafts, listed on this non-production build with a draft mark.
+    // All four real project stories are published, so none carries a draft mark.
     expect(await page.locator("[data-project]").count()).toBeGreaterThanOrEqual(1);
     const link = page.locator("[data-project] h2 a", { hasText: "Focus Pocus" });
     await expect(link).toHaveCount(1);

@@ -151,9 +151,8 @@ test("the sitemap lists the eight pages, the listing pages, the series pages, th
   const first = /<loc>[^<]*(\/sitemap-[^<]+\.xml)<\/loc>/.exec(index)?.[1];
   const sitemap = await (await request.get(first!)).text();
   const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]!).pathname).sort();
-  // The sample post and the Focus Pocus, Flux and Tempo projects are drafts: built outside
-  // production, left out of a production build. The four real posts, the first drc.dev's project
-  // story and the Tempo privacy page are published. Sorted by code point, so drafts sit among the rest.
+  // The sample post is a draft: built outside production, left out of a production build. The four
+  // real posts, the four real project stories and the Tempo privacy page are published. Sorted by code point, so drafts sit among the rest.
   expect(paths).toEqual([
     "/",
     "/about/",

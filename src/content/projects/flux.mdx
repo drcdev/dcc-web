@@ -1,7 +1,7 @@
 ---
 title: Flux
-problem: Run two newsletters on one Ghost site without the theme treating them as a single stream.
-description: How Flux, a custom Ghost theme, gives two newsletters their own look and adds AI reading aids to each post.
+problem: I've never liked stock themes, and I wanted my Ghost site to be my own.
+description: How I built Flux, my own Ghost theme, with two streams of writing and AI reading aids that encourage readers to think critically.
 themes: [Publishing, AI integration, Web]
 status: shipped
 visual:
@@ -22,54 +22,48 @@ visuals:
     description: Ghost renders the Flux theme. When AI analysis is switched on, the theme calls Supabase Edge Functions that ask a model for critical questions and related topics about the post.
     part: build
 invitation: "If your publication or site needs a design that follows its structure rather than a template, tell me about it."
-draft: true
+draft: false
 ---
 
-{/* DRAFT FOR REVIEW: written by Claude from the old drc.dev project entry, the flux repository README and CLAUDE.md, and the post "Self-contained development for Ghost themes". The facts (Handlebars, Tailwind v4, Drift and Convergence streams with lavender and sage colours, three-state dark mode, CSP and SRI, DOMPurify, Supabase Edge Functions with OpenRouter, member tiers for models, Magic Pages hosting, Codespaces workflow) come from those sources. The old entry also described an Express.js AI gateway on Fly.io; the repository now shows Supabase Edge Functions instead, so the story follows the repository. The constraints, the options and the lessons are inferred and need Don's correction. Themes are placeholders. The date is the repository's creation date. The picture is the split-screen image from the Ghost themes post. There is no source link because the repository is private, and no stand-in link: doncoleman.ca becomes this site at launch (docs/launch.md), and the build test rejects links to the site's own host at another origin. */}
+{/* Written from Don's interview answers on 3 October 2026. The technical facts (Handlebars, Tailwind v4, the lavender and sage colours, integrity hashes, DOMPurify, Magic Pages hosting, Supabase Edge Functions, the Codespaces workflow) come from the flux repository and the post "Self-contained development for Ghost themes". Themes are placeholders. The date is the repository's creation date. The picture is the split-screen image from the Ghost themes post. There is no source link because the repository is private, and no stand-in link: doncoleman.ca becomes this site at launch (docs/launch.md), and the build test rejects links to the site's own host at another origin. */}
 
 ## Problem
 
-Two newsletters, Convergence and Drift, share one Ghost site. A stock theme shows them as one list of posts with one colour and one subscribe button.
+I've never been a fan of stock themes, for anything. When I set up doncoleman.ca on Ghost, I wanted the site to be my own.
 
-The aim was a theme where each newsletter has its own look and its own archive, and where a post can offer the reader more than the text.
+The name Drift and Convergence came from my initials, and from my appreciation for complexity, systems leadership and how problems evolve as we navigate them. I made dozens of changes to the design as I built it. The idea of treating them as two separate streams of thought came about naturally along the way.
 
 ## Options
 
-Three routes were open. Only one of them could give the two newsletters their own identity without working against the theme.
+I never seriously considered living with a stock theme. The real question was how much of the theme to build myself.
 
-Each newsletter's colour, timeline and subscribe button had to be driven by Ghost's own settings rather than a hard-coded list. Everything had to live in the theme and in Ghost's routes and redirects files, and the theme had to keep content security policy headers and integrity hashes on its scripts.
+- **My own design**: The site had to look like mine, not like a template.
+- **Easy to change**: I made dozens of design changes as I built it, so the theme couldn't fight me.
+- **Works on hosted Ghost**: The site runs on Magic Pages, so everything had to live in the theme.
+- **Room for AI features**: The theme had to leave space for the reading aids I wanted to add.
 
-- **Two newsletters, two looks**: Convergence and Drift each need their own colour, archive and subscribe button.
-- **Works on hosted Ghost**: The site runs on Magic Pages, so the theme cannot depend on server changes or plugins.
-- **Dark mode done properly**: Light, dark and system choices, with no flash of the wrong theme on load.
-- **Safe AI additions**: AI-generated text must be sanitised, and the page must keep a strict content security policy.
-
-| Option | Two newsletters, two looks | Works on hosted Ghost | Dark mode done properly | Safe AI additions |
+| Option | My own design | Easy to change | Works on hosted Ghost | Room for AI features |
 | --- | --- | --- | --- | --- |
-| Ghost's stock Casper theme | No | Yes | Partly | No |
-| A marketplace theme, customised | Partly | Yes | Partly | No |
+| Ghost's stock Casper theme | No | No | Yes | No |
+| A marketplace theme, customised | Partly | Partly | Yes | Partly |
 | **A theme built from scratch** | Yes | Yes | Yes | Yes |
 
-Why a theme built from scratch won: it was the only route that gave each newsletter its own identity on hosted Ghost and left room for the AI features and the security defaults.
+Why a theme built from scratch won: it was the only way to make the site my own.
 
 ## Build
 
-Flux is a Ghost theme written in Handlebars with Tailwind v4. Drift is lavender and Convergence is sage, each with its own archive, timeline and subscribe button, and other tags take their accent colour from Ghost.
+I wrote a lot of Flux by hand and used AI to help me develop the components. Most of the AI functionality I wrote with Claude Code, in small incremental chunks.
 
-A Node.js build minifies the scripts and stamps them with subresource integrity hashes. AI-generated content passes through DOMPurify before it reaches the page.
+The hardest part was Handlebars. Its conditional logic isn't very pliable, so I brought in custom JavaScript early to get what I needed. Underneath, Flux is Handlebars and Tailwind v4. Drift is lavender and Convergence is sage, and each has its own archive, timeline and subscribe button. A Node.js build minifies the scripts and stamps them with integrity hashes. AI-generated text passes through DOMPurify before it reaches the page.
 
-AI reading aids are optional. A Supabase Edge Function asks a model for critical questions and related topics about a post, and members can regenerate them with higher-tier models.
+The reading aids came from my MBA. The program, and especially our change management course, really reinforced critical thinking. As I built the site and thought about the people who might read what I write, I wanted a unique way to encourage critical engagement. Each post can show critical questions and related topics generated by a model. Logged-in members default to a higher-tier model, but they aren't forced to use it.
 
-Development runs in a GitHub Codespace that starts a local Ghost, pulls real content from production and deploys the theme through GitHub Actions.
+The AI service started as an Express gateway on Fly.io. As I added features, I realized that building and running my own containers would be overcomplicated. Supabase let me put most of the features into one service and piggyback on Ghost's authentication more easily.
 
-Flux has been the live theme on doncoleman.ca since 2025. Each newsletter reads as its own publication, and the dark mode toggle holds its state across pages.
-
-The Codespaces workflow means a new environment with real content is a few minutes away, which is described in the post on [self-contained development for Ghost themes](/writing/self-contained-development-for-ghost-themes/).
-
-This site replaces the Ghost blog, so Flux retires with it. The split-screen picture is its record, and the lessons carried over into the design of this site.
+I developed Flux in a GitHub Codespace, so I didn't have to install Ghost on my computer and maintain a local installation over time. A Codespace let me work on it without burdening my own machine. More on that in the post on [self-contained development for Ghost themes](/writing/self-contained-development-for-ghost-themes/).
 
 ## Lessons
 
-A hosted Ghost site cannot run a server, so the AI backend had to live somewhere else. It moved from an Express.js gateway to Supabase Edge Functions, which was less to run.
+Flux did exactly what I needed it to do, and I learned a lot about what I really need out of a personal website. The next iteration will be even better, even as I move away from Ghost, which I really enjoyed working with. That next iteration is the site you're reading.
 
-Content security headers and integrity hashes were worth adding early. Retrofitting them to a theme that already loaded scripts freely would have been slower.
+If you're adding AI features, really think about what your users need to get some unique benefit from them. Everyone's used to seeing chatbots and summaries, but I'm not convinced they're useful most of the time.

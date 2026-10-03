@@ -96,8 +96,6 @@ test("the sitemap lists exactly the built public pages, the series pages, never 
       "/projects/",
       "/projects/drcdev-github-io/",
       "/projects/focus-pocus/",
-      // The other real projects are drafts, built and listed only outside production, like the
-      // sample post.
       "/projects/flux/",
       "/projects/tempo/",
       "/services/",

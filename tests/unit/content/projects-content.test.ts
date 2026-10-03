@@ -17,7 +17,7 @@ const { parseFrontmatter } = (await import(
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const slugs = ["focus-pocus", "drcdev-github-io", "flux", "tempo"];
 // Projects Don has reviewed and published: no longer drafts, and the review comment is gone.
-const published = ["drcdev-github-io"];
+const published = ["focus-pocus", "drcdev-github-io", "flux", "tempo"];
 const read = (slug: string) => {
   const path = resolve(root, `src/content/projects/${slug}.mdx`);
   const source = readFileSync(path, "utf-8");
@@ -75,14 +75,14 @@ describe("the migrated tables follow FR-022", () => {
   it("maps Flux's fit answers and chosen option", () => {
     const table = validateProjectStory("flux.mdx", read("flux").content);
     expect(table.constraints.map((c) => c.label)).toEqual([
-      "Two newsletters, two looks",
+      "My own design",
+      "Easy to change",
       "Works on hosted Ghost",
-      "Dark mode done properly",
-      "Safe AI additions",
+      "Room for AI features",
     ]);
     expect(table.options.map((o) => [o.name, o.chosen, o.fits])).toEqual([
-      ["Ghost's stock Casper theme", false, ["no", "yes", "partly", "no"]],
-      ["A marketplace theme, customised", false, ["partly", "yes", "partly", "no"]],
+      ["Ghost's stock Casper theme", false, ["no", "no", "yes", "no"]],
+      ["A marketplace theme, customised", false, ["partly", "partly", "yes", "partly"]],
       ["A theme built from scratch", true, ["yes", "yes", "yes", "yes"]],
     ]);
   });
