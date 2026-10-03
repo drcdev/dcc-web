@@ -153,7 +153,7 @@ W1 and W2 (it describes them). W5 is the orchestrator's.
 
 ### W1 Geometry smoke test (new, `e2e` project)
 
-- [ ] W1 done
+- [x] W1 done
 
 **Files:** `tests/e2e/geometry.spec.ts` (new). No config change: the `e2e` project's
 `testIgnore` does not match it, so `e2e` picks it up.
