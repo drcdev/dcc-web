@@ -9,6 +9,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { pillRowTopics } from "../../../src/config/topics.ts";
+import { FIXTURE_POSTS } from "../../../scripts/build-fixture-site.ts";
 
 const dir = fileURLToPath(new URL("../../../src/content/posts/", import.meta.url));
 const fixtureDir = fileURLToPath(new URL("../../fixtures/posts/valid/", import.meta.url));
@@ -154,5 +155,43 @@ describe("fixture posts for the fixture site", () => {
     const textOnly = fixture("text-only\\.mdx");
     expect(textOnly, "tests/fixtures/posts/valid/text-only.mdx").toBeDefined();
     expect(textOnly!.front).not.toMatch(/^featureImage:/m);
+  });
+
+  const topicsOf = (front: string): string[] => [...front.matchAll(/^ {2}- ([a-z0-9-]+)$/gm)].map((m) => m[1]!);
+
+  it("has a post that shows every part of the post template (#40 V3)", () => {
+    const everyPart = fixture("every-part\\.mdx");
+    expect(everyPart, "tests/fixtures/posts/valid/every-part.mdx").toBeDefined();
+    const source = readFileSync(`${fixtureDir}every-part.mdx`, "utf-8");
+    expect(source).toMatch(/^[\x00-\x7F]*$/);
+    expect(everyPart!.front).toMatch(/^featured: true$/m);
+    expect(everyPart!.front).toMatch(/^featureImage:/m);
+    // A date far past any real post, so it stays the newest post and the lead story.
+    expect(everyPart!.front).toMatch(/^date: 2099-\d{2}-\d{2}$/m);
+    expect(topicsOf(everyPart!.front)).toEqual(["drift", "compliant-data", "healthcare-leadership", "fixture-cards"]);
+    expect(everyPart!.body).toMatch(/^```[a-z]+ caption="[^"]+"$/m);
+    expect(everyPart!.body).toMatch(/^\|.*\|\s*$/m);
+    expect(everyPart!.body).toMatch(/^> \S/m);
+    expect(everyPart!.body).toMatch(/\[[^\]]+\]\([^)]+\)/);
+    for (const hashes of ["##", "###", "####"]) {
+      expect(everyPart!.body, hashes).toMatch(new RegExp(`^${hashes} \\S`, "m"));
+    }
+  });
+
+  it("puts the fixture-cards topic on exactly every-part, long-title and text-only", () => {
+    const named = FIXTURE_POSTS.filter((name) => {
+      const post = fixture(name.replace(".", "\\."));
+      return post !== undefined && topicsOf(post.front).includes("fixture-cards");
+    });
+    expect([...named].sort()).toEqual(["every-part.mdx", "long-title.mdx", "text-only.mdx"]);
+    // It is each post's last topic, so the first controlled topic still sets the card colour.
+    for (const name of named) {
+      const topics = topicsOf(fixture(name.replace(".", "\\."))!.front);
+      expect(topics.at(-1), name).toBe("fixture-cards");
+    }
+  });
+
+  it("copies every fixture post into the fixture site", () => {
+    expect([...FIXTURE_POSTS]).toEqual(["text-only.mdx", "long-title.mdx", "every-part.mdx"]);
   });
 });

@@ -240,7 +240,7 @@ and W2's pages. W5 needs W4. W6 describes everything.
 
 ### W1 Fixture post `every-part`, the `fixture-cards` topic, and the fixture-site specs that read them
 
-- [ ] W1 done
+- [x] W1 done
 
 **Files:**
 
