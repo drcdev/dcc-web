@@ -157,6 +157,8 @@ describe.each(environments)("astro build with the $label environment", ({ env })
       "/about/",
       "/contact/",
       "/privacy-policy/",
+      "/privacy/plunge-buddy/",
+      "/privacy/tempo/",
       "/projects/",
       "/projects/focus-pocus/",
       "/services/",
@@ -175,7 +177,13 @@ describe.each(environments)("astro build with the $label environment", ({ env })
       "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/",
     ];
     const samplePosts = ["/writing/sample-everything/"];
-    const expected = env.WORKERS_CI_BRANCH === "main" ? [...pages, ...realPosts] : [...pages, ...realPosts, ...samplePosts];
+    // The projects migrated from the first drc.dev are drafts until Don reviews them, so a
+    // production build leaves them out like the sample post (specs/009-portfolio data-model.md).
+    const draftProjects = ["/projects/drcdev-github-io/", "/projects/flux/", "/projects/plunge-buddy/", "/projects/tempo/"];
+    const expected =
+      env.WORKERS_CI_BRANCH === "main"
+        ? [...pages, ...realPosts]
+        : [...pages, ...realPosts, ...samplePosts, ...draftProjects];
     expect([...entries].sort()).toEqual(expected.map((path) => `${expectedOrigin}${path}`).sort());
   });
 

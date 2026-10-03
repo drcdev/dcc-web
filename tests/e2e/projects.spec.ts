@@ -97,7 +97,7 @@ test.describe("the Focus Pocus story", () => {
     await expect(region.getByRole("columnheader", { name: /Chosen/ })).toHaveCount(1);
   });
 
-  test("has a stand-in link, draft marks and placeholder marks", async ({ page }) => {
+  test("has a stand-in link, draft marks and no placeholder marks", async ({ page }) => {
     await page.goto(STORY);
     await expect(page.getByRole("link", { name: "Focus Pocus on drc.dev" })).toHaveAttribute(
       "href",
@@ -105,7 +105,8 @@ test.describe("the Focus Pocus story", () => {
     );
     await expect(page.getByText("This is not a live demo.")).toBeVisible();
     await expect(page.locator("[data-draft-mark]")).toHaveCount(7);
-    expect(await page.locator("[data-placeholder]").count()).toBeGreaterThan(0);
+    // The pictures are real captures from the blog post, so no "Placeholder" mark shows.
+    await expect(page.locator("[data-placeholder]")).toHaveCount(0);
   });
 
   test("the invitation opens the contact form about the project, with no cookie and no new origin", async ({
@@ -129,13 +130,15 @@ test.describe("the Focus Pocus story", () => {
 test.describe("the projects index", () => {
   const INDEX = "/projects/";
 
-  test("answers 200 with one h1, one row for Focus Pocus and a link to its story", async ({ page }) => {
+  test("answers 200 with one h1, a row for Focus Pocus and a link to its story", async ({ page }) => {
     const response = await page.goto(INDEX);
     expect(response?.status()).toBe(200);
     await expect(page.locator("h1")).toHaveText("Projects");
-    await expect(page.locator("[data-project]")).toHaveCount(1);
-    const link = page.locator("[data-project] h2 a");
-    await expect(link).toHaveText("Focus Pocus");
+    // Focus Pocus is the one published project; the stories migrated from the first
+    // drc.dev are drafts, listed on this non-production build with a draft mark.
+    expect(await page.locator("[data-project]").count()).toBeGreaterThanOrEqual(1);
+    const link = page.locator("[data-project] h2 a", { hasText: "Focus Pocus" });
+    await expect(link).toHaveCount(1);
     await expect(link).toHaveAttribute("href", STORY);
     await link.click();
     await expect(page).toHaveURL(new RegExp(`${STORY}$`));
@@ -160,12 +163,12 @@ test.describe("the projects index", () => {
   test("a row is two columns at 1280px and one column at 390px", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(INDEX);
-    const text = await page.locator("[data-project-text]").boundingBox();
-    const visual = await page.locator("[data-project-visual]").boundingBox();
+    const text = await page.locator("[data-project-text]").first().boundingBox();
+    const visual = await page.locator("[data-project-visual]").first().boundingBox();
     expect(visual!.x).toBeGreaterThan(text!.x + text!.width - 1);
     await page.setViewportSize({ width: 390, height: 844 });
-    const textNarrow = await page.locator("[data-project-text]").boundingBox();
-    const visualNarrow = await page.locator("[data-project-visual]").boundingBox();
+    const textNarrow = await page.locator("[data-project-text]").first().boundingBox();
+    const visualNarrow = await page.locator("[data-project-visual]").first().boundingBox();
     expect(visualNarrow!.y).toBeGreaterThanOrEqual(textNarrow!.y + textNarrow!.height - 1);
   });
 
@@ -183,8 +186,11 @@ test.describe("the projects index", () => {
 
   test("going back from a story restores the index with its ?theme=", async ({ page }) => {
     await page.goto(`${INDEX}?theme=macos`);
-    await expect(page.locator("[data-project]")).toBeVisible();
-    await page.locator("[data-project] h2 a").click();
+    // Only Focus Pocus has the macOS theme; the other rows stay in the list, hidden.
+    const shown = page.locator("[data-project]:not([hidden])");
+    await expect(shown).toHaveCount(1);
+    await expect(shown).toBeVisible();
+    await shown.locator("h2 a").click();
     await page.goBack();
     await expect(page).toHaveURL(/\/projects\/\?theme=macos$/);
     await expect(page.locator('button[data-theme="macos"]')).toHaveAttribute("aria-pressed", "true");

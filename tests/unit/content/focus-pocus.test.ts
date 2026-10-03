@@ -29,16 +29,18 @@ describe("the Focus Pocus project file", () => {
     for (const tag of chapters) expect(tag).toMatch(/\sdraft(\s|>|\/)/);
   });
 
-  it("marks every placeholder visual with placeholder: true", () => {
-    // Every picture of kind image or clip stands in for a capture that does not exist yet.
+  it("shows real captures, with alt text and no placeholder left", () => {
+    // The pictures are the screenshots from the blog post, so none stands in for a
+    // capture that does not exist yet.
     const lines = frontmatter().split("\n");
-    const placeholders = lines
+    const pictures = lines
       .map((line, index) => ({ line, index }))
       .filter(({ line }) => /^\s+kind: (image|clip)\s*$/.test(line));
-    expect(placeholders.length).toBeGreaterThanOrEqual(2);
-    for (const { index } of placeholders) {
+    expect(pictures.length).toBeGreaterThanOrEqual(2);
+    for (const { index } of pictures) {
       const block = lines.slice(index, index + 8).join("\n");
-      expect(block).toMatch(/placeholder: true/);
+      expect(block).toMatch(/^\s+alt: \S/m);
+      expect(block).not.toMatch(/placeholder: true/);
     }
   });
 
