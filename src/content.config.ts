@@ -57,7 +57,8 @@ const posts = defineCollection({
 // entry id is the slug from the file name (specs/009-portfolio/data-model.md).
 const projects = defineCollection({
   loader: glob({
-    pattern: "**/*.{md,mdx}",
+    // A file whose name starts with `_` (the writer's template) is not a project.
+    pattern: ["**/*.{md,mdx}", "!**/_*"],
     base: "./src/content/projects",
     generateId: ({ entry, base, data }) => {
       const slug = slugFromPath(entry);

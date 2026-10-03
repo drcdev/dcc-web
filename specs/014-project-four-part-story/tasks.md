@@ -74,9 +74,9 @@ Tests and fixtures first (T013-T020, each test seen to fail), then the code that
 **Goal**: copy, rename, fill in `_template.mdx`.
 **Independent test**: a renamed copy of the template builds with four parts, links and invitation.
 
-- [ ] T026 [US2] Write unit tests (unit) `tests/unit/content/project-template.test.ts`: file exists, `draft: true`, passes schema and story check, example picture with `part` and an `invitation`, comments name the optional details, only example.com links. Write build tests (build; reason: only the real loader and route show exclusion and a clean build) in `tests/build/project-validation.test.ts`: template excluded (X01) and a renamed copy builds (X02, SC-003). See fail.
-- [ ] T027 [US2] Update the `src/content.config.ts` loader pattern to `["**/*.{md,mdx}", "!**/_*"]` and the route duplicate-file glob in `src/pages/projects/[slug].astro` to exclude `_` files (research R3); create `src/content/projects/_template.mdx` and `src/content/projects/images/template/diagram.svg` per data-model.md. Make T026 pass.
-- [ ] T028 [P] [US2] Update `tests/unit/content/projects-guide.test.ts` (unit: guide names every setting, part, allowed answer; no blocks or stages) and see it fail; rewrite `docs/projects.md` for the four-part shape; update the contract-row mapping in `docs/testing.md`. Make the test pass.
+- [x] T026 [US2] Write unit tests (unit) `tests/unit/content/project-template.test.ts`: file exists, `draft: true`, passes schema and story check, example picture with `part` and an `invitation`, comments name the optional details, only example.com links. Write build tests (build; reason: only the real loader and route show exclusion and a clean build) in `tests/build/project-validation.test.ts`: template excluded (X01) and a renamed copy builds (X02, SC-003). See fail.
+- [x] T027 [US2] Update the `src/content.config.ts` loader pattern to `["**/*.{md,mdx}", "!**/_*"]` and the route duplicate-file glob in `src/pages/projects/[slug].astro` to exclude `_` files (research R3); create `src/content/projects/_template.mdx` and `src/content/projects/images/template/diagram.svg` per data-model.md. Make T026 pass.
+- [x] T028 [P] [US2] Update `tests/unit/content/projects-guide.test.ts` (unit: guide names every setting, part, allowed answer; no blocks or stages) and see it fail; rewrite `docs/projects.md` for the four-part shape; update the contract-row mapping in `docs/testing.md`. Make the test pass.
 
 ---
 

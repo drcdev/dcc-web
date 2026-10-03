@@ -22,7 +22,7 @@ export async function getStaticPaths() {
   // The file list comes from the file system, not the collection, so two files that
   // make the same slug (x.md and x.mdx) are both seen (the collection keeps only one).
   assertUniqueProjectFiles(
-    Object.keys(import.meta.glob("/src/content/projects/**/*.{md,mdx}", { query: "?url" })).map((path) =>
+    Object.keys(import.meta.glob(["/src/content/projects/**/*.{md,mdx}", "!/src/content/projects/**/_*"], { query: "?url" })).map((path) =>
       path.slice("/src/content/projects/".length),
     ),
   );
