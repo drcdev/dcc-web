@@ -51,8 +51,8 @@ because:
 - it is the cleanest full run so far.
 
 The other `main` runs since #31 bracket it: 450 s (#31), 464 s (#32), 396 s (#33), 479 s (#34).
-#33 and #34 probably took the content-only path for `build-tests`. That is inferred from the
-252 s `build-tests`, not confirmed from the logs. The record states the range (6:15 to 7:59), so
+Every `main` push is full tier. The short `build-tests` runs were #32 (245 s) and #33 (252 s),
+so the full-tier range is 245 to 393 s. The record states the range (6:15 to 7:59), so
 one fast run is not presented as typical. Run 37035625920 (#30, 1174 s) is left out as an
 anomaly, probably a rerun.
 
@@ -181,7 +181,7 @@ The guards that read this file and the drift guard must stay green. Then run
     4 min target moves to #FOLLOWUP_ISSUE" (or "to the D8 follow-up issue" if no number yet).
 - The per-job table of run 37090465334: `changes` 15 s, `static` 93 s, `build-tests` 338 s,
   `e2e` 341 s, `verify` 13 s. One sentence follows it: `e2e` is the long pole in every `main`
-  run (341 to 451 s), `build-tests` is next (338 to 393 s on the full tier), and the matrices
+  run (341 to 451 s), `build-tests` is next (245 to 393 s), and the matrices
   were left alone under D8.
 - The local stage table: Vitest 180 files, 2570 passed and 1 skipped, 156.45 s; worker 12
   files, 132 passed, 3.47 s; Playwright 1388 passed, 144 s (2.4 min); total 339 s. One sentence
@@ -228,7 +228,7 @@ is open so its number can be cited. Content, in the format of the phase 5 commen
 
 ### W3 `[ORCHESTRATOR]` Open the D8 follow-up issue
 
-- [ ] W3 done
+- [x] W3 done
 
 **Files:** none (GitHub). **Test:** n/a (not repository work).
 
@@ -241,7 +241,7 @@ W1 runs if possible, so W1 can link the number. Draft:
 
 > Follow-up to #26 (decision D8). After phases 1 to 5, CI `verify` on `main` takes 6 min 15 s
 > (run 37090465334; range 6:15 to 7:59), down from 31 min. The `e2e` job is the long pole in
-> every run (341 to 451 s), with `build-tests` next (338 to 393 s). The local `pnpm run verify`
+> every run (341 to 451 s), with `build-tests` next (245 to 393 s). The local `pnpm run verify`
 > takes 5 min 39 s (Vitest 156 s, Playwright 144 s, worker 3.5 s). #26 revised its local target
 > to ≤ 6 min. This issue carries the original 4 min target. See "Measured gate times" in
 > `docs/testing.md`.
@@ -288,8 +288,8 @@ W1 runs if possible, so W1 can link the number. Draft:
 >   recorded reason why not.
 > - No template or a11y combination loses coverage without a line in `docs/testing.md`.
 
-Judgment call: the `e2e` target of ≤ 300 s sits just under today's best `build-tests` (338 s).
-At that point Playwright is no longer the long pole. The orchestrator may adjust it.
+Judgment call: the `e2e` target of ≤ 300 s is not under the best `build-tests` on main (245 s).
+At 300 s Playwright may still be the long pole, so #37 should re-check the target after measuring. The orchestrator may adjust it.
 
 Judgment call: the four #36 governance items go into this issue instead of a separate one. They
 are small, and listing them stops them being lost when #26 closes. The orchestrator may split

@@ -7,7 +7,8 @@ It came out of [issue #26](https://github.com/drcdev/dcc-web/issues/26) (phases 
 numbers are the budget that the build project is held to. CI runs the same scripts split
 across parallel jobs (see "CI jobs"); phase 3 of #26 added that. Phase 4 added a content-only
 tier for changes that touch nothing but content files, and `pnpm run verify:quick` for the
-inner loop (see "Change tiers" and "Inner loop: `verify:quick`"). Phase 6 recorded the final gate times (see "Measured gate times").
+inner loop (see "Change tiers" and "Inner loop: `verify:quick`"). Phase 6 recorded the final
+gate times (see "Measured gate times").
 
 ## Layers
 
@@ -338,8 +339,9 @@ succeeded):
 | `e2e` | 341 s |
 | `verify` | 13 s |
 
-`e2e` is the long pole in every `main` run (341 to 451 s). `build-tests` is next (338 to 393 s on
-the full tier). The a11y and no-js matrices were left alone under D8.
+`e2e` is the long pole in every `main` run (341 to 451 s). `build-tests` is next (245 to 393 s).
+`e2e` is longer than `build-tests` in every run. The a11y and no-js matrices were left alone
+under D8.
 
 Local stages, one `pnpm run verify` on commit 75e73fc:
 
