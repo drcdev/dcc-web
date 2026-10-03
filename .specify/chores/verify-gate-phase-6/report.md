@@ -116,3 +116,55 @@ files / 132 tests, build ok), and so has the `tests/unit/setup` re-run above.
 3. Correct the `build-tests` range in the #37 body from "338 to 393 s" to "245 to 393 s" (H1),
    and recheck #37's `e2e` ≤ 300 s target against it.
 4. Tick W3 in plan.md, since #37 exists.
+
+## Round 2
+
+Reviewed 2026-10-02 against fix commit 6feefca (fresh eyes, read-only outside this file).
+
+### Verdicts on round 1
+
+- **H1: closed.** `docs/testing.md:342` now reads "`build-tests` is next (245 to 393 s)", which
+  matches the five-run table above (min 245 s #32, max 393 s #31). The only number changed in
+  `docs/testing.md` between 4468375 and HEAD is 338 to 245 (`grep -o` number diff). Issue #37
+  (open) now says "with `build-tests` next (245 to 393 s)"; "338" no longer appears in it.
+- **L1: closed.** `docs/testing.md:10-11` is re-wrapped at the paragraph's width. With
+  `tr -s ' \n' ' '`, the intro paragraph (old lines 5-10, new lines 5-11) is word-for-word the
+  same as before.
+- **L2: closed.** `plan.md:54-55` now says every `main` push is full tier, with #32 (245 s) and
+  #33 (252 s) as the short runs. The W1 draft (`plan.md:184`) and the #37 draft (`plan.md:244`)
+  say 245 to 393 s. The judgment call at `plan.md:291-292` says the best `build-tests` on `main`
+  is 245 s and #37 should re-check the target after measuring. `plan.md:231` has `- [x] W3 done`.
+
+Scope of 6feefca: only `docs/testing.md` and `plan.md` changed. Heading lists in both files are
+the same as before the fix.
+
+### New findings
+
+**LOW**
+
+**L3. `docs/testing.md:342-343`: one sentence was added beyond the described fix.** The
+measured-times sentence is not whitespace-only. It now also says "`e2e` is longer than
+`build-tests` in every run." The round-1 fix asked only for the range to change, with the
+conclusion left as it was. The new sentence is true for all five runs (427>393, 434>245, 356>252,
+451>377, 341>338), and it says what H1 noted: the conclusion still holds with the wider range.
+It also differs from the W1 wording in `plan.md:183-185`. No change needed; mention it in the PR
+body or leave it.
+
+**L4. `plan.md:292`: the rewritten judgment call is not wrapped** (130 characters, while the
+plan wraps at about 100). It is only in the plan, so this is cosmetic.
+
+### Tests
+
+`perl -e 'alarm 300; exec @ARGV' corepack pnpm vitest run tests/unit/setup tests/unit/ci` on
+node v24.4.1: **59 files, 878 passed**, 2.47 s. No full gate and no Playwright project was run.
+
+### Scope and Principle III
+
+`git diff --name-only main...HEAD`: `.specify/chores/verify-gate-phase-6/plan.md`,
+`.specify/chores/verify-gate-phase-6/report.md` and `docs/testing.md` only. No dependency, CI,
+deploy, design, skill or constitution change. Verdict stays **not major**.
+
+### Final counts
+
+Round 1 open: 0 (H1, L1, L2 closed). Round 2 new: **0 CRITICAL, 0 HIGH, 0 MEDIUM, 2 LOW**
+(L3, L4, neither blocking).
