@@ -403,7 +403,7 @@ posts, which no longer include text-only. The guarantee lives in three places:
 
 ### W2 Contact-form fixture page
 
-- [ ] W2 done
+- [x] W2 done
 
 **Files:** `tests/fixtures/pages/contact-form.mdx` (new); `scripts/build-fixture-site.ts`;
 `tests/unit/site/fixture-posts.test.ts`.

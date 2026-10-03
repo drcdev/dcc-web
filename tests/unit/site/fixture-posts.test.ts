@@ -1,7 +1,9 @@
 // The generated posts of the fixture site (tasks T026, T091): 13 or more valid
 // posts, each with a small generated feature image, so the pagination end-to-end
 // tests and the full-listing page-weight measurement (spec FR-041) have a second
-// page to look at. `generateFixturePosts()` is pure; the script writes its result.
+// page to look at. `generateFixturePosts()` is pure; the script writes its result. The file also
+// covers the fixture pages the build script copies into the fixture site (FIXTURE_PAGES).
+import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -9,7 +11,7 @@ import { z } from "astro/zod";
 import { postSchema } from "../../../src/content/schemas/post.ts";
 import { assertPostDates } from "../../../src/lib/content/post-dates.ts";
 import { assertPostFiles } from "../../../src/lib/content/post-address.ts";
-import { generateFixturePosts } from "../../../scripts/build-fixture-site.ts";
+import { FIXTURE_PAGES, generateFixturePosts } from "../../../scripts/build-fixture-site.ts";
 
 const fromAstro = createRequire(createRequire(import.meta.url).resolve("astro/package.json"));
 const { parseFrontmatter } = (await import(
@@ -82,5 +84,25 @@ describe("generateFixturePosts", () => {
       const body = post.source.split(/^---$/m).at(-1) ?? "";
       expect(body.trim().length, post.slug).toBeGreaterThan(40);
     }
+  });
+});
+
+describe("fixture pages", () => {
+  const pagesDir = new URL("../../fixtures/pages/", import.meta.url);
+  const read = (name: string) => readFileSync(new URL(name, pagesDir), "utf8");
+
+  it("copies the sections page and the contact-form page, and both files exist", () => {
+    expect([...FIXTURE_PAGES]).toEqual(["sections.mdx", "contact-form.mdx"]);
+    for (const name of FIXTURE_PAGES) expect(existsSync(new URL(name, pagesDir)), name).toBe(true);
+  });
+
+  it("keeps the contact-form page ASCII, with the form in its body", () => {
+    const source = read("contact-form.mdx");
+    expect(/^[\x00-\x7f]*$/.test(source)).toBe(true);
+    expect(source).toContain("<ContactForm />");
+  });
+
+  it("keeps the form off the sections page, so its baselines and no-JS script count hold", () => {
+    expect(read("sections.mdx")).not.toContain("<ContactForm");
   });
 });
