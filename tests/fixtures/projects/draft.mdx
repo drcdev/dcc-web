@@ -4,52 +4,36 @@ problem: A project that is not ready to be seen.
 description: A draft project, left out of the production build.
 themes: [Tooling]
 status: in-progress
+date: 2026-01-02
 visual:
   kind: image
   src: ./images/sample.png
   alt: A sample picture
   placeholder: true
 draft: true
-comparison:
-  constraints:
-    - { id: simple, label: Simple to run }
-  options:
-    - id: script
-      name: A script
-      summary: One file.
-      fit: { simple: meets }
-      chosen: true
-      reason: It is the simplest thing that works.
 ---
 
-<Chapter stage="problem">
+## Problem
+
 Who had the problem and what it was.
-</Chapter>
 
-<Chapter stage="constraints">
-What made it hard.
-</Chapter>
+## Options
 
-<Chapter stage="options">
-Short framing.
+The routes that were considered.
 
-<OptionComparison />
-</Chapter>
+- **Simple to run:** Whether one person can run it.
 
-<Chapter stage="built">
+| Option | Simple to run |
+| --- | --- |
+| **A script** | yes |
+| A service | no |
+
+Why a script: it is the simplest thing that works.
+
+## Build
+
 What was built.
-</Chapter>
 
-<Chapter stage="outcome">
-How it turned out.
-</Chapter>
+## Lessons
 
-<Chapter stage="lessons">
 What was learned.
-</Chapter>
-
-<Chapter stage="invitation">
-If you have a problem like this, tell me about it.
-
-<Invitation />
-</Chapter>

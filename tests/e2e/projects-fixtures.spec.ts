@@ -123,89 +123,38 @@ test("buttons wrap and the page does not scroll sideways at 320px", async ({ pag
   expect(tops.size).toBeGreaterThan(1);
 });
 
-// US6: embedded demo, link-only demo and clip (contracts/pages-dom.md). The demo
-// address is answered locally so the run needs no network.
-test.describe("demos and clips", () => {
-  test("an embedded demo is a lazy frame that loads on reaching it, with no CSP violation", async ({ page }) => {
+// US6: a live demo is a plain link, never a frame (specs/014-project-four-part-story, FR-008). The
+// demo address is answered locally so the run needs no network.
+test.describe("demos", () => {
+  test("a live demo is one same-tab link in Build, with no frame and no CSP violation", async ({ page }) => {
     await recordCspViolations(page);
     const requested: string[] = [];
     await page.route("https://demo.drc.dev/**", (route) => {
       requested.push(route.request().url());
-      return route.fulfill({ contentType: "text/html", body: "<!doctype html><title>Demo</title><p>Demo</p>" });
+      return route.abort();
     });
     await page.goto("/projects/every-setting/");
-    const frame = page.locator("iframe");
-    await expect(frame).toHaveCount(1);
-    await expect(frame).toHaveAttribute("loading", "lazy");
-    await expect(frame).toHaveAttribute("title", "Every setting demo");
-    await frame.scrollIntoViewIfNeeded();
-    await expect.poll(() => requested.length).toBeGreaterThan(0);
+    await page.locator('[data-part="build"]').scrollIntoViewIfNeeded();
+    await expect(page.locator("iframe")).toHaveCount(0);
+    const link = page.getByRole("link", { name: "Open the Every setting demo" });
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAttribute("href", "https://demo.drc.dev/every-setting");
+    await expect(link).not.toHaveAttribute("target", /.+/);
+    await expect(page.locator('[data-part="build"] [data-build-links] a[href^="https://demo.drc.dev"]')).toHaveCount(1);
+    expect(requested, "the page never loads the demo itself").toEqual([]);
     expect(await cspViolations(page)).toEqual([]);
-    await expect(page.getByRole("link", { name: "Open the Every setting demo" })).toBeVisible();
   });
 
-  test("the embedded demo frame is no keyboard trap and the open-demo link sits outside it (FR-041)", async ({
-    page,
-  }) => {
-    await page.route("https://demo.drc.dev/**", (route) =>
-      route.fulfill({ contentType: "text/html", body: "<!doctype html><title>Demo</title><p>Demo</p>" }),
-    );
-    await page.goto("/projects/every-setting/");
-    const frame = page.locator("iframe");
-    await frame.scrollIntoViewIfNeeded();
-    const link = page.getByRole("link", { name: "Open the Every setting demo" });
-    await expect(link).toBeVisible();
-    expect(await link.evaluate((el) => !!el.closest("iframe"))).toBe(false);
-    // Tab from the link before the frame until focus is on the frame, then out of it again.
-    const onFrame = () => page.evaluate(() => document.activeElement?.tagName === "IFRAME");
-    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-    await frame.evaluate((el) => {
-      const before = document.createElement("button");
-      before.textContent = "start";
-      before.id = "trap-probe-start";
-      el.parentElement!.insertBefore(before, el);
-      before.focus();
-    });
-    let reached = false;
-    for (let i = 0; i < 6 && !reached; i += 1) {
-      await page.keyboard.press("Tab");
-      reached = await onFrame();
-    }
-    expect(reached, "Tab reaches the frame").toBe(true);
-    await page.keyboard.press("Tab");
-    await page.keyboard.press("Tab");
-    expect(await onFrame(), "a further Tab leaves the frame").toBe(false);
-    await page.keyboard.press("Shift+Tab");
-    await page.keyboard.press("Shift+Tab");
-    await page.keyboard.press("Shift+Tab");
-    const stillTrapped = await onFrame();
-    expect(stillTrapped && (await page.evaluate(() => document.hasFocus())), "Shift+Tab leaves the frame").toBe(false);
-  });
-
-  test("the open-demo link stays visible when the frame request is blocked (FR-041)", async ({ page }) => {
-    await page.route("https://demo.drc.dev/**", (route) => route.abort());
-    await page.goto("/projects/every-setting/");
-    await page.locator("iframe").scrollIntoViewIfNeeded();
-    const link = page.getByRole("link", { name: "Open the Every setting demo" });
-    await expect(link).toBeVisible();
-    await expect(link).toHaveAttribute("href", /^https:\/\/demo\.drc\.dev/);
-  });
-
-  test("a link-only story (Focus Pocus, a stand-in) has no frame", async ({ page }) => {
+  test("a stand-in story (Focus Pocus) has no frame and says it is not a live demo", async ({ page }) => {
     await page.goto("/projects/focus-pocus/");
     await expect(page.locator("iframe")).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Focus Pocus on drc.dev" })).toBeVisible();
+    await expect(page.getByText("This is not a live demo.")).toBeVisible();
   });
 
-  test("a clip shows its controls and is not playing", async ({ page }) => {
+  test("a story page has no video", async ({ page }) => {
     await page.goto("/projects/every-setting/");
-    const video = page.locator("video");
-    await expect(video).toHaveCount(1);
-    await video.scrollIntoViewIfNeeded();
-    await expect(video).toHaveAttribute("controls", "");
-    await expect(video).toHaveJSProperty("paused", true);
-    await expect(video).toHaveJSProperty("autoplay", false);
-    await expect(video).toHaveJSProperty("muted", true);
+    await expect(page.locator("video")).toHaveCount(0);
   });
 });
 
@@ -221,29 +170,40 @@ test("a story with its own sharing image shares that image and its alt text", as
   expect(response.headers()["content-type"]).toContain("image/png");
 });
 
-// US8: a story that uses every block (tests/fixtures/projects/every-block.mdx).
-test.describe("the every-block story", () => {
-  test("renders all seven chapters, the page sections and the invitation", async ({ page }) => {
-    await page.goto("/projects/every-block/");
-    await expect(page.locator("[data-chapter]")).toHaveCount(7);
-    await expect(page.getByText("An intro paragraph inside a chapter.")).toBeVisible();
-    await expect(page.getByText("A titled block")).toBeVisible();
-    await expect(page.getByText("A figure inside a chapter")).toBeVisible();
-    await expect(page.getByRole("link", { name: "See the source" })).toBeVisible();
-    await expect(page.locator('a[href="/contact/?project=every-block"]')).toHaveCount(1);
+// US8: a story with a picture on every part (tests/fixtures/projects/every-part.mdx).
+test.describe("the every-part story", () => {
+  test("renders four parts each with a picture beside it, a sub-heading, a plain table, the links and the invitation", async ({
+    page,
+  }) => {
+    await page.goto("/projects/every-part/");
+    await expect(page.locator("section[data-part]")).toHaveCount(4);
+    await expect(page.locator("[data-part-picture]")).toHaveCount(4);
+    await expect(page.getByRole("heading", { name: "A sub-heading", level: 3 })).toBeVisible();
+    // The Build table is the writer's own plain table; the Options table is the component's region.
+    await expect(page.locator('[data-part="build"] table')).toHaveCount(1);
+    await expect(page.locator('[data-part="build"] [data-options-table]')).toHaveCount(0);
+    await expect(page.locator('[data-part="options"] [data-options-table]')).toHaveCount(1);
+    await expect(page.getByRole("link", { name: "Every part stand-in" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Source code for Every part" })).toBeVisible();
+    await expect(page.locator("[data-invitation-text]")).toHaveText("If you have a problem shaped like this one, tell me about it.");
+    await expect(page.locator('a[href="/contact/?project=every-part"]')).toHaveCount(1);
   });
 
-  test("marks placeholders and the draft chapter with real text", async ({ page }) => {
-    await page.goto("/projects/every-block/");
+  test("loads the first picture eagerly and the others lazily", async ({ page }) => {
+    await page.goto("/projects/every-part/");
+    const loading = await page.locator("[data-part-picture] img").evaluateAll((els) => els.map((el) => el.getAttribute("loading")));
+    expect(loading).toEqual(["eager", "lazy", "lazy", "lazy"]);
+  });
+
+  test("marks placeholders with real text", async ({ page }) => {
+    await page.goto("/projects/every-part/");
     await expect(page.locator("[data-placeholder]").first()).toContainText("Placeholder");
-    await expect(page.locator("#lessons [data-draft-mark]")).toHaveText("Draft for review");
-    await expect(page.locator("[data-draft-mark]")).toHaveCount(1);
   });
 
   test("the comparison scrolls with the keyboard at a narrow width", async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });
-    await page.goto("/projects/every-block/");
-    const region = page.locator("[data-comparison]");
+    await page.goto("/projects/every-part/");
+    const region = page.locator("[data-options-table]");
     await region.scrollIntoViewIfNeeded();
     await region.focus();
     await expect(region).toBeFocused();
