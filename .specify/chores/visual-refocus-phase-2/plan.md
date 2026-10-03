@@ -747,7 +747,7 @@ them after the review phase.
 
 ### W6 `docs/testing.md`: Layers rows, Visual coverage, gate-time entry
 
-- [ ] W6 done
+- [x] W6 done
 
 **Files:** `docs/testing.md`.
 
