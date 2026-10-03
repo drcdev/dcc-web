@@ -1,7 +1,7 @@
 ---
 title: drc.dev, the first portfolio
-problem: Show side projects in one place without running a server or paying for hosting.
-description: How the first drc.dev portfolio was built as a Next.js static site with a terminal look and deployed free on GitHub Pages.
+problem: People kept asking about my side projects, and I had nowhere to point them.
+description: How I built the first drc.dev in a few evenings with Claude Code, as a static Next.js site with a terminal look, hosted free on GitHub Pages.
 themes: [Web, Static sites, Portfolio]
 status: shipped
 visual:
@@ -26,48 +26,48 @@ visuals:
     description: Projects are entries in one TypeScript file. Next.js exports them as static pages, and a GitHub Actions workflow publishes the result to GitHub Pages on every push.
     part: build
 invitation: "If you need a small site that explains your work and costs nothing to keep online, tell me about it."
-draft: true
+draft: false
 ---
 
-{/* DRAFT FOR REVIEW: written by Claude from the drcdev.github.io repository (README, project entry and source). The facts (Next.js 15 static export, TypeScript, Tailwind v4, JetBrains Mono, react-markdown, the AsciiBox, AsciiButton and Badge components, GitHub Actions deploying to GitHub Pages, per-project privacy pages) come from the repository. The constraints, the options and the lessons are inferred and need Don's correction. This is the site that the current drc.dev replaces, so Don may prefer to leave it out, or to keep it as the story of what the new site learned from. The stand-in link will stop working once drc.dev points at the new site. Themes are placeholders. The date is the repository's creation date. The picture is a screenshot of the live site taken on 2 October 2026. */}
+{/* Written from Don's interview answers on 3 October 2026. The technical facts come from the drcdev.github.io repository. The stand-in link will stop working once drc.dev points at the new site. The date is the repository's creation date. The picture is a screenshot of the live site taken on 2 October 2026. */}
 
 ## Problem
 
-Side projects were scattered across repositories and app stores with nothing to tie them together or say why they exist.
+Over the years I've built a lot of little projects, and I usually learn a lot from each one. Whenever I talk about them, people want to know more. Some want to start something of their own.
 
-The aim was a single page on drc.dev that lists each project with a screenshot, its stack and a short description, and costs nothing to keep online.
+I wanted one quick, easy place to post those projects, in case they help someone else get started.
+
+I put it on drc.dev, my initials. I liked the .dev name for a place to post development projects. It also keeps them separate from doncoleman.ca, which I'm building as a more personal website.
 
 ## Options
 
-Three routes were open. Two of them were already paid for, but neither put the projects on their own domain in their own style.
+I looked at a few places to host it for free or cheap. The site didn't need anything interactive, so a plain static site would do.
 
-- **Free to host**: No server and no monthly bill for a page that changes a few times a year.
-- **On its own domain**: drc.dev, not a page inside someone else's site.
-- **Easy to add a project**: A new project is one entry, with Markdown for the description.
-- **A terminal look**: Box-drawing borders, bracketed buttons and a monospace typeface.
+- **Free**: It's a side project page, so I didn't want to pay to keep it online.
+- **Easy**: Pushing a change should be all it takes to publish it.
+- **Static is enough**: The site has no interactive parts, so I didn't need a server.
+- **On drc.dev**: The projects needed their own home, apart from doncoleman.ca.
 
-| Option | Free to host | On its own domain | Easy to add a project | A terminal look |
+| Option | Free | Easy | Static is enough | On drc.dev |
 | --- | --- | --- | --- | --- |
-| A GitHub profile README | Yes | No | Yes | Partly |
-| A page on the Ghost blog | Yes | Partly | Partly | No |
-| **A Next.js static site on GitHub Pages** | Yes | Yes | Yes | Yes |
+| Vercel | Yes | Yes | Partly | Yes |
+| fly.io | Partly | Partly | No | Yes |
+| **GitHub Pages** | Yes | Yes | Yes | Yes |
 
-Why a Next.js static site on GitHub Pages won: it was the only route that met all four constraints, and the deploy workflow is one file that GitHub runs.
+Why GitHub Pages won: it's free and easy, and I didn't need any interactive components.
 
 ## Build
 
-The first drc.dev was a Next.js 15 site in TypeScript, exported to static HTML. Each project is an entry in one file, with its description in Markdown, its technologies, a category and its links.
+I built the whole site with Claude Code. I started with a detailed spec of how I wanted it to look and what platform I was targeting. Writing the spec up front made a big difference. It took some back and forth to fine-tune, and there were elements I wanted to change, but overall the early experiments were excellent. The whole thing took only a few evenings.
 
-A small component library gives the terminal look: a box with corner marks, a button in square brackets and a badge for each technology. Tailwind v4 defines the colours in CSS, with a rust accent.
+The terminal look is a bit of nostalgia, and it fits the development theme: boxes with corner marks, buttons in square brackets, a badge for each technology and a rust accent. Underneath, it's a Next.js site in TypeScript exported to static HTML. Each project is one entry in a single file, with its description in Markdown. A GitHub Actions workflow builds the site and deploys it to GitHub Pages on every push to main.
 
-Two of the apps need a privacy policy for their store listings, so the site also publishes a privacy page for each of them. A GitHub Actions workflow builds and deploys the site to GitHub Pages on every push to main.
-
-The site has been the home of these projects on drc.dev since December 2025, with four projects and two privacy pages, at no hosting cost.
-
-It is now being replaced by this site, which tells the story of each project rather than listing its features.
+I added privacy pages for two of the apps later. I was thinking about publishing them to the App Store and wanted to be ready if I did. I haven't published any yet.
 
 ## Lessons
 
-A list of features and technologies says what a project is but not why it exists or what was learned. That gap is what the current drc.dev is built to close.
+I've pointed a few people to the site, but honestly I'm not sure anyone has looked at it.
 
-Keeping the privacy policies on the same site as the portfolio tied the app store listings to the site's address, so any move has to keep those addresses working.
+It started as a way to show off a few projects. When I began rebuilding doncoleman.ca, I realized the projects made more sense there, told as stories instead of listed. So this site is being replaced by the one you're reading.
+
+If you're building your own portfolio, think about the image you want to present and the story you want to tell. With a strong definition of both, AI can go a very long way toward getting you there.

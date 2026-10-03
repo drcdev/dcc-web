@@ -175,13 +175,15 @@ describe.each(environments)("astro build with the $label environment", ({ env })
       "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/",
     ];
     const samplePosts = ["/writing/sample-everything/"];
-    // The four real projects (Focus Pocus and the three migrated from the first drc.dev) are drafts until Don reviews them, so a
-    // production build leaves them out like the sample post (specs/009-portfolio data-model.md).
-    const draftProjects = ["/projects/focus-pocus/", "/projects/drcdev-github-io/", "/projects/flux/", "/projects/tempo/"];
+    // Don has reviewed and published the first drc.dev's story, so every build lists it.
+    const realProjects = ["/projects/drcdev-github-io/"];
+    // The other real projects are drafts until Don reviews them, so a production build leaves them
+    // out like the sample post (specs/009-portfolio data-model.md).
+    const draftProjects = ["/projects/focus-pocus/", "/projects/flux/", "/projects/tempo/"];
     const expected =
       env.WORKERS_CI_BRANCH === "main"
-        ? [...pages, ...realPosts]
-        : [...pages, ...realPosts, ...samplePosts, ...draftProjects];
+        ? [...pages, ...realPosts, ...realProjects]
+        : [...pages, ...realPosts, ...realProjects, ...samplePosts, ...draftProjects];
     expect([...entries].sort()).toEqual(expected.map((path) => `${expectedOrigin}${path}`).sort());
   });
 
