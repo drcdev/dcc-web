@@ -252,7 +252,7 @@ as a shared section. Do not touch `pipeline-verify-wording.test.ts` or
 
 ### W2 Pipelines and CLAUDE.md: the bullet and the layer-naming phrases
 
-- [ ] W2 done
+- [x] W2 done
 
 **Files:** `.claude/skills/deliver/SKILL.md`, `.claude/skills/tweak/SKILL.md`,
 `.claude/skills/squash/SKILL.md`, `.claude/skills/chore/SKILL.md`, `CLAUDE.md`.
