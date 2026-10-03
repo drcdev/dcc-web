@@ -260,7 +260,7 @@ async function footerStop(page: Page): Promise<string> {
   return page.evaluate(() => {
     const el = document.activeElement;
     if (!el || el === document.body) return "body";
-    if (!document.querySelector("footer")?.contains(el)) return `outside:${el.getAttribute("href") ?? el.tagName}`;
+    if (!document.querySelector("body > footer")?.contains(el)) return `outside:${el.getAttribute("href") ?? el.tagName}`;
     if (el.hasAttribute("data-theme-toggle")) return "theme-switch";
     return el.getAttribute("href") ?? el.tagName.toLowerCase();
   });
