@@ -122,8 +122,12 @@ function checkOptions(nodes: Node[], fail: (problem: string) => Error): OptionsC
     if (cells.length !== headerCells.length) {
       throw fail(`the option "${name}" has ${cells.length} cells but the table has ${headerCells.length} columns. Give every row one cell per column.`);
     }
-    const strong = (first.children ?? []).filter((kid) => kid.type === "strong");
-    const chosen = strong.length === 1 && first.children!.length === 1;
+    const kids = first.children ?? [];
+    // Italic wrapping a single bold (`_**Name**_`) counts as fully bold, like `***Name***`.
+    const onlyKid = kids.length === 1 ? kids[0]! : undefined;
+    const italicBold = onlyKid?.type === "emphasis" && onlyKid.children?.length === 1 && onlyKid.children[0]!.type === "strong";
+    const strong = kids.filter((kid) => kid.type === "strong" || (italicBold && kid === onlyKid));
+    const chosen = strong.length === 1 && kids.length === 1;
     if (!chosen && strong.length > 0) {
       throw fail(`the option "${name}" is bold only in part, and exactly one option must be in bold. Bold the whole option name.`);
     }

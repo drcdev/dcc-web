@@ -196,6 +196,14 @@ describe("the Options part (T01-T13)", () => {
     expect(result.options).toEqual([{ name: "Only one", chosen: true, fits: ["yes"] }]);
   });
 
+  it("T043 accepts a bold-and-italic chosen option, still rejects italic only", () => {
+    for (const mark of ["***A script***", "_**A script**_"]) {
+      const result = validateProjectStory(FILE, story(options({ table: TABLE.replace("**A script**", mark) })));
+      expect(result.options[0]).toEqual({ name: "A script", chosen: true, fits: ["yes", "partly"] });
+    }
+    rejects(story(options({ table: TABLE.replace("**A script**", "*A script*") })), "exactly one option must be in bold", "0");
+  });
+
   it("allows a multi-sentence Why line", () => {
     expect(run(story(options({ after: "Why a script: it is simple. It is also cheap. Nothing else came close." })))).not.toThrow();
   });
