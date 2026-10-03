@@ -2,8 +2,6 @@
 /writing/topics/drift/* /writing/drift/:splat 301
 /writing/topics/convergence /writing/convergence/ 301
 /writing/topics/convergence/* /writing/convergence/:splat 301
-# App privacy policies moved from the first drc.dev; the app store listings point at the old addresses.
+# The Tempo privacy policy moved from the first drc.dev; the app store listing points at the old address.
 /projects/tempo/privacy /privacy/tempo/ 301
 /projects/tempo/privacy/ /privacy/tempo/ 301
-/projects/plunge-buddy/privacy /privacy/plunge-buddy/ 301
-/projects/plunge-buddy/privacy/ /privacy/plunge-buddy/ 301
