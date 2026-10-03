@@ -1,4 +1,4 @@
-// US5 and FR-022, FR-023, FR-082: the five real projects are in the four-part shape, all drafts,
+// US5 and FR-022, FR-023, FR-082: the four real projects are in the four-part shape, all drafts,
 // and no site code names one. Unit layer: it reads the files and the schema, and builds nothing.
 import { createRequire } from "node:module";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
@@ -15,7 +15,7 @@ const { parseFrontmatter } = (await import(
 )) as { parseFrontmatter: (code: string) => { frontmatter: Record<string, unknown>; content: string } };
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
-const slugs = ["focus-pocus", "drcdev-github-io", "flux", "plunge-buddy", "tempo"];
+const slugs = ["focus-pocus", "drcdev-github-io", "flux", "tempo"];
 const read = (slug: string) => {
   const path = resolve(root, `src/content/projects/${slug}.mdx`);
   const source = readFileSync(path, "utf-8");

@@ -1,10 +1,11 @@
 // Builds the fixture site used by the browser tests: a copy of this
-// repository's site with tests/fixtures/pages/sections.mdx added as an extra
-// page (specs/003-standalone-pages/tasks.md, T004, T005) and with generated
-// blog posts added, so pagination has a second page to test
-// (specs/008-blog/tasks.md, T026). Two fixture posts from tests/fixtures/posts/valid/ are added
+// repository's site with the fixture pages added as extra pages (FIXTURE_PAGES: the sections page,
+// specs/003-standalone-pages/tasks.md, T004, T005, and a page holding the contact form) and with
+// generated blog posts added, so pagination has a second page to test
+// (specs/008-blog/tasks.md, T026). Three fixture posts from tests/fixtures/posts/valid/ are added
 // too: a post with no feature image and a post with a very long title, the cases the removed
-// sample posts used to cover (FIXTURE_POSTS). Written to .cache/fixture-site/dist.
+// sample posts used to cover, and a post that shows every part of the post template, the lead
+// story and the subject of the post-template snapshot (FIXTURE_POSTS). Written to .cache/fixture-site/dist.
 import { cpSync, existsSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,10 +23,19 @@ export interface GeneratedPost {
 /**
  * Fixture posts copied from tests/fixtures/posts/valid/ (with the pictures in
  * tests/fixtures/posts/images/): a text-only post (no feature image, 2026-08-10) and a post
- * with a very long title holding an unbroken word (2026-08-20). tests/e2e/blog-fixtures.spec.ts
- * checks them on the served fixture site.
+ * with a very long title holding an unbroken word (2026-08-20), and a featured post that shows
+ * every part of the post template (2099-01-01, so it is always the newest post and the lead
+ * story). All three also carry the free-form topic `fixture-cards`, so that topic page lists
+ * exactly them. tests/e2e/blog-fixtures.spec.ts checks them on the served fixture site.
  */
-export const FIXTURE_POSTS = ["text-only.mdx", "long-title.mdx"] as const;
+export const FIXTURE_POSTS = ["text-only.mdx", "long-title.mdx", "every-part.mdx"] as const;
+
+/**
+ * Fixture pages copied from tests/fixtures/pages/ into src/content/pages/ (with the pictures in
+ * tests/fixtures/pages/images/). The contact form has its own page so that adding it does not
+ * change the sections page: its baselines and its no-JavaScript script count stay as they are.
+ */
+export const FIXTURE_PAGES = ["sections.mdx", "contact-form.mdx"] as const;
 
 /** A free-form topic id (not in src/config/topics.ts) carried by the oldest generated post. */
 export const FREE_FORM_TOPIC = "cloud-cost";
@@ -106,7 +116,7 @@ export function generateFixturePosts(count = MINIMUM_POSTS): GeneratedPost[] {
 async function buildSite(): Promise<void> {
   const repoRoot = fileURLToPath(new URL("../", import.meta.url));
   const siteRoot = resolve(repoRoot, ".cache/fixture-site");
-  const fixture = resolve(repoRoot, "tests/fixtures/pages/sections.mdx");
+  const pageFixtures = resolve(repoRoot, "tests/fixtures/pages");
 
   rmSync(siteRoot, { recursive: true, force: true });
   mkdirSync(siteRoot, { recursive: true });
@@ -127,10 +137,12 @@ async function buildSite(): Promise<void> {
   mkdirSync(resolve(siteRoot, "worker/src/contact"), { recursive: true });
   cpSync(resolve(repoRoot, "worker/src/contact/rules.ts"), resolve(siteRoot, "worker/src/contact/rules.ts"));
 
-  if (existsSync(fixture)) {
+  if (FIXTURE_PAGES.some((name) => existsSync(resolve(pageFixtures, name)))) {
     mkdirSync(resolve(siteRoot, "src/content/pages"), { recursive: true });
-    cpSync(fixture, resolve(siteRoot, "src/content/pages/sections.mdx"));
-    const images = resolve(repoRoot, "tests/fixtures/pages/images");
+    for (const name of FIXTURE_PAGES) {
+      if (existsSync(resolve(pageFixtures, name))) cpSync(resolve(pageFixtures, name), resolve(siteRoot, "src/content/pages", name));
+    }
+    const images = resolve(pageFixtures, "images");
     if (existsSync(images)) cpSync(images, resolve(siteRoot, "src/content/pages/images"), copyOptions);
   }
 

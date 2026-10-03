@@ -157,7 +157,6 @@ describe.each(environments)("astro build with the $label environment", ({ env })
       "/about/",
       "/contact/",
       "/privacy-policy/",
-      "/privacy/plunge-buddy/",
       "/privacy/tempo/",
       "/projects/",
       "/services/",
@@ -176,9 +175,9 @@ describe.each(environments)("astro build with the $label environment", ({ env })
       "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/",
     ];
     const samplePosts = ["/writing/sample-everything/"];
-    // The five real projects (Focus Pocus and the four migrated from the first drc.dev) are drafts until Don reviews them, so a
+    // The four real projects (Focus Pocus and the three migrated from the first drc.dev) are drafts until Don reviews them, so a
     // production build leaves them out like the sample post (specs/009-portfolio data-model.md).
-    const draftProjects = ["/projects/focus-pocus/", "/projects/drcdev-github-io/", "/projects/flux/", "/projects/plunge-buddy/", "/projects/tempo/"];
+    const draftProjects = ["/projects/focus-pocus/", "/projects/drcdev-github-io/", "/projects/flux/", "/projects/tempo/"];
     const expected =
       env.WORKERS_CI_BRANCH === "main"
         ? [...pages, ...realPosts]

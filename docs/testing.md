@@ -21,9 +21,9 @@ gate times (see "Measured gate times").
 | Build, `build` | `pnpm run test:build`, Vitest `build` project, `buildFixtureSite(...)` (default mode) | What the real build does: route generation, `getStaticPaths()` checks, render-time component checks, Astro's own errors (body image import), draft exclusion per environment, CSP and indexing output, code highlighting, cross-page output. Tens of seconds per run. | One build per fixture set, many assertions read from it | Thin to what only a build can show. |
 | Worker integration | `pnpm run test:worker`, `vitest-pool-workers` | The contact API against local D1 | Per endpoint | Keep. |
 | Real `astro build` | `tests/build/indexing.test.ts`, which runs `astro build` on the repository's own content in the main-branch and preview environments, plus `pnpm run build`, which runs in the `e2e` job in CI and in the local `verify` script. `indexing.test.ts` also runs on content-only changes, through `pnpm run test:build:content`. | That the real site builds and that its sitemap, robots and headers match the environment | Two environments | Keep. |
-| E2E | Playwright `e2e` and sibling projects, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Journeys in a real browser: navigation, theme, menu, contact submission, not-found, behaviour without JavaScript, layout geometry per template (no sideways scroll, no element wider than the viewport, header and footer clear of the main content) | Journeys, plus the template matrix | Keep journeys; review matrices (#40). |
+| E2E | Playwright `e2e` and sibling projects, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Journeys in a real browser: navigation, theme, menu, contact submission, not-found, behaviour without JavaScript, layout geometry per template (no sideways scroll, no element wider than the viewport, header and footer clear of the main content), the theme token each key component resolves to in both themes (`theme-tokens.spec.ts`) | Journeys, plus the template matrix | Keep journeys; review matrices (#40). |
 | Accessibility | Playwright `a11y` projects (axe), `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | WCAG 2.2 AA per template, both widths, both themes | Full template matrix | Keep (Principle X). |
-| Visual | Playwright `visual` project, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Pixel baselines of the design system: the shell (header, footer, open mobile menu), the not-found page and the sections fixture on the fixture site. Never real content. | Per platform | Keep, blocking. A diff is a design-system change (Principle III). Real-content shots removed in #40 phase 1; see "Visual coverage". |
+| Visual | Playwright `visual` project, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Pixel baselines of the design system: the shell (header, footer, open mobile menu), the not-found page, and on the fixture site the sections page, the post and story templates, the listing cards, the lead story, a series banner, two projects index rows and the contact form. Never real content. | Per platform | Keep, blocking. A diff is a design-system change (Principle III). Real-content shots removed in #40 phase 1; fixture template shots added in phase 2; see "Visual coverage". |
 | Budget | Playwright `budget` project, `pnpm run test:budget` | LCP, CLS, long tasks and bytes under throttling | Per template, own invocation with one worker (`pnpm run test:budget`) | Keep. Slow by design. |
 | Preview site-check | `scripts/site-check`, run against the preview deployment | Sitemap and links on the deployed preview | Once per PR; the crawl runs in the `e2e` job on pull requests | Keep. |
 
@@ -115,29 +115,40 @@ id finds the test.
 ### Visual coverage
 
 The `visual` project snapshots the design system only: the shell (header, footer and the open
-mobile menu), the not-found page and the sections fixture page. The real-content shots were
-removed in #40 phase 1, so a content edit cannot fail it. The geometry smoke test in
+mobile menu), the not-found page and fixture subjects on the fixture site. The real-content
+shots were removed in #40 phase 1, so a content edit cannot fail it. The geometry smoke test in
 `tests/e2e/geometry.spec.ts`, the shell snapshots, the sections fixture snapshot, the `a11y`
 contrast checks and the existing e2e and build content tests took over what each one guarded.
+Phase 2 added element shots of the fixture post and story templates, the listing cards, the
+lead story, the Drift series banner, two projects index rows and the contact form. Each is an
+element on fixture content, so a content edit still cannot fail the project.
 
 | Removed subject (4 images per platform) | Where its coverage lives now |
 |---|---|
-| `home` | Header, footer and menu: the kept shell snapshots, taken on `/`. Layout breakage: the geometry test. Contrast in both themes: `a11y` (axe on every template, both widths and themes). Introduction card and copy: `pages.spec.ts` and the build tests. Home intro card pixels have no snapshot (gap). |
+| `home` | Header, footer and menu: the kept shell snapshots, taken on `/`. Layout breakage: the geometry test. Contrast in both themes: `a11y` (axe on every template, both widths and themes). Introduction card and copy: `pages.spec.ts` and the build tests. Home intro card pixels: review-only by decision (#40 phase 2): it is site copy, not a template. |
 | `about` | Shell snapshots; geometry test; `a11y`; About sections and Recognition links: `pages.spec.ts`. |
-| `contact` | Shell snapshots; geometry test; `a11y`; the form and its states: `contact.spec.ts`. The contact form's pixels have no snapshot (gap): the `sections` fixture does not render `ContactForm`. |
-| `writing-landing` | Shell snapshots; geometry test; `a11y`; listing behaviour: `blog.spec.ts` and the `sections` project's `blog-fixtures.spec.ts` and `blog-pagination.spec.ts`. Listing card and lead-story pixels have no snapshot (gap): the planned fixture post and story shots do not render them. |
-| `writing-all` | As `writing-landing`, including the card gap. Pagination: `blog-pagination.spec.ts`. |
-| `writing-topic` | As `writing-landing`, including the card gap. |
-| `writing-post` | Shell snapshots; geometry test (includes the code block and table scroll containers); `a11y` (`blog.a11y.spec.ts`, `blog-fixture.a11y.spec.ts`); Copy button and table region: `blog.spec.ts`; forced colours: `blog-forced-colors.spec.ts`. Post template pixels: gap until the #40 V3 fixture post snapshot lands. |
-| `writing-series` | Shell snapshots; geometry test; `a11y`; series intro and links: `blog.spec.ts`. Series banner pixels have no snapshot (gap). |
-| `projects` | Shell snapshots; geometry test; `a11y`; two-column and one-column rows: `projects.spec.ts`; fixture listings: `projects-fixtures.spec.ts`. Projects index row pixels have no snapshot (gap). |
-| `project-story` | Shell snapshots; geometry test (reduced motion, final state); `a11y`; part layout at 390 and 1280, comparison region and invitation: `projects.spec.ts`; motion: `projects-motion.spec.ts`; forced colours: `projects-forced-colors.spec.ts`; no-JS: `projects-no-js.spec.ts`. Story template pixels: gap until the #40 V3 fixture story snapshot lands. |
+| `contact` | Shell snapshots; geometry test; `a11y`; the form and its states: `contact.spec.ts`. The contact form's pixels: the `contact-form` snapshot of the fixture page `/contact-form/` (#40 phase 2). |
+| `writing-landing` | Shell snapshots; geometry test; `a11y`; listing behaviour: `blog.spec.ts` and the `sections` project's `blog-fixtures.spec.ts` and `blog-pagination.spec.ts`. Listing card pixels: `listing-cards`, the three fixture cards on `/writing/topics/fixture-cards/`. Lead-story pixels: `lead-story` on the fixture `/writing/`, whose lead is the fixture post `every-part` (dated 2099 so no real post can take the lead). |
+| `writing-all` | As `writing-landing`, including the card snapshot. Pagination: `blog-pagination.spec.ts`. |
+| `writing-topic` | As `writing-landing`, including the card snapshot. |
+| `writing-post` | Shell snapshots; geometry test (includes the code block and table scroll containers); `a11y` (`blog.a11y.spec.ts`, `blog-fixture.a11y.spec.ts`); Copy button and table region: `blog.spec.ts`; forced colours: `blog-forced-colors.spec.ts`. Post template pixels: `post-template`, the article of the fixture post `/writing/every-part/`. Related posts are left out because they are chosen from all posts; their cards are the `listing-cards` component. |
+| `writing-series` | Shell snapshots; geometry test; `a11y`; series intro and links: `blog.spec.ts`. Series banner pixels: `series-banner` on the fixture `/writing/drift/` (banner element only). |
+| `projects` | Shell snapshots; geometry test; `a11y`; two-column and one-column rows: `projects.spec.ts`; fixture listings: `projects-fixtures.spec.ts`. Projects index row pixels: `project-row-minimal` and `project-row-every-setting` (row elements only; the fixture index also lists real draft rows). |
+| `project-story` | Shell snapshots; geometry test (reduced motion, final state); `a11y`; part layout at 390 and 1280, comparison region and invitation: `projects.spec.ts`; motion: `projects-motion.spec.ts`; forced colours: `projects-forced-colors.spec.ts`; no-JS: `projects-no-js.spec.ts`. Story template pixels: `story-template`, the article of the fixture story `/projects/every-part/`, with reduced motion. |
 
-After this PR these pixels have no snapshot. Until #40 V3 adds one fixture post and one fixture
-story snapshot, the post and story templates. With no planned replacement, the listing cards
-and lead story, the series banner, the projects index rows, the home intro card and the contact
-form: V3's fixtures do not render them. They are gaps to either widen V3 to cover or accept,
-which the PR body raises for Don. Review alone guards them meanwhile.
+Every phase-1 gap now has a fixture snapshot, except the home intro card, which is review-only
+by decision. The fixture site also holds real content, so every phase-2 subject is an element
+shot, and the post's Related posts are left out. `blog-fixtures.spec.ts` pins the lead, so a
+fixture change that moves it fails there with a named reason.
+
+`tests/e2e/theme-tokens.spec.ts` adds the token check that pixels cannot name. On three fixture
+pages (`/sections/`, `/writing/every-part/`, `/projects/every-part/`) it reads the computed
+colour of the key components (header, footer, pills, buttons, code block, table, quote, links
+and focus rings), compares each with the theme's token in both themes, and flips the `dark`
+class without a reload to prove the class alone drives the value. The site has no callout
+component, so the prose blockquote stands in for "callouts". The CTA button is theme-invariant
+by design (`bg-rust-600 text-white`, no `dark:` variant), so the test pins it equal in both
+themes.
 
 ### Check functions and call sites
 
@@ -382,3 +393,18 @@ Method:
 
 After figures are from this PR's CI run, which adds the preview site-check; the
 `test:e2e:parallel` step is the comparable number.
+
+### Visual refocus, #40 phase 2 (2026-10-03)
+
+| Measure | Before (run 37141574364, `main` push of #41) | After |
+|---|---|---|
+| `e2e` job | 305 s | 447 s (7 min 27 s), run 37146856024 (`main` push of #43) |
+| `test:e2e:parallel` step | 208 s | 318 s (5 min 18 s), same run |
+| Visual tests | 18 | 50 |
+| Visual PNGs | 36 | 100 |
+| E2E tests | 619 | 625 |
+
+Before and after are both `main` push runs, so they compare directly. The PR's own run
+(37146278538) had 437 s for the job and 311 s for the step. Across the whole of #40, the `e2e` job
+went from 473 s to 447 s and the run (first job start to `verify` end) from 500 s to 465 s.
+Each figure is a single run.
