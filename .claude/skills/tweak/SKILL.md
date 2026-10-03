@@ -86,6 +86,16 @@ through.
   - **Test-first (Principle I).** Tests are mandatory, written before the
     code they cover, and seen to fail first — however small the change. The
     tasks template calls tests "optional"; the constitution wins.
+  - **Test placement.** Every behaviour gets one primary layer: the
+    cheapest layer that can observe it. E2E is for journeys and for
+    anything only a browser can show; build tests are for what only the
+    real build can show; accessibility and visual tests cover templates,
+    not stories. Every planned test (a test task, a reproducing test or a
+    work item's test) names its layer (unit, component, build, worker,
+    E2E, accessibility, visual or budget), and testing the same behaviour
+    at a second layer needs a written reason. The constitution's
+    Development Workflow makes this binding; "Where a test goes" in
+    `docs/testing.md` has the detail.
   - **Release gate (Principle II).** Never mark a task done on a red suite.
     The `verify` package script, run as `pnpm run verify`, is the local
     mirror of the CI gate and must exit zero before the pipeline is
@@ -153,7 +163,7 @@ phase:
 | 1   | specify   | `speckit-specify`   | opus   | Pass the change description as args. The `before_specify` hook (`speckit-git-feature`) must run and create the branch. Keep it to five or fewer functional requirements — if it will not fit, say so rather than padding. However small the change: state the accessibility expectation (WCAG 2.2 AA, Principle X) and whether any rendered page changes appearance (that decides the visual-baseline step in Finish). Copy is plain language, no hype. Return the created branch and spec dir. |
 | 2   | clarify   | `speckit-clarify`   | opus   | **One round only, two steps — see below.**                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | 3   | plan      | `speckit-plan`      | opus   | The Constitution Check is not optional here; address every principle, briefly. Every Astro choice cites its docs page via the Astro Docs MCP (Principle IV). Confirm in the plan that no Principle III criterion fires — if one does, say so plainly so the orchestrator can promote to `/deliver`. If the plan rules out a plausible alternative (say, a CSS-only fix vs. a component change), record the decision and the rejected option in plan.md. Skip `research.md`, `data-model.md` and `contracts/` unless the change genuinely needs them. |
-| 4   | tasks     | `speckit-tasks`     | sonnet | Tests are **mandatory**, not optional, and ordered before the implementation they cover: unit/component tests for the changed code, an E2E or accessibility case where the change is visible in the browser. If the change alters what a snapshotted page looks like, include a task to update the macOS and Linux visual baselines (`pnpm run test:visual:update`, then `pnpm run test:visual:update:linux`, which needs Docker Desktop) after the implementation. Tasks a subagent cannot verify locally (needs the preview deployment or Don's eyes) get the suffix `[PREVIEW-CHECK]`. |
+| 4   | tasks     | `speckit-tasks`     | sonnet | Tests are **mandatory**, not optional, and ordered before the implementation they cover: usually a unit or component test for the changed code, and an E2E case only where the change is something only a browser can show. Each test task names its one primary layer, the cheapest layer that can observe the behaviour ("Where a test goes" in `docs/testing.md`), and gives the reason for any second layer in the task text. If the change alters what a snapshotted page looks like, include a task to update the macOS and Linux visual baselines (`pnpm run test:visual:update`, then `pnpm run test:visual:update:linux`, which needs Docker Desktop) after the implementation. Tasks a subagent cannot verify locally (needs the preview deployment or Don's eyes) get the suffix `[PREVIEW-CHECK]`. |
 | 5   | implement | `speckit-implement` | sonnet | Execute the whole task list unless it has more than one `## Phase` heading, in which case take one phase per subagent as `/deliver` does. Work test-first: write the tests, run them and see them fail, then implement until they pass. Then run `pnpm run verify:quick` under the perl alarm as the inner-loop check; only the full `pnpm run verify`, which the orchestrator runs before the PR, counts as the gate. Never mark a task done on a red suite. Follow the Astro docs and prefer first-party features over custom code. Leave `[PREVIEW-CHECK]` tasks unchecked and list them in your summary. Commit via `speckit-git-commit` (event `after_implement`). |
 
 ### Phase 2: clarify (the one mid-pipeline user pause)

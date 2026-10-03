@@ -105,6 +105,9 @@ Every behaviour gets **one primary layer**: the cheapest layer that can observe 
 - Accessibility and visual tests cover templates, not stories.
 - A second layer needs a reason, written in the test's comment.
 
+The constitution's Development Workflow makes this rule binding: every test task in the pipelines
+names its layer and gives the reason for any second layer.
+
 The test title or a comment carries the contract row id (`row 7`, `P13`), so a search for the
 id finds the test.
 

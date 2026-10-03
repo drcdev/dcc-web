@@ -78,6 +78,9 @@ Keep the four pipelines aligned. A change to any of these goes into all four tog
 - the "PR author account" block (a unit test checks it is identical in all four);
 - the "Inner loop and gate" paragraph and the `verify:quick` sentence in the implement or fix
   phase (a unit test checks both are identical in all four).
+- the "Test placement" bullet in the Rules section and the layer-naming phrase where each
+  pipeline plans its tests (tasks row, fix and assess rows, or plan, implement and review
+  steps); a unit test checks the bullet is identical in all four.
 
 ## Spec Kit extensions
 
