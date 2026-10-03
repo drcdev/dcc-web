@@ -160,7 +160,7 @@ own `verify` run goes in the PR body and the phase 6 issue comment.
 
 ### W1 New guard `tests/unit/setup/pipeline-test-placement.test.ts` (red)
 
-- [ ] W1 done
+- [x] W1 done
 
 **Files:** `tests/unit/setup/pipeline-test-placement.test.ts` (new).
 
