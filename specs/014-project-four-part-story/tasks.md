@@ -84,8 +84,8 @@ Tests and fixtures first (T013-T020, each test seen to fail), then the code that
 
 **Goal**: same rows and filter, tighter spacing, newest first.
 
-- [ ] T029 [US4] E2E test (e2e) in `tests/e2e/projects-fixtures.spec.ts`: newest-first order assertion, count stays 9, filter unchanged, row links at least 24 by 24 px beside the existing filter-button target check (FR-027). See fail where order differs. The smaller row spacing itself is checked at the visual layer (T038).
-- [ ] T030 [US4] Reduce vertical row spacing in `src/components/project/portfolio.css` (FR-021); keep `src/pages/projects/index.astro` markup. Make T029 pass. Production list/empty-state behaviour is covered by T032.
+- [X] T029 [US4] E2E test (e2e) in `tests/e2e/projects-fixtures.spec.ts`: newest-first order assertion, count stays 9, filter unchanged, row links at least 24 by 24 px beside the existing filter-button target check (FR-027). See fail where order differs. The smaller row spacing itself is checked at the visual layer (T038).
+- [X] T030 [US4] Reduce vertical row spacing in `src/components/project/portfolio.css` (FR-021); keep `src/pages/projects/index.astro` markup. Make T029 pass. Production list/empty-state behaviour is covered by T032.
 
 ---
 

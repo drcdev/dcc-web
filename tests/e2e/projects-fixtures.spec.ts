@@ -108,6 +108,26 @@ test("filter targets are at least 24x24 px", async ({ page }) => {
   }
 });
 
+test("lists projects newest first", async ({ page }) => {
+  await page.goto(INDEX);
+  const slugs = await rows(page).evaluateAll((els) => els.map((el) => el.getAttribute("data-project")));
+  // Fixture dates: draft 2026-01-02, minimal 2026-01-01, every-part 2025-12-01, every-setting 2025-06-01.
+  const fixtures = ["draft", "minimal", "every-part", "every-setting"];
+  const seen = slugs.filter((slug): slug is string => !!slug && fixtures.includes(slug));
+  expect(seen).toEqual(fixtures);
+});
+
+test("row title links are at least 24x24 px (FR-027)", async ({ page }) => {
+  await page.goto(INDEX);
+  const links = await page.locator("[data-project] [data-project-title] a:visible").all();
+  expect(links.length).toBe(ALL);
+  for (const link of links) {
+    const box = await link.boundingBox();
+    expect(box!.width).toBeGreaterThanOrEqual(24);
+    expect(box!.height).toBeGreaterThanOrEqual(24);
+  }
+});
+
 test("buttons wrap and the page does not scroll sideways at 320px", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto(INDEX);

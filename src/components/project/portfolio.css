@@ -308,7 +308,7 @@ summary,
   @apply m-0 list-none p-0;
 }
 [data-project] {
-  @apply grid gap-6 border-t-[6px] border-dusk-900 py-8 dark:border-mist-200;
+  @apply grid gap-4 border-t-[6px] border-dusk-900 py-4 dark:border-mist-200;
 }
 [data-project] > * {
   min-width: 0;
@@ -316,12 +316,12 @@ summary,
 @media (min-width: 64rem) {
   [data-project] {
     grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
-    gap: 4rem;
+    gap: 3rem;
     align-items: center;
   }
 }
 [data-project-title] {
-  @apply m-0 mb-3 text-3xl font-extrabold tracking-tight text-dusk-900 md:text-5xl dark:text-white;
+  @apply m-0 mb-2 text-3xl font-extrabold tracking-tight text-dusk-900 md:text-5xl dark:text-white;
 }
 [data-project-title] a {
   @apply text-dusk-900 underline-offset-4 hover:underline dark:text-white;
@@ -330,7 +330,7 @@ summary,
   @apply outline-2 outline-offset-2 outline-accent-500 dark:outline-accent-400;
 }
 [data-project-problem] {
-  @apply m-0 mb-4 max-w-prose text-xl text-dusk-800 dark:text-mist-200;
+  @apply m-0 mb-3 max-w-prose text-xl text-dusk-800 dark:text-mist-200;
   line-height: 1.5;
 }
 [data-project] [data-draft-mark] {
