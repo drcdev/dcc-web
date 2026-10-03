@@ -312,7 +312,7 @@ perl alarm; it is expected red only on the W1 file's two pending cases.
 
 ### W3 Constitution amendment 2.1.0 and the `docs/testing.md` pointer
 
-- [ ] W3 done
+- [x] W3 done
 
 **Files:** `.specify/memory/constitution.md`, `docs/testing.md`.
 

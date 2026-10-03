@@ -1,47 +1,36 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 1.1.0 → 2.0.0
-Bump rationale: MAJOR. Principle VIII (Fly.io Best Practices) is removed and
-replaced by a new Principle VIII (Cloudflare Best Practices), and Principle VII is
-redefined: the contact API and its storage move from Fly.io in Toronto to
-Cloudflare Workers and D1, dropping the Canada residency requirement. Principle IV,
-Principle V and the Technology Constraints change accordingly. The amendment
-request named the previous version as 1.0.0; the file was at 1.1.0 (the Astro
-Docs MCP amendment), so the bump is applied from 1.1.0.
+Version change: 2.0.0 → 2.1.0
+Bump rationale: MINOR. The Development Workflow section gains a binding
+test-placement rule (one primary layer per behaviour, named per test task, a
+reason for any second layer), which materially expands how Principle I's test
+layers are applied. No principle is removed or redefined, and it is more than a
+wording change. Source: issue #26 decision D7.
 
-Modified principles:
-- IV. First-Party Before Custom → IV. First-Party Before Custom (title unchanged;
-  the first-party rule now names Cloudflare only)
-- V. Static by Default → V. Static by Default (title unchanged; first bullet now
-  states that the contact API under /api/ is the only server-side code)
-- VII. Private Data: Minimal, Protected, in Canada → VII. Private Data: Minimal
-  and Protected (redefined: storage is Cloudflare D1 in the location recorded in
-  the contact feature's plan; IP addresses stored only as salted hashes; preview
-  submissions kept separate from production; secrets in Cloudflare and GitHub)
-- VIII. Fly.io Best Practices → VIII. Cloudflare Best Practices (replaced)
+Modified principles: none (Principle I's text is unchanged).
 
 Added sections: none
 
-Removed sections:
-- VIII. Fly.io Best Practices (replaced by VIII. Cloudflare Best Practices)
+Removed sections: none
 
 Other changes:
-- Technology Constraints: Hosting is now "Cloudflare Workers static assets";
-  Contact API is now TypeScript in the site's Worker with D1 and a Cron Trigger.
-- Every mention of Fly.io, fly.toml, Fly volumes, the Toronto region (yyz) and
-  storing data in Canada is removed.
+- Development Workflow: new test-placement bullet, directly after "Tasks are
+  ordered so tests come before the implementation they cover."
+- Ratified stays 2026-09-28; Last Amended is 2026-10-02.
 
 Templates reviewed (read at runtime, not modified by this command):
-- .specify/templates/plan-template.md — the free-form Constitution Check
-  accommodates the renamed Principle VII and the new Principle VIII without a
-  structural change.
+- .specify/templates/plan-template.md — no change required.
 - .specify/templates/spec-template.md — no change required.
-- .specify/templates/tasks-template.md — no change required.
+- .specify/templates/tasks-template.md — still calls tests optional and has no
+  layer field. The /deliver, /tweak, /squash and /chore pipeline instructions
+  override it and now require the layer, so the template change is deferred. The
+  four pipeline skills were updated in the same change.
 
-Follow-up TODOs: none. No placeholders deferred. Earlier feature specs, plans and
-docs/setup.md still describe Fly.io/Toronto storage and are out of scope for this
-command (see the amendment's Next Actions).
+Follow-up TODOs:
+- Add a layer field to the tasks template and speckit-tasks.
+- Principle I's layer list does not yet name build, visual or budget tests.
+No placeholders deferred.
 -->
 
 # doncoleman.ca Constitution
@@ -201,6 +190,12 @@ the change as major.
   that supports the choice, as found through the Astro Docs MCP. A reviewer can then confirm
   the choice against the current docs rather than the agent's recollection.
 - Tasks are ordered so tests come before the implementation they cover.
+- Test placement: every behaviour gets one primary layer, the cheapest layer that can observe
+  it. End-to-end tests are for journeys and for anything only a browser can show; build tests,
+  which run the real `astro build`, are for what only the real build can show; accessibility
+  and visual checks cover page templates, not each user story. Every test task names its
+  layer, and testing the same behaviour at a second layer needs a written reason.
+  `docs/testing.md` ("Where a test goes") holds the working detail.
 - Agents keep changes inside the feature's scope. Anything out of scope is noted in the spec
   as follow-up work, not done in passing.
 - Writing on the site (placeholder copy, labels, error messages) is plain language, with no
@@ -216,4 +211,4 @@ the change as major.
   - PATCH for wording and clarifications.
 - Every pull request review checks compliance with this document.
 
-**Version**: 2.0.0 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-09-29
+**Version**: 2.1.0 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-10-02
