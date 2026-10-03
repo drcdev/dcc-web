@@ -9,84 +9,50 @@ visual:
   src: ./images/plunge-buddy/index.png
   alt: The top of the Plunge Buddy screen for San Francisco, with one card showing air and feels-like temperature, water temperature, wave height and tide times
 date: 2026-01-11
-draft: true
 visuals:
   screenshot:
     kind: image
     src: ./images/plunge-buddy/screenshot.png
     alt: The full Plunge Buddy screen for San Francisco, showing air and feels-like temperature, water temperature, wave height, the last and next high and low tides, and a refresh button
+    part: problem
   architecture:
     kind: diagram
     src: ./images/plunge-buddy/architecture.svg
     alt: Boxes joined by arrows, from the Plunge Buddy app to its network services to three data sources, OpenWeatherMap, Open-Meteo and WorldTides
     description: The app takes the phone's location and asks three public services for weather, marine and tide data through actor-based network services.
-comparison:
-  caption: The three ways to check plunge conditions that were considered
-  constraints:
-    - id: one-glance
-      label: Everything on one screen
-      detail: Air, water, waves and tides together, with no scrolling between sources.
-    - id: local
-      label: Uses the current location
-      detail: Conditions for where the phone is, with a sensible default when location is refused.
-    - id: private
-      label: No account and no tracking
-      detail: Nothing stored about the user beyond preferences kept on the phone.
-    - id: low-upkeep
-      label: Little to maintain
-      detail: No server to run and no data to keep.
-  options:
-    - id: three-sites
-      name: Check three websites
-      summary: Open a weather site, a marine forecast and a tide table before each plunge.
-      fit: { one-glance: misses, local: partly, private: partly, low-upkeep: meets }
-      pros: [Nothing to build.]
-      cons: [Three tabs and three layouts every time., Each site has its own cookies and ads.]
-    - id: shortcut-widget
-      name: An iOS Shortcut or widget
-      summary: Chain the three services together with Shortcuts and show the result on the home screen.
-      fit: { one-glance: partly, local: meets, private: meets, low-upkeep: partly }
-      pros: [Quick to put together.]
-      cons: [Fragile when a service changes its response., Hard to share with anyone else.]
-    - id: swiftui-app
-      name: A native SwiftUI app
-      summary: A small iPhone app that asks three public APIs and shows the answers on one card.
-      fit: { one-glance: meets, local: meets, private: meets, low-upkeep: meets }
-      pros: [One screen that is quick to read., Location handled by the system with the usual permission prompt.]
-      cons: [Needs an Apple developer account and App Store review to share.]
-      chosen: true
-      reason: It was the only route that put everything on one screen, used the phone's location, and kept the data on the device.
+    part: build
+invitation: "If a decision you make often depends on data scattered across several sources, tell me about it."
+draft: true
 ---
 
 {/* DRAFT FOR REVIEW: written by Claude from the old drc.dev project entry and the privacy policy published with it. The facts (Swift, SwiftUI, MVVM, CoreLocation, actor-based network services with async/await, OpenWeatherMap, Open-Meteo and WorldTides, the Vancouver default, on-device Apple Intelligence recommendations from locally stored preferences, created by Kieran McConnell and maintained and deployed by Don) come from those sources. The constraints, the options and the lessons are inferred and need Don's correction. The repository linked from the old site no longer exists under that name, so there is no source link. The date is the old site's last change to this project (January 2026); its privacy policy says 11 January 2025, which looks like a typo for 2026 since Apple's on-device Foundation Models shipped in late 2025. Themes are placeholders. The picture is the screenshot from the old site. */}
 
-<Chapter stage="problem" visual="screenshot" draft>
+## Problem
 
 A cold plunge is only worth the trip when the air, the water, the waves and the tide line up. Those four facts live on three different websites.
 
 The aim was one screen on the phone that answers the question in a glance.
 
-</Chapter>
-
-<Chapter stage="constraints" draft>
-
-Air temperature, water temperature, wave height and the tide times had to sit together on one card, with no scrolling between sources.
-
-The app had to use the phone's location, and fall back to Vancouver, BC when permission is refused.
-
-Nothing about the user should leave the phone. There is no account, no analytics and no server of our own, which also keeps the app cheap to keep running.
-
-</Chapter>
-
-<Chapter stage="options" draft>
+## Options
 
 Three routes were open. The first two cost nothing to build but failed the one-glance test.
 
-<OptionComparison />
+The app had to fall back to Vancouver, BC when location permission is refused. There is no account, no analytics and no server of our own.
 
-</Chapter>
+- **Everything on one screen**: Air, water, waves and tides together, with no scrolling between sources.
+- **Uses the current location**: Conditions for where the phone is, with a sensible default when location is refused.
+- **No account and no tracking**: Nothing stored about the user beyond preferences kept on the phone.
+- **Little to maintain**: No server to run and no data to keep.
 
-<Chapter stage="built" visual="architecture" draft>
+| Option | Everything on one screen | Uses the current location | No account and no tracking | Little to maintain |
+| --- | --- | --- | --- | --- |
+| Check three websites | No | Partly | Partly | Yes |
+| An iOS Shortcut or widget | Partly | Yes | Yes | Partly |
+| **A native SwiftUI app** | Yes | Yes | Yes | Yes |
+
+Why a native SwiftUI app won: it was the only route that put everything on one screen, used the phone's location, and kept the data on the device.
+
+## Build
 
 Plunge Buddy is an iPhone app written in Swift and SwiftUI with an MVVM structure. Actor-based network services make the API calls thread-safe, with async/await throughout.
 
@@ -96,28 +62,12 @@ An optional recommendation uses Apple Intelligence on the device, working only f
 
 Plunge Buddy was created by Kieran McConnell. Don maintains it and handles the release.
 
-</Chapter>
-
-<Chapter stage="outcome" draft>
-
 Opening the app gives the four numbers for the nearest water in a few seconds, with a refresh button for a second look.
 
 The [privacy policy](/privacy/plunge-buddy/) is short because there is little to say: location is used while the app is open and never stored, and preferences stay on the device.
 
-</Chapter>
-
-<Chapter stage="lessons" draft>
+## Lessons
 
 Three free data services means three sets of limits and three ways to fail, so each service has its own actor and its own error handling.
 
 Keeping the AI feature on the device avoided a privacy policy section and a server bill in one decision.
-
-</Chapter>
-
-<Chapter stage="invitation" draft>
-
-If a decision you make often depends on data scattered across several sources, tell me about it.
-
-<Invitation />
-
-</Chapter>

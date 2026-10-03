@@ -93,11 +93,11 @@ Tests and fixtures first (T013-T020, each test seen to fail), then the code that
 
 **Goal**: five projects in the new shape, all `draft: true`, using only current text (FR-022 mapping).
 
-- [ ] T031 [US5] Write unit tests (unit) `tests/unit/content/projects-content.test.ts` (replaces `focus-pocus.test.ts`): all five `draft: true`, "draft for review" comments kept, no removed setting, each passes schema and story check, current invitation sentence moved to `invitation`. Delete `tests/unit/content/focus-pocus.test.ts`. See fail.
-- [ ] T032 [US5] Build tests (build) update `tests/build/drafts.test.ts` and `tests/build/indexing.test.ts`: production lists no projects, builds no project pages, empty state, no sitemap entries, Focus Pocus on the draft list (US4-3, SC-005). See fail (Focus Pocus is still published).
-- [ ] T033 [P] [US5] Rewrite `src/content/projects/focus-pocus.mdx` per FR-022 (built-chapter picture keeps the part, outcome picture stays unassigned); `draft: true`; list dropped text in a scratch note.
-- [ ] T034 [P] [US5] Rewrite `src/content/projects/drcdev-github-io.mdx` and `flux.mdx` per FR-022; keep drafts and review comments; list dropped text.
-- [ ] T035 [P] [US5] Rewrite `src/content/projects/plunge-buddy.mdx` and `tempo.mdx` per FR-022; keep drafts and review comments; list dropped text. Then make T031 and T032 pass and run the whole unit project.
+- [X] T031 [US5] Write unit tests (unit) `tests/unit/content/projects-content.test.ts` (replaces `focus-pocus.test.ts`): all five `draft: true`, "draft for review" comments kept, no removed setting, each passes schema and story check, current invitation sentence moved to `invitation`. Delete `tests/unit/content/focus-pocus.test.ts`. See fail.
+- [X] T032 [US5] Build tests (build) update `tests/build/drafts.test.ts` and `tests/build/indexing.test.ts`: production lists no projects, builds no project pages, empty state, no sitemap entries, Focus Pocus on the draft list (US4-3, SC-005). See fail (Focus Pocus is still published).
+- [X] T033 [P] [US5] Rewrite `src/content/projects/focus-pocus.mdx` per FR-022 (built-chapter picture keeps the part, outcome picture stays unassigned); `draft: true`; list dropped text in a scratch note.
+- [X] T034 [P] [US5] Rewrite `src/content/projects/drcdev-github-io.mdx` and `flux.mdx` per FR-022; keep drafts and review comments; list dropped text.
+- [X] T035 [P] [US5] Rewrite `src/content/projects/plunge-buddy.mdx` and `tempo.mdx` per FR-022; keep drafts and review comments; list dropped text. Then make T031 and T032 pass and run the whole unit project.
 
 ---
 

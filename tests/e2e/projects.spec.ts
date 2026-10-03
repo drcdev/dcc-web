@@ -188,7 +188,21 @@ test.describe("the Focus Pocus story", () => {
       for (const [name, target] of targets) {
         await target.focus();
         await expect(target, name).toBeFocused();
-        await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        // The page scrolls smoothly when motion is allowed, so wait for the scroll to settle before measuring.
+        await page.evaluate(
+          () =>
+            new Promise<void>((resolve) => {
+              let last = -1;
+              let still = 0;
+              const tick = () => {
+                still = window.scrollY === last ? still + 1 : 0;
+                last = window.scrollY;
+                if (still >= 10) resolve();
+                else requestAnimationFrame(tick);
+              };
+              requestAnimationFrame(tick);
+            }),
+        );
         const { ok, info } = await isVisibleAndUncovered(page, target);
         expect(ok, `${name}: ${info}`).toBe(true);
         const outline = await target.evaluate((el) => getComputedStyle(el).outlineStyle);
