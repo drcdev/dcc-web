@@ -107,7 +107,7 @@ Tracking.*
 - **Family and fallback**: `@font-face` family `Inter`; root `font-family="Inter, sans-serif"`;
   the gate accepts exactly that stack and no named system family (research R4).
 - **OFL attribution**: copyright kept in name ID 0 of each subset, plus a human-readable XML
-  comment directly before the `<style data-inter-subset>` naming Inter 4.1, the copyright
+  comment directly before the `<style data-inter-subset="">` naming Inter 4.1, the copyright
   holder, the SIL OFL 1.1 with its address (`https://openfontlicense.org`) and
   `src/assets/fonts/LICENSE.txt` (research R5, contract D07).
 - **Script**: `scripts/fonts/embed-diagram-fonts.ts`, run as
@@ -182,7 +182,7 @@ compressed transfer.
 | `images/focus-pocus/architecture.svg` | 1,472 | 585 | 9,634 | 6,702 |
 | `images/tempo/architecture.svg` | 2,119 | 740 | 10,496 | 7,001 |
 | `images/template/diagram.svg` (never published) | 689 | 334 | 4,265 | 2,916 |
-| `public/og-default.png` | 15,938 | n/a | | n/a |
+| `public/og-default.png` | 15,938 | n/a | 17,171 | n/a |
 
 | Page (budget spec, simulated mobile) | Before total transfer | After total transfer | Limit |
 |---|---|---|---|

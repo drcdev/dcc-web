@@ -19,8 +19,8 @@ A committed SVG under `src/content/` that contains at least one `<text>` element
 | Other `font-family` | any other element | none allowed (FR-008) |
 | `style` attributes | any element | none allowed (FR-008) |
 | `font-weight` values | `<g>`, `<text>`, `<tspan>` | `400` or `700` only; no `font-style` (FR-001) |
-| Font block | generated `<style data-inter-subset>` | exactly two `@font-face` rules, family `Inter`, weights 400 and 700, style normal, `src: url(data:font/woff2;base64,…) format("woff2")` (FR-003a, FR-012) |
-| Licence comment | XML comment directly before the `<style data-inter-subset>` | names Inter 4.1, the copyright holder ("The Inter Project Authors"), the SIL Open Font License 1.1 with its address (`https://openfontlicense.org`) and `src/assets/fonts/LICENSE.txt` (FR-013, D07) |
+| Font block | generated `<style data-inter-subset="">` | exactly two `@font-face` rules, family `Inter`, weights 400 and 700, style normal, `src: url(data:font/woff2;base64,…) format("woff2")` (FR-003a, FR-012) |
+| Licence comment | XML comment directly before the `<style data-inter-subset="">` | names Inter 4.1, the copyright holder ("The Inter Project Authors"), the SIL Open Font License 1.1 with its address (`https://openfontlicense.org`) and `src/assets/fonts/LICENSE.txt` (FR-013, D07) |
 | Labels | character data of `<text>`/`<tspan>` | real text, never paths; every character is in both embedded faces' cmaps (FR-003a, FR-009) |
 | External references | `href`, `url(…)` | only `url(#id)` and `url(data:…)`; no `http`, no relative file (FR-012) |
 | Size | file bytes | ≤ 16,384 (FR-009a) |
