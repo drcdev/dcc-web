@@ -125,17 +125,33 @@ locally on macOS and in CI on Linux on the first run.
   monospace fallback; nothing is hidden. Each face loads or fails on its own.
 - **Characters outside the shipped set** in code (for example box-drawing characters in a
   directory tree, or emoji): those characters fall back to the system stack only, as Inter's
-  uncovered characters do today; the page still renders and the build does not fail. Visual-test
-  subjects must not draw an uncovered code character unless it is explicitly excluded in the
-  guard test.
+  uncovered characters do today, drawn by the first family in the monospace fallback stack that
+  has them at its normal metrics, so they stay as legible as today; the page still renders and
+  the build does not fail. Visual-test subjects must not draw an uncovered code character unless
+  it is explicitly excluded in the guard test.
 - **Code inside a heading or bold text**: heading weight is bold, so code there uses the bold
   monospace face; weights the site does not ship resolve to a shipped face through standard CSS
   font matching (500 to 400; 600 and 800 to 700), with no synthesized weight.
 - **Italic code**: code inside emphasis uses the real italic face. Syntax-highlight colours are
-  unchanged and no highlight class gains an italic or bold style.
-- **Long lines**: code blocks keep scrolling sideways inside their card as today; a monospace face
-  is usually wider than Inter, so more lines may scroll, and focus on a scrollable block stays
-  visible. No page may scroll sideways at 320 CSS px or 200% zoom.
+  unchanged and no highlight class gains an italic or bold style. Emphasis inside code is marked
+  up with `em` (or `strong`), exactly as emphasis in prose is, so its meaning does not rest on
+  the slant alone; forced-colours mode and zoom keep the face, so the slant still shows there.
+  This feature adds no further cue for emphasis, as feature 018 added none for Inter.
+- **Long lines and wider code**: code blocks keep scrolling sideways inside their card as today.
+  JetBrains Mono advances every character by 0.6 em, wider than Inter's average, so more
+  code-block lines scroll sideways and inline code takes more room and may wrap differently.
+  This is the accepted consequence of keeping code size, line height and spacing unchanged
+  (FR-009); Don judges it on the preview. Focus on a scrollable block stays visible, and no page
+  may scroll sideways at 320 CSS px or 200% zoom.
+- **Swap inside a scrolled block**: the swap from fallback to the shipped face is a plain redraw
+  during load, with no animation or transition, so reduced-motion settings are unaffected. No
+  script moves focus or adjusts a block's scroll position; the browser keeps both as for any
+  reflow, and since the adjusted fallback has the same 0.6 em advance where Courier New exists,
+  the scrolled position barely moves.
+- **Navigation and view transitions**: every navigation is a full document load (the site uses
+  CSS cross-document view transitions, not a client-side router), so each page requests code
+  faces by the same rule (FR-007), and faces already in the browser cache are not downloaded
+  again.
 - **Keyboard and sample text** (`kbd`, `samp`): these monospace roles use the same shipped face,
   so no text on the site depends on a monospace font installed on the visitor's machine.
 - **Heaviest page**: the page with the most transfer must still fit the 150 KB budget with every
@@ -145,7 +161,12 @@ locally on macOS and in CI on Linux on the first run.
   cache header as Inter, so a second page view downloads no font bytes.
 - **JavaScript off**: the code font loads and applies with no client-side script.
 - **Forced colours and dark mode**: no colour token, size or spacing changes, so contrast is
-  unchanged; the existing checks must still pass.
+  unchanged; the existing checks must still pass. Bold and bold-italic code use the same colours
+  as regular code (heavier strokes only raise apparent contrast), and inline code inside links,
+  headings and emphasis keeps today's colour combinations; the existing axe contrast checks on
+  every template cover all of these, with the shipped face and with the fallback.
+- **Assistive technology and copying**: the change is typeface only. The text content, markup,
+  accessible names, reading order and copied text of code are unchanged.
 
 ## Requirements *(mandatory)*
 
@@ -154,70 +175,137 @@ locally on macOS and in CI on Linux on the first run.
 - **FR-001**: Inline code, code blocks, preformatted text, and keyboard and sample text (`code`,
   `pre`, `kbd`, `samp`) on every public page MUST render in one self-hosted monospace typeface,
   JetBrains Mono.
-  Prose, headings and every other text stay in Inter. Text inside images is out of scope.
-- **FR-002**: The monospace typeface is JetBrains Mono. It MUST be released under the SIL Open Font License (or an
-  equally permissive font licence that allows self-hosting, subsetting and commercial use), MUST
-  have true italic designs (not only an oblique of the upright), and MUST be chosen to sit with
-  Inter: neutral, sans-serif letterforms, an x-height close to Inter's, and clearly distinct
-  I l 1 | and O 0. JetBrains Mono was chosen over IBM Plex Mono and Source Code Pro for its
-  neutral letterforms and Inter-like x-height; the plan confirms it against this requirement and
-  FR-003 by measurement.
+  Prose, headings and every other text stay in Inter. Text inside images is out of scope. The
+  change is typeface only: no markup, text content or reading order of code changes.
+- **FR-002**: The monospace typeface is JetBrains Mono. It MUST be released under the SIL Open
+  Font License 1.1, which permits self-hosting, subsetting, modification and commercial use
+  provided the licence travels with the files (FR-013). Its licence declares no Reserved Font
+  Name, so the subset files keep the family name "JetBrains Mono", as Inter's subsets keep
+  theirs; if a future release's licence declares one, the subset must be renamed. Choosing any
+  other face is a new decision for Don, not covered by this requirement. The face MUST have true
+  italic designs (not only an oblique of the upright), and MUST sit with Inter: neutral,
+  sans-serif letterforms; an x-height within 5% of Inter's, measured in em from the font files
+  (JetBrains Mono 0.550 em against Inter's 0.546 em); and clearly distinct I l 1 | and O 0 in
+  the default glyphs, with no OpenType feature needed (a dotted or slashed zero, a serifed or
+  tailed l and 1). Distinctness is judged from the face's default glyph shapes in the plan and
+  confirmed by Don on the preview. JetBrains Mono was chosen over IBM Plex Mono and Source Code
+  Pro for its neutral letterforms and Inter-like x-height; the plan confirms it against this
+  requirement and FR-003 by measurement.
 - **FR-003**: The site MUST ship exactly four monospace faces: regular (400), italic (400),
-  bold (700) and bold italic (700). Each MUST contain exactly the same shipped character set as
-  the Inter faces (printable ASCII, all of Latin-1, – — ‘ ’ “ ” … • and → ✓ ✗ where the face has
-  those glyphs). OpenType features MAY be dropped to save bytes, except any the face needs to
-  draw the shipped characters correctly; programming ligatures MUST NOT be shipped or enabled, so code shows the characters
-  typed. The four files together MUST be at most 60,000 bytes; the plan records the measured
-  sizes.
+  bold (700) and bold italic (700), and no variable or other-weight file; the build output MUST
+  hold exactly eight font files (four Inter, four monospace). Each MUST contain exactly the same
+  shipped character set as the Inter faces (printable ASCII, all of Latin-1, – — ‘ ’ “ ” … • and
+  → ✓ ✗ where the face has those glyphs), taken from the one character-set definition in the
+  code that Inter's faces use, so the two families cannot drift apart. JetBrains Mono has a
+  glyph for every shipped character, → ✓ ✗ included (measured in the plan), so no shipped
+  character falls back in code. OpenType features MAY be dropped to save bytes, except any the
+  face needs to draw the shipped characters correctly; programming ligatures MUST NOT be shipped
+  or enabled, so code shows the characters typed: the subset carries no ligature feature at all,
+  so no style can switch one on, and the site sets no `font-feature-settings` for code. The four
+  files together MUST be at most 60,000 bytes, counted as the raw size on disk of the four
+  committed WOFF2 files (not transfer size); the plan records the measured sizes. The subset
+  MUST be reproducible exactly as Inter's is (feature 018): a one-off recipe script beside
+  Inter's records the upstream release version, its download URL and checksum, the source files
+  taken from it, the character set, the subsetting tool with its pinned version and options, and
+  the output checksums. The tool is run on demand on a workstation, never added as a package
+  dependency or a CI step.
 - **FR-004**: Code text drawn in the monospace face MUST use its real italic and bold faces,
   never a browser-synthesized slant or weight. Fallback text keeps the browser's default
-  synthesis, as for Inter.
+  synthesis, as for Inter. The italic faces exist for code inside emphasis (`em`); no meaning in
+  code is conveyed by italic alone, and syntax highlighting (comments included) does not use
+  italic (FR-009).
 - **FR-005**: Font files MUST be committed to the repository and served from the site's own
-  origin, through the same first-party mechanism the site already uses for Inter. The site MUST
-  NOT request fonts or stylesheets from a font service or any third party.
+  origin, through the same first-party mechanism the site already uses for Inter: Astro's Fonts
+  API with local files (feature 018 FR-004; its research names the Astro documentation pages).
+  On every page template, the site MUST NOT request fonts or stylesheets from a font service or
+  any third party, and MUST NOT add a preconnect, DNS-prefetch or other resource hint to another
+  origin.
 - **FR-006**: While the monospace face loads, or if it fails, code MUST be visible in a system
-  monospace fallback stack, using `font-display: swap`. Metric-adjusted fallback faces SHOULD
-  be used where the platform supports them for this face, so the swap does not shift layout; the
-  swap MUST NOT push any page over the existing cumulative layout shift budget (CLS below 0.1).
+  monospace fallback stack, using `font-display: swap`. The stack is Tailwind's default
+  monospace families in order (`ui-monospace`, `SFMono-Regular`, `Menlo`, `Monaco`, `Consolas`,
+  `"Liberation Mono"`, `"Courier New"`), ending with the generic `monospace`, so every platform,
+  Linux included, draws code in a monospace face; the plan states the exact order. Astro's
+  optimized (metric-adjusted) fallback faces MUST be generated for the face from the stack's
+  families whose metrics Astro knows (Courier New), and they come first in the stack; they apply
+  where the visitor has that font. Elsewhere (most Linux machines) code shows in the rest of the
+  stack at its normal metrics and the swap is unadjusted, as for Inter (feature 018). The swap
+  MUST NOT push any page over the existing cumulative layout shift budget (CLS below 0.1),
+  measured as feature 018 FR-006 defines: each page's own CLS in the budget test under its
+  FR-007 conditions (Chromium, 390 × 844, simulated slow 4G), which include the code-bearing
+  post template. If CLS fails without a preload, the work stops and Don is told; a preload is
+  not added to fix it (FR-007). A font that fails to load leaves the page fully usable and
+  within FR-012.
 - **FR-007**: The monospace faces MUST NOT be preloaded, because most pages draw no code. A page
-  that draws no code MUST request no monospace font file, and a page MUST request each face at
-  most once. Inter's preloads are unchanged.
+  draws code in a face when it has visible text in `code`, `pre`, `kbd` or `samp` (or their
+  descendants) whose computed weight and style select that face by standard font matching
+  (FR-004 and the weight edge case) and whose characters fall in the shipped set. A page MUST
+  request only the faces it draws: a page that draws no code MUST request no monospace font
+  file, and a page with code but no italic or bold code MUST NOT request those faces. A page
+  MUST request each face at most once, counted as requests to that face's file in one page load
+  with the browser cache disabled, as the font-request test counts them. Inter's preloads are
+  unchanged.
 - **FR-008**: Every page MUST stay within the existing performance budget (150 KB total transfer
   per page on simulated slow 4G, LCP 2.5 s, CLS below 0.1, long tasks 200 ms, JavaScript 10 KB),
   measured exactly as feature 018's FR-007 defines, with every face a page draws counted. No
-  budget limit is raised in this feature. If a page cannot fit, implementation halts before the
+  budget limit is raised in this feature. The budget template that draws code is the post
+  template, and the plan also estimates the worst case of a page drawing all four monospace
+  faces; implementation records the measured total for the code-bearing template and for the
+  heaviest page in the pull request. If a page cannot fit, implementation halts before the
   pull request and Don is told which page failed, its measured bytes and their breakdown.
 - **FR-009**: Code size, colours, syntax-highlight colours, background, padding, border and line
-  height MUST stay as they are today. No highlight class gains a font style or weight.
+  height MUST stay as they are today, for `kbd` (its box shadow and boundaries) and `samp` as for
+  `code` and `pre`, so existing contrast ratios carry over to both themes. Code keeps today's
+  relative font sizes; the font sets no size of its own. No syntax-highlight class (the `hl-*`
+  classes in the global stylesheet and the highlighter's token spans) gains a font style or
+  weight.
 - **FR-010**: The Content Security Policy MUST continue to allow the fonts with no violation and
   MUST NOT be loosened. The only permitted change in the built policy is any `sha256-` hash for
   the generated font style; no source, keyword or directive is added or changed in either the
-  page policy or the header policy.
-- **FR-011**: Monospace font files MUST be emitted with fingerprinted filenames and served with
-  the same one-year immutable cache header as the Inter files, through the existing
-  font-directory rule; no other build file's caching changes.
-- **FR-012**: Every page MUST continue to meet WCAG 2.2 AA, including reflow at 320 CSS px and
-  200% zoom with no horizontal page scroll, resize text, the 1.4.12 text-spacing overrides, and
-  visible, unobscured focus on scrollable code blocks, in light and dark themes and in
-  forced-colours mode.
-- **FR-013**: The font licence MUST be committed alongside the font files, unmodified and with
-  its copyright notice, kept distinct from Inter's licence file.
+  page policy or the header policy. A violation is any CSP error the browser reports on a page
+  template, as feature 018 FR-009 defines it.
+- **FR-011**: Monospace font files MUST be emitted with fingerprinted (content-hashed) filenames
+  and served with the same header as the Inter files, `Cache-Control: public, max-age=31536000,
+  immutable`, through the existing `/_astro/fonts/*` rule (feature 018 FR-015). When a face's
+  content changes, its hash and URL change, so the immutable cache never serves a stale face.
+  `public/_headers` is not edited, so no other build file's caching changes.
+- **FR-012**: Every page MUST continue to meet WCAG 2.2 AA, with the shipped face and with the
+  fallback, including: reflow at 320 CSS px and 200% zoom with no horizontal page scroll (code
+  blocks may scroll sideways inside their own card, as two-dimensional content WCAG 1.4.10
+  allows, but the page itself must not); resize text (1.4.4), since code sizes stay in today's
+  relative units and browser text-size and minimum-size settings apply as today; no loss of
+  content under the 1.4.12 text-spacing overrides, applied to code in the monospace face as to
+  Inter; and visible, unobscured focus (2.4.7, 2.4.11) on scrollable code blocks, including
+  blocks that start scrolling because of the wider face. These hold with the same pass criteria
+  in light and dark themes and in forced-colours mode.
+- **FR-013**: The font licence MUST be committed in the same directory as the monospace font
+  files, as the release's own `OFL.txt` byte for byte (its checksum recorded in the recipe),
+  including its copyright notice, kept distinct from Inter's licence file. This mirrors feature
+  018 FR-013, which keeps Inter's unmodified licence beside the Inter files. The OFL requires the
+  licence to travel with the font files, not a user-visible credit; as for Inter, no credit or
+  colophon is added to the site.
 - **FR-014**: The character guard test from feature 018 MUST also cover code text in the visual
   subjects: it fails when a visual subject draws, in code, a character outside the monospace
-  shipped set, naming the character, its code point and its file, unless the character is in the
-  test's named exclusion list with a reason. Real site content is not checked.
+  shipped set, naming the character, its code point, its file and the family it is missing from,
+  unless the character is in the test's named exclusion list with a reason (feature 018's list:
+  emoji, box drawing, the soft hyphen and line-break whitespace). Real site content is not
+  checked.
 - **FR-015**: Every visual baseline whose subject draws code text MUST be regenerated on both
-  platforms as a predicted change, and no other baseline may change. macOS baselines come from
+  platforms as a predicted change, and no other baseline may change. Before regenerating, the
+  plan lists the code-bearing subjects and their image files, found by searching every source
+  the subjects draw for code markup; after regenerating, the changed images in git MUST be
+  exactly that list. macOS baselines come from
   `pnpm run test:visual:update` and Linux baselines from `pnpm run test:visual:update:linux` in
   Docker; the visual project MUST pass on both, and the Docker-generated Linux baselines MUST
-  pass CI on the first run. Visual shots MUST wait for the monospace faces a subject draws, as
-  they already wait for Inter, so no shot is taken mid-swap. If the Docker baselines fail CI,
+  pass CI on the first run. Visual shots MUST wait, as they already wait for Inter, until every
+  monospace face that the subject's code text needs (by FR-007's rule) has loaded, so no shot is
+  taken mid-swap; a subject with no code waits for no monospace face. If the Docker baselines fail CI,
   the cause is investigated within this feature as feature 018's FR-011 describes; CI-artifact
   baselines are not landed without telling Don.
 - **FR-016**: Fonts MUST load and apply with JavaScript turned off and MUST add no client-side
   script.
 - **FR-017**: The change MUST add no recurring cost, no new external service and no new package
-  dependency, and MUST NOT touch the contact form, the contact API, any data collection or
+  dependency, not even for tooling (the subsetting tool runs as a pinned one-off outside
+  `package.json`, FR-003), and MUST NOT touch the contact form, the contact API, any data collection or
   storage, or any secret.
 
 ### Key Entities
@@ -243,13 +331,17 @@ locally on macOS and in CI on Linux on the first run.
 - **SC-004**: Every page measured by the budget test stays at or under 150 KB (153,600 bytes)
   total transfer, with LCP, CLS, long-task and JavaScript limits unchanged.
 - **SC-005**: The four monospace files total at most 60,000 bytes.
-- **SC-006**: The accessibility checks report zero violations on every page template, at both
-  widths and in both themes, unchanged from today.
+- **SC-006**: The accessibility checks (as feature 018 SC-005 lists them: axe with every WCAG
+  2.0, 2.1 and 2.2 A and AA tag, plus the reflow, zoom, text-spacing, forced-colours and focus
+  checks) report zero violations on every page template in the shared template list, at phone
+  and desktop widths and in both themes, unchanged from today.
 - **SC-007**: The refreshed baselines are exactly the code-bearing subjects on both platforms
   (zero other baselines changed), and Docker-generated Linux baselines pass CI's visual project
   on the first run at the unchanged comparison threshold. Every changed region is explained by
   the code typeface (glyph shapes and widths, and the wrapping and box sizes they cause).
-- **SC-008**: Running costs are unchanged ($0 added per month).
+- **SC-008**: Running costs are unchanged ($0 added per month): no new service or runtime
+  dependency, and four static files of about 32 KB served from Workers static assets within
+  the free plan.
 
 ## Assumptions
 

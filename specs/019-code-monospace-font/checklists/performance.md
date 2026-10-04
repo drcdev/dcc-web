@@ -8,41 +8,41 @@
 
 ## Loading Behaviour
 
-- [ ] CHK001 - Is "a page fetches a code face only when it draws code in that face" defined precisely enough to decide, per face, which pages request it? [Clarity, Spec §FR-007]
-- [ ] CHK002 - Is the no-preload rule stated together with its rationale and an explicit statement that Inter's preloads are unchanged? [Completeness, Spec §FR-007]
-- [ ] CHK003 - Is the requirement that a page requests each face at most once measurable, and is the way it is counted defined? [Measurability, Spec §FR-007]
-- [ ] CHK004 - Is it clear whether pages with code but no italic or bold code are required to skip the italic and bold faces? [Ambiguity, Spec §US2, §FR-007]
-- [ ] CHK005 - Is the behaviour for pages that draw code only after navigation or view transitions defined? [Gap, Edge Case]
-- [ ] CHK006 - Is the stop-and-report path when CLS fails without preload specified as the only response (no silent preload)? [Clarity, Plan Risks, Spec §FR-007]
+- [x] CHK001 - Is "a page fetches a code face only when it draws code in that face" defined precisely enough to decide, per face, which pages request it? [Clarity, Spec §FR-007]
+- [x] CHK002 - Is the no-preload rule stated together with its rationale and an explicit statement that Inter's preloads are unchanged? [Completeness, Spec §FR-007]
+- [x] CHK003 - Is the requirement that a page requests each face at most once measurable, and is the way it is counted defined? [Measurability, Spec §FR-007]
+- [x] CHK004 - Is it clear whether pages with code but no italic or bold code are required to skip the italic and bold faces? [Ambiguity, Spec §US2, §FR-007]
+- [x] CHK005 - Is the behaviour for pages that draw code only after navigation or view transitions defined? [Gap, Edge Case]
+- [x] CHK006 - Is the stop-and-report path when CLS fails without preload specified as the only response (no silent preload)? [Clarity, Plan Risks, Spec §FR-007]
 
 ## Budget Headroom
 
-- [ ] CHK007 - Is the 150 KB (153,600 byte) per-page budget stated with the same measurement method as feature 018, with a reference to where that method is defined? [Traceability, Spec §FR-008]
-- [ ] CHK008 - Is the 60,000-byte cap on the four faces defined by a single unambiguous unit (raw bytes of the shipped files, not transfer size)? [Clarity, Spec §FR-003, §SC-005]
-- [ ] CHK009 - Are the worst-case pages (code with italic, bold and bold-italic all drawn) identified as the budget subjects, not just the typical page? [Coverage, Spec §FR-008]
-- [ ] CHK010 - Is the headroom on the heaviest code-bearing page quantified, given the plan's estimate is unmeasured? [Measurability, Plan Risks]
-- [ ] CHK011 - Is the halt-and-tell-Don behaviour on a failed budget or size cap defined with the data to report (page, bytes, breakdown)? [Completeness, Spec §FR-008, §Assumptions]
-- [ ] CHK012 - Is it stated that LCP, long-task and JavaScript limits are unchanged and that no budget limit is raised? [Consistency, Spec §FR-008, §SC-004]
+- [x] CHK007 - Is the 150 KB (153,600 byte) per-page budget stated with the same measurement method as feature 018, with a reference to where that method is defined? [Traceability, Spec §FR-008]
+- [x] CHK008 - Is the 60,000-byte cap on the four faces defined by a single unambiguous unit (raw bytes of the shipped files, not transfer size)? [Clarity, Spec §FR-003, §SC-005]
+- [x] CHK009 - Are the worst-case pages (code with italic, bold and bold-italic all drawn) identified as the budget subjects, not just the typical page? [Coverage, Spec §FR-008]
+- [x] CHK010 - Is the headroom on the heaviest code-bearing page quantified, given the plan's estimate is unmeasured? [Measurability, Plan Risks]
+- [x] CHK011 - Is the halt-and-tell-Don behaviour on a failed budget or size cap defined with the data to report (page, bytes, breakdown)? [Completeness, Spec §FR-008, §Assumptions]
+- [x] CHK012 - Is it stated that LCP, long-task and JavaScript limits are unchanged and that no budget limit is raised? [Consistency, Spec §FR-008, §SC-004]
 
 ## Layout Shift and Fallback
 
-- [ ] CHK013 - Is "where the platform supports them" for metric-adjusted fallbacks bounded, so the SHOULD is checkable? [Ambiguity, Spec §FR-006]
-- [ ] CHK014 - Are fallback metric requirements consistent for Linux visitors without the adjusted fallback's base font? [Consistency, Plan Risks]
-- [ ] CHK015 - Is the CLS requirement defined for code-bearing pages specifically, on mobile, with the measurement conditions named? [Measurability, Spec §FR-006]
+- [x] CHK013 - Is "where the platform supports them" for metric-adjusted fallbacks bounded, so the SHOULD is checkable? [Ambiguity, Spec §FR-006]
+- [x] CHK014 - Are fallback metric requirements consistent for Linux visitors without the adjusted fallback's base font? [Consistency, Plan Risks]
+- [x] CHK015 - Is the CLS requirement defined for code-bearing pages specifically, on mobile, with the measurement conditions named? [Measurability, Spec §FR-006]
 
 ## Cache Headers
 
-- [ ] CHK016 - Is the one-year immutable cache requirement tied to the existing font-directory rule, with the exact header value or a pointer to it? [Traceability, Spec §FR-011]
-- [ ] CHK017 - Is it stated that fingerprinted filenames change when file content changes, so immutable caching is safe? [Completeness, Spec §FR-011]
-- [ ] CHK018 - Is the requirement that no other build file's caching changes testable? [Measurability, Spec §FR-011]
+- [x] CHK016 - Is the one-year immutable cache requirement tied to the existing font-directory rule, with the exact header value or a pointer to it? [Traceability, Spec §FR-011]
+- [x] CHK017 - Is it stated that fingerprinted filenames change when file content changes, so immutable caching is safe? [Completeness, Spec §FR-011]
+- [x] CHK018 - Is the requirement that no other build file's caching changes testable? [Measurability, Spec §FR-011]
 
 ## Content Security Policy
 
-- [ ] CHK019 - Is the permitted CSP change (an added `sha256-` hash only) defined for both the page policy and the header policy? [Clarity, Spec §FR-010]
-- [ ] CHK020 - Is "no violation" defined as an observable criterion (for example console or report events on code pages)? [Measurability, Spec §FR-010]
-- [ ] CHK021 - Is the requirement that the policy is not loosened consistent with the claim that no source or directive is added? [Consistency, Spec §FR-010]
+- [x] CHK019 - Is the permitted CSP change (an added `sha256-` hash only) defined for both the page policy and the header policy? [Clarity, Spec §FR-010]
+- [x] CHK020 - Is "no violation" defined as an observable criterion (for example console or report events on code pages)? [Measurability, Spec §FR-010]
+- [x] CHK021 - Is the requirement that the policy is not loosened consistent with the claim that no source or directive is added? [Consistency, Spec §FR-010]
 
 ## Rendering Without Scripts
 
-- [ ] CHK022 - Is it stated that no client-side script is added and the JavaScript budget is unchanged? [Consistency, Spec §FR-016, §FR-008]
-- [ ] CHK023 - Are programming ligatures required to be off in a way that does not depend on features dropped from the subset (both disabled and not shipped)? [Clarity, Spec §FR-003]
+- [x] CHK022 - Is it stated that no client-side script is added and the JavaScript budget is unchanged? [Consistency, Spec §FR-016, §FR-008]
+- [x] CHK023 - Are programming ligatures required to be off in a way that does not depend on features dropped from the subset (both disabled and not shipped)? [Clarity, Spec §FR-003]
