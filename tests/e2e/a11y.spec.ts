@@ -6,9 +6,9 @@
 // FR-027, SC-002; contracts/verify-gate.md).
 //
 // Carried forward from the placeholder: one main, one h1 and no skipped
-// heading levels, a non-empty title, lang="en", no horizontal scroll at 320 px
-// and at 200% zoom, readable without JavaScript, and a first Tab stop with an
-// accessible name and a visible focus style (now the skip link).
+// heading levels, a non-empty title, lang="en", no horizontal scroll at
+// 200% zoom (the 320 px check lives in geometry.spec.ts), readable without JavaScript, and a
+// first Tab stop with an accessible name and a visible focus style (now the skip link).
 // Deliberately dropped (they contradict this feature's spec; listed for the
 // PR description, T097): "has no non-text content" and "first Tab stop is the
 // link to the current site".
@@ -163,12 +163,6 @@ for (const template of TEMPLATES) {
     test('has lang="en" on the root element', async ({ page }) => {
       await page.goto(template.path);
       await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    });
-
-    test("reflows without horizontal scroll at 320 CSS px wide", async ({ page }) => {
-      await page.setViewportSize({ width: 320, height: 640 });
-      await page.goto(template.path);
-      await expectNoHorizontalScroll(page);
     });
 
     test("reflows without horizontal scroll at 200% zoom", async ({ page }) => {

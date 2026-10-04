@@ -293,7 +293,7 @@ and `tests/e2e/projects.spec.ts`.
 | `pages.spec.ts` "does not scroll sideways at 320/390/1280px" for `/`, `/services/`, `/speaking/`, `/about/`, `/privacy-policy/`, `/terms-of-use/` and `/technology/`: 21 tests, height 800 | `geometry.spec.ts` at narrow, phone and desktop for the same seven templates (heights 640, 844 and 800). At a fixed width, horizontal scroll does not depend on height. `/privacy/tempo/` is not a template, so it keeps its three tests in `pages.spec.ts`. |
 | `projects.spec.ts` "does not scroll sideways at 320/390/1280px" on `/projects/`: 3 tests | `geometry.spec.ts` `projects` at narrow, phone and desktop. |
 
-- [ ] done
+- [x] done
 
 ### W3 — Focus-ring probes that prove a real ring in dark mode
 
