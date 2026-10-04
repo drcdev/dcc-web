@@ -11,6 +11,7 @@ import { extname, join, normalize } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { test, expect, type BrowserContext, type Page } from "@playwright/test";
 import { buildFixtureSite, type FixtureSiteResult } from "../build/fixture-site.ts";
+import { expectThemeClass, setTheme } from "./color-theme.ts";
 
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"];
 const THEMES = ["dark", "light"] as const;
@@ -93,16 +94,6 @@ async function serveDist(context: BrowserContext, dist: string, transform?: (htm
   });
 }
 
-async function setTheme(page: Page, theme: "dark" | "light") {
-  await page.addInitScript((value) => {
-    try {
-      localStorage.setItem("color-theme", value);
-    } catch {
-      // Storage unavailable: the page falls back to dark.
-    }
-  }, theme);
-}
-
 async function open(page: Page, target: Target, options: { stripped?: boolean } = {}) {
   if (target.dist) {
     await serveDist(page.context(), target.dist(), options.stripped ? stripScripts : undefined);
@@ -140,7 +131,7 @@ for (const target of TARGETS) {
           await page.setViewportSize({ width: size.width, height: size.height });
           await setTheme(page, theme);
           await open(page, target);
-          await expect(page.locator("html")).toHaveClass(theme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
+          await expectThemeClass(page, theme);
           await expectNoAxeViolations(page);
         });
       }

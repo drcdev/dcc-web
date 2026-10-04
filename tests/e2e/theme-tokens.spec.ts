@@ -18,18 +18,18 @@
 // (reduced motion is on as well, so none runs). The page then loses or gains the `dark` class in
 // place, with no reload, and every probe is checked again against the other theme's token.
 //
-// Two notes on the probe tables:
+// Focus rings: in dark mode the prose link and its ring share `accent-400`, and a ring that
+// falls back to `currentColor` (no `outline-color` rule) would read the same colour. So the
+// focus probes also prove that the ring is the site's rule and not `currentColor`: no outline
+// before focus, the site's ring shape after it, and a ring colour that ignores the text colour.
+//
+// A note on the probe tables:
 // - The site has no callout component (post row P19 uses `Callout` only as an example of an
 //   unknown section tag), so the prose blockquote, the one set-apart block of text a post
 //   renders, stands in for "callouts".
-// - The call-to-action button is `bg-rust-600 text-white` in both themes: it has no `dark:`
-//   variant today. Its light and dark tokens are therefore equal here, so the test pins it as
-//   theme-invariant and an accidental flip fails. Giving it a dark variant would be a design
-//   change, which is outside this test.
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { FIXTURE_SITE } from "./templates";
-
-type Theme = "light" | "dark";
+import { expectThemeClass, setTheme, type Theme } from "./color-theme.ts";
 
 /** A token name (`dusk-200` is `--color-dusk-200`) or the literal `transparent`. */
 type Token = string;
@@ -89,13 +89,12 @@ const PAGES: Page_[] = [
         first: true,
         props: { color: ["mauve-600", "mauve-400"] },
       },
-      // Theme-invariant by design today (see the head comment).
       {
         name: "CTA button",
         selector: "main a",
         hasText: "Get in touch",
         first: true,
-        props: { "background-color": ["rust-600", "rust-600"], color: ["white", "white"] },
+        props: { "background-color": ["rust-600", "rust-300"], color: ["white", "dusk-900"] },
       },
       {
         name: "CTA button focus ring",
@@ -104,6 +103,20 @@ const PAGES: Page_[] = [
         first: true,
         focus: true,
         props: { "outline-color": ["accent-500", "accent-400"] },
+      },
+    ],
+  },
+  {
+    path: "/",
+    ready: async (page) => {
+      await expect(page.locator("[data-theme-switch]")).toBeVisible();
+    },
+    probes: [
+      {
+        name: "home intro CTA button",
+        selector: 'main section a[href="/services/"]',
+        first: true,
+        props: { "background-color": ["rust-600", "rust-300"], color: ["white", "dusk-900"] },
       },
     ],
   },
@@ -224,17 +237,6 @@ const PAGES: Page_[] = [
   },
 ];
 
-/** Writes the colour theme before the first paint, as the site's own script reads it. */
-async function startIn(page: Page, theme: Theme) {
-  await page.addInitScript((value) => {
-    try {
-      localStorage.setItem("color-theme", value);
-    } catch {
-      // Storage unavailable: the page falls back to dark.
-    }
-  }, theme);
-}
-
 /**
  * The computed colour of a design-system token, read from a throwaway element. Setting the
  * property through the CSSOM is allowed by the site's CSP (setAttribute("style") is not). The
@@ -259,17 +261,38 @@ function subject(page: Page, probe: Probe): Locator {
   return probe.first ? found.first() : found;
 }
 
+/**
+ * Proves a focused element shows the site's own ring. The shape is the site's rule
+ * (`outline-2 outline-offset-2`), not Chromium's default (`auto`, 1px, offset 0). The colour is
+ * read again after the text colour is overridden in place, because a ring that falls back to
+ * `currentColor` follows it and a token ring does not.
+ */
+async function expectRealRing(locator: Locator, ringColour: string, label: string) {
+  await expect(locator, `${label} outline-style`).toHaveCSS("outline-style", "solid");
+  await expect(locator, `${label} outline-width`).toHaveCSS("outline-width", "2px");
+  await expect(locator, `${label} outline-offset`).toHaveCSS("outline-offset", "2px");
+  await locator.evaluate((el) => (el as HTMLElement).style.setProperty("color", "rgb(1, 2, 3)"));
+  await expect(locator, `${label} outline follows the text colour`).toHaveCSS("outline-color", ringColour);
+  await locator.evaluate((el) => (el as HTMLElement).style.removeProperty("color"));
+}
+
 /** Checks every probe of a page against one theme's tokens. */
 async function expectTheme(page: Page, probes: Probe[], theme: Theme) {
   const index = theme === "light" ? 0 : 1;
-  await expect(page.locator("html")).toHaveClass(theme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
+  await expectThemeClass(page, theme);
   for (const probe of probes) {
     const locator = subject(page, probe);
     await expect(locator, `${probe.name} is on the page`).toHaveCount(1);
-    if (probe.focus) await locator.focus();
+    if (probe.focus) {
+      await expect(locator, `${probe.name} has no outline before focus (${theme})`).toHaveCSS("outline-style", "none");
+      await locator.focus();
+    }
     for (const [property, tokens] of Object.entries(probe.props)) {
       const expected = await colourOf(page, tokens[index]!);
       await expect(locator, `${probe.name} ${property} (${theme}, --color-${tokens[index]})`).toHaveCSS(property, expected);
+      if (probe.focus && property === "outline-color") {
+        await expectRealRing(locator, expected, `${probe.name} (${theme})`);
+      }
     }
     if (probe.focus) await locator.blur();
   }
@@ -297,7 +320,7 @@ for (const { path, ready, probes } of PAGES) {
     test(`${path} resolves theme tokens, ${from} then ${to}`, async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.emulateMedia({ reducedMotion: "reduce" });
-      await startIn(page, from);
+      await setTheme(page, from);
       await page.goto(`${FIXTURE_SITE}${path}`);
       await ready(page);
 

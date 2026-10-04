@@ -21,9 +21,9 @@ gate times (see "Measured gate times").
 | Build, `build` | `pnpm run test:build`, Vitest `build` project, `buildFixtureSite(...)` (default mode) | What the real build does: route generation, `getStaticPaths()` checks, render-time component checks, Astro's own errors (body image import), draft exclusion per environment, CSP and indexing output, code highlighting, cross-page output. Tens of seconds per run. | One build per fixture set, many assertions read from it | Thin to what only a build can show. |
 | Worker integration | `pnpm run test:worker`, `vitest-pool-workers` | The contact API against local D1 | Per endpoint | Keep. |
 | Real `astro build` | `tests/build/indexing.test.ts`, which runs `astro build` on the repository's own content in the main-branch and preview environments, plus `pnpm run build`, which runs in the `e2e` job in CI and in the local `verify` script. `indexing.test.ts` also runs on content-only changes, through `pnpm run test:build:content`. | That the real site builds and that its sitemap, robots and headers match the environment | Two environments | Keep. |
-| E2E | Playwright `e2e` and sibling projects, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Journeys in a real browser: navigation, theme, menu, contact submission, not-found, behaviour without JavaScript, layout geometry per template (no sideways scroll, no element wider than the viewport, header and footer clear of the main content), the theme token each key component resolves to in both themes (`theme-tokens.spec.ts`) | Journeys, plus the template matrix | Keep journeys; review matrices (#40). |
+| E2E | Playwright `e2e` and sibling projects, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Journeys in a real browser: navigation, theme, menu, contact submission, not-found, behaviour without JavaScript, layout geometry per template at 320, 390 and 1280 px (no sideways scroll, no element wider than the viewport, header and footer clear of the main content), the theme token each key component resolves to in both themes (`theme-tokens.spec.ts`) | Journeys, plus the template matrix | Keep journeys; review matrices (#40). |
 | Accessibility | Playwright `a11y` projects (axe), `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | WCAG 2.2 AA per template, both widths, both themes | Full template matrix | Keep (Principle X). |
-| Visual | Playwright `visual` project, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Pixel baselines of the design system: the shell (header, footer, open mobile menu), the not-found page, and on the fixture site the sections page, the post and story templates, the listing cards, the lead story, a series banner, two projects index rows and the contact form. Never real content. | Per platform | Keep, blocking. A diff is a design-system change (Principle III). Real-content shots removed in #40 phase 1; fixture template shots added in phase 2; see "Visual coverage". |
+| Visual | Playwright `visual` project, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Pixel baselines of the design system: the shell (header, footer, open mobile menu), the not-found page, and on the fixture site the sections page, the post and story templates, the listing cards, the lead story, a series banner, four projects index rows (shipped, experiment, draft and in progress) and the contact form. Never real content. | Per platform | Keep, blocking. A diff is a design-system change (Principle III). Real-content shots removed in #40 phase 1; fixture template shots added in phase 2; see "Visual coverage". |
 | Budget | Playwright `budget` project, `pnpm run test:budget` | LCP, CLS, long tasks and bytes under throttling | Per template, own invocation with one worker (`pnpm run test:budget`) | Keep. Slow by design. |
 | Preview site-check | `scripts/site-check`, run against the preview deployment | Sitemap and links on the deployed preview | Once per PR; the crawl runs in the `e2e` job on pull requests | Keep. |
 
@@ -121,7 +121,11 @@ shots were removed in #40 phase 1, so a content edit cannot fail it. The geometr
 contrast checks and the existing e2e and build content tests took over what each one guarded.
 Phase 2 added element shots of the fixture post and story templates, the listing cards, the
 lead story, the Drift series banner, two projects index rows and the contact form. Each is an
-element on fixture content, so a content edit still cannot fail the project.
+element on fixture content, so a content edit still cannot fail the project. #48 added the draft
+and in-progress projects index rows, making four.
+The project also sets the footer year to 2026 before every shot (`tests/e2e/footer-year.ts`), so
+a new calendar year cannot fail it; the real year is checked by `SiteFooter.test.ts` and
+`shell.spec.ts`.
 
 | Removed subject (4 images per platform) | Where its coverage lives now |
 |---|---|
@@ -133,7 +137,7 @@ element on fixture content, so a content edit still cannot fail the project.
 | `writing-topic` | As `writing-landing`, including the card snapshot. |
 | `writing-post` | Shell snapshots; geometry test (includes the code block and table scroll containers); `a11y` (`blog.a11y.spec.ts`, `blog-fixture.a11y.spec.ts`); Copy button and table region: `blog.spec.ts`; forced colours: `blog-forced-colors.spec.ts`. Post template pixels: `post-template`, the article of the fixture post `/writing/every-part/`. Related posts are left out because they are chosen from all posts; their cards are the `listing-cards` component. |
 | `writing-series` | Shell snapshots; geometry test; `a11y`; series intro and links: `blog.spec.ts`. Series banner pixels: `series-banner` on the fixture `/writing/drift/` (banner element only). |
-| `projects` | Shell snapshots; geometry test; `a11y`; two-column and one-column rows: `projects.spec.ts`; fixture listings: `projects-fixtures.spec.ts`. Projects index row pixels: `project-row-minimal` and `project-row-every-setting` (row elements only; the fixture index also lists real draft rows). |
+| `projects` | Shell snapshots; geometry test; `a11y`; two-column and one-column rows: `projects.spec.ts`; fixture listings: `projects-fixtures.spec.ts`. Projects index row pixels: `project-row-minimal`, `project-row-every-setting`, `project-row-draft` and `project-row-in-progress` (row elements only; the fixture index also lists the real rows, which the test removes). |
 | `project-story` | Shell snapshots; geometry test (reduced motion, final state); `a11y`; part layout at 390 and 1280, comparison region and invitation: `projects.spec.ts`; motion: `projects-motion.spec.ts`; forced colours: `projects-forced-colors.spec.ts`; no-JS: `projects-no-js.spec.ts`. Story template pixels: `story-template`, the article of the fixture story `/projects/every-part/`, with reduced motion. |
 
 Every phase-1 gap now has a fixture snapshot, except the home intro card, which is review-only
@@ -149,6 +153,13 @@ class without a reload to prove the class alone drives the value. The site has n
 component, so the prose blockquote stands in for "callouts". The CTA button is theme-invariant
 by design (`bg-rust-600 text-white`, no `dark:` variant), so the test pins it equal in both
 themes.
+
+The focus-ring probes also check that the ring is the site's own rule (solid, 2px, offset 2px,
+and no outline before focus) and that it keeps its token colour when the text colour is
+overridden in place. That matters in dark mode, where the prose link and its ring share
+`accent-400`, so a ring that fell back to `currentColor` would otherwise pass. The specs that
+need a colour theme before first paint share one helper, `tests/e2e/color-theme.ts`
+(`setTheme`, `expectThemeClass`), instead of each carrying a copy.
 
 ### Check functions and call sites
 
@@ -408,3 +419,18 @@ Before and after are both `main` push runs, so they compare directly. The PR's o
 (37146278538) had 437 s for the job and 311 s for the step. Across the whole of #40, the `e2e` job
 went from 473 s to 447 s and the run (first job start to `verify` end) from 500 s to 465 s.
 Each figure is a single run.
+
+### Playwright theme and layout tidy, #49 (2026-10-03)
+
+| Measure | Before (run 37168636278, `main` push of #58) | After |
+|---|---|---|
+| `e2e` job | 449 s | 394 s (6 min 34 s), run 37169411244 (PR #59, first run) |
+| `test:e2e:parallel` step | 320 s | 269 s (4 min 29 s), same run |
+| E2E tests | 617 | 611 |
+| Accessibility tests | 626 | 608 |
+| All Playwright tests (`--list`, five local projects) | 1429 | 1405 |
+
+The tidy moved the colour-theme helper into one file and folded the sideways-scroll checks into
+the geometry test, which now runs at 320, 390 and 1280 px. The a11y 320 px reflow check went
+with it. Counts are from `playwright test --list` on the branch after merging `main` at #58;
+the visual (58), sections (55) and budget (73) projects are unchanged.
