@@ -61,12 +61,24 @@ each diagram's own 1200×480 `viewBox`.
 | Cadence | Supabase | 40, 160; 108 / 148 | 40, **194**; 108 / 148 / 182 | "sync and AI routines," / "when online" | unchanged: `M754 220 L852 130` ends on the box side (40 to 234) |
 | Cadence | Apple Watch | 280, 160; 348 / 388 | **256**, **194**; 324 / 364 / 398 | "via a Shortcuts" / "handoff, optional" | unchanged: `… V360` ends on the box side (256 to 450). Moved up 24 to keep a 30-unit bottom margin; 22 units clear below Supabase |
 | Tempo | Apple Health | 280, 160; 348 / 388 | **256**, **194**; 324 / 364 / 398 | "or Health Connect," / "optional" | unchanged: `M754 260 L852 350` ends on the box side (256 to 450). Moved up 24 for the 30-unit bottom margin; 56 units clear below Supabase |
-| Flux | Flux theme | 150, 180; 222 / 262 / 296 | 150, **214**; 222 / 262 / 296 / 330 | "Handlebars," / "Tailwind v4" / "two newsletter streams" | unchanged (`M344 240 H442`, `M754 240 H852` at y 240) |
-| Flux | AI analysis | 150, 180; 222 / 262 / 296 | 150, **214**; 222 / 262 / 296 / 330 | "Supabase Edge" / "Functions" / "optional, member tiers" | unchanged |
+| Flux | Ghost | 150, 180; 222 / 262 / 296 | 150, **248**; 222 / 262 / 296 / 330 / 364 | "hosted on" / "Magic Pages" / "posts, members," / "routes" | unchanged (`M344 240 H442` at y 240) |
+| Flux | Flux theme | 150, 180; 222 / 262 / 296 | 150, **248**; 222 / 262 / 296 / 330 / 364 | "Handlebars," / "Tailwind v4" / "two newsletter" / "streams" | unchanged (`M344 240 H442`, `M754 240 H852` at y 240) |
+| Flux | AI analysis | 150, 180; 222 / 262 / 296 | 150, **248**; 222 / 262 / 296 / 330 / 364 | "Supabase Edge" / "Functions" / "optional," / "member tiers" | unchanged |
+| drcdev.github.io | Project entries | 150, 180; 222 / 262 / 296 | 150, **214**; 222 / 262 / 296 / 330 | "one TypeScript file" / "Markdown" / "descriptions" | unchanged (`M344 240 H442` at y 240) |
+| drcdev.github.io | Next.js | 150, 180; 222 / 262 / 296 | 150, **214**; 222 / 262 / 296 / 330 | "static export" / "Tailwind v4," / "ASCII look" | unchanged |
+| Focus Pocus | Focus Pocus | 150, 180; 230 / 272 | 150, **214**; 230 / 272 / 306 | "MCP server," / "35+ tools" | unchanged |
 
-Every other box, label, colour, arrow and the drcdev.github.io, Focus Pocus and template diagrams
-keep their geometry. Each wrapped line is its own `<text>` element at the box's centre `x`, as the
-existing lines are.
+The last three rows and the Flux Ghost row were added after CI (PR #80) showed Linux Chromium
+renders Inter about 3.4 units wider than macOS Chromium at 24 px: Flux "posts, members, routes"
+measured 16.35 units each side on macOS and 13.00 on Linux. Every label with under 8 units of
+slack beyond the 16-unit rule on macOS was wrapped, so there are now 13 wrapped labels (the
+extra ones: Flux "posts, members, routes", "hosted on Magic Pages" and, re-split, "two newsletter
+streams" and "optional, member tiers"; drcdev.github.io "Markdown descriptions" and "Tailwind v4,
+ASCII look"; Focus Pocus "MCP server, 35+ tools"). The three Flux boxes stay equal in height.
+
+Every other box, label, colour, arrow and the drcdev.github.io GitHub Pages box, Claude Desktop,
+OmniFocus and template diagram boxes keep their geometry. Each wrapped line is its own `<text>`
+element at the box's centre `x`, as the existing lines are.
 
 ## Sharing image source
 

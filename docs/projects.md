@@ -135,7 +135,8 @@ The `fonts:diagrams` script does not check that a label fits. The browser test
 of clear space each side of a label and for labels that overlap.
 
 - Keep each diagram file under 16 KB.
-- Leave 16 units each side of a label inside its box.
+- Leave 16 units each side of a label inside its box. Linux Chromium (CI) draws Inter about 3.5
+  units wider than macOS, so leave 8 more units of room than the test needs on your machine.
 - If a label does not fit, wrap it onto a second line rather than shrinking or rewording it:
   put 34 units between the lines and make the box 34 units taller for each extra line.
 - When an edit changes what the diagram says, update the picture's `alt`, the SVG's

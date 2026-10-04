@@ -20,9 +20,10 @@ Each diagram SVG carries its own Inter: an inline `<style>` with two data-URI `@
 `src/assets/fonts/Inter-{Regular,Bold}.woff2`. The root `<svg>` asks for `Inter, sans-serif`;
 labels stay real `<text>`. Labels are edited by hand in the SVG, then
 `pnpm run fonts:diagrams -- <file>` (`scripts/fonts/embed-diagram-fonts.ts`, `uvx` fonttools)
-rewrites the font block. Nothing runs at build time; Astro serves the SVG byte for byte. Six
+rewrites the font block. Nothing runs at build time; Astro serves the SVG byte for byte. Thirteen
 detail labels that do not fit their 300-unit boxes with 16 units each side in Inter wrap onto two
-lines and their boxes grow (the sixth found by research R8, now listed in the spec too). A unit test holds every
+lines and their boxes grow (six by research R8; seven more after Linux CI showed Chromium there
+renders about 3.5 units wider, so any label with under 8 units of macOS slack wraps too). A unit test holds every
 SVG with text under `src/content/` to the contract (Inter only, glyphs present in the embedded
 cmaps, licence notice, self-contained, at most 16 KB); an E2E test proves in Chromium that the
 faces load and the labels fit. The sharing-image script inlines `Inter-Bold.woff2` through a
@@ -56,7 +57,7 @@ transfer, LCP ≤ 2.5 s, CLS < 0.1, long tasks ≤ 200 ms, JS ≤ 10 KB)
 **Constraints**: each diagram SVG ≤ 16,384 bytes; no request beyond the SVG itself; CSP not
 loosened; Inter glyphs only from the 018 files; no build-time step; no new npm dependency
 
-**Scale/Scope**: 5 published diagrams + 1 template starter; 1 sharing image; 6 wrapped labels
+**Scale/Scope**: 5 published diagrams + 1 template starter; 1 sharing image; 13 wrapped labels
 
 ## Constitution Check
 
@@ -67,7 +68,7 @@ Tracking.*
 |---|---|
 | I. Test-First | Every behaviour has a test written first and seen to fail, at one named layer (Test placement below). On today's files the unit diagram test fails D01 (root font-family), D04 (no block) and D07; the E2E test fails D11 (no Inter face) and D12 (six labels too wide); the og test fails O01/O02 (no exports). Tasks order tests before the code they cover. |
 | II. Automated Release Gate | No check is skipped, disabled or weakened; the budget limits are untouched (FR-010). New checks join the existing `test:unit` and `test:e2e:parallel` steps, which also run on content-only PRs (research R7), so a later label edit without the script fails CI. Full `verify` before the PR. |
-| III. Human Review | **Major**: visual identity (diagram lettering, six box shapes, sharing image). Auto-merge off, `major-change` label, `[PREVIEW-CHECK]` task, reason in the PR body; the sixth wrapped label and the two moved boxes (research R8) are called out for Don. |
+| III. Human Review | **Major**: visual identity (diagram lettering, ten box shapes, sharing image). Auto-merge off, `major-change` label, `[PREVIEW-CHECK]` task, reason in the PR body; the sixth wrapped label and the two moved boxes (research R8) are called out for Don. |
 | IV. First-Party Before Custom | Astro Docs MCP consulted; each option and page in research R1. **Page fonts**: Astro Fonts API (kept; cannot reach an SVG shown as an `<img>`). **Diagram delivery**: `<Image />` (kept; SVG sources pass through unprocessed with `image.dangerouslyProcessSVG` false, confirmed on today's build). **SVG components** (inline): rejected, fails FR-002 and changes the content model. **`experimental.svgOptimizer`**: components only, and cannot shrink a font. **OG via `fontData` + Satori**: rejected, three new dependencies and a build step. **Cloudflare**: Cloudflare Fonts only rewrites Google Fonts links in HTML; Images or Browser Rendering would add a service for a file that changes once; plain static assets used. **Subsetting**: no first-party option, so the 018 `pyftsubset` recipe is reused (custom by necessity). **Why nothing runs at build time**: it would need `uv`/Python in Workers Builds and CI or a new JS subsetter dependency, for files that change rarely; the gate catches drift. **Why no new npm dependency**: `uvx` sits outside `package.json` as in 018, `fontace` ships with Astro, Playwright is already present. |
 | V. Static by Default | No client JavaScript; diagrams remain prerendered `<img>` elements; text readable with JS off (the figure caption and alt text are unchanged). |
 | VI. Content as Files | Diagrams stay committed SVG files edited by hand; the only extra step is one script on the edited file (FR-007), documented in `docs/projects.md`. No schema change. |
@@ -92,7 +93,7 @@ Tracking.*
 | `scripts/fonts/embed-diagram-fonts.ts` (new) | The hand-run script (S01 to S08): subset the two committed faces to the file's label characters with `uvx` fonttools, write the block, check, print sizes. |
 | `scripts/fonts/subset-inter.ts` | No behaviour change; its exported `FONTTOOLS_SPEC` is imported by the new script. |
 | `package.json` | `scripts`: `"fonts:diagrams": "node scripts/fonts/embed-diagram-fonts.ts"`. No dependency change. |
-| `src/content/projects/images/*/architecture.svg` (5) | Root `font-family="Inter, sans-serif"`; `font-family` removed from the `<g>`; six wrapped labels and box changes per [data-model.md](./data-model.md#wrapped-labels-and-box-changes); font block written by the script. |
+| `src/content/projects/images/*/architecture.svg` (5) | Root `font-family="Inter, sans-serif"`; `font-family` removed from the `<g>`; 13 wrapped labels and box changes per [data-model.md](./data-model.md#wrapped-labels-and-box-changes); font block written by the script. |
 | `src/content/projects/images/template/diagram.svg` | Root `font-family="Inter, sans-serif"`; `font-family="sans-serif"` removed from the two `<text>`; font block written by the script. |
 | `scripts/og-image/render.ts` | `OG_FONT_FILE`, pure `ogHtml(fontBase64)`, inline `@font-face`, `font-family: Inter`, fonts-loaded check, browser launch under `import.meta.main` (O01 to O04). |
 | `public/og-default.png` | Re-rendered once by hand with the new script. |
@@ -177,9 +178,9 @@ compressed transfer.
 | File | Before bytes | Before gzip | After bytes | After gzip |
 |---|---|---|---|---|
 | `images/cadence/architecture.svg` | 2,170 | 776 | 10,384 | 6,836 |
-| `images/drcdev-github-io/architecture.svg` | 1,774 | 672 | 10,456 | 7,191 |
-| `images/flux/architecture.svg` | 1,821 | 696 | 9,924 | 6,711 |
-| `images/focus-pocus/architecture.svg` | 1,472 | 585 | 9,634 | 6,702 |
+| `images/drcdev-github-io/architecture.svg` | 1,774 | 672 | 10,588 | 7,229 |
+| `images/flux/architecture.svg` | 1,821 | 696 | 10,189 | 6,747 |
+| `images/focus-pocus/architecture.svg` | 1,472 | 585 | 9,700 | 6,732 |
 | `images/tempo/architecture.svg` | 2,119 | 740 | 10,496 | 7,001 |
 | `images/template/diagram.svg` (never published) | 689 | 334 | 4,265 | 2,916 |
 | `public/og-default.png` | 15,938 | n/a | 17,171 | n/a |
@@ -212,8 +213,10 @@ figures; the after run notes whether a diagram request appears. Prototype estima
 
 - **Six wraps, not five.** The 16-unit rule also catches Flux "Handlebars, Tailwind v4" (272.7
   units, 13.6 each side). FR-003's rule is binding, so it wraps; the PR body tells Don. The
-  closest fit left unwrapped is Flux "posts, members, routes" with 16.35 units each side; the
-  E2E check would catch it if Chromium's shaping differed.
+  closest fit left unwrapped was Flux "posts, members, routes" with 16.35 units each side, and
+  Linux Chromium in CI did render it 3.4 units wider (13.00), failing D12. Seven more labels
+  with under 8 units of macOS slack were therefore wrapped (data-model.md). Lesson: leave 8 units
+  of headroom over the 16-unit rule when measuring on macOS.
 - **Two boxes move.** Growing the Cadence Apple Watch and Tempo Apple Health boxes downward would
   leave them 6 units from the canvas edge, so each moves up 24 units (arrows unchanged). Called
   out in the PR body.

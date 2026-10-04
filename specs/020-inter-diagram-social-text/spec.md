@@ -170,7 +170,13 @@ system font and confirm the gate fails with a message naming that diagram.
   handoff, optional" and "local store and write queue", Tempo "or Health Connect, optional", and
   Flux "Supabase Edge Functions". The same rule also catches a sixth, Flux "Handlebars,
   Tailwind v4" (13.6 units each side), so it wraps too; any other label found not to fit is
-  wrapped the same way, and the plan lists every wrap. Each wraps onto two lines at the same
+  wrapped the same way, and the plan lists every wrap. CI on Linux Chromium then showed Inter
+  renders about 3.5 units wider there than on macOS (Flux "posts, members, routes" went from
+  16.35 to 13.00 units each side), so a label that fits on macOS with under 8 units of slack
+  also wraps: the full set is now 13 wrapped labels, the six above plus Flux "posts, members,
+  routes", "hosted on Magic Pages", "two newsletter streams" and "optional, member tiers",
+  drcdev.github.io "Markdown descriptions" and "Tailwind v4, ASCII look", and Focus Pocus "MCP
+  server, 35+ tools". Lesson: measure on macOS, but leave at least 8 units of headroom. Each wraps onto two lines at the same
   size and weight, and that box grows taller only where the extra line needs room. Labels are
   never shrunk, reworded, clipped or allowed to overlap a border.
 - **A label that does not fit on two lines**: none of today's labels needs more than two lines.
@@ -237,7 +243,7 @@ system font and confirm the gate fails with a message naming that diagram.
   each side (Edge Cases). Such a label wraps under FR-003b, and the plan lists every such
   adjustment with before and after coordinates. The canvas never grows: a box that needs room
   moves within it (Edge Cases, "Canvas bounds"). Diagrams with no wrapped label (today
-  drcdev.github.io, Focus Pocus and the template starter) keep identical geometry.
+  the template starter) keep identical geometry.
 - **FR-003b**: Label fit and wrapping rules, for every label in every diagram:
   - **Clear space** is measured horizontally from the label's rendered text box (its shaped,
     kerned advance width in Inter at the label's own size and weight, as the browser draws it) to
