@@ -18,6 +18,10 @@
 // updateSnapshots "none" (a missing baseline fails) come from
 // playwright.config.ts.
 //
+// Every shot waits for the self-hosted Inter faces first (settleFonts): document.fonts.ready,
+// no FontFace still loading, and Regular and Bold loaded, so a face is never mid-swap
+// when the screenshot is taken (issue #62, FR-011).
+//
 // The footer year is frozen to 2026 before every shot (freezeFooterYear), so a
 // new calendar year cannot fail the shell, not-found or sections shots (issue #45).
 import { test, expect, type Locator, type Page } from "@playwright/test";
@@ -38,6 +42,17 @@ async function open(page: Page, path: string, width: number, height: number, the
   await freezeFooterYear(page);
   await expectThemeClass(page, theme);
   await settleImages(page);
+  await settleFonts(page);
+}
+
+async function settleFonts(page: Page) {
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+  await page.waitForFunction(
+    () =>
+      Array.from(document.fonts).every((face) => face.status !== "loading") &&
+      document.fonts.check('400 16px "Inter"') &&
+      document.fonts.check('700 16px "Inter"'),
+  );
 }
 
 // Astro renders images with loading="lazy", so an image below the first

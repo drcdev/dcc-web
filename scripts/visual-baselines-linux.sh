@@ -36,7 +36,8 @@ docker run --rm -t \
     # ubuntu-latest ships DejaVu, which fontconfig ranks first for sans-serif,
     # so CI renders the site's system font stack in DejaVu Sans. The Playwright
     # image lacks it and would fall back to Liberation Sans, changing every
-    # text pixel. Installing it makes the two renderings match.
+    # text pixel. Installing it makes the two renderings match. Inter is self-hosted
+    # now, but DejaVu stays so the fallback face matches CI (feature 018, R10).
     (apt-get update -qq && apt-get install -y -qq --no-install-recommends fonts-dejavu-core) >/dev/null 2>&1
     echo \"sans-serif resolves to: \$(fc-match sans-serif)\"
     npm install -g pnpm@${pnpm_version} >/dev/null

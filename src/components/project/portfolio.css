@@ -1,7 +1,7 @@
 @reference "../../styles/global.css";
 
 /* Portfolio story styles: the four-part story (specs/014-project-four-part-story).
-   Existing palette tokens and the system font only. The part text uses the post
+   Existing palette tokens and the site font (self-hosted Inter, feature 018). The part text uses the post
    body's prose classes, so headings and text match a post. Every effect is behind
    the reduced-motion guard and the resting state is the fully visible one. */
 
