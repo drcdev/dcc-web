@@ -113,9 +113,9 @@ export function generateFixturePosts(count = MINIMUM_POSTS): GeneratedPost[] {
   });
 }
 
-async function buildSite(): Promise<void> {
+/** Lays out the fixture site's source tree in `siteRoot` (everything but the Astro build). */
+export function prepareFixtureSite(siteRoot: string): void {
   const repoRoot = fileURLToPath(new URL("../", import.meta.url));
-  const siteRoot = resolve(repoRoot, ".cache/fixture-site");
   const pageFixtures = resolve(repoRoot, "tests/fixtures/pages");
 
   rmSync(siteRoot, { recursive: true, force: true });
@@ -166,6 +166,11 @@ async function buildSite(): Promise<void> {
     });
   }
 
+}
+
+async function buildSite(): Promise<void> {
+  const siteRoot = resolve(fileURLToPath(new URL("../", import.meta.url)), ".cache/fixture-site");
+  prepareFixtureSite(siteRoot);
   await build({ root: siteRoot, logLevel: "warn" });
 }
 

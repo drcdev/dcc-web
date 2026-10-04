@@ -102,7 +102,7 @@ already live, in the specs that run on the real site (port 4321) and the unit te
   imports `posts`, `projects`, `realPosts` or `pages` from `tests/helpers/content`. Both fail now.
 - Layer: unit, the cheapest layer that sees the copied tree; no Astro build needed. The e2e fixed
   counts (W3-W5) are a second, incidental observation, not a planned second layer.
-- [ ] done
+- [x] done
 
 ### W2 Build the fixture site from fixture content only
 - Files: `scripts/build-fixture-site.ts`.
