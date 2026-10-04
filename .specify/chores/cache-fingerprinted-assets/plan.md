@@ -196,7 +196,7 @@ at new hashed names.
 
 ### W4: Docs and the 018 contract rows
 
-- [ ] W4 done
+- [x] W4 done
 - **Files:** `docs/testing.md`, `specs/018-self-hosted-fonts/contracts/fonts.md`,
   `specs/018-self-hosted-fonts/spec.md`.
 - **Test:** no behaviour: n/a (documentation).

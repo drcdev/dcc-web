@@ -32,8 +32,8 @@ must not contain `specs/...` path literals (the changed-paths drift guard reject
 | Row | Rule |
 |---|---|
 | F10 | `GET /_astro/fonts/<hash>.woff2` returns 200, `Content-Type: font/woff2`, `Cache-Control: public, max-age=31536000, immutable`, and the full `/*` security header set. |
-| F11 | Other files under `/_astro/` (for example the page stylesheet) do not carry `immutable` or `max-age=31536000`; their caching is unchanged. |
-| F12 | `public/_headers` has four rules: `/*`, `/_astro/fonts/*` (only `Cache-Control`), and the two host rules, unchanged. |
+| F11 | Other files under `/_astro/` (for example the page stylesheet) do not carry `immutable` or `max-age=31536000`; their caching is unchanged. Superseded by #74: every file under `/_astro/`, including the stylesheet, carries `Cache-Control: public, max-age=31536000, immutable`. |
+| F12 | `public/_headers` has four rules: `/*`, `/_astro/fonts/*` (only `Cache-Control`), and the two host rules, unchanged. Superseded by #74: the second rule is `/_astro/*` (only `Cache-Control`). |
 
 ## Rendering (browser)
 
