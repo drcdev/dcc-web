@@ -37,6 +37,8 @@ foundation's FR-003 (feature 002, site foundation).
 - Q: Which characters must the shipped Inter files contain? → A: Printable ASCII, all of Latin-1 (U+00A0–U+00FF), the common typographic punctuation – — ‘ ’ “ ” … •, and → ✓ ✗ where Inter has those glyphs. Size savings come from dropping OpenType features, keeping kerning.
 - Q: Should a test fail when a visual-test subject draws a character the shipped Inter files do not contain? → A: Yes, for the visual subjects only (shell, not-found page and fixture site). Fixture text with uncovered characters is changed or explicitly excluded; real content is not checked.
 - Q: How should font files be cached between page views? → A: Fingerprinted filenames emitted by the Astro build, served with `Cache-Control: public, max-age=31536000, immutable`.
+- Q: Should the "never synthesize a slant or weight" rule also apply when text is shown in the system fallback font? → A: No. The rule covers Inter only: all four faces are declared, so Inter text always uses real faces, and tests check the rendered face. Fallback text keeps the browser's default synthesis so emphasis still shows.
+- Q: Should the one-year immutable cache header apply only to the font files, or to every fingerprinted build file under `/_astro/`? → A: Only the four fingerprinted Inter files. Other build files keep today's caching; a long cache for all of `/_astro/` is follow-up work.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -134,7 +136,12 @@ baselines must be complete and correct for the gate to stay meaningful.
   transfer budget with the fonts included. If any page cannot fit, the work stops and is reported
   to Don; the budget is not raised.
 - **Repeat visits**: font files are cached by the browser so a second page view does not
-  download them again.
+  download them again. Only the font files get the long cache; other build files keep today's
+  caching.
+- **Emphasis in the fallback font**: while Inter loads, if it fails, or for characters outside
+  the shipped set, italic and bold text in the fallback stack keeps the browser's default
+  synthesis, so emphasis still shows even where the system font has no real italic or bold
+  face.
 - **Forced colours and dark mode**: the font change does not affect contrast, focus indicators
   or forced-colours rendering.
 - **JavaScript off**: fonts load and apply without any client-side script.
@@ -150,7 +157,9 @@ baselines must be complete and correct for the gate to stay meaningful.
   and → ✓ ✗ where Inter has those glyphs. OpenType features MAY be dropped to save bytes, but
   kerning MUST be kept.
 - **FR-003**: Italic and bold-italic text MUST render with Inter's real italic faces, never a
-  browser-synthesized slant or weight.
+  browser-synthesized slant or weight. This applies to text drawn in Inter only: text drawn in
+  the fallback stack (while Inter loads, if it fails, or for characters outside the shipped
+  character set) keeps the browser's default synthesis, so emphasis stays visible.
 - **FR-004**: Font files MUST be committed to the repository and served from the site's own
   origin. The site MUST NOT request fonts, stylesheets or anything else from a font service or
   any third party.
@@ -176,14 +185,16 @@ baselines must be complete and correct for the gate to stay meaningful.
 - **FR-014**: The change MUST add no recurring cost and no new external service.
 - **FR-015**: Font files MUST be emitted by the Astro build with fingerprinted (content-hashed)
   filenames and served with `Cache-Control: public, max-age=31536000, immutable`, so browsers
-  cache them across page views.
+  cache them across page views. The header applies to the four Inter files only; other build
+  files keep today's caching.
 - **FR-016**: A guard test MUST fail when any visual-test subject (shell, not-found page or
   fixture site) draws a character outside the shipped character set. Fixture text with an
   uncovered character is changed, or the character is explicitly excluded in the test. Real
   site content is not checked.
 - **FR-017**: Weights other than 400 and 700 MUST resolve through standard CSS font matching
   with no class changes (500 renders as 400; 600 and 800 render as 700), and the browser MUST
-  NOT synthesize a weight or slant.
+  NOT synthesize a weight or slant for text drawn in Inter. Synthesis is not turned off for
+  fallback text (FR-003).
 
 ### Key Entities
 
@@ -217,7 +228,8 @@ baselines must be complete and correct for the gate to stay meaningful.
 - **SC-008**: The guard test finds zero uncovered characters in the visual-test subjects, apart
   from characters it explicitly excludes.
 - **SC-009**: A second page view downloads zero font bytes, because the font files carry
-  fingerprinted names and a one-year immutable cache header.
+  fingerprinted names and a one-year immutable cache header; no other build file's caching
+  changes.
 
 ## Decisions
 
@@ -262,6 +274,8 @@ These were settled by Don before the specification and are not open for clarific
 
 ## Follow-up work
 
+- Consider a one-year immutable cache header for all fingerprinted build files under
+  `/_astro/` (CSS and scripts), not only the font files (FR-015).
 - Consider a self-hosted monospace font for code and preformatted blocks (D2).
 - Revisit the "Visual baselines" guidance in the agent notes and pipeline skills if the CI-label
   fallback proves unnecessary for predicted changes over the next few pull requests.
