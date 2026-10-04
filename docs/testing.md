@@ -422,15 +422,15 @@ Each figure is a single run.
 
 ### Playwright theme and layout tidy, #49 (2026-10-03)
 
-| Measure | Before (run 37161130853, `main` push) | After |
+| Measure | Before (run 37168636278, `main` push of #58) | After |
 |---|---|---|
-| `e2e` job | 445 s | pending (#49 PR run) |
-| `test:e2e:parallel` step | 318 s | pending (#49 PR run) |
-| E2E tests | 615 | 609 |
+| `e2e` job | 449 s | pending (#49 PR run) |
+| `test:e2e:parallel` step | 320 s | pending (#49 PR run) |
+| E2E tests | 617 | 611 |
 | Accessibility tests | 626 | 608 |
-| All Playwright tests (`--list`, five local projects) | 1419 | 1395 |
+| All Playwright tests (`--list`, five local projects) | 1429 | 1405 |
 
 The tidy moved the colour-theme helper into one file and folded the sideways-scroll checks into
 the geometry test, which now runs at 320, 390 and 1280 px. The a11y 320 px reflow check went
-with it. Counts are from `playwright test --list`; the visual (50) and sections (55) projects
-are unchanged.
+with it. Counts are from `playwright test --list` on the branch after merging `main` at #58;
+the visual (58), sections (55) and budget (73) projects are unchanged.
