@@ -280,6 +280,17 @@ under Principle III; visual baselines must be refreshed, see plan).
 
 ## R12. Testing Workers AI and assets in the worker tests and E2E
 
+**Implement-phase result (T001 spike, no Cloudflare credentials, empty `WRANGLER_HOME`)**: all
+three paths passed, so no fallback is needed. (a) `wrangler dev` with `ai` and `ASSETS` bindings
+starts and serves `/api/*` and static assets; the only output is the "AI bindings always access
+remote resources" warning, with no login demand. (b) The worker Vitest pool starts with the `ai`
+binding present and `remoteBindings: false`, and the existing 132 worker tests pass. Without
+`remoteBindings: false` the pool called the Cloudflare API with the token from the repository
+`.env`, so T014 must add it. (c) The pool and `wrangler types --check` run with no `dist/`
+directory. `wrangler types` emits `AI?: Ai` (optional, because the binding is remote-only) and
+`ASSETS: Fetcher`, so the questions handler must guard a missing `env.AI`. Note that
+`WRANGLER_HOME` (not `XDG_CONFIG_HOME`) is how to point wrangler at an empty config directory.
+
 **Decision**:
 
 - **Worker tests** (`@cloudflare/vitest-plugin`): the handler is called with an env override,
