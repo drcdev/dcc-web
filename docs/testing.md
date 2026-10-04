@@ -23,7 +23,7 @@ gate times (see "Measured gate times").
 | Real `astro build` | `tests/build/indexing.test.ts`, which runs `astro build` on the repository's own content in the main-branch and preview environments, plus `pnpm run build`, which runs in the `e2e` job in CI and in the local `verify` script. `indexing.test.ts` also runs on content-only changes, through `pnpm run test:build:content`. | That the real site builds and that its sitemap, robots and headers match the environment | Two environments | Keep. |
 | E2E | Playwright `e2e` and sibling projects, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Journeys in a real browser: navigation, theme, menu, contact submission, not-found, behaviour without JavaScript, layout geometry per template (no sideways scroll, no element wider than the viewport, header and footer clear of the main content), the theme token each key component resolves to in both themes (`theme-tokens.spec.ts`) | Journeys, plus the template matrix | Keep journeys; review matrices (#40). |
 | Accessibility | Playwright `a11y` projects (axe), `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | WCAG 2.2 AA per template, both widths, both themes | Full template matrix | Keep (Principle X). |
-| Visual | Playwright `visual` project, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Pixel baselines of the design system: the shell (header, footer, open mobile menu), the not-found page, and on the fixture site the sections page, the post and story templates, the listing cards, the lead story, a series banner, two projects index rows and the contact form. Never real content. | Per platform | Keep, blocking. A diff is a design-system change (Principle III). Real-content shots removed in #40 phase 1; fixture template shots added in phase 2; see "Visual coverage". |
+| Visual | Playwright `visual` project, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Pixel baselines of the design system: the shell (header, footer, open mobile menu), the not-found page, and on the fixture site the sections page, the post and story templates, the listing cards, the lead story, a series banner, four projects index rows (shipped, experiment, draft and in progress) and the contact form. Never real content. | Per platform | Keep, blocking. A diff is a design-system change (Principle III). Real-content shots removed in #40 phase 1; fixture template shots added in phase 2; see "Visual coverage". |
 | Budget | Playwright `budget` project, `pnpm run test:budget` | LCP, CLS, long tasks and bytes under throttling | Per template, own invocation with one worker (`pnpm run test:budget`) | Keep. Slow by design. |
 | Preview site-check | `scripts/site-check`, run against the preview deployment | Sitemap and links on the deployed preview | Once per PR; the crawl runs in the `e2e` job on pull requests | Keep. |
 
@@ -121,10 +121,11 @@ shots were removed in #40 phase 1, so a content edit cannot fail it. The geometr
 contrast checks and the existing e2e and build content tests took over what each one guarded.
 Phase 2 added element shots of the fixture post and story templates, the listing cards, the
 lead story, the Drift series banner, two projects index rows and the contact form. Each is an
-element on fixture content, so a content edit still cannot fail the project. The retired
-status (feature 015) added two more fixture subjects, `project-row-retired` (the retired
-index row) and `retired-story-header` (the story header with the retired pill and note), on
-the fixture project `retired`.
+element on fixture content, so a content edit still cannot fail the project. #48 added the draft
+and in-progress projects index rows, making four. The retired status (feature 015) added two
+more fixture subjects, `project-row-retired` (the retired index row, making five) and
+`retired-story-header` (the story header with the retired pill and note), on the fixture
+project `retired`.
 
 | Removed subject (4 images per platform) | Where its coverage lives now |
 |---|---|
@@ -136,7 +137,7 @@ the fixture project `retired`.
 | `writing-topic` | As `writing-landing`, including the card snapshot. |
 | `writing-post` | Shell snapshots; geometry test (includes the code block and table scroll containers); `a11y` (`blog.a11y.spec.ts`, `blog-fixture.a11y.spec.ts`); Copy button and table region: `blog.spec.ts`; forced colours: `blog-forced-colors.spec.ts`. Post template pixels: `post-template`, the article of the fixture post `/writing/every-part/`. Related posts are left out because they are chosen from all posts; their cards are the `listing-cards` component. |
 | `writing-series` | Shell snapshots; geometry test; `a11y`; series intro and links: `blog.spec.ts`. Series banner pixels: `series-banner` on the fixture `/writing/drift/` (banner element only). |
-| `projects` | Shell snapshots; geometry test; `a11y`; two-column and one-column rows: `projects.spec.ts`; fixture listings: `projects-fixtures.spec.ts`. Projects index row pixels: `project-row-minimal` and `project-row-every-setting` (row elements only; the fixture index also lists real draft rows). |
+| `projects` | Shell snapshots; geometry test; `a11y`; two-column and one-column rows: `projects.spec.ts`; fixture listings: `projects-fixtures.spec.ts`. Projects index row pixels: `project-row-minimal`, `project-row-every-setting`, `project-row-draft` and `project-row-in-progress` (row elements only; the fixture index also lists the real rows, which the test removes). |
 | `project-story` | Shell snapshots; geometry test (reduced motion, final state); `a11y`; part layout at 390 and 1280, comparison region and invitation: `projects.spec.ts`; motion: `projects-motion.spec.ts`; forced colours: `projects-forced-colors.spec.ts`; no-JS: `projects-no-js.spec.ts`. Story template pixels: `story-template`, the article of the fixture story `/projects/every-part/`, with reduced motion. |
 
 Every phase-1 gap now has a fixture snapshot, except the home intro card, which is review-only

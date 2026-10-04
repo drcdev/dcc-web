@@ -1,16 +1,15 @@
 // Visual baselines for the design system and the templates, never for real
-// content. Phone (390) and desktop (1280) widths, dark and light themes - 58
+// content. Phone (390) and desktop (1280) widths, dark and light themes - 66
 // images per platform:
 //   - the header, the footer and the open mobile menu from `/` (the menu at
 //     phone width only), and the full not-found page;
 //   - the sections fixture page on the fixture site (port 4322), full page;
-//   - ten fixture-site subjects, each an element shot: the post template, the
+//   - twelve fixture-site subjects, each an element shot: the post template, the
 //     project-story template, the lead story, the listing cards, a series
-//     banner, three project index rows (minimal, every-setting and retired),
-//     the retired story header and the
-//     contact form.
+//     banner, five project index rows (minimal, every-setting, draft, in
+//     progress and retired), the retired story header and the contact form.
 // Every fixture subject is an element shot, because the pages around it also
-// show real posts and real project rows (Related posts, the real draft rows),
+// show real posts and real project rows (Related posts, the real project rows),
 // and a full-page shot would pin the shell a second time. The project-row
 // subjects also remove the real rows first, because their position would
 // otherwise move the fixture row. So a content edit
@@ -184,6 +183,20 @@ const FIXTURE_SUBJECTS = [
     title: "fixture project row, every setting",
     path: "/projects/",
     locator: (page: Page) => page.locator('li[data-project="every-setting"]'),
+    wait: onlyFixtureRows,
+  },
+  {
+    prefix: "project-row-draft",
+    title: "fixture project row, draft",
+    path: "/projects/",
+    locator: (page: Page) => page.locator('li[data-project="draft"]'),
+    wait: onlyFixtureRows,
+  },
+  {
+    prefix: "project-row-in-progress",
+    title: "fixture project row, in progress",
+    path: "/projects/",
+    locator: (page: Page) => page.locator('li[data-project="every-part"]'),
     wait: onlyFixtureRows,
   },
   {
