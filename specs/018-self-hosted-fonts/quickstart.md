@@ -19,6 +19,24 @@ git status src/assets/fonts/
 Expected: the four `Inter-*.woff2` files and `LICENSE.txt`; on an unchanged recipe, no diff
 (the subset is byte-deterministic). Sizes about 11.4, 12.3, 11.5 and 12.6 KB.
 
+Recorded recipe (a re-run in T007 produced no diff):
+
+- Release: `https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip`, archive SHA-256
+  `9883fdd4a49d4fb66bd8177ba6625ef9a64aa45899767dde3d36aa425756b11e`.
+- Per face, from `extras/ttf/Inter-<face>.ttf`:
+  `uvx --from "fonttools[woff]==4.60.2" pyftsubset Inter-<face>.ttf --unicodes=U+0020-007E,U+00A0-00FF,U+2013,U+2014,U+2018,U+2019,U+201C,U+201D,U+2022,U+2026,U+2192,U+2713,U+2717 --layout-features=kern --no-hinting --flavor=woff2 --output-file=src/assets/fonts/Inter-<face>.woff2`
+
+| File | Bytes | SHA-256 |
+|---|---|---|
+| `Inter-Regular.woff2` | 11,364 | `ec3ad8fb97298f5a68a0a83836db7d64a67a6d4544af8173f948bbd7a1a7d132` |
+| `Inter-Italic.woff2` | 12,308 | `3f210da2f9a9849f5882c0f8986e1e24af09de0351daedf1c2b5fa195782e901` |
+| `Inter-Bold.woff2` | 11,516 | `fde7b48132e4150ee9f4fb70a963badc15d641f6f8601c517bc7d45ee65463ac` |
+| `Inter-BoldItalic.woff2` | 12,560 | `7dbfe53fac47fe85d3b0da1d45d5a6295cdeafeef50f8a57c360c3045a2f8aeb` |
+| `LICENSE.txt` | | `262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a` |
+
+Note for the coverage guard (T008): fontace reports U+FFFF (the cmap end marker) as covered in
+each face; the real cmap (fontTools) holds the 201 shipped code points, so readers must ignore it.
+
 ## 2. Fast checks
 
 ```sh
