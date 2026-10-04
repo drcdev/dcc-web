@@ -72,8 +72,8 @@ describe("docs/design-source.md", () => {
     return dataRows;
   }
 
-  it("Mapping: has 18 mapping rows", () => {
-    expect(getMappingDataRows().length).toBe(18);
+  it("Mapping: has 19 mapping rows", () => {
+    expect(getMappingDataRows().length).toBe(19);
   });
 
   it("Mapping: every owner is one of the allowed values", () => {

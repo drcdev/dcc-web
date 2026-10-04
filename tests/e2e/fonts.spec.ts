@@ -17,6 +17,17 @@ const sha = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 const source = (name: string) => sha(readFileSync(`src/assets/fonts/${name}.woff2`));
 const BOLD_ITALIC = source("Inter-BoldItalic");
 const ITALIC_HASHES = new Set([source("Inter-Italic"), BOLD_ITALIC]);
+const INTER_HASHES = new Set(["Regular", "Italic", "Bold", "BoldItalic"].map((n) => source(`Inter-${n}`)));
+const mono = (name: string) => sha(readFileSync(`src/assets/fonts/jetbrains-mono/JetBrainsMono-${name}.woff2`));
+// Mono files are identified by the SHA-256 of the committed files (they carry hashed names).
+const MONO_BY_FACE = {
+  "400 normal": mono("Regular"),
+  "400 italic": mono("Italic"),
+  "700 normal": mono("Bold"),
+  "700 italic": mono("BoldItalic"),
+} as const;
+const MONO_HASHES = new Set<string>(Object.values(MONO_BY_FACE));
+const CODE_ELEMENTS = "code, pre, kbd, samp";
 
 async function fontsReady(page: Page) {
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
@@ -93,7 +104,18 @@ test.describe("the drawn face", () => {
     });
   }
 
-  test("inline code is drawn in Inter at the face its weight selects", async ({ page }) => {
+  test("a code block and its highlighted token are drawn in JetBrainsMono-Regular (M13)", async ({ page }) => {
+    for (const query of ["main pre code span span"]) {
+      const faces = await drawnFaces(page, query);
+      expect(faces.length, query).toBeGreaterThan(0);
+      for (const drawn of faces) {
+        expect(drawn.custom, `${query} is a custom font`).toBe(true);
+        expect(drawn.name, query).toBe("JetBrainsMono-Regular");
+      }
+    }
+  });
+
+  test("inline code is drawn in the mono face its weight selects (M13)", async ({ page }) => {
     // The prose styles set `code` to weight 600, which the two weights shipped (400, 700) draw as
     // bold; the face is derived from the computed weight so a later prose change cannot make this lie.
     const weight = await page.locator("main p code").first().evaluate((el) => Number(getComputedStyle(el).fontWeight));
@@ -101,49 +123,136 @@ test.describe("the drawn face", () => {
     expect(faces.length).toBeGreaterThan(0);
     for (const drawn of faces) {
       expect(drawn.custom).toBe(true);
-      expect(drawn.name).toBe(weight >= 600 ? "Inter-Bold" : "Inter-Regular");
+      expect(drawn.name).toBe(weight >= 600 ? "JetBrainsMono-Bold" : "JetBrainsMono-Regular");
     }
+  });
+
+  for (const { label, query, face } of [
+    { label: "code in emphasis", query: "main p em code", face: "JetBrainsMono-BoldItalic" },
+    { label: "code in strong", query: "main p strong code", face: "JetBrainsMono-Bold" },
+    { label: "kbd", query: "main kbd", face: "JetBrainsMono-Regular" },
+    { label: "samp", query: "main p > samp", face: "JetBrainsMono-Regular" },
+    { label: "samp in emphasis", query: "main p em samp", face: "JetBrainsMono-Italic" },
+  ]) {
+    test(`${label} is drawn in ${face} (M13)`, async ({ page }) => {
+      const faces = await drawnFaces(page, query);
+      expect(faces.length).toBeGreaterThan(0);
+      for (const drawn of faces) {
+        expect(drawn.custom).toBe(true);
+        expect(drawn.name).toBe(face);
+      }
+    });
+  }
+
+  test("the code card caption and the Copy button stay in Inter (FR-004)", async ({ page }) => {
+    for (const query of [".code-card__caption", ".code-card__button"]) {
+      const faces = await drawnFaces(page, query);
+      expect(faces.length, query).toBeGreaterThan(0);
+      for (const drawn of faces) expect(drawn.name.startsWith("Inter-"), `${query}: ${drawn.name}`).toBe(true);
+    }
+  });
+
+  test("code characters of different shapes have equal advance (M14)", async ({ page }) => {
+    expect(await equalAdvance(page)).toBe(true);
   });
 });
 
-test("every font request is the site's own hashed file, once, and an italic is asked for only by a page that draws one", async ({
+/**
+ * Appends two inline `code` runs of equal length but different letters and compares their widths.
+ * Built in the page so the fixture is not edited; no inline style is set (the CSP forbids it).
+ */
+async function equalAdvance(page: Page): Promise<boolean> {
+  await page.evaluate(() => {
+    const p = document.createElement("p");
+    for (const text of ["iiiiiiii", "WWWWWWWW"]) {
+      const code = document.createElement("code");
+      code.dataset.probe = "";
+      code.textContent = text;
+      p.append(code, " ");
+    }
+    document.querySelector("main")!.append(p);
+  });
+  // Reading the layout starts the faces loading; fonts.ready then waits for them.
+  await page.evaluate(() => document.querySelector("[data-probe]")!.getBoundingClientRect().width);
+  await fontsReady(page);
+  const widths = await page.evaluate(() =>
+    [...document.querySelectorAll("[data-probe]")].map((el) => el.getBoundingClientRect().width),
+  );
+  expect(widths).toHaveLength(2);
+  return Math.abs(widths[0]! - widths[1]!) < 0.01;
+}
+
+/**
+ * Loads a path in a fresh page and returns every font file it requested (as a content hash of the
+ * served bytes), plus any request that is not a same-origin hashed woff2.
+ */
+async function loadAndCollect(page: Page, path: string) {
+  const requests: { url: string; hash: string }[] = [];
+  const pending: Promise<void>[] = [];
+  const offOrigin: string[] = [];
+  const origin = path.startsWith("http") ? new URL(path).origin : "http://127.0.0.1:4321";
+  page.on("response", (response) => {
+    const url = response.url();
+    if (response.request().resourceType() !== "font" && !/\.(woff2?|ttf|otf)(\?|$)/.test(url)) return;
+    if (!url.startsWith(`${origin}/_astro/fonts/`) || !url.endsWith(".woff2")) offOrigin.push(url);
+    pending.push(
+      // A preload's body can be gone by the time it is read, so the file is fetched again.
+      page.request.get(url).then(async (fetched) => {
+        const body = await fetched.body();
+        requests.push({ url, hash: sha(body) });
+      }),
+    );
+  });
+  await page.goto(path);
+  await fontsReady(page);
+  await page.waitForLoadState("networkidle");
+  await Promise.all(pending);
+  page.removeAllListeners("response");
+  return { requests, offOrigin };
+}
+
+/** The mono faces the page's visible code text draws, by standard font matching on weight and style. */
+async function drawnMonoFaces(page: Page): Promise<Set<string>> {
+  const found = await page.evaluate((selector) => {
+    const faces = new Set<string>();
+    const matches = [...document.querySelectorAll(`:is(${selector}), :is(${selector}) *`)];
+    for (const el of matches) {
+      if (![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent?.trim())) continue;
+      if (el.getClientRects().length === 0) continue;
+      const style = getComputedStyle(el);
+      const weight = Number(style.fontWeight) >= 600 ? "700" : "400";
+      faces.add(`${weight} ${style.fontStyle === "normal" ? "normal" : "italic"}`);
+    }
+    return [...faces];
+  }, CODE_ELEMENTS);
+  return new Set(found);
+}
+
+test("every font request is the site's own hashed file, once, and each page asks only for the faces it draws", async ({
   context,
 }) => {
   for (const template of TEMPLATES) {
     // A fresh page per template, so one page's late requests are never counted for the next.
     const page = await context.newPage();
-    const requests: { url: string; hash: string }[] = [];
-    const pending: Promise<void>[] = [];
-    const offOrigin: string[] = [];
-    const origin = template.path.startsWith("http") ? new URL(template.path).origin : "http://127.0.0.1:4321";
-    page.on("response", (response) => {
-      const url = response.url();
-      if (response.request().resourceType() !== "font" && !/\.(woff2?|ttf|otf)(\?|$)/.test(url)) return;
-      if (!url.startsWith(`${origin}/_astro/fonts/`) || !url.endsWith(".woff2")) offOrigin.push(url);
-      pending.push(
-        // A preload's body can be gone by the time it is read, so the file is fetched again.
-        page.request.get(url).then(async (fetched) => {
-          const body = await fetched.body();
-          requests.push({ url, hash: sha(body) });
-        }),
-      );
-    });
-    await page.goto(template.path);
-    await fontsReady(page);
-    await page.waitForLoadState("networkidle");
-    await Promise.all(pending);
-    page.removeAllListeners("response");
+    const { requests, offOrigin } = await loadAndCollect(page, template.path);
 
     expect(offOrigin, `${template.name}: off-origin or non-woff2 font request`).toEqual([]);
     const urls = requests.map((r) => r.url);
     expect(new Set(urls).size, `${template.name}: a file requested twice`).toBe(urls.length);
-    expect(urls.length, `${template.name}: at most four files`).toBeLessThanOrEqual(4);
+    const inter = requests.filter((r) => INTER_HASHES.has(r.hash));
+    const monoRequests = requests.filter((r) => MONO_HASHES.has(r.hash));
+    expect(inter.length, `${template.name}: at most four Inter files`).toBeLessThanOrEqual(4);
+    expect(monoRequests.length, `${template.name}: at most four mono files`).toBeLessThanOrEqual(4);
+    expect(inter.length + monoRequests.length, `${template.name}: every file is an Inter or mono file`).toBe(
+      requests.length,
+    );
 
     // A page asks for an italic file only when it draws italic text (the home tagline does; most
     // pages do not), and for the bold italic only when it draws bold italic text.
     const drawn = await page.evaluate(() => {
       const found = { italic: false, boldItalic: false };
       for (const el of document.querySelectorAll("body *")) {
+        if (el.closest("code, pre, kbd, samp")) continue;
         if (![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent?.trim())) continue;
         const style = getComputedStyle(el);
         if (style.fontStyle !== "italic") continue;
@@ -158,11 +267,31 @@ test("every font request is the site's own hashed file, once, and an italic is a
     if (!drawn.boldItalic) {
       expect(requests.some((r) => r.hash === BOLD_ITALIC), `${template.name} draws no bold italic`).toBe(false);
     }
+
+    // FR-007 (stricter than M15): the mono files requested are exactly the faces the code text draws.
+    const faces = await drawnMonoFaces(page);
+    const expected = [...faces].map((f) => MONO_BY_FACE[f as keyof typeof MONO_BY_FACE]).sort();
+    expect(monoRequests.map((r) => r.hash).sort(), `${template.name}: mono files requested`).toEqual(expected);
     await page.close();
   }
 });
 
-test("without JavaScript the text is still drawn in Inter", async ({ browser }) => {
+test("a page whose code is only a block at regular weight requests only the Regular mono file", async ({
+  page,
+}) => {
+  // A real built page with no code, given one code block through `page.route`; no fixture is added.
+  await page.route("**/about/", async (route) => {
+    const response = await route.fetch();
+    const body = (await response.text()).replace("</main>", "<pre><code>const a = 1;</code></pre></main>");
+    await route.fulfill({ response, body });
+  });
+  const { requests, offOrigin } = await loadAndCollect(page, "/about/");
+  expect(offOrigin).toEqual([]);
+  expect(await page.locator("main pre code").count()).toBe(1);
+  expect(requests.filter((r) => MONO_HASHES.has(r.hash)).map((r) => r.hash)).toEqual([MONO_BY_FACE["400 normal"]]);
+});
+
+test("without JavaScript the text and the code are still drawn in the shipped faces", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   try {
@@ -171,6 +300,9 @@ test("without JavaScript the text is still drawn in Inter", async ({ browser }) 
     const faces = await drawnFaces(page, CLOSING);
     expect(faces.length).toBeGreaterThan(0);
     expect(faces.every((f) => f.custom && f.name === "Inter-Regular")).toBe(true);
+    const code = await drawnFaces(page, "main pre code span span");
+    expect(code.length).toBeGreaterThan(0);
+    expect(code.every((f) => f.custom && f.name === "JetBrainsMono-Regular")).toBe(true);
   } finally {
     await context.close();
   }
@@ -187,4 +319,23 @@ test("when the font files fail, the text shows in another face and italics stay 
   for (const drawn of faces) expect(drawn.name.startsWith("Inter-")).toBe(false);
   const style = await page.locator("main p em").first().evaluate((el) => getComputedStyle(el).fontStyle);
   expect(style).toBe("italic");
+
+  // Code: visible, drawn by a monospace fallback (equal advances), italic code stays slanted (M17, FR-006).
+  await expect(page.locator("main pre code").first()).toBeVisible();
+  const code = await drawnFaces(page, "main pre code span span");
+  expect(code.length).toBeGreaterThan(0);
+  for (const drawn of code) expect(drawn.name.startsWith("JetBrainsMono-"), drawn.name).toBe(false);
+  expect(await page.locator("main p em code").first().evaluate((el) => getComputedStyle(el).fontStyle)).toBe("italic");
+  expect(await equalAdvance(page), "fallback code has equal advances").toBe(true);
+
+  // FR-012 with the fallback: no sideways scroll at 320 px and the focused scroll region is visible.
+  await page.setViewportSize({ width: 320, height: 800 });
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow, "no sideways page scroll").toBeLessThanOrEqual(0);
+  const pre = page.locator("main pre").first();
+  await pre.focus();
+  await expect(pre).toBeFocused();
+  await expect(pre).toBeInViewport();
+  const box = await pre.boundingBox();
+  expect(box!.x + box!.width).toBeLessThanOrEqual(320 + 0.5);
 });

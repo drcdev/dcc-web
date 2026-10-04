@@ -18,7 +18,8 @@
 //
 // Every shot waits for the self-hosted Inter faces first (settleFonts): document.fonts.ready,
 // no FontFace still loading, and Regular and Bold loaded, so a face is never mid-swap
-// when the screenshot is taken (issue #62, FR-011).
+// when the screenshot is taken (issue #62, FR-011). For every code, pre, kbd and samp on the
+// page it also waits for the element's own JetBrains Mono face to load (feature 019, FR-015).
 //
 // The footer year is frozen to 2026 before every shot (freezeFooterYear), so a
 // new calendar year cannot fail the shell, not-found or sections shots (issue #45).
@@ -58,6 +59,26 @@ async function settleFonts(page: Page) {
         return inter.length > 0 && inter.every((face) => face.status === "loaded");
       };
       return faces.every((face) => face.status !== "loading") && loaded("400") && loaded("700");
+    },
+    undefined,
+    { timeout: 10_000 },
+  );
+  // Astro registers the code family as `JetBrains Mono-<hash>`, so a check on the bare family
+  // name passes whatever happens. Each code-bearing element's computed font is loaded by its
+  // text, then the hashed faces are asserted loaded.
+  await page.waitForFunction(
+    async () => {
+      const elements = Array.from(document.querySelectorAll("code, pre, kbd, samp"));
+      if (elements.length === 0) return true;
+      await Promise.all(
+        elements.map((el) => {
+          const style = getComputedStyle(el);
+          const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+          return document.fonts.load(font, el.textContent ?? "").catch(() => []);
+        }),
+      );
+      const mono = Array.from(document.fonts).filter((face) => /^"?JetBrains Mono-[0-9a-f]+"?$/.test(face.family));
+      return mono.some((face) => face.status === "loaded") && mono.every((face) => face.status !== "loading");
     },
     undefined,
     { timeout: 10_000 },

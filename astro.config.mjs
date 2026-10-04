@@ -10,7 +10,7 @@ import mdx from "@astrojs/mdx";
 import { satteri } from "@astrojs/markdown-satteri";
 
 import { pruneDraftAssets } from "./src/lib/prune-unreferenced-assets.ts";
-import { INTER_UNICODE_RANGE, SYSTEM_FONT_STACK } from "./src/lib/fonts/charset.ts";
+import { INTER_UNICODE_RANGE, MONO_FALLBACK_STACK, SYSTEM_FONT_STACK } from "./src/lib/fonts/charset.ts";
 import { resolveSiteOrigin } from "./src/lib/site-origin.ts";
 import { readingTimePlugin } from "./src/lib/markdown/reading-time.ts";
 import { projectPartsPlugin } from "./src/lib/markdown/project-parts.ts";
@@ -35,9 +35,10 @@ const themeInitSource = readFileSync(new URL("./src/scripts/theme-init.js", impo
 /** @type {`sha256-${string}`} */
 const themeInitHash = `sha256-${createHash("sha256").update(themeInitSource).digest("base64")}`;
 
-// What the four Inter faces share: swap while loading, and the subset's unicode-range.
+// What the eight faces (four Inter, four JetBrains Mono) share: swap while loading, and the
+// subset's unicode-range.
 /** @type {{ display: "swap"; unicodeRange: [string, ...string[]] }} */
-const interFace = { display: "swap", unicodeRange: [INTER_UNICODE_RANGE[0], ...INTER_UNICODE_RANGE.slice(1)] };
+const subsetFace = { display: "swap", unicodeRange: [INTER_UNICODE_RANGE[0], ...INTER_UNICODE_RANGE.slice(1)] };
 
 // https://astro.build/config
 export default defineConfig({
@@ -67,6 +68,10 @@ export default defineConfig({
   // /_astro/fonts/ at build, preloaded by <Font /> in BaseLayout. The system stack is the fallback
   // and Astro adjusts the last generic entry's metrics so the swap does not shift the layout
   // (docs.astro.build/en/guides/fonts/; specs/018-self-hosted-fonts/research.md R1, R6).
+  // JetBrains Mono is the second family, for code: same local provider, four committed subset
+  // files, the same unicode-range, Tailwind's mono stack as fallback with optimized fallbacks.
+  // It has no preload, so only pages that draw code fetch it
+  // (docs.astro.build/en/guides/fonts/; feature 019 research R1, R3).
   fonts: [
     {
       provider: fontProviders.local(),
@@ -76,10 +81,25 @@ export default defineConfig({
       optimizedFallbacks: true,
       options: {
         variants: [
-          { weight: 400, style: "normal", src: ["./src/assets/fonts/Inter-Regular.woff2"], ...interFace },
-          { weight: 400, style: "italic", src: ["./src/assets/fonts/Inter-Italic.woff2"], ...interFace },
-          { weight: 700, style: "normal", src: ["./src/assets/fonts/Inter-Bold.woff2"], ...interFace },
-          { weight: 700, style: "italic", src: ["./src/assets/fonts/Inter-BoldItalic.woff2"], ...interFace },
+          { weight: 400, style: "normal", src: ["./src/assets/fonts/Inter-Regular.woff2"], ...subsetFace },
+          { weight: 400, style: "italic", src: ["./src/assets/fonts/Inter-Italic.woff2"], ...subsetFace },
+          { weight: 700, style: "normal", src: ["./src/assets/fonts/Inter-Bold.woff2"], ...subsetFace },
+          { weight: 700, style: "italic", src: ["./src/assets/fonts/Inter-BoldItalic.woff2"], ...subsetFace },
+        ],
+      },
+    },
+    {
+      provider: fontProviders.local(),
+      name: "JetBrains Mono",
+      cssVariable: "--font-jetbrains-mono",
+      fallbacks: [...MONO_FALLBACK_STACK],
+      optimizedFallbacks: true,
+      options: {
+        variants: [
+          { weight: 400, style: "normal", src: ["./src/assets/fonts/jetbrains-mono/JetBrainsMono-Regular.woff2"], ...subsetFace },
+          { weight: 400, style: "italic", src: ["./src/assets/fonts/jetbrains-mono/JetBrainsMono-Italic.woff2"], ...subsetFace },
+          { weight: 700, style: "normal", src: ["./src/assets/fonts/jetbrains-mono/JetBrainsMono-Bold.woff2"], ...subsetFace },
+          { weight: 700, style: "italic", src: ["./src/assets/fonts/jetbrains-mono/JetBrainsMono-BoldItalic.woff2"], ...subsetFace },
         ],
       },
     },
