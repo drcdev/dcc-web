@@ -120,10 +120,10 @@ row ids instead.
 | StoryHeader note: exact wording for none / `{name}` / `{name, href}`; no note on other statuses; draft notice before the header and note after the meta on a retired draft; link text is the name, same-tab (no `target`), underlined; name-only has no `<a>`; no role/aria on pill or note; no script (FR-005, FR-007, FR-010, FR-012) | component | `tests/component/project/StoryHeader.test.ts` |
 | ProjectRow for a retired project: Retired pill, same `data-themes`, title link unchanged (FR-002, US1-4) | component | `tests/component/project/ProjectRow.test.ts` |
 | RP04/RP05 call site: a retired **draft** naming a missing project fails a **production** build, naming file and id; message carries no canary | build | `tests/build/project-validation.test.ts` "RP04: a retired draft naming a missing project fails a production build" with `tests/fixtures/projects/broken/RP04-missing-replacement.mdx` |
-| Route wiring and draft replacement in production: production build lists the retired row with the Retired pill, builds `/projects/retired/` with all four parts and a note naming "Draft project" without a link; preview build links `/projects/draft/` (FR-002, FR-003, FR-007, SC-001) | build | `tests/build/drafts.test.ts` (add `retired.mdx` with `replace` pointing `project: minimal` at `draft` to the existing two builds; no new build) |
+| Route wiring and draft replacement in production: production build lists the retired row with the Retired pill, builds `/projects/retired/` with all four parts and a note naming "Draft project" without a link; preview build links `/projects/draft/` (FR-002, FR-003, FR-007, SC-001) | build | `tests/build/drafts.test.ts` (add `{ from: "retired.mdx", replace: [["project: minimal", "project: draft"]] }` to the `projects` list of the existing two builds, so only these builds' copy points at the draft fixture; no new build) |
 | Following the note's link reaches the replacement story in one click (SC-002, US2-1) | E2E | `tests/e2e/projects-fixtures.spec.ts` (new test on `/projects/retired/`) |
 | Retired pill computed colours equal the mauve tokens in both themes (FR-004; tokens are what pixels cannot name) | E2E (theme-tokens) | `tests/e2e/theme-tokens.spec.ts`: a `/projects/retired/` entry with a `[data-status="retired"]` probe: background `mauve-50`/`mauve-800`, color `mauve-950`/`mauve-100`, border `mauve-800`/`mauve-300` |
-| Template accessibility with a retired project, story and index (SC-004, FR-012, FR-013) | a11y | `tests/e2e/a11y.spec.ts` "portfolio states": add "the retired fixture story" (`/projects/retired/`) and "the full fixture index" (`/projects/`, which lists the retired row), both widths and themes |
+| Template accessibility with a retired project, story and index (SC-004, FR-012); reflow of the pill and note (FR-013) | a11y | `tests/e2e/a11y.spec.ts` "portfolio states": add "the retired fixture story" (`/projects/retired/`) and "the full fixture index" (`/projects/`, which lists the retired row) to the axe states, both widths and themes; plus the no-horizontal-scroll check (`expectNoHorizontalScroll`) on `/projects/retired/` at 320 CSS px and at 200% zoom, since the TEMPLATES loop that runs it does not reach the fixture site |
 | Template pixels: retired row and retired story header | visual | `tests/e2e/visual.spec.ts`: subjects `project-row-retired` and `retired-story-header` (below) |
 
 No-JS reading (FR-010) has no browser test of its own: the pill and note are static text in the
@@ -137,7 +137,7 @@ prerendered HTML, which the component tests (no `<script>`) and the drafts build
 | `tests/e2e/projects-fixtures.spec.ts` | `ALL` 8 → 9; "lists projects newest first" fixture list gains `"retired"` last (date 2025-01-01, update the dates comment); header comment | The fixture site copies every file in `tests/fixtures/projects/` (except `broken/`), so the new fixture adds a row. Tooling and AI-integration counts unchanged (theme is Automation). |
 | `tests/e2e/visual.spec.ts` | `FIXTURE_PROJECTS` gains `"retired"`; two new subjects; header comment "50 images per platform" → 58, "eight fixture-site subjects" → ten | New template subjects; `onlyFixtureRows` must keep the retired row for its shot. |
 | `tests/unit/content/project-schema.test.ts` | status loop and S02 phrase list include `retired` | FR-001 |
-| `tests/build/project-validation.test.ts` | row 03 phrase list may add `retired`; new RP04 run | Contract S02 (changed), RP04 |
+| `tests/build/project-validation.test.ts` | row 03 phrase list adds `retired`; new RP04 run | Contract S02 (changed), RP04 |
 | `tests/unit/content/projects-guide.test.ts` | values list includes `retired`; walker stops at `reference()` | FR-011, research R2 |
 | `tests/component/project/StatusPill.test.ts` | add `["retired", "Retired"]` | FR-004 |
 | `tests/unit/content/projects-content.test.ts` | add Tempo status/replacement assertion | FR-009; `slugs` and `published` stay the same |
@@ -177,17 +177,22 @@ without it no visual subject shows the new tone or the note (research R7).
 
 ### Order of work (for tasks)
 
-1. Status module, schema and their unit tests (RED then GREEN); guide and template updates.
-2. Replacement check and resolver with unit tests; route wiring; broken fixture and the RP04
-   build run.
-3. Pill tone, StatusPill, StoryHeader note, ProjectRow types, CSS; component tests first.
-4. Fixture `retired.mdx`; drafts build test; e2e link journey, fixture counts, theme tokens,
-   a11y state.
-5. Tempo content and its unit assertion.
-6. Visual subjects and baselines (macOS then Linux).
-7. Docs (`docs/projects.md`, `docs/testing.md`, `docs/design-source.md`).
-8. `[PREVIEW-CHECK]`: Don reviews `/projects/` and `/projects/tempo/` in both themes on the
-   preview deployment.
+1. Status module, schema, replacement check and resolver, each after its unit tests (RED then
+   GREEN); guide and template updates.
+2. Every test for the page changes, written and seen to fail first: component tests (Pill,
+   StatusPill, StoryHeader, ProjectRow), the RP04 build run with its broken fixture, the
+   drafts build test, fixture counts, theme tokens, the a11y states and reflow check, the
+   visual subjects and the e2e link journey.
+3. Fixture `retired.mdx` (test input).
+4. Code: pill tone, StatusPill, ProjectRow types, StoryHeader note and CSS, ProjectLayout, then
+   route wiring, until every step-2 test except the missing baselines is green.
+5. Tempo's unit assertion, then Tempo's content.
+6. Baselines (macOS then Linux) against the prediction below.
+7. Docs (`docs/testing.md`, `docs/design-source.md`; `docs/projects.md` goes with the guide
+   test in step 1).
+8. `[PREVIEW-CHECK]`: Don reviews `/projects/` and `/projects/tempo/` in both themes and at
+   phone width on the preview deployment and judges the filled mauve pill and the note; the
+   wording, missing link and colours are already covered by tests.
 
 ## Project Structure
 
