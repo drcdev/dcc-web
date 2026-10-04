@@ -424,8 +424,8 @@ Each figure is a single run.
 
 | Measure | Before (run 37168636278, `main` push of #58) | After |
 |---|---|---|
-| `e2e` job | 449 s | pending (#49 PR run) |
-| `test:e2e:parallel` step | 320 s | pending (#49 PR run) |
+| `e2e` job | 449 s | 394 s (6 min 34 s), run 37169411244 (PR #59, first run) |
+| `test:e2e:parallel` step | 320 s | 269 s (4 min 29 s), same run |
 | E2E tests | 617 | 611 |
 | Accessibility tests | 626 | 608 |
 | All Playwright tests (`--list`, five local projects) | 1429 | 1405 |
