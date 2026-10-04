@@ -13,9 +13,9 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { topicHref, topics } from "../../src/config/topics.ts";
 import { configSchema } from "../../scripts/setup-check/schemas.ts";
 import { resolveSiteOrigin } from "../../src/lib/site-origin.ts";
+import { inBuild, pages, posts, projects, isSample, sitemapPaths } from "../helpers/content.ts";
 
 const run = promisify(execFile);
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -85,9 +85,9 @@ describe.each(environments)("astro build with the $label environment", ({ env })
   // A draft standalone page is noindex in every build, so the main build's "no robots meta" rule
   // covers the published pages only.
   const isDraftPage = (file: string): boolean => {
-    const slug = relative(outDir, file).replace(/(^|\/)index\.html$/, "") || "index";
-    const source = join(root, "src/content/pages", `${slug}.mdx`);
-    return existsSync(source) && /^draft:\s*true\s*$/m.test(readFileSync(source, "utf-8"));
+    const address = `/${relative(outDir, file).replace(/(^|\/)index\.html$/, "")}`;
+    const normalised = address === "/" ? "/" : `${address}/`;
+    return pages.some((page) => page.draft && page.address === normalised);
   };
 
   it("sets the robots meta tag by build: none on published pages in main, noindex everywhere else", () => {
@@ -150,60 +150,46 @@ describe.each(environments)("astro build with the $label environment", ({ env })
     const entries = [...readFileSync(join(outDir, "sitemap-0.xml"), "utf-8").matchAll(/<loc>([^<]+)<\/loc>/g)].map(
       (m) => m[1]!,
     );
-    // A preview build includes the sample post, which is a draft; production leaves it out (spec 008 R3).
-    // The listing pages are published on every build: all posts and one page per topic (spec 008 US4).
-    const pages = [
-      "/",
-      "/about/",
-      "/contact/",
-      "/privacy-policy/",
-      "/privacy/tempo/",
-      "/projects/",
-      "/services/",
-      "/speaking/",
-      "/technology/",
-      "/terms-of-use/",
-      "/writing/",
-      "/writing/all/",
-      ...topics.map((topic) => topicHref(topic.id)),
-    ];
-    // Don's real posts (feature 010) are published, so every build lists them.
-    const realPosts = [
-      "/writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/",
-      "/writing/self-contained-development-for-ghost-themes/",
-      "/writing/starting-something-new/",
-      "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/",
-    ];
-    const samplePosts = ["/writing/sample-everything/"];
-    // Don has reviewed and published every real project story, so every build lists them.
-    const realProjects = [
-      "/projects/drcdev-github-io/",
-      "/projects/flux/",
-      "/projects/focus-pocus/",
-      "/projects/tempo/",
-    ];
-    const expected =
-      env.WORKERS_CI_BRANCH === "main"
-        ? [...pages, ...realPosts, ...realProjects]
-        : [...pages, ...realPosts, ...realProjects, ...samplePosts];
+    // The sitemap lists every page, the listings and one page per topic, and the posts and projects
+    // the build contains: a production build leaves drafts out, any other build lists them.
+    const expected = sitemapPaths({ production: env.WORKERS_CI_BRANCH === "main" });
     expect([...entries].sort()).toEqual(expected.map((path) => `${expectedOrigin}${path}`).sort());
   });
 
-  it("leaves the draft sample post out of production and builds it, labelled, elsewhere (FR-032, FR-046)", () => {
-    const page = join(outDir, "writing/sample-everything/index.html");
-    if (env.WORKERS_CI_BRANCH === "main") {
-      expect(files.some((f) => f.includes(`${join("writing", "sample-")}`))).toBe(false);
-      // The listing shows the real posts and links to no sample.
-      const listing = readFileSync(join(outDir, "writing/index.html"), "utf-8");
-      expect(listing).toContain('href="/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/"');
-      expect(listing).not.toContain("/writing/sample-");
-      expect(listing).not.toContain("data-draft-label");
-    } else {
-      const html = readFileSync(page, "utf-8");
-      expect(html).toMatch(/data-draft-notice[^>]*>\s*<strong>Draft\.<\/strong>/);
-      expect(html).toMatch(/<meta\s+name="robots"\s+content="noindex"\s*\/?>/);
-      expect(readFileSync(join(outDir, "writing/index.html"), "utf-8")).toContain("data-draft-label");
-    }
+  const production = env.WORKERS_CI_BRANCH === "main";
+  const drafts = [...posts, ...projects].filter((entry) => entry.draft);
+  const pageFile = (address: string) => join(outDir, address, "index.html");
+  const listingOf = (entry: (typeof drafts)[number]) =>
+    readFileSync(join(outDir, entry.collection === "posts" ? "writing/all" : "projects", "index.html"), "utf-8");
+
+  it("has a draft to check: the test-owned sample post is a draft", () => {
+    expect(posts.filter(isSample).every((post) => post.draft)).toBe(true);
+    expect(posts.some(isSample)).toBe(true);
+  });
+
+  it.each(drafts.map((entry) => [entry.address, entry] as const))(
+    "leaves the draft %s out of production and builds it, labelled, elsewhere (FR-032, FR-046)",
+    (_address, entry) => {
+      const label = entry.collection === "posts" ? "data-draft-label" : "data-draft-mark";
+      if (production) {
+        expect(existsSync(pageFile(entry.address)), entry.address).toBe(false);
+        expect(listingOf(entry)).not.toContain(`href="${entry.address}"`);
+        expect(listingOf(entry)).not.toContain(label);
+      } else {
+        const html = readFileSync(pageFile(entry.address), "utf-8");
+        expect(html).toContain("data-draft-notice");
+        expect(html).toMatch(/<meta\s+name="robots"\s+content="noindex"\s*\/?>/);
+        expect(listingOf(entry)).toContain(`href="${entry.address}"`);
+        expect(listingOf(entry)).toContain(label);
+      }
+    },
+  );
+
+  it("lists every post and project the build contains on its listing", () => {
+    const writing = readFileSync(join(outDir, "writing/all/index.html"), "utf-8");
+    for (const post of inBuild(posts, { production })) expect(writing, post.address).toContain(`href="${post.address}"`);
+    const listing = readFileSync(join(outDir, "projects/index.html"), "utf-8");
+    for (const project of inBuild(projects, { production })) expect(listing, project.address).toContain(`href="${project.address}"`);
   });
 
   // The launch paths are checked against the main-branch build: the production environment with the

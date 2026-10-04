@@ -303,7 +303,7 @@ item leaves `verify:quick` green, along with its targeted files:
 | Flux constraint labels and option fits | New rule for every project: each option has exactly one fit per constraint, each fit is `yes`, `partly` or `no`, and constraint labels are non-empty and distinct. The existing rule (4 constraints, at least 3 options, exactly 1 chosen) stays. |
 | FR-082: no site code names `focus-pocus` | Rule for every project slug: no file under `src/{components,layouts,pages,lib,styles}` or `astro.config.mjs` contains the slug as a quoted literal (`["'\`]<slug>["'\`]`) or as `/projects/<slug>`. The implementer checks for false positives on `flux` (the design theme appears in comments, not as a quoted slug) and records the result. |
 
-### W3. Indexing build test and the content-tier guard
+### W3. Indexing build test and the content-tier guard (Done: local-site names about/index.html and indexing imports the helper, so the probe is "reads the helper or names an entry file", project-template exempt)
 
 - **Files:** `tests/build/indexing.test.ts`, `tests/unit/ci/content-tier.test.ts`.
 - **Test:** existing, rewritten, **build layer** (the sitemap and listing are cross-page output
