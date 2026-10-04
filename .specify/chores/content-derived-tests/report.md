@@ -282,3 +282,19 @@ Both problems go away if the fixture dates are reverted and `blog-fixtures.spec.
 2. Rewrite the five fixture assertions in `blog-fixtures.spec.ts` as described in C1.
 3. Re-run `--project visual` (expect 50 passed), plus `--project sections` for `blog-fixtures` and `blog-pagination`.
 4. Fix the header comment (L11).
+
+## Round 2 confirmation
+
+Final read-only pass over the round-2 fix commit (ec23472). 0 CRITICAL, 0 HIGH, 0 LOW new.
+
+- **C1: Closed.** `scripts/build-fixture-site.ts` is byte-identical to `main`, and the spec no longer overrides fixture dates.
+  - The fixed `toContain("/writing/fixture-post-01/")` and `latest.slice(0, 2)` checks are gone.
+  - The text-only card is checked on every run on the fixture-cards page (no `img`, plus `data-text-only`). On the landing it is checked only when the computed landing grid includes it, and otherwise its count is asserted to be 0.
+  - The long-title wrap is checked on every run on the fixture-cards page (h2) and on the post page (h1), and on `/`, the landing, `/writing/all/` and technology-teams only when the computed Recent, landing grid or page-1 slice includes it. A missing post makes the check fail rather than skip.
+  - Featured and Latest are each compared with the computed landing selection, and the number of Featured marks equals `featured.length` (never 0: fixture-post-01 is always featured and is not the lead).
+  - Technology-teams page 1 is compared with the computed `.slice(0, blog.pageSize)`; the fixture-cards page is compared with `hrefsWithTopic("fixture-cards")` and includes `LONG_TITLE` and `TEXT_ONLY`.
+  - `main` guarantees that moved rather than disappeared: the "exactly one text-only card on the landing" check (now href-based plus fixture-cards); the pinned Featured, Latest and home sequences (now computed selections); the Starting and Focus Pocus absence checks (now the "not shown" loop); "text-only among the technology-teams posts" (now on fixture-cards).
+- **H5: Closed.** `git diff main...HEAD -- scripts/` is empty; the diff stays inside Acceptance 7's scope.
+- **L11: Closed.** The header comment says fixture-post-01 is dated 2026-06-30 and posts 02 to 13 run 2026-06-29 back to 2026-06-18, matching the generator on `main`. The far-future note is gone.
+- **L12: Closed.** The landing-test comment keeps "every-part is the lead (2099)" and adds that the fixture posts' places in Featured and Latest are asserted only through the computed selection.
+- Guard `tests/unit/content/no-real-content-in-tests.test.ts`: 69 passed.
