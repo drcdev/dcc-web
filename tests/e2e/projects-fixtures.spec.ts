@@ -1,14 +1,18 @@
 // The projects index on the fixture site (port 4322, playwright.config.ts project
-// `sections`): the repository's projects (Focus Pocus and the three drafts migrated
-// from the first drc.dev) plus the four fixtures, so filtering, clearing, sharing and
+// `sections`): the repository's projects plus the four fixtures, so filtering, clearing, sharing and
 // the unknown-theme message have something to work on (US4; contracts/filter-island.md;
 // FR-014).
 import { expect, test, type Page } from "@playwright/test";
+import { themeKey } from "../../src/lib/content/themes";
+import { projects, readEntries } from "../helpers/content.ts";
 import { cspViolations, recordCspViolations } from "./csp-violations.ts";
 
 const INDEX = "/projects/";
-// Four repository projects and four fixtures. A new project in src/content/projects/ adds one.
-const ALL = 8;
+// The fixture site is not a production build, so drafts count: every repository project plus the fixtures.
+const ALL_PROJECTS = [...projects, ...readEntries("projects", "tests/fixtures/projects")];
+const ALL = ALL_PROJECTS.length;
+const TOOLING = ALL_PROJECTS.filter((project) => (project.data.themes as string[]).map(themeKey).includes("tooling")).length;
+if (TOOLING < 2) throw new Error("The fixtures put Tooling on two projects, so the count is always plural.");
 const rows = (page: Page) => page.locator("[data-project]:not([hidden])");
 const status = (page: Page) => page.locator("[data-filter-status]");
 
@@ -23,7 +27,7 @@ test("lists every project, with the controls ready", async ({ page }) => {
 
 test("theme variants collapse to one button", async ({ page }) => {
   await page.goto(INDEX);
-  // Tooling is on two projects and AI integration on two: one button each.
+  // Tooling and AI integration are each on several projects: one button each.
   await expect(page.locator('button[data-theme="tooling"]')).toHaveCount(1);
   await expect(page.locator('button[data-theme="ai-integration"]')).toHaveCount(1);
 });
@@ -31,8 +35,8 @@ test("theme variants collapse to one button", async ({ page }) => {
 test("filters by theme, announces the count and clears", async ({ page }) => {
   await page.goto(INDEX);
   await page.locator('button[data-theme="tooling"]').click();
-  await expect(rows(page)).toHaveCount(2);
-  await expect(status(page)).toHaveText("Showing 2 projects about Tooling.");
+  await expect(rows(page)).toHaveCount(TOOLING);
+  await expect(status(page)).toHaveText(`Showing ${TOOLING} projects about Tooling.`);
   await expect(page).toHaveURL(/\/projects\/\?theme=tooling$/);
   await expect(page.locator('button[data-theme="tooling"]')).toHaveAttribute("aria-pressed", "true");
   await page.locator("[data-filter-all]").click();
@@ -51,11 +55,11 @@ test("keeps focus on the pressed button", async ({ page }) => {
 
 test("reloading or sharing ?theme= applies the filter", async ({ page }) => {
   await page.goto(`${INDEX}?theme=tooling`);
-  await expect(rows(page)).toHaveCount(2);
+  await expect(rows(page)).toHaveCount(TOOLING);
   await expect(page.locator('button[data-theme="tooling"]')).toHaveAttribute("aria-pressed", "true");
-  await expect(status(page)).toHaveText("Showing 2 projects about Tooling.");
+  await expect(status(page)).toHaveText(`Showing ${TOOLING} projects about Tooling.`);
   await page.reload();
-  await expect(rows(page)).toHaveCount(2);
+  await expect(rows(page)).toHaveCount(TOOLING);
 });
 
 test("an unknown theme lists nothing, says so and keeps the address until cleared", async ({ page }) => {
@@ -96,7 +100,7 @@ test("announces the status as a polite live region", async ({ page }) => {
   await expect(status(page)).toHaveAttribute("role", "status");
   await page.locator('button[data-theme="tooling"]').click();
   await page.locator('button[data-theme="tooling"]').click();
-  await expect(status(page)).toHaveText("Showing 2 projects about Tooling.");
+  await expect(status(page)).toHaveText(`Showing ${TOOLING} projects about Tooling.`);
 });
 
 test("filter targets are at least 24x24 px", async ({ page }) => {
@@ -165,10 +169,10 @@ test.describe("demos", () => {
     expect(await cspViolations(page)).toEqual([]);
   });
 
-  test("a stand-in story (Focus Pocus) has no frame and says it is not a live demo", async ({ page }) => {
-    await page.goto("/projects/focus-pocus/");
+  test("a stand-in story has no frame and says it is not a live demo", async ({ page }) => {
+    await page.goto("/projects/every-part/");
     await expect(page.locator("iframe")).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Focus Pocus on drc.dev" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Every part stand-in" })).toBeVisible();
     await expect(page.getByText("This is not a live demo.")).toBeVisible();
   });
 

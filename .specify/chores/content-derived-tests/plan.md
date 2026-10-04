@@ -485,7 +485,7 @@ item leaves `verify:quick` green, along with its targeted files:
 - **Coverage mapping:** the fixed fixture-item assertions are kept. The real-post contributions
   are computed. Nothing removed.
 
-### W10. Fixture-site projects spec
+### W10. Fixture-site projects spec (Done: the stand-in test now runs on every-part; the Tooling count guard throws if it drops below two)
 
 - **Files:** `tests/e2e/projects-fixtures.spec.ts`.
 - **Test:** existing, rewritten, **e2e layer** (`sections`).
