@@ -132,6 +132,7 @@ describe("wrangler.jsonc", () => {
     expect(read("playwright.config.ts")).toContain("wrangler dev --config wrangler.e2e.json");
     const script = read("scripts/e2e-wrangler-config.ts");
     expect(script).toContain("delete config.ai");
+    expect(script).toContain("delete env.ai");
     expect(read(".gitignore")).toMatch(/^wrangler\.e2e\.json$/m);
     expect(config.ai).toEqual({ binding: "AI" });
   });

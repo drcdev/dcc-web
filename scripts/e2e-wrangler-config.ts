@@ -14,4 +14,7 @@ const config = JSON.parse(
 ) as Record<string, unknown>;
 delete config.ai;
 delete config.$schema;
+for (const env of Object.values((config.env ?? {}) as Record<string, Record<string, unknown>>)) {
+  delete env.ai;
+}
 writeFileSync(fileURLToPath(new URL("wrangler.e2e.json", root)), `${JSON.stringify(config, null, 2)}\n`);
