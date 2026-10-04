@@ -77,6 +77,9 @@ describe("PostCard image and text-only variants (FR-011)", () => {
     expect(img!.attrs.width).toBeTruthy();
     expect(img!.attrs.height).toBeTruthy();
     expect(img!.attrs.loading).toBe("lazy");
+    const classes = classList(img!);
+    expect(classes).toContain("aspect-[16/9]");
+    expect(classes).toContain("object-cover");
     const article = byName(html, "article")[0]!;
     expect("data-text-only" in article.attrs).toBe(false);
     expect(html.indexOf("<img")).toBeLessThan(html.indexOf("<a "));
