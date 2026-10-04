@@ -24,6 +24,12 @@ describe("PostHero", () => {
     expect(img.attrs.fetchpriority).toBe("high");
   });
 
+  it("puts no quality parameter on any image candidate URL (FR-006)", async () => {
+    const html = await container.renderToString(PostHero, { props: { image: { src: sample, alt: "x" } } });
+    const [img] = byName(html, "img");
+    expect(`${img!.attrs.src} ${img!.attrs.srcset ?? ""}`).not.toMatch(/[?&]q=/);
+  });
+
   it("is not wrapped in a link", async () => {
     const html = await container.renderToString(PostHero, { props: { image: { src: sample, alt: "x" } } });
     expect(byName(html, "a")).toHaveLength(0);
