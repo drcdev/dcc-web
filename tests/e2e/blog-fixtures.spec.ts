@@ -6,16 +6,17 @@
 // whose title is very long and holds an unbroken word (technology-teams,
 // fixture-cards), and every-part.mdx, a featured post that shows every part of the post template
 // (2099-01-01, so it is always the lead; drift, compliant-data, healthcare-leadership,
-// fixture-cards). It also adds 13 generated posts, fixture-post-01 to -13, dated 2026-06-29 back
-// to 2026-06-18, all on agentic-ai; fixture-post-01 is featured. text-only, long-title and
-// fixture-post-01 get far-future dates on the fixture site (2098-12-30, 2098-12-31 and 2098-12-29,
-// scripts/build-fixture-site.ts), so a real post never moves them out of the lists checked here. The lists these tests check
-// (landing, topic page, home) are computed from the site's own posts plus those, so a new story
-// never needs a test change; the assertions about the fixture posts themselves stay fixed.
+// fixture-cards). It also adds 13 generated posts, fixture-post-01 to -13, all on agentic-ai:
+// fixture-post-01 is dated 2026-06-30 and featured, and posts 02 to 13 run 2026-06-29 back to
+// 2026-06-18. The lists these tests check (landing, topic page, home) are computed from the site's
+// own posts plus those, so a new story never needs a test change. A fixture post's place in a list
+// is asserted only through that computed selection; the fixture-only topic page fixture-cards
+// holds the three fixture-owned posts whatever else the site gains, so the no-image card and the
+// long-title wrap are always checked there.
 import { test, expect, type Page } from "@playwright/test";
 import { blog } from "../../src/config/blog.ts";
 import { selectLanding, selectRecent, sortNewestFirst } from "../../src/lib/content/post-order.ts";
-import { FIXTURE_POSTS, FIXTURE_POST_DATES, generateFixturePosts } from "../../scripts/build-fixture-site.ts";
+import { FIXTURE_POSTS, generateFixturePosts } from "../../scripts/build-fixture-site.ts";
 import { posts, postSummary, readEntries } from "../helpers/content.ts";
 
 const LANDING = "/writing/";
@@ -38,15 +39,13 @@ const generated = generateFixturePosts().map((post) => {
 });
 const fixtureOwned = readEntries("posts", "tests/fixtures/posts/valid")
   .filter((entry) => (FIXTURE_POSTS as readonly string[]).includes(`${entry.slug}.mdx`))
-  .map(postSummary)
-  // The fixture site dates two of them in the far future (scripts/build-fixture-site.ts).
-  .map((post) => {
-    const date = FIXTURE_POST_DATES[`${post.slug}.mdx`];
-    return date === undefined ? post : { ...post, date: new Date(date) };
-  });
+  .map(postSummary);
 // Every post the fixture site builds, newest first. It is not a production build, so drafts are built.
 const SITE_POSTS = sortNewestFirst([...posts.map(postSummary), ...fixtureOwned, ...generated]);
 const LANDING_POSTS = selectLanding(SITE_POSTS);
+const LANDING_GRID_HREFS = [...LANDING_POSTS.featured, ...LANDING_POSTS.latest].map((post) => post.href);
+const RECENT_HREFS = selectRecent(SITE_POSTS).map((post) => post.href);
+const FIXTURE_CARDS = "/writing/topics/fixture-cards/";
 const hrefsWithTopic = (id: string) => SITE_POSTS.filter((post) => post.topics.includes(id)).map((post) => post.href);
 
 const noSidewaysScroll = async (page: Page, what: string) => {
@@ -63,27 +62,41 @@ const cardHrefs = (page: Page, selector: string) =>
 test.describe("landing page on the fixture site", () => {
   // every-part is the lead (2099). Featured holds the newest featured posts and Latest the newest
   // others, both computed from the site's posts, so no post outside the lead, Featured and Latest
-  // is linked in those grids.
+  // is linked in those grids. The fixture posts' places in Featured and Latest are asserted only
+  // through that computed selection.
   test("fills Featured with the newest featured posts and Latest with the newest others", async ({ page }) => {
     await page.goto(LANDING);
     expect(await page.locator("[data-lead-story] h2 a").getAttribute("href")).toBe("/writing/every-part/");
     expect(LANDING_POSTS.lead?.href).toBe("/writing/every-part/");
     const featured = await cardHrefs(page, "[data-featured-grid]");
     expect(featured).toEqual(LANDING_POSTS.featured.map((post) => post.href));
-    expect(featured).toContain("/writing/fixture-post-01/");
     await expect(page.locator("[data-featured-grid] [data-featured-mark]")).toHaveCount(featured.length);
     const latest = await cardHrefs(page, "[data-latest-grid]");
     expect(latest).toEqual(LANDING_POSTS.latest.map((post) => post.href));
-    expect(latest.slice(0, 2)).toEqual([LONG_TITLE, TEXT_ONLY]);
     const shown = new Set([LANDING_POSTS.lead!, ...LANDING_POSTS.featured, ...LANDING_POSTS.latest].map((post) => post.href));
     for (const post of SITE_POSTS.filter((candidate) => !shown.has(candidate.href))) {
       await expect(page.locator(`main a[href="${post.href}"]`), post.href).toHaveCount(0);
     }
   });
 
-  test("shows the text-only post as a card with no image and no empty picture box", async ({ page }) => {
+  test("shows the text-only post as a card with no image and no empty picture box when the landing lists it", async ({ page }) => {
     await page.goto(LANDING);
-    const textOnly = page.locator(`[data-post-card]:has(h3 a[href="${TEXT_ONLY}"])`);
+    const textOnly = page.locator(`[data-post-card]:has(a[href="${TEXT_ONLY}"])`);
+    if (!LANDING_GRID_HREFS.includes(TEXT_ONLY)) {
+      await expect(textOnly).toHaveCount(0);
+      return;
+    }
+    await expect(textOnly).toHaveCount(1);
+    await expect(textOnly).toHaveAttribute("data-text-only", /.*/);
+    await expect(textOnly.locator("img")).toHaveCount(0);
+  });
+});
+
+test.describe("fixture-only topic page", () => {
+  // Only the three fixture-owned posts carry fixture-cards, so they are always on its one page.
+  test("shows the text-only post as a card with no image and no empty picture box", async ({ page }) => {
+    await page.goto(FIXTURE_CARDS);
+    const textOnly = page.locator(`[data-post-card]:has(a[href="${TEXT_ONLY}"])`);
     await expect(textOnly).toHaveCount(1);
     await expect(textOnly).toHaveAttribute("data-text-only", /.*/);
     await expect(textOnly.locator("img")).toHaveCount(0);
@@ -107,13 +120,16 @@ test.describe("post with no feature image", () => {
 test.describe("very long title", () => {
   test("wraps without sideways scrolling at 320 px on every page that shows it", async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 640 });
-    for (const [path, heading] of [
-      ["/", "h3"],
-      [LANDING, "h3"],
-      ["/writing/all/", "h2"],
-      ["/writing/topics/technology-teams/", "h2"],
+    const technologyTeams = hrefsWithTopic("technology-teams");
+    const pages: Array<readonly [string, string]> = [
+      [FIXTURE_CARDS, "h2"],
       [LONG_TITLE, "h1"],
-    ] as const) {
+    ];
+    if (RECENT_HREFS.includes(LONG_TITLE)) pages.push(["/", "h3"]);
+    if (LANDING_GRID_HREFS.includes(LONG_TITLE)) pages.push([LANDING, "h3"]);
+    if (SITE_POSTS.findIndex((post) => post.href === LONG_TITLE) < blog.pageSize) pages.push(["/writing/all/", "h2"]);
+    if (technologyTeams.indexOf(LONG_TITLE) < blog.pageSize) pages.push(["/writing/topics/technology-teams/", "h2"]);
+    for (const [path, heading] of pages) {
       await page.goto(path);
       await expect(page.locator(heading, { hasText: LONG_TITLE_START }).first(), path).toBeVisible();
       await noSidewaysScroll(page, path);
@@ -122,12 +138,20 @@ test.describe("very long title", () => {
 });
 
 test.describe("topic page on the fixture site", () => {
-  test("lists the technology-teams posts newest first, the text-only card among them", async ({ page }) => {
+  test("lists the first page of technology-teams posts newest first", async ({ page }) => {
     await page.goto("/writing/topics/technology-teams/");
     const hrefs = await page
       .locator("main [data-post-card] h2 a")
       .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
-    expect(hrefs).toEqual(hrefsWithTopic("technology-teams"));
+    expect(hrefs).toEqual(hrefsWithTopic("technology-teams").slice(0, blog.pageSize));
+  });
+
+  test("lists the fixture-cards posts, the long-title and text-only cards among them", async ({ page }) => {
+    await page.goto(FIXTURE_CARDS);
+    const hrefs = await page
+      .locator("main [data-post-card] h2 a")
+      .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+    expect(hrefs).toEqual(hrefsWithTopic("fixture-cards"));
     expect(hrefs).toEqual(expect.arrayContaining([LONG_TITLE, TEXT_ONLY]));
   });
 });

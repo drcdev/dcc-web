@@ -610,3 +610,11 @@ Review round 1 (H1 to H4, L1) fixed; nothing else touched.
 - **H4** `projects-no-js.spec.ts`: the stand-in link name defaults to `` `${title} on drc.dev` `` and the local type makes `label` optional.
 - **L1** `indexing.test.ts`: `production` is `isProductionBuild(env)`, used for the sitemap and the drafts checks.
 - **Proof:** five scratch unfeatured, image-less posts dated 2026-10-03 (26 posts, three pages, text-only lead): `sections` pagination and fixtures specs and the `e2e` landing and no-JS specs all passed, then the scratch posts were deleted.
+
+## Round 2 fixes
+
+Review round 2 (C1, H5, L11, L12) fixed; nothing else touched.
+
+- **C1, H5** `scripts/build-fixture-site.ts` is back to `main` (no `FIXTURE_POST_DATES`, `FEATURED_FIXTURE_DATE` or `readFileSync`), so the `listing-cards` baselines are untouched and nothing under `scripts/` is in the diff. `blog-fixtures.spec.ts` drops the date override and the fixed Featured and `latest.slice(0, 2)` checks (the computed-selection assertions cover them). The text-only card and the long-title wrap are checked always on `/writing/topics/fixture-cards/` (and `LONG_TITLE` on its own page), and on `/`, the landing, `/writing/all/` and `/writing/topics/technology-teams/` only when the computed selection or page-1 slice includes the post. The technology-teams page 1 is compared with `hrefsWithTopic(...).slice(0, blog.pageSize)`; the `arrayContaining([LONG_TITLE, TEXT_ONLY])` check moved to the fixture-cards page.
+- **L11, L12** header comment and landing-test comment corrected (fixture-post-01 is 2026-06-30, posts 02 to 13 run 2026-06-29 back to 2026-06-18; no far-future note).
+- **Proof:** five scratch unfeatured, image-less posts dated 2026-10-03 under `src/content/posts/`: the two sections specs passed (19 tests); scratch posts deleted, `src/content/` clean. Visual project: 50 passed, no PNG changed.
