@@ -16,6 +16,10 @@
 // updateSnapshots "none" (a missing baseline fails) come from
 // playwright.config.ts.
 //
+// Every shot waits for the self-hosted Inter faces first (settleFonts): document.fonts.ready,
+// no FontFace still loading, and Regular and Bold loaded, so a face is never mid-swap
+// when the screenshot is taken (issue #62, FR-011).
+//
 // The footer year is frozen to 2026 before every shot (freezeFooterYear), so a
 // new calendar year cannot fail the shell, not-found or sections shots (issue #45).
 import { test, expect, type Locator, type Page } from "@playwright/test";
@@ -36,6 +40,28 @@ async function open(page: Page, path: string, width: number, height: number, the
   await freezeFooterYear(page);
   await expectThemeClass(page, theme);
   await settleImages(page);
+  await settleFonts(page);
+}
+
+async function settleFonts(page: Page) {
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+  // Astro registers the family as `Inter-<hash>`, so `document.fonts.check('400 16px "Inter"')`
+  // names a family with no faces and passes whatever happens. The faces are found by that hashed
+  // family instead, and Regular and Bold (normal style) must both have loaded.
+  await page.waitForFunction(
+    () => {
+      const faces = Array.from(document.fonts);
+      const loaded = (weight: string) => {
+        const inter = faces.filter(
+          (face) => /^"?Inter-[0-9a-f]+"?$/.test(face.family) && face.weight === weight && face.style === "normal",
+        );
+        return inter.length > 0 && inter.every((face) => face.status === "loaded");
+      };
+      return faces.every((face) => face.status !== "loading") && loaded("400") && loaded("700");
+    },
+    undefined,
+    { timeout: 10_000 },
+  );
 }
 
 // Astro renders images with loading="lazy", so an image below the first

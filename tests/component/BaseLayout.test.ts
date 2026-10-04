@@ -193,3 +193,79 @@ describe("BaseLayout head slot (blog feed link; research R3)", () => {
   });
 });
 
+
+describe("fonts", () => {
+  // Layer component: head markup from the Container API (F01 to F05; FR-001, FR-004, FR-005,
+  // FR-006, FR-012). If the container cannot resolve the Fonts API virtual module, these
+  // assertions move to the build test, as the tasks say.
+  const head = () => html.slice(html.indexOf("<head"), html.indexOf("</head>"));
+  const fontStyle = () => {
+    const styles = [...head().matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]!);
+    const found = styles.filter((s) => s.includes("@font-face"));
+    expect(found).toHaveLength(1);
+    return found[0]!;
+  };
+  const faces = (css: string) => [...css.matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]!);
+  const prop = (face: string, name: string) => new RegExp(`(?:^|[;\\s])${name}:\\s*([^;]+);?`).exec(face)?.[1]?.trim() ?? "";
+  // Astro registers the family under a hashed name (Inter-<hash>), so the family is matched by shape.
+  const isInter = (face: string) => /^Inter-[0-9a-f]+$/.test(prop(face, "font-family").replace(/["']/g, ""));
+
+  it("holds four Inter faces, swapped, ranged, same-origin woff2", () => {
+    const inter = faces(fontStyle()).filter(isInter);
+    expect(inter).toHaveLength(4);
+    const combos = inter.map((f) => `${prop(f, "font-weight")} ${prop(f, "font-style")}`).sort();
+    expect(combos).toEqual(["400 italic", "400 normal", "700 italic", "700 normal"]);
+    for (const face of inter) {
+      expect(prop(face, "font-display")).toBe("swap");
+      expect(prop(face, "unicode-range")).not.toBe("");
+      expect(face).toMatch(/src:\s*url\(\s*["']?\/_astro\/fonts\/[^"')]+\.woff2["']?\s*\)\s*format\(["']woff2["']\)/);
+    }
+  });
+
+  it("holds four metric-adjusted fallback faces from local Arial only", () => {
+    const css = fontStyle();
+    const inter = faces(css).filter(isInter);
+    const fallbacks = faces(css).filter((f) => !isInter(f));
+    expect(fallbacks).toHaveLength(4);
+    for (const face of fallbacks) {
+      expect(face).toMatch(/src:\s*local\(["']Arial(?: Bold)?["']\)/);
+      expect(face).not.toContain("url(");
+      for (const p of ["size-adjust", "ascent-override", "descent-override", "line-gap-override"]) {
+        expect(prop(face, p), p).not.toBe("");
+      }
+      const match = inter.find(
+        (i) =>
+          prop(i, "font-weight") === prop(face, "font-weight") &&
+          prop(i, "font-style") === prop(face, "font-style"),
+      );
+      expect(match, "matching Inter face").toBeDefined();
+      // Astro gives the fallback faces no unicode-range, so they cover every character.
+      expect(prop(face, "unicode-range")).toBe("");
+    }
+  });
+
+  it("lists Inter, the fallback family, then the system stack in --font-inter", () => {
+    const value = /--font-inter:\s*([^;}]+)/.exec(fontStyle())?.[1] ?? "";
+    const families = value.split(",").map((f) => f.trim());
+    expect(families[0]!.replace(/["']/g, "")).toMatch(/^Inter-[0-9a-f]+$/);
+    expect(families.slice(1, 3).every((f) => /fallback: Arial/.test(f))).toBe(true);
+    expect(families.length).toBeGreaterThan(3);
+    expect(families.at(-1)).toBe("sans-serif");
+  });
+
+  it("preloads exactly the regular and bold upright files", () => {
+    const preloads = byName(head(), "link").filter((l) => l.attrs.rel === "preload");
+    expect(preloads).toHaveLength(2);
+    for (const l of preloads) {
+      expect(l.attrs.as).toBe("font");
+      expect(l.attrs.type).toBe("font/woff2");
+      expect("crossorigin" in l.attrs).toBe(true);
+      expect(l.attrs.href).toMatch(/^\/_astro\/fonts\/[^/]+\.woff2$/);
+    }
+  });
+
+  it("names no off-origin URL in the font markup", () => {
+    const links = head().match(/<link[^>]*preload[^>]*>/g)?.join("") ?? "";
+    expect(((fontStyle() + links).match(/https?:\/\/[^\s"')]+/g)) ?? []).toEqual([]);
+  });
+});

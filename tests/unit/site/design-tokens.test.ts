@@ -88,14 +88,15 @@ describe("src/styles/global.css design tokens", () => {
     expect(block).toMatch(/outline-color:\s*CanvasText/i);
   });
 
-  it("sets --font-body and --font-heading to system font stacks", () => {
-    expect(css).toMatch(/--font-body:\s*[^;]+;/);
-    expect(css).toMatch(/--font-heading:\s*[^;]+;/);
-    // System stacks should not reference a hosted/web font family like a Google Fonts name.
-    const bodyDecl = css.match(/--font-body:\s*([^;]+);/)?.[1] ?? "";
-    const headingDecl = css.match(/--font-heading:\s*([^;]+);/)?.[1] ?? "";
-    expect(bodyDecl).toMatch(/system-ui|sans-serif|serif|monospace/);
-    expect(headingDecl).toMatch(/system-ui|sans-serif|serif|monospace/);
+  it("sets --font-body and --font-heading to the self-hosted Inter variable (F07)", () => {
+    expect(css.match(/--font-body:\s*([^;]+);/)?.[1]?.trim()).toBe("var(--font-inter)");
+    expect(css.match(/--font-heading:\s*([^;]+);/)?.[1]?.trim()).toBe("var(--font-inter)");
+  });
+
+  it("keeps pre and code in the body-font element rule (F08, FR-008)", () => {
+    const rule = css.match(/([^{}]*)\{\s*font-family:\s*var\(--font-body\);\s*\}/)?.[1] ?? "";
+    expect(rule).toMatch(/\bpre\b/);
+    expect(rule).toMatch(/\bcode\b/);
   });
 
   it("has no @font-face declaration", () => {

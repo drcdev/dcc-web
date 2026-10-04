@@ -120,11 +120,10 @@
 
   /* ===== END BRAND COLORS ===== */
 
-  /* Fonts - system stacks only; no web fonts, no font service (FR-003) */
-  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  --font-heading: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  /* Fonts - self-hosted Inter via Astro's Fonts API (--font-inter is emitted by <Font /> in
+     BaseLayout); the system stack is its fallback; no font service */
+  --font-body: var(--font-inter);
+  --font-heading: var(--font-inter);
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
