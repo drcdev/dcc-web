@@ -29,6 +29,15 @@ Constitution Principle III: Don approves the pull request after checking the pre
 deployment. It also supersedes the "system font stack, no web fonts" part of the site
 foundation's FR-003 (feature 002, site foundation).
 
+## Clarifications
+
+### Session 2026-10-03
+
+- Q: Should medium-weight text (weight 500) render in Inter Regular 400 or Inter Bold 700, now that only 400 and 700 ship? → A: Standard CSS font matching decides, with no class changes: 500 renders as 400; 600 and 800 render as 700. The plan lists the affected components.
+- Q: Which characters must the shipped Inter files contain? → A: Printable ASCII, all of Latin-1 (U+00A0–U+00FF), the common typographic punctuation – — ‘ ’ “ ” … •, and → ✓ ✗ where Inter has those glyphs. Size savings come from dropping OpenType features, keeping kerning.
+- Q: Should a test fail when a visual-test subject draws a character the shipped Inter files do not contain? → A: Yes, for the visual subjects only (shell, not-found page and fixture site). Fixture text with uncovered characters is changed or explicitly excluded; real content is not checked.
+- Q: How should font files be cached between page views? → A: Fingerprinted filenames emitted by the Astro build, served with `Cache-Control: public, max-age=31536000, immutable`.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - A predicted visual change lands green first time (Priority: P1)
@@ -112,13 +121,15 @@ baselines must be complete and correct for the gate to stay meaningful.
 
 - **Font fails to load** (blocked, offline, slow): text stays readable in the current system
   font stack; nothing is hidden or blank while waiting.
-- **Characters outside the latin subset** (for example a rare accented letter or symbol in a
-  post): the browser falls back to the system stack for those characters only; the page still
-  renders and the build does not fail.
-- **Unshipped weights**: a weight or style the site does not ship (for example a semibold or
-  medium weight used by a component) must not be synthesized by the browser in a way that
-  differs between environments; each such use either maps to a shipped face or is listed and
-  resolved in the plan.
+- **Characters outside the shipped character set** (for example a letter outside Latin-1, an
+  emoji or a box-drawing symbol in a post): the browser falls back to the system stack for those
+  characters only; the page still renders and the build does not fail. Visual-test subjects are
+  the exception: a guard test fails if they draw an uncovered character, unless that character
+  is explicitly excluded (FR-016).
+- **Unshipped weights**: weights the site does not ship resolve to a shipped face through
+  standard CSS font matching, with no class changes and no synthesized weight: medium (500)
+  renders as regular (400); semibold (600) and extrabold (800) render as bold (700). The plan
+  lists the affected components.
 - **Heaviest page**: the page with the most content transferred must still fit the 100 KB total
   transfer budget with the fonts included. If any page cannot fit, the work stops and is reported
   to Don; the budget is not raised.
@@ -134,7 +145,10 @@ baselines must be complete and correct for the gate to stay meaningful.
 
 - **FR-001**: Every public page MUST render headings and body text in the Inter typeface.
 - **FR-002**: The site MUST ship exactly four Inter faces: regular (400), italic (400),
-  bold (700) and bold italic (700), each limited to the latin character subset.
+  bold (700) and bold italic (700). Each MUST contain exactly the shipped character set:
+  printable ASCII, all of Latin-1 (U+00A0–U+00FF), the typographic punctuation – — ‘ ’ “ ” … •,
+  and → ✓ ✗ where Inter has those glyphs. OpenType features MAY be dropped to save bytes, but
+  kerning MUST be kept.
 - **FR-003**: Italic and bold-italic text MUST render with Inter's real italic faces, never a
   browser-synthesized slant or weight.
 - **FR-004**: Font files MUST be committed to the repository and served from the site's own
@@ -160,15 +174,26 @@ baselines must be complete and correct for the gate to stay meaningful.
 - **FR-013**: The Inter licence (SIL Open Font License) MUST be included alongside the font files
   in the repository, as the licence requires.
 - **FR-014**: The change MUST add no recurring cost and no new external service.
-- **FR-015**: Font files MUST be served so that browsers can cache them across page views.
+- **FR-015**: Font files MUST be emitted by the Astro build with fingerprinted (content-hashed)
+  filenames and served with `Cache-Control: public, max-age=31536000, immutable`, so browsers
+  cache them across page views.
+- **FR-016**: A guard test MUST fail when any visual-test subject (shell, not-found page or
+  fixture site) draws a character outside the shipped character set. Fixture text with an
+  uncovered character is changed, or the character is explicitly excluded in the test. Real
+  site content is not checked.
+- **FR-017**: Weights other than 400 and 700 MUST resolve through standard CSS font matching
+  with no class changes (500 renders as 400; 600 and 800 render as 700), and the browser MUST
+  NOT synthesize a weight or slant.
 
 ### Key Entities
 
 - **Font face**: one of the four shipped Inter files, defined by its weight (400 or 700), style
-  (normal or italic), character subset (latin) and size in bytes, which counts against the page
-  budget.
+  (normal or italic), the shipped character set (FR-002), its fingerprinted filename and its size
+  in bytes, which counts against the page budget.
+- **Shipped character set**: printable ASCII, Latin-1, – — ‘ ’ “ ” … • and → ✓ ✗ (where Inter
+  has them); the same set in all four faces.
 - **Fallback stack**: the current system font stack, used while Inter loads, if it fails, and
-  for characters outside the latin subset.
+  for characters outside the shipped character set.
 - **Visual baseline**: a committed reference screenshot per subject and platform; 66 per
   platform, 132 in total.
 
@@ -189,6 +214,10 @@ baselines must be complete and correct for the gate to stay meaningful.
 - **SC-006**: All 132 visual baselines are refreshed in one pull request, and no other visual
   diff appears.
 - **SC-007**: Running costs are unchanged (no new service, $0 added per month).
+- **SC-008**: The guard test finds zero uncovered characters in the visual-test subjects, apart
+  from characters it explicitly excludes.
+- **SC-009**: A second page view downloads zero font bytes, because the font files carry
+  fingerprinted names and a one-year immutable cache header.
 
 ## Decisions
 
@@ -217,8 +246,8 @@ These were settled by Don before the specification and are not open for clarific
   change is expected.
 - After this change, no visual subject depends on fonts installed on the machine running the
   tests for the shipped weights and styles.
-- Any weight other than 400 and 700 that components request is mapped to the nearest shipped
-  face; the plan lists any such usage.
+- Any weight other than 400 and 700 that components request resolves through standard CSS font
+  matching (FR-017); the plan lists any such usage.
 - Docker remains the local way to regenerate Linux baselines; the CI label fallback stays
   available but should no longer be needed for a predicted change.
 - This is a major change under Constitution Principle III (design system and visual identity);
