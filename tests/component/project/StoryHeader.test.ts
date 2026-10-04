@@ -63,24 +63,24 @@ describe("StoryHeader", () => {
     });
 
     it("names a replacement without a link", async () => {
-      const html = await render(StoryHeader, { ...retired, replacement: { name: "Cadence" } });
-      expect(noteText(html)).toBe(`${lead} It was replaced by Cadence.`);
+      const html = await render(StoryHeader, { ...retired, replacement: { name: "Metronome" } });
+      expect(noteText(html)).toBe(`${lead} It was replaced by Metronome.`);
       expect(byName(html, "a")).toHaveLength(0);
     });
 
     it("links the replacement's name in the same tab", async () => {
-      const html = await render(StoryHeader, { ...retired, replacement: { name: "Cadence", href: "/projects/cadence/" } });
+      const html = await render(StoryHeader, { ...retired, replacement: { name: "Metronome", href: "/projects/metronome/" } });
       const links = byName(html, "a");
       expect(links).toHaveLength(1);
-      expect(links[0]!.attrs.href).toBe("/projects/cadence/");
+      expect(links[0]!.attrs.href).toBe("/projects/metronome/");
       expect(links[0]!.attrs.target).toBeUndefined();
-      expect(textOf(html, "a")).toBe("Cadence");
-      expect(noteText(html)).toBe(`${lead} It was replaced by Cadence.`);
+      expect(textOf(html, "a")).toBe("Metronome");
+      expect(noteText(html)).toBe(`${lead} It was replaced by Metronome.`);
       expect(links[0]!.attrs.class ?? "").toContain("underline");
     });
 
     it("has no note on other statuses, even with a replacement", async () => {
-      const html = await render(StoryHeader, { ...props, replacement: { name: "Cadence" } });
+      const html = await render(StoryHeader, { ...props, replacement: { name: "Metronome" } });
       expect(note(html)).toHaveLength(0);
     });
 
@@ -92,7 +92,7 @@ describe("StoryHeader", () => {
     });
 
     it("adds no role, aria attribute or script to the pill or the note", async () => {
-      const html = await render(StoryHeader, { ...retired, replacement: { name: "Cadence", href: "/projects/cadence/" } });
+      const html = await render(StoryHeader, { ...retired, replacement: { name: "Metronome", href: "/projects/metronome/" } });
       expect(byName(html, "script")).toHaveLength(0);
       const tags = [...note(html), ...byName(html, "span").filter((t) => t.attrs["data-status"] === "retired")];
       expect(tags).toHaveLength(2);

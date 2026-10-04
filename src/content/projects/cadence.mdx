@@ -1,0 +1,74 @@
+---
+title: Cadence
+problem: Rebuild my stretching and physio timer with a spec-first, test-first, AI-driven process instead of patching Tempo by hand.
+description: How I rebuilt Tempo as Cadence with a fully agentic, spec-first process, and what it taught me about letting AI drive the work.
+themes: [Agentic development, Mobile development, Health]
+status: shipped
+visual:
+  kind: image
+  src: ./images/cadence/index.png
+  alt: The Cadence run screen in landscape during Wrist circles, step 3 of 6 of a warm-up, showing side 1 of 2, rep 4 of 20, a one-second ring and Tendon glides next
+date: 2026-07-18
+demo:
+  href: https://cadence.drc.dev
+  title: Cadence on the web
+visuals:
+  today:
+    kind: image
+    src: ./images/cadence/today.png
+    alt: The Cadence Today screen showing the Physio rotation on day 2 of 18, with Bike Warm-up and Lower body A to start or skip and Shoulder Health B and Wrist strength iso after this day
+    part: problem
+  architecture:
+    kind: diagram
+    src: ./images/cadence/architecture.svg
+    alt: Four boxes, the Cadence app pointing to on-device data, which points to Supabase when online, and the app pointing to Apple Watch through a Shortcuts handoff
+    description: The app keeps every routine, rotation and session on the device first, behind a write queue that syncs to Supabase when there is a connection. Starting a workout on the Apple Watch goes through the Shortcuts app, because iOS has no API for it.
+    part: build
+invitation: "If you want to see what a spec-first, agent-driven build looks like in practice, or you're weighing one for your own team, tell me about it."
+draft: false
+---
+
+{/* Written from Don's interview answers (2026-10-03). The technical facts (Expo and React Native, Supabase with a local write queue, Spec Kit with a stronger and a faster model by phase, 51 slices between 2026-07-18 and 2026-09-13, a constitution of ten principles, the guard script, Maestro and Playwright, the Shortcuts handoff in ADR-0045, TestFlight and a direct Android install, the web build at cadence.drc.dev) come from the Cadence repository, which is private. The date is the first decision record. Tempo (/projects/tempo/) names Cadence as its replacement. */}
+
+## Problem
+
+[Tempo](/projects/tempo/) did its job. I ran my stretching and physio routine from it most days. But the timer logic lived only in my head, and once I started using Claude Code on it, every change meant a careful round of regression testing on the one thing the app had to get right.
+
+By mid 2026 I wanted to learn agentic development properly: not an AI helping me type, but a process where the requirements are written down first, the tests run before anything merges, and the agent does the building. Tempo was the obvious thing to rebuild. I knew exactly what it had to do, I'd feel every mistake in my own workouts, and I had a few ideas it could never express, like a rotation of routines that advances when you actually do the work, so a missed day leaves nothing to catch up on.
+
+## Options
+
+I weighed three routes. All three had to keep the phones and the web, keep working with no connection, and cost nothing to run.
+
+- **Works well with agents**: A stack the AI knows deeply, so its output needs less correction and the process can run without me reading every line.
+- **iPhone, Android and the web**: One codebase for every device I use.
+- **Works offline**: A spinner blocking a workout is a defect.
+- **Nothing to pay for**: No build service, no store fees beyond the developer account, free hosting.
+
+| Option | Works well with agents | iPhone, Android and the web | Works offline | Nothing to pay for |
+| --- | --- | --- | --- | --- |
+| Keep patching Tempo in Flutter | No | Yes | Yes | Yes |
+| Rewrite in Flutter, spec-first | Partly | Yes | Yes | Yes |
+| **Rewrite in Expo and React Native, spec-first** | Yes | Yes | Yes | Yes |
+
+Why Expo won: agents know it best. React, TypeScript and Tailwind-style styling are everywhere in the training data, so the AI wrote better code with far less steering than it ever did in Flutter. Patching Tempo would have meant bolting specs onto logic nobody had written down, and a Flutter rewrite kept the one part of the old stack that slowed the agents most.
+
+## Build
+
+I started with the Spec Kit commands and a plan I generated from Tempo and what I wanted the process to be. From there my job was requirements and review. I wrote and clarified specs, read plans, tested each build on my phone and approved pull requests. The agents wrote the code.
+
+Every feature was one vertical slice through the same pipeline: specify, clarify, plan, tasks, implement, verify. A stronger model handled the thinking phases, specifying, clarifying and planning, and a faster one did the grind of tasks and implementation. A constitution of ten principles sat over all of it, including verification before volume, offline as the default case and history that is never rewritten. A verify script was the gate: typecheck, lint, a database reset and the whole test suite, run locally by hooks and again in CI before anything merged. End-to-end tests ran on simulators with Maestro and Playwright, with evidence attached to each pull request. A small guard script stopped the agents from ever touching the cloud. Between 18 July and 13 September 2026 that produced 51 slices and well over a hundred decision records, with more test files than source files.
+
+Keeping the agents disciplined was the hardest part. Left alone they drift from the spec, overbuild and skip the awkward test. The constitution, the gate and the skills are what held them in line, and most of my corrections ended up as a new rule or a sharper skill rather than a fix to the code.
+
+The Apple Watch was the other hard one. I wanted a routine to start a workout on my wrist when I pressed Start. iOS gives a third-party iPhone app no way to do that: HealthKit can only read workouts and write finished ones, and a live session needs a watchOS app. The one public path is the Shortcuts app, whose Start Workout action does begin a workout on the paired watch, and which can be driven from a URL with a callback. So Cadence opens a shortcut I publish, passes the activity, and listens for the return link. Everything it needs is saved before it leaves the foreground, and if the return never comes, the routine simply runs without the watch. No spinner, no timeout, nothing that can block Start.
+
+It runs on iOS, Android and the web from one Expo codebase. Routines, rotations and history live on the device first, behind a write queue that syncs to Supabase when there is a connection, so two phones converge on the same place in the rotation. Spoken and tone cues mean I never look at the screen, there are progress charts, and an edge function can draft a routine from a description. iOS builds go to TestFlight from a hosted macOS runner, Android is a signed install from the same pipeline, and the web version is on Cloudflare at cadence.drc.dev.
+
+Cadence is my daily driver on my iPhone, it replaced Tempo completely, and I'm still adding slices.
+
+## Lessons
+
+With good skills and a constitution, agentic development really can drive itself most of the time. Plenty of issues still pop up, and I spend real time on review and on tightening the rules, but I'm vastly more productive than I was steering every change by hand.
+
+The process transferred. The deliver, tweak and squash pipelines I built for Cadence now build this website and my other work, and the habit of writing the spec and the failing test before the code is the part I'd keep even without the agents.
