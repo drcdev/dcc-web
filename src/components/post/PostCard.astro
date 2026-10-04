@@ -43,8 +43,9 @@ const border = textOnly && mainTopic ? `border-2 ${topicStyle(mainTopic.colour).
         <Image
           src={post.featureImage.src}
           alt={post.featureImage.alt}
-          widths={[320, 480, 640]}
-          sizes="(min-width: 1024px) 320px, (min-width: 640px) 45vw, 100vw"
+          widths={[320, 400, 640]}
+          sizes="(min-width: 1024px) 320px, (min-width: 640px) 45vw, calc(100vw - 2rem)"
+          quality={65}
           class="aspect-[16/9] h-auto w-full object-cover"
         />
       )

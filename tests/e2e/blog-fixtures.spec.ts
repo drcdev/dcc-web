@@ -210,3 +210,27 @@ test.describe("home page recent writing on the fixture site", () => {
     }
   });
 });
+
+test.describe("card images at phone width", () => {
+  test.use({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+  const PAGES = ["/", "/writing/", "/writing/all/", FIXTURE_CARDS, "/writing/drift/"];
+  for (const path of PAGES) {
+    test(`${path} picks at most the 400w card file`, async ({ page }) => {
+      await page.goto(path);
+      const images = page.locator("[data-post-card] img");
+      const count = await images.count();
+      expect(count, "image cards on the page").toBeGreaterThan(0);
+      for (let i = 0; i < count; i++) {
+        const img = images.nth(i);
+        await img.scrollIntoViewIfNeeded();
+        await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.currentSrc !== "")).toBe(true);
+        const picked = await img.evaluate((el: HTMLImageElement) => {
+          const entry = el.srcset.split(",").map((part) => part.trim().split(/\s+/)).find(([url]) => el.currentSrc.endsWith(url!) || url === el.currentSrc);
+          return entry?.[1] ?? "";
+        });
+        expect(picked, `candidate chosen for ${await img.getAttribute("alt")}`).not.toBe("");
+        expect(parseInt(picked, 10)).toBeLessThanOrEqual(400);
+      }
+    });
+  }
+});
