@@ -1,0 +1,88 @@
+# Tasks: Right-size listing card images
+
+**Input**: `specs/021-card-image-size/` (spec.md, plan.md, research.md, contracts/post-card-image.md, quickstart.md)
+**Branch**: `021-card-image-size` | **Issue**: #73
+
+**Tests are mandatory** (Constitution Principle I). Each test task names its one primary layer
+(`docs/testing.md`, "Where a test goes"). Tests come before the implementation they cover and
+are seen to fail first. The source change is three props on one `<Image>`.
+
+## Format: `- [ ] T### [P?] [Story] Description with file path`
+
+## Phase 1: Setup
+
+- [ ] T001 Run `node -v`; if it is not the `.nvmrc` major, use `source ~/.nvm/nvm.sh && nvm use` in the same Bash command as every toolchain call. Check `lsof -i :4321 -i :4322` shows no sibling Playwright server before any E2E run (CLAUDE.md, "Local toolchain").
+- [ ] T002 Read `src/components/post/PostCard.astro`, `tests/component/post/PostCard.test.ts` (the `withImage` card and its 1200 px fixture source) and `tests/e2e/blog-fixtures.spec.ts` to learn the existing helpers and patterns before writing tests.
+
+---
+
+## Phase 2: User Story 1 - Lighter series and listing pages on a phone (Priority: P1) MVP
+
+**Goal**: A 390 px, 1x phone downloads the 400w card file at quality 65 instead of the 480w file at quality 80.
+
+**Independent test**: Component tests C1 to C3 pass on the rendered card, and the fixture-site E2E test C6 shows `currentSrc` at most 400w on every card listing.
+
+### Tests (write first, run, confirm they fail on today's 320/480/640 widths, `100vw` and missing `q=`)
+
+- [ ] T003 [P] [US1] Component test (layer: component; the Astro container observes the rendered `srcset` with no browser) in `tests/component/post/PostCard.test.ts`: for the `withImage` card (1200 px source) parse the `srcset` descriptors and expect exactly `320w, 400w, 640w` (C1, FR-001, FR-004). Also expect a narrower source never lists a width above its own (nothing enlarged).
+- [ ] T004 [P] [US1] Component test (layer: component, same file as T003) in `tests/component/post/PostCard.test.ts`: `sizes` equals `(min-width: 1024px) 320px, (min-width: 640px) 45vw, calc(100vw - 2rem)` (C2, FR-002).
+- [ ] T005 [P] [US1] Component test (layer: component, same file) in `tests/component/post/PostCard.test.ts`: the `src` and every `srcset` URL contain `q=65` and `f=webp` (C3, FR-003, FR-005). If the container omits `q=` from candidate URLs at the red step, move this one check to a build test of the fixture-site HTML and write the reason in the test and in `plan.md` "Risks and notes".
+- [ ] T006 [US1] E2E test (layer: E2E, `sections` project, fixture site; only a browser shows which candidate it chooses) in `tests/e2e/blog-fixtures.spec.ts`: new `test.describe("card images at phone width")` at 390x844 with `deviceScaleFactor: 1`, visiting `/`, `/writing/`, `/writing/all/`, `/writing/topics/fixture-cards/` and `/writing/drift/`. On each page scroll every card `img` into view, wait for `complete`, map `currentSrc` to its `srcset` descriptor, expect at most 400w and at least one image card per page (C6, SC-001). Use fixture content only; name no real post.
+- [ ] T007 [US1] Run the new tests (`pnpm exec vitest run tests/component/post/PostCard.test.ts` and the `sections` project for `blog-fixtures.spec.ts`) and record that T003 to T006 fail for the expected reasons (480w pick, `100vw`, no `q=`).
+
+### Implementation
+
+- [ ] T008 [US1] In `src/components/post/PostCard.astro` set on the `<Image>`: `widths={[320, 400, 640]}`, `sizes="(min-width: 1024px) 320px, (min-width: 640px) 45vw, calc(100vw - 2rem)"` and `quality={65}`. Change nothing else (alt, size, `loading="lazy"` and classes stay).
+- [ ] T009 [US1] Re-run T003 to T006 and confirm they now pass; run `pnpm run lint` and `pnpm run typecheck` (or the repo's equivalents) on the changed files.
+
+**Checkpoint**: US1 delivers the saving on its own.
+
+---
+
+## Phase 3: User Story 2 - Cards still look right on larger and sharper screens (Priority: P2)
+
+**Goal**: Wider and high-density screens still get a sufficient file, and no other image changes.
+
+**Independent test**: The 640w candidate stays offered; card shape, alt, size and lazy loading are unchanged; hero, lead and project images carry no quality parameter; the `listing-cards` visual subject is unchanged or only its own baselines are refreshed.
+
+### Tests (regression guards: the behaviour is kept, so they pass at once. Seeing them fail is done by briefly dropping `quality={65}` and adding `q` to `LeadStory`/`PostHero` locally, then reverting)
+
+- [ ] T010 [P] [US2] Component test (layer: component) in `tests/component/post/PostCard.test.ts`: keep the existing `alt`, `width`, `height` and `loading="lazy"` assertions green and add a check for the `aspect-[16/9]` and `object-cover` classes (C4, FR-005).
+- [ ] T011 [P] [US2] Component test (layer: component; the quality prop is a per-component rendering fact, not a browser one) in `tests/component/post/LeadStory.test.ts` and `tests/component/post/PostHero.test.ts`: no candidate URL contains `q=` (C5, FR-006).
+- [ ] T012 [US2] Run the visual project (`pnpm run test:visual`). If `listing-cards-*` passes, no baseline change is needed; record that. Only if the `listing-cards` snapshot fails, refresh the macOS set with `pnpm run test:visual:update`, then the Linux set with `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, stop and report so Don can start it, or use the `visual-baselines` PR label and copy only `*-linux.png` from the artifact). Commit only the `tests/e2e/visual.spec.ts-snapshots/listing-cards-*.png` images. Any other subject that differs (`lead-story`, `post-template`, project rows, shell) is a regression to fix, not a baseline to refresh.
+
+---
+
+## Phase 4: User Story 3 - A series can keep growing within budget (Priority: P3)
+
+**Goal**: Pages stay inside the unchanged 150 KB budget with more headroom, and the saving is measured.
+
+**Independent test**: `budget.spec.ts` passes unchanged, and the convergence before/after figures are recorded.
+
+- [ ] T013 [US3] Budget check (layer: budget; the existing `budget.spec.ts` already observes total transfer, so no new test and no limit changed): run the `budget` project and confirm every template and the 12-card fixture `/writing/all/` pass (C7, FR-007, SC-003).
+- [ ] T014 [US3] Record the SC-002 measurement (a reported figure, not a gate). Build `dist/` (`pnpm run build`), sum the card image bytes of `/writing/convergence/` (the two `_astro/` WebP files its card HTML references, at the 400w candidate for a 390 px phone) and the page total transfer, and compare with the baseline in `research.md` (77,520 B of card images on a 121,654 B page; expected about 41,000 B and about 85,000 B). Add an "After" section with the figures and the method to `specs/021-card-image-size/research.md` for the PR body.
+
+---
+
+## Phase 5: Polish and cross-cutting
+
+- [ ] T015 [P] Docs: `grep` found no description of the card image widths in `docs/` (`docs/posts.md` "Images and their widths" covers in-post images only), so add one sentence to the `writing-landing` row of the "Visual coverage" table in `docs/testing.md` saying where the card-image check lives (component tests in `PostCard.test.ts`, E2E in the `sections` project's `blog-fixtures.spec.ts`). Re-grep first; skip if a doc has since gained such a description and edit that one instead.
+- [ ] T016 Run `pnpm run verify:quick` (inner loop). Ask Don before the full `pnpm run verify` gate, then run it via the wrapper under `perl -e 'alarm N; exec @ARGV'` and read the `VERIFY_EXIT=` line.
+- [ ] T017 Walk through `specs/021-card-image-size/quickstart.md` and confirm each check; note the incidental `wayfinder-hero` alt-text mismatch as follow-up only (out of scope).
+
+---
+
+## Dependencies and order
+
+- Phase 1, then Phase 2. Within Phase 2: T003 to T006 (T003 to T005 parallel, same file so edit sequentially in practice; T006 another file) then T007 (red) then T008 then T009.
+- Phase 3 depends on T008 (T010, T011 parallel; T012 after them).
+- Phase 4 depends on T008 and runs after Phase 3 (the build used by T014 must not run while Docker builds `dist/`).
+- Phase 5 last. No `[PREVIEW-CHECK]` task: every check is observable locally or in CI (plan judged none needed).
+
+## Parallel opportunities
+
+T003/T004/T005 with T006; T010 with T011; T015 with T013/T014.
+
+## Implementation strategy
+
+MVP is Phase 2 (US1): it carries the entire source change. Phases 3 and 4 add regression guards, the visual check and the measurement. Total 17 tasks: Setup 2, US1 7, US2 3, US3 2, Polish 3.
