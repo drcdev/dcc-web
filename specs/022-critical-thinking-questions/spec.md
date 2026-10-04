@@ -8,6 +8,17 @@
 
 **Input**: User description: "create a critical thinking support on writing posts. it should take the form of a button/banner to generate critical thinking questions to review in advance of reading the article. on large screens, it could be a floating sidebar, and on small screens it can be a block below the header card. consider model providers and ease of implementation (ex. cloudflare vs say openrouter). consider generation limits (per day or per user per day) as a token bucket. clicking the button should generate 2-4 concise critical thinking questions for the reader."
 
+## Clarifications
+
+### Session 2026-10-04
+
+- Q: Which hosted model provider should the question endpoint use? → A: Cloudflare Workers AI, through an `ai` binding in the existing Worker; no external service, account or API key.
+- Q: Fresh questions on every press, or one set per post reused for every reader? → A: Hybrid. The first press shows the post's cached set (keyed by a hash of the post content, stored in D1); an optional "new questions" action generates a fresh set. Only generations (the first for a post version, and each "new questions" press) draw from the limit; serving a cached set does not.
+- Q: At which levels do the token-bucket limits apply? → A: Site-wide only. One bucket for the whole site (per environment) that refills to a daily allowance, default about 200 generations a day, set in one config file. No per-reader bucket and no reader identifiers.
+- Q: Where is the bucket state stored? → A: In the existing D1 database, renamed: new databases `dcc-web` (production) and `dcc-web-preview` (preview) replace `dcc-web-contact` and `dcc-web-contact-preview`, which are deleted. Existing contact data need not be kept (the contact feature is not live).
+- Q: Should pressing the button also require a Turnstile check? → A: No. The origin check plus the site-wide limit only.
+- Q: How is Constitution Principle V (only server-side code is the contact API) handled? → A: Amended in this PR via the speckit-constitution skill during the plan phase, generalising it to a small set of named first-party `/api/` endpoints, each with its data and limits.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Get questions to think about before reading (Priority: P1)
@@ -69,27 +80,28 @@ panel position in each, and that it never covers the article text.
 
 ### User Story 3 - Fair, bounded use (Priority: P2)
 
-Generating questions costs real resources, so use is capped. Each reader gets a small number of
-generations per day, and the whole site has a daily ceiling that keeps running costs inside the
-constitution's cost limit. When a limit is reached, the reader is told plainly and the article
-is unaffected.
+Generating questions costs real resources, so use is capped. The whole site shares one daily
+allowance of generations, sized to stay inside Workers AI's free daily allowance and the
+constitution's cost limit. Showing a post's already generated questions does not use the
+allowance. When the allowance is used up, the reader is told plainly and the article is
+unaffected.
 
 **Why this priority**: Without limits, one script or one busy day could run up costs or exhaust
 a free allowance. It is required before the feature goes live, but can be built after Story 1.
 
-**Independent Test**: Exhaust the per-reader allowance from one client and confirm the next
-press shows the "limit reached" message; exhaust the site-wide allowance and confirm every
-reader sees the "unavailable today" message.
+**Independent Test**: Exhaust the site-wide allowance and confirm that a press needing a new
+generation shows the "unavailable for now" message, while a post whose questions are already
+cached still shows them.
 
 **Acceptance Scenarios**:
 
-1. **Given** a reader who has used up their allowance, **When** they press the button, **Then**
-   the panel says they have reached today's limit and roughly when they can try again, and no
-   generation is attempted.
-2. **Given** the site-wide daily allowance is used up, **When** any reader presses the button,
-   **Then** the panel says questions are unavailable for now and to try again later.
-3. **Given** allowance refills over time (token bucket), **When** enough time has passed,
-   **Then** the reader can generate again without any action from Don.
+1. **Given** the site-wide allowance is used up, **When** a reader presses the button on a post
+   with no cached questions, or presses "new questions", **Then** the panel says questions are
+   unavailable for now and roughly when to try again, and no generation is attempted.
+2. **Given** the site-wide allowance is used up, **When** a reader presses the button on a post
+   whose current version already has cached questions, **Then** the cached questions are shown.
+3. **Given** the allowance refills over time (token bucket), **When** enough time has passed,
+   **Then** readers can generate again without any action from Don.
 
 ---
 
@@ -110,8 +122,11 @@ reader sees the "unavailable today" message.
 - **Requests from elsewhere**: requests that do not come from the site's own pages are refused.
 - **Requests for posts that do not exist**: refused; the service never generates questions for
   arbitrary text supplied by a caller.
-- **Reader presses the button again after questions appear**: [default] the button is replaced
-  by the questions; a "new questions" action, if any, counts against the allowance.
+- **Reader wants different questions**: after questions appear, the button is replaced by the
+  questions and a "new questions" action; each press of it generates a fresh set and draws from
+  the site-wide allowance.
+- **Post edited after questions were cached**: the cache key is a hash of the post content, so
+  a changed post gets a new set on the next press; the old set is never shown for it.
 - **Theme**: the panel follows the site's light and dark themes.
 
 ## Requirements *(mandatory)*
@@ -155,53 +170,58 @@ reader sees the "unavailable today" message.
 **Question service**
 
 - **FR-013**: Questions MUST be generated by a server-side endpoint under `/api/` in the site's
-  existing Worker, using a hosted language model. The model provider is
-  [NEEDS CLARIFICATION: Cloudflare Workers AI (first-party, binding in the existing Worker, free
-  daily allowance, no new account or secret) or a third-party router such as OpenRouter (wider
-  model choice, needs an API key secret and a paid account, adds an external service)? Principle
-  IV favours Workers AI; Principle IX caps total running cost at $13 a month.]
+  existing Worker, using Cloudflare Workers AI through an `ai` binding. No third-party model
+  provider, API key or external account is used.
 - **FR-014**: The endpoint MUST generate questions only for published (or, in preview, draft)
   posts on this site, identified by the post itself, never from free text supplied by the
   caller.
 - **FR-015**: The endpoint MUST accept requests only from the site's own origin, over HTTPS, and
   MUST return generic errors that reveal no provider, prompt or internal details.
-- **FR-016**: Generated questions MUST be [NEEDS CLARIFICATION: generated fresh on every press
-  (each reader can get different questions; every press uses the model), or generated once per
-  post and reused for every reader until the post changes (one model call per post, so limits
-  are rarely reached and cost is near zero, but every reader sees the same questions)?]
+- **FR-016**: The first press on a post MUST return the cached question set for the post's
+  current content (keyed by a hash of the post content and stored in D1), generating and storing
+  it only if none exists. After questions appear, the panel MUST offer a "new questions" action
+  that generates a fresh set for that reader. Serving a cached set MUST NOT draw from the limit;
+  each generation (a first generation for a post version, or a "new questions" press) MUST.
+  Whether a fresh set replaces the cached one is decided in the plan (default: it does not).
 
 **Generation limits**
 
-- **FR-017**: Generation MUST be rate-limited with token buckets that refill over time. The
-  limits apply at [NEEDS CLARIFICATION: which levels — a per-reader daily bucket only, a
-  site-wide daily bucket only, or both? Recommended: both, e.g. 5 per reader per day and a
-  site-wide daily ceiling sized to stay inside the provider's free allowance.]
-- **FR-018**: Bucket sizes and refill rates MUST be set in one place in configuration, so Don
+- **FR-017**: Generation MUST be rate-limited by one site-wide token bucket per environment,
+  stored in D1, that refills over time to a daily allowance (default about 200 generations a
+  day). There is no per-reader limit.
+- **FR-018**: The bucket size and refill rate MUST be set in one place in configuration, so Don
   can change them without editing logic.
-- **FR-019**: A per-reader limit MUST identify readers without storing personal data: no
-  accounts, no cookies used for tracking, and no raw IP addresses stored or logged. Any
-  identifier is a salted one-way hash, as the contact form does, and is kept no longer than the
-  limit window needs.
-- **FR-020**: When a limit is reached, the endpoint MUST refuse without calling the model and
-  MUST tell the client when it may retry; the panel MUST show which limit applies in plain
-  words.
+- **FR-019**: The feature MUST NOT identify or track readers: no accounts, no cookies, and no IP
+  addresses or hashes of them stored or logged for this feature.
+- **FR-020**: When the bucket is empty, the endpoint MUST refuse without calling the model and
+  MUST tell the client when it may retry; the panel MUST say in plain words that questions are
+  unavailable for now and roughly when to try again.
 - **FR-021**: Preview deployments MUST use limits and usage records separate from production.
 
 **Privacy, logging and cost**
 
-- **FR-022**: The endpoint MUST NOT log reader identifiers, IP addresses or generated text.
-  Aggregate counts (generations, refusals, errors) may be logged.
+- **FR-022**: The endpoint MUST NOT log IP addresses or generated text. Aggregate counts
+  (generations, cache hits, refusals, errors) may be logged.
 - **FR-023**: The privacy policy MUST be updated to say that pressing the button sends the post
-  (not any reader data) to the named AI provider and how the per-reader limit works.
-- **FR-024**: The expected monthly cost at the configured limits MUST be stated, and MUST stay
-  within the $13 a month ceiling together with existing costs.
+  text (not any reader data) to Cloudflare Workers AI, that generated questions are stored per
+  post, and that the feature collects no personal data.
+- **FR-024**: The expected monthly cost at the configured limit MUST be stated in the plan; the
+  default allowance MUST fit inside Workers AI's free daily allowance, so the expected cost is
+  $0, and in any case total running costs MUST stay within the $13 a month ceiling.
+- **FR-025**: The D1 databases MUST be renamed to reflect that they are no longer contact-only:
+  new databases `dcc-web` (production) and `dcc-web-preview` (preview) are created, their ids
+  replace the old ones in the Wrangler configuration, all migrations run on them, and the old
+  `dcc-web-contact` and `dcc-web-contact-preview` databases are deleted. Existing contact data
+  is not migrated (the contact feature is not live).
+- **FR-026**: The endpoint MUST NOT require Turnstile or any other client challenge; the origin
+  check and the site-wide limit are the only abuse controls.
 
 ### Key Entities
 
-- **Critical thinking question set**: 2 to 4 short questions tied to one post; may be cached
-  per post depending on FR-016.
-- **Usage bucket**: a token count and last-refill time, either for one reader (keyed by a
-  salted hash) or for the whole site, per environment.
+- **Critical thinking question set**: 2 to 4 short questions tied to one post version, cached in
+  D1 keyed by the post slug and a hash of its content.
+- **Usage bucket**: one token count and last-refill time for the whole site, per environment,
+  stored in D1.
 - **Post text**: the published post's title, summary and body as sent for generation; never
   reader-supplied.
 
@@ -213,8 +233,8 @@ reader sees the "unavailable today" message.
   5 seconds in at least 95% of attempts under normal conditions.
 - **SC-002**: 100% of displayed question sets contain between 2 and 4 items, each ending in a
   question mark and no longer than about 25 words.
-- **SC-003**: A reader cannot get more generations in a day than the configured per-reader
-  allowance, and total daily generations never exceed the configured site-wide ceiling.
+- **SC-003**: Total generations never exceed what the configured site-wide bucket allows, and
+  serving a cached set never consumes allowance.
 - **SC-004**: Post pages remain readable with JavaScript disabled, pass automated accessibility
   checks in both themes and layouts, and stay within the existing performance budget.
 - **SC-005**: Expected running cost at the configured limits is at or below the constitution's
@@ -225,26 +245,30 @@ reader sees the "unavailable today" message.
 
 - "Writing posts" means the post pages under `/writing/<slug>/`; series pages, topic pages and
   listings do not get the panel.
-- "User" in "per user per day" means an anonymous reader, identified only by a salted hash of
-  the connecting IP address, as the contact form's rate limit does. There are no accounts.
+- The "per user per day" idea in the request is replaced by a single site-wide daily
+  allowance; readers are never identified.
 - Questions are in English, matching the site's content.
-- The panel replaces its button with the questions; the questions are not kept after the reader
-  leaves the page unless the plan chooses per-post reuse (FR-016).
-- Bot protection beyond origin checks and limits (for example Turnstile) is decided in the plan;
-  the limits alone must keep cost bounded.
+- The panel replaces its button with the questions; nothing is kept in the reader's browser,
+  and the per-post cache lives only in D1 (FR-016).
+- No bot protection beyond the origin check and the site-wide limit (no Turnstile); the limit
+  alone keeps cost bounded.
 - The large-screen breakpoint is the site's existing breakpoint at which the reading column
   leaves room for a sidebar; the plan names it.
 
 ## Dependencies and Governance
 
 - **Constitution Principle V** says the only server-side code is the contact API under `/api/`.
-  This feature adds a second endpoint, so it needs a constitution amendment (via the
-  speckit-constitution skill) or an approved exception before it ships.
-- **Constitution Principle III**: this is a major change (new integration or external service,
-  possible running cost, a new site-wide visual element on post pages). Don approves it on the
-  PR after checking the preview deployment.
-- **Constitution Principle VII** limits collected personal data to the contact form; the
-  per-reader limit must use only a salted hash and the privacy policy must say so.
+  This feature adds a second endpoint, so the plan phase MUST amend Principle V in this PR by
+  running the speckit-constitution skill (never a hand edit), generalising it to a small set of
+  named first-party `/api/` endpoints, each stated with its data and limits.
+- **Constitution Principle III**: this is a major change (new Workers AI integration, possible
+  running cost, a D1 database replacement, and a new site-wide visual element on post pages).
+  Don approves it on the PR after checking the preview deployment.
+- **Constitution Principle VII** limits collected personal data to the contact form; this
+  feature collects none, and the privacy policy must say what is sent to Workers AI.
+- **Infrastructure**: the D1 rename (FR-025) needs Cloudflare account steps (create, migrate,
+  swap ids in `wrangler.jsonc`, delete the old databases) and an `ai` binding in both
+  environments; the plan lists them as setup steps for Don.
 - **Constitution Principle X** allows no third-party scripts; any model provider is called from
   the Worker only, never from the browser.
 
