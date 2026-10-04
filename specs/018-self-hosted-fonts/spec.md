@@ -448,7 +448,7 @@ These were settled by Don before the specification and are not open for clarific
   grow with every post in a series; then consider whether the 150 KB budget (D3) can come back
   down.
 - Consider a one-year immutable cache header for all fingerprinted build files under
-  `/_astro/` (CSS and scripts), not only the font files (FR-015).
+  `/_astro/` (CSS and scripts), not only the font files (FR-015) (done in #74).
 - Consider a self-hosted monospace font for code and preformatted blocks (D2).
 - Consider drawing text inside images (the SVG architecture diagrams and the og image) in Inter,
   for example by embedding the subset font or converting the text to outlines, within the page

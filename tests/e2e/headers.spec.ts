@@ -134,7 +134,7 @@ for (const { path } of RESPONSES.filter((r) => r.html)) {
   });
 }
 
-// Self-hosted fonts are cached for a year by content hash (F10, F11; FR-015, SC-009). The unit test
+// Self-hosted fonts are cached for a year by content hash (F10, #74; FR-015, SC-009). The unit test
 // reads the rule text; only the served response shows that wrangler's `_headers` matching reaches
 // Astro's real output path and replaces the default Cache-Control.
 test("a served font file is immutable and carries the full security header set", async ({ page, request }) => {
@@ -151,11 +151,39 @@ test("a served font file is immutable and carries the full security header set",
   }
 });
 
-test("the page stylesheet is not marked immutable", async ({ page, request }) => {
-  await page.goto("/");
-  const href = await page.locator('link[rel="stylesheet"]').first().getAttribute("href");
-  expect(href).toMatch(/^\/_astro\//);
-  const response = await request.get(href!);
+// Every content-hashed file Astro emits under /_astro/ is cached for a year (#74). The unit test
+// reads the rule text; only the served response shows that the `/_astro/*` splat reaches Astro's
+// real CSS and JS paths and replaces Cloudflare's default Cache-Control (same reasoning as the
+// font test). The HTML is not fingerprinted, so it must keep the default: an over-broad rule
+// would cache pages for a year.
+test("every fingerprinted stylesheet and script is immutable and carries the full security header set", async ({
+  page,
+  request,
+}) => {
+  const urls = new Set<string>();
+  for (const path of ["/", "/contact/"]) {
+    await page.goto(path);
+    const found = await page.evaluate(() => [
+      ...[...document.querySelectorAll('link[rel="stylesheet"]')].map((el) => el.getAttribute("href") ?? ""),
+      ...[...document.querySelectorAll("script[src]")].map((el) => el.getAttribute("src") ?? ""),
+    ]);
+    for (const url of found) if (url.startsWith("/_astro/")) urls.add(url);
+  }
+  expect([...urls].some((url) => url.endsWith(".css"))).toBe(true);
+  expect([...urls].some((url) => url.endsWith(".js"))).toBe(true);
+  for (const url of urls) {
+    const response = await request.get(url);
+    expect(response.status(), url).toBe(200);
+    const headers = response.headers();
+    expect(headers["cache-control"], url).toBe("public, max-age=31536000, immutable");
+    for (const [name, value] of Object.entries(HEADERS)) {
+      expect(headers[name], `${url} ${name}`).toBe(value);
+    }
+  }
+});
+
+test("the home page HTML is not marked immutable", async ({ request }) => {
+  const response = await request.get("/");
   expect(response.status()).toBe(200);
   expect(response.headers()["cache-control"] ?? "").not.toContain("immutable");
 });
