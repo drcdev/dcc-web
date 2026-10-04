@@ -133,7 +133,7 @@ already live, in the specs that run on the real site (port 4321) and the unit te
 - Coverage mapping: landing/Featured/Latest over real posts → `blog.spec.ts` "landing page"
   (no post twice, parts in order); Recent writing over real posts → `blog.spec.ts`
   "home page recent writing (US7)"; selection rules → `tests/unit/content/post-order.test.ts`.
-- [ ] done
+- [x] done
 
 ### W5 projects-fixtures.spec.ts: fixed counts and exact order
 - `ALL = 5`, `TOOLING = 2` from `readEntries("projects", "tests/fixtures/projects")` or literals
