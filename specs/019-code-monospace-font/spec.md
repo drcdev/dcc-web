@@ -31,6 +31,16 @@ This is a change to the design system and visual identity, so it is a **major ch
 Constitution Principle III: Don approves the pull request after checking the preview
 deployment, and auto-merge stays off.
 
+## Clarifications
+
+### Session 2026-10-04
+
+- Q: Which monospace typeface should code use? → A: JetBrains Mono.
+- Q: Which weights and styles of the code font should the site ship? → A: Regular, italic, bold and bold italic.
+- Q: Should keyboard keys and sample program output also use the code font, alongside inline code and code blocks? → A: Yes; inline code, code blocks and preformatted text, keyboard keys and sample output all use the code font.
+- Q: How should the code font load on pages that show code? → A: No preloading; a page fetches a code face only when it draws code in that face.
+- Q: Besides the per-page 150 KB budget, should the code font files have their own size cap? → A: Yes, 60 KB (60,000 bytes) for all four faces together.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - A reader reads code in a real monospace face (Priority: P1)
@@ -142,13 +152,16 @@ locally on macOS and in CI on Linux on the first run.
 ### Functional Requirements
 
 - **FR-001**: Inline code, code blocks, preformatted text, and keyboard and sample text (`code`,
-  `pre`, `kbd`, `samp`) on every public page MUST render in one self-hosted monospace typeface.
+  `pre`, `kbd`, `samp`) on every public page MUST render in one self-hosted monospace typeface,
+  JetBrains Mono.
   Prose, headings and every other text stay in Inter. Text inside images is out of scope.
-- **FR-002**: The monospace typeface MUST be released under the SIL Open Font License (or an
+- **FR-002**: The monospace typeface is JetBrains Mono. It MUST be released under the SIL Open Font License (or an
   equally permissive font licence that allows self-hosting, subsetting and commercial use), MUST
   have true italic designs (not only an oblique of the upright), and MUST be chosen to sit with
   Inter: neutral, sans-serif letterforms, an x-height close to Inter's, and clearly distinct
-  I l 1 | and O 0. The plan records the candidates considered, the face chosen and why.
+  I l 1 | and O 0. JetBrains Mono was chosen over IBM Plex Mono and Source Code Pro for its
+  neutral letterforms and Inter-like x-height; the plan confirms it against this requirement and
+  FR-003 by measurement.
 - **FR-003**: The site MUST ship exactly four monospace faces: regular (400), italic (400),
   bold (700) and bold italic (700). Each MUST contain exactly the same shipped character set as
   the Inter faces (printable ASCII, all of Latin-1, – — ‘ ’ “ ” … • and → ✓ ✗ where the face has
@@ -240,10 +253,10 @@ locally on macOS and in CI on Linux on the first run.
 
 ## Assumptions
 
-- The working candidate is JetBrains Mono (SIL OFL 1.1, true italics, neutral sans letterforms,
-  commonly paired with Inter). IBM Plex Mono and Source Code Pro are the alternatives. The plan
-  confirms the choice against FR-002 and FR-003 by measuring the subset sizes; if no candidate
-  meets the 60,000-byte cap, the work stops and Don is told the measured sizes.
+- The face is JetBrains Mono (SIL OFL 1.1, true italics, neutral sans letterforms, commonly
+  paired with Inter), confirmed in clarification. The plan measures the four subset sizes
+  against FR-003; if they exceed the 60,000-byte cap, the work stops and Don is told the measured
+  sizes rather than switching face silently.
 - Comments and other syntax-highlighted tokens keep their current non-italic style; the italic
   face exists for code inside emphasis and for consistency, not to restyle highlighting.
 - From a scan of the fixture site, only the fixture post template subject draws code (inline
