@@ -121,7 +121,7 @@ already live, in the specs that run on the real site (port 4321) and the unit te
 - Test: existing (4 tests x 2 listings), now fixed.
 - Coverage mapping: "pagination counts include the real posts" → real listing of every post is
   `blog.spec.ts` "all posts page … every post as a card, newest first" (4321).
-- [ ] done
+- [x] done
 
 ### W4 blog-fixtures.spec.ts: fixture-only SITE_POSTS, unconditional checks
 - `SITE_POSTS = sortNewestFirst([...fixtureOwned, ...generated])`; drop `posts`. Replace the
