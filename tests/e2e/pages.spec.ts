@@ -3,6 +3,7 @@
 // FR-030; SC-001).
 import { test, expect } from "@playwright/test";
 import { pages, projects } from "../helpers/content";
+import { TEMPLATES } from "./templates.ts";
 
 // [address, h1, draft], from each page's front matter. The h1 is the page title on every page.
 const PAGES = pages.map((entry) => [entry.address, entry.title, entry.draft] as const);
@@ -76,16 +77,19 @@ for (const [path, title, draft] of PAGES) {
       await context.close();
     });
 
-    for (const width of [320, 390, 1280]) {
-      test(`does not scroll sideways at ${width}px`, async ({ page }) => {
-        await page.setViewportSize({ width, height: 800 });
-        await page.goto(path);
-        const { scrollWidth, clientWidth } = await page.evaluate(() => ({
-          scrollWidth: document.documentElement.scrollWidth,
-          clientWidth: document.documentElement.clientWidth,
-        }));
-        expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
-      });
+    // Templates are covered by geometry.spec.ts at the same widths.
+    if (!TEMPLATES.some((t) => t.path === path)) {
+      for (const width of [320, 390, 1280]) {
+        test(`does not scroll sideways at ${width}px`, async ({ page }) => {
+          await page.setViewportSize({ width, height: 800 });
+          await page.goto(path);
+          const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+            scrollWidth: document.documentElement.scrollWidth,
+            clientWidth: document.documentElement.clientWidth,
+          }));
+          expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+        });
+      }
     }
   });
 }

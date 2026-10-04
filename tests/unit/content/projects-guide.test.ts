@@ -24,7 +24,13 @@ function collect(schema: unknown, keys = new Set<string>(), values = new Set<str
   else if (type === "union") for (const option of def.options as unknown[]) collect(option, keys, values);
   else if (type === "enum") for (const value of Object.values(def.entries as Record<string, string>)) values.add(value);
   else if (type === "literal") for (const value of def.values as string[]) values.add(value);
-  else if (type === "pipe") collect(def.in, keys, values);
+  // reference() is a pipe whose input is a union of an id and Astro's own { id, collection } object. It is a
+  // leaf here: the guide names `project`, not Astro's internal keys.
+  else if (type === "pipe") {
+    const input = (def.in as { _zod?: { def?: { options?: Array<{ _zod?: { def?: { type?: string } } }> } } })?._zod?.def;
+    const isReference = input?.options?.some((option) => option._zod?.def?.type === "string") && input?.options?.some((option) => option._zod?.def?.type === "object");
+    if (!isReference) collect(def.in, keys, values);
+  }
   else if ("innerType" in def) collect(def.innerType, keys, values);
   return { keys, values };
 }
@@ -35,9 +41,9 @@ const settings = [...keys];
 describe("docs/projects.md", () => {
   it("finds the settings in the schema", () => {
     expect(settings).toEqual(
-      expect.arrayContaining(["title", "problem", "themes", "demo", "standIn", "visuals", "part", "invitation", "date"]),
+      expect.arrayContaining(["title", "problem", "themes", "demo", "standIn", "visuals", "part", "invitation", "date", "replacedBy", "project", "name", "href"]),
     );
-    expect([...values]).toEqual(expect.arrayContaining(["shipped", "experiment", "in-progress", "image", "diagram"]));
+    expect([...values]).toEqual(expect.arrayContaining(["shipped", "experiment", "in-progress", "retired", "image", "diagram"]));
   });
 
   it.each(settings)("names the setting %s", (setting) => {
@@ -85,6 +91,11 @@ describe("docs/projects.md", () => {
     ["an unsupported image file", /(unsupported|not supported|other than)[^\n]*(picture|image|file type)/i],
     ["a page claiming an address under /projects/", /\/projects\/[^\n]*(page|address)|page[^\n]*\/projects\//i],
     ["two files with the same address", /same address|`x\.md`/i],
+    ["a replacement on a project that is not retired (RP01)", /replacedBy[^\n]*(not retired|only a retired)|only a retired/i],
+    ["a replacement that names both or neither of project and name (RP02)", /both[^\n]*`project`[^\n]*`name`|`project`[^\n]*`name`[^\n]*(both|neither)/i],
+    ["a replacement address that is not https (RP03)", /replacedBy[^\n]*https|href[^\n]*https/i],
+    ["a replacement naming a missing project (RP04)", /replacedBy[^\n]*(no (such )?project file|missing|does not exist)/i],
+    ["a project that replaces itself (RP05)", /replace[sd]? itself|itself[^\n]*replacedBy/i],
   ];
   it.each(errorClasses)("explains the build error: %s", (_name, pattern) => {
     const section = guide.slice(guide.indexOf("## Build errors you may see"));

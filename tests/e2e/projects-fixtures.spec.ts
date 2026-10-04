@@ -1,5 +1,5 @@
 // The projects index on the fixture site (port 4322, playwright.config.ts project
-// `sections`): the repository's projects plus the four fixtures, so filtering, clearing, sharing and
+// `sections`): the repository's projects plus the fixtures, so filtering, clearing, sharing and
 // the unknown-theme message have something to work on (US4; contracts/filter-island.md;
 // FR-014).
 import { expect, test, type Page } from "@playwright/test";
@@ -115,8 +115,8 @@ test("filter targets are at least 24x24 px", async ({ page }) => {
 test("lists projects newest first", async ({ page }) => {
   await page.goto(INDEX);
   const slugs = await rows(page).evaluateAll((els) => els.map((el) => el.getAttribute("data-project")));
-  // Fixture dates: draft 2026-01-02, minimal 2026-01-01, every-part 2025-12-01, every-setting 2025-06-01.
-  const fixtures = ["draft", "minimal", "every-part", "every-setting"];
+  // Fixture dates: draft 2026-01-02, minimal 2026-01-01, every-part 2025-12-01, every-setting 2025-06-01, retired 2025-01-01.
+  const fixtures = ["draft", "minimal", "every-part", "every-setting", "retired"];
   const seen = slugs.filter((slug): slug is string => !!slug && fixtures.includes(slug));
   expect(seen).toEqual(fixtures);
 });
@@ -240,4 +240,14 @@ test.describe("the every-part story", () => {
     }));
     expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
   });
+});
+
+// SC-002, US2-1: only a browser shows that the note's link is followed in one click, in the same tab.
+test("the retired story's note links to the replacement story in the same tab", async ({ page }) => {
+  await page.goto("/projects/retired/");
+  const link = page.locator("[data-retired-note] a");
+  await expect(link).toHaveText("Minimal project");
+  await link.click();
+  await expect(page).toHaveURL(/\/projects\/minimal\/$/);
+  await expect(page.locator("[data-story-title]")).toHaveText("Minimal project");
 });

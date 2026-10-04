@@ -6,9 +6,9 @@
 // FR-027, SC-002; contracts/verify-gate.md).
 //
 // Carried forward from the placeholder: one main, one h1 and no skipped
-// heading levels, a non-empty title, lang="en", no horizontal scroll at 320 px
-// and at 200% zoom, readable without JavaScript, and a first Tab stop with an
-// accessible name and a visible focus style (now the skip link).
+// heading levels, a non-empty title, lang="en", no horizontal scroll at
+// 200% zoom (the 320 px check lives in geometry.spec.ts), readable without JavaScript, and a
+// first Tab stop with an accessible name and a visible focus style (now the skip link).
 // Deliberately dropped (they contradict this feature's spec; listed for the
 // PR description, T097): "has no non-text content" and "first Tab stop is the
 // link to the current site".
@@ -16,6 +16,7 @@ import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { TEMPLATES } from "./templates.ts";
 import { pickedStory } from "../helpers/content";
+import { expectThemeClass, setTheme } from "./color-theme.ts";
 
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"];
 
@@ -31,16 +32,6 @@ const MENU_BUTTON = 'button[aria-controls="primary-nav-list"]';
 // The switch is named by its own visually hidden text ("Theme: Dark"), never
 // aria-label (contracts/theme.md "Toggle"; tests/component/ThemeToggle.test.ts).
 const THEME_SWITCH = "footer button[data-theme-toggle]";
-
-async function setTheme(page: Page, theme: "dark" | "light") {
-  await page.addInitScript((value) => {
-    try {
-      localStorage.setItem("color-theme", value);
-    } catch {
-      // Storage unavailable: the page falls back to dark.
-    }
-  }, theme);
-}
 
 async function expectNoAxeViolations(page: Page) {
   const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
@@ -63,7 +54,7 @@ for (const template of TEMPLATES) {
           await page.setViewportSize({ width: size.width, height: size.height });
           await setTheme(page, theme);
           await page.goto(template.path);
-          await expect(page.locator("html")).toHaveClass(theme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
+          await expectThemeClass(page, theme);
           await expectNoAxeViolations(page);
         });
       }
@@ -173,12 +164,6 @@ for (const template of TEMPLATES) {
     test('has lang="en" on the root element', async ({ page }) => {
       await page.goto(template.path);
       await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    });
-
-    test("reflows without horizontal scroll at 320 CSS px wide", async ({ page }) => {
-      await page.setViewportSize({ width: 320, height: 640 });
-      await page.goto(template.path);
-      await expectNoHorizontalScroll(page);
     });
 
     test("reflows without horizontal scroll at 200% zoom", async ({ page }) => {
@@ -394,6 +379,8 @@ test.describe("portfolio states", () => {
     { name: "the every-part fixture story", path: "/projects/every-part/" },
     // A live demo link cannot share a page with a stand-in link, so it has its own story (SC-006).
     { name: "the every-setting fixture story", path: "/projects/every-setting/" },
+    { name: "the retired fixture story", path: "/projects/retired/" },
+    { name: "the full fixture index", path: "/projects/" },
     { name: "the filtered index", path: "/projects/?theme=tooling" },
     { name: "the empty index (unknown theme)", path: "/projects/?theme=nonsense" },
   ];
@@ -406,7 +393,7 @@ test.describe("portfolio states", () => {
           await page.setViewportSize({ width: size.width, height: size.height });
           await setTheme(page, theme);
           await page.goto(`${FIXTURE}${state.path}`);
-          await expect(page.locator("html")).toHaveClass(theme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
+          await expectThemeClass(page, theme);
           if (state.path.startsWith("/projects/?")) {
             await expect(page.locator("project-filter[data-ready]")).toHaveCount(1);
           }
@@ -449,6 +436,17 @@ test.describe("portfolio states", () => {
     await comparison.scrollIntoViewIfNeeded();
     await expect(comparison).toBeVisible();
     expect(await comparison.evaluate((el) => el.getBoundingClientRect().right <= document.documentElement.clientWidth + 1)).toBe(true);
+    await expectNoHorizontalScroll(page);
+  });
+
+  test("the retired fixture story reflows at 320 CSS px and at 200% zoom (FR-013)", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto(`${FIXTURE}/projects/retired/`);
+    await expect(page.locator("[data-retired-note]")).toBeVisible();
+    await expectNoHorizontalScroll(page);
+    await page.setViewportSize({ width: 1280, height: 720 });
+    const client = await page.context().newCDPSession(page);
+    await client.send("Emulation.setDeviceMetricsOverride", { width: 640, height: 360, deviceScaleFactor: 2, mobile: false });
     await expectNoHorizontalScroll(page);
   });
 

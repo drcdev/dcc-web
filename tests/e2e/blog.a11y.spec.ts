@@ -8,19 +8,10 @@ import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { TEMPLATES } from "./templates.ts";
 import { seriesPost } from "../helpers/content.ts";
+import { setTheme } from "./color-theme.ts";
 
 const THEMES = ["dark", "light"] as const;
 const SUFFIX = " · Don Coleman";
-
-async function setTheme(page: Page, theme: "dark" | "light") {
-  await page.addInitScript((value) => {
-    try {
-      localStorage.setItem("color-theme", value);
-    } catch {
-      // Storage unavailable: the page falls back to dark.
-    }
-  }, theme);
-}
 
 const noSidewaysScroll = async (page: Page) => {
   const { scrollWidth, clientWidth } = await page.evaluate(() => ({

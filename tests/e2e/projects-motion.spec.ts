@@ -4,6 +4,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { cspViolations, recordCspViolations } from "./csp-violations.ts";
 import { pickedStory } from "../helpers/content";
+import { expectThemeClass, setTheme } from "./color-theme.ts";
 
 const STORY = pickedStory.address;
 
@@ -111,15 +112,9 @@ test.describe("progress bar contrast (FR-083, WCAG 1.4.11)", () => {
   test.use({ reducedMotion: "no-preference", viewport: { width: 1440, height: 900 } });
   for (const theme of ["light", "dark"] as const) {
     test(`is at least 3:1 against the page background in the ${theme} theme`, async ({ page }) => {
-      await page.addInitScript((value) => {
-        try {
-          localStorage.setItem("color-theme", value);
-        } catch {
-          // Storage unavailable: the page falls back to its default theme.
-        }
-      }, theme);
+      await setTheme(page, theme);
       await page.goto(STORY);
-      await expect(page.locator("html")).toHaveClass(theme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
+      await expectThemeClass(page, theme);
       await expect(page.locator("[data-progress]")).toHaveCSS("display", "block");
       const { bar, background, ratio } = await contrastRatio(page);
       expect(ratio, `${bar} on ${background}`).toBeGreaterThanOrEqual(3);

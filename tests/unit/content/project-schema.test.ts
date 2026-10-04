@@ -74,9 +74,40 @@ describe("projectSchema", () => {
     rejects({ ...minimal, visual: { ...minimal.visual, extra: 1 } });
   });
 
-  it("accepts the three statuses only", () => {
-    for (const status of ["shipped", "experiment", "in-progress"]) ok({ ...minimal, status });
+  it("accepts the four statuses only", () => {
+    for (const status of ["shipped", "experiment", "in-progress", "retired"]) ok({ ...minimal, status });
     rejects({ ...minimal, status: "done" });
+  });
+
+  describe("replacedBy (RP01 to RP03)", () => {
+    const retired = { ...minimal, status: "retired" };
+    const withReplacement = (replacedBy: unknown) => ({ ...retired, replacedBy });
+    it("accepts a project, a name, or a name with an https href", () => {
+      ok(withReplacement({ project: "other" }));
+      ok(withReplacement({ name: "Cadence" }));
+      ok(withReplacement({ name: "Cadence", href: "https://example.com/cadence" }));
+    });
+    it("RP01: only a retired project can name a replacement", () => {
+      expect(issueText({ ...minimal, replacedBy: { name: "Cadence" } })).toContain("only a retired project");
+    });
+    it.each([
+      ["both", { project: "a", name: "B" }],
+      ["neither", { href: "https://example.com/" }],
+      ["an empty object", {}],
+    ])("RP02: %s of project and name is rejected", (_name, value) => {
+      expect(issueText(withReplacement(value))).toContain("either project");
+    });
+    it("RP02: href beside project is rejected", () => {
+      expect(issueText(withReplacement({ project: "a", href: "https://example.com/" }))).toContain("href goes with name");
+    });
+    it.each([
+      ["a non-https href", { name: "A", href: "http://example.com/" }],
+      ["a host-less href", { name: "A", href: "https://" }],
+      ["an unknown key", { name: "A", colour: "red" }],
+      ["an empty name", { name: "" }],
+      ["a whitespace name", { name: "   " }],
+      ["null", null],
+    ])("RP03: %s is rejected", (_name, value) => rejects(withReplacement(value)));
   });
 
   describe("problem", () => {
@@ -191,7 +222,7 @@ describe("projectSchema messages (contracts/build-errors.md)", () => {
   });
   it("S02: an unknown status names status and lists the allowed values", () => {
     const text = issueText({ ...minimal, status: "finished" });
-    for (const phrase of ["status", "shipped", "experiment", "in-progress"]) expect(text).toContain(phrase);
+    for (const phrase of ["status", "shipped", "experiment", "in-progress", "retired"]) expect(text).toContain(phrase);
   });
   it.each([
     ["none", []],

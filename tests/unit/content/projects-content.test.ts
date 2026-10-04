@@ -74,3 +74,14 @@ describe("no site code names a project (FR-082)", () => {
 });
 
 it("keeps the template beside the five", () => expect(existsSync(resolve(root, "src/content/projects/_template.mdx"))).toBe(true));
+
+describe("Tempo is retired", () => {
+  const { frontmatter } = read("tempo");
+  it("is retired, replaced by Cadence with no link, and still published", () => {
+    expect(frontmatter.status).toBe("retired");
+    expect(frontmatter.replacedBy).toEqual({ name: "Cadence" });
+    expect(frontmatter.draft).toBe(false);
+    expect(slugs).toContain("tempo");
+    expect(published).toContain("tempo");
+  });
+});

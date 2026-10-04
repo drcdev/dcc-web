@@ -1,15 +1,15 @@
 // Visual baselines for the design system and the templates, never for real
-// content. Phone (390) and desktop (1280) widths, dark and light themes - 50
+// content. Phone (390) and desktop (1280) widths, dark and light themes - 66
 // images per platform:
 //   - the header, the footer and the open mobile menu from `/` (the menu at
 //     phone width only), and the full not-found page;
 //   - the sections fixture page on the fixture site (port 4322), full page;
-//   - eight fixture-site subjects, each an element shot: the post template, the
+//   - twelve fixture-site subjects, each an element shot: the post template, the
 //     project-story template, the lead story, the listing cards, a series
-//     banner, two project index rows (minimal and every-setting) and the
-//     contact form.
+//     banner, five project index rows (minimal, every-setting, draft, in
+//     progress and retired), the retired story header and the contact form.
 // Every fixture subject is an element shot, because the pages around it also
-// show real posts and real project rows (Related posts, the real draft rows),
+// show real posts and real project rows (Related posts, the real project rows),
 // and a full-page shot would pin the shell a second time. The project-row
 // subjects also remove the real rows first, because their position would
 // otherwise move the fixture row. So a content edit
@@ -17,7 +17,12 @@
 // (maxDiffPixelRatio 0.001, animations disabled, caret hidden) and
 // updateSnapshots "none" (a missing baseline fails) come from
 // playwright.config.ts.
+//
+// The footer year is frozen to 2026 before every shot (freezeFooterYear), so a
+// new calendar year cannot fail the shell, not-found or sections shots (issue #45).
 import { test, expect, type Locator, type Page } from "@playwright/test";
+import { expectThemeClass, setTheme, type Theme } from "./color-theme.ts";
+import { freezeFooterYear } from "./footer-year";
 
 const WIDTHS = [
   { name: "phone", width: 390, height: 844 },
@@ -26,17 +31,12 @@ const WIDTHS = [
 
 const THEMES = ["dark", "light"] as const;
 
-async function open(page: Page, path: string, width: number, height: number, theme: "dark" | "light") {
+async function open(page: Page, path: string, width: number, height: number, theme: Theme) {
   await page.setViewportSize({ width, height });
-  await page.addInitScript((value) => {
-    try {
-      localStorage.setItem("color-theme", value);
-    } catch {
-      // Storage unavailable: the page falls back to dark.
-    }
-  }, theme);
+  await setTheme(page, theme);
   await page.goto(path);
-  await expect(page.locator("html")).toHaveClass(theme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
+  await freezeFooterYear(page);
+  await expectThemeClass(page, theme);
   await settleImages(page);
 }
 
@@ -112,7 +112,7 @@ for (const size of WIDTHS) {
 // pages do is asserted elsewhere (blog-fixtures, projects-fixtures, contact,
 // projects and theme-tokens specs); this block adds only the pixels. Each shot
 // is the element, not the page, so Related posts, real project rows and the
-// footer's build-time year stay out of it. Reduced motion puts the story in its
+// footer stay out of it. Reduced motion puts the story in its
 // resting state (chapters final, no reading-progress bar).
 const FIXTURE = "http://localhost:4322";
 
@@ -120,7 +120,7 @@ const FIXTURE = "http://localhost:4322";
 // added or removed above a fixture row moves that row by a fraction of a pixel
 // and changes its rendering. Removing the real rows once the filter island is
 // ready leaves each row's position set by the four fixtures alone (PR #42).
-const FIXTURE_PROJECTS = ["draft", "minimal", "every-part", "every-setting"];
+const FIXTURE_PROJECTS = ["draft", "minimal", "every-part", "every-setting", "retired"];
 
 async function onlyFixtureRows(page: Page) {
   await expect(page.locator("project-filter[data-ready]")).toHaveCount(1);
@@ -184,6 +184,33 @@ const FIXTURE_SUBJECTS = [
     path: "/projects/",
     locator: (page: Page) => page.locator('li[data-project="every-setting"]'),
     wait: onlyFixtureRows,
+  },
+  {
+    prefix: "project-row-draft",
+    title: "fixture project row, draft",
+    path: "/projects/",
+    locator: (page: Page) => page.locator('li[data-project="draft"]'),
+    wait: onlyFixtureRows,
+  },
+  {
+    prefix: "project-row-in-progress",
+    title: "fixture project row, in progress",
+    path: "/projects/",
+    locator: (page: Page) => page.locator('li[data-project="every-part"]'),
+    wait: onlyFixtureRows,
+  },
+  {
+    prefix: "project-row-retired",
+    title: "fixture project row, retired",
+    path: "/projects/",
+    locator: (page: Page) => page.locator('li[data-project="retired"]'),
+    wait: onlyFixtureRows,
+  },
+  {
+    prefix: "retired-story-header",
+    title: "fixture retired story header",
+    path: "/projects/retired/",
+    locator: (page: Page) => page.locator("header[data-story-header]"),
   },
   {
     prefix: "contact-form",

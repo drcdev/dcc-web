@@ -276,18 +276,6 @@ test.describe("the projects index", () => {
     expect(visualNarrow!.y).toBeGreaterThanOrEqual(textNarrow!.y + textNarrow!.height - 1);
   });
 
-  for (const width of [320, 390, 1280]) {
-    test(`does not scroll sideways at ${width}px`, async ({ page }) => {
-      await page.setViewportSize({ width, height: 800 });
-      await page.goto(INDEX);
-      const { scrollWidth, clientWidth } = await page.evaluate(() => ({
-        scrollWidth: document.documentElement.scrollWidth,
-        clientWidth: document.documentElement.clientWidth,
-      }));
-      expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
-    });
-  }
-
   test("going back from a story restores the index with its ?theme=", async ({ page }) => {
     const key = themeKey((pickedStory.data.themes as string[])[0]);
     const matching = projects.filter((project) => (project.data.themes as string[]).map(themeKey).includes(key));

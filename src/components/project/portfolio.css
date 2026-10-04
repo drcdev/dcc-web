@@ -34,6 +34,9 @@ summary,
 [data-story-meta] {
   @apply my-4 flex flex-wrap items-center gap-3;
 }
+[data-retired-note] {
+  @apply my-4 max-w-prose border-l-4 border-mauve-700 pl-4 text-base text-dusk-900 dark:border-mauve-300 dark:text-mist-100;
+}
 [data-draft-notice] {
   @apply mx-auto mb-6 max-w-screen-lg border border-rust-700 bg-rust-50 px-4 py-3 text-sm text-dusk-900 dark:border-rust-300 dark:bg-dusk-900 dark:text-white;
 }

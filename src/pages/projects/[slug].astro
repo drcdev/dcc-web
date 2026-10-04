@@ -13,6 +13,7 @@ import ProjectLayout from "../../layouts/ProjectLayout.astro";
 import OptionsTable from "../../components/project/OptionsTable.astro";
 import ProjectPart from "../../components/project/ProjectPart.astro";
 import { assertUniqueProjectFiles } from "../../lib/content/project-address";
+import { checkReplacements, resolveReplacement } from "../../lib/content/project-replacement";
 import { validateProjectStory } from "../../lib/content/project-story";
 import type { OptionsComparison } from "../../lib/content/options-comparison";
 import { fileOfProject, getPublishedProjects } from "../../lib/projects";
@@ -29,14 +30,21 @@ export async function getStaticPaths() {
   // A broken draft must fail the production build too, so every entry is checked
   // before drafts are filtered out. The checked Options table travels to the page as a prop.
   const comparisons = new Map<string, OptionsComparison>();
-  for (const entry of await getCollection("projects")) {
+  const all = await getCollection("projects");
+  for (const entry of all) {
     comparisons.set(entry.id, validateProjectStory(fileOfProject(entry), entry.body ?? ""));
   }
+  // A replacement must name a project file that exists and is not the project itself (RP04, RP05).
+  checkReplacements(all);
   const projects = await getPublishedProjects(process.env);
-  return projects.map((entry) => ({ params: { slug: entry.id }, props: { entry, comparison: comparisons.get(entry.id)! } }));
+  const publishedIds = new Set(projects.map((entry) => entry.id));
+  return projects.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry, comparison: comparisons.get(entry.id)!, replacement: resolveReplacement(entry, all, publishedIds) },
+  }));
 }
 
-const { entry, comparison } = Astro.props;
+const { entry, comparison, replacement } = Astro.props;
 const { data } = entry;
 // The story components read the project from here (src/env.d.ts) and name its file in errors.
 Astro.locals.project = { slug: entry.id, file: fileOfProject(entry), data, comparison };
@@ -60,6 +68,7 @@ const share = data.image ? await getImage({ src: data.image.src as ImageMetadata
   imageAlt={data.image?.alt}
   draft={data.draft}
   slug={entry.id}
+  replacement={replacement}
 >
   <Content components={{ ProjectPart, OptionsTable }} />
 </ProjectLayout>

@@ -19,15 +19,25 @@ describe("Pill", () => {
     expect(byName(html, "script")).toHaveLength(0);
   });
 
+  it("renders the mauve tone as a filled pill", async () => {
+    const html = await render(Pill, { tone: "mauve" }, "Retired");
+    const [span] = byName(html, "span");
+    expect(span!.attrs["data-tone"]).toBe("mauve");
+    expect(span!.attrs.class).toContain("bg-mauve-50");
+    expect(span!.attrs.class).toContain("dark:bg-mauve-800");
+  });
+
   it("uses one pill style for every tone", async () => {
     const a = await render(Pill, { tone: "sage" }, "A");
     const b = await render(Pill, { tone: "rust" }, "A");
+    const c = await render(Pill, { tone: "mauve" }, "A");
     const shape = (html: string) =>
       (byName(html, "span")[0]!.attrs.class ?? "")
         .split(" ")
-        .filter((c) => !/sage|rust/.test(c))
+        .filter((c) => !/sage|rust|mauve|dusk/.test(c))
         .join(" ");
     expect(shape(a)).toBe(shape(b));
+    expect(shape(a)).toBe(shape(c));
     expect(a).toContain("data-pill");
   });
 });
