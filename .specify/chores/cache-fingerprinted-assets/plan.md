@@ -154,7 +154,7 @@ at new hashed names.
 
 ### W2: E2E test that served stylesheets and scripts are immutable (test first)
 
-- [ ] W2 done
+- [x] W2 done
 - **Files:** `tests/e2e/headers.spec.ts`.
 - **Test:** new-first, replacing an existing test. **Layer: E2E (served response).** Second
   layer reason, written in the test comment: the unit test reads the rule text; only the
