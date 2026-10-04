@@ -25,7 +25,11 @@ cards. On the convergence series page, two card images make up about 79 KB of th
 total-transfer budget that feature 018 (self-hosted fonts, PR #72) set.
 
 This feature makes card images card-sized and lighter, so listing pages keep clear headroom
-under the unchanged 150 KB budget as series and listings grow.
+under the unchanged 150 KB budget as series and listings grow ("clear headroom" is quantified
+under Assumptions, "Expected page weight").
+
+Nothing needed to understand a card depends on its image: the title, summary, date and topics
+are text and carry the card's meaning; the image is a visual summary with alternative text.
 
 ## Clarifications
 
@@ -96,7 +100,8 @@ the release gate by itself.
 **Why this priority**: This is the long-term outcome the issue asks for; it follows from Story 1.
 
 **Independent Test**: The existing budget check on the fixture site's all-posts page (12 cards
-with images) passes with clear headroom.
+with images) passes with clear headroom, meaning at least 40 KB under the 150 KB budget (see
+Assumptions, "Expected page weight").
 
 **Acceptance Scenarios**:
 
@@ -107,14 +112,35 @@ with images) passes with clear headroom.
 
 ### Edge Cases
 
-- A post with no feature image is a text-only card: it gets no image at all, as today.
-- A source image narrower than the card-sized version: the site never enlarges it beyond its
-  own width, as today.
+- A post with no feature image is a text-only card: it gets no image at all and no empty or
+  placeholder image box, as today.
+- A card image that fails to load: the browser shows its alternative text in the card's image
+  box, as today, and the card's title, summary, date and topics still carry its meaning. The
+  alternative text is the same whichever width version was requested.
+- A source image narrower than a listed version: the site never enlarges it. A source narrower
+  than 640 pixels offers the listed widths below its own width plus its own width (for example
+  320, 400 and 480 for a 480-pixel source); a source narrower than 400 pixels offers 320 and its
+  own width. Phones then pick the widest offered version no wider than 400 pixels.
+- A feature image with text or fine detail in it: any text in a card image must not be needed
+  to understand the post (the card's own text and the image's alternative text carry it), so a
+  lower quality cannot hide required information. Quality 65 was picked with a margin for
+  detailed photos (research.md R3); if a later image shows artefacts at card size under the
+  SC-004 check, retuning the card quality is a follow-up, not a per-image override.
+- At 1x pixel density, a browser window whose card slot is between 401 and 480 pixels wide (a
+  window 433 to 512 pixels wide, or 890 to 1023 pixels wide where cards take 45% of the width)
+  may pick the 640 version where today it picks the dropped 480 one, which can be up to about a
+  quarter more bytes for that card. This is the accepted cost of dropping the 480 version
+  (Clarifications). No common phone or tablet renders at 1x in those widths, the budget
+  viewport is not in them, and Chromium's selection usually picks 400 there anyway.
 - The lead story on the writing landing page is not a card and is usually the page's largest
   visible element; its image is unchanged.
 - A post's own page (its hero image) and the projects index are not card listings; their images
   are unchanged by this feature.
-- Dark mode, forced colours and JavaScript turned off: card images behave as they do today.
+- Dark mode and forced colours: the same image file is drawn in the same 16:9 box with no
+  filter or colour change, as today; the card's text and borders follow the existing theme
+  rules.
+- JavaScript turned off: version choice uses only the image's own HTML attributes (the
+  offered widths and declared display widths), so it works the same without JavaScript.
 
 ## Requirements *(mandatory)*
 
@@ -126,27 +152,53 @@ with images) passes with clear headroom.
   check uses), the browser MUST choose the card-sized version for every card image, on every
   page that shows post cards. To make this hold on real phones too, the card's declared phone
   display width MUST be the card's real width (about the screen width minus 2rem of page
-  margins) instead of the full screen width, so every phone up to about 430 pixels wide at
-  normal density picks the 400 version. The tablet and desktop display widths stay as they are.
+  margins, with the root font at 16 pixels) instead of the full screen width, so every screen
+  up to 432 CSS pixels wide at normal density (card slot at most 400 pixels) picks the 400
+  version or a narrower one. The tablet and desktop display widths stay as they are. This
+  changes only which file the browser picks; the card's drawn size, shape and layout are
+  unchanged.
 - **FR-003**: Card images MUST be encoded at a lower quality than the site's general image
-  quality, chosen so the image shows no visible artefacts at the size the card is drawn. The
-  plan picks one WebP quality value between 60 and 70 by comparing file sizes and appearance on
-  the fixture and convergence images.
+  quality, chosen so the image shows no visible artefacts at the size the card is drawn. "No
+  visible artefacts" means: in a side-by-side comparison of the candidate quality against
+  today's encoding, at the card's drawn size at 1x and 2x, on the fixture images and the two
+  convergence images, no banding, blocking, ringing or blur is visible that is absent from
+  today's encoding. The plan picks one WebP quality value between 60 and 70 by that comparison
+  plus the encoded file sizes at each quality, and records the value, the byte table and the
+  comparison result in research.md so the choice can be repeated. (Done in the plan phase:
+  quality 65, research.md R3.)
 - **FR-004**: Cards MUST still offer versions wide enough for wider and high-density screens; the
   widest version a card offers MUST NOT be narrower than the widest it offers today (640
   pixels), and the narrowest stays at 320 pixels so wide 1x screens download no more than today.
+  Expected selection: a phone at 2x or 3x density picks the 640 version (its card slot needs
+  more than 640 device pixels), the same width as today at the lower quality, so it downloads
+  less than today; a desktop 1024 pixels or wider at 1x draws the card at 320 pixels and picks
+  the 320 version, as today; a tablet at 1x picks the narrowest version covering 45% of its
+  width.
 - **FR-005**: Card images MUST keep their current shape, crop, alternative text, intrinsic width
-  and height, lazy loading and image format.
+  and height, lazy loading and image format (WebP), on every width version (320, 400 and 640).
+  The alternative text is the post's feature-image text and is the same for every width version;
+  neither the version picked nor the lower quality changes it. The width and height attributes
+  stay the source image's own dimensions, as today, whichever version the browser picks, and
+  the image keeps its 16:9 box, so the card's space is reserved before any version loads and
+  the changed version set cannot cause layout shift (SC-003's layout-shift limit). Lazy loading
+  changes only when the file downloads: the image stays in the same place in the card, is not
+  focusable, and does not change reading or focus order.
 - **FR-006**: The lower card quality MUST apply only to post card images. The lead story, post
   hero images, project images and the home page photo MUST keep their current versions and
   quality.
 - **FR-007**: The total-transfer page budget MUST stay at 150 KB, and every page template MUST
-  still pass it.
+  still pass it. No page may become heavier than today at the budget check's viewport: pages
+  with cards get lighter, and pages without card images (including the lead story and post
+  hero images) keep the same image bytes. Apart from the 1x edge case above, the same holds on
+  other screens, because the version picked is no wider than today's and is encoded at a lower
+  quality (flat-colour fixture images may vary by a few bytes either way).
 - **FR-008**: Tests MUST be written first and seen to fail (Constitution Principle I). Each test
   names its primary layer, following `docs/testing.md` "Where a test goes": the versions and
   quality a card offers are observable without a browser; which version a phone-width browser
-  downloads and the page's transferred bytes are observable only in a browser. Tests use fixture
-  content, never a named real post.
+  downloads and the page's transferred bytes are observable only in a browser. Automated tests
+  use fixture content, never a named real post. The convergence page appears only in SC-002,
+  which is a manual measurement of the real site reported in the PR body, not an automated
+  test, so it does not conflict with this rule.
 
 ### Key Entities
 
@@ -157,26 +209,54 @@ with images) passes with clear headroom.
 
 ### Measurable Outcomes
 
-- **SC-001**: On every page template that shows post cards, at the budget check's phone-width
-  viewport, no downloaded card image is wider than about 400 pixels.
+- **SC-001**: On every page that shows post cards (the writing landing's latest and featured
+  grids, all posts, a topic page, a series page and the home page's recent writing, checked on
+  the fixture site), at the budget check's phone-width viewport (390 pixels, 1x), no downloaded
+  card image has a width descriptor above 400w. Pass line: the chosen version is 400w or
+  narrower for every card image on each page, and each page has at least one image card.
 - **SC-002**: The combined weight of the card images on the convergence series page falls by at
   least 40% from today's 79 KB (to about 47 KB or less), and the page's total transfer falls
   below 100 KB. This is a reported measurement, not a hard target or an automated check: the
   before and after figures go in the PR body. The automated gates are the unchanged 150 KB
-  budget (SC-003) and a fixture-site test of SC-001.
+  budget (SC-003) and a fixture-site test of SC-001. Both figures are measured the same way:
+  the page budget check's total-transfer figure for the convergence page (compressed bytes
+  including headers, under the conditions in Assumptions) and the card images' share of it,
+  with the card image file sizes from the build as a cross-check; the before figures are
+  research.md R4's (78,604 of 121,654 bytes). If the reported after figures miss either
+  target, the PR still reports them and the miss is recorded as a follow-up issue, not rework
+  in this feature, provided the 150 KB budget (SC-003) and SC-001 hold.
 - **SC-003**: Every page template, and the fixture site's 12-card all-posts page, passes the
-  unchanged 150 KB total-transfer budget along with the existing LCP, layout-shift, long-task and
-  JavaScript limits.
-- **SC-004**: Card images show no visible blurring or artefacts at their drawn size, judged on
-  the preview deployment and by the listing-cards visual check.
+  unchanged 150 KB total-transfer budget along with the existing limits: largest contentful
+  paint at most 2.5 s, cumulative layout shift below 0.1, long tasks at most 200 ms in total
+  and at most 10 KB of JavaScript. The automated accessibility check (WCAG 2.2 AA) keeps
+  passing on every page template, including every page that shows post cards.
+- **SC-004**: Card images show no visible blurring or artefacts at their drawn size, as defined
+  in FR-003: the plan's side-by-side check (research.md R3) found none at the chosen quality,
+  the listing-cards visual check covers the fixture cards, and the convergence cards are looked
+  at on the preview deployment.
 
 ## Assumptions
 
 - "Listing cards" means post cards wherever they appear: writing landing (latest and featured
   grids), all posts, topic pages, series pages and the home page's recent writing. They are one
   card design, so one change covers them all.
-- The phone-width viewport and network settings are those the existing page budget check uses
-  (390 pixels wide, normal pixel density).
+- The phone-width viewport and network settings are those the existing page budget check uses:
+  a 390 by 844 viewport at normal pixel density, simulated slow 4G (150 ms round trip, 1.6 Mbps
+  down), 4x CPU slowdown and the browser cache disabled. Total transfer is the compressed bytes
+  on the wire, headers included, for everything loaded until the page is loaded and the network
+  is idle, without scrolling; lazy-loaded card images the browser does not fetch before then
+  are not counted.
+- Expected page weight. At 400 pixels and quality 65 a real-photo card image is about 20 KB
+  (the two convergence cards are about 41 KB together, research.md R3), against about 39 KB per
+  card today. The convergence page's non-image weight is about 43 KB, so the page goes from
+  about 122 KB to about 85 KB, leaving about 65 KB of headroom, room for about three more
+  real-photo cards fetched on first load. The fixture site's 12-card all-posts page uses
+  flat-colour fixture images of a few hundred bytes each, so its weight is set by the shell
+  and stays far below 150 KB. "Clear headroom" means at least 40 KB under the budget (room for
+  two more real-photo cards) on both pages. A real page of 12 photo cards whose images all
+  loaded at once would weigh about 43 + 12 x 20 = 283 KB; it stays within budget only because
+  lazy loading fetches just the cards near the first screen. Bringing such a page under budget
+  if all its cards load early is out of scope (see Out of Scope).
 - The site's images are already WebP; the card stays WebP and only its quality drops, to a
   value between 60 and 70 that the plan picks (FR-003).
 - The predicted visual change: the fixture listing-cards visual subject shows lighter, card-sized
@@ -194,5 +274,7 @@ with images) passes with clear headroom.
 - Right-sizing project images on the projects index rows and story pages, the lead story image
   and post hero images. Each could be its own follow-up if those pages approach the budget.
 - Changing the 150 KB budget or any other budget limit.
-- Changing how many cards a listing page shows before it paginates.
+- Changing how many cards a listing page shows before it paginates, or making a page of 12
+  real-photo cards fit the budget if all its images load at once (Assumptions, "Expected page
+  weight").
 - Changing the source images in the content folders.
