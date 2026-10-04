@@ -18,6 +18,7 @@
 // updateSnapshots "none" (a missing baseline fails) come from
 // playwright.config.ts.
 import { test, expect, type Locator, type Page } from "@playwright/test";
+import { expectThemeClass, setTheme, type Theme } from "./color-theme.ts";
 
 const WIDTHS = [
   { name: "phone", width: 390, height: 844 },
@@ -26,17 +27,11 @@ const WIDTHS = [
 
 const THEMES = ["dark", "light"] as const;
 
-async function open(page: Page, path: string, width: number, height: number, theme: "dark" | "light") {
+async function open(page: Page, path: string, width: number, height: number, theme: Theme) {
   await page.setViewportSize({ width, height });
-  await page.addInitScript((value) => {
-    try {
-      localStorage.setItem("color-theme", value);
-    } catch {
-      // Storage unavailable: the page falls back to dark.
-    }
-  }, theme);
+  await setTheme(page, theme);
   await page.goto(path);
-  await expect(page.locator("html")).toHaveClass(theme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
+  await expectThemeClass(page, theme);
   await settleImages(page);
 }
 

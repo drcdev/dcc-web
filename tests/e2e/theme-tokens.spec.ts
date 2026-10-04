@@ -28,8 +28,8 @@
 //   change, which is outside this test.
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { FIXTURE_SITE } from "./templates";
+import { expectThemeClass, setTheme, type Theme } from "./color-theme.ts";
 
-type Theme = "light" | "dark";
 
 /** A token name (`dusk-200` is `--color-dusk-200`) or the literal `transparent`. */
 type Token = string;
@@ -217,17 +217,6 @@ const PAGES: Page_[] = [
   },
 ];
 
-/** Writes the colour theme before the first paint, as the site's own script reads it. */
-async function startIn(page: Page, theme: Theme) {
-  await page.addInitScript((value) => {
-    try {
-      localStorage.setItem("color-theme", value);
-    } catch {
-      // Storage unavailable: the page falls back to dark.
-    }
-  }, theme);
-}
-
 /**
  * The computed colour of a design-system token, read from a throwaway element. Setting the
  * property through the CSSOM is allowed by the site's CSP (setAttribute("style") is not). The
@@ -255,7 +244,7 @@ function subject(page: Page, probe: Probe): Locator {
 /** Checks every probe of a page against one theme's tokens. */
 async function expectTheme(page: Page, probes: Probe[], theme: Theme) {
   const index = theme === "light" ? 0 : 1;
-  await expect(page.locator("html")).toHaveClass(theme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
+  await expectThemeClass(page, theme);
   for (const probe of probes) {
     const locator = subject(page, probe);
     await expect(locator, `${probe.name} is on the page`).toHaveCount(1);
@@ -290,7 +279,7 @@ for (const { path, ready, probes } of PAGES) {
     test(`${path} resolves theme tokens, ${from} then ${to}`, async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.emulateMedia({ reducedMotion: "reduce" });
-      await startIn(page, from);
+      await setTheme(page, from);
       await page.goto(`${FIXTURE_SITE}${path}`);
       await ready(page);
 

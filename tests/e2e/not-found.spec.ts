@@ -5,6 +5,7 @@
 // page's build output with a genuine HTTP 404 status, not a soft 404.
 import { test, expect } from "@playwright/test";
 import { futureDestinations } from "../../src/config/navigation.ts";
+import { expectThemeClass, setTheme } from "./color-theme.ts";
 
 // Retired Ghost blog addresses that this rebuild does not carry over
 // (docs/design-source.md "Current live URLs" / "What doesn't carry over").
@@ -56,9 +57,9 @@ test.describe("not-found content", () => {
   }
 
   test("renders in the visitor's currently-chosen theme", async ({ page }) => {
-    await page.addInitScript(() => localStorage.setItem("color-theme", "light"));
+    await setTheme(page, "light");
     await page.goto(NOT_FOUND_ADDRESSES[0]);
-    await expect(page.locator("html")).not.toHaveClass(/\bdark\b/);
+    await expectThemeClass(page, "light");
     await expect(page.getByRole("heading", { level: 1, name: "Page not found" })).toBeVisible();
   });
 });

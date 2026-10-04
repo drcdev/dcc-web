@@ -3,8 +3,9 @@
 // section once, checked for accessibility, reflow, no-JS reading, image widths,
 // focus and target size, heading colours and metadata (FR-010, FR-011, FR-013,
 // FR-014, FR-028a; US3 scenario 2; US4 scenarios 1 to 6).
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { setTheme } from "./color-theme.ts";
 
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"];
 const PATH = "/sections/";
@@ -13,16 +14,6 @@ const SIZES = [
   { name: "phone", width: 390, height: 844 },
   { name: "desktop", width: 1280, height: 800 },
 ] as const;
-
-async function setTheme(page: Page, theme: "dark" | "light") {
-  await page.addInitScript((value) => {
-    try {
-      localStorage.setItem("color-theme", value);
-    } catch {
-      // Storage unavailable: the page falls back to dark.
-    }
-  }, theme);
-}
 
 for (const theme of THEMES) {
   for (const size of SIZES) {

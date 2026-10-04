@@ -240,7 +240,7 @@ W3 builds on W1's import in `theme-tokens.spec.ts`.
 - `git status --porcelain tests/e2e/visual.spec.ts-snapshots/` must be empty. A snapshot diff
   is a regression, not a baseline to refresh.
 
-- [ ] done
+- [x] done
 
 ### W2 — Fold the repeated sideways-scroll checks into the geometry test
 
