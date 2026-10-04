@@ -118,7 +118,7 @@ runtime year), as does `shell.spec.ts` line 288.
 
 ### W1: Unit test for the freeze helper and its use in `visual.spec.ts` (test first)
 
-- [ ] W1 done
+- [x] W1 done
 - **Files:** `tests/unit/site/visual-footer-year.test.ts` (new).
 - **Test:** new-first. **Layer: unit**, the cheapest layer that can observe the mechanism: the
   text rewrite is a pure function, and "every shot is frozen" is a fact about the spec's source.
