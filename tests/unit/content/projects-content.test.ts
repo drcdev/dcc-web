@@ -54,10 +54,10 @@ describe.each(projects.map((entry) => [entry.slug, entry] as const))("the %s pro
     expect(visuals.some((picture) => picture.part === "build")).toBe(true);
   });
 
-  it("names its replacement when it is retired, and names none otherwise", () => {
+  it("names a replacement only when it is retired, and a retired project may name none (#65)", () => {
     const replacedBy = frontmatter.replacedBy as { project?: unknown; name?: string } | undefined;
-    if (frontmatter.status === "retired") expect(Boolean(replacedBy?.project) || Boolean(replacedBy?.name)).toBe(true);
-    else expect(replacedBy).toBeUndefined();
+    if (frontmatter.status !== "retired") expect(replacedBy).toBeUndefined();
+    else if (replacedBy) expect(Boolean(replacedBy.project) !== Boolean(replacedBy.name)).toBe(true);
   });
 });
 
