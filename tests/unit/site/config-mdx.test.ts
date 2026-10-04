@@ -36,9 +36,9 @@ describe("MDX and fixture-site configuration", () => {
     expect(config).toMatch(/name:\s*"sections"/);
     // The project also runs the pagination spec, which needs the fixture site's 13 or more posts
     // (spec 008 T057), the blog fixtures spec, which needs the fixture site's text-only and long
-    // title posts (spec 010), and the project fixtures spec (spec 009).
+    // title posts (spec 010), the project fixtures spec (spec 009) and the questions panel spec (spec 022).
     expect(config).toMatch(
-      /testMatch:\s*\[\s*\/sections\\\.spec\\\.ts\$\/,\s*\/blog-pagination\\\.spec\\\.ts\$\/,\s*\/blog-fixtures\\\.spec\\\.ts\$\/,\s*\/projects-fixtures\\\.spec\\\.ts\$\/,?\s*\]/,
+      /testMatch:\s*\[\s*\/sections\\\.spec\\\.ts\$\/,\s*\/blog-pagination\\\.spec\\\.ts\$\/,\s*\/blog-fixtures\\\.spec\\\.ts\$\/,\s*\/projects-fixtures\\\.spec\\\.ts\$\/,\s*\/questions\\\.spec\\\.ts\$\/,?\s*\]/,
     );
     expect(config).toMatch(/testIgnore:\s*\[[^\]]*sections\\\.spec\\\.ts\$/s);
     expect(config).toMatch(/testIgnore:\s*\[[^\]]*blog-fixtures\\\.spec\\\.ts\$/s);

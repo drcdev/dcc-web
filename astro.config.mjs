@@ -155,7 +155,13 @@ export default defineConfig({
   // The not-found page is not a public page (FR-017c, FR-018; research R9).
   // pruneDraftAssets drops what only a draft project used from the production build.
   integrations: [
-    sitemap({ filter: (page) => !new URL(page).pathname.startsWith("/404") }),
+    sitemap({
+      filter: (page) => {
+        const { pathname } = new URL(page);
+        // The per-post question source files are data for the questions API, not pages (specs/022).
+        return !pathname.startsWith("/404") && !pathname.endsWith("/question-source.json");
+      },
+    }),
     mdx(),
     pruneDraftAssets(process.env),
   ],

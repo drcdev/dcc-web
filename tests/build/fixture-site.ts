@@ -153,6 +153,9 @@ export async function buildFixtureSite(
   // The contact form imports its shared limits from the Worker package.
   mkdirSync(resolve(root, "worker/src/contact"), { recursive: true });
   cpSync(resolve(repoRoot, "worker/src/contact/rules.ts"), resolve(root, "worker/src/contact/rules.ts"));
+  // The question source preparer imports the input cap from the questions config.
+  mkdirSync(resolve(root, "worker/src/questions"), { recursive: true });
+  cpSync(resolve(repoRoot, "worker/src/questions/config.ts"), resolve(root, "worker/src/questions/config.ts"));
   // Dependencies resolve through the repository's node_modules.
   symlinkSync(resolve(repoRoot, "node_modules"), resolve(root, "node_modules"), "dir");
 

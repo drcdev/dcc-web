@@ -145,6 +145,9 @@ export function prepareFixtureSite(siteRoot: string): void {
   // The contact form imports the shared limits from the Worker package.
   mkdirSync(resolve(siteRoot, "worker/src/contact"), { recursive: true });
   cpSync(resolve(repoRoot, "worker/src/contact/rules.ts"), resolve(siteRoot, "worker/src/contact/rules.ts"));
+  // The question source preparer imports the input cap from the questions config.
+  mkdirSync(resolve(siteRoot, "worker/src/questions"), { recursive: true });
+  cpSync(resolve(repoRoot, "worker/src/questions/config.ts"), resolve(siteRoot, "worker/src/questions/config.ts"));
 
   if (FIXTURE_PAGES.some((name) => existsSync(resolve(pageFixtures, name)))) {
     mkdirSync(resolve(siteRoot, "src/content/pages"), { recursive: true });

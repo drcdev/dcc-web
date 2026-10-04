@@ -157,3 +157,17 @@ describe("PostLayout head", () => {
     expect(feed!.attrs.href).toBe("https://example.test/writing/rss.xml");
   });
 });
+
+describe("PostLayout questions panel (specs/022 P01, P03)", () => {
+  it("renders the panel once, after the title card and before the body", async () => {
+    const html = await render(summary("one"), { questionHash: "ab".repeat(32) });
+    expect(html.match(/data-questions(?=[\s>])/g)).toHaveLength(1);
+    expect(html.indexOf("data-title-card")).toBeLessThan(html.indexOf("data-questions"));
+    expect(html.indexOf("data-questions")).toBeLessThan(html.indexOf("data-post-body"));
+    expect(html).toContain('data-slug="one"');
+  });
+
+  it("leaves the panel out when the route gives no hash", async () => {
+    expect(await render(summary("one"))).not.toContain("data-questions");
+  });
+});

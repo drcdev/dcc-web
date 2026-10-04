@@ -30,11 +30,17 @@ const starRule = () => rules().get("/*") ?? new Map<string, string>();
 const WORKERS_DEV_RULE = "https://:worker.:subdomain.workers.dev/*";
 const ASTRO_RULE = "/_astro/*";
 const REVIEW_HOST_RULE ="https://new.doncoleman.ca/*";
+const QUESTION_SOURCE_RULE = "/writing/*/question-source.json";
 const publicAstroPath = fileURLToPath(new URL("../../../public/_astro", import.meta.url));
 
 describe("public/_headers", () => {
-  it("has exactly four rules, in order: every path, the fingerprinted build files, workers.dev previews and the review host", () => {
-    expect([...rules().keys()]).toEqual(["/*", ASTRO_RULE, WORKERS_DEV_RULE, REVIEW_HOST_RULE]);
+  it("has exactly five rules, in order: every path, the fingerprinted build files, the question source files, workers.dev previews and the review host", () => {
+    expect([...rules().keys()]).toEqual(["/*", ASTRO_RULE, QUESTION_SOURCE_RULE, WORKERS_DEV_RULE, REVIEW_HOST_RULE]);
+  });
+
+  // specs/022 T023: the per-post source file the questions API reads is not for search engines.
+  it.each([QUESTION_SOURCE_RULE])("sets X-Robots-Tag: noindex, and nothing else, on %s", (path) => {
+    expect([...rules().get(path)!.entries()]).toEqual([["x-robots-tag", "noindex"]]);
   });
 
   // F12, FR-015: issue #74 widened this from the font files to every content-hashed file Astro
