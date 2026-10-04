@@ -12,6 +12,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { test, expect, type BrowserContext, type Page } from "@playwright/test";
 import { buildFixtureSite, type FixtureSiteResult } from "../build/fixture-site.ts";
 import { expectThemeClass, setTheme } from "./color-theme.ts";
+import { stubQuestionsApi, type StubResponse } from "./questions-stub.ts";
 
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"];
 const THEMES = ["dark", "light"] as const;
@@ -190,3 +191,44 @@ for (const target of TARGETS) {
     });
   });
 }
+
+// The questions panel states (specs/022 T045; P24, FR-012a). The idle panel is already scanned with
+// the post template in a11y.spec.ts; the markup of the ready, limited and error states exists only
+// after a press, so a second scan of the same template is needed to see it.
+const QUESTIONS_POST = "http://localhost:4322/writing/text-only/";
+const QUESTION_STATES: { name: string; responses: StubResponse[]; text: string }[] = [
+  {
+    name: "ready",
+    responses: [{ body: { ok: true, source: "generated", questions: ["What evidence supports the claim?", "Who might disagree?", "What would change the conclusion?"] } }],
+    text: "What evidence supports the claim?",
+  },
+  {
+    name: "limited",
+    responses: [{ status: 429, headers: { "Retry-After": "432" }, body: { ok: false, error: "limited", retryAfter: 432 } }],
+    text: "limit has been reached",
+  },
+  {
+    name: "error",
+    responses: [{ status: 503, body: { ok: false, error: "unavailable" } }],
+    text: "Questions could not be loaded",
+  },
+];
+
+test.describe("questions panel states", () => {
+  for (const state of QUESTION_STATES) {
+    for (const size of SIZES) {
+      for (const theme of THEMES) {
+        test(`has zero axe violations in the ${state.name} state at ${size.name} width in the ${theme} theme`, async ({ page }) => {
+          await page.setViewportSize({ width: size.width, height: size.height });
+          await setTheme(page, theme);
+          await stubQuestionsApi(page, state.responses);
+          await page.goto(QUESTIONS_POST);
+          await expectThemeClass(page, theme);
+          await page.locator("[data-questions-get]").click();
+          await expect(page.locator("[data-questions]")).toContainText(state.text);
+          await expectNoAxeViolations(page);
+        });
+      }
+    }
+  }
+});
