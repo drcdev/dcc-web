@@ -2,7 +2,9 @@
 // "PartPicture"). Called with the `image` helper from the collection schema context
 // (docs.astro.build/en/guides/images/#images-in-content-collections). Every
 // object is strict, so an unknown, misspelled or removed setting fails the build naming it.
+import { reference } from "astro:content";
 import { z } from "astro/zod";
+import { projectStatuses } from "../../lib/content/project-status.ts";
 import { partIds } from "../../lib/content/parts.ts";
 import { themeKey } from "../../lib/content/themes.ts";
 import { requiredText as text, type ImageValidator } from "./shared.ts";
@@ -55,7 +57,10 @@ export function projectSchema({ image }: { image: ImageValidator }) {
       problem,
       description: text,
       themes: z.array(text).min(1, "list at least one theme").max(4, "list at most four themes"),
-      status: z.enum(["shipped", "experiment", "in-progress"]),
+      status: z.enum(projectStatuses),
+      // The project that replaced a retired one: a project on the site (linked to its page) or a name,
+      // optionally with an https address. Missing and self references are checked in project-replacement.ts.
+      replacedBy: z.strictObject({ project: reference("projects").optional(), name: text.optional(), href: httpsUrl.optional() }).optional(),
       date: z.coerce.date(),
       visual: z.discriminatedUnion("kind", [imageVisual, diagramVisual]),
       visuals: z.record(visualName, z.discriminatedUnion("kind", [storyImage, storyDiagram])).optional(),
@@ -79,6 +84,30 @@ export function projectSchema({ image }: { image: ImageValidator }) {
     .superRefine((value, ctx) => {
       if (value.demo && value.standIn) {
         ctx.addIssue({ code: "custom", path: ["standIn"], message: "use demo or standIn, not both" });
+      }
+      const replacedBy = value.replacedBy;
+      if (replacedBy) {
+        if (value.status !== "retired") {
+          ctx.addIssue({
+            code: "custom",
+            path: ["replacedBy"],
+            message: "only a retired project can name a replacement: set status: retired, or remove replacedBy",
+          });
+        }
+        if (!replacedBy.project === !replacedBy.name) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["replacedBy"],
+            message:
+              "replacedBy needs either project (the file name of a project on the site) or name (with an optional href), not both",
+          });
+        } else if (replacedBy.project && replacedBy.href) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["replacedBy", "href"],
+            message: "href goes with name: a project on the site is linked to its own page",
+          });
+        }
       }
       const seen = new Set<string>();
       value.themes.forEach((theme, index) => {

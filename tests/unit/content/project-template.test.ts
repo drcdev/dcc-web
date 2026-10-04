@@ -46,7 +46,9 @@ describe("the project template", () => {
 
   it("names the optional details in comments", () => {
     const comments = [...content.matchAll(/\{\/\*([\s\S]*?)\*\/\}/g)].map((match) => match[1]).join("\n");
-    for (const detail of ["visuals", "standIn", "demo", "source", "image", "invitation"]) expect(comments).toContain(detail);
+    for (const detail of ["visuals", "standIn", "demo", "source", "image", "invitation", "retired", "replacedBy"]) {
+      expect(comments).toContain(detail);
+    }
   });
 
   it("links only to example.com", () => {

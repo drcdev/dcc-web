@@ -56,7 +56,8 @@ The settings between the two `---` lines:
 | `problem` | yes | The problem in one sentence of at most 140 characters, ending with a full stop, question mark or exclamation mark. It is the row text on the Projects page. |
 | `description` | yes | A short summary for search results and link previews. |
 | `themes` | yes | One to four themes, such as `[AI integration, Automation]`. Visitors filter the Projects page by them. Do not repeat a theme. |
-| `status` | yes | One of `shipped`, `experiment` or `in-progress`. |
+| `status` | yes | One of `shipped`, `experiment`, `in-progress` or `retired`. A retired project keeps its story and its place in the list, with a Retired label and a note that you no longer use or maintain it. |
+| `replacedBy` | no | Only on a `retired` project: what replaced it. Either `project:` with the file name of another project on the site (the note links to its story), or `name:` with the replacement's name and an optional `href:` (an https address). Use `project` or `name`, not both; `href` goes only with `name`. |
 | `date` | yes | When the project was made, like `2025-06-01`. The Projects page lists the newest first. |
 | `visual` | yes | The picture on the project's row. See "Pictures". |
 | `visuals` | no | Named pictures for the story, each beside one part. See "Pictures". |
@@ -181,7 +182,7 @@ The build stops at the first problem and names the file. Messages start with `Pr
 (or `Project files` when two files clash) or name the project in a "data does not match" note.
 
 - A missing or misspelled setting, a wrong kind of value, or a `status` that is not one of the
-  three allowed words.
+  four allowed words.
 - A removed setting: `order`, `comparison`, or the demo's embed switch.
 - No themes at all, more than four themes, or the same theme twice.
 - A visual name under `visuals` that is not lower-case letters, digits and hyphens starting
@@ -206,5 +207,10 @@ The build stops at the first problem and names the file. Messages start with `Pr
 - Two files with the same address (`x.md` and `x.mdx`), a file in a subfolder, or a file name
   with anything other than lower-case letters, digits and hyphens.
 - A `problem` over 140 characters or with more than one sentence.
+- A `replacedBy` on a project whose `status` is not `retired` (only a retired project can name a replacement).
+- A `replacedBy` with both `project` and `name`, or neither, or an `href` beside `project`.
+- A `replacedBy` `href` that is not https, an empty `name`, or a setting it does not know.
+- A `replacedBy` `project` that names a file that does not exist (no such project file; use the file name of a project on the site, or `name` for anything else).
+- A project that replaces itself: `replacedBy` names the project's own file.
 - A `demo` address that is not on drc.dev, or a `source` or `standIn` address that is not
   https. Both `demo` and `standIn` set.

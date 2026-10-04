@@ -8,10 +8,14 @@ describe("StatusPill", () => {
     ["shipped", "Shipped"],
     ["experiment", "Experiment"],
     ["in-progress", "In progress"],
+    ["retired", "Retired"],
   ])("shows %s as text", async (status, label) => {
     const html = await render(StatusPill, { status });
     const tag = byName(html, "span").find((t) => t.attrs["data-status"]);
     expect(tag!.attrs["data-status"]).toBe(status);
+    if (status === "retired") expect(tag!.attrs["data-tone"]).toBe("mauve");
+    expect(tag!.attrs.role).toBeUndefined();
+    expect(Object.keys(tag!.attrs).some((name) => name.startsWith("aria-"))).toBe(false);
     expect(textOf(html, "span")).toContain(label);
   });
 });

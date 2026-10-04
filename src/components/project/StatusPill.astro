@@ -2,13 +2,12 @@
 // Project status as text in the shared pill (FR-017, FR-025). The tone is
 // decorative; the word is what carries the status.
 import Pill from "../Pill.astro";
+import { statusLabel, statusTone, type ProjectStatus } from "../../lib/content/project-status";
 
 export interface Props {
-  status: "shipped" | "experiment" | "in-progress";
+  status: ProjectStatus;
 }
 const { status } = Astro.props;
-const label = { shipped: "Shipped", experiment: "Experiment", "in-progress": "In progress" }[status];
-const tone = { shipped: "sage", experiment: "lavender", "in-progress": "rust" } as const;
 ---
 
-<Pill tone={tone[status]} data-status={status}>{label}</Pill>
+<Pill tone={statusTone(status)} data-status={status}>{statusLabel(status)}</Pill>

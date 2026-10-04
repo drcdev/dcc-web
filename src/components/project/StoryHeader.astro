@@ -1,6 +1,7 @@
 ---
 // The top of a project story: the title as the page's one h1, the problem line,
 // status and themes (contracts/pages-dom.md). A draft shows a notice in plain text.
+import type { ProjectStatus } from "../../lib/content/project-status";
 import StatusPill from "./StatusPill.astro";
 import ThemePills from "./ThemePills.astro";
 import "./portfolio.css";
@@ -8,7 +9,7 @@ import "./portfolio.css";
 export interface Props {
   title: string;
   problem: string;
-  status: "shipped" | "experiment" | "in-progress";
+  status: ProjectStatus;
   themes: readonly string[];
   /** A draft is shown outside the production build only; the notice says so. */
   draft?: boolean;
