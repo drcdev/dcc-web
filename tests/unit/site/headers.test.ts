@@ -28,23 +28,32 @@ function rules(): Map<string, Map<string, string>> {
 const starRule = () => rules().get("/*") ?? new Map<string, string>();
 
 const WORKERS_DEV_RULE = "https://:worker.:subdomain.workers.dev/*";
-const FONTS_RULE = "/_astro/fonts/*";
+const ASTRO_RULE = "/_astro/*";
 const REVIEW_HOST_RULE ="https://new.doncoleman.ca/*";
+const publicAstroPath = fileURLToPath(new URL("../../../public/_astro", import.meta.url));
 
 describe("public/_headers", () => {
-  it("has exactly four rules, in order: every path, the font files, workers.dev previews and the review host", () => {
-    expect([...rules().keys()]).toEqual(["/*", FONTS_RULE, WORKERS_DEV_RULE, REVIEW_HOST_RULE]);
+  it("has exactly four rules, in order: every path, the fingerprinted build files, workers.dev previews and the review host", () => {
+    expect([...rules().keys()]).toEqual(["/*", ASTRO_RULE, WORKERS_DEV_RULE, REVIEW_HOST_RULE]);
   });
 
-  // F12, FR-015: only the content-hashed font files are cached for a year; nothing else sets Cache-Control.
-  it("sets only the immutable year-long Cache-Control on /_astro/fonts/*", () => {
-    expect([...rules().get(FONTS_RULE)!.entries()]).toEqual([["cache-control", "public, max-age=31536000, immutable"]]);
+  // F12, FR-015: issue #74 widened this from the font files to every content-hashed file Astro
+  // emits under /_astro/. One rule only, because overlapping _headers rules join the same
+  // header with a comma. Nothing else sets Cache-Control.
+  it("sets only the immutable year-long Cache-Control on /_astro/*", () => {
+    expect([...rules().get(ASTRO_RULE)!.entries()]).toEqual([["cache-control", "public, max-age=31536000, immutable"]]);
   });
 
   it("sets Cache-Control on no other rule", () => {
     for (const [path, rule] of rules()) {
-      if (path !== FONTS_RULE) expect(rule.has("cache-control"), path).toBe(false);
+      if (path !== ASTRO_RULE) expect(rule.has("cache-control"), path).toBe(false);
     }
+  });
+
+  // Files in public/ are copied as-is and never renamed with a hash, so an unhashed file
+  // under /_astro/ could only come from here and would be cached for a year.
+  it("public/ has no _astro directory, so only Astro's hashed build output is served under /_astro/", () => {
+    expect(existsSync(publicAstroPath)).toBe(false);
   });
 
   it("does not set X-Robots-Tag on /* (the live domain is indexable, FR-010d)", () => {

@@ -131,7 +131,7 @@ at new hashed names.
 
 ### W1: Unit tests for the widened rule (test first)
 
-- [ ] W1 done
+- [x] W1 done
 - **Files:** `tests/unit/site/headers.test.ts`.
 - **Test:** unit over config, new-first. **Layer: unit**, the cheapest layer that can observe
   the rule text.
