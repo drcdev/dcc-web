@@ -451,7 +451,7 @@ item leaves `verify:quick` green, along with its targeted files:
 | All posts list order | `sortNewestFirst`, same exact equality |
 | Topic list `[WAYFINDER, STARTING]` | Computed per topic, same exact equality |
 
-### W8. Blog e2e spec, part 2: related, feed, home, series, markers
+### W8. Blog e2e spec, part 2: related, feed, home, series, markers (Done: the four real-post constants are deleted; the topic-page marker case picks a non-series topic that a series post shares)
 
 - **Files:** `tests/e2e/blog.spec.ts` (the remaining blocks).
 - **Test:** existing, rewritten, **e2e layer**.

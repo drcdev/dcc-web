@@ -8,15 +8,11 @@
 import { test, expect, type Page } from "@playwright/test";
 import { cspViolations, recordCspViolations } from "./csp-violations.ts";
 import { blog } from "../../src/config/blog.ts";
-import { topics, topicHref } from "../../src/config/topics.ts";
-import { selectLanding, sortNewestFirst } from "../../src/lib/content/post-order.ts";
-import { inBuild, posts, postSummary } from "../helpers/content.ts";
+import { topics, topicHref, seriesIds, otherSeries, findTopic } from "../../src/config/topics.ts";
+import { selectLanding, selectRecent, selectRelated, sortNewestFirst } from "../../src/lib/content/post-order.ts";
+import { inBuild, posts, postSummary, seriesPost } from "../helpers/content.ts";
 
 const POST = "/writing/sample-everything/";
-const WAYFINDER = "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/";
-const FOCUS_POCUS = "/writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/";
-const GHOST_THEMES = "/writing/self-contained-development-for-ghost-themes/";
-const STARTING = "/writing/starting-something-new/";
 // The e2e server serves a local build, which is not a production build, so drafts are built and listed.
 const BUILT_POSTS = inBuild(posts, { production: false }).map(postSummary);
 /** The newest post with no update date. */
@@ -25,6 +21,12 @@ const PLAIN_POST = (() => {
   if (!plain) throw new Error("tests/e2e/blog.spec.ts: no post lacks an update date.");
   return plain.href;
 })();
+/** The series id a post is tagged with, if any. */
+const seriesOf = (post: { topics: readonly string[] }) => post.topics.find((id) => (seriesIds as readonly string[]).includes(id));
+const SAMPLE = BUILT_POSTS.find((post) => post.href === POST)!;
+const TAGGED_HREFS = BUILT_POSTS.filter((post) => seriesOf(post)).map((post) => post.href);
+const SERIES_POST = postSummary(seriesPost);
+const SERIES_POST_NAME = findTopic(seriesOf(SERIES_POST)!)!.name;
 const CAPTIONED_CODE = "const { title, summary } = entry.data;\nconsole.log(`${title}: ${summary}`);";
 
 const noSidewaysScroll = async (page: Page) => {
@@ -498,7 +500,7 @@ test.describe("related posts", () => {
     const related = page.locator("[data-related]");
     await expect(related.getByRole("heading", { level: 2, name: "Related posts" })).toBeVisible();
     const hrefs = await related.locator("li h3 a").evaluateAll((links) => links.map((a) => a.getAttribute("href")));
-    expect(hrefs).toEqual([FOCUS_POCUS, WAYFINDER, GHOST_THEMES]);
+    expect(hrefs).toEqual(selectRelated(SAMPLE, BUILT_POSTS).map((post) => post.href));
     expect(hrefs).not.toContain(POST);
   });
 
@@ -533,9 +535,9 @@ test.describe("feed", () => {
   for (const path of [
     "/writing/",
     "/writing/all/",
-    "/writing/topics/technology-teams/",
-    "/writing/sample-everything/",
-    WAYFINDER,
+    TOPIC,
+    POST,
+    SERIES_POST.href,
   ]) {
     test(`advertises the feed in the head of ${path}`, async ({ page }) => {
       await page.goto(path);
@@ -548,7 +550,7 @@ test.describe("feed", () => {
 });
 
 test.describe("home page recent writing (US7)", () => {
-  // The 3 newest: sample-everything (2026-08-27), the Wayfinder post (2025-08-27), Focus Pocus (08-16).
+  const RECENT = selectRecent(BUILT_POSTS);
   test("lists the 3 newest posts as cards, newest first, with a link to all writing", async ({ page }) => {
     await page.goto("/");
     const section = page.locator("section[aria-labelledby]").filter({
@@ -556,27 +558,36 @@ test.describe("home page recent writing (US7)", () => {
     });
     await expect(section).toBeVisible();
     const cards = section.locator("article[data-post-card]");
-    await expect(cards).toHaveCount(3);
-    await expect(cards.nth(0).getByRole("heading", { level: 3 })).toContainText("Every kind of content a post can hold");
-    await expect(cards.nth(1).getByRole("heading", { level: 3 })).toContainText("The Systems Leadership Wayfinder");
-    await expect(cards.nth(2).getByRole("heading", { level: 3 })).toContainText("Building Focus Pocus");
+    await expect(cards).toHaveCount(RECENT.length);
+    for (const [index, post] of RECENT.entries()) {
+      await expect(cards.nth(index).getByRole("heading", { level: 3 })).toContainText(post.title);
+    }
     await expect(section.getByRole("link", { name: "All writing" })).toHaveAttribute("href", "/writing/");
   });
 
   test("reaches the newest post in 2 selections from Home (SC-001)", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("link", { name: /Every kind of content a post can hold/ }).click();
-    await expect(page).toHaveURL(/\/writing\/sample-everything\/$/);
+    const [newest] = RECENT;
+    await page.getByRole("link", { name: newest!.title }).first().click();
+    await expect(page).toHaveURL(new RegExp(`${newest!.href}$`));
   });
 });
 
-// Series pages and redirects (spec 013 US4; contracts/writing-pages.md; SC-003). Drift holds Focus Pocus
-// (2025-08-16) and Ghost themes (08-07); Convergence holds the Wayfinder post (2025-08-27) and Starting
-// something new (03-15). The sample post has no series.
-const SERIES_POSTS = {
-  drift: { name: "Drift", other: "Convergence", otherPath: "/writing/convergence/", posts: [FOCUS_POCUS, GHOST_THEMES] },
-  convergence: { name: "Convergence", other: "Drift", otherPath: "/writing/drift/", posts: [WAYFINDER, STARTING] },
-} as const;
+// Series pages and redirects (spec 013 US4; contracts/writing-pages.md; SC-003). Each series page lists the
+// posts tagged with its id, newest first. The sample post has no series.
+const SERIES_POSTS = Object.fromEntries(
+  seriesIds.map((id) => [
+    id,
+    {
+      name: findTopic(id)!.name,
+      other: findTopic(otherSeries(id))!.name,
+      otherPath: topicHref(otherSeries(id)),
+      posts: sortNewestFirst(BUILT_POSTS.filter((post) => post.topics.includes(id)))
+        .slice(0, blog.pageSize)
+        .map((post) => post.href),
+    },
+  ]),
+);
 
 test.describe("series pages", () => {
   for (const [id, series] of Object.entries(SERIES_POSTS)) {
@@ -608,7 +619,7 @@ test.describe("series pages", () => {
   }
 
   test("page 1 and a page past the last are not built", async ({ page }) => {
-    for (const path of ["/writing/drift/1/", "/writing/drift/99/"]) {
+    for (const path of [`${topicHref(seriesIds[0])}1/`, `${topicHref(seriesIds[0])}99/`]) {
       const response = await page.goto(path);
       expect(response?.status(), path).toBe(404);
     }
@@ -616,11 +627,12 @@ test.describe("series pages", () => {
 });
 
 test.describe("redirects from the old series topic addresses (FR-008a)", () => {
+  const [first] = seriesIds;
   const cases: Array<[string, string]> = [
-    ["/writing/topics/drift", "/writing/drift/"],
-    ["/writing/topics/drift/", "/writing/drift/"],
-    ["/writing/topics/drift/2/", "/writing/drift/2/"],
-    ["/writing/topics/convergence/", "/writing/convergence/"],
+    [`/writing/topics/${first}`, topicHref(first!)],
+    [`/writing/topics/${first}/`, topicHref(first!)],
+    [`/writing/topics/${first}/2/`, `${topicHref(first!)}2/`],
+    ...seriesIds.slice(1).map((id): [string, string] => [`/writing/topics/${id}/`, topicHref(id)]),
   ];
   for (const [from, to] of cases) {
     test(`${from} answers 301 to ${to}`, async ({ request }) => {
@@ -633,20 +645,26 @@ test.describe("redirects from the old series topic addresses (FR-008a)", () => {
   test("following the redirect for a page past the last ends on the not-found page with status 404", async ({
     request,
   }) => {
-    const response = await request.get("/writing/topics/drift/99/");
+    const response = await request.get(`/writing/topics/${seriesIds[0]}/99/`);
     expect(response.status()).toBe(404);
-    expect(new URL(response.url()).pathname).toBe("/writing/drift/99/");
+    expect(new URL(response.url()).pathname).toBe(`${topicHref(seriesIds[0]!)}99/`);
   });
 });
 
 // Series markers on every page that shows topics (spec 013 US3; FR-010; SC-002). Tagged posts carry a
 // "Series: ..." marker; the sample post has no series and shows none.
 test.describe("series markers", () => {
+  const seriesNames = seriesIds.map((id) => findTopic(id)!.name);
+  // A topic page shows markers only when one of its posts is in a series.
+  const markerTopic = topics.find(
+    (topic) => !("series" in topic) && BUILT_POSTS.some((post) => seriesOf(post) && post.topics.includes(topic.id)),
+  );
+  if (!markerTopic) throw new Error("tests/e2e/blog.spec.ts: no non-series topic is shared with a series post.");
   const listings = [
     ["the landing page", "/writing/"],
     ["/writing/all/", "/writing/all/"],
-    ["a topic page", "/writing/topics/technology-teams/"],
-    ["a series page", "/writing/drift/"],
+    ["a topic page", topicHref(markerTopic.id)],
+    ["a series page", topicHref(seriesIds[0]!)],
     ["the home page's Recent writing", "/"],
   ] as const;
   for (const [name, path] of listings) {
@@ -654,7 +672,7 @@ test.describe("series markers", () => {
       await page.goto(path);
       const markers = page.locator("[data-series-marker]");
       expect(await markers.count()).toBeGreaterThan(0);
-      for (const text of await markers.allInnerTexts()) expect(text).toMatch(/^Series: (Drift|Convergence)$/);
+      for (const text of await markers.allInnerTexts()) expect(text).toMatch(new RegExp(`^Series: (${seriesNames.join("|")})$`));
       const untagged = page.locator("[data-post-card], [data-lead-story]").filter({ has: page.locator(`a[href="${POST}"]`) });
       for (let i = 0; i < (await untagged.count()); i += 1) {
         await expect(untagged.nth(i).locator("[data-series-marker]")).toHaveCount(0);
@@ -663,17 +681,17 @@ test.describe("series markers", () => {
   }
 
   test("the marker comes first in a card's topic list", async ({ page }) => {
-    await page.goto("/writing/all/");
-    const card = page.locator("[data-post-card]").filter({ has: page.locator(`a[href="${GHOST_THEMES}"]`) });
-    await expect(card.locator('ul[aria-label="Topics"] a').first()).toHaveText("Series: Drift");
+    await page.goto(topicHref(seriesOf(SERIES_POST)!));
+    const card = page.locator("[data-post-card]").filter({ has: page.locator(`a[href="${SERIES_POST.href}"]`) });
+    await expect(card.locator('ul[aria-label="Topics"] a').first()).toHaveText(`Series: ${SERIES_POST_NAME}`);
   });
 
   test("a tagged post header shows a marker that links to the series page", async ({ page }) => {
-    await page.goto(GHOST_THEMES);
-    const link = page.locator("[data-series-marker]", { hasText: "Series: Drift" }).first();
+    await page.goto(SERIES_POST.href);
+    const link = page.locator("[data-series-marker]", { hasText: `Series: ${SERIES_POST_NAME}` }).first();
     await expect(link).toBeVisible();
     await link.click();
-    await expect(page).toHaveURL(/\/writing\/drift\/$/);
+    await expect(page).toHaveURL(new RegExp(`${topicHref(seriesOf(SERIES_POST)!)}$`));
   });
 
   test("an untagged post header has no marker", async ({ page }) => {
@@ -691,7 +709,7 @@ test.describe("series markers", () => {
     for (let i = 0; i < (await cards.count()); i += 1) {
       const card = cards.nth(i);
       const href = await card.locator("h3 a").getAttribute("href");
-      const tagged = [GHOST_THEMES, FOCUS_POCUS, WAYFINDER, STARTING].includes(href ?? "");
+      const tagged = TAGGED_HREFS.includes(href ?? "");
       await expect(card.locator("[data-series-marker]")).toHaveCount(tagged ? 1 : 0);
     }
   });
