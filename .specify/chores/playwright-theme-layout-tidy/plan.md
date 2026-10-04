@@ -371,7 +371,7 @@ tables and the test count (6) stay the same.
 **Test:** `no behaviour: n/a (documentation only)`. `verify:quick` runs the unit checks that
 read `docs/testing.md`.
 
-- [ ] done
+- [x] done
 
 ### W5 — `[ORCHESTRATOR]` Full gate, after-measurement, PR
 
