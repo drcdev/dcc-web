@@ -347,7 +347,7 @@ tables and the test count (6) stay the same.
     prose link still passes in dark.
   - Revert, then run all 6 tests green.
 
-- [ ] done
+- [x] done
 
 ### W4 — `docs/testing.md`
 

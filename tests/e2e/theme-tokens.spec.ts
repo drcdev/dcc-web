@@ -18,6 +18,11 @@
 // (reduced motion is on as well, so none runs). The page then loses or gains the `dark` class in
 // place, with no reload, and every probe is checked again against the other theme's token.
 //
+// Focus rings: in dark mode the prose link and its ring share `accent-400`, and a ring that
+// falls back to `currentColor` (no `outline-color` rule) would read the same colour. So the
+// focus probes also prove that the ring is the site's rule and not `currentColor`: no outline
+// before focus, the site's ring shape after it, and a ring colour that ignores the text colour.
+//
 // Two notes on the probe tables:
 // - The site has no callout component (post row P19 uses `Callout` only as an example of an
 //   unknown section tag), so the prose blockquote, the one set-apart block of text a post
@@ -241,6 +246,21 @@ function subject(page: Page, probe: Probe): Locator {
   return probe.first ? found.first() : found;
 }
 
+/**
+ * Proves a focused element shows the site's own ring. The shape is the site's rule
+ * (`outline-2 outline-offset-2`), not Chromium's default (`auto`, 1px, offset 0). The colour is
+ * read again after the text colour is overridden in place, because a ring that falls back to
+ * `currentColor` follows it and a token ring does not.
+ */
+async function expectRealRing(locator: Locator, ringColour: string, label: string) {
+  await expect(locator, `${label} outline-style`).toHaveCSS("outline-style", "solid");
+  await expect(locator, `${label} outline-width`).toHaveCSS("outline-width", "2px");
+  await expect(locator, `${label} outline-offset`).toHaveCSS("outline-offset", "2px");
+  await locator.evaluate((el) => (el as HTMLElement).style.setProperty("color", "rgb(1, 2, 3)"));
+  await expect(locator, `${label} outline follows the text colour`).toHaveCSS("outline-color", ringColour);
+  await locator.evaluate((el) => (el as HTMLElement).style.removeProperty("color"));
+}
+
 /** Checks every probe of a page against one theme's tokens. */
 async function expectTheme(page: Page, probes: Probe[], theme: Theme) {
   const index = theme === "light" ? 0 : 1;
@@ -248,10 +268,16 @@ async function expectTheme(page: Page, probes: Probe[], theme: Theme) {
   for (const probe of probes) {
     const locator = subject(page, probe);
     await expect(locator, `${probe.name} is on the page`).toHaveCount(1);
-    if (probe.focus) await locator.focus();
+    if (probe.focus) {
+      await expect(locator, `${probe.name} has no outline before focus (${theme})`).toHaveCSS("outline-style", "none");
+      await locator.focus();
+    }
     for (const [property, tokens] of Object.entries(probe.props)) {
       const expected = await colourOf(page, tokens[index]!);
       await expect(locator, `${probe.name} ${property} (${theme}, --color-${tokens[index]})`).toHaveCSS(property, expected);
+      if (probe.focus && property === "outline-color") {
+        await expectRealRing(locator, expected, `${probe.name} (${theme})`);
+      }
     }
     if (probe.focus) await locator.blur();
   }
