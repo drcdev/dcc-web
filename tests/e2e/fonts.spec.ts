@@ -62,8 +62,23 @@ test.describe("the drawn face", () => {
   });
 
   test("Inter is loaded for every weight and style the page draws", async ({ page }) => {
-    for (const spec of ["400 1em Inter", "700 1em Inter", "italic 400 1em Inter", "italic 700 1em Inter"]) {
-      expect(await page.evaluate((s) => document.fonts.check(s), spec), spec).toBe(true);
+    // Astro registers the family as `Inter-<hash>`, so `document.fonts.check('400 1em Inter')`
+    // names a family with no faces and passes whatever happens; the faces are found by that
+    // hashed family instead, and each must have loaded.
+    const statuses = await page.evaluate(() =>
+      Array.from(document.fonts)
+        .filter((face) => /^"?Inter-[0-9a-f]+"?$/.test(face.family))
+        .map((face) => ({ weight: face.weight, style: face.style, status: face.status })),
+    );
+    for (const [weight, style] of [
+      ["400", "normal"],
+      ["700", "normal"],
+      ["400", "italic"],
+      ["700", "italic"],
+    ] as const) {
+      const faces = statuses.filter((face) => face.weight === weight && face.style === style);
+      expect(faces.length, `${weight} ${style} face exists`).toBeGreaterThan(0);
+      for (const face of faces) expect(face.status, `${weight} ${style}`).toBe("loaded");
     }
   });
 

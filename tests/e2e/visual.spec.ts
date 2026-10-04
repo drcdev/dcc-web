@@ -47,11 +47,22 @@ async function open(page: Page, path: string, width: number, height: number, the
 
 async function settleFonts(page: Page) {
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
+  // Astro registers the family as `Inter-<hash>`, so `document.fonts.check('400 16px "Inter"')`
+  // names a family with no faces and passes whatever happens. The faces are found by that hashed
+  // family instead, and Regular and Bold (normal style) must both have loaded.
   await page.waitForFunction(
-    () =>
-      Array.from(document.fonts).every((face) => face.status !== "loading") &&
-      document.fonts.check('400 16px "Inter"') &&
-      document.fonts.check('700 16px "Inter"'),
+    () => {
+      const faces = Array.from(document.fonts);
+      const loaded = (weight: string) => {
+        const inter = faces.filter(
+          (face) => /^"?Inter-[0-9a-f]+"?$/.test(face.family) && face.weight === weight && face.style === "normal",
+        );
+        return inter.length > 0 && inter.every((face) => face.status === "loaded");
+      };
+      return faces.every((face) => face.status !== "loading") && loaded("400") && loaded("700");
+    },
+    undefined,
+    { timeout: 10_000 },
   );
 }
 

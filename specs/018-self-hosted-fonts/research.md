@@ -342,6 +342,11 @@ through to them (the guard, R5).
   Arial Bold",` followed by `SYSTEM_FONT_STACK` in the order above.
 - No file is downloaded for the fallback faces (`local()` only), so they add only inline CSS
   (R4).
+- **Verified difference (Phase 7, T041)**: the built output gives the fallback faces **no**
+  `unicode-range`, unlike the reading above. Each fallback face therefore covers every
+  character, which is harmless: it is a `local()` face, downloads nothing, and sits after the
+  Inter family in `--font-inter`, so it draws only what Inter cannot. Contract F02 and
+  `tests/component/BaseLayout.test.ts` assert the emitted form.
 
 **Effect for visitors**: while Inter loads (or if it fails), a visitor who has Arial (macOS,
 Windows) sees size-adjusted Arial, so the swap to Inter keeps line boxes and line breaks close to
