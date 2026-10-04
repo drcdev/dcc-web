@@ -521,7 +521,7 @@ item leaves `verify:quick` green, along with its targeted files:
   FR-005 rule for every post. Which series a post is in is copy. Correct series listings are
   still checked by W8's series-page test.
 
-### W12. Neutral inline examples in unit content tests
+### W12. Neutral inline examples in unit content tests (Done: same assertions, example-project strings)
 
 - **Files:** `tests/unit/content/project-address.test.ts`, `contact-link.test.ts`,
   `project-schema.test.ts`.

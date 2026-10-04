@@ -10,9 +10,9 @@ import { partHeadings, partIds } from "../../../src/lib/content/parts.ts";
 const schema = projectSchema({ image: () => z.string() });
 
 const minimal = {
-  title: "Focus Pocus",
-  problem: "Managing OmniFocus meant switching apps.",
-  description: "How Focus Pocus lets Claude manage OmniFocus.",
+  title: "Example project",
+  problem: "Managing the example meant switching apps.",
+  description: "How Example project lets Claude manage the example.",
   themes: ["AI integration"],
   status: "experiment",
   date: "2025-06-01",
@@ -22,8 +22,8 @@ const minimal = {
 const full = {
   ...minimal,
   themes: ["AI integration", "Automation", "macOS"],
-  demo: { href: "https://drc.dev/demo/fp", title: "Focus Pocus" },
-  source: "https://github.com/drcdev/focus-pocus",
+  demo: { href: "https://drc.dev/demo/fp", title: "Example project" },
+  source: "https://github.com/drcdev/example-project",
   image: { src: "./images/fp/share.png", alt: "Share image" },
   invitation: "Got a similar problem? Get in touch.",
   draft: true,
@@ -82,7 +82,7 @@ describe("projectSchema", () => {
   describe("problem", () => {
     it.each(["What?", "Stop!", "One sentence."])("accepts %s", (problem) => ok({ ...minimal, problem }));
     it.each([
-      ["no end mark", "Managing OmniFocus meant switching apps"],
+      ["no end mark", "Managing the example meant switching apps"],
       ["two sentences", "First one. Second one."],
       ["empty", ""],
       ["over 140 characters", `${"a".repeat(140)}.`],
