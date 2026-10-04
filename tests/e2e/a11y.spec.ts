@@ -378,6 +378,8 @@ test.describe("portfolio states", () => {
     { name: "the every-part fixture story", path: "/projects/every-part/" },
     // A live demo link cannot share a page with a stand-in link, so it has its own story (SC-006).
     { name: "the every-setting fixture story", path: "/projects/every-setting/" },
+    { name: "the retired fixture story", path: "/projects/retired/" },
+    { name: "the full fixture index", path: "/projects/" },
     { name: "the filtered index", path: "/projects/?theme=tooling" },
     { name: "the empty index (unknown theme)", path: "/projects/?theme=nonsense" },
   ];
@@ -433,6 +435,17 @@ test.describe("portfolio states", () => {
     await comparison.scrollIntoViewIfNeeded();
     await expect(comparison).toBeVisible();
     expect(await comparison.evaluate((el) => el.getBoundingClientRect().right <= document.documentElement.clientWidth + 1)).toBe(true);
+    await expectNoHorizontalScroll(page);
+  });
+
+  test("the retired fixture story reflows at 320 CSS px and at 200% zoom (FR-013)", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto(`${FIXTURE}/projects/retired/`);
+    await expect(page.locator("[data-retired-note]")).toBeVisible();
+    await expectNoHorizontalScroll(page);
+    await page.setViewportSize({ width: 1280, height: 720 });
+    const client = await page.context().newCDPSession(page);
+    await client.send("Emulation.setDeviceMetricsOverride", { width: 640, height: 360, deviceScaleFactor: 2, mobile: false });
     await expectNoHorizontalScroll(page);
   });
 

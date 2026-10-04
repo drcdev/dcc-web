@@ -24,9 +24,11 @@ export interface Props {
   draft?: boolean;
   /** The project slug; names the title for the view transition. */
   slug: string;
+  /** For a retired project: the resolved replacement shown in the note. */
+  replacement?: ComponentProps<typeof StoryHeader>["replacement"];
 }
 
-const { title, problem, description, status, themes, navigation, image, imageAlt, draft = false, slug } = Astro.props;
+const { title, problem, description, status, themes, navigation, image, imageAlt, draft = false, slug, replacement } = Astro.props;
 Astro.csp?.insertStyleHash(transitionHash([slug]));
 ---
 
@@ -34,7 +36,7 @@ Astro.csp?.insertStyleHash(transitionHash([slug]));
   <TitleTransition slugs={[slug]} />
   <ReadingProgress />
   <article data-story class="mx-auto">
-    <StoryHeader title={title} problem={problem} status={status} themes={themes} draft={draft} slug={slug} />
+    <StoryHeader title={title} problem={problem} status={status} themes={themes} draft={draft} slug={slug} replacement={replacement} />
     <slot />
     <ProjectInvitation />
   </article>

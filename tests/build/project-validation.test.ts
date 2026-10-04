@@ -35,7 +35,7 @@ describe("project schema and loader wiring (sync)", () => {
     expectRejected(
       "sync",
       [{ from: "broken/R01-removed-order.mdx", to: "draft.mdx", replace: ["status: in-progress", "status: nonsense"] }],
-      ["draft", "status", "shipped", "experiment", "in-progress"],
+      ["draft", "status", "shipped", "experiment", "in-progress", "retired"],
       production,
     ));
 
@@ -78,6 +78,17 @@ describe("project route wiring (build)", () => {
       "build",
       [{ from: "broken/story-mdx-element.mdx", to: "draft-element.mdx" }],
       ["draft-element.mdx", "<Demo>", "plain Markdown"],
+      production,
+    ));
+
+  // RP04 call site: checkReplacements runs over every entry, drafts included, before the production
+  // filter. The check itself is asserted in tests/unit/content/project-replacement.test.ts; this run
+  // proves the route calls it in the real build (second layer, contracts/build-errors.md).
+  it("RP04: a retired draft naming a missing project fails a production build", () =>
+    expectRejected(
+      "build",
+      [{ from: "broken/RP04-missing-replacement.mdx", to: "draft-replacement.mdx" }],
+      ["draft-replacement", "replacedBy", "no-such-project"],
       production,
     ));
 });

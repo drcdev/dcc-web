@@ -27,7 +27,9 @@ const draftWithAssets: FixtureFile = {
     ],
   ],
 };
-const projects = ["minimal.mdx", draftWithAssets];
+// The retired fixture points at the draft fixture in these builds only (FR-007).
+const retiredPointingAtDraft: FixtureFile = { from: "retired.mdx", replace: [["project: minimal", "project: draft"]] };
+const projects = ["minimal.mdx", draftWithAssets, retiredPointingAtDraft];
 
 // A throwaway route written into the copied site prints what getPostSummaries() returns
 // (tasks T017, T020; research R3, R6).
@@ -160,9 +162,24 @@ describe("a production build (Workers Builds, main)", () => {
 
   it("keeps the draft project's title and files out of every built file", () => {
     for (const [path, html] of build().htmlFiles()) {
+      // The retired fixture's note names its draft replacement, without a link (FR-007); no other page may.
+      if (path === "projects/retired/index.html") continue;
       expect(html, path).not.toContain("Draft project");
     }
     expect(builtNames(build()).filter((name) => name.includes("draft-only"))).toEqual([]);
+  });
+
+  it("lists the retired project with its pill and names a draft replacement without a link (FR-002, FR-003, FR-007)", () => {
+    const index = build().read("projects/index.html");
+    expect(index).toContain("Retired project");
+    expect(index).toMatch(/data-status="retired"[^>]*>\s*Retired\s*</);
+    const story = build().read("projects/retired/index.html");
+    const note = /<p[^>]*data-retired-note[^>]*>[\s\S]*?<\/p>/.exec(story)?.[0] ?? "";
+    expect(note).toContain("It was replaced by Draft project.");
+    expect(note).not.toContain("<a");
+    expect(story).not.toContain("/projects/draft/");
+    const parts = [...story.matchAll(/<section[^>]*\sdata-part="([a-z]+)"/g)].map((m) => m[1]);
+    expect(parts).toEqual(["problem", "options", "build", "lessons"]);
   });
 
   it("marks no project as a draft", () => {
@@ -253,6 +270,11 @@ describe("a preview build (Workers Builds, another branch)", () => {
     expect(story).toContain("Draft project");
     expect(story).toContain("data-draft-notice");
     expect(build().read("sitemap-0.xml")).toContain("/projects/draft/");
+  });
+
+  it("links the retired project's note to the draft story when drafts are shown (FR-007)", () => {
+    const note = /<p[^>]*data-retired-note[^>]*>[\s\S]*?<\/p>/.exec(build().read("projects/retired/index.html"))?.[0] ?? "";
+    expect(note).toMatch(/<a[^>]*href="\/projects\/draft\/"[^>]*>Draft project<\/a>/);
   });
 
   it("emits the draft project's own image, and leaves the published project unmarked", () => {

@@ -122,7 +122,10 @@ contrast checks and the existing e2e and build content tests took over what each
 Phase 2 added element shots of the fixture post and story templates, the listing cards, the
 lead story, the Drift series banner, two projects index rows and the contact form. Each is an
 element on fixture content, so a content edit still cannot fail the project. #48 added the draft
-and in-progress projects index rows, making four.
+and in-progress projects index rows, making four. The retired status (feature 015) added two
+more fixture subjects, `project-row-retired` (the retired index row, making five) and
+`retired-story-header` (the story header with the retired pill and note), on the fixture
+project `retired`.
 The project also sets the footer year to 2026 before every shot (`tests/e2e/footer-year.ts`), so
 a new calendar year cannot fail it; the real year is checked by `SiteFooter.test.ts` and
 `shell.spec.ts`.
@@ -285,7 +288,7 @@ is checked by `unit/project-template.test.ts`, and the guide by `unit/projects-g
 
 | Rows (contract ids) | Rule | Primary assertion | Call-site run |
 |---|---|---|---|
-| S01 to S08 | Required settings, status, themes, pictures, unknown setting, problem length, addresses, picture name | `unit/project-schema.test.ts` "S01" to "S08" | schema sync (row 03 run) |
+| S01 to S08 | Required settings, status, themes, pictures, unknown setting, problem length, addresses, picture name. S02 changed in `specs/015-project-retired-status/contracts/build-errors.md`: its message now lists `retired` too | `unit/project-schema.test.ts` "S01" to "S08" | schema sync (row 03 run) |
 | S09 | Missing picture file | `build/project-validation.test.ts` "row 17" (the check has no unit test of its own) | sync, row 17 |
 | S10 | Bad file name, nested file | `unit/project-address.test.ts` "rejects %s with the file name and the naming rule" | sync, row 27 |
 | S11 | Two files, one slug | `unit/project-address.test.ts` "names both files when .md and .mdx share a slug" | build, row 26 |
@@ -295,6 +298,8 @@ is checked by `unit/project-template.test.ts`, and the guide by `unit/projects-g
 | P01 to P07 | The four parts, heading level, body images, text before the first part | `unit/project-story.test.ts` "P01" to "P07" | build, "a malformed options table in a draft" run (same call) |
 | T01 to T13 | The Options constraint list, table, bold option and "Why" line | `unit/project-story.test.ts` "T01" to "T13" | build, "a malformed options table in a draft" |
 | X01, X02 | The template is excluded; a renamed copy builds | `unit/project-template.test.ts`; `build/project-template.test.ts` "X01", "X02" | build |
+| RP01 to RP03 | Retired status and `replacedBy` (`specs/015-project-retired-status/contracts/build-errors.md`): replacement on a non-retired project, `project` and `name` both or neither or `href` beside `project`, bad `href`, unknown key, empty `name`, null | `unit/project-schema.test.ts` "RP01" to "RP03" | schema sync (row 03 run) |
+| RP04, RP05 | `replacedBy.project` names no project file, or the project itself | `unit/project-replacement.test.ts` "RP04", "RP05" | build, "RP04: a retired draft naming a missing project fails a production build" (RP05 shares the `checkReplacements` call) |
 
 A page file under `/projects/...` fails through the page address check:
 `unit/address.test.ts` "fails for a page file under the projects story route's prefix" and

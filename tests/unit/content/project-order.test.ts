@@ -34,6 +34,15 @@ describe("selectPublishedProjects", () => {
     expect(ids(selectPublishedProjects(same, local))).toEqual(["a-file", "b-file"]);
   });
 
+  it("sorts a retired project by date like any other status (FR-002)", () => {
+    const list = [
+      { ...p("retired", { date: new Date("2024-06-01") }), status: "retired" },
+      p("newer", { date: new Date("2025-01-01") }),
+      p("older", { date: new Date("2024-01-01") }),
+    ];
+    expect(ids(selectPublishedProjects(list, local))).toEqual(["newer", "retired", "older"]);
+  });
+
   it("keeps drafts outside production builds", () => {
     const list = [p("a"), p("d", { draft: true })];
     expect(ids(selectPublishedProjects(list, local))).toEqual(["a", "d"]);
