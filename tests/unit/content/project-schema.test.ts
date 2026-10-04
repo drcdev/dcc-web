@@ -84,11 +84,11 @@ describe("projectSchema", () => {
     const withReplacement = (replacedBy: unknown) => ({ ...retired, replacedBy });
     it("accepts a project, a name, or a name with an https href", () => {
       ok(withReplacement({ project: "other" }));
-      ok(withReplacement({ name: "Cadence" }));
-      ok(withReplacement({ name: "Cadence", href: "https://example.com/cadence" }));
+      ok(withReplacement({ name: "Metronome" }));
+      ok(withReplacement({ name: "Metronome", href: "https://example.com/metronome" }));
     });
     it("RP01: only a retired project can name a replacement", () => {
-      expect(issueText({ ...minimal, replacedBy: { name: "Cadence" } })).toContain("only a retired project");
+      expect(issueText({ ...minimal, replacedBy: { name: "Metronome" } })).toContain("only a retired project");
     });
     it.each([
       ["both", { project: "a", name: "B" }],

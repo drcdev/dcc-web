@@ -9,7 +9,8 @@ import { validateProjectStory } from "../../../src/lib/content/project-story.ts"
 import { projects } from "../../helpers/content.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
-const removed = ["order", "comparison", "demo", "clips", "pros", "cons"];
+// The demo setting itself stays (an address on drc.dev and a title); only its embed switch was removed.
+const removed = ["order", "comparison", "clips", "pros", "cons"];
 
 describe.each(projects.map((entry) => [entry.slug, entry] as const))("the %s project file", (_slug, entry) => {
   const { data: frontmatter, body: content } = entry;
@@ -25,6 +26,7 @@ describe.each(projects.map((entry) => [entry.slug, entry] as const))("the %s pro
     const result = projectSchema({ image: () => z.string() }).safeParse(frontmatter);
     expect(result.error?.message).toBeUndefined();
     for (const key of removed) expect(frontmatter).not.toHaveProperty(key);
+    expect(frontmatter.demo ?? {}).not.toHaveProperty("embed");
     expect(source).not.toMatch(/<(Chapter|OptionComparison|Demo|Invitation)\b/);
   });
 
