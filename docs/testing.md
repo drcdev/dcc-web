@@ -424,7 +424,7 @@ Each figure is a single run.
 | `test:e2e:parallel` step | 318 s | pending (#49 PR run) |
 | E2E tests | 615 | 609 |
 | Accessibility tests | 626 | 608 |
-| All Playwright tests (`--list`, four local projects) | 1419 | 1395 |
+| All Playwright tests (`--list`, five local projects) | 1419 | 1395 |
 
 The tidy moved the colour-theme helper into one file and folded the sideways-scroll checks into
 the geometry test, which now runs at 320, 390 and 1280 px. The a11y 320 px reflow check went

@@ -35,7 +35,6 @@ import { test, expect, type Locator, type Page } from "@playwright/test";
 import { FIXTURE_SITE } from "./templates";
 import { expectThemeClass, setTheme, type Theme } from "./color-theme.ts";
 
-
 /** A token name (`dusk-200` is `--color-dusk-200`) or the literal `transparent`. */
 type Token = string;
 
