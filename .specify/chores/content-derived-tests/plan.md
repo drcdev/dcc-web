@@ -548,7 +548,7 @@ item leaves `verify:quick` green, along with its targeted files:
   guard).
 - **Coverage mapping:** none removed.
 
-### W14. Docs and the content-edit proof
+### W14. Docs and the content-edit proof (Done: scratch edit flipped flux draft, renamed it, flipped a post featured flag and renamed it; unit 172 files and 2524 tests, test:build:content 3 files and 74 tests, both passed with no test edit; first run failed only on the rule that a draft project carries a review comment, so the scratch edit added one; Playwright and the full build not run, left to verify)
 
 - **Files:** `docs/testing.md`.
 - **Test:** `no behaviour: n/a (docs)`. The existing docs tests (`docs-structure`,
