@@ -184,7 +184,7 @@ at new hashed names.
 
 ### W3: Widen the rule in `public/_headers`
 
-- [ ] W3 done
+- [x] W3 done
 - **Files:** `public/_headers`.
 - **Test:** existing: W1 and W2 turn green (rebuild `dist` so the copied `_headers` updates;
   the fixture build copies `public/` too).
