@@ -165,7 +165,7 @@ a second layer for the same behaviour.
 `run.sh 600 pnpm exec playwright test --project=visual -g "project row, (draft|in progress)"`
 fails on 8 missing baselines (record the red).
 
-### W2 Generate the new baselines (additions only)
+### [x] W2 Generate the new baselines (additions only)
 
 **Files:** `tests/e2e/visual.spec.ts-snapshots/` (16 new PNGs).
 
