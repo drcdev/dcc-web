@@ -2,8 +2,10 @@
 // The story needs no script of its own (FR-011), and the index lists every project with the
 // filter controls, status and empty message all hidden, never dead.
 import { expect, test } from "@playwright/test";
+import { pickedStory } from "../helpers/content";
 
-const STORY = "/projects/focus-pocus/";
+const STORY = pickedStory.address;
+const data = pickedStory.data as { standIn?: { label?: string }; source?: string; demo?: string };
 const INDEX = "/projects/";
 
 test.describe("without JavaScript", () => {
@@ -21,10 +23,11 @@ test.describe("without JavaScript", () => {
     await expect(table).toBeVisible();
     expect(await table.getByRole("columnheader").count()).toBeGreaterThan(2);
     await expect(page.getByRole("navigation", { name: "In this story" })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Focus Pocus on drc.dev" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Source code for Focus Pocus/ })).toBeVisible();
+    // Each link is asserted only when the story's front matter declares it.
+    if (data.standIn) await expect(page.getByRole("link", { name: data.standIn.label ?? `${pickedStory.title} on drc.dev` })).toBeVisible();
+    if (data.source) await expect(page.getByRole("link", { name: `Source code for ${pickedStory.title}` })).toBeVisible();
     await expect(page.locator("[data-invitation-text]")).toBeVisible();
-    await expect(page.getByRole("link", { name: /Tell me about a problem like Focus Pocus/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: `Tell me about a problem like ${pickedStory.title}` })).toBeVisible();
   });
 
   test("the story has no script beyond the shell's", async ({ page }) => {
@@ -54,9 +57,9 @@ test.describe("without JavaScript", () => {
 
   test("a project row opens its story", async ({ page }) => {
     await page.goto(INDEX);
-    await page.getByRole("link", { name: "Focus Pocus" }).first().click();
-    await expect(page).toHaveURL(/\/projects\/focus-pocus\/$/);
-    await expect(page.locator("h1")).toHaveText("Focus Pocus");
+    await page.getByRole("link", { name: pickedStory.title }).first().click();
+    await expect(page).toHaveURL(new RegExp(`${pickedStory.address}$`));
+    await expect(page.locator("h1")).toHaveText(pickedStory.title);
   });
 });
 

@@ -15,6 +15,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { TEMPLATES } from "./templates.ts";
+import { pickedStory } from "../helpers/content";
 import { expectThemeClass, setTheme } from "./color-theme.ts";
 
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"];
@@ -461,7 +462,7 @@ test.describe("portfolio states", () => {
     await expect(region).toBeInViewport();
   });
 
-  for (const path of ["/projects/focus-pocus/", "/projects/"]) {
+  for (const path of [pickedStory.address, "/projects/"]) {
     test(`focus is never hidden under sticky or fixed content on ${path}`, async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.goto(path);

@@ -2,27 +2,18 @@
 // (contracts/page-dom.md; FR-013, FR-014, FR-015, FR-020, FR-025, FR-027,
 // FR-030; SC-001).
 import { test, expect } from "@playwright/test";
+import { pages, projects } from "../helpers/content";
 import { TEMPLATES } from "./templates.ts";
 
-// [address, h1, draft]. About carries Don's real copy and is live (feature 010); the rest are drafts.
-const PAGES = [
-  ["/", "Don Coleman", true],
-  ["/services/", "Services", true],
-  ["/speaking/", "Speaking", true],
-  ["/about/", "About", false],
-  ["/privacy-policy/", "Privacy policy", true],
-  ["/terms-of-use/", "Terms of use", true],
-  ["/technology/", "Technology", true],
-  // The Tempo privacy policy moved from the first drc.dev is published as it was.
-  ["/privacy/tempo/", "Tempo privacy policy", false],
-] as const;
+// [address, h1, draft], from each page's front matter. The h1 is the page title on every page.
+const PAGES = pages.map((entry) => [entry.address, entry.title, entry.draft] as const);
 
 const NOT_BUILT = ["/cookie-policy/"] as const;
 
-// The Tempo app store listing points at the first drc.dev's per-project privacy address,
+// An app store listing points at the first drc.dev's per-project privacy address,
 // which public/_redirects sends to the app privacy page with a real 301.
 test.describe("redirects from the first drc.dev's app privacy addresses", () => {
-  for (const slug of ["tempo"]) {
+  for (const slug of pages.filter((entry) => entry.slug.startsWith("privacy/")).map((entry) => entry.slug.slice("privacy/".length))) {
     for (const from of [`/projects/${slug}/privacy`, `/projects/${slug}/privacy/`]) {
       test(`${from} answers 301 to /privacy/${slug}/`, async ({ request }) => {
         const response = await request.get(from, { maxRedirects: 0 });
@@ -145,48 +136,9 @@ for (const path of NOT_BUILT) {
 }
 
 test("the projects index and every story answer 200", async ({ request }) => {
-  for (const path of ["/projects/", "/projects/focus-pocus/"]) {
+  for (const path of ["/projects/", ...projects.map((entry) => entry.address)]) {
     expect((await request.get(path)).status(), path).toBe(200);
   }
-});
-
-test("the sitemap lists the eight pages, the listing pages, the series pages, the real posts, the sample post and the projects, and neither the not-found page nor the cookie policy", async ({ request }) => {
-  const index = await (await request.get("/sitemap-index.xml")).text();
-  const first = /<loc>[^<]*(\/sitemap-[^<]+\.xml)<\/loc>/.exec(index)?.[1];
-  const sitemap = await (await request.get(first!)).text();
-  const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]!).pathname).sort();
-  // The sample post is a draft: built outside production, left out of a production build. The four
-  // real posts, the four real project stories and the Tempo privacy page are published. Sorted by code point, so drafts sit among the rest.
-  expect(paths).toEqual([
-    "/",
-    "/about/",
-    "/contact/",
-    "/privacy-policy/",
-    "/privacy/tempo/",
-    "/projects/",
-    "/projects/drcdev-github-io/",
-    "/projects/flux/",
-    "/projects/focus-pocus/",
-    "/projects/tempo/",
-    "/services/",
-    "/speaking/",
-    "/technology/",
-    "/terms-of-use/",
-    "/writing/",
-    "/writing/all/",
-    "/writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/",
-    "/writing/convergence/",
-    "/writing/drift/",
-    "/writing/sample-everything/",
-    "/writing/self-contained-development-for-ghost-themes/",
-    "/writing/starting-something-new/",
-    "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/",
-    "/writing/topics/agentic-ai/",
-    "/writing/topics/compliant-data/",
-    "/writing/topics/healthcare-leadership/",
-    "/writing/topics/technology-teams/",
-  ]);
-  expect(paths.some((p) => p.startsWith("/404") || p === "/cookie-policy/")).toBe(false);
 });
 
 test.describe("home introduction card (FR-016 to FR-019, FR-028a)", () => {

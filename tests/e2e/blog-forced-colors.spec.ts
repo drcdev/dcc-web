@@ -2,8 +2,9 @@
 // Author colours are replaced by the system palette, so what must survive is structure: the
 // marker keeps its 2px outline and its "Series:" text, an ordinary pill keeps its 1px border.
 import { expect, test, type Page } from "@playwright/test";
+import { seriesPost } from "../helpers/content.ts";
 
-const POST = "/writing/self-contained-development-for-ghost-themes/";
+const POST = seriesPost.address;
 
 test.use({ forcedColors: "active", reducedMotion: "no-preference", viewport: { width: 1280, height: 800 } });
 
