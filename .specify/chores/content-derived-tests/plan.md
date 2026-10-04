@@ -532,7 +532,7 @@ item leaves `verify:quick` green, along with its targeted files:
   `example_project.mdx` and `Example.mdx`.
 - **Coverage mapping:** identical assertions, different example strings.
 
-### W13. The guard
+### W13. The guard (Done: needles are real post/project addresses, entry file names and quoted titles; it caught two leftovers, series-post addresses in blog-forced-colors and blog.a11y, now read from seriesPost)
 
 - **Files:** new `tests/unit/content/no-real-content-in-tests.test.ts`.
 - **Test:** new, **unit layer** (it reads files and builds nothing). It exports or defines a
