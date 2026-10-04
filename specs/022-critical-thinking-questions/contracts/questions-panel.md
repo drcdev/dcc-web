@@ -84,7 +84,8 @@ The previous questions (if any) stay visible in the limited, stale and error sta
   `position: sticky; top: 1rem`; while scrolling the body it stays in view and its box never
   intersects the body text, the header or the footer (FR-009). It stops at the end of the body.
   Its top aligns with the top of the body. Because it occupies its own grid column it cannot
-  cover a focused element in the body (WCAG 2.4.11).
+  cover a focused element in the body (WCAG 2.4.11). Wide and full-width figures in the body
+  expand to the body column's edges at this width, never past the window or under the panel.
 - P21a: the panel is sticky only while its box fits the viewport (`max-height` never set, no
   inner scrollbar). Sticky positioning applies under `@media (min-width: 1280px) and
   (min-height: 40rem)`; in addition the script removes the sticky class whenever the panel's
