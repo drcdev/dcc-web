@@ -466,7 +466,7 @@ item leaves `verify:quick` green, along with its targeted files:
 - **Coverage mapping:** the same exact-equality assertions with computed lists. Nothing
   removed.
 
-### W9. Fixture-site blog specs
+### W9. Fixture-site blog specs (Done: the home recent-writing check is computed too, and a module-level guard throws when the totals no longer give exactly two pages)
 
 - **Files:** `tests/e2e/blog-fixtures.spec.ts`, `tests/e2e/blog-pagination.spec.ts`.
 - **Test:** existing, rewritten, **e2e layer** (`sections` project, port 4322).
