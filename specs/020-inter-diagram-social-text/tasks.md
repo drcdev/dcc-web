@@ -98,3 +98,7 @@ T002; T003 with T008 and T009 (different files); T013 to T016; T024 with T025.
 ## Implementation strategy
 
 MVP is US1 (diagrams). Then US2, then the US3 gate proof and docs. Major change: auto-merge off, `major-change` label, PR body calls out the six wraps (the sixth is Flux "Handlebars, Tailwind v4") and the two moved boxes.
+
+## Phase 7: Convergence
+
+- [ ] T033 In `docs/projects.md` "Text in a diagram", add that label fit (16 units each side, no overlap) is checked by the gate's browser test `tests/e2e/diagram-fonts.spec.ts` by measuring the drawn text, not by a character count, because letter widths vary, and that the font script does not check fit per FR-007 (partial)
