@@ -26,16 +26,23 @@ How to set up, run and validate the feature. Contracts:
 | 7 | CI | After merge, `pnpm run deploy:production` applies both migrations to `dcc-web` and deploys | automatic |
 | 8 | Don | `pnpm setup:check --item contact-production-deploy` reports complete | LIVE (read) |
 | 9 | Don | `pnpm exec wrangler d1 delete dcc-web-contact-preview --env-file /dev/null` (only after step 5 succeeded) | LIVE |
-| 10 | Don | `pnpm exec wrangler d1 delete dcc-web-contact --env-file /dev/null` (only after step 7 succeeded) | LIVE |
+| 10a | Don | `pnpm exec wrangler d1 execute dcc-web-contact --remote --command "SELECT count(*) FROM messages" --env-file /dev/null` must print 0; if not, stop and export the rows before step 10 | LIVE (read) |
+| 10 | Don | `pnpm exec wrangler d1 delete dcc-web-contact --env-file /dev/null` (only after step 7 succeeded and step 10a printed 0) | LIVE |
+
+If step 5 or step 7 fails against the new ids, do not delete anything: revert the id commit so
+CI redeploys against the old databases, fix the cause, and repeat from step 4 (rollback in
+`contracts/worker-config.md`).
 
 No Workers AI setup is needed: the `ai` binding uses the account's Workers AI with no key or
 dashboard step. If the preview deploy (step 5) fails with an authorisation error that names
 Workers AI, the Workers Builds API token needs the Workers AI permission added in the dashboard
 (Don, LIVE); record that in `docs/setup.md` item 24 if it happens.
 
-Optional remote check of the new databases (agent may run, read-only):
+Remote check of the new databases (agent may run, read-only; required before steps 9 and 10):
 `pnpm exec wrangler d1 migrations list dcc-web-preview --remote --env preview --env-file /dev/null`
-shows no pending migrations after step 5.
+shows no pending migrations after step 5, and
+`pnpm exec wrangler d1 migrations list dcc-web --remote --env-file /dev/null` shows none after
+step 7.
 
 ## 2. Local validation
 
@@ -50,7 +57,7 @@ with `ASTRO_PREVIEW_BACKGROUND=1`): `pnpm run verify`.
 
 Expected:
 
-- Worker tests: rows Q01–Q12 and guarantees Q20–Q27 in `contracts/questions-api.md` pass in the
+- Worker tests: rows Q01–Q12 and guarantees Q20–Q29 in `contracts/questions-api.md` pass in the
   `production` project; `environments.test.ts` passes in both projects with the new names.
 - `dist/writing/<slug>/question-source.json` exists for every visible post and not for drafts
   in a production build; `dist/sitemap-*.xml` lists none of them.
@@ -81,7 +88,16 @@ local bucket is in the local D1.
 
 On the preview deployment (`br-<branch>-dcc-web-preview.drc-dev.workers.dev`), steps 1, 2, 4 and
 6 are the `[PREVIEW-CHECK]` for Don: question quality from the chosen model, panel placement and
-both themes.
+both themes. Pass criteria:
+
+- **Question quality** (spec FR-004): on every published post, the cached set and one "new
+  questions" set each have 2–4 questions that refer to something specific in that post, none
+  summarises, answers or quotes it, and none would fit any post unchanged. If more than one post
+  fails, switch to the fallback model (research R1) and recheck.
+- **Placement**: at 390 px a block between title card and body; at 1280 px a sidebar that stays
+  beside the body while scrolling and never covers text, header, footer or a focused link.
+- **Themes**: panel text and buttons readable in light and dark.
+- **Live database steps**: steps 5, 6 and the preview `migrations list` check above pass.
 
 ## 4. Visual baselines
 

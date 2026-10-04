@@ -22,12 +22,17 @@ in preview builds). Produced by `src/pages/writing/[slug]/question-source.json.t
 | `hash` | string | 64 lowercase hex chars: SHA-256 of `JSON.stringify([title, summary, body])` over the **raw** body (research R3) |
 
 The post page renders the same `slug` and `hash` as `data-slug` and `data-hash` on the panel.
-The Worker trusts only this file, read through `env.ASSETS`, never the caller (FR-014).
+The Worker trusts only this file, read through `env.ASSETS`, never the caller (FR-014). Static
+assets are fixed for each deployment and no request path can write them; only a new build and
+deploy changes the file.
 
 ## 2. `question_sets` (D1)
 
 One cached set per post version (FR-016). At most one row per slug: inserting a set for a new
-hash deletes the slug's other rows in the same batch (research R8).
+hash deletes the slug's other rows in the same batch (research R8). Retention (FR-016a): a set
+is kept until the post's hash changes; rows for removed posts may linger and may be pruned by
+hand. Inserts use `INSERT OR IGNORE`, so of two concurrent first generations the first write
+wins. "New questions" sets are never written here.
 
 | Column | Type | Constraint |
 |---|---|---|
@@ -66,7 +71,7 @@ updated_at) × rate)`, with `rate = BUCKET_REFILL_PER_DAY / 86,400,000` tokens p
 | Cached press | set exists for `(slug, hash)` | none | 200, `source: "cached"` |
 | Take (first generation or "new questions") | `available ≥ 1` | `tokens = available − 1`, `updated_at = now` (one atomic `UPDATE … RETURNING`) | continue to the model |
 | Take | `available < 1` | none | 429, `Retry-After = ceil((1 − available) / rate / 1000)` s |
-| Refund | model error, timeout or fewer than 2 valid questions | `tokens = min(capacity, tokens + 1)` | 503 |
+| Refund | model error, timeout, fewer than 2 valid questions, or a D1 or asset failure after the take | `tokens = min(capacity, tokens + 1)`; if this statement fails the token stays spent | 503 |
 | Success | 2–4 valid questions | first generation: insert set and delete the slug's other hashes; fresh: nothing stored | 200, `source: "generated"` or `"fresh"` |
 
 ## 4. Configuration (`worker/src/questions/config.ts`)
@@ -83,6 +88,13 @@ updated_at) × rate)`, with `rate = BUCKET_REFILL_PER_DAY / 86,400,000` tokens p
 | `QUESTION_MAX_WORDS` / `QUESTION_MAX_CHARS` | `25` / `200` | validator |
 | `QUOTE_RUN_WORDS` | `10` | validator (no quoting at length) |
 | `BODY_MAX_BYTES` | `1024` | request body cap |
+
+A unit test asserts every numeric value is a positive finite number and `QUESTIONS_MIN ≤
+QUESTIONS_MAX`. (The sizing rule for raising a bucket, both environments' worst case inside the
+free daily allocation, is in the plan's Risks.) At run time the bucket treats a non-positive or
+non-finite capacity or rate as an empty bucket (429), never as unlimited.
+`MAX_OUTPUT_TOKENS = 300` leaves room for the prompt's 3 questions (or at most 4) of 25 words,
+about 35 tokens each, plus list markers.
 
 ## 5. Validation rules for one question (FR-003, FR-004, SC-002)
 

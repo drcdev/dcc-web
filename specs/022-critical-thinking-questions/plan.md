@@ -66,7 +66,7 @@ violation; nothing in Complexity Tracking.*
 
 | Principle | How this plan complies |
 |---|---|
-| I. Test-First | Every behaviour has a test at one named layer (Test placement below), written first and seen to fail: the validator, preparer and bucket maths fail as missing modules; worker rows Q01–Q27 fail with today's 404 for `/api/questions`; the build test fails with no `question-source.json`; the panel E2E fails with no `[data-questions]`. Integration tests run the API against real local D1 (Principle I, as amended). Tasks order tests before code. |
+| I. Test-First | Every behaviour has a test at one named layer (Test placement below), written first and seen to fail: the validator, preparer and bucket maths fail as missing modules; worker rows Q01–Q29 fail with today's 404 for `/api/questions`; the build test fails with no `question-source.json`; the panel E2E fails with no `[data-questions]`. Integration tests run the API against real local D1 (Principle I, as amended). Tasks order tests before code. |
 | II. Automated Release Gate | No check is skipped or weakened. New tests join existing jobs (`test:unit`, `test:worker`, `test:build`, `test:e2e:parallel`, `test:budget`); no new script or project. Visual baselines are refreshed for a predicted template change only. Full `verify` before the PR. |
 | III. Human Review | **Major** (see header): new integration and bindings, D1 replacement, infra config, possible cost, constitution amendment, post template change. Auto-merge off, `[PREVIEW-CHECK]` tasks, reason in the PR body. |
 | IV. First-Party Before Custom | Astro Docs MCP consulted (research R2, R9, R10 cite pages). **Model inference**: Workers AI binding (first-party; external providers rejected, R1). **Structured output**: Workers AI JSON Mode exists but is documented only for older or larger models and not guaranteed, so plain-line output plus a Worker validator (R1, R5). **Post text for the Worker**: Astro static file endpoint + Workers `ASSETS` binding (R2); `HTMLRewriter` and bundled manifests rejected. **Question-set cache**: D1 (spec); Cache API and KV fall short (R8). **Token bucket**: D1 single row (spec); Workers Rate Limiting binding cannot express a daily site-wide limit, AI Gateway rate limiting/caching is dashboard-configured and keyed on whole requests, a Durable Object adds a class for one counter (R7). **Endpoint**: route in the existing Worker; Astro server endpoints/Actions need the Cloudflare adapter and on-demand rendering (R9). **UI panel**: Astro component with a processed `<script>`, data attributes, no framework (R10). **Custom code** (validator, bucket SQL, text preparer) exists only where no first-party option meets the requirement, as named above. |
@@ -96,7 +96,7 @@ specs/022-critical-thinking-questions/
 ├── data-model.md        # question source, question_sets, usage_bucket, config, validation
 ├── quickstart.md        # Cloudflare steps (LIVE marked), local validation, journeys, baselines
 ├── contracts/
-│   ├── questions-api.md # POST /api/questions, Q01–Q27
+│   ├── questions-api.md # POST /api/questions, Q01–Q29
 │   ├── questions-panel.md # panel markup, states, placement, P01–P23
 │   └── worker-config.md # wrangler.jsonc, rename file list, deploy order, W01–W05
 └── tasks.md             # /speckit-tasks (not created here)
@@ -122,7 +122,7 @@ worker/src/
     └── log.ts                           # new: outcome-only log line
 worker/test/
 ├── helpers.ts                           # run(request, envOverrides); fake AI and ASSETS
-├── questions.test.ts                    # new: Q01–Q27
+├── questions.test.ts                    # new: Q01–Q29
 ├── questions-validate.test.ts           # new: validator rules
 ├── questions-bucket.test.ts             # new: bucket against local D1
 ├── environments.test.ts                 # new names; per-environment bucket
@@ -181,14 +181,21 @@ Each behaviour has one primary layer, the cheapest that can observe it (`docs/te
 | Journey: press → loading → questions → new questions; 429, stale and error states; no request on load; double-press guard (P04, P10–P16, US1, US3 panel side) | E2E | `tests/e2e/questions.spec.ts` (`page.route` stubs `/api/questions`) | Only a browser shows the states and announcements |
 | Placement at 390 and 1280 px, sticky, no overlap, DOM order (P03, P20, P21) | E2E | `tests/e2e/questions.spec.ts` | Layout geometry needs a browser (the existing `geometry.spec.ts` also covers no horizontal scroll for the post template unchanged) |
 | No-JS: no panel, post readable (P05) | E2E | `tests/e2e/no-js.spec.ts` (extended) | Existing no-JS journey file |
-| WCAG 2.2 AA both themes/widths (P22) | Accessibility | existing `blog.a11y.spec.ts` / `blog-fixture.a11y.spec.ts` | Template-level; the panel is on the template |
+| WCAG 2.2 AA both themes/widths (P22), idle state | Accessibility | existing `blog.a11y.spec.ts` / `blog-fixture.a11y.spec.ts` | Template-level; the panel is on the template |
+| WCAG 2.2 AA of the ready, limited and error states, both themes (P24, FR-012a) | Accessibility | `blog-fixture.a11y.spec.ts` (new cases, `page.route` stub) | Second scan of the same template, with a written reason: these states' markup exists only after interaction, so the idle template scan cannot see it |
+| Sticky fallback for a tall panel at 1280×600, 400% zoom (320 px) block layout (P21a, P21b) | E2E | `tests/e2e/questions.spec.ts` | Layout geometry needs a browser |
 | Forced colours (P23) | E2E | existing `blog-forced-colors.spec.ts` (one assertion added) | Existing template check |
 | Budget, JS ≤ 10 KB (P06) | Budget | existing `budget.spec.ts` | Unchanged limits |
 | Post template pixels | Visual | existing `post-template` shot, baselines refreshed (macOS and Linux) | Template change |
 | Panel script only on posts (P06), CSP unchanged | Build | `question-source.test.ts` (asserts no panel script in a non-post page of the same build) | Second assertion in the same build; no extra build |
 
 No behaviour is tested at a second layer except the build check of P02, whose component test
-covers markup and whose build test covers that page and file agree (different behaviour).
+covers markup and whose build test covers that page and file agree (different behaviour), and
+the state scans in the a11y row above (reason given there).
+
+No test at any layer calls the real Workers AI model: worker tests pass a fake `AI` and a fake
+`ASSETS` through the env override, E2E and a11y tests stub `/api/questions` with `page.route`,
+and CI has no Cloudflare login. A test that would reach the real binding is a defect.
 
 ## Visual baselines
 
@@ -212,7 +219,10 @@ task.
   fallback model and its lower bucket are named in research R1; switching is a config edit.
 - **Live database steps** need Don (quickstart §1, LIVE rows). Until the new ids land, the branch
   keeps the old ids with the new names and setup-check items 19, 24, 25 report the new names
-  missing; do not merge in that state.
+  missing; do not merge in that state. The rule is enforced by W01 in `config-files.test.ts`
+  (ids must differ from the old ones), which fails `verify` until the new ids land. Old
+  databases are deleted only after each environment deploys green against its new id; the
+  rollback path is in `contracts/worker-config.md`.
 - **Shared allowance**: production and preview share one account's 10,000 neurons/day; the
   default buckets use at most about half of it. Raising either bucket should keep
   2 × capacity × 13 ≤ 10,000.

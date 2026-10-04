@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -31,9 +31,8 @@
 
 ## Notes
 
-- Three [NEEDS CLARIFICATION] markers remain for the clarify phase: FR-013 (model provider:
-  Workers AI vs OpenRouter), FR-016 (fresh questions per press vs one cached set per post),
-  FR-017 (per-reader bucket, site-wide bucket, or both).
+- The three [NEEDS CLARIFICATION] markers (FR-013 provider, FR-016 caching, FR-017 bucket
+  levels) were resolved in the clarify phase (spec Clarifications, session 2026-10-04).
 - FR-013 names `/api/` and the existing Worker, and the provider question names products. These
   are deliberate: the constitution (Principles IV, V, VIII) fixes where server code runs, and the
   user asked for the provider choice to be weighed. No other implementation detail is specified.

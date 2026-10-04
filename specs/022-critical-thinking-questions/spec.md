@@ -107,14 +107,27 @@ cached still shows them.
 
 ### Edge Cases
 
-- **JavaScript off**: the article reads normally. The panel is either not shown or shows only a
-  plain sentence; it never shows a button that does nothing.
+- **JavaScript off**: the article reads normally and the panel is not shown at all (no heading,
+  no sentence, no button); it never shows a button that does nothing.
 - **Service error or timeout**: the panel shows a short plain-language error and lets the reader
-  try again; a failed attempt does not reveal internal details. Whether a failed attempt uses up
-  allowance is decided in the plan (default: it does not).
+  try again straight away (no back-off); a failed attempt does not reveal internal details. A
+  failed attempt does not use up allowance: the token taken for it is refunded (FR-020a).
 - **Malformed output**: if the model returns fewer than 2 usable questions, more than 4, or
   text that is not questions, the reader sees at most 4 valid questions, or the error state if
   fewer than 2 are usable. Raw model output is never shown unfiltered.
+- **Instructions inside post text**: post text is treated as untrusted data in the prompt even
+  though Don writes it (quoted material, MDX comments or examples could read as instructions).
+  It is passed between fixed delimiters after an instruction to treat it only as material to
+  question, and the output validator (FR-004a) bounds what any output can do: only 2 to 4
+  plain question sentences, with no markup, links or code, ever reach the reader.
+- **Workers AI unavailable for reasons outside the site** (the account's free daily allocation
+  used up by something else, the model deprecated or removed, a platform outage): treated as a
+  service error (refund, generic error); the model id is changed in the config module if the
+  model is gone.
+- **Two readers trigger the first generation of the same post version at once**: each attempt
+  takes exactly one token and gets its own generated set; the first set stored wins and later
+  ones are not stored (first write wins), so at most one token is spent per attempt and the
+  cache holds one set.
 - **Very long posts**: the post text sent for generation may be shortened to fit the model's
   input limit; questions must still relate to the post.
 - **Draft posts**: drafts only build in preview; the panel works there the same way, with
@@ -124,9 +137,14 @@ cached still shows them.
   arbitrary text supplied by a caller.
 - **Reader wants different questions**: after questions appear, the button is replaced by the
   questions and a "new questions" action; each press of it generates a fresh set and draws from
-  the site-wide allowance.
-- **Post edited after questions were cached**: the cache key is a hash of the post content, so
-  a changed post gets a new set on the next press; the old set is never shown for it.
+  the site-wide allowance. The fresh set is shown to that reader only and never replaces or adds
+  to the cached set.
+- **Post edited after questions were cached**: the cache key is a hash of the post's title,
+  summary and body, so a changed post gets a new set on the next press; the old set is never
+  shown for the new version. Changes to other front matter (dates, topics) or to styling do not
+  change the key.
+- **Page loaded before an edit was deployed**: the reader's page carries the old hash; if no set
+  is cached for it, the panel asks the reader to reload the page, and no generation happens.
 - **Theme**: the panel follows the site's light and dark themes.
 
 ## Requirements *(mandatory)*
@@ -143,29 +161,73 @@ cached still shows them.
   that post, each a single concise sentence (at most about 25 words) ending in a question mark.
 - **FR-004**: The questions MUST encourage the reader to examine the post's claims,
   assumptions, evidence, alternatives or implications. They MUST NOT summarise the post, answer
-  themselves, or quote the post at length.
+  themselves, or quote the post at length ("at length" means a run of 10 or more consecutive
+  words shared with the post text). An acceptable set refers to something specific in the post
+  (a claim, example or recommendation) rather than asking questions that would fit any post;
+  this quality bar is judged by Don on the preview for every published post, and again whenever
+  the model changes.
+- **FR-004a**: The Worker MUST validate every question mechanically before it is shown or
+  stored: it ends in "?", is one sentence, has 1 to 25 words and at most 200 characters,
+  contains no `<`, `>`, backtick or URL, shares no run of 10 or more consecutive words with the
+  post text, and is not a duplicate. The "no summary, no answer" part of FR-004 is a prompt
+  requirement judged under the quality bar above, not by the validator.
 - **FR-005**: While a request is in progress, the panel MUST show a loading state, MUST prevent
-  repeat presses, and MUST announce the state change to assistive technology.
-- **FR-006**: The panel MUST say the questions are AI-generated and may be imperfect.
+  repeat presses, and MUST announce the state change to assistive technology. Announcements use
+  one polite status live region that is present (empty) in the DOM from page load, and the
+  spoken text for each state is the same text shown on screen (contract "States").
+- **FR-006**: The panel MUST say the questions are AI-generated and may be imperfect. The note
+  follows the list in DOM and reading order and is never hidden from assistive technology while
+  questions are shown.
 - **FR-007**: All panel copy (heading, explanation, button label, errors, limit messages) MUST be
-  plain language with no hype, per the constitution.
+  plain language with no hype, per the constitution. The copy is the exact strings in
+  `contracts/questions-panel.md`, each one short sentence with no exclamation marks or
+  marketing words; the component test asserts them verbatim.
 
 **Placement**
 
 - **FR-008**: Below the site's large-screen breakpoint, the panel MUST appear as a block
   directly below the title card and above the article body.
-- **FR-009**: At or above the large-screen breakpoint, the panel MUST appear as a sidebar beside
-  the reading column that stays in view while scrolling and never overlaps article text, the
-  site header or the footer.
+- **FR-009**: At or above the large-screen breakpoint (1280 CSS px, Tailwind `xl`), the panel
+  MUST appear as a sidebar beside the reading column that stays in view while scrolling and
+  never overlaps article text, the site header or the footer. Because it sits in its own
+  column, it MUST never hide a focused element in the article (WCAG 2.2 Focus Not Obscured).
+  The sidebar is sticky only while its whole box fits in the viewport; when it is taller (short
+  window, large text, zoom) it stays in normal flow in its column and scrolls with the page, so
+  its content is never clipped and it never needs its own scrollbar.
+- **FR-009a**: The breakpoint is measured in CSS pixels, so zoom moves the layout: at 200% zoom
+  on a 1280 px window, and at 400% zoom (320 CSS px), the panel is the in-flow block of FR-008,
+  with no horizontal scrolling and no loss of content or function (WCAG 1.4.10 Reflow). The
+  panel has no fixed heights, so text-spacing overrides (WCAG 1.4.12) and larger default font
+  sizes grow it rather than clip it.
 - **FR-010**: In both layouts the panel MUST come before the article body in DOM, reading and
-  focus order.
+  focus order. It is a complementary landmark (`aside`) named by its heading, an `h2` (the post
+  title is the only `h1` and the body's own headings start at `h2`, so the outline skips no
+  level). In the sidebar layout its top aligns with the top of the body, so the visual order
+  (panel beside the start of the body) matches the DOM order.
 
 **Static-first and accessibility**
 
 - **FR-011**: Post pages MUST stay prerendered and fully readable with JavaScript off; the panel
   is an interactive island that loads only on writing posts and adds no script to other pages.
+  With JavaScript off the panel is not displayed and none of its controls are reachable.
 - **FR-012**: The panel MUST meet WCAG 2.2 AA in both themes and both layouts, and post pages
-  MUST stay within the existing performance budget.
+  MUST stay within the existing performance budget. In particular, in every state (idle,
+  loading, ready, limited, stale, error):
+  - text, including the loading button's label and the error and limit messages, has at least
+    4.5:1 contrast; button borders and the focus indicator have at least 3:1 against adjacent
+    colours;
+  - both buttons have a target of at least 24 by 24 CSS px (WCAG 2.2 Target Size, Minimum) and
+    a visible focus indicator at least 2 px thick (the site's existing focus ring);
+  - the loading button stays perceivable and focusable (it is marked unavailable, not removed
+    from the focus order), so a keyboard user's focus is not lost;
+  - error, limit and stale states are conveyed by text, never by colour alone;
+  - in forced-colours mode the panel border, both buttons and the focus indicator use system
+    colours and stay visible;
+  - the panel uses no animation, spinner or scroll-linked effect; any transition added later
+    MUST be removed under `prefers-reduced-motion: reduce`.
+- **FR-012a**: Accessibility checks MUST cover the panel in each state that changes its markup
+  (idle on page load, and ready, limited and error after a stubbed response), in both themes,
+  not only the initial page.
 
 **Question service**
 
@@ -174,37 +236,80 @@ cached still shows them.
   provider, API key or external account is used.
 - **FR-014**: The endpoint MUST generate questions only for published (or, in preview, draft)
   posts on this site, identified by the post itself, never from free text supplied by the
-  caller.
+  caller. The only model inputs are fixed instructions and the post's title, summary and
+  prepared text from the build's static source file, which no request can write; no request
+  field is ever placed in a prompt. An unknown slug and a draft slug on production get the same
+  "not found" response.
 - **FR-015**: The endpoint MUST accept requests only from the site's own origin, over HTTPS, and
-  MUST return generic errors that reveal no provider, prompt or internal details.
+  MUST return generic errors that reveal no provider, model, prompt, raw output or internal
+  details. "Own origin" means the request's `Origin` header equals the origin of the URL it
+  was sent to (so each preview hostname and `localhost` are their own origin), and
+  `Sec-Fetch-Site`, when present, is `same-origin`; a missing `Origin` header is refused. Plain
+  HTTP is refused except on `localhost` and `127.0.0.1` for local development. The endpoint
+  sends no CORS headers and answers a preflight `OPTIONS` with 405, so no other origin can read
+  its responses.
 - **FR-016**: The first press on a post MUST return the cached question set for the post's
-  current content (keyed by a hash of the post content and stored in D1), generating and storing
-  it only if none exists. After questions appear, the panel MUST offer a "new questions" action
-  that generates a fresh set for that reader. Serving a cached set MUST NOT draw from the limit;
-  each generation (a first generation for a post version, or a "new questions" press) MUST.
-  Whether a fresh set replaces the cached one is decided in the plan (default: it does not).
+  current content (keyed by the post slug and a SHA-256 hash of its title, summary and body,
+  stored in D1), generating and storing it only if none exists. After questions appear, the
+  panel MUST offer a "new questions" action that generates a fresh set for that reader. Serving
+  a cached set MUST NOT draw from the limit and MUST NOT write to the bucket; each generation (a
+  first generation for a post version, or a "new questions" press) MUST take exactly one token,
+  whatever the post's length. A fresh set from "new questions" is shown to that reader only and
+  is never stored: it does not replace or add to the cached set. Cached reads therefore cannot
+  amplify cost; first generation and "new questions" are the only paths that spend.
+- **FR-016a**: A cached set is kept until its post's content hash changes: storing the set for a
+  new hash deletes the slug's sets for older hashes in the same write. Sets for posts that are
+  later removed may remain; they hold only questions about text that was public and cost nothing
+  to serve, and may be pruned by hand. Two simultaneous first generations for the same post
+  version are resolved first write wins (see Edge Cases).
 
 **Generation limits**
 
 - **FR-017**: Generation MUST be rate-limited by one site-wide token bucket per environment,
-  stored in D1, that refills over time to a daily allowance (default about 200 generations a
-  day). There is no per-reader limit.
+  stored in D1, with a capacity of 200 tokens and continuous refill at 200 tokens a day
+  (`available = min(capacity, tokens + elapsed × rate)`, no daily reset). A new environment or
+  a newly created database starts with a full bucket. Each take is one atomic database
+  statement, so simultaneous presses can never take more tokens than the bucket holds. There is
+  no per-reader limit.
 - **FR-018**: The bucket size and refill rate MUST be set in one place in configuration, so Don
-  can change them without editing logic.
-- **FR-019**: The feature MUST NOT identify or track readers: no accounts, no cookies, and no IP
-  addresses or hashes of them stored or logged for this feature.
+  can change them without editing logic. A unit test MUST fail if any limit is not a positive
+  finite number (or the question minimum exceeds the maximum), and the bucket code MUST treat a
+  bad value as "no tokens" (refuse), never as "unlimited".
+- **FR-019**: The feature MUST NOT identify or track readers: no accounts, no cookies, no local
+  or session storage, and no IP addresses, hashes of them, user agents, `Referer` values or
+  per-request timestamps tied to a reader stored or logged for this feature. The D1 tables hold
+  only post slugs, content hashes, validated questions, the model id, set creation times and the
+  bucket's token count and refill time.
 - **FR-020**: When the bucket is empty, the endpoint MUST refuse without calling the model and
-  MUST tell the client when it may retry; the panel MUST say in plain words that questions are
-  unavailable for now and roughly when to try again.
+  MUST tell the client when it may retry: the number of whole seconds (at least 1, rounded up)
+  until one token is available, in both the body and a matching `Retry-After` header. The panel
+  MUST say in plain words that questions are unavailable for now and roughly when to try again,
+  rounded up to whole minutes (minimum 1), or to whole hours above 90 minutes, so the time shown
+  is never earlier than the real one and at most one unit later. The cache is checked before the
+  bucket, so a post with a cached set never gets the limit message.
+- **FR-020a**: A generation attempt that fails after taking its token (model error, the 15 s
+  model timeout, fewer than 2 valid questions, or a database or asset failure while
+  generating or storing) MUST refund that token, capped at the bucket's capacity, and answer
+  with the generic error. Failures before a token is taken (bad request, unknown post, stale
+  page) take none. If the refund itself fails, the token stays spent (the allowance is
+  undercounted, never overspent) and the reader still gets the generic error.
 - **FR-021**: Preview deployments MUST use limits and usage records separate from production.
 
 **Privacy, logging and cost**
 
-- **FR-022**: The endpoint MUST NOT log IP addresses or generated text. Aggregate counts
-  (generations, cache hits, refusals, errors) may be logged.
-- **FR-023**: The privacy policy MUST be updated to say that pressing the button sends the post
-  text (not any reader data) to Cloudflare Workers AI, that generated questions are stored per
-  post, and that the feature collects no personal data.
+- **FR-022**: The endpoint MUST NOT log IP addresses, any request header value, the slug, post
+  text, prompts, raw model output or generated questions. The only log content allowed is one
+  line per request naming the event and its outcome (cached, generated, fresh, limited,
+  not found, stale, forbidden, invalid, malformed, unavailable), plus an error class name for
+  unavailable, from which aggregate counts can be read. Worker invocation logs stay off. Don
+  watches usage through these outcome lines and the Workers AI usage page in the dashboard; no
+  automated alert is required, because the bucket already caps cost.
+- **FR-023**: The privacy policy MUST be updated, in this feature's pull request and so before
+  the feature reaches production, to say that pressing the button sends the post text (not any
+  reader data) to Cloudflare Workers AI, that generated questions are stored per post, and that
+  the feature collects no personal data. It MUST also say that Cloudflare, as the host, handles
+  every request (including the reader's IP address) in its own platform logs and security
+  systems, which are outside the site's control and not read by the site.
 - **FR-024**: The expected monthly cost at the configured limit MUST be stated in the plan; the
   default allowance MUST fit inside Workers AI's free daily allowance, so the expected cost is
   $0, and in any case total running costs MUST stay within the $13 a month ceiling.
@@ -212,14 +317,30 @@ cached still shows them.
   new databases `dcc-web` (production) and `dcc-web-preview` (preview) are created, their ids
   replace the old ones in the Wrangler configuration, all migrations run on them, and the old
   `dcc-web-contact` and `dcc-web-contact-preview` databases are deleted. Existing contact data
-  is not migrated (the contact feature is not live).
+  is not migrated (the contact feature is not live). D1 has no rename command, so
+  create-swap-delete is the only path. The swap follows a fixed order: create, swap ids, deploy
+  each environment (which applies all migrations), confirm no migration is pending and the
+  setup check passes, then delete the old database for that environment. Old databases are
+  kept until their environment has deployed green against the new id; if a deploy against the
+  new ids fails, the rollback is to revert the id commit, which rebinds the old databases. Before
+  deleting `dcc-web-contact`, Don confirms its `messages` table is empty; if it holds any row,
+  the deletion stops until those messages are exported. The renamed databases start with an
+  empty question cache and a full bucket, which is a valid state with nothing lost. The contact
+  API, its retention Cron Trigger and its schema are unchanged; they use the same `DB` binding
+  on the renamed database. Deleting the old databases and removing every remaining reference to
+  their names are tracked tasks, not implied ones.
 - **FR-026**: The endpoint MUST NOT require Turnstile or any other client challenge; the origin
-  check and the site-wide limit are the only abuse controls.
+  check and the site-wide limit are the only abuse controls. An origin check does not stop a
+  script that forges headers; the site-wide bucket is the compensating control. One caller can
+  therefore use up the day's allowance; the accepted impact is that new generations get the
+  "unavailable for now" message until the bucket refills, while cached sets are still served
+  and articles are unaffected, and the cost stays bounded by the bucket.
 
 ### Key Entities
 
 - **Critical thinking question set**: 2 to 4 short questions tied to one post version, cached in
-  D1 keyed by the post slug and a hash of its content.
+  D1 keyed by the post slug and a SHA-256 hash of its title, summary and body; at most one set
+  per post is kept (FR-016a).
 - **Usage bucket**: one token count and last-refill time for the whole site, per environment,
   stored in D1.
 - **Post text**: the published post's title, summary and body as sent for generation; never
@@ -230,7 +351,8 @@ cached still shows them.
 ### Measurable Outcomes
 
 - **SC-001**: On a published post, a reader who presses the button sees 2 to 4 questions within
-  5 seconds in at least 95% of attempts under normal conditions.
+  5 seconds in at least 95% of attempts under normal conditions. (The 15 s model timeout in
+  FR-020a is a hard ceiling for the slowest attempts, not the target.)
 - **SC-002**: 100% of displayed question sets contain between 2 and 4 items, each ending in a
   question mark and no longer than about 25 words.
 - **SC-003**: Total generations never exceed what the configured site-wide bucket allows, and

@@ -8,48 +8,48 @@
 
 ## Announcements and Live Regions
 
-- [ ] CHK001 Is "announced to assistive technology" defined precisely (live region role, politeness, and which text is spoken) for loading, ready, limited, stale and error states? [Clarity, Spec §FR-005, Contract §States]
-- [ ] CHK002 Are the announcement texts for every state specified, and are they the same strings that appear visually? [Consistency, Contract §States]
-- [ ] CHK003 Is it specified whether the live region exists in the DOM before the first state change, so the first announcement is not lost? [Gap, Contract §Markup]
-- [ ] CHK004 Is the live-region requirement defined for the "new questions" flow, where the list is replaced while the reader may already be reading it? [Coverage, Spec §FR-016]
-- [ ] CHK005 Are requirements stated for what is announced when a 429 message carries a retry time (rounded minutes or hours)? [Clarity, Contract §P15]
-- [ ] CHK006 Is `aria-busy` usage specified consistently with the live-region announcement so the loading state is not announced twice or not at all? [Consistency, Contract §States]
+- [x] CHK001 Is "announced to assistive technology" defined precisely (live region role, politeness, and which text is spoken) for loading, ready, limited, stale and error states? [Clarity, Spec §FR-005, Contract §States]
+- [x] CHK002 Are the announcement texts for every state specified, and are they the same strings that appear visually? [Consistency, Contract §States]
+- [x] CHK003 Is it specified whether the live region exists in the DOM before the first state change, so the first announcement is not lost? [Gap, Contract §Markup]
+- [x] CHK004 Is the live-region requirement defined for the "new questions" flow, where the list is replaced while the reader may already be reading it? [Coverage, Spec §FR-016]
+- [x] CHK005 Are requirements stated for what is announced when a 429 message carries a retry time (rounded minutes or hours)? [Clarity, Contract §P15]
+- [x] CHK006 Is `aria-busy` usage specified consistently with the live-region announcement so the loading state is not announced twice or not at all? [Consistency, Contract §States]
 
 ## Focus Handling
 
-- [ ] CHK007 Is the focus target after each state transition defined (idle to loading, loading to ready, loading to error, loading to limited)? [Completeness, Contract §States]
-- [ ] CHK008 Is the focus requirement defined for the case where a disabled button holds focus during loading, including what a keyboard user can do meanwhile? [Edge Case, Spec §FR-005]
-- [ ] CHK009 Is it specified where focus goes when "Get questions" is removed from the DOM on success and the user had focus on it? [Clarity, Contract §States]
-- [ ] CHK010 Are focus-visibility requirements (indicator, contrast, offset) quantified for both buttons in both themes? [Measurability, Contract §P22]
-- [ ] CHK011 Does WCAG 2.2 target size (24 by 24 CSS px minimum) appear as a requirement for both buttons? [Gap]
-- [ ] CHK012 Is it stated that a sticky panel never obscures the focused element elsewhere in the article (WCAG 2.2 Focus Not Obscured)? [Gap, Spec §FR-009]
+- [x] CHK007 Is the focus target after each state transition defined (idle to loading, loading to ready, loading to error, loading to limited)? [Completeness, Contract §States]
+- [x] CHK008 Is the focus requirement defined for the case where a disabled button holds focus during loading, including what a keyboard user can do meanwhile? [Edge Case, Spec §FR-005]
+- [x] CHK009 Is it specified where focus goes when "Get questions" is removed from the DOM on success and the user had focus on it? [Clarity, Contract §States]
+- [x] CHK010 Are focus-visibility requirements (indicator, contrast, offset) quantified for both buttons in both themes? [Measurability, Contract §P22]
+- [x] CHK011 Does WCAG 2.2 target size (24 by 24 CSS px minimum) appear as a requirement for both buttons? [Gap]
+- [x] CHK012 Is it stated that a sticky panel never obscures the focused element elsewhere in the article (WCAG 2.2 Focus Not Obscured)? [Gap, Spec §FR-009]
 
 ## Reading Order and Structure
 
-- [ ] CHK013 Is the panel's heading level specified relative to the post's heading outline, so the post does not skip or duplicate levels? [Gap, Contract §Markup]
-- [ ] CHK014 Is the landmark role of the panel (complementary region with an accessible name) specified, and is it consistent with its position before the article body in both layouts? [Consistency, Spec §FR-010]
-- [ ] CHK015 Is the requirement that DOM, reading and focus order match the visual order stated for both the block and sidebar layouts? [Consistency, Spec §FR-010, Contract §P03]
-- [ ] CHK016 Is the question list required to be exposed as an ordered list, and is the maximum and minimum item count reflected in the markup contract? [Clarity, Spec §FR-003, Contract §P12]
-- [ ] CHK017 Is the AI-generated note required to be reachable and read in order with the list, not only visually adjacent? [Gap, Spec §FR-006]
+- [x] CHK013 Is the panel's heading level specified relative to the post's heading outline, so the post does not skip or duplicate levels? [Gap, Contract §Markup]
+- [x] CHK014 Is the landmark role of the panel (complementary region with an accessible name) specified, and is it consistent with its position before the article body in both layouts? [Consistency, Spec §FR-010]
+- [x] CHK015 Is the requirement that DOM, reading and focus order match the visual order stated for both the block and sidebar layouts? [Consistency, Spec §FR-010, Contract §P03]
+- [x] CHK016 Is the question list required to be exposed as an ordered list, and is the maximum and minimum item count reflected in the markup contract? [Clarity, Spec §FR-003, Contract §P12]
+- [x] CHK017 Is the AI-generated note required to be reachable and read in order with the list, not only visually adjacent? [Gap, Spec §FR-006]
 
 ## Layout, Zoom and Motion
 
-- [ ] CHK018 Are requirements defined for 200% and 400% zoom (reflow at 320 CSS px), including what the sticky sidebar does when its content is taller than the viewport? [Gap, Spec §FR-009]
-- [ ] CHK019 Is behaviour specified for text-spacing overrides and larger default font sizes on the panel's fixed or sticky box? [Gap]
-- [ ] CHK020 Is "stays in view" for the sticky sidebar defined for a panel taller than the viewport (clipped content versus scrolling inside the panel)? [Ambiguity, Spec §FR-009]
-- [ ] CHK021 Are reduced-motion requirements stated for any loading indicator, reveal or scroll-linked behaviour of the panel? [Gap]
-- [ ] CHK022 Is the breakpoint at which layout switches stated as a number and reconciled with zoom (a 400% zoom on a desktop lands in the block layout)? [Clarity, Contract §P20, P21]
+- [x] CHK018 Are requirements defined for 200% and 400% zoom (reflow at 320 CSS px), including what the sticky sidebar does when its content is taller than the viewport? [Gap, Spec §FR-009]
+- [x] CHK019 Is behaviour specified for text-spacing overrides and larger default font sizes on the panel's fixed or sticky box? [Gap]
+- [x] CHK020 Is "stays in view" for the sticky sidebar defined for a panel taller than the viewport (clipped content versus scrolling inside the panel)? [Ambiguity, Spec §FR-009]
+- [x] CHK021 Are reduced-motion requirements stated for any loading indicator, reveal or scroll-linked behaviour of the panel? [Gap]
+- [x] CHK022 Is the breakpoint at which layout switches stated as a number and reconciled with zoom (a 400% zoom on a desktop lands in the block layout)? [Clarity, Contract §P20, P21]
 
 ## Colour, Themes and Contrast
 
-- [ ] CHK023 Are contrast ratios required explicitly (4.5:1 text, 3:1 UI components and focus indicators) for every panel state, including disabled buttons and the error and limit messages? [Measurability, Spec §FR-012]
-- [ ] CHK024 Are disabled-state requirements defined so the loading button remains perceivable and its text readable? [Gap, Spec §FR-005]
-- [ ] CHK025 Is forced-colours mode specified beyond "keeps borders visible", including the state colours of the buttons and focus indicator? [Clarity, Contract §P23]
-- [ ] CHK026 Is it stated that error and limit states are not conveyed by colour alone? [Gap, Contract §States]
+- [x] CHK023 Are contrast ratios required explicitly (4.5:1 text, 3:1 UI components and focus indicators) for every panel state, including disabled buttons and the error and limit messages? [Measurability, Spec §FR-012]
+- [x] CHK024 Are disabled-state requirements defined so the loading button remains perceivable and its text readable? [Gap, Spec §FR-005]
+- [x] CHK025 Is forced-colours mode specified beyond "keeps borders visible", including the state colours of the buttons and focus indicator? [Clarity, Contract §P23]
+- [x] CHK026 Is it stated that error and limit states are not conveyed by colour alone? [Gap, Contract §States]
 
 ## Content and Non-JS
 
-- [ ] CHK027 Are language and reading-level requirements for panel copy stated in testable terms ("plain language, no hype")? [Measurability, Spec §FR-007]
-- [ ] CHK028 Is the no-JavaScript requirement consistent between the spec ("not shown or a plain sentence") and the contract (not displayed, no button reachable)? [Conflict, Spec §Edge Cases, Contract §P05]
-- [ ] CHK029 Is the question text required to be rendered as plain text for assistive technology, with no markup that could change reading behaviour? [Clarity, Contract §P12]
-- [ ] CHK030 Are accessibility checks required to cover each panel state (idle, loading, ready, limited, stale, error), not only the initial page? [Coverage, Spec §SC-004]
+- [x] CHK027 Are language and reading-level requirements for panel copy stated in testable terms ("plain language, no hype")? [Measurability, Spec §FR-007]
+- [x] CHK028 Is the no-JavaScript requirement consistent between the spec ("not shown or a plain sentence") and the contract (not displayed, no button reachable)? [Conflict, Spec §Edge Cases, Contract §P05]
+- [x] CHK029 Is the question text required to be rendered as plain text for assistive technology, with no markup that could change reading behaviour? [Clarity, Contract §P12]
+- [x] CHK030 Are accessibility checks required to cover each panel state (idle, loading, ready, limited, stale, error), not only the initial page? [Coverage, Spec §SC-004]

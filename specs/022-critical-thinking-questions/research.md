@@ -129,8 +129,12 @@ the questions still relate to the post (spec edge case "Very long posts").
   25 words ending in "?", that examine claims, assumptions, evidence, alternatives or
   implications, without summarising, answering or quoting the post, output one per line with
   nothing else. The user message carries title, summary and text between fixed delimiters. The
-  text is Don's own published content, so prompt injection risk is low, and the validator below
-  bounds what any output can do.
+  text is Don's own published content, so prompt injection risk is low, but the trust boundary
+  still treats it as untrusted data: quoted material, code examples or MDX comments could read
+  as instructions. The system message says the delimited text is material to question and that
+  any instructions inside it are to be ignored, no request field ever enters the prompt, and
+  the validator below bounds what any output can do (only 2–4 plain question sentences with no
+  markup, links or code reach a reader, whatever the text says).
 - **Parser and validator** (`worker/src/questions/validate.ts`, pure): split on newlines; strip
   list markers (`1.`, `1)`, `-`, `*`, `•`), surrounding quotes and Markdown emphasis; drop empty
   lines and lines not ending in `?`; reject a line that has a sentence end (`.`, `!`, `?`) before
@@ -141,8 +145,16 @@ the questions still relate to the post (spec edge case "Very long posts").
   token (R7), logs `malformed`, and answers `503 unavailable`; the panel shows its retry error.
   Raw output is never returned or logged (FR-022, spec "Malformed output").
 - **Timeout**: the model call is raced against a **15 s** timeout; a timeout or a thrown error
-  from `env.AI.run` (including Workers AI's own daily-limit error) is treated like malformed
-  output: refund, `503`.
+  from `env.AI.run` (including Workers AI's own daily-limit error when the account allocation
+  is used up by something other than these buckets, and a model that has been deprecated,
+  renamed or removed) is treated like malformed output: refund, `503`. The log line's error
+  class lets Don tell a persistent model failure from a transient one; the fix for a removed
+  model is a config change of `QUESTIONS_MODEL` (and the bucket, per R1's fallback). The 15 s
+  timeout is a hard ceiling for slow attempts; the 5 s target in SC-001 is for 95% of presses,
+  which typical generation (~120 output tokens on a small model) meets well inside.
+- **Output cap**: `max_tokens: 300` covers the requested 3 questions (at most 4 kept) of up to
+  25 words, about 35 tokens each with list markers, with headroom; output past the cap is
+  simply cut and the validator drops any unfinished line.
 - **Temperature**: 0.4 for the first (cached) set, 0.9 for "new questions", so a fresh press
   differs from the cached set.
 
@@ -176,7 +188,7 @@ RETURNING tokens;
 No row returned → empty: a `SELECT` computes `retryAfter = ceil((1 − refilled) / rate)` seconds
 and the Worker answers `429` with `Retry-After` and calls no model (FR-020). A failed or
 malformed generation **refunds** the token (`tokens = min(cap, tokens + 1)`), so failures do not
-spend (spec edge case default). Serving a cached set never touches the bucket (FR-016, SC-003).
+spend (spec FR-020a). Serving a cached set never touches the bucket (FR-016, SC-003).
 D1 runs each statement atomically on a single primary, so concurrent presses cannot overspend.
 
 **Rationale**: D1 was chosen in Clarifications; this keeps it to one row, one indexed write per
@@ -202,7 +214,7 @@ generation.
 key `(slug, content_hash)`. A first generation inserts with `INSERT OR IGNORE` (a concurrent
 first press keeps whichever landed first) and, in the same `batch()`, deletes the slug's rows for
 other hashes, so the table holds at most one set per post and needs no retention job. A
-"new questions" set is returned to that reader only and **not** stored (FR-016 default: it does
+"new questions" set is returned to that reader only and **not** stored (FR-016: it does
 not replace the cached one).
 
 **First-party alternatives considered**: Workers **Cache API** (per data centre, evictable, so a
@@ -317,7 +329,9 @@ tests `tests/unit/site/config-files.test.ts`, `deploy-preview.test.ts`,
 `cached | generated | fresh | limited | not_found | stale | forbidden | invalid | malformed |
 unavailable`, plus the error class name for `unavailable` (as contact does). Never the slug's
 questions, the model output, an IP or a header value (FR-019, FR-022, SC-006). `invocation_logs`
-stay off. The privacy policy (`src/content/pages/privacy-policy.mdx`) gains a short section
+stay off. Cloudflare's own platform request logs and security systems (which see the reader's
+IP, as for every request to the site) are outside the site's control and are not read by it;
+the privacy policy says so. The privacy policy (`src/content/pages/privacy-policy.mdx`) gains a short section
 (FR-023): pressing the button sends the post's own text, not reader data, to Cloudflare Workers
 AI; one generated set per post version is stored in D1; nothing about the reader is collected,
 stored or logged.

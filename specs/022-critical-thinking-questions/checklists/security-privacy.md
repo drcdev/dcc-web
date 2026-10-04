@@ -8,49 +8,49 @@
 
 ## Origin and Request Validation
 
-- [ ] CHK001 Is "the site's own origin" defined precisely (which headers are trusted, which hosts count, what happens on preview hostnames and localhost)? [Clarity, Spec §FR-015, Contract §Q02]
-- [ ] CHK002 Are requirements consistent about requests with a missing `Origin` header, a cross-site `Sec-Fetch-Site`, and non-browser clients that can forge headers? [Consistency, Contract §Q02]
-- [ ] CHK003 Is it acknowledged in the requirements that an origin check does not stop scripted callers, and is the site-wide bucket named as the compensating control? [Assumption, Spec §FR-026]
-- [ ] CHK004 Are input limits (body size, slug pattern, hash pattern, content type) specified for every request field, with a defined response for each violation? [Completeness, Contract §Q03-Q05]
-- [ ] CHK005 Is the CORS stance stated (no cross-origin read access, no permissive preflight response)? [Gap, Spec §FR-015]
-- [ ] CHK006 Is the HTTPS-only requirement defined for the endpoint, including local development exceptions? [Clarity, Spec §FR-015]
+- [x] CHK001 Is "the site's own origin" defined precisely (which headers are trusted, which hosts count, what happens on preview hostnames and localhost)? [Clarity, Spec §FR-015, Contract §Q02]
+- [x] CHK002 Are requirements consistent about requests with a missing `Origin` header, a cross-site `Sec-Fetch-Site`, and non-browser clients that can forge headers? [Consistency, Contract §Q02]
+- [x] CHK003 Is it acknowledged in the requirements that an origin check does not stop scripted callers, and is the site-wide bucket named as the compensating control? [Assumption, Spec §FR-026]
+- [x] CHK004 Are input limits (body size, slug pattern, hash pattern, content type) specified for every request field, with a defined response for each violation? [Completeness, Contract §Q03-Q05]
+- [x] CHK005 Is the CORS stance stated (no cross-origin read access, no permissive preflight response)? [Gap, Spec §FR-015]
+- [x] CHK006 Is the HTTPS-only requirement defined for the endpoint, including local development exceptions? [Clarity, Spec §FR-015]
 
 ## No Caller-Supplied Text Reaches the Model
 
-- [ ] CHK007 Is it stated that the only model inputs are the stored post source and fixed instructions, and that no request field is concatenated into a prompt? [Completeness, Spec §FR-014]
-- [ ] CHK008 Is the "stale" case (hash differs from the current build) specified so a caller cannot pick which version of text is used? [Clarity, Contract §Q07]
-- [ ] CHK009 Are requirements defined for how an unknown slug and a draft slug on production are indistinguishable to the caller? [Edge Case, Contract §Q06]
-- [ ] CHK010 Is the source of post text (static file read through the assets binding) specified as non-writable by any request path? [Gap, Research §R2]
+- [x] CHK007 Is it stated that the only model inputs are the stored post source and fixed instructions, and that no request field is concatenated into a prompt? [Completeness, Spec §FR-014]
+- [x] CHK008 Is the "stale" case (hash differs from the current build) specified so a caller cannot pick which version of text is used? [Clarity, Contract §Q07]
+- [x] CHK009 Are requirements defined for how an unknown slug and a draft slug on production are indistinguishable to the caller? [Edge Case, Contract §Q06]
+- [x] CHK010 Is the source of post text (static file read through the assets binding) specified as non-writable by any request path? [Gap, Research §R2]
 
 ## Prompt Injection from Post Content
 
-- [ ] CHK011 Is the threat of instructions embedded in post text (author-controlled content, quoted material, comments in MDX) acknowledged and its mitigation stated? [Gap, Research §R5]
-- [ ] CHK012 Are post-processing requirements defined so an injected instruction cannot cause output beyond 2-4 questions (no links, no markup, no system text)? [Coverage, Spec §Edge Cases]
-- [ ] CHK013 Is the trust boundary documented: post text is treated as untrusted data in the prompt even though Don authors it? [Assumption]
+- [x] CHK011 Is the threat of instructions embedded in post text (author-controlled content, quoted material, comments in MDX) acknowledged and its mitigation stated? [Gap, Research §R5]
+- [x] CHK012 Are post-processing requirements defined so an injected instruction cannot cause output beyond 2-4 questions (no links, no markup, no system text)? [Coverage, Spec §Edge Cases]
+- [x] CHK013 Is the trust boundary documented: post text is treated as untrusted data in the prompt even though Don authors it? [Assumption]
 
 ## Output Validation
 
-- [ ] CHK014 Are all validation rules (count, one sentence, trailing question mark, 25-word limit, no quoting, no summary) defined with testable thresholds? [Measurability, Spec §FR-003, FR-004, Data model §5]
-- [ ] CHK015 Is "no quoting the post at length" quantified? [Ambiguity, Spec §FR-004]
-- [ ] CHK016 Is the behaviour defined when validation yields between 2 and 4 valid items out of a larger raw set, and when fewer than 2 remain? [Completeness, Spec §Edge Cases]
-- [ ] CHK017 Is it required that validated questions are rendered as text and never as HTML in both Worker response and panel? [Clarity, Contract §P12]
-- [ ] CHK018 Is it required that raw model output, prompts and provider names never appear in any response, including error bodies? [Completeness, Spec §FR-015]
-- [ ] CHK019 Are requirements consistent between the server validator and the client guard (P16) so the two cannot disagree about what is displayable? [Consistency, Contract §P16]
+- [x] CHK014 Are all validation rules (count, one sentence, trailing question mark, 25-word limit, no quoting, no summary) defined with testable thresholds? [Measurability, Spec §FR-003, FR-004, Data model §5]
+- [x] CHK015 Is "no quoting the post at length" quantified? [Ambiguity, Spec §FR-004]
+- [x] CHK016 Is the behaviour defined when validation yields between 2 and 4 valid items out of a larger raw set, and when fewer than 2 remain? [Completeness, Spec §Edge Cases]
+- [x] CHK017 Is it required that validated questions are rendered as text and never as HTML in both Worker response and panel? [Clarity, Contract §P12]
+- [x] CHK018 Is it required that raw model output, prompts and provider names never appear in any response, including error bodies? [Completeness, Spec §FR-015]
+- [x] CHK019 Are requirements consistent between the server validator and the client guard (P16) so the two cannot disagree about what is displayable? [Consistency, Contract §P16]
 
 ## Personal Data, Storage and Logging
 
-- [ ] CHK020 Is "no reader data" defined to cover IP addresses, hashes of them, user agents, cookies, local storage and request timing correlated to a person? [Clarity, Spec §FR-019]
-- [ ] CHK021 Are the stored fields for `question_sets` and `usage_bucket` enumerated, and does each field exclude reader-derived data? [Completeness, Data model §2-3]
-- [ ] CHK022 Is the allowed log content (aggregate counts) separated from forbidden content (IP addresses, generated text, post text, slug-level reader activity) with no gap between the two lists? [Clarity, Spec §FR-022]
-- [ ] CHK023 Are platform-level logs (Workers observability, invocation logs, `cf-connecting-ip` in platform telemetry) addressed as part of the "no IP logged" requirement? [Gap, Spec §FR-022]
-- [ ] CHK024 Does Principle VII's contact-only personal data rule stay consistent with the new endpoint, with the privacy-policy text required by FR-023 stating what is sent to Workers AI and what is stored? [Consistency, Spec §FR-023]
-- [ ] CHK025 Is retention for cached question sets stated (kept until the post changes, pruned, or kept indefinitely)? [Gap, Data model §2]
+- [x] CHK020 Is "no reader data" defined to cover IP addresses, hashes of them, user agents, cookies, local storage and request timing correlated to a person? [Clarity, Spec §FR-019]
+- [x] CHK021 Are the stored fields for `question_sets` and `usage_bucket` enumerated, and does each field exclude reader-derived data? [Completeness, Data model §2-3]
+- [x] CHK022 Is the allowed log content (aggregate counts) separated from forbidden content (IP addresses, generated text, post text, slug-level reader activity) with no gap between the two lists? [Clarity, Spec §FR-022]
+- [x] CHK023 Are platform-level logs (Workers observability, invocation logs, `cf-connecting-ip` in platform telemetry) addressed as part of the "no IP logged" requirement? [Gap, Spec §FR-022]
+- [x] CHK024 Does Principle VII's contact-only personal data rule stay consistent with the new endpoint, with the privacy-policy text required by FR-023 stating what is sent to Workers AI and what is stored? [Consistency, Spec §FR-023]
+- [x] CHK025 Is retention for cached question sets stated (kept until the post changes, pruned, or kept indefinitely)? [Gap, Data model §2]
 
 ## Abuse and Secrets
 
-- [ ] CHK026 Are bucket-exhaustion abuse scenarios addressed: one caller draining the site-wide allowance and denying others, and the intended impact (graceful 429, cached sets still served)? [Coverage, Spec §US3]
-- [ ] CHK027 Is it stated that cache-hit reads cannot be used to amplify cost, and that "fresh" requests are the only drawn-down path besides first generation? [Clarity, Spec §FR-016]
-- [ ] CHK028 Is the requirement "no API key or secret is introduced" stated and consistent with the Workers AI binding approach? [Consistency, Spec §FR-013]
-- [ ] CHK029 Is the CSP requirement explicit (no loosening, `connect-src 'self'` sufficient, no inline script or style introduced by the panel)? [Clarity, Contract §P06]
-- [ ] CHK030 Are indexing requirements for `question-source.json` (noindex header, sitemap exclusion) stated, given it contains full post text as a public static file? [Completeness, Plan §Source Code]
-- [ ] CHK031 Is separation of preview and production data (databases, buckets, cached sets) specified so preview drafts never reach production caches? [Coverage, Spec §FR-021]
+- [x] CHK026 Are bucket-exhaustion abuse scenarios addressed: one caller draining the site-wide allowance and denying others, and the intended impact (graceful 429, cached sets still served)? [Coverage, Spec §US3]
+- [x] CHK027 Is it stated that cache-hit reads cannot be used to amplify cost, and that "fresh" requests are the only drawn-down path besides first generation? [Clarity, Spec §FR-016]
+- [x] CHK028 Is the requirement "no API key or secret is introduced" stated and consistent with the Workers AI binding approach? [Consistency, Spec §FR-013]
+- [x] CHK029 Is the CSP requirement explicit (no loosening, `connect-src 'self'` sufficient, no inline script or style introduced by the panel)? [Clarity, Contract §P06]
+- [x] CHK030 Are indexing requirements for `question-source.json` (noindex header, sitemap exclusion) stated, given it contains full post text as a public static file? [Completeness, Plan §Source Code]
+- [x] CHK031 Is separation of preview and production data (databases, buckets, cached sets) specified so preview drafts never reach production caches? [Coverage, Spec §FR-021]
