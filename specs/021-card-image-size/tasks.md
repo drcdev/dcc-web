@@ -66,9 +66,9 @@ are seen to fail first. The source change is three props on one `<Image>`.
 
 ## Phase 5: Polish and cross-cutting
 
-- [ ] T015 [P] Docs: `grep` found no description of the card image widths in `docs/` (`docs/posts.md` "Images and their widths" covers in-post images only), so add one sentence to the `writing-landing` row of the "Visual coverage" table in `docs/testing.md` saying where the card-image check lives (component tests in `PostCard.test.ts`, E2E in the `sections` project's `blog-fixtures.spec.ts`). Re-grep first; skip if a doc has since gained such a description and edit that one instead.
+- [x] T015 [P] Docs: `grep` found no description of the card image widths in `docs/` (`docs/posts.md` "Images and their widths" covers in-post images only), so add one sentence to the `writing-landing` row of the "Visual coverage" table in `docs/testing.md` saying where the card-image check lives (component tests in `PostCard.test.ts`, E2E in the `sections` project's `blog-fixtures.spec.ts`). Re-grep first; skip if a doc has since gained such a description and edit that one instead.
 - [ ] T016 Run `pnpm run verify:quick` (inner loop). The full gate's `a11y` project keeps the WCAG 2.2 AA check on every template green (SC-003). Ask Don before the full `pnpm run verify` gate, then run it via the wrapper under `perl -e 'alarm N; exec @ARGV'` and read the `VERIFY_EXIT=` line.
-- [ ] T017 Walk through `specs/021-card-image-size/quickstart.md` and confirm each check, including step 5's local look at the convergence cards at 390 px (SC-004); note the incidental `wayfinder-hero` alt-text mismatch as follow-up only (out of scope).
+- [x] T017 Walk through `specs/021-card-image-size/quickstart.md` and confirm each check, including step 5's local look at the convergence cards at 390 px (SC-004); note the incidental `wayfinder-hero` alt-text mismatch as follow-up only (out of scope).
 
 ---
 
