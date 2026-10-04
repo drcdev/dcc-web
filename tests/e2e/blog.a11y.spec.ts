@@ -288,11 +288,11 @@ for (const template of blogTemplates) {
       expect(scripts.filter((s) => s.inline && s.type !== "module")).toHaveLength(1);
       const modules = scripts.filter((s) => s.type === "module");
       // The site's existing modules (menu, theme switch) are counted on a page with no blog parts;
-      // a post page may add the copy module and the share module, nothing else.
+      // a post page may add the copy, share and questions-panel modules, nothing else.
       await page.goto("/about/");
       const existing = await page.locator("script[type=module]").count();
       await page.goto(template.path);
-      expect(modules.length).toBeLessThanOrEqual(existing + (template.name.startsWith("writing-post") ? 2 : 0));
+      expect(modules.length).toBeLessThanOrEqual(existing + (template.name.startsWith("writing-post") ? 3 : 0));
       // The copy module is present exactly where a code block is.
       const hasCode = (await page.locator("figure[data-code-block]").count()) > 0;
       if (hasCode) expect(modules.length).toBeGreaterThanOrEqual(1);

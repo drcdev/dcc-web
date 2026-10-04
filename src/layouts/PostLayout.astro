@@ -71,9 +71,16 @@ const seo: Partial<ComponentProps<typeof BaseLayout>> = {
       {post.featured && <p class="m-0 mb-3"><span data-featured-mark class={featuredMark}>Featured</span></p>}
       <PostMeta post={post} />
     </div>
-    {questionHash && <QuestionsPanel slug={post.slug} hash={questionHash} />}
-    <div data-post-body class:list={[proseClasses, "mx-auto mt-8 max-w-3xl"]}>
-      <slot />
+    {/* Below xl the panel is a block above the body. From xl the two share a grid row: the panel in
+        a right-hand column, the body in the left, which is the row the sticky panel stays inside. */}
+    <div class:list={[questionHash && "xl:grid xl:grid-cols-[minmax(0,1fr)_15rem] xl:gap-x-8"]}>
+      {questionHash && <QuestionsPanel slug={post.slug} hash={questionHash} />}
+      <div
+        data-post-body
+        class:list={[proseClasses, "mx-auto mt-8 max-w-3xl", questionHash && "w-full xl:col-start-1 xl:row-start-1"]}
+      >
+        <slot />
+      </div>
     </div>
     <div class="mx-auto mt-8 max-w-3xl">
       <ViewsNote />

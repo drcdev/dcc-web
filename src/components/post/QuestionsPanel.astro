@@ -15,6 +15,11 @@ export interface Props {
 
 const { slug, hash } = Astro.props;
 
+// From xl (1280 px) the panel is the right-hand column and stays in view while the body scrolls,
+// but only on a window at least 40rem tall. The script removes this class when the panel is taller
+// than the window (it reads the class from data-sticky, so the name lives here once).
+const STICKY = "[@media(min-width:1280px)_and_(min-height:40rem)]:sticky [@media(min-width:1280px)_and_(min-height:40rem)]:top-4";
+
 // The site's focus ring, 44 px targets, and a dashed border (not colour alone) while a request runs.
 const control =
   "inline-flex min-h-11 cursor-pointer items-center rounded-full border border-rust-600 bg-transparent px-4 py-2 text-sm font-medium text-rust-800 hover:bg-rust-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rust-600 aria-disabled:cursor-wait aria-disabled:border-dashed dark:border-rust-300 dark:text-rust-300 dark:hover:bg-rust-950 forced-colors:border-[ButtonText] forced-colors:text-[ButtonText]";
@@ -25,7 +30,12 @@ const control =
   data-slug={slug}
   data-hash={hash}
   aria-labelledby="questions-heading"
-  class="hidden [.js_&]:block mx-auto mt-6 max-w-3xl rounded-xl border border-dusk-200 bg-white p-6 dark:border-dusk-700 dark:bg-dusk-800 forced-colors:border-[CanvasText]"
+  class:list={[
+    "hidden [.js_&]:block mx-auto mt-6 w-full max-w-3xl xl:col-start-2 xl:row-start-1 xl:mx-0 xl:mt-8 xl:max-w-none xl:self-start",
+    STICKY,
+    "rounded-xl border border-dusk-200 bg-white p-6 dark:border-dusk-700 dark:bg-dusk-800 forced-colors:border-[CanvasText]",
+  ]}
+  data-sticky={STICKY}
 >
   <h2 id="questions-heading" class="m-0 mb-2 text-lg font-bold text-dusk-900 dark:text-white">Think before you read</h2>
   <p class="m-0 mb-3 text-dusk-700 dark:text-mist-300">Get a few questions to keep in mind while you read this post.</p>
@@ -80,6 +90,17 @@ const control =
     let busy = false;
     let hasQuestions = false;
 
+    // A sticky panel taller than the window could not be scrolled fully into view, so it goes back
+    // into the flow (WCAG 2.2 focus not obscured, contract P21a). Classes only: the policy blocks styles.
+    const stickyClasses = (panel.dataset.sticky ?? "").split(" ").filter(Boolean);
+    function fitSticky() {
+      if (stickyClasses.length === 0) return;
+      panel.classList.add(...stickyClasses);
+      if (panel.offsetHeight > window.innerHeight - 32) panel.classList.remove(...stickyClasses);
+    }
+    fitSticky();
+    window.addEventListener("resize", fitSticky);
+
     async function ask(fresh: boolean, button: HTMLButtonElement) {
       if (busy) return;
       busy = true;
@@ -111,6 +132,7 @@ const control =
       button.removeAttribute("aria-disabled");
       if (!questions) {
         status!.textContent = message;
+        fitSticky();
         return;
       }
 
@@ -127,6 +149,7 @@ const control =
       getButton!.hidden = true;
       status!.textContent = hasQuestions ? "New questions are ready." : "Questions are ready.";
       hasQuestions = true;
+      fitSticky();
       if (button === getButton) newButton!.focus();
     }
 

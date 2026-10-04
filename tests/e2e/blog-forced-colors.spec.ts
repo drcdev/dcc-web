@@ -27,6 +27,21 @@ test("the series marker keeps a 2px outline in the system text colour and its Se
   await expect(marker).toHaveCSS("border-top-color", await systemColor(page, "CanvasText"));
 });
 
+test("the questions panel keeps its border, button outline and focus indicator (P23)", async ({ page }) => {
+  await page.goto(POST);
+  const panel = page.locator("[data-questions]");
+  await expect(panel).toBeVisible();
+  await expect(panel).toHaveCSS("border-top-width", "1px");
+  await expect(panel).toHaveCSS("border-top-color", await systemColor(page, "CanvasText"));
+  const button = panel.locator("[data-questions-get]");
+  await expect(button).toHaveCSS("border-top-width", "1px");
+  await expect(button).not.toHaveCSS("border-top-style", "none");
+  await button.focus();
+  await expect(button).toBeFocused();
+  await expect(button).not.toHaveCSS("outline-style", "none");
+  await expect(button).toHaveCSS("outline-width", "2px");
+});
+
 test("an ordinary topic pill keeps a 1px border", async ({ page }) => {
   await page.goto(POST);
   const pill = page.locator("[data-topic-pill]").first();

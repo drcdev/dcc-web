@@ -379,15 +379,15 @@ describe("questions API: the site-wide bucket (Q08, Q20 to Q23, Q28)", () => {
   });
 
   describe("Q22: a failure after the take refunds the token", () => {
-    const cases: [string, (hash: string) => { ai: Ai; assets: Fetcher }, number][] = [
-      ["a model error", () => ({ ai: fakeAi({ throws: new Error("boom") }), assets: undefined as never }), 503],
-      ["a malformed answer", () => ({ ai: fakeAi({ text: "not questions" }), assets: undefined as never }), 503],
+    const cases: [string, () => Ai, number][] = [
+      ["a model error", () => fakeAi({ throws: new Error("boom") }), 503],
+      ["a malformed answer", () => fakeAi({ text: "not questions" }), 503],
     ];
     it.each(cases)("%s", async (_name, make, status) => {
       vi.useFakeTimers({ now: FIXED, toFake: ["Date"] });
       await setBucket(5, FIXED);
       const { assets, hash } = await setup();
-      const res = await run(request({ slug: SLUG, hash }), { AI: make(hash).ai, ASSETS: assets });
+      const res = await run(request({ slug: SLUG, hash }), { AI: make(), ASSETS: assets });
       expect(res.status).toBe(status);
       expect(await tokens()).toBe(5);
     });
@@ -412,10 +412,10 @@ describe("questions API: the site-wide bucket (Q08, Q20 to Q23, Q28)", () => {
     it("an asset failure", async () => {
       vi.useFakeTimers({ now: FIXED, toFake: ["Date"] });
       await setBucket(5, FIXED);
-      const { hash, source } = await setup();
-      const broken = { fetch: async () => new Response("{not json", { status: 200 }) } as unknown as Fetcher;
-      void source;
-      const res = await run(request({ slug: SLUG, hash }), { AI: fakeAi({ text: MODEL_TEXT }), ASSETS: broken });
+      const { hash } = await setup();
+      // An ASSETS binding whose source file is not valid JSON; the Worker only calls `fetch` on it.
+      const broken: Pick<Fetcher, "fetch"> = { fetch: async () => new Response("{not json", { status: 200 }) };
+      const res = await run(request({ slug: SLUG, hash }), { AI: fakeAi({ text: MODEL_TEXT }), ASSETS: broken as Fetcher });
       expect(res.status).toBe(503);
       expect(await tokens()).toBe(5);
     });

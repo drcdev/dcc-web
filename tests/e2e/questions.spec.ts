@@ -214,3 +214,167 @@ test.describe("questions panel", () => {
     expect(after).toEqual(before);
   });
 });
+
+// Placement (specs/022 tasks T040; contracts/questions-panel.md P03, P20, P21, P21a, P21b; FR-009).
+// The fixture posts are short, so each geometry case adds paragraphs to the body, which gives the
+// sticky panel something to stay beside.
+test.describe("questions panel placement", () => {
+  const FOUR = ["Q one?", "Q two?", "Q three?", "Q four?"];
+  const titleCard = (page: Page) => page.locator("[data-title-card]");
+  const body = (page: Page) => page.locator("[data-post-body]");
+
+  const lengthenBody = (page: Page) =>
+    page.evaluate(() => {
+      const target = document.querySelector("[data-post-body]")!;
+      for (let i = 0; i < 60; i++) {
+        const p = document.createElement("p");
+        p.textContent = `Filler paragraph ${i}. `.repeat(12);
+        target.append(p);
+      }
+    });
+
+  const box = async (locator: ReturnType<Page["locator"]>) => (await locator.boundingBox())!;
+
+  for (const width of [320, 390, 1279]) {
+    test(`is a block between the title card and the body at ${width} px with no sideways scroll (P20)`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto(POST);
+      await expect(panel(page)).toBeVisible();
+      const [card, aside, text] = [await box(titleCard(page)), await box(panel(page)), await box(body(page))];
+      expect(aside.y).toBeGreaterThanOrEqual(card.y + card.height - 1);
+      expect(aside.y + aside.height).toBeLessThanOrEqual(text.y + 1);
+      expect(aside.width).toBeLessThanOrEqual(text.width + 1);
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
+      ).toBe(true);
+    });
+  }
+
+  for (const width of [640, 320]) {
+    test(`keeps the block layout at ${width} px, the width of a zoomed 1280 px window (P21b)`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 600 });
+      await page.goto(POST);
+      await expect(panel(page)).toBeVisible();
+      await expect(panel(page)).toHaveCSS("position", "static");
+      const [aside, text] = [await box(panel(page)), await box(body(page))];
+      expect(aside.y + aside.height).toBeLessThanOrEqual(text.y + 1);
+    });
+  }
+
+  for (const width of [1280, 1440]) {
+    test(`sits beside the body at ${width} px, stays in view and stops at the body's end (P21, FR-009)`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto(POST);
+      await lengthenBody(page);
+      await expect(panel(page)).toBeVisible();
+
+      const [aside, text] = [await box(panel(page)), await box(body(page))];
+      expect(aside.x).toBeGreaterThanOrEqual(text.x + text.width - 1);
+      expect(Math.abs(aside.y - text.y)).toBeLessThanOrEqual(1);
+      await expect(panel(page)).toHaveCSS("position", "sticky");
+      await expect(panel(page)).toHaveCSS("top", "16px");
+
+      // Scrolled into the middle of the body: the panel is held 16 px below the top of the viewport.
+      await page.evaluate(() =>
+        window.scrollTo(0, document.querySelector("[data-post-body]")!.getBoundingClientRect().top + window.scrollY + 600),
+      );
+      const held = await box(panel(page));
+      expect(Math.abs(held.y - 16)).toBeLessThanOrEqual(1);
+      const mid = await box(body(page));
+      expect(held.x).toBeGreaterThanOrEqual(mid.x + mid.width - 1);
+
+      // At the end of the body the panel stops with it, above the views note and the footer.
+      await page.evaluate(() => {
+        const el = document.querySelector("[data-post-body]")!;
+        window.scrollTo(0, el.getBoundingClientRect().bottom + window.scrollY - 300);
+      });
+      const [end, endBody, footer] = [
+        await box(panel(page)),
+        await box(body(page)),
+        await box(page.locator("footer").last()),
+      ];
+      expect(end.y + end.height).toBeLessThanOrEqual(endBody.y + endBody.height + 1);
+      expect(end.y + end.height).toBeLessThanOrEqual(footer.y);
+    });
+  }
+
+  test("puts the panel before the body in the DOM and tab order (P03)", async ({ page }) => {
+    await page.goto(POST);
+    const before = await page.evaluate(() => {
+      const aside = document.querySelector("[data-questions]")!;
+      const text = document.querySelector("[data-post-body]")!;
+      return Boolean(aside.compareDocumentPosition(text) & Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+    expect(before).toBe(true);
+    expect(await page.locator("[tabindex]:not([tabindex='0']):not([tabindex='-1'])").count()).toBe(0);
+  });
+
+  test("lets every panel element scroll into view at 1280x600 with 4 questions and drops the sticky position (P21a)", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 600 });
+    await stubQuestionsApi(page, [ok(FOUR)]);
+    await page.goto(POST);
+    await lengthenBody(page);
+    await getButton(page).click();
+    await expect(items(page)).toHaveCount(4);
+    await expect(panel(page)).toHaveCSS("position", "static");
+    for (const part of [newButton(page), status(page), items(page).last(), note(page)]) {
+      await part.scrollIntoViewIfNeeded();
+      const rect = await box(part);
+      expect(rect.y).toBeGreaterThanOrEqual(0);
+      expect(rect.y + rect.height).toBeLessThanOrEqual(600);
+    }
+  });
+
+  test("removes the sticky class from a panel taller than the window and restores it when the window grows (P21a)", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 700 });
+    // Four questions of the longest allowed length in the 15rem column make a panel taller than 700 px.
+    const LONG = FOUR.map((q, i) => `${`Question ${i} with a long run of words to wrap often `.repeat(4)}`.slice(0, 198) + "?");
+    await stubQuestionsApi(page, [ok(LONG)]);
+    await page.goto(POST);
+    await lengthenBody(page);
+    await expect(panel(page)).toHaveCSS("position", "sticky");
+    await getButton(page).click();
+    await expect(items(page)).toHaveCount(4);
+    await expect(panel(page)).toHaveCSS("position", "static");
+    const tall = (await box(panel(page))).height;
+    expect(tall).toBeGreaterThan(668);
+    await page.setViewportSize({ width: 1280, height: Math.ceil(tall) + 40 });
+    await expect(panel(page)).toHaveCSS("position", "sticky");
+    await page.setViewportSize({ width: 1280, height: Math.ceil(tall) + 10 });
+    await expect(panel(page)).toHaveCSS("position", "static");
+  });
+
+  test("clips nothing with WCAG 1.4.12 text spacing applied, beside the body and as a block", async ({ page }) => {
+    await stubQuestionsApi(page, [ok(FOUR)]);
+    for (const width of [1280, 320]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(POST);
+      await getButton(page).click();
+      await expect(items(page)).toHaveCount(4);
+      // The page policy blocks an inline <style>, so the overrides go in as a constructed stylesheet.
+      await page.evaluate(() => {
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(`* { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; }
+          p { margin-bottom: 2em !important; }`);
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+      });
+      const clipped = await page.evaluate(() => {
+        const aside = document.querySelector<HTMLElement>("[data-questions]")!;
+        const outer = aside.getBoundingClientRect();
+        return {
+          overflow: aside.scrollWidth > aside.clientWidth || aside.scrollHeight > aside.clientHeight,
+          outside: [...aside.querySelectorAll<HTMLElement>("*")].some((el) => {
+            const r = el.getBoundingClientRect();
+            return r.width > 0 && (r.right > outer.right + 1 || r.left < outer.left - 1);
+          }),
+          sideways: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+        };
+      });
+      expect(clipped).toEqual({ overflow: false, outside: false, sideways: false });
+    }
+  });
+});
