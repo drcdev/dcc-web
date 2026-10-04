@@ -49,6 +49,8 @@ describe("the project template", () => {
     for (const detail of ["visuals", "standIn", "demo", "source", "image", "invitation", "retired", "replacedBy"]) {
       expect(comments).toContain(detail);
     }
+    expect(comments).toContain("https");
+    expect(comments).toContain("cannot be customised");
   });
 
   it("links only to example.com", () => {

@@ -321,4 +321,3 @@ on stories 1 and 2.
   (the comment in Tempo's content already notes this).
 - A status filter on the projects index, or moving retired projects to a separate section.
 - Marking any other project retired.
-- Updating the MDX comment in Tempo's body (it still says a retired status is issue #50); left as is by instruction, so reword it when Cadence gets a project story.
