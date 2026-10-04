@@ -76,10 +76,10 @@ description: "Task list for Inter text in diagrams and the sharing image"
 
 ## Phase 6: Polish and verification
 
-- [ ] T026 Budget layer, no new test: run the existing `tests/e2e/budget.spec.ts` unchanged and confirm every template passes at the 150 KB limit; copy the project-story total transfer figure (and whether a diagram request appears) into the "After" cell of the second FR-011 table in `specs/020-inter-diagram-social-text/plan.md`.
-- [ ] T027 Accessibility layer, no new test: run `tests/e2e/a11y.spec.ts` and the portfolio a11y specs unchanged; no new violation (SC-005).
-- [ ] T028 Visual layer, no new test: run the visual project (`pnpm run test:visual`) and confirm it passes with the committed baselines. The plan expects NO baseline change (fixture diagrams are raster). Any diff is a regression to fix, not a baseline to refresh; run no update command.
-- [ ] T029 Run `pnpm run verify:quick`, then fix lint, type and format findings in the new scripts and tests.
+- [x] T026 Budget layer, no new test: run the existing `tests/e2e/budget.spec.ts` unchanged and confirm every template passes at the 150 KB limit; copy the project-story total transfer figure (and whether a diagram request appears) into the "After" cell of the second FR-011 table in `specs/020-inter-diagram-social-text/plan.md`.
+- [x] T027 Accessibility layer, no new test: run `tests/e2e/a11y.spec.ts` and the portfolio a11y specs unchanged; no new violation (SC-005).
+- [x] T028 Visual layer, no new test: run the visual project (`pnpm run test:visual`) and confirm it passes with the committed baselines. The plan expects NO baseline change (fixture diagrams are raster). Any diff is a regression to fix, not a baseline to refresh; run no update command.
+- [x] T029 Run `pnpm run verify:quick`, then fix lint, type and format findings in the new scripts and tests.
 - [ ] T030 Ask Don before the full `pnpm run verify` (parallel gates crash his machine); run it via the wrapper in the background under `perl -e 'alarm N; exec @ARGV'`, check `lsof` on port 4321 first, and read the `VERIFY_EXIT=` line. Merge `origin/main` first and re-run the font step if a sibling edited a diagram.
 - [ ] T031 [PREVIEW-CHECK] Don confirms the sharing image: open `/og-default.png` on the branch preview deployment, and paste the preview or site URL into a real share preview (Slack, LinkedIn or Messenger) to see "Don Coleman" in Inter Bold with the same layout and colours as before. A pixel comparison is machine-dependent, so this is by eye.
 - [ ] T032 [PREVIEW-CHECK] Don opens a published project story with a diagram on the preview in Safari (macOS or iOS) and in Firefox (SC-001: Safari and one other browser; the E2E check is Chromium only), and confirms the diagram letters in Inter and the six wrapped labels and two moved boxes (Cadence Apple Watch, Tempo Apple Health) look right, including the sixth wrap (Flux "Handlebars, Tailwind v4").

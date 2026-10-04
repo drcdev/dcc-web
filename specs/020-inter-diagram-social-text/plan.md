@@ -186,7 +186,7 @@ compressed transfer.
 
 | Page (budget spec, simulated mobile) | Before total transfer | After total transfer | Limit |
 |---|---|---|---|
-| project-story template (picked story) | 64,933 bytes (LCP 732 ms, CLS 0, JS 0) | | 153,600 bytes |
+| project-story template (picked story) | 64,933 bytes (LCP 732 ms, CLS 0, JS 0) | 65,263 bytes (LCP 680 ms, CLS 0, JS 0); +330 bytes of run-to-run variation, no diagram request counted (lazy-loaded below the fold) | 153,600 bytes |
 
 The diagram is lazy-loaded far below the fold at 390×844, so it is most likely outside both
 figures; the after run notes whether a diagram request appears. Prototype estimate: about 9 to
