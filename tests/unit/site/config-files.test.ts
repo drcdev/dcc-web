@@ -127,6 +127,15 @@ describe("wrangler.jsonc", () => {
     expect(read("scripts/deploy/preview.ts")).toContain('"--env", "preview"');
   });
 
+  it("runs the e2e Worker from a generated config without the remote-only ai binding", () => {
+    const read = (rel: string) => readFileSync(fileURLToPath(new URL(`../../../${rel}`, import.meta.url)), "utf-8");
+    expect(read("playwright.config.ts")).toContain("wrangler dev --config wrangler.e2e.json");
+    const script = read("scripts/e2e-wrangler-config.ts");
+    expect(script).toContain("delete config.ai");
+    expect(read(".gitignore")).toMatch(/^wrangler\.e2e\.json$/m);
+    expect(config.ai).toEqual({ binding: "AI" });
+  });
+
   it("names the preview Worker dcc-web-preview", () => {
     expect(config.env?.preview?.name).toBe("dcc-web-preview");
   });
@@ -246,7 +255,7 @@ describe("playwright.config.ts", () => {
   it("runs the webServer through wrangler dev on 127.0.0.1:4321 with metrics off", async () => {
     const config = await loadConfig();
     const server = config.webServer[0];
-    expect(server?.command).toContain("wrangler dev --ip 127.0.0.1 --port 4321");
+    expect(server?.command).toContain("wrangler dev --config wrangler.e2e.json --ip 127.0.0.1 --port 4321");
     expect(server?.command).toContain("--persist-to .cache/e2e-state");
     expect(server?.command).toContain("--env-file tests/fixtures/worker/e2e.env");
     expect(server?.command).toContain("wrangler d1 migrations apply DB --local --persist-to .cache/e2e-state");
