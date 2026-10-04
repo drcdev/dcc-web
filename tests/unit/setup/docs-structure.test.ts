@@ -153,9 +153,20 @@ describe("docs/setup.md contact-form part (items 19 to 25)", () => {
     expect(s).toContain("Western North America");
     expect(s).toContain("`wnam`");
     expect(s).toMatch(/cannot be changed/i);
-    expect(s).toContain("pnpm exec wrangler d1 create dcc-web-contact --location wnam");
-    expect(s).toContain("pnpm exec wrangler d1 create dcc-web-contact-preview --location wnam");
+    expect(s).toContain("pnpm exec wrangler d1 create dcc-web --location wnam");
+    expect(s).toContain("pnpm exec wrangler d1 create dcc-web-preview --location wnam");
     expect(s).toContain("pnpm exec wrangler d1 delete");
+    expect(s).toContain("usage bucket");
+  });
+
+  it("item 24 notes the Workers Builds token may need the Workers AI permission", () => {
+    expect(extractSection(contents, "contact-preview-deploy")).toContain("Workers AI");
+  });
+
+  it("item 25 deletes the retired dcc-web-contact databases after the production deploy", () => {
+    const s = extractSection(contents, "contact-production-deploy");
+    expect(s).toContain("pnpm exec wrangler d1 delete dcc-web-contact --env-file /dev/null");
+    expect(s).toContain("pnpm exec wrangler d1 delete dcc-web-contact-preview --env-file /dev/null");
   });
 
   it("item 21 gives secret put commands and the replacement rule, and never asks for a value in chat", () => {

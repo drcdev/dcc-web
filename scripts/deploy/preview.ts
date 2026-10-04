@@ -29,7 +29,7 @@ export function previewDeploySteps(env: DeployPreviewEnv): string[][] {
     );
   }
   const steps = [
-    ["d1", "migrations", "apply", "dcc-web-contact-preview", "--remote", "--env", "preview"],
+    ["d1", "migrations", "apply", "DB", "--remote", "--env", "preview"],
     ["deploy", "--env", "preview"],
   ];
   if (branch !== "main") {

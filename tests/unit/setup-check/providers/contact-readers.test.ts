@@ -26,25 +26,25 @@ function reader(client: Record<string, unknown>) {
 describe("listD1Databases", () => {
   it("returns only uuid, name and region", async () => {
     const list = vi.fn(() =>
-      iterate([{ uuid: "u1", name: "dcc-web-contact", running_in_region: "WNAM", file_size: 5, secret: "leak", num_tables: 1 }]),
+      iterate([{ uuid: "u1", name: "dcc-web", running_in_region: "WNAM", file_size: 5, secret: "leak", num_tables: 1 }]),
     );
-    const result = await reader({ d1: { database: { list } } }).listD1Databases("acct", "dcc-web-contact");
-    expect(result).toEqual([{ uuid: "u1", name: "dcc-web-contact", runningInRegion: "WNAM" }]);
-    expect(list).toHaveBeenCalledWith({ account_id: "acct", name: "dcc-web-contact" });
+    const result = await reader({ d1: { database: { list } } }).listD1Databases("acct", "dcc-web");
+    expect(result).toEqual([{ uuid: "u1", name: "dcc-web", runningInRegion: "WNAM" }]);
+    expect(list).toHaveBeenCalledWith({ account_id: "acct", name: "dcc-web" });
   });
 
   it("falls back to the per-database read when the list omits the region, and leaves it undefined when absent everywhere", async () => {
     const get = vi.fn(async (uuid: string) => (uuid === "u1" ? { uuid, running_in_region: "WNAM" } : { uuid }));
     const list = vi.fn(() =>
       iterate([
-        { uuid: "u1", name: "dcc-web-contact" },
-        { uuid: "u2", name: "dcc-web-contact-preview" },
+        { uuid: "u1", name: "dcc-web" },
+        { uuid: "u2", name: "dcc-web-preview" },
       ]),
     );
     const result = await reader({ d1: { database: { list, get } } }).listD1Databases("acct");
     expect(result).toEqual([
-      { uuid: "u1", name: "dcc-web-contact", runningInRegion: "WNAM" },
-      { uuid: "u2", name: "dcc-web-contact-preview", runningInRegion: undefined },
+      { uuid: "u1", name: "dcc-web", runningInRegion: "WNAM" },
+      { uuid: "u2", name: "dcc-web-preview", runningInRegion: undefined },
     ]);
   });
 

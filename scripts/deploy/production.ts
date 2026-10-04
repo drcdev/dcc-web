@@ -18,7 +18,7 @@ export function productionDeploySteps(env: DeployProductionEnv): string[][] {
   if (env.WORKERS_CI_BRANCH !== "main") {
     throw new Error("deploy:production only runs for the main branch; other branches deploy with deploy:preview.");
   }
-  return [["d1", "migrations", "apply", "dcc-web-contact", "--remote"], ["deploy"]];
+  return [["d1", "migrations", "apply", "DB", "--remote"], ["deploy"]];
 }
 
 function main(): number {

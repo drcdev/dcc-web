@@ -17,8 +17,10 @@ const other = expected === "preview" ? "production" : "preview";
 
 describe(`the ${expected} environment`, () => {
   it("binds DB to its own D1 database and never the other's", () => {
-    expect(env.EXPECTED_DATABASE_NAME).toBe(expected === "preview" ? "dcc-web-contact-preview" : "dcc-web-contact");
-    expect(env.OTHER_DATABASE_NAME).toBe(other === "preview" ? "dcc-web-contact-preview" : "dcc-web-contact");
+    // Shape, not live names, so the test holds before and after the database swap commit.
+    const production = expected === "preview" ? env.OTHER_DATABASE_NAME : env.EXPECTED_DATABASE_NAME;
+    const preview = expected === "preview" ? env.EXPECTED_DATABASE_NAME : env.OTHER_DATABASE_NAME;
+    expect(preview).toBe(`${production}-preview`);
     expect(env.EXPECTED_DATABASE_NAME).not.toBe(env.OTHER_DATABASE_NAME);
   });
 

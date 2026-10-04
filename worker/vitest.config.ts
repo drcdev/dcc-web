@@ -26,6 +26,8 @@ export default defineConfig(async () => {
     return {
       plugins: [
         cloudflareTest({
+          // No Cloudflare account access in tests: the `ai` binding is never reached (tests inject fakes).
+          remoteBindings: false,
           wrangler: {
             configPath: "../wrangler.jsonc",
             ...(name === "preview" ? { environment: "preview" } : {}),
