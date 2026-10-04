@@ -29,7 +29,14 @@ Constitution Principle III: Don approves the pull request after checking the pre
 deployment. It also supersedes the "system font stack, no web fonts" part of the site
 foundation's FR-003 (feature 002, site foundation), and the 100 KB total-transfer figure in
 that feature's SC-004 and the budget test, which becomes 150 KB (D3). The other budget limits
-are unchanged.
+are unchanged. Feature 002's spec is not rewritten: from this feature on, the 150 KB figure here
+and in the budget test is the only total-transfer budget, and the 100 KB figure in feature 002
+is historical.
+
+The change also adds one rule to the committed `public/_headers` file (the font cache header,
+FR-015). That is serving configuration, a further Principle III trigger covered by the same
+major-change review. It changes no CI workflow, no Worker code, no dependency, no contact-form
+path, no data collection and no secret.
 
 ## Clarifications
 
@@ -95,14 +102,20 @@ passes.
    Inter's italic faces.
 2. **Given** any page, **When** its network requests are inspected, **Then** every font file
    comes from the site's own origin and no request goes to a font service or other third party.
-3. **Given** a slow connection, **When** a page loads, **Then** text is visible immediately in
-   the system font stack, drawn with metric-adjusted fallback faces where the visitor has those
+3. **Given** a slow connection, **When** a page loads, **Then** text is visible from first
+   paint in the system font stack (`font-display: swap`, so no text is hidden beyond the very
+   short block period `swap` allows; FR-005), drawn with metric-adjusted fallback faces where the visitor has those
    fonts, and swaps to Inter without layout shift beyond the existing cumulative layout shift
    budget.
 4. **Given** code and preformatted blocks, **When** they render, **Then** they use the same
    body font as the surrounding text, exactly as today (now Inter).
-5. **Given** the site's Content Security Policy, **When** any page loads, **Then** the fonts load
-   with no policy violation and the policy is not loosened.
+5. **Given** the site's Content Security Policy, **When** any page template loads (including
+   the not-found page), **Then** the fonts load with no policy violation (no CSP violation
+   reported in the browser console) and the policy is not loosened (FR-009).
+6. **Given** any page template, **When** the accessibility checks run at phone and desktop
+   widths, in light and dark themes, in forced-colours mode, at 200% zoom and at 320 CSS px with
+   WCAG 1.4.12 text spacing, **Then** they report zero WCAG 2.2 AA violations, as today (FR-010,
+   SC-005).
 
 ---
 
@@ -130,16 +143,26 @@ baselines must be complete and correct for the gate to stay meaningful.
 
 - **Font fails to load** (blocked, offline, slow): text stays readable in the system font
   stack, through the metric-adjusted fallback faces where the visitor has those fonts; nothing
-  is hidden or blank while waiting.
+  is hidden or blank while waiting. Each face loads or fails on its own: text that needs a
+  failed face stays in the fallback stack (with synthesized emphasis, FR-003) for the rest of
+  the page view, while text whose face did load is drawn in Inter.
+- **Visitor without the fallback's source font** (Arial; most Linux machines, likely the CI
+  runner): the metric-adjusted faces do not apply, text shows in the rest of today's stack at
+  its normal metrics, and the swap to Inter is unadjusted. The CLS limit (FR-006) still applies
+  to that case.
 - **Characters outside the shipped character set** (for example a letter outside Latin-1, an
   emoji or a box-drawing symbol in a post): the browser falls back to the system stack for those
-  characters only; the page still renders and the build does not fail. Visual-test subjects are
+  characters only, drawing them with the same system families as today at their normal metrics
+  (the metric-adjusted faces carry Inter's unicode-range, so they skip these characters), so
+  they stay as legible as today; the page still renders and the build does not fail. Visual-test subjects are
   the exception: a guard test fails if they draw an uncovered character, unless that character
   is explicitly excluded (FR-016).
 - **Unshipped weights**: weights the site does not ship resolve to a shipped face through
   standard CSS font matching, with no class changes and no synthesized weight: medium (500)
   renders as regular (400); semibold (600) and extrabold (800) render as bold (700). The plan
-  lists the affected components.
+  lists the affected components (research R7). Medium (500) text, such as header and footer
+  links, pills and buttons, loses its slight weight difference from body text; weight must not
+  be the only cue that sets such an element apart (FR-017).
 - **Heaviest page**: the page with the most content transferred must fit the 150 KB total
   transfer budget with the fonts included (D3). Today that is `/writing/convergence/`, whose
   weight is dominated by two real posts' card images; with Inter it measures 121,654 of
@@ -157,8 +180,18 @@ baselines must be complete and correct for the gate to stay meaningful.
   the match still cannot be shown, the work stops and the diff is reported to Don (FR-011).
 - **Text inside images**: the SVG architecture diagrams and the og image keep their current font
   (FR-001).
-- **Forced colours and dark mode**: the font change does not affect contrast, focus indicators
-  or forced-colours rendering.
+- **Forced colours and dark mode**: the change alters no colour token, font size or type
+  scale, so contrast ratios are unchanged. The accessibility checks that run today in light and
+  dark themes and in forced-colours mode (axe colour contrast, visible focus outlines, borders on
+  pills, marks and code) MUST still pass with Inter (FR-010). Forced-colours mode does not change
+  the font family, so Inter is used there as well.
+- **Changed text widths**: Inter's glyph widths differ from the system font, so some labels and
+  lines wrap differently. Focus indicators MUST stay fully visible and unobscured wherever an
+  element moves or wraps (WCAG 2.4.7, 2.4.11), and no page may scroll sideways at 320 CSS px or
+  200% zoom (FR-010).
+- **A face's content changes** (Inter upgraded or re-subset later): its content hash, and so its
+  URL, changes; pages reference only the new URL, the old URL drops out of the build, and a
+  stale cached copy is never used (FR-015).
 - **JavaScript off**: fonts load and apply without any client-side script.
 
 ## Requirements *(mandatory)*
@@ -167,12 +200,13 @@ baselines must be complete and correct for the gate to stay meaningful.
 
 - **FR-001**: Every public page MUST render headings and body text in the Inter typeface. Text
   inside images (the SVG architecture diagrams and the og image) is out of scope and keeps its
-  current font.
+  current font. Those images, their alt text and their legibility are unchanged by this feature.
 - **FR-002**: The site MUST ship exactly four Inter faces: regular (400), italic (400),
   bold (700) and bold italic (700). Each MUST contain exactly the shipped character set:
   printable ASCII, all of Latin-1 (U+00A0–U+00FF), the typographic punctuation – — ‘ ’ “ ” … •,
   and → ✓ ✗ where Inter has those glyphs. OpenType features MAY be dropped to save bytes, but
-  kerning MUST be kept.
+  kerning MUST be kept. The four files together MUST be at most 50,000 bytes (measured at
+  47,748, from 11,364 for Regular to 12,560 for Bold Italic; research R3).
 - **FR-003**: Italic and bold-italic text MUST render with Inter's real italic faces, never a
   browser-synthesized slant or weight. This applies to text drawn in Inter only: text drawn in
   the fallback stack (while Inter loads, if it fails, or for characters outside the shipped
@@ -181,49 +215,110 @@ baselines must be complete and correct for the gate to stay meaningful.
   origin. The site MUST NOT request fonts, stylesheets or anything else from a font service or
   any third party.
 - **FR-005**: While Inter is loading, or if it fails to load, text MUST be visible in the
-  system font stack: the same system font families the site uses today. Metric-adjusted
-  fallback faces (Astro's optimized fallbacks) generated from local system fonts in that stack
-  MAY come first, so fallback text occupies the same space as Inter; they change only size and
-  line metrics, never the families offered. If the stack has to be reordered for the fallback
-  faces to be generated, the plan states the exact order.
+  system font stack: the same system font families the site uses today. Every Inter face MUST
+  use `font-display: swap`: text is drawn in the fallback from first paint, with no invisible
+  text beyond the very short block period `swap` allows, and is redrawn in Inter when the face
+  arrives; text whose face fails stays in the fallback for the rest of the page view.
+  Metric-adjusted fallback faces (Astro's optimized fallbacks) generated from local system
+  fonts in that stack MAY come first, so fallback text occupies the same space as Inter. They
+  change only the rendered glyph size (`size-adjust`) and the ascent, descent and line gap used
+  by `line-height: normal`; they set no `font-size` or `line-height`, so the visitor's text size,
+  zoom, minimum font size and text-spacing settings apply to them exactly as to Inter. The only
+  permitted reordering of the stack is moving the generic `sans-serif` from before the emoji
+  families to the end, which Astro needs to generate the fallback faces; no family is added or
+  removed, and the plan states the exact order (research R6).
 - **FR-006**: Swapping from the fallback font to Inter MUST NOT push any page over the existing
   cumulative layout shift budget (CLS below 0.1), which is unchanged. Metric-adjusted fallback
-  faces MUST be used to keep that swap from shifting layout.
+  faces MUST be used to keep that swap from shifting layout. The measure is each page's own CLS
+  in the budget test under the FR-007 conditions, including runs on machines without the
+  adjusted faces' source font; the adjusted faces' presence is checked in the page head
+  (contract F01 to F03).
 - **FR-007**: Every page MUST stay within the performance budget on simulated slow 4G, with
   fonts counted. The total-transfer limit is **150 KB (153,600 bytes) per page**, raised from
   100 KB by Don's decision D3; the LCP (2.5 s), CLS (below 0.1), long-task (200 ms) and
-  JavaScript (10 KB) limits and the measurement conditions are unchanged. Images MUST NOT be
-  shrunk or re-encoded in this feature. If a page still cannot fit, the work stops and is
-  reported.
-- **FR-008**: Code and preformatted blocks MUST continue to use the body font, exactly as today.
+  JavaScript (10 KB) limits and the measurement conditions are unchanged. Total transfer means
+  the sum of the encoded bytes, headers included, of every response a page makes on one load
+  with the browser cache disabled, in Chromium at a 390 × 844 viewport on simulated slow 4G
+  (150 ms round trip, 1.6 Mbps down, 750 kbps up), exactly as the budget test measures it; D3,
+  SC-004 and the plan use this one definition. Images MUST NOT be shrunk or re-encoded in this
+  feature. If a page still cannot fit, implementation halts before the pull request is opened
+  and Don is told which page failed, its measured bytes and their breakdown; the budget is not
+  raised again within this feature.
+- **FR-008**: Code and preformatted blocks MUST continue to use the body font, exactly as today,
+  at today's size, colour and background. Inter, like today's system sans fonts, does not
+  strongly separate some similar characters (for example capital I and lowercase l); that is
+  the trade-off D2 accepts, and a monospace code font is follow-up work.
 - **FR-009**: The site's Content Security Policy MUST continue to allow the fonts with no
-  violation and MUST NOT be loosened for this change.
+  violation and MUST NOT be loosened for this change. The current policy is the page CSP meta
+  tag built from `security.csp` in `astro.config.mjs` (including `default-src 'self'`,
+  `font-src 'self'` and `style-src 'self'` plus `sha256-` hashes) and the header policy in
+  `public/_headers` (`frame-ancestors 'none'; object-src 'none'; base-uri 'self'`). The
+  directives that govern fonts are `font-src` (the font files), `style-src` (the inline
+  `@font-face` style that `<Font />` emits, allowed by its `sha256-` hash, never by
+  `'unsafe-inline'`) and `default-src` (the fallback for both). The only permitted difference in
+  the built policy is the added `sha256-` hash for that style; no source, keyword or directive
+  is added or changed in either policy. A violation is any CSP error the browser reports on a
+  page template.
 - **FR-010**: Every page MUST continue to meet WCAG 2.2 AA and Core Web Vitals "good"
-  thresholds on mobile.
+  thresholds on mobile. For this change that explicitly includes, with Inter and with the
+  fallback: text and non-text contrast (1.4.3, 1.4.11), with no colour token, font size or type
+  scale changed to keep it; resize text (1.4.4), since the fonts set no size of their own and
+  browser text-size and minimum-size settings apply as today; reflow with no horizontal scroll
+  at 320 CSS px and at 200% zoom (1.4.10); no loss of content under the 1.4.12 text-spacing
+  overrides; and visible, unobscured focus (2.4.7, 2.4.11), in light and dark themes and in
+  forced-colours mode.
 - **FR-011**: All 132 visual baselines (66 macOS, 66 Linux) MUST be regenerated as a predicted
-  change, and the visual project MUST pass on both platforms. Linux baselines regenerated
+  change, and the visual project MUST pass on both platforms. The count is every image in
+  `tests/e2e/visual.spec.ts-snapshots/` (132 on 2026-10-03); if a merged change alters the
+  subject list first, the count follows that directory and every image in it is refreshed.
+  macOS baselines are produced with `pnpm run test:visual:update` on a Mac and Linux baselines
+  only with `pnpm run test:visual:update:linux` in Docker. Linux baselines regenerated
   locally in Docker MUST pass CI's visual project on the first run. If they do not, the
-  remaining cause is investigated within this feature (Docker image fonts, rendering flags); if
-  the Docker-to-CI match still cannot be shown, the work stops and the diff details are reported
+  remaining cause is investigated within this feature, in this order: (1) read the CI job's
+  diff images to find the failing subjects and regions; (2) compare the fonts installed and
+  matched in the Docker image and on the CI runner; (3) compare browser versions and rendering
+  flags. If a cause is found and fixed within this feature's scope, the Linux baselines are
+  regenerated in Docker and pushed once more. If no cause is found, or that run also fails, the
+  Docker-to-CI match cannot be shown: the work stops and the diff details are reported
   to Don. Baselines produced by CI (the `visual-baselines` label artifact) MUST NOT be landed
   for this pull request, and issue #62 is not closed until the match is shown.
 - **FR-012**: Fonts MUST load and apply with JavaScript turned off and MUST add no client-side
   script.
 - **FR-013**: The Inter licence (SIL Open Font License) MUST be included alongside the font files
-  in the repository, as the licence requires.
-- **FR-014**: The change MUST add no recurring cost and no new external service.
+  in the repository, as the licence requires: `src/assets/fonts/LICENSE.txt`, the unmodified
+  SIL Open Font License 1.1 text from the Inter 4.1 release, including its copyright notice.
+- **FR-014**: The change MUST add no recurring cost and no new external service, and MUST NOT
+  touch the contact form, the contact API, any data collection or storage, or any secret.
 - **FR-015**: Font files MUST be emitted by the Astro build with fingerprinted (content-hashed)
   filenames and served with `Cache-Control: public, max-age=31536000, immutable`, so browsers
   cache them across page views. The header applies to the four Inter files only; other build
-  files keep today's caching.
+  files keep today's caching. The rule matches the directory `/_astro/fonts/*` in
+  `public/_headers`, not individual filenames, so it keeps matching when a hash changes; Astro
+  writes only Fonts API files to that directory. It combines with the existing rules: font
+  responses keep every `/*` security header unchanged (and the `noindex` header on preview
+  hosts), no other rule sets `Cache-Control`, and the served `Cache-Control` is exactly this one
+  value, replacing the platform default rather than adding to it. When a face's content
+  changes, its hash and URL change and the old URL drops out of the build. The served header is
+  checked by the end-to-end header test against `wrangler dev` and confirmed on the preview
+  deployment during Don's preview check; production serves the same `_headers` file.
 - **FR-016**: A guard test MUST fail when any visual-test subject (shell, not-found page or
-  fixture site) draws a character outside the shipped character set. Fixture text with an
-  uncovered character is changed, or the character is explicitly excluded in the test. Real
-  site content is not checked.
+  fixture site) draws a character outside the shipped character set. Its scope is the source
+  of those subjects: the shell, layout, page, config and script sources, and the fixture site's
+  pages, posts (including generated ones) and projects as the fixture-site build lists them.
+  Fixture text with an uncovered character is changed, or the character is explicitly excluded
+  in the test: exclusions are one named list in the test, each entry with its reason (emoji,
+  box drawing, the soft hyphen and line-break whitespace today; research R5). A failure names
+  each uncovered character, its code point and its file. Real site content is not checked.
 - **FR-017**: Weights other than 400 and 700 MUST resolve through standard CSS font matching
   with no class changes (500 renders as 400; 600 and 800 render as 700), and the browser MUST
   NOT synthesize a weight or slant for text drawn in Inter. Synthesis is not turned off for
-  fallback text (FR-003).
+  fallback text (FR-003). Font weight MUST NOT be the only cue that sets an element apart: each
+  500 → 400 element listed in the plan keeps another cue (colour, underline, size, position or
+  a border), and Don confirms the mapping on the preview.
+- **FR-018**: Only the regular (400) and bold (700) faces MUST be preloaded, because every page
+  draws them; the italic faces MUST NOT be preloaded. A page MUST request each face at most
+  once, so at most four font requests, and a page that draws no italic text MUST NOT request
+  an italic face.
 
 ### Key Entities
 
@@ -243,27 +338,40 @@ baselines must be complete and correct for the gate to stay meaningful.
 ### Measurable Outcomes
 
 - **SC-001**: A pull request whose Linux baselines were regenerated locally in Docker passes the
-  CI visual project on its first run, including the fixture post page (0 subjects failing,
+  CI visual project on its first run, for every subject in `tests/e2e/visual.spec.ts` at the
+  project's existing comparison threshold (`maxDiffPixelRatio` 0.001, unchanged), including the
+  fixture post page (0 subjects failing,
   compared with 1 failing at about 1% of pixels today), using only Docker-generated Linux
   baselines, never CI-artifact images.
 - **SC-002**: 100% of page templates render headings, body, italic, bold and bold-italic text in
-  Inter, with zero synthesized italic or bold faces. Text inside images (SVG diagrams, og image)
-  is not counted.
-- **SC-003**: Zero font requests leave the site's own origin on any page.
+  Inter, with zero synthesized italic or bold faces, as reported by the browser for the face
+  that actually drew each element (its PostScript name, for example `Inter-Italic` rather than
+  `Inter-Regular` on italic text), not only by the CSS. Text inside images (SVG diagrams, og
+  image) is not counted.
+- **SC-003**: Zero font or stylesheet requests leave the site's own origin on any page template,
+  including the not-found page.
 - **SC-004**: Every page measured by the budget test stays at or under 150 KB (153,600 bytes)
   total transfer, with LCP, CLS, long-task and JavaScript limits unchanged, on simulated slow 4G
-  with fonts included. The heaviest page, `/writing/convergence/`, measures about 121,654 bytes
-  (about 31,900 bytes of headroom).
-- **SC-005**: Accessibility checks report zero WCAG 2.2 AA violations on every page template,
-  unchanged from today.
-- **SC-006**: All 132 visual baselines are refreshed in one pull request, and no other visual
-  diff appears.
+  with fonts included, measured as FR-007 defines. The heaviest page, `/writing/convergence/`,
+  measured about 121,654 bytes by that method (research R4; about 31,900 bytes of headroom).
+- **SC-005**: The accessibility checks (axe-core through `@axe-core/playwright` with every
+  WCAG 2.0, 2.1 and 2.2 A and AA tag, plus the existing reflow, zoom, text-spacing,
+  forced-colours and focus checks) report zero violations on every page template in the shared
+  template list, at phone and desktop widths in both themes, unchanged from today.
+- **SC-006**: All 132 visual baselines (every image in the snapshot directory, FR-011) are
+  refreshed in one pull request, and no other visual diff appears: every changed region is
+  explained by text rendering (glyph shapes, widths, and the line breaks and box sizes those
+  cause). A change to colour, borders, images or spacing that text reflow does not explain is a
+  regression to fix, not a baseline to refresh.
 - **SC-007**: Running costs are unchanged (no new service, $0 added per month).
 - **SC-008**: The guard test finds zero uncovered characters in the visual-test subjects, apart
   from characters it explicitly excludes.
-- **SC-009**: A second page view downloads zero font bytes, because the font files carry
-  fingerprinted names and a one-year immutable cache header; no other build file's caching
-  changes.
+- **SC-009**: In a browser with its cache enabled, after a first page view has downloaded the
+  faces it draws, a second page view (another page or the same page by navigation or a normal
+  reload) downloads zero font bytes and sends no revalidation request for them, because the font
+  files carry fingerprinted names and a one-year immutable cache header; no other build file's
+  caching changes. A first view with a cold cache, a hard reload and a disabled cache still
+  download the faces.
 
 ## Decisions
 
@@ -277,7 +385,8 @@ These were settled by Don before the specification and are not open for clarific
 - **D3 - Budget** (revised by Don, 2026-10-03): the per-page total-transfer limit in the budget
   test is raised from 100 KB to **150 KB** (150 × 1024 = 153,600 bytes) on slow 4G, so the site
   can carry its own typeface. The LCP, CLS, long-task and JavaScript limits and the slow-4G
-  conditions are unchanged.
+  conditions are unchanged. The raise stands until a later reviewed change lowers it; lowering
+  it after the card-image follow-up is follow-up work, not part of this feature.
 
   Rationale: the budget is a design decision owned by the maintainer, not a check this feature
   can bend. It is raised deliberately, here in the specification and reviewed with this
@@ -300,14 +409,27 @@ These were settled by Don before the specification and are not open for clarific
 - Only the faces a page actually renders count against its transfer budget. The plan measures
   the heaviest pages with fonts included before committing to an approach.
 - The site's existing Content Security Policy already permits same-origin fonts, so no policy
-  change is expected.
+  change is expected: the page CSP meta built from `astro.config.mjs` carries `font-src 'self'`,
+  and the header policy in `public/_headers` sets only `frame-ancestors`, `object-src` and
+  `base-uri`, none of which governs fonts (checked 2026-10-03).
+- Fonts are same-origin. The preload links carry `crossorigin` (font requests are always made
+  in CORS mode), and a same-origin CORS request needs no `Access-Control-Allow-Origin` header, so
+  no CORS header is added.
+- The change has no screen-reader impact: it alters no markup, text, accessible name, role or
+  reading order, only the glyphs drawn.
+- The shipped character set covers the site's real content as measured on 2026-10-03: its
+  non-ASCII text is © · É ä é – — … → ✓ ✗ (all covered) plus box drawing, ⚠ ✅ ❌ and emoji,
+  which fall back by design (research R5). A future name with letters outside Latin-1 (for
+  example ā, ł or č) draws those letters in the fallback stack.
 - After this change, no visual subject depends on fonts installed on the machine running the
   tests for the shipped weights and styles.
 - Any weight other than 400 and 700 that components request resolves through standard CSS font
   matching (FR-017); the plan lists any such usage.
 - Docker remains the local way to regenerate Linux baselines; the CI label fallback stays
   available for other work but should no longer be needed for a predicted change, and it is not
-  used to land this pull request's baselines (FR-011).
+  used to land this pull request's baselines (FR-011). If Docker is unavailable, Don is asked to
+  start Docker Desktop, as the agent notes already require; this restriction applies to this
+  pull request only and leaves the notes' general fallback in place for other work.
 - This is a major change under Constitution Principle III (design system and visual identity);
   auto-merge stays off and Don approves after checking the preview deployment.
 

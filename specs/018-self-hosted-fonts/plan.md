@@ -7,9 +7,11 @@
 **Major change (Constitution Principle III): YES.** The slice changes the design system and the
 site's visual identity: every page's typeface changes from the system stack to Inter, medium
 (500) text renders lighter and semibold (600) text heavier, and all 132 visual baselines change.
-It also supersedes the "system font stack, no web fonts" part of feature 002's FR-003. It adds no
-dependency, service, cost or CI/deployment configuration change (the subsetting tool is a pinned
-one-off outside `package.json`). Auto-merge stays off, the PR carries the `major-change` label,
+It also supersedes the "system font stack, no web fonts" part of feature 002's FR-003. Its one
+serving-configuration change is the `/_astro/fonts/*` cache rule in the committed
+`public/_headers` file (FR-015), another Principle III trigger covered by the same review. It
+adds no dependency, service, cost, CI workflow, Worker code or contact-data change (the
+subsetting tool is a pinned one-off outside `package.json`). Auto-merge stays off, the PR carries the `major-change` label,
 `tasks.md` carries a `[PREVIEW-CHECK]` task, and the PR body says why.
 
 **Decisions taken after the first plan (Don, 2026-10-03; spec D3, FR-005 to FR-007,
