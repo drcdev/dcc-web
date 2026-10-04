@@ -122,6 +122,9 @@ contrast checks and the existing e2e and build content tests took over what each
 Phase 2 added element shots of the fixture post and story templates, the listing cards, the
 lead story, the Drift series banner, two projects index rows and the contact form. Each is an
 element on fixture content, so a content edit still cannot fail the project.
+The project also sets the footer year to 2026 before every shot (`tests/e2e/footer-year.ts`), so
+a new calendar year cannot fail it; the real year is checked by `SiteFooter.test.ts` and
+`shell.spec.ts`.
 
 | Removed subject (4 images per platform) | Where its coverage lives now |
 |---|---|

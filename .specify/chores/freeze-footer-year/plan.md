@@ -188,7 +188,7 @@ runtime year), as does `shell.spec.ts` line 288.
 
 ### W4: Note the frozen year in `docs/testing.md`
 
-- [ ] W4 done
+- [x] W4 done
 - **Files:** `docs/testing.md`, the "Visual coverage" paragraph (around line 117).
 - **Test:** no behaviour: n/a (documentation).
 - Add one sentence: the visual project sets the footer year to 2026 before every shot
