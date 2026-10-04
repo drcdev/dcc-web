@@ -2,7 +2,7 @@
 // (specs/022 contracts/questions-api.md rows Q01 to Q07, Q09 to Q12; guarantees Q24, Q25, Q27, Q29).
 import { env } from "cloudflare:workers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MODEL_TIMEOUT_MS, QUESTIONS_MODEL } from "../src/questions/config";
+import { BUCKET_CAPACITY, BUCKET_REFILL_PER_DAY, MODEL_TIMEOUT_MS, QUESTIONS_MODEL } from "../src/questions/config";
 import { fakeAi, fakeAssets, makeSource, ORIGIN, run } from "./helpers";
 
 const SLUG = "a-post";
@@ -34,10 +34,17 @@ async function storedRows() {
     .results;
 }
 
+async function setBucket(tokens: number, updatedAt: number) {
+  await env.DB.prepare("UPDATE usage_bucket SET tokens = ?, updated_at = ? WHERE id = 1").bind(tokens, updatedAt).run();
+}
+async function tokens() {
+  return (await env.DB.prepare("SELECT tokens FROM usage_bucket WHERE id = 1").first<{ tokens: number }>())!.tokens;
+}
+
 let logs: string[];
 beforeEach(async () => {
   await env.DB.prepare("DELETE FROM question_sets").run();
-  await env.DB.prepare("UPDATE usage_bucket SET tokens = 0, updated_at = 0 WHERE id = 1").run();
+  await setBucket(BUCKET_CAPACITY, Date.now());
   logs = [];
   vi.spyOn(console, "log").mockImplementation((line: unknown) => {
     logs.push(String(line));
@@ -309,5 +316,138 @@ describe("questions API: privacy (FR-019, FR-022)", () => {
     const res = await run(req, { AI: fakeAi({ text: MODEL_TEXT }), ASSETS: assets });
     expect(res.headers.get("Set-Cookie")).toBeNull();
     for (const [name] of get.mock.calls) expect(String(name).toLowerCase()).not.toBe("cf-connecting-ip");
+  });
+});
+
+describe("questions API: the site-wide bucket (Q08, Q20 to Q23, Q28)", () => {
+  const FIXED = Date.parse("2026-10-04T12:00:00.000Z");
+
+  it("Q08: an empty bucket is 429 with Retry-After equal to retryAfter and no model call", async () => {
+    vi.useFakeTimers({ now: FIXED, toFake: ["Date"] });
+    await setBucket(0, FIXED);
+    const { assets, hash } = await setup();
+    const ai = fakeAi({ text: MODEL_TEXT });
+    const res = await run(request({ slug: SLUG, hash }), { AI: ai, ASSETS: assets });
+    expect(res.status).toBe(429);
+    const body = (await res.json()) as { ok: boolean; error: string; retryAfter: number };
+    expect(body).toEqual({ ok: false, error: "limited", retryAfter: Math.ceil(86_400 / BUCKET_REFILL_PER_DAY) });
+    expect(res.headers.get("Retry-After")).toBe(String(body.retryAfter));
+    expect(ai.calls).toHaveLength(0);
+    expect(await storedRows()).toHaveLength(0);
+  });
+
+  it("Q20: a cached press never changes the bucket, even when it is empty", async () => {
+    const { assets, hash } = await setup();
+    await run(request({ slug: SLUG, hash }), { AI: fakeAi({ text: MODEL_TEXT }), ASSETS: assets });
+    vi.useFakeTimers({ now: FIXED, toFake: ["Date"] });
+    await setBucket(0, FIXED);
+    const ai = fakeAi({ text: MODEL_TEXT });
+    const res = await run(request({ slug: SLUG, hash }), { AI: ai, ASSETS: assets });
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { source: string }).source).toBe("cached");
+    expect(await tokens()).toBe(0);
+    expect(ai.calls).toHaveLength(0);
+  });
+
+  it("Q21: with capacity N and a frozen clock the (N+1)th generation is 429 and the model ran N times", async () => {
+    vi.useFakeTimers({ now: FIXED, toFake: ["Date"] });
+    const N = 3;
+    await setBucket(N, FIXED);
+    const { assets, hash } = await setup();
+    const ai = fakeAi({ text: MODEL_TEXT });
+    const statuses: number[] = [];
+    for (let i = 0; i < N + 1; i++) {
+      statuses.push((await run(request({ slug: SLUG, hash, fresh: true }), { AI: ai, ASSETS: assets })).status);
+    }
+    expect(statuses).toEqual([200, 200, 200, 429]);
+    expect(ai.calls).toHaveLength(N);
+  });
+
+  it("New questions takes a token, and a cached set is served when the bucket is empty", async () => {
+    vi.useFakeTimers({ now: FIXED, toFake: ["Date"] });
+    await setBucket(5, FIXED);
+    const { assets, hash } = await setup();
+    const ai = fakeAi({ text: MODEL_TEXT });
+    await run(request({ slug: SLUG, hash }), { AI: ai, ASSETS: assets });
+    expect(await tokens()).toBe(4);
+    await run(request({ slug: SLUG, hash, fresh: true }), { AI: ai, ASSETS: assets });
+    expect(await tokens()).toBe(3);
+    await setBucket(0, FIXED);
+    const cached = await run(request({ slug: SLUG, hash }), { AI: ai, ASSETS: assets });
+    expect(cached.status).toBe(200);
+    expect(((await cached.json()) as { source: string }).source).toBe("cached");
+  });
+
+  describe("Q22: a failure after the take refunds the token", () => {
+    const cases: [string, (hash: string) => { ai: Ai; assets: Fetcher }, number][] = [
+      ["a model error", () => ({ ai: fakeAi({ throws: new Error("boom") }), assets: undefined as never }), 503],
+      ["a malformed answer", () => ({ ai: fakeAi({ text: "not questions" }), assets: undefined as never }), 503],
+    ];
+    it.each(cases)("%s", async (_name, make, status) => {
+      vi.useFakeTimers({ now: FIXED, toFake: ["Date"] });
+      await setBucket(5, FIXED);
+      const { assets, hash } = await setup();
+      const res = await run(request({ slug: SLUG, hash }), { AI: make(hash).ai, ASSETS: assets });
+      expect(res.status).toBe(status);
+      expect(await tokens()).toBe(5);
+    });
+
+    it("a D1 failure while storing the set", async () => {
+      vi.useFakeTimers({ now: FIXED, toFake: ["Date"] });
+      await setBucket(5, FIXED);
+      const { assets, hash } = await setup();
+      await env.DB.prepare("DROP TRIGGER IF EXISTS fail_store").run();
+      await env.DB.prepare(
+        "CREATE TRIGGER fail_store BEFORE INSERT ON question_sets BEGIN SELECT RAISE(ABORT, 'forced'); END",
+      ).run();
+      try {
+        const res = await run(request({ slug: SLUG, hash }), { AI: fakeAi({ text: MODEL_TEXT }), ASSETS: assets });
+        expect(res.status).toBe(503);
+        expect(await tokens()).toBe(5);
+      } finally {
+        await env.DB.prepare("DROP TRIGGER IF EXISTS fail_store").run();
+      }
+    });
+
+    it("an asset failure", async () => {
+      vi.useFakeTimers({ now: FIXED, toFake: ["Date"] });
+      await setBucket(5, FIXED);
+      const { hash, source } = await setup();
+      const broken = { fetch: async () => new Response("{not json", { status: 200 }) } as unknown as Fetcher;
+      void source;
+      const res = await run(request({ slug: SLUG, hash }), { AI: fakeAi({ text: MODEL_TEXT }), ASSETS: broken });
+      expect(res.status).toBe(503);
+      expect(await tokens()).toBe(5);
+    });
+  });
+
+  it("Q23: 404 not_found and 404 stale never take a token or call the model", async () => {
+    vi.useFakeTimers({ now: FIXED, toFake: ["Date"] });
+    await setBucket(5, FIXED);
+    const { assets } = await setup();
+    const ai = fakeAi({ text: MODEL_TEXT });
+    const missing = await run(request({ slug: "no-such-post", hash: "c".repeat(64) }), { AI: ai, ASSETS: assets });
+    expect(missing.status).toBe(404);
+    const stale = await run(request({ slug: SLUG, hash: "d".repeat(64) }), { AI: ai, ASSETS: assets });
+    expect(stale.status).toBe(404);
+    expect(ai.calls).toHaveLength(0);
+    expect(await tokens()).toBe(5);
+  });
+
+  it("Q28: two concurrent first generations each take one token, both answer generated, one row is stored", async () => {
+    vi.useFakeTimers({ now: FIXED, toFake: ["Date"] });
+    await setBucket(5, FIXED);
+    const { assets, hash } = await setup();
+    const ai = fakeAi({ text: MODEL_TEXT });
+    const [a, b] = await Promise.all([
+      run(request({ slug: SLUG, hash }), { AI: ai, ASSETS: assets }),
+      run(request({ slug: SLUG, hash }), { AI: ai, ASSETS: assets }),
+    ]);
+    expect(a.status).toBe(200);
+    expect(b.status).toBe(200);
+    expect(((await a.json()) as { source: string }).source).toBe("generated");
+    expect(((await b.json()) as { source: string }).source).toBe("generated");
+    expect(await tokens()).toBe(3);
+    expect(await storedRows()).toHaveLength(1);
   });
 });

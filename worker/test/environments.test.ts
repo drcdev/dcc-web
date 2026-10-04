@@ -51,4 +51,12 @@ describe(`the ${expected} environment`, () => {
     expect(crossed.status).toBe(401);
     expect(await crossed.text()).not.toContain(`Sender ${expected}`);
   });
+
+  it("keeps its own usage bucket row: draining it leaves no trace in the other environment's data (Q26)", async () => {
+    // Each Vitest project has its own local D1, so a drained bucket here is visible only here.
+    await env.DB.prepare("UPDATE usage_bucket SET tokens = 0, updated_at = 1 WHERE id = 1").run();
+    const row = await env.DB.prepare("SELECT tokens FROM usage_bucket WHERE id = 1").first<{ tokens: number }>();
+    expect(row?.tokens).toBe(0);
+    expect(env.EXPECTED_DATABASE_NAME).not.toBe(env.OTHER_DATABASE_NAME);
+  });
 });

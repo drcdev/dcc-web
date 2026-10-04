@@ -4,6 +4,7 @@
 import { json } from "../http";
 import { isSameOriginRequest } from "../same-origin";
 import { getSet, storeSet } from "./cache";
+import { takeToken, refundToken } from "./bucket";
 import { BODY_MAX_BYTES, QUESTIONS_MODEL } from "./config";
 import { generate } from "./generate";
 import { logOutcome, type QuestionsOutcome } from "./log";
@@ -79,6 +80,7 @@ export async function handleQuestions(request: Request, env: Env): Promise<Respo
   if (typeof hash !== "string" || !HASH.test(hash)) return fail(400, "invalid", "invalid");
   if (typeof fresh !== "boolean") return fail(400, "invalid", "invalid");
 
+  let taken = false;
   try {
     if (!fresh) {
       const cached = await getSet(env.DB, slug, hash);
@@ -91,16 +93,29 @@ export async function handleQuestions(request: Request, env: Env): Promise<Respo
     if (!isSource(file)) throw new Error("question source has the wrong shape");
     if (file.hash !== hash) return fail(404, "stale", "stale");
 
-    // The site-wide token is taken here (Phase 4, US3).
+    // One site-wide token per generation, taken after the cheap checks and before the model call
+    // (contract step 7). Every failure from here on gives it back.
+    const take = await takeToken(env.DB, Date.now());
+    if (!take.ok) {
+      logOutcome("limited");
+      return json({ ok: false, error: "limited", retryAfter: take.retryAfter }, 429, {
+        "Retry-After": String(take.retryAfter),
+      });
+    }
+    taken = true;
 
     const output = await generate(env.AI, file, fresh);
     const result = validateQuestions(output, file.text);
-    if (!result.ok) return fail(503, "unavailable", "malformed");
+    if (!result.ok) {
+      await refundToken(env.DB);
+      return fail(503, "unavailable", "malformed");
+    }
 
     if (fresh) return success("fresh", result.questions);
     await storeSet(env.DB, slug, hash, result.questions, QUESTIONS_MODEL);
     return success("generated", result.questions);
   } catch (error) {
+    if (taken) await refundToken(env.DB);
     return fail(503, "unavailable", "unavailable", {}, error);
   }
 }

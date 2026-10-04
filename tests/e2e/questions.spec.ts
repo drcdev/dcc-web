@@ -162,6 +162,45 @@ test.describe("questions panel", () => {
     await expect(status(page)).toContainText("Try again in about 3 hours.");
   });
 
+  for (const [seconds, wait] of [
+    [1, "1 minute"],
+    [59, "1 minute"],
+    [60, "1 minute"],
+    [61, "2 minutes"],
+    [5400, "90 minutes"],
+    [5401, "2 hours"],
+    [7200, "2 hours"],
+  ] as const) {
+    test(`on 429 with retryAfter ${seconds} the wait reads "${wait}", announced in the status region (P15)`, async ({ page }) => {
+      await stubQuestionsApi(page, [
+        { status: 429, headers: { "Retry-After": String(seconds) }, body: { ok: false, error: "limited", retryAfter: seconds } },
+      ]);
+      await page.goto(POST);
+      await getButton(page).focus();
+      await getButton(page).click();
+      await expect(status(page)).toHaveText(
+        `Questions are unavailable for now because today's limit has been reached. Try again in about ${wait}.`,
+      );
+      await expect(getButton(page)).toBeFocused();
+      await expect(getButton(page)).not.toHaveAttribute("aria-disabled", "true");
+    });
+  }
+
+  test("keeps the previous questions and focus on New questions when it is limited (P15)", async ({ page }) => {
+    await stubQuestionsApi(page, [
+      ok(SET),
+      { status: 429, headers: { "Retry-After": "432" }, body: { ok: false, error: "limited", retryAfter: 432 } },
+    ]);
+    await page.goto(POST);
+    await getButton(page).click();
+    await expect(items(page)).toHaveCount(3);
+    await newButton(page).click();
+    await expect(status(page)).toContainText("today's limit has been reached. Try again in about 8 minutes.");
+    await expect(items(page)).toHaveCount(3);
+    await expect(newButton(page)).toBeFocused();
+    await expect(newButton(page)).not.toHaveAttribute("aria-disabled", "true");
+  });
+
   test("sets no cookie and writes nothing to local or session storage (FR-019)", async ({ page }) => {
     await stubQuestionsApi(page, [ok(SET), ok(["A new question?", "Another new one?"], "fresh")]);
     await page.goto(POST);
