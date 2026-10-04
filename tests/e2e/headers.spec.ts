@@ -151,6 +151,33 @@ test("a served font file is immutable and carries the full security header set",
   }
 });
 
+// The monospace files have no preload link, so the URL comes from the JetBrains Mono @font-face
+// rule (M12, FR-011). Second layer over the unit test: only the served response shows that the
+// `_headers` rule reaches the mono file path.
+test("a served mono font file is immutable and carries the full security header set", async ({ page, request }) => {
+  await page.goto("/");
+  const href = await page.evaluate(() => {
+    for (const style of document.querySelectorAll("style")) {
+      const css = style.textContent ?? "";
+      for (const face of css.match(/@font-face\s*\{[^}]*\}/g) ?? []) {
+        if (!/font-family:\s*["']?JetBrains Mono-[0-9a-f]+["']?\s*;/.test(face)) continue;
+        const url = /url\(\s*["']?([^"')]+\.woff2)["']?\s*\)/.exec(face)?.[1];
+        if (url) return url;
+      }
+    }
+    return null;
+  });
+  expect(href, "a JetBrains Mono @font-face on the home page").toMatch(/^\/_astro\/fonts\/[^/]+\.woff2$/);
+  const response = await request.get(href!);
+  expect(response.status()).toBe(200);
+  const headers = response.headers();
+  expect(headers["content-type"]).toBe("font/woff2");
+  expect(headers["cache-control"]).toBe("public, max-age=31536000, immutable");
+  for (const [name, value] of Object.entries(HEADERS)) {
+    expect(headers[name], name).toBe(value);
+  }
+});
+
 test("the page stylesheet is not marked immutable", async ({ page, request }) => {
   await page.goto("/");
   const href = await page.locator('link[rel="stylesheet"]').first().getAttribute("href");

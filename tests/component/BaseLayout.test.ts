@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
 import BaseLayout from "../../src/layouts/BaseLayout.astro";
 import { byName, classList, focusable, tags } from "./html.ts";
+import { INTER_UNICODE_RANGE, MONO_FALLBACK_STACK } from "../../src/lib/fonts/charset.ts";
 
 const themeInitSource = readFileSync(
   fileURLToPath(new URL("../../src/scripts/theme-init.js", import.meta.url)),
@@ -199,12 +200,18 @@ describe("fonts", () => {
   // FR-006, FR-012). If the container cannot resolve the Fonts API virtual module, these
   // assertions move to the build test, as the tasks say.
   const head = () => html.slice(html.indexOf("<head"), html.indexOf("</head>"));
-  const fontStyle = () => {
+  const fontStyles = () => {
     const styles = [...head().matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1]!);
-    const found = styles.filter((s) => s.includes("@font-face"));
+    return styles.filter((s) => s.includes("@font-face"));
+  };
+  // The Fonts API emits one style element per family; each is picked by the variable it defines.
+  const styleFor = (variable: string) => {
+    const found = fontStyles().filter((s) => s.includes(`${variable}:`));
     expect(found).toHaveLength(1);
     return found[0]!;
   };
+  const fontStyle = () => styleFor("--font-inter");
+  const monoStyle = () => styleFor("--font-jetbrains-mono");
   const faces = (css: string) => [...css.matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]!);
   const prop = (face: string, name: string) => new RegExp(`(?:^|[;\\s])${name}:\\s*([^;]+);?`).exec(face)?.[1]?.trim() ?? "";
   // Astro registers the family under a hashed name (Inter-<hash>), so the family is matched by shape.
@@ -266,6 +273,49 @@ describe("fonts", () => {
 
   it("names no off-origin URL in the font markup", () => {
     const links = head().match(/<link[^>]*preload[^>]*>/g)?.join("") ?? "";
-    expect(((fontStyle() + links).match(/https?:\/\/[^\s"')]+/g)) ?? []).toEqual([]);
+    expect(((fontStyles().join("") + links).match(/https?:\/\/[^\s"')]+/g)) ?? []).toEqual([]);
+  });
+
+  // M01 to M05, FR-005, FR-006, FR-007: the monospace family, same mechanism, no preload.
+  const isMono = (face: string) => /^JetBrains Mono-[0-9a-f]+$/.test(prop(face, "font-family").replace(/["']/g, ""));
+  const isMonoFallback = (face: string) =>
+    /^JetBrains Mono-[0-9a-f]+ fallback: Courier New$/.test(prop(face, "font-family").replace(/["']/g, ""));
+  const squash = (s: string) => s.replace(/\s+/g, "");
+
+  it("holds four JetBrains Mono faces, swapped, ranged, same-origin woff2, no local() (M01, M02)", () => {
+    const mono = faces(monoStyle()).filter(isMono);
+    expect(mono).toHaveLength(4);
+    const combos = mono.map((f) => `${prop(f, "font-weight")} ${prop(f, "font-style")}`).sort();
+    expect(combos).toEqual(["400 italic", "400 normal", "700 italic", "700 normal"]);
+    for (const face of mono) {
+      expect(prop(face, "font-display")).toBe("swap");
+      expect(squash(prop(face, "unicode-range"))).toBe(squash(INTER_UNICODE_RANGE.join(",")));
+      expect(face).toMatch(/src:\s*url\(\s*["']?\/_astro\/fonts\/[^"')]+\.woff2["']?\s*\)\s*format\(["']woff2["']\)/);
+      expect(face).not.toContain("local(");
+    }
+  });
+
+  it("holds four Courier New fallback faces with no url() (M03)", () => {
+    const fallbacks = faces(monoStyle()).filter(isMonoFallback);
+    expect(fallbacks).toHaveLength(4);
+    for (const face of fallbacks) {
+      expect(face).toMatch(/src:\s*local\(["']Courier New(?: Bold)?["']\)/);
+      expect(face).not.toContain("url(");
+      expect(prop(face, "size-adjust")).not.toBe("");
+    }
+  });
+
+  it("lists the mono family, its fallback family, then the mono stack ending monospace (M03)", () => {
+    const value = /--font-jetbrains-mono:\s*([^;}]+)/.exec(monoStyle())?.[1] ?? "";
+    const families = value.split(",").map((f) => f.trim().replace(/["']/g, ""));
+    expect(families[0]!).toMatch(/^JetBrains Mono-[0-9a-f]+$/);
+    expect(families[1]!).toMatch(/fallback: Courier New/);
+    for (const family of MONO_FALLBACK_STACK) expect(families).toContain(family.replace(/["']/g, ""));
+    expect(families.at(-1)).toBe("monospace");
+  });
+
+  it("preloads only the two Inter upright files, nothing mono (M04)", () => {
+    const preloads = byName(head(), "link").filter((l) => l.attrs.rel === "preload" && l.attrs.as === "font");
+    expect(preloads).toHaveLength(2);
   });
 });
