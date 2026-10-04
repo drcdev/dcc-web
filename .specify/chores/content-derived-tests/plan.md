@@ -284,7 +284,7 @@ item leaves `verify:quick` green, along with its targeted files:
   The test asserts the helper's behaviour against the files, never against today's slugs.
 - **Coverage mapping:** none removed.
 
-### W2. Projects content unit test
+### W2. Projects content unit test (Done: no false positives on any slug; FR-082 and fit rules run per project)
 
 - **Files:** `tests/unit/content/projects-content.test.ts`.
 - **Test:** existing, rewritten, **unit layer**. Seen to pass before and after; the proof that

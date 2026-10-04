@@ -1,38 +1,24 @@
-// US5 and FR-022, FR-023, FR-082: the four real projects are in the four-part shape, drafts until
-// Don publishes them, and no site code names one. Unit layer: it reads the files and the schema, and builds nothing.
-import { createRequire } from "node:module";
+// US5 and FR-022, FR-023, FR-082: every real project is in the four-part shape, a draft with its review comment or published without it, and no site code names one. Unit layer: it reads the files and the schema, and builds nothing.
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { z } from "astro/zod";
 import { projectSchema } from "../../../src/content/schemas/project.ts";
 import { validateProjectStory } from "../../../src/lib/content/project-story.ts";
-
-const fromAstro = createRequire(createRequire(import.meta.url).resolve("astro/package.json"));
-const { parseFrontmatter } = (await import(
-  pathToFileURL(fromAstro.resolve("@astrojs/internal-helpers/frontmatter")).href
-)) as { parseFrontmatter: (code: string) => { frontmatter: Record<string, unknown>; content: string } };
+import { projects } from "../../helpers/content.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
-const slugs = ["focus-pocus", "drcdev-github-io", "flux", "tempo"];
-// Projects Don has reviewed and published: no longer drafts, and the review comment is gone.
-const published = ["focus-pocus", "drcdev-github-io", "flux", "tempo"];
-const read = (slug: string) => {
-  const path = resolve(root, `src/content/projects/${slug}.mdx`);
-  const source = readFileSync(path, "utf-8");
-  return { path, source, ...parseFrontmatter(source) };
-};
 const removed = ["order", "comparison", "demo", "clips", "pros", "cons"];
 
-describe.each(slugs)("the %s project file", (slug) => {
-  const { source, frontmatter, content } = read(slug);
+describe.each(projects.map((entry) => [entry.slug, entry] as const))("the %s project file", (_slug, entry) => {
+  const { data: frontmatter, body: content } = entry;
+  const source = readFileSync(resolve(root, entry.file), "utf-8");
 
-  it("is a draft with its review comment until Don publishes it", () => {
-    const isPublished = published.includes(slug);
-    expect(frontmatter.draft).toBe(!isPublished);
-    if (isPublished) expect(content).not.toMatch(/DRAFT FOR REVIEW/);
-    else expect(content).toMatch(/\{\/\*\s*DRAFT FOR REVIEW:/);
+  it("is a draft with its review comment, or published without it", () => {
+    expect(frontmatter.draft === true).toBe(entry.draft);
+    if (entry.draft) expect(content).toMatch(/\{\/\*\s*DRAFT FOR REVIEW:/);
+    else expect(content).not.toMatch(/DRAFT FOR REVIEW/);
   });
 
   it("passes the schema and has none of the removed settings", () => {
@@ -43,10 +29,21 @@ describe.each(slugs)("the %s project file", (slug) => {
   });
 
   it("passes the story check with exactly one bold option", () => {
-    const table = validateProjectStory(`src/content/projects/${slug}.mdx`, content);
+    const table = validateProjectStory(entry.file, content);
     expect(table.options.filter((option) => option.chosen)).toHaveLength(1);
     expect(table.options.length).toBeGreaterThanOrEqual(3);
     expect(table.constraints).toHaveLength(4);
+  });
+
+  it("gives every option one fit per constraint, over distinct non-empty constraint labels", () => {
+    const table = validateProjectStory(entry.file, content);
+    const labels = table.constraints.map((c) => c.label);
+    expect(labels.every((label) => label.trim() !== "")).toBe(true);
+    expect(new Set(labels).size).toBe(labels.length);
+    for (const option of table.options) {
+      expect(option.fits).toHaveLength(table.constraints.length);
+      for (const fit of option.fits) expect(["yes", "partly", "no"]).toContain(fit);
+    }
   });
 
   it("has its own invitation sentence and pictures that name a part", () => {
@@ -58,36 +55,6 @@ describe.each(slugs)("the %s project file", (slug) => {
   });
 });
 
-describe("Focus Pocus", () => {
-  const { frontmatter, content } = read("focus-pocus");
-  it("chooses JXA behind an MCP server and keeps the packing-list picture without a part", () => {
-    expect(validateProjectStory("focus-pocus.mdx", content).options.find((o) => o.chosen)?.name).toBe("JXA behind an MCP server");
-    const visuals = frontmatter.visuals as Record<string, { part?: string }>;
-    expect(visuals["packing-list"]).toBeDefined();
-    expect(visuals["packing-list"]!.part).toBeUndefined();
-  });
-  it("has a stand-in address", () => {
-    expect(frontmatter.standIn).toMatchObject({ href: "https://drc.dev/projects/focus-pocus" });
-  });
-});
-
-describe("the migrated tables follow FR-022", () => {
-  it("maps Flux's fit answers and chosen option", () => {
-    const table = validateProjectStory("flux.mdx", read("flux").content);
-    expect(table.constraints.map((c) => c.label)).toEqual([
-      "My own design",
-      "Easy to change",
-      "Works on hosted Ghost",
-      "Room for AI features",
-    ]);
-    expect(table.options.map((o) => [o.name, o.chosen, o.fits])).toEqual([
-      ["Ghost's stock Casper theme", false, ["no", "no", "yes", "no"]],
-      ["A marketplace theme, customised", false, ["partly", "partly", "yes", "partly"]],
-      ["A theme built from scratch", true, ["yes", "yes", "yes", "yes"]],
-    ]);
-  });
-});
-
 function files(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
@@ -96,11 +63,13 @@ function files(dir: string): string[] {
 }
 
 describe("no site code names a project (FR-082)", () => {
-  it("has no file under src/components, layouts, pages, lib or styles, nor astro.config.mjs, that names focus-pocus", () => {
-    const targets = ["components", "layouts", "pages", "lib", "styles"].flatMap((d) => files(resolve(root, "src", d)));
-    targets.push(resolve(root, "astro.config.mjs"));
-    const named = targets.filter((path) => /focus[-_ ]?pocus/i.test(readFileSync(path, "utf-8")));
-    expect(named.map((p) => p.slice(root.length))).toEqual([]);
+  const targets = ["components", "layouts", "pages", "lib", "styles"].flatMap((d) => files(resolve(root, "src", d)));
+  targets.push(resolve(root, "astro.config.mjs"));
+  const sources = targets.map((path) => ({ path: path.slice(root.length), text: readFileSync(path, "utf-8") }));
+
+  it.each(projects.map((entry) => entry.slug))("has no file under src/components, layouts, pages, lib or styles, nor astro.config.mjs, that names %s", (slug) => {
+    const quoted = new RegExp(`["'\`]${slug}["'\`]|/projects/${slug}\\b`);
+    expect(sources.filter(({ text }) => quoted.test(text)).map(({ path }) => path)).toEqual([]);
   });
 });
 
