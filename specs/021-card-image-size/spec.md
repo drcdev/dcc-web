@@ -27,6 +27,15 @@ total-transfer budget that feature 018 (self-hosted fonts, PR #72) set.
 This feature makes card images card-sized and lighter, so listing pages keep clear headroom
 under the unchanged 150 KB budget as series and listings grow.
 
+## Clarifications
+
+### Session 2026-10-04
+
+- Q: Which set of widths should a card image offer? → A: 320, 400 and 640 pixels; the 480 version is dropped.
+- Q: Should the card's declared display width on phones be corrected from the full screen width to the card's real width? → A: Yes. The phone value becomes the card's real width (about the screen width minus 2rem of page margins), so every phone up to about 430 pixels wide picks the 400 version; the tablet and desktop values stay as they are.
+- Q: How should the lower card quality be chosen? → A: The plan picks one WebP quality value between 60 and 70 by comparing file sizes and appearance on the fixture and convergence images.
+- Q: Is SC-002 a hard target or a measurement reported in the PR? → A: A reported measurement: before and after figures for the convergence page go in the PR body. The automated gates are the unchanged 150 KB budget and a fixture-site test that no phone-width card download is wider than about 400 pixels (SC-001).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Lighter series and listing pages on a phone (Priority: P1)
@@ -111,16 +120,21 @@ with images) passes with clear headroom.
 
 ### Functional Requirements
 
-- **FR-001**: Every post card with an image MUST offer a card-sized image version about 400
-  pixels wide.
+- **FR-001**: Every post card with an image MUST offer exactly three width versions: 320, 400
+  and 640 pixels (the 400 version is the card-sized one; today's 480 version is dropped).
 - **FR-002**: On a phone-width screen at normal pixel density (the viewport the page budget
   check uses), the browser MUST choose the card-sized version for every card image, on every
-  page that shows post cards.
+  page that shows post cards. To make this hold on real phones too, the card's declared phone
+  display width MUST be the card's real width (about the screen width minus 2rem of page
+  margins) instead of the full screen width, so every phone up to about 430 pixels wide at
+  normal density picks the 400 version. The tablet and desktop display widths stay as they are.
 - **FR-003**: Card images MUST be encoded at a lower quality than the site's general image
   quality, chosen so the image shows no visible artefacts at the size the card is drawn. The
-  exact value is set in the plan.
+  plan picks one WebP quality value between 60 and 70 by comparing file sizes and appearance on
+  the fixture and convergence images.
 - **FR-004**: Cards MUST still offer versions wide enough for wider and high-density screens; the
-  widest version a card offers MUST NOT be narrower than the widest it offers today.
+  widest version a card offers MUST NOT be narrower than the widest it offers today (640
+  pixels), and the narrowest stays at 320 pixels so wide 1x screens download no more than today.
 - **FR-005**: Card images MUST keep their current shape, crop, alternative text, intrinsic width
   and height, lazy loading and image format.
 - **FR-006**: The lower card quality MUST apply only to post card images. The lead story, post
@@ -147,7 +161,9 @@ with images) passes with clear headroom.
   viewport, no downloaded card image is wider than about 400 pixels.
 - **SC-002**: The combined weight of the card images on the convergence series page falls by at
   least 40% from today's 79 KB (to about 47 KB or less), and the page's total transfer falls
-  below 100 KB.
+  below 100 KB. This is a reported measurement, not a hard target or an automated check: the
+  before and after figures go in the PR body. The automated gates are the unchanged 150 KB
+  budget (SC-003) and a fixture-site test of SC-001.
 - **SC-003**: Every page template, and the fixture site's 12-card all-posts page, passes the
   unchanged 150 KB total-transfer budget along with the existing LCP, layout-shift, long-task and
   JavaScript limits.
@@ -161,8 +177,8 @@ with images) passes with clear headroom.
   card design, so one change covers them all.
 - The phone-width viewport and network settings are those the existing page budget check uses
   (390 pixels wide, normal pixel density).
-- The site's images are already WebP; the card stays WebP and only its quality drops. The plan
-  picks the value (expected somewhere around 60 to 70) by comparing file size and appearance.
+- The site's images are already WebP; the card stays WebP and only its quality drops, to a
+  value between 60 and 70 that the plan picks (FR-003).
 - The predicted visual change: the fixture listing-cards visual subject shows lighter, card-sized
   images, so its baselines are refreshed on both platforms as part of this feature. That diff is
   predicted here, so it is not a regression. Other visual subjects should not change; any other
