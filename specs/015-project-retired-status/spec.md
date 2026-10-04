@@ -10,6 +10,16 @@
 
 This feature implements GitHub issue #50.
 
+## Clarifications
+
+### Session 2026-10-03
+
+- Q: When Tempo's retired note names Cadence, what should "Cadence" link to? → A: Name Cadence in plain text with no link until a Cadence project story exists (follow-up).
+- Q: What forms should a retired project's replacement be allowed to take in content? → A: Either a reference to another project on the site (checked at build time), or a name with an optional https address for anything off the site.
+- Q: Which colour should the "Retired" status pill use? → A: A new muted tone (for example a mauve or grey border and background, AA contrast in both light and dark themes) used only for Retired. This is a design-system change and so a major change under Principle III.
+- Q: In the production build, what should a retired project's note do when its replacement is a draft project with no page there? → A: Name the replacement by its title without a link in production; link it in builds that include drafts.
+- Q: Should the retired note's wording be one fixed sentence or per-project text? → A: One fixed template sentence plus the replacement clause when there is one; no per-project note text.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - A reader sees that a project is retired (Priority: P1)
@@ -100,7 +110,8 @@ on stories 1 and 2.
 - A retired project names itself as its replacement: the build fails with a clear message.
 - A retired project names a replacement project that is a draft: in a build that shows drafts
   the link works; in the production build, where the draft has no page, the replacement is
-  named without a link rather than linking to a page that does not exist.
+  named by its title without a link rather than linking to a page that does not exist. The
+  production build does not fail.
 - A retired project that is also a draft: the draft notice and the retired note both show
   outside production, and the project is left out of production as any draft is.
 - The page is read with JavaScript turned off: the status and the retired note are still
@@ -117,22 +128,28 @@ on stories 1 and 2.
 - **FR-003**: A retired project's story page MUST be built and shown in full, with nothing
   removed because of the status.
 - **FR-004**: Wherever a project's status is shown (index row and story header), a retired
-  project MUST show the label "Retired", visually distinct from the other statuses and
-  meeting the site's contrast requirements in both light and dark themes.
+  project MUST show the label "Retired" in the shared status pill using a new muted tone (for
+  example a mauve or grey border and background) that is used only for Retired, is distinct
+  from the existing neutral, sage, lavender and rust tones, and meets AA contrast in both
+  light and dark themes. Adding this tone is a design-system change (see Assumptions).
 - **FR-005**: A retired project's story page MUST show a short plain-language note near the
-  top of the story saying the project is retired and no longer used or maintained.
+  top of the story saying the project is retired and no longer used or maintained. The note
+  is one fixed sentence from the template, followed by a replacement clause when a
+  replacement is named; projects cannot supply their own note text.
 - **FR-006**: A retired project MAY name the project that replaced it. The replacement MUST be
-  one of: another project on the site, or a name with an optional https address for a
-  replacement off the site.
+  exactly one of: a reference to another project on the site (checked at build time), or a
+  name with an optional https address for a replacement off the site.
 - **FR-007**: When a retired project names a replacement, the retired note MUST name it; it
   MUST link to the replacement's story page when the replacement is a project with a page in
   the current build, link to its address when it is an off-site replacement with an address,
-  and otherwise name it without a link.
+  and otherwise name it without a link. A replacement project that is a draft is linked in
+  builds that include drafts and named by its title without a link in the production build.
 - **FR-008**: Content that names a replacement on a project not marked retired, names a
   missing project, or names itself as its replacement MUST fail the build with a clear error
   that names the file.
 - **FR-009**: Tempo's content MUST be changed to the retired status with Cadence named as its
-  replacement.
+  replacement in plain text (an off-site name with no address), so the note names Cadence
+  without a link until a Cadence project story exists.
 - **FR-010**: The status and the retired note MUST be readable with JavaScript turned off and
   MUST be exposed to assistive technology as text, not only as colour.
 - **FR-011**: The content template for new projects MUST document the retired status and the
@@ -164,16 +181,21 @@ on stories 1 and 2.
 ## Assumptions
 
 - **Cadence has no project page yet.** There is no Cadence entry in the projects collection
-  and no public Cadence address is known, so Tempo names Cadence without a link for now. Once
-  a Cadence project exists, Tempo's replacement is switched to point to it (follow-up). This
-  is the main open question for clarify: Don may instead want Tempo to link to an external
-  Cadence address now, if one exists.
+  and no public Cadence address is known, so Tempo names Cadence in plain text without a link
+  (confirmed in clarify). Once a Cadence project exists, Tempo's replacement is switched to
+  point to it (follow-up).
 - The retired note sits with the story header (status, problem, themes) so it is seen before
-  the story; its exact wording is plain language in the site's voice, for example "Retired.
+  the story; its wording is one fixed sentence in the site's voice plus the replacement
+  clause when there is one, for example "Retired.
   I no longer use or maintain this project. It was replaced by Cadence."
-- The "Retired" status uses an existing tone from the current design system palette rather
-  than a new colour, so this is not a design-system change under Principle III. If a new
-  tone turns out to be needed, that becomes a major change and is raised in the plan.
+- **This is a major change.** The "Retired" status gets a new muted pill tone used only for
+  Retired. A new tone changes the design system, so under Constitution Principle III the PR
+  needs Don's explicit approval after he has looked at the preview deployment, and
+  auto-merge stays off.
+- Visual baselines need refreshing only if the shell, not-found or fixture-site snapshots
+  change. The fixture site may need a retired fixture project so the visual project
+  exercises the new tone; the plan decides this, and any baseline change it causes must be
+  predicted up front.
 - Index order is unchanged: retired projects are ordered the same way as all other projects,
   not moved to the end. No filter by status is added.
 - The story page's metadata (title, description, social preview) is unchanged by the status.
