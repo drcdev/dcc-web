@@ -173,6 +173,15 @@ the files and the config, and `design-tokens.test.ts` the `--font-mono` token. `
 proves the mono faces and that a page without code fetches no mono file, and the visual project
 waits for the code faces. Only the `post-template` baselines show code.
 
+Diagram and sharing-image fonts (feature 020): the project diagrams embed their own Inter
+subsets. The unit test `tests/unit/site/diagram-fonts.test.ts` is the gate (fonts embedded,
+every label character covered, Inter requested, file under 16 KB) and the E2E spec
+`tests/e2e/diagram-fonts.spec.ts` proves each diagram draws in Inter with every label inside
+its box. The unit test `tests/unit/site/og-image.test.ts` checks the sharing image script, not
+the PNG: whenever `scripts/og-image/render.ts` changes, re-run `node scripts/og-image/render.ts`
+and commit `public/og-default.png`. After editing a diagram label, run `pnpm run fonts:diagrams`
+(see `docs/projects.md`).
+
 | Removed subject (4 images per platform) | Where its coverage lives now |
 |---|---|
 | `home` | Header, footer and menu: the kept shell snapshots, taken on `/`. Layout breakage: the geometry test. Contrast in both themes: `a11y` (axe on every template, both widths and themes). Introduction card and copy: `pages.spec.ts` and the build tests. Home intro card pixels: review-only by decision (#40 phase 2): it is site copy, not a template. |

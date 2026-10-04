@@ -113,6 +113,35 @@ visuals:
     part: build
 ```
 
+### Text in a diagram
+
+A diagram draws its words in Inter, the same font as the page. Write each label as a `<text>`
+in the SVG and give the root `<svg>` the setting `font-family="Inter, sans-serif"`. The file
+carries its own small copy of the Inter letters it uses, because an SVG shown as a picture
+cannot borrow the page's font.
+
+After you add or change a label, run this on the edited file (it needs `uv`; `brew install uv`):
+
+```bash
+pnpm run fonts:diagrams -- src/content/projects/images/<project>/<file>.svg
+```
+
+If you forget, the unit test `tests/unit/site/diagram-fonts.test.ts` fails and names the file
+and the character that is missing, and tells you to run the same command. It also fails when a
+label asks for a system font, or when a file is over 16 KB.
+
+The `fonts:diagrams` script does not check that a label fits. The browser test
+`tests/e2e/diagram-fonts.spec.ts` does that by measuring the drawn text: it checks for 16 units
+of clear space each side of a label and for labels that overlap.
+
+- Keep each diagram file under 16 KB.
+- Leave 16 units each side of a label inside its box. Linux Chromium (CI) draws Inter about 3.5
+  units wider than macOS, so leave 8 more units of room than the test needs on your machine.
+- If a label does not fit, wrap it onto a second line rather than shrinking or rewording it:
+  put 34 units between the lines and make the box 34 units taller for each extra line.
+- When an edit changes what the diagram says, update the picture's `alt`, the SVG's
+  `aria-label` and the `description` in the same change.
+
 Names use lower-case letters, digits and hyphens and start with a letter. A missing file stops
 the build and names the path. The list picture (`visual`) has no `part`.
 
