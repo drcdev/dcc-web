@@ -7,7 +7,7 @@
 // noindex robots meta tag, and lang="en".
 // Deliberately dropped (superseded by the spec's budget; listed for the PR
 // description, T097): "zero <script> elements", "CLS exactly 0" and
-// "total under 30 KB".
+// "total under 30 KB". The total-transfer limit is 150 KB since feature 018 (self-hosted type).
 import { test, expect, type Browser } from "@playwright/test";
 import { TEMPLATES } from "./templates.ts";
 
@@ -16,7 +16,9 @@ const BUDGET = {
   cls: 0.1,
   longTaskMs: 200,
   jsBytes: 10 * 1024,
-  totalBytes: 100 * 1024,
+  // Raised from 100 KB for feature 018 (decision D3): the site now serves its own type, which
+  // adds the two preloaded upright Inter files to every page. The other limits are unchanged.
+  totalBytes: 150 * 1024,
 };
 
 interface Measurement {

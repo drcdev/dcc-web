@@ -133,3 +133,29 @@ for (const { path } of RESPONSES.filter((r) => r.html)) {
     expect(pageErrors).toEqual([]);
   });
 }
+
+// Self-hosted fonts are cached for a year by content hash (F10, F11; FR-015, SC-009). The unit test
+// reads the rule text; only the served response shows that wrangler's `_headers` matching reaches
+// Astro's real output path and replaces the default Cache-Control.
+test("a served font file is immutable and carries the full security header set", async ({ page, request }) => {
+  await page.goto("/");
+  const href = await page.locator('link[rel="preload"][as="font"]').first().getAttribute("href");
+  expect(href).toMatch(/^\/_astro\/fonts\/[^/]+\.woff2$/);
+  const response = await request.get(href!);
+  expect(response.status()).toBe(200);
+  const headers = response.headers();
+  expect(headers["content-type"]).toBe("font/woff2");
+  expect(headers["cache-control"]).toBe("public, max-age=31536000, immutable");
+  for (const [name, value] of Object.entries(HEADERS)) {
+    expect(headers[name], name).toBe(value);
+  }
+});
+
+test("the page stylesheet is not marked immutable", async ({ page, request }) => {
+  await page.goto("/");
+  const href = await page.locator('link[rel="stylesheet"]').first().getAttribute("href");
+  expect(href).toMatch(/^\/_astro\//);
+  const response = await request.get(href!);
+  expect(response.status()).toBe(200);
+  expect(response.headers()["cache-control"] ?? "").not.toContain("immutable");
+});

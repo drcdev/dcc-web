@@ -6,6 +6,10 @@
 // stylesheet loads, so the wrong theme never flashes (FR-013). It is rendered
 // with is:inline because Astro's processed scripts are deferred modules that
 // run after first paint (docs.astro.build/en/guides/client-side-scripts/#script-processing).
+// Inter is self-hosted: <Font /> below emits the @font-face rules, the metric-adjusted fallbacks
+// and --font-inter, and preloads the two upright files; italics load on demand
+// (docs.astro.build/en/guides/fonts/; specs/018-self-hosted-fonts).
+import { Font } from "astro:assets";
 import "../styles/global.css";
 import themeInit from "../scripts/theme-init.js?raw";
 import Seo, { type Props as SeoProps } from "../components/Seo.astro";
@@ -29,6 +33,7 @@ const { navigation, ...seo } = Astro.props;
     <script is:inline set:html={themeInit} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <Seo {...seo} />
+    <Font cssVariable="--font-inter" preload={[{ weight: "400", style: "normal" }, { weight: "700", style: "normal" }]} />
     <slot name="head" />
   </head>
   <body class="bg-white dark:bg-dusk-BASE antialiased">
