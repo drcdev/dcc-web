@@ -1,12 +1,13 @@
 // Visual baselines for the design system and the templates, never for real
-// content. Phone (390) and desktop (1280) widths, dark and light themes - 50
+// content. Phone (390) and desktop (1280) widths, dark and light themes - 58
 // images per platform:
 //   - the header, the footer and the open mobile menu from `/` (the menu at
 //     phone width only), and the full not-found page;
 //   - the sections fixture page on the fixture site (port 4322), full page;
-//   - eight fixture-site subjects, each an element shot: the post template, the
+//   - ten fixture-site subjects, each an element shot: the post template, the
 //     project-story template, the lead story, the listing cards, a series
-//     banner, two project index rows (minimal and every-setting) and the
+//     banner, three project index rows (minimal, every-setting and retired),
+//     the retired story header and the
 //     contact form.
 // Every fixture subject is an element shot, because the pages around it also
 // show real posts and real project rows (Related posts, the real draft rows),
@@ -120,7 +121,7 @@ const FIXTURE = "http://localhost:4322";
 // added or removed above a fixture row moves that row by a fraction of a pixel
 // and changes its rendering. Removing the real rows once the filter island is
 // ready leaves each row's position set by the four fixtures alone (PR #42).
-const FIXTURE_PROJECTS = ["draft", "minimal", "every-part", "every-setting"];
+const FIXTURE_PROJECTS = ["draft", "minimal", "every-part", "every-setting", "retired"];
 
 async function onlyFixtureRows(page: Page) {
   await expect(page.locator("project-filter[data-ready]")).toHaveCount(1);
@@ -184,6 +185,19 @@ const FIXTURE_SUBJECTS = [
     path: "/projects/",
     locator: (page: Page) => page.locator('li[data-project="every-setting"]'),
     wait: onlyFixtureRows,
+  },
+  {
+    prefix: "project-row-retired",
+    title: "fixture project row, retired",
+    path: "/projects/",
+    locator: (page: Page) => page.locator('li[data-project="retired"]'),
+    wait: onlyFixtureRows,
+  },
+  {
+    prefix: "retired-story-header",
+    title: "fixture retired story header",
+    path: "/projects/retired/",
+    locator: (page: Page) => page.locator("header[data-story-header]"),
   },
   {
     prefix: "contact-form",

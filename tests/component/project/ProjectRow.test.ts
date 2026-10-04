@@ -64,4 +64,13 @@ describe("ProjectRow", () => {
     const published = await render(ProjectRow, props);
     expect(published).not.toContain("data-draft-mark");
   });
+
+  it("shows the Retired pill for a retired project and changes nothing else", async () => {
+    const html = await render(ProjectRow, { ...props, status: "retired" });
+    expect(byName(html, "span").some((t) => t.attrs["data-status"] === "retired")).toBe(true);
+    expect(html).toContain("Retired");
+    expect(byName(html, "li").find((t) => "data-project" in t.attrs)!.attrs["data-themes"]).toBe("ai-integration|macos");
+    expect(byName(html, "a")).toHaveLength(1);
+    expect(byName(html, "a")[0]!.attrs.href).toBe("/projects/focus-pocus/");
+  });
 });

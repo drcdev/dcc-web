@@ -2,6 +2,7 @@
 // The top of a project story: the title as the page's one h1, the problem line,
 // status and themes (contracts/pages-dom.md). A draft shows a notice in plain text.
 import type { ProjectStatus } from "../../lib/content/project-status";
+import type { ResolvedReplacement } from "../../lib/content/project-replacement";
 import StatusPill from "./StatusPill.astro";
 import ThemePills from "./ThemePills.astro";
 import "./portfolio.css";
@@ -11,13 +12,15 @@ export interface Props {
   problem: string;
   status: ProjectStatus;
   themes: readonly string[];
+  /** For a retired project: what replaced it, with a link when it has a page. */
+  replacement?: ResolvedReplacement;
   /** A draft is shown outside the production build only; the notice says so. */
   draft?: boolean;
   /** Names the h1 for the view transition from the index row; see TitleTransition. */
   slug?: string;
 }
 
-const { title, problem, status, themes, draft = false, slug } = Astro.props;
+const { title, problem, status, themes, draft = false, slug, replacement } = Astro.props;
 ---
 
 {
@@ -34,4 +37,24 @@ const { title, problem, status, themes, draft = false, slug } = Astro.props;
     <StatusPill status={status} />
     <ThemePills themes={themes} />
   </div>
+  {
+    status === "retired" && (
+      <p data-retired-note>
+        <strong>Retired.</strong> I no longer use or maintain this project.
+        {replacement && (
+          <>
+            {" "}It was replaced by{" "}
+            {replacement.href ? (
+              <a href={replacement.href} class="underline underline-offset-2">
+                {replacement.name}
+              </a>
+            ) : (
+              replacement.name
+            )}
+            .
+          </>
+        )}
+      </p>
+    )
+  }
 </header>

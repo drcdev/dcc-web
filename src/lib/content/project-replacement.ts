@@ -4,7 +4,8 @@
 // naming the file, so RP04 and RP05 are checked here over every entry, drafts included.
 import { projectFileError } from "./errors.ts";
 
-type Replacement = { project: { id: string } } | { name: string; href?: string };
+// The schema allows exactly one of the two forms (RP02), so its inferred type has every key optional.
+type Replacement = { project?: { id: string }; name?: string; href?: string };
 
 interface Replaceable {
   id: string;
@@ -23,7 +24,7 @@ export function checkReplacements(entries: readonly Replaceable[]): void {
   const ids = new Set(entries.map((entry) => entry.id));
   for (const entry of entries) {
     const replacedBy = entry.data.replacedBy;
-    if (!replacedBy || !("project" in replacedBy)) continue;
+    if (!replacedBy?.project) continue;
     const target = replacedBy.project.id;
     if (target === entry.id) {
       throw projectFileError(
@@ -48,11 +49,12 @@ export function resolveReplacement(
 ): ResolvedReplacement | undefined {
   const replacedBy = entry.data.replacedBy;
   if (!replacedBy) return undefined;
-  if ("project" in replacedBy) {
+  if (replacedBy.project) {
     const id = replacedBy.project.id;
     const target = all.find((candidate) => candidate.id === id);
     const name = target?.data.title ?? id;
     return publishedIds.has(id) ? { name, href: `/projects/${id}/` } : { name };
   }
+  if (!replacedBy.name) return undefined;
   return replacedBy.href ? { name: replacedBy.name, href: replacedBy.href } : { name: replacedBy.name };
 }

@@ -185,6 +185,23 @@ const PAGES: Page_[] = [
     ],
   },
   {
+    path: "/projects/retired/",
+    ready: async (page) => {
+      await expect(page.locator("[data-story-title]")).toBeVisible();
+    },
+    probes: [
+      {
+        name: "status pill (retired)",
+        selector: '[data-status="retired"]',
+        props: {
+          "background-color": ["mauve-50", "mauve-800"],
+          color: ["mauve-950", "mauve-100"],
+          "border-top-color": ["mauve-800", "mauve-300"],
+        },
+      },
+    ],
+  },
+  {
     path: "/projects/every-part/",
     ready: async (page) => {
       await expect(page.locator("[data-story-title]")).toBeVisible();
