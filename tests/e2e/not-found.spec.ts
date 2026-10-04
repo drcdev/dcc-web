@@ -5,6 +5,7 @@
 // page's build output with a genuine HTTP 404 status, not a soft 404.
 import { test, expect } from "@playwright/test";
 import { futureDestinations } from "../../src/config/navigation.ts";
+import { pages } from "../helpers/content.ts";
 import { expectThemeClass, setTheme } from "./color-theme.ts";
 
 // Retired Ghost blog addresses that this rebuild does not carry over
@@ -17,18 +18,7 @@ const GHOST_ADDRESSES = ["/tag/x/", "/author/x/", "/rss/", "/ghost/", "/2024/05/
 const NOT_FOUND_ADDRESSES = [...RETIRED_ADDRESSES, ...GHOST_ADDRESSES, ...futureDestinations, "/cookie-policy/"] as const;
 
 // Addresses that are built and must keep returning 200 (robots.txt: T083).
-const BUILT_ADDRESSES = [
-  "/",
-  "/services/",
-  "/speaking/",
-  "/about/",
-  "/privacy-policy/",
-  "/privacy/tempo/",
-  "/terms-of-use/",
-  "/technology/",
-  "/contact/",
-  "/robots.txt",
-] as const;
+const BUILT_ADDRESSES = [...pages.map((page) => page.address), "/robots.txt"];
 
 test.describe("not-found status", () => {
   for (const path of NOT_FOUND_ADDRESSES) {

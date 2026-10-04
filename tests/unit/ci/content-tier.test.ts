@@ -49,14 +49,26 @@ describe("content-only tier guard", () => {
     .map((f) => String(f).split("\\").join("/"))
     .filter((f) => f.endsWith(".test.ts") && !listed.includes(`tests/build/${f}`));
 
-  it("finds real content entries and sees them in a listed file", () => {
+  // A build test reads real content either through the shared helper or by naming an entry's file.
+  const readsHelper = (text: string) => /from\s+["'][^"']*helpers\/content(\.ts)?["']/.test(text);
+
+  it("finds real content entries and sees them in the listed files", () => {
     expect(slugs.length).toBeGreaterThan(0);
-    expect(readFileSync(join(root, "tests/build/indexing.test.ts"), "utf-8")).toContain("/about/");
+    // project-template.test.ts runs on a fixed template build, so it reads no real content.
+    for (const file of listed.filter((f) => !f.endsWith("project-template.test.ts"))) {
+      const text = readFileSync(join(root, file), "utf-8");
+      const namesEntry = slugs.some((slug) => text.includes(`${slug}/index.html`) || text.includes(`/${slug}/`));
+      expect(readsHelper(text) || namesEntry, `${file} reads no real content: drop it from test:build:content`).toBe(true);
+    }
   });
 
-  it("no build test outside test:build:content names a real content entry", () => {
+  it("no build test outside test:build:content names or reads a real content entry", () => {
     for (const file of others) {
       const text = readFileSync(join(root, "tests/build", file), "utf-8");
+      expect(
+        readsHelper(text),
+        `${file} reads the content helper: add this file to test:build:content or stop reading real content`,
+      ).toBe(false);
       for (const slug of slugs) {
         for (const needle of [`${slug}.mdx`, `${slug}/index.html`, `/${slug}/`]) {
           expect(

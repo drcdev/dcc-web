@@ -2,8 +2,9 @@
 // replaced by the system palette, so what must survive is structure: borders, the
 // chosen mark (a word plus a row edge), the status, the progress bar and focus.
 import { expect, test, type Page } from "@playwright/test";
+import { pickedStory } from "../helpers/content";
 
-const STORY = "/projects/focus-pocus/";
+const STORY = pickedStory.address;
 
 test.use({ forcedColors: "active", reducedMotion: "no-preference", viewport: { width: 1280, height: 800 } });
 

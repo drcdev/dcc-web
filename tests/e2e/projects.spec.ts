@@ -1,8 +1,12 @@
 // The projects pages on the production build (specs/014-project-four-part-story/contracts/pages-dom.md).
 // The story part is here; the index part follows.
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { themeKey } from "../../src/lib/content/themes";
+import { pickedStory, projects } from "../helpers/content";
 
-const STORY = "/projects/focus-pocus/";
+// The template checks run on one story the helper picks from the content; the rule loops run on
+// every project. The e2e server is a local build, so drafts are present.
+const STORY = pickedStory.address;
 const POST = "/writing/sample-everything/";
 const PARTS = [
   ["problem", "Problem"],
@@ -32,12 +36,12 @@ async function isVisibleAndUncovered(page: Page, target: Locator): Promise<{ ok:
   return { ok, info: JSON.stringify(result) };
 }
 
-test.describe("the Focus Pocus story", () => {
+test.describe("a project story (template)", () => {
   test("answers 200 with one h1 and the four parts in order, with no contents list or chapter numbers", async ({ page }) => {
     const response = await page.goto(STORY);
     expect(response?.status()).toBe(200);
     await expect(page.locator("h1")).toHaveCount(1);
-    await expect(page.locator("h1")).toHaveText("Focus Pocus");
+    await expect(page.locator("h1")).toHaveText(pickedStory.title);
     await expect(page.locator("main article")).toHaveCount(1);
     await expect(page.locator("main article > header h1")).toHaveCount(1);
     await expect(page.locator("main h2")).toHaveText(PARTS.map(([, heading]) => heading));
@@ -111,17 +115,6 @@ test.describe("the Focus Pocus story", () => {
     for (const cell of await region.locator("td[data-fit]").all()) await expect(cell).toHaveText(/Yes|Partly|No/);
   });
 
-  test("has a stand-in link, no draft notice and no iframe", async ({ page }) => {
-    await page.goto(STORY);
-    await expect(page.getByRole("link", { name: "Focus Pocus on drc.dev" })).toHaveAttribute(
-      "href",
-      "https://drc.dev/projects/focus-pocus",
-    );
-    await expect(page.getByText("This is not a live demo.")).toBeVisible();
-    await expect(page.locator("[data-draft-notice]")).toHaveCount(0);
-    await expect(page.locator("iframe")).toHaveCount(0);
-  });
-
   test("ends with the invitation, after the four parts", async ({ page }) => {
     await page.goto(STORY);
     const order = await page.evaluate(() => {
@@ -142,10 +135,10 @@ test.describe("the Focus Pocus story", () => {
     await page.goto(STORY);
     const beforeCookies = await context.cookies();
     const invitation = page.locator("[data-invitation]");
-    await expect(invitation).toHaveAttribute("href", "/contact/?project=focus-pocus");
+    await expect(invitation).toHaveAttribute("href", `/contact/?project=${pickedStory.slug}`);
     await invitation.click();
-    await expect(page).toHaveURL(/\/contact\/\?project=focus-pocus$/);
-    await expect(page.locator("#contact-project")).toHaveText("About: focus-pocus");
+    await expect(page).toHaveURL(new RegExp(`/contact/\\?project=${pickedStory.slug}$`));
+    await expect(page.locator("#contact-project")).toHaveText(`About: ${pickedStory.slug}`);
     expect(await context.cookies()).toEqual(beforeCookies);
     expect([...origins]).toEqual(["http://127.0.0.1:4321"]);
   });
@@ -165,8 +158,8 @@ test.describe("the Focus Pocus story", () => {
 
     test("names the title for the view transition so it carries over from the list", async ({ page }) => {
       await page.goto(STORY);
-      await expect(page.locator("h1")).toHaveCSS("view-transition-name", "project-focus-pocus");
-      await expect(page.locator("h1")).toHaveAttribute("data-title-slug", "focus-pocus");
+      await expect(page.locator("h1")).toHaveCSS("view-transition-name", `project-${pickedStory.slug}`);
+      await expect(page.locator("h1")).toHaveAttribute("data-title-slug", pickedStory.slug);
     });
   });
 
@@ -212,21 +205,48 @@ test.describe("the Focus Pocus story", () => {
   }
 });
 
+// Rules over every project in the content.
+test.describe("every project story", () => {
+  for (const project of projects) {
+    test(`${project.slug}: title, review notice, invitation and view-transition name follow its front matter`, async ({ page }) => {
+      const response = await page.goto(project.address);
+      expect(response?.status()).toBe(200);
+      await expect(page.locator("h1")).toHaveText(project.title);
+      await expect(page.locator("[data-draft-notice]")).toHaveCount(project.draft ? 1 : 0);
+      await expect(page.locator("[data-invitation]")).toHaveAttribute("href", `/contact/?project=${project.slug}`);
+      await expect(page.locator("h1")).toHaveCSS("view-transition-name", `project-${project.slug}`);
+    });
+  }
+
+  for (const project of projects.filter((entry) => entry.data.standIn)) {
+    const standIn = project.data.standIn as { href: string; label?: string };
+    test(`${project.slug}: the stand-in link goes to its address, says it is not a live demo and embeds nothing`, async ({ page }) => {
+      await page.goto(project.address);
+      await expect(page.getByRole("link", { name: standIn.label ?? `${project.title} on drc.dev` })).toHaveAttribute(
+        "href",
+        standIn.href,
+      );
+      await expect(page.getByText("This is not a live demo.")).toBeVisible();
+      await expect(page.locator("iframe")).toHaveCount(0);
+    });
+  }
+});
+
 test.describe("the projects index", () => {
   const INDEX = "/projects/";
 
-  test("answers 200 with one h1, a row for Focus Pocus and a link to its story", async ({ page }) => {
+  test("answers 200 with one h1, one row for every project and a link to its story", async ({ page }) => {
     const response = await page.goto(INDEX);
     expect(response?.status()).toBe(200);
     await expect(page.locator("h1")).toHaveText("Projects");
-    // All four real project stories are published, so none carries a draft mark.
-    expect(await page.locator("[data-project]").count()).toBeGreaterThanOrEqual(1);
-    const link = page.locator("[data-project] h2 a", { hasText: "Focus Pocus" });
-    await expect(link).toHaveCount(1);
-    await expect(link).toHaveAttribute("href", STORY);
+    await expect(page.locator("[data-project]")).toHaveCount(projects.length);
+    for (const project of projects) {
+      await expect(page.locator(`[data-project] h2 a[href="${project.address}"]`)).toHaveCount(1);
+    }
+    const link = page.locator(`[data-project] h2 a[href="${STORY}"]`);
     await link.click();
     await expect(page).toHaveURL(new RegExp(`${STORY}$`));
-    await expect(page.locator("h1")).toHaveText("Focus Pocus");
+    await expect(page.locator("h1")).toHaveText(pickedStory.title);
   });
 
   test("the header Projects link is current on the index and on a story", async ({ page }) => {
@@ -257,19 +277,21 @@ test.describe("the projects index", () => {
   });
 
   test("going back from a story restores the index with its ?theme=", async ({ page }) => {
-    await page.goto(`${INDEX}?theme=macos`);
-    // Only Focus Pocus has the macOS theme; the other rows stay in the list, hidden.
+    const key = themeKey((pickedStory.data.themes as string[])[0]);
+    const matching = projects.filter((project) => (project.data.themes as string[]).map(themeKey).includes(key));
+    await page.goto(`${INDEX}?theme=${key}`);
+    // The other rows stay in the list, hidden.
     const shown = page.locator("[data-project]:not([hidden])");
-    await expect(shown).toHaveCount(1);
-    await expect(shown).toBeVisible();
-    await shown.locator("h2 a").click();
+    await expect(shown).toHaveCount(matching.length);
+    await expect(shown.first()).toBeVisible();
+    await shown.first().locator("h2 a").click();
     await page.goBack();
-    await expect(page).toHaveURL(/\/projects\/\?theme=macos$/);
-    await expect(page.locator('button[data-theme="macos"]')).toHaveAttribute("aria-pressed", "true");
+    await expect(page).toHaveURL(new RegExp(`/projects/\\?theme=${key}$`));
+    await expect(page.locator(`button[data-theme="${key}"]`)).toHaveAttribute("aria-pressed", "true");
   });
 
   test("the header Projects link always opens the unfiltered index", async ({ page }) => {
-    await page.goto(`${INDEX}?theme=macos`);
+    await page.goto(`${INDEX}?theme=${themeKey((pickedStory.data.themes as string[])[0])}`);
     await page.locator('#primary-nav-list a[href="/projects/"]').click();
     await expect(page).toHaveURL(/\/projects\/$/);
     await expect(page.locator("[data-filter-all]")).toHaveAttribute("aria-pressed", "true");

@@ -112,6 +112,26 @@ names its layer and gives the reason for any second layer.
 The test title or a comment carries the contract row id (`row 7`, `P13`), so a search for the
 id finds the test.
 
+### Real content in tests
+
+Tests never name a real post or project. They read `src/content/**` through
+`tests/helpers/content.ts`, so publishing a story, flipping a `draft` flag or rewriting a title
+never needs a test edit.
+
+- An expectation is computed from the frontmatter and the build mode (for example the sitemap
+  and the listings), or written as a rule that runs over every entry of a kind (for example
+  "every draft shows the review notice").
+- A fixed literal is allowed only for content the test owns: the fixture site and fixture
+  projects under `tests/fixtures/`, inline strings in a unit test (use neutral example data),
+  and the FR-035 sample post, which is a draft by contract.
+- `tests/unit/content/no-real-content-in-tests.test.ts` enforces this. It builds its needles from
+  the content (every real post and project address, entry file name and quoted title) and fails
+  when a file under `tests/e2e/`, `tests/build/` or `tests/unit/content/` contains one. It needs
+  no upkeep when the content changes.
+- A build test that imports the helper reads real content, so it belongs in
+  `test:build:content` (the content-only CI tier). `tests/unit/ci/content-tier.test.ts` checks
+  this.
+
 ### Visual coverage
 
 The `visual` project snapshots the design system only: the shell (header, footer and the open

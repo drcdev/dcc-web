@@ -7,6 +7,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { TEMPLATES } from "./templates.ts";
+import { seriesPost } from "../helpers/content.ts";
 import { setTheme } from "./color-theme.ts";
 
 const THEMES = ["dark", "light"] as const;
@@ -301,7 +302,7 @@ for (const template of blogTemplates) {
 
 // Series markers and reflow (spec 013 US3; FR-010, FR-016d). axe over these pages runs in
 // a11y.spec.ts; these checks cover the pages with markers present in both themes, and reflow.
-const MARKER_PAGES = ["/writing/", "/writing/all/", "/writing/self-contained-development-for-ghost-themes/"] as const;
+const MARKER_PAGES = ["/writing/", "/writing/all/", seriesPost.address] as const;
 for (const theme of THEMES) {
   for (const path of MARKER_PAGES) {
     test(`${path} shows a series marker with readable text in the ${theme} theme`, async ({ page }) => {
@@ -318,7 +319,7 @@ for (const theme of THEMES) {
   }
 }
 
-const REFLOW_PAGES = ["/writing/", "/writing/drift/", "/writing/self-contained-development-for-ghost-themes/", "/"] as const;
+const REFLOW_PAGES = ["/writing/", "/writing/drift/", seriesPost.address, "/"] as const;
 for (const path of REFLOW_PAGES) {
   test(`${path} reflows with no horizontal scroll at 320px`, async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });

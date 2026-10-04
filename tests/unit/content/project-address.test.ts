@@ -6,14 +6,14 @@ import { assertUniqueProjectFiles, slugFromPath } from "../../../src/lib/content
 
 describe("slugFromPath", () => {
   it.each([
-    ["focus-pocus.mdx", "focus-pocus"],
-    ["focus-pocus.md", "focus-pocus"],
+    ["example-project.mdx", "example-project"],
+    ["example-project.md", "example-project"],
     ["2026-plan.mdx", "2026-plan"],
   ])("maps %s to %s", (path, slug) => {
     expect(slugFromPath(path)).toBe(slug);
   });
 
-  it.each(["Focus.mdx", "focus pocus.mdx", "focus_pocus.mdx", "a.b.mdx", `${"a".repeat(65)}.mdx`, ".mdx"])(
+  it.each(["Example.mdx", "example project.mdx", "example_project.mdx", "a.b.mdx", `${"a".repeat(65)}.mdx`, ".mdx"])(
     "rejects %s with the file name and the naming rule",
     (path) => {
       expect(() => slugFromPath(path)).toThrow(path);

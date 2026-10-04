@@ -4,6 +4,8 @@
 // flipped `built` to `true` here), so the header/no-JS assertions that were
 // marked `fixme` while it didn't exist now run and must pass.
 
+import { pickedStory } from "../helpers/content";
+
 /**
  * The fixture site (scripts/build-fixture-site.ts), served on port 4322 by playwright.config.ts.
  * A template on it has an absolute address; `page.goto`, `request.get` and `page.route` all take one.
@@ -31,7 +33,7 @@ export const TEMPLATES = [
   // only the fixture site has (the site itself has no post without a feature image).
   { name: "writing-post-text-only", path: `${FIXTURE_SITE}/writing/text-only/`, built: true },
   { name: "projects", path: "/projects/", built: true },
-  { name: "project-story", path: "/projects/focus-pocus/", built: true },
+  { name: "project-story", path: pickedStory.address, built: true },
 ] as const;
 
 export const NOT_FOUND_PENDING = "not-found page is built in Phase 7 (T071); T072 enables this";

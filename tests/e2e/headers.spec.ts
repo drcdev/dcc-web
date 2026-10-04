@@ -3,6 +3,7 @@
 // (contracts/http-responses.md; research R8; FR-010d, FR-024, FR-024a, FR-024c).
 import { test, expect } from "@playwright/test";
 import { cspViolations, recordCspViolations } from "./csp-violations.ts";
+import { pickedStory } from "../helpers/content";
 
 const HEADERS: Record<string, string> = {
   "content-security-policy": "frame-ancestors 'none'; object-src 'none'; base-uri 'self'",
@@ -32,7 +33,7 @@ const RESPONSES = [
   { path: "/", status: 200, html: true },
   { path: "/nope/", status: 404, html: true },
   { path: "/projects/", status: 200, html: true },
-  { path: "/projects/focus-pocus/", status: 200, html: true },
+  { path: pickedStory.address, status: 200, html: true },
   { path: "/robots.txt", status: 200, html: false },
   { path: "/sitemap-index.xml", status: 200, html: false },
   { path: "/og-default.png", status: 200, html: false },

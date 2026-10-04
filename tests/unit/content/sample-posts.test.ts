@@ -8,7 +8,8 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { pillRowTopics } from "../../../src/config/topics.ts";
+import { pillRowTopics, seriesIds } from "../../../src/config/topics.ts";
+import { realPosts } from "../../helpers/content.ts";
 import { FIXTURE_POSTS } from "../../../scripts/build-fixture-site.ts";
 
 const dir = fileURLToPath(new URL("../../../src/content/posts/", import.meta.url));
@@ -117,7 +118,7 @@ describe("sample posts", () => {
   });
 });
 
-// FR-005: the four real series posts list their series id first and keep their other topics.
+// FR-005: a post in a series lists that series id first and is in only one series.
 describe("series tagging of the real posts (FR-005)", () => {
   const topicsOf = (front: string): string[] => [
     ...[...front.matchAll(/^ {2}- ([a-z0-9-]+)$/gm)].map((m) => m[1]!),
@@ -125,19 +126,21 @@ describe("series tagging of the real posts (FR-005)", () => {
   ];
   const real = load(dir, /\.mdx$/);
   const topicsFor = (slug: string) => topicsOf(real.find((s) => s.name === `${slug}.mdx`)!.front);
+  const inSeries = (topics: string[]) => topics.filter((id) => seriesIds.includes(id as never));
 
-  it.each([
-    ["the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change", "convergence", "healthcare-leadership"],
-    ["starting-something-new", "convergence", "healthcare-leadership"],
-    ["building-focus-pocus-what-i-learned-about-ai-coding-and-integration", "drift", "agentic-ai"],
-    ["self-contained-development-for-ghost-themes", "drift", "technology-teams"],
-  ])("%s lists %s first and keeps %s", (slug, series, kept) => {
-    expect(topicsFor(slug)).toEqual([series, kept]);
+  it("lists the series id first, and only one, on every real post that is in a series", () => {
+    const tagged = realPosts.map((post) => ({ slug: post.slug, topics: (post.data.topics as string[] | undefined) ?? [] }));
+    expect(tagged.length).toBeGreaterThan(0);
+    for (const { slug, topics } of tagged) {
+      const series = inSeries(topics);
+      if (series.length === 0) continue;
+      expect(series, `${slug} is in one series`).toHaveLength(1);
+      expect(topics[0], `${slug} lists its series first`).toBe(series[0]);
+    }
   });
 
   it("leaves sample-everything out of both series", () => {
-    expect(topicsFor("sample-everything")).not.toContain("drift");
-    expect(topicsFor("sample-everything")).not.toContain("convergence");
+    expect(inSeries(topicsFor("sample-everything"))).toEqual([]);
   });
 });
 

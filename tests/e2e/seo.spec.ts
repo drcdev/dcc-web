@@ -5,6 +5,8 @@
 // absolute addresses are checked against the origin robots.txt reports and
 // fetched from the local server by path.
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
+import { seriesIds, topicHref } from "../../src/config/topics";
+import { projects, sitemapPaths } from "../helpers/content";
 
 const NOT_FOUND_PATH = "/nope/";
 
@@ -61,57 +63,19 @@ async function expectSharedMetadata(page: Page, origin: string, type: "website" 
   if (type === "website") expect(png.readUInt32BE(20)).toBe(630);
 }
 
-// This build is not a production build, so the sample post (a draft) is built and listed;
-// production leaves it out (specs/008-blog research R3). The four real posts (feature 010)
-// are published and listed on every build.
-const POSTS = [
-  "/writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/",
-  "/writing/sample-everything/",
-  "/writing/self-contained-development-for-ghost-themes/",
-  "/writing/starting-something-new/",
-  "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/",
-];
+// The e2e server serves a local build, which is not a production build, so drafts are built and
+// listed (specs/008-blog research R3). The sitemap is computed from the content.
+const SITEMAP = sitemapPaths({ production: false });
 
-// The all posts page and one page per topic are built on every build (spec 008 US4).
-const TOPIC_PAGES = [
-  "/writing/topics/agentic-ai/",
-  "/writing/topics/compliant-data/",
-  "/writing/topics/healthcare-leadership/",
-  "/writing/topics/technology-teams/",
-];
-
-// The two canonical series listing pages are built on every build (FR-008).
-const SERIES_PAGES = ["/writing/convergence/", "/writing/drift/"];
-
-test("the sitemap lists exactly the built public pages, the series pages, never /404", async ({ request }) => {
+test("the sitemap lists exactly the built public pages, never /404 or the cookie policy", async ({ request }) => {
   const origin = await robotsOrigin(request);
   const entries = await sitemapEntries(request);
-  expect([...entries].sort()).toEqual(
-    [
-      "/",
-      "/about/",
-      "/contact/",
-      "/privacy-policy/",
-      "/privacy/tempo/",
-      "/projects/",
-      "/projects/drcdev-github-io/",
-      "/projects/focus-pocus/",
-      "/projects/flux/",
-      "/projects/tempo/",
-      "/services/",
-      "/speaking/",
-      "/technology/",
-      "/terms-of-use/",
-      "/writing/",
-      "/writing/all/",
-      ...TOPIC_PAGES,
-      ...SERIES_PAGES,
-      ...POSTS,
-    ]
-      .map((path) => `${origin}${path}`)
-      .sort(),
-  );
-  for (const entry of entries) expect(new URL(entry).pathname.startsWith("/404")).toBe(false);
+  expect([...entries].sort()).toEqual(SITEMAP.map((path) => `${origin}${path}`).sort());
+  for (const entry of entries) {
+    const path = new URL(entry).pathname;
+    expect(path.startsWith("/404"), path).toBe(false);
+    expect(path, "the cookie policy is retired").not.toBe("/cookie-policy/");
+  }
 });
 
 test("robots.txt allows all crawling and points at the sitemap on the page origin", async ({ request, page }) => {
@@ -132,13 +96,16 @@ test("robots.txt allows all crawling and points at the sitemap on the page origi
   expect(new URL(canonical!).origin).toBe(await robotsOrigin(request));
 });
 
+// The two canonical series listing pages (FR-008) are in the sitemap but are not posts.
+const SERIES_PAGES = seriesIds.map((id) => topicHref(id));
+
 /** Post pages are articles; the landing, all posts, topic and series pages are ordinary pages (FR-030, FR-008). */
 const isPostPath = (path: string) =>
   path.startsWith("/writing/") &&
   path !== "/writing/" &&
   !path.startsWith("/writing/all/") &&
   !path.startsWith("/writing/topics/") &&
-  !SERIES_PAGES.some((series) => path.startsWith(series));
+  !SERIES_PAGES.includes(path);
 
 test("every public page has complete, consistent metadata", async ({ page, request }) => {
   const origin = await robotsOrigin(request);
@@ -177,22 +144,27 @@ test("the not-found page has metadata and noindex but no canonical and no og:url
   await expectSharedMetadata(page, origin);
 });
 
-test("the project story has its own title, description, canonical, sharing image and sitemap entry", async ({
-  page,
-  request,
-}) => {
-  const origin = await robotsOrigin(request);
-  const entries = await sitemapEntries(request);
-  expect(entries).toContain(`${origin}/projects/`);
-  expect(entries).toContain(`${origin}/projects/focus-pocus/`);
-  await page.goto("/projects/focus-pocus/");
-  expect(await page.title()).toContain("Focus Pocus");
-  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", `${origin}/projects/focus-pocus/`);
-  await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /Focus Pocus/);
-  await expectSharedMetadata(page, origin);
-  // Focus Pocus has no sharing image of its own, so it uses the site default (FR-080).
-  expect(await attr(page, 'meta[property="og:image"]')).toContain("og-default");
-});
+for (const entry of projects) {
+  test(`the project story ${entry.slug} has its own title, description, canonical, sharing image and sitemap entry`, async ({
+    page,
+    request,
+  }) => {
+    const origin = await robotsOrigin(request);
+    const entries = await sitemapEntries(request);
+    expect(entries).toContain(`${origin}/projects/`);
+    expect(entries).toContain(`${origin}${entry.address}`);
+    await page.goto(entry.address);
+    expect(await page.title()).toContain(entry.title);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", `${origin}${entry.address}`);
+    // The story template passes data.description to the shared head.
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", String(entry.data.description));
+    await expectSharedMetadata(page, origin);
+    // A story without a sharing image of its own uses the site default (FR-080).
+    const image = await attr(page, 'meta[property="og:image"]');
+    if (entry.data.image) expect(image).not.toContain("og-default");
+    else expect(image).toContain("og-default");
+  });
+}
 
 test("the feed's title is Drift & Convergence and its description names both series (FR-013)", async ({ request }) => {
   const xml = await (await request.get("/writing/rss.xml")).text();
