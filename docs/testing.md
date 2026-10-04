@@ -124,6 +124,11 @@ never needs a test edit.
 - A fixed literal is allowed only for content the test owns: the fixture site and fixture
   projects under `tests/fixtures/`, inline strings in a unit test (use neutral example data),
   and the FR-035 sample post, which is a draft by contract.
+- The Playwright fixture site (`scripts/build-fixture-site.ts`, port 4322) is built from fixture
+  content only: 16 posts (13 generated plus the fixture posts `every-part`, `long-title` and
+  `text-only`) and 5 fixture projects. No real post, project or the sample post is in it. The real
+  pages are kept so the shell and the home page are unchanged. Its specs expect fixed counts and
+  an exact order.
 - `tests/unit/content/no-real-content-in-tests.test.ts` enforces this. It builds its needles from
   the content (every real post and project address, entry file name and quoted title) and fails
   when a file under `tests/e2e/`, `tests/build/` or `tests/unit/content/` contains one. It needs
@@ -163,17 +168,17 @@ pinned by the web font and any glyph outside the subset falls back to DejaVu the
 | `home` | Header, footer and menu: the kept shell snapshots, taken on `/`. Layout breakage: the geometry test. Contrast in both themes: `a11y` (axe on every template, both widths and themes). Introduction card and copy: `pages.spec.ts` and the build tests. Home intro card pixels: review-only by decision (#40 phase 2): it is site copy, not a template. |
 | `about` | Shell snapshots; geometry test; `a11y`; About sections and Recognition links: `pages.spec.ts`. |
 | `contact` | Shell snapshots; geometry test; `a11y`; the form and its states: `contact.spec.ts`. The contact form's pixels: the `contact-form` snapshot of the fixture page `/contact-form/` (#40 phase 2). |
-| `writing-landing` | Shell snapshots; geometry test; `a11y`; listing behaviour: `blog.spec.ts` and the `sections` project's `blog-fixtures.spec.ts` and `blog-pagination.spec.ts`. Listing card pixels: `listing-cards`, the three fixture cards on `/writing/topics/fixture-cards/`. Lead-story pixels: `lead-story` on the fixture `/writing/`, whose lead is the fixture post `every-part` (dated 2099 so no real post can take the lead). |
+| `writing-landing` | Shell snapshots; geometry test; `a11y`; listing behaviour: `blog.spec.ts` and the `sections` project's `blog-fixtures.spec.ts` and `blog-pagination.spec.ts`. Listing card pixels: `listing-cards`, the three fixture cards on `/writing/topics/fixture-cards/`. Lead-story pixels: `lead-story` on the fixture `/writing/`, whose lead is the fixture post `every-part` (dated 2099 so it is the lead). |
 | `writing-all` | As `writing-landing`, including the card snapshot. Pagination: `blog-pagination.spec.ts`. |
 | `writing-topic` | As `writing-landing`, including the card snapshot. |
 | `writing-post` | Shell snapshots; geometry test (includes the code block and table scroll containers); `a11y` (`blog.a11y.spec.ts`, `blog-fixture.a11y.spec.ts`); Copy button and table region: `blog.spec.ts`; forced colours: `blog-forced-colors.spec.ts`. Post template pixels: `post-template`, the article of the fixture post `/writing/every-part/`. Related posts are left out because they are chosen from all posts; their cards are the `listing-cards` component. |
 | `writing-series` | Shell snapshots; geometry test; `a11y`; series intro and links: `blog.spec.ts`. Series banner pixels: `series-banner` on the fixture `/writing/drift/` (banner element only). |
-| `projects` | Shell snapshots; geometry test; `a11y`; two-column and one-column rows: `projects.spec.ts`; fixture listings: `projects-fixtures.spec.ts`. Projects index row pixels: `project-row-minimal`, `project-row-every-setting`, `project-row-draft` and `project-row-in-progress` (row elements only; the fixture index also lists the real rows, which the test removes). |
+| `projects` | Shell snapshots; geometry test; `a11y`; two-column and one-column rows: `projects.spec.ts`; fixture listings: `projects-fixtures.spec.ts`. Projects index row pixels: `project-row-minimal`, `project-row-every-setting`, `project-row-draft` and `project-row-in-progress` (row elements only; the fixture index lists exactly the five fixture projects, and the test waits for those five rows). |
 | `project-story` | Shell snapshots; geometry test (reduced motion, final state); `a11y`; part layout at 390 and 1280, comparison region and invitation: `projects.spec.ts`; motion: `projects-motion.spec.ts`; forced colours: `projects-forced-colors.spec.ts`; no-JS: `projects-no-js.spec.ts`. Story template pixels: `story-template`, the article of the fixture story `/projects/every-part/`, with reduced motion. |
 
 Every phase-1 gap now has a fixture snapshot, except the home intro card, which is review-only
-by decision. The fixture site also holds real content, so every phase-2 subject is an element
-shot, and the post's Related posts are left out. `blog-fixtures.spec.ts` pins the lead, so a
+by decision. Every phase-2 subject is an element shot, which keeps the shell out of it, and the post's
+Related posts are left out. `blog-fixtures.spec.ts` pins the lead, so a
 fixture change that moves it fails there with a named reason.
 
 `tests/e2e/theme-tokens.spec.ts` adds the token check that pixels cannot name. On three fixture

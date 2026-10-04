@@ -1,23 +1,23 @@
-// Blog cases the site's own posts no longer hold, checked on the fixture site (port 4322,
-// playwright.config.ts project `sections`; scripts/build-fixture-site.ts). The fixture site is
-// the site's own posts (drafts included, as it is not a production build) plus three fixture
-// posts from tests/fixtures/posts/valid/: text-only.mdx, a post with no feature image
+// Blog cases checked on the fixture site (port 4322, playwright.config.ts project `sections`;
+// scripts/build-fixture-site.ts). The fixture site holds fixture posts only, 16 in all: three
+// fixture posts from tests/fixtures/posts/valid/: text-only.mdx, a post with no feature image
 // (healthcare-leadership, technology-teams, fixture-cards), long-title.mdx, a post
-// whose title is very long and holds an unbroken word (technology-teams,
-// fixture-cards), and every-part.mdx, a featured post that shows every part of the post template
-// (2099-01-01, so it is always the lead; drift, compliant-data, healthcare-leadership,
-// fixture-cards). It also adds 13 generated posts, fixture-post-01 to -13, all on agentic-ai:
-// fixture-post-01 is dated 2026-06-30 and featured, and posts 02 to 13 run 2026-06-29 back to
-// 2026-06-18. The lists these tests check (landing, topic page, home) are computed from the site's
-// own posts plus those, so a new story never needs a test change. A fixture post's place in a list
-// is asserted only through that computed selection; the fixture-only topic page fixture-cards
-// holds the three fixture-owned posts whatever else the site gains, so the no-image card and the
-// long-title wrap are always checked there.
+// whose title is very long and holds an unbroken word (technology-teams, fixture-cards), and
+// every-part.mdx, a featured post that shows every part of the post template (2099-01-01, so it
+// is always the lead; drift, compliant-data, healthcare-leadership, fixture-cards). It also holds
+// 13 generated posts, fixture-post-01 to -13, all on agentic-ai: fixture-post-01 is dated
+// 2026-06-30 and featured, and posts 02 to 13 run 2026-06-29 back to 2026-06-18. With no real
+// post in the build, the lead, Featured, Latest and Recent writing are fixed lists, asserted
+// literally below and checked against the selection rules, and every check runs unconditionally.
+// Where the real content guarantees live: the landing page over real posts (no post twice, parts in
+// order) is blog.spec.ts "landing page", Recent writing over real posts is blog.spec.ts "home page
+// recent writing (US7)", and the selection rules are tests/unit/content/post-order.test.ts (all
+// port 4321 or unit).
 import { test, expect, type Page } from "@playwright/test";
 import { blog } from "../../src/config/blog.ts";
 import { selectLanding, selectRecent, sortNewestFirst } from "../../src/lib/content/post-order.ts";
 import { FIXTURE_POSTS, generateFixturePosts } from "../../scripts/build-fixture-site.ts";
-import { posts, postSummary, readEntries } from "../helpers/content.ts";
+import { postSummary, readEntries } from "../helpers/content.ts";
 
 const LANDING = "/writing/";
 const TEXT_ONLY = "/writing/text-only/";
@@ -40,11 +40,14 @@ const generated = generateFixturePosts().map((post) => {
 const fixtureOwned = readEntries("posts", "tests/fixtures/posts/valid")
   .filter((entry) => (FIXTURE_POSTS as readonly string[]).includes(`${entry.slug}.mdx`))
   .map(postSummary);
-// Every post the fixture site builds, newest first. It is not a production build, so drafts are built.
-const SITE_POSTS = sortNewestFirst([...posts.map(postSummary), ...fixtureOwned, ...generated]);
+// Every post the fixture site builds, newest first.
+const SITE_POSTS = sortNewestFirst([...fixtureOwned, ...generated]);
 const LANDING_POSTS = selectLanding(SITE_POSTS);
-const LANDING_GRID_HREFS = [...LANDING_POSTS.featured, ...LANDING_POSTS.latest].map((post) => post.href);
-const RECENT_HREFS = selectRecent(SITE_POSTS).map((post) => post.href);
+// The fixed lists the fixture site shows (the selection rules must produce exactly these).
+const LEAD = "/writing/every-part/";
+const FEATURED = ["/writing/fixture-post-01/"];
+const LATEST = [LONG_TITLE, TEXT_ONLY, ...[2, 3, 4, 5].map((n) => `/writing/fixture-post-0${n}/`)];
+const RECENT = [LEAD, LONG_TITLE, TEXT_ONLY];
 const FIXTURE_CARDS = "/writing/topics/fixture-cards/";
 const hrefsWithTopic = (id: string) => SITE_POSTS.filter((post) => post.topics.includes(id)).map((post) => post.href);
 
@@ -60,32 +63,29 @@ const cardHrefs = (page: Page, selector: string) =>
   page.locator(`${selector} [data-post-card] h3 a`).evaluateAll((links) => links.map((a) => a.getAttribute("href")));
 
 test.describe("landing page on the fixture site", () => {
-  // every-part is the lead (2099). Featured holds the newest featured posts and Latest the newest
-  // others, both computed from the site's posts, so no post outside the lead, Featured and Latest
-  // is linked in those grids. The fixture posts' places in Featured and Latest are asserted only
-  // through that computed selection.
+  // every-part is the lead (2099). Featured holds the one other featured post and Latest the six
+  // newest others, as fixed lists that the selection rules must also produce, so no post outside
+  // the lead, Featured and Latest is linked in those grids.
   test("fills Featured with the newest featured posts and Latest with the newest others", async ({ page }) => {
     await page.goto(LANDING);
     expect(await page.locator("[data-lead-story] h2 a").getAttribute("href")).toBe("/writing/every-part/");
-    expect(LANDING_POSTS.lead?.href).toBe("/writing/every-part/");
+    expect(LANDING_POSTS.lead?.href).toBe(LEAD);
+    expect(LANDING_POSTS.featured.map((post) => post.href)).toEqual(FEATURED);
+    expect(LANDING_POSTS.latest.map((post) => post.href)).toEqual(LATEST);
     const featured = await cardHrefs(page, "[data-featured-grid]");
-    expect(featured).toEqual(LANDING_POSTS.featured.map((post) => post.href));
+    expect(featured).toEqual(FEATURED);
     await expect(page.locator("[data-featured-grid] [data-featured-mark]")).toHaveCount(featured.length);
     const latest = await cardHrefs(page, "[data-latest-grid]");
-    expect(latest).toEqual(LANDING_POSTS.latest.map((post) => post.href));
+    expect(latest).toEqual(LATEST);
     const shown = new Set([LANDING_POSTS.lead!, ...LANDING_POSTS.featured, ...LANDING_POSTS.latest].map((post) => post.href));
     for (const post of SITE_POSTS.filter((candidate) => !shown.has(candidate.href))) {
       await expect(page.locator(`main a[href="${post.href}"]`), post.href).toHaveCount(0);
     }
   });
 
-  test("shows the text-only post as a card with no image and no empty picture box when the landing lists it", async ({ page }) => {
+  test("shows the text-only post as a card with no image and no empty picture box", async ({ page }) => {
     await page.goto(LANDING);
     const textOnly = page.locator(`[data-post-card]:has(a[href="${TEXT_ONLY}"])`);
-    if (!LANDING_GRID_HREFS.includes(TEXT_ONLY)) {
-      await expect(textOnly).toHaveCount(0);
-      return;
-    }
     await expect(textOnly).toHaveCount(1);
     await expect(textOnly).toHaveAttribute("data-text-only", /.*/);
     await expect(textOnly.locator("img")).toHaveCount(0);
@@ -120,15 +120,16 @@ test.describe("post with no feature image", () => {
 test.describe("very long title", () => {
   test("wraps without sideways scrolling at 320 px on every page that shows it", async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 640 });
-    const technologyTeams = hrefsWithTopic("technology-teams");
+    // long-title is on the home page's Recent writing, the landing's Latest grid, the first page
+    // of all posts and the first page of technology-teams, so each is checked.
     const pages: Array<readonly [string, string]> = [
       [FIXTURE_CARDS, "h2"],
       [LONG_TITLE, "h1"],
+      ["/", "h3"],
+      [LANDING, "h3"],
+      ["/writing/all/", "h2"],
+      ["/writing/topics/technology-teams/", "h2"],
     ];
-    if (RECENT_HREFS.includes(LONG_TITLE)) pages.push(["/", "h3"]);
-    if (LANDING_GRID_HREFS.includes(LONG_TITLE)) pages.push([LANDING, "h3"]);
-    if (SITE_POSTS.findIndex((post) => post.href === LONG_TITLE) < blog.pageSize) pages.push(["/writing/all/", "h2"]);
-    if (technologyTeams.indexOf(LONG_TITLE) < blog.pageSize) pages.push(["/writing/topics/technology-teams/", "h2"]);
     for (const [path, heading] of pages) {
       await page.goto(path);
       await expect(page.locator(heading, { hasText: LONG_TITLE_START }).first(), path).toBeVisible();
@@ -185,7 +186,7 @@ test.describe("free-form topic page on the fixture site", () => {
 });
 
 test.describe("series lead on the fixture site", () => {
-  // The lead (every-part) joins drift and no fixture post joins convergence, so the lead links both series.
+  // The lead (every-part) is the only post in drift and none is in convergence, so the lead links both series.
   test("links both series even though neither has a post", async ({ page }) => {
     await page.goto(LANDING);
     const lead = page.locator("[data-series-intro]");
@@ -201,9 +202,9 @@ test.describe("home page recent writing on the fixture site", () => {
       has: page.getByRole("heading", { level: 2, name: "Recent writing" }),
     });
     const recent = selectRecent(SITE_POSTS);
+    expect(recent.map((post) => post.href)).toEqual(RECENT);
     const cards = section.locator("article[data-post-card]");
     await expect(cards).toHaveCount(recent.length);
-    expect(recent[0]?.href).toBe("/writing/every-part/");
     for (const [index, post] of recent.entries()) {
       await expect(cards.nth(index).getByRole("heading", { level: 3 })).toContainText(post.title);
     }

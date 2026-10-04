@@ -59,14 +59,14 @@ describe("resolveReplacement", () => {
   });
 
   it("uses an off-site name and href", () => {
-    expect(resolveReplacement(old({ name: "Cadence", href: "https://example.com/c" }), all, published)).toEqual({
-      name: "Cadence",
+    expect(resolveReplacement(old({ name: "Metronome", href: "https://example.com/c" }), all, published)).toEqual({
+      name: "Metronome",
       href: "https://example.com/c",
     });
   });
 
   it("uses a name alone with no link", () => {
-    expect(resolveReplacement(old({ name: "Cadence" }), all, published)).toEqual({ name: "Cadence" });
+    expect(resolveReplacement(old({ name: "Metronome" }), all, published)).toEqual({ name: "Metronome" });
   });
 
   it("returns nothing without replacedBy", () => {
