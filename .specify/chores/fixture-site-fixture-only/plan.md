@@ -171,7 +171,7 @@ already live, in the specs that run on the real site (port 4321) and the unit te
 - `docs/design-source.md` lines 79-80: note the Playwright fixture site has fixture posts and
   projects only.
 - Test: `no behaviour: n/a (docs)`; CLAUDE.md is not touched.
-- [ ] done
+- [x] done
 
 ## Docs citations (Principle IV)
 

@@ -77,7 +77,9 @@ Test support for this structure:
   The harness copies the site into `.cache/`, adds fixture page files and runs an Astro build or sync.
 - `tests/fixtures/pages/` holds the fixture pages: `sections.mdx`, `workshops.mdx`, and
   `broken/` with the files that must fail the build. `pnpm run build:fixtures` builds the site with
-  the sections fixture for the `sections` Playwright project.
+  the sections fixture for the `sections` Playwright project. That Playwright fixture site
+  (`scripts/build-fixture-site.ts`) holds fixture posts and fixture projects only, plus the real
+  pages for the shell.
 
 ### Flux deviations
 
