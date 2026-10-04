@@ -17,7 +17,12 @@
 // (maxDiffPixelRatio 0.001, animations disabled, caret hidden) and
 // updateSnapshots "none" (a missing baseline fails) come from
 // playwright.config.ts.
+//
+// The footer year is frozen to 2026 before every shot (freezeFooterYear), so a
+// new calendar year cannot fail the shell, not-found or sections shots (issue #45).
 import { test, expect, type Locator, type Page } from "@playwright/test";
+import { expectThemeClass, setTheme, type Theme } from "./color-theme.ts";
+import { freezeFooterYear } from "./footer-year";
 
 const WIDTHS = [
   { name: "phone", width: 390, height: 844 },
@@ -26,17 +31,12 @@ const WIDTHS = [
 
 const THEMES = ["dark", "light"] as const;
 
-async function open(page: Page, path: string, width: number, height: number, theme: "dark" | "light") {
+async function open(page: Page, path: string, width: number, height: number, theme: Theme) {
   await page.setViewportSize({ width, height });
-  await page.addInitScript((value) => {
-    try {
-      localStorage.setItem("color-theme", value);
-    } catch {
-      // Storage unavailable: the page falls back to dark.
-    }
-  }, theme);
+  await setTheme(page, theme);
   await page.goto(path);
-  await expect(page.locator("html")).toHaveClass(theme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
+  await freezeFooterYear(page);
+  await expectThemeClass(page, theme);
   await settleImages(page);
 }
 
@@ -112,7 +112,7 @@ for (const size of WIDTHS) {
 // pages do is asserted elsewhere (blog-fixtures, projects-fixtures, contact,
 // projects and theme-tokens specs); this block adds only the pixels. Each shot
 // is the element, not the page, so Related posts, real project rows and the
-// footer's build-time year stay out of it. Reduced motion puts the story in its
+// footer stay out of it. Reduced motion puts the story in its
 // resting state (chapters final, no reading-progress bar).
 const FIXTURE = "http://localhost:4322";
 

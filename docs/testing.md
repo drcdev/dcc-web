@@ -21,7 +21,7 @@ gate times (see "Measured gate times").
 | Build, `build` | `pnpm run test:build`, Vitest `build` project, `buildFixtureSite(...)` (default mode) | What the real build does: route generation, `getStaticPaths()` checks, render-time component checks, Astro's own errors (body image import), draft exclusion per environment, CSP and indexing output, code highlighting, cross-page output. Tens of seconds per run. | One build per fixture set, many assertions read from it | Thin to what only a build can show. |
 | Worker integration | `pnpm run test:worker`, `vitest-pool-workers` | The contact API against local D1 | Per endpoint | Keep. |
 | Real `astro build` | `tests/build/indexing.test.ts`, which runs `astro build` on the repository's own content in the main-branch and preview environments, plus `pnpm run build`, which runs in the `e2e` job in CI and in the local `verify` script. `indexing.test.ts` also runs on content-only changes, through `pnpm run test:build:content`. | That the real site builds and that its sitemap, robots and headers match the environment | Two environments | Keep. |
-| E2E | Playwright `e2e` and sibling projects, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Journeys in a real browser: navigation, theme, menu, contact submission, not-found, behaviour without JavaScript, layout geometry per template (no sideways scroll, no element wider than the viewport, header and footer clear of the main content), the theme token each key component resolves to in both themes (`theme-tokens.spec.ts`) | Journeys, plus the template matrix | Keep journeys; review matrices (#40). |
+| E2E | Playwright `e2e` and sibling projects, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Journeys in a real browser: navigation, theme, menu, contact submission, not-found, behaviour without JavaScript, layout geometry per template at 320, 390 and 1280 px (no sideways scroll, no element wider than the viewport, header and footer clear of the main content), the theme token each key component resolves to in both themes (`theme-tokens.spec.ts`) | Journeys, plus the template matrix | Keep journeys; review matrices (#40). |
 | Accessibility | Playwright `a11y` projects (axe), `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | WCAG 2.2 AA per template, both widths, both themes | Full template matrix | Keep (Principle X). |
 | Visual | Playwright `visual` project, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Pixel baselines of the design system: the shell (header, footer, open mobile menu), the not-found page, and on the fixture site the sections page, the post and story templates, the listing cards, the lead story, a series banner, four projects index rows (shipped, experiment, draft and in progress) and the contact form. Never real content. | Per platform | Keep, blocking. A diff is a design-system change (Principle III). Real-content shots removed in #40 phase 1; fixture template shots added in phase 2; see "Visual coverage". |
 | Budget | Playwright `budget` project, `pnpm run test:budget` | LCP, CLS, long tasks and bytes under throttling | Per template, own invocation with one worker (`pnpm run test:budget`) | Keep. Slow by design. |
@@ -126,6 +126,9 @@ and in-progress projects index rows, making four. The retired status (feature 01
 more fixture subjects, `project-row-retired` (the retired index row, making five) and
 `retired-story-header` (the story header with the retired pill and note), on the fixture
 project `retired`.
+The project also sets the footer year to 2026 before every shot (`tests/e2e/footer-year.ts`), so
+a new calendar year cannot fail it; the real year is checked by `SiteFooter.test.ts` and
+`shell.spec.ts`.
 
 | Removed subject (4 images per platform) | Where its coverage lives now |
 |---|---|
@@ -153,6 +156,13 @@ class without a reload to prove the class alone drives the value. The site has n
 component, so the prose blockquote stands in for "callouts". The CTA button is theme-invariant
 by design (`bg-rust-600 text-white`, no `dark:` variant), so the test pins it equal in both
 themes.
+
+The focus-ring probes also check that the ring is the site's own rule (solid, 2px, offset 2px,
+and no outline before focus) and that it keeps its token colour when the text colour is
+overridden in place. That matters in dark mode, where the prose link and its ring share
+`accent-400`, so a ring that fell back to `currentColor` would otherwise pass. The specs that
+need a colour theme before first paint share one helper, `tests/e2e/color-theme.ts`
+(`setTheme`, `expectThemeClass`), instead of each carrying a copy.
 
 ### Check functions and call sites
 
@@ -414,3 +424,18 @@ Before and after are both `main` push runs, so they compare directly. The PR's o
 (37146278538) had 437 s for the job and 311 s for the step. Across the whole of #40, the `e2e` job
 went from 473 s to 447 s and the run (first job start to `verify` end) from 500 s to 465 s.
 Each figure is a single run.
+
+### Playwright theme and layout tidy, #49 (2026-10-03)
+
+| Measure | Before (run 37168636278, `main` push of #58) | After |
+|---|---|---|
+| `e2e` job | 449 s | 394 s (6 min 34 s), run 37169411244 (PR #59, first run) |
+| `test:e2e:parallel` step | 320 s | 269 s (4 min 29 s), same run |
+| E2E tests | 617 | 611 |
+| Accessibility tests | 626 | 608 |
+| All Playwright tests (`--list`, five local projects) | 1429 | 1405 |
+
+The tidy moved the colour-theme helper into one file and folded the sideways-scroll checks into
+the geometry test, which now runs at 320, 390 and 1280 px. The a11y 320 px reflow check went
+with it. Counts are from `playwright test --list` on the branch after merging `main` at #58;
+the visual (58), sections (55) and budget (73) projects are unchanged.

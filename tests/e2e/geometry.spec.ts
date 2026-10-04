@@ -4,10 +4,10 @@
 // sideways, an element wider than the screen, or a header or footer that runs into the main
 // content.
 //
-// Overlap with other specs: no-js.spec.ts asserts no horizontal page scroll per template with
-// JavaScript off, and a11y.spec.ts asserts it at 320 px for reflow. This spec asserts it with
-// JavaScript on (menu button, theme switch and islands present), next to the two checks nothing
-// else makes. The extra assertions cost no extra page load.
+// Overlap with other specs: this spec owns the per-template sideways-scroll check at 320, 390 and
+// 1280 px with JavaScript on (menu button, theme switch and islands present), including WCAG
+// 1.4.10 reflow at 320. no-js.spec.ts keeps the check with JavaScript off, and a11y.spec.ts keeps
+// it at 200% zoom and with text spacing. The extra assertions cost no extra page load.
 //
 // Skip rule for the "no element wider than the viewport" walk. An element is exempt when:
 //   - its box has zero width or height (display: none, the closed mobile menu list, empty
@@ -24,6 +24,7 @@ import { test, expect } from "@playwright/test";
 import { NOT_FOUND_PENDING, TEMPLATES } from "./templates.ts";
 
 const WIDTHS = [
+  { name: "narrow", width: 320, height: 640 },
   { name: "phone", width: 390, height: 844 },
   { name: "desktop", width: 1280, height: 800 },
 ] as const;
