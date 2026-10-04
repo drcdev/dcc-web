@@ -22,6 +22,19 @@ Expect: the four `JetBrainsMono-*.woff2` files match their pinned SHA-256, weigh
 cmaps; total ≤ 60,000 bytes (31,656 today); `OFL.txt` unmodified; the guard green for both
 families (M10, M11, M19).
 
+Reproducibility (recorded 2026-10-04): release
+`https://github.com/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip`,
+archive SHA-256 `6f6376c6ed2960ea8a963cd7387ec9d76e3f629125bc33d1fdcd7eb7012f7bbf`. Per face:
+`uvx --from "fonttools[woff]==4.60.2" pyftsubset JetBrainsMono-<face>.ttf --unicodes=<INTER_UNICODE_RANGE> --layout-features= --no-hinting --flavor=woff2 --output-file=src/assets/fonts/jetbrains-mono/JetBrainsMono-<face>.woff2`.
+
+| File | Bytes | SHA-256 |
+|---|---|---|
+| `JetBrainsMono-Regular.woff2` | 7,460 | `c7db62fa593d7a626f8eb77646a6f0944c01e3ba586ac3ceca55e8b36888bd18` |
+| `JetBrainsMono-Italic.woff2` | 8,256 | `3e6abb338d565e42430dc0d7612f261eb92d62b89a1f77c021cc9e7daa5d9dc0` |
+| `JetBrainsMono-Bold.woff2` | 7,544 | `504d5a6ee14ff269ca94e8c5d2b661c92a6cd3290c11735c7099fd5a71bc83c0` |
+| `JetBrainsMono-BoldItalic.woff2` | 8,396 | `62e2d56f1471aa78550024fc0432303c351d9c4141ba7a5331b267c8c2015fdf` |
+| `OFL.txt` | 4,399 | `30f0c136e3c88e422d0791acd97238870f9054a9729bc34cf2ff0d4ed8cac4ad` |
+
 Regenerate (only when upgrading the font): `node scripts/fonts/subset-jetbrains-mono.ts`, then
 `git status src/assets/fonts/jetbrains-mono/` shows no change if the release is the same.
 

@@ -1,7 +1,7 @@
 // The character set the self-hosted Inter files ship, and the system font stack used as the
 // fallback. No imports, so astro.config.mjs, the subset script and the tests can all load it.
 
-/** CSS `unicode-range` tokens for the shipped set: ASCII, Latin-1, typographic marks, → ✓ ✗. */
+/** CSS `unicode-range` tokens for the shipped set, used by both Inter and JetBrains Mono: ASCII, Latin-1, typographic marks, → ✓ ✗. */
 export const INTER_UNICODE_RANGE: readonly string[] = [
   "U+0020-007E",
   "U+00A0-00FF",
@@ -33,6 +33,18 @@ export function codePointsOf(range: readonly string[]): Set<number> {
 
 /** Inside the range but absent from Inter's cmap: U+00AD SOFT HYPHEN is never drawn as a glyph. */
 export const NOT_IN_INTER: readonly number[] = [0x00ad];
+
+/** Tailwind's default mono families, in order, with the generic `monospace` last. */
+export const MONO_FALLBACK_STACK: readonly string[] = [
+  "ui-monospace",
+  "SFMono-Regular",
+  "Menlo",
+  "Monaco",
+  "Consolas",
+  "Liberation Mono",
+  "Courier New",
+  "monospace",
+];
 
 /** Today's system families, none added or removed, with the generic `sans-serif` last. */
 export const SYSTEM_FONT_STACK: readonly string[] = [
