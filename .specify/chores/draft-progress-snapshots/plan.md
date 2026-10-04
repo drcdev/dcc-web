@@ -121,7 +121,7 @@ build-time year, the shared theme helper) are unaffected.
 
 Order: W1 → W2 → W3. W2 needs W1; W3 describes the result.
 
-### W1 Two fixture row subjects in `visual.spec.ts`
+### [x] W1 Two fixture row subjects in `visual.spec.ts`
 
 **Files:** `tests/e2e/visual.spec.ts`.
 
