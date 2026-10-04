@@ -60,6 +60,12 @@ describe.each(slugs)("the %s project file", (slug) => {
 
 describe("Focus Pocus", () => {
   const { frontmatter, content } = read("focus-pocus");
+  it("is retired with no replacement, and still published (issue #65)", () => {
+    expect(frontmatter.status).toBe("retired");
+    expect(frontmatter.replacedBy).toBeUndefined();
+    expect(frontmatter.draft).toBe(false);
+    expect(published).toContain("focus-pocus");
+  });
   it("chooses JXA behind an MCP server and keeps the packing-list picture without a part", () => {
     expect(validateProjectStory("focus-pocus.mdx", content).options.find((o) => o.chosen)?.name).toBe("JXA behind an MCP server");
     const visuals = frontmatter.visuals as Record<string, { part?: string }>;
