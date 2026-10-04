@@ -62,8 +62,8 @@ No tasks of its own: the link's browser test is T020 (with the resolver cases in
 
 **Goal**: Tempo shows as retired, replaced by Cadence, no link.
 
-- [ ] T026 [US3] Layer unit. Add to `tests/unit/content/projects-content.test.ts` the assertion that Tempo is `retired`, `replacedBy` is `{ name: "Cadence" }` with no href, and it is still published (slug and `published` lists unchanged). See fail.
-- [ ] T027 [US3] Content: set `status: retired` and `replacedBy: { name: Cadence }` (plain-text name, no `href`, so no link; FR-009) in `src/content/projects/tempo.mdx`; update the body comment per research R8. T026 goes green. Confirm `tests/build/indexing.test.ts`, `tests/e2e/seo.spec.ts`, `tests/e2e/pages.spec.ts` need no change (Tempo stays at `/projects/tempo/`).
+- [x] T026 [US3] Layer unit. Add to `tests/unit/content/projects-content.test.ts` the assertion that Tempo is `retired`, `replacedBy` is `{ name: "Cadence" }` with no href, and it is still published (slug and `published` lists unchanged). See fail.
+- [x] T027 [US3] Content: set `status: retired` and `replacedBy: { name: Cadence }` (plain-text name, no `href`, so no link; FR-009) in `src/content/projects/tempo.mdx`; update the body comment per research R8. T026 goes green. Confirm `tests/build/indexing.test.ts`, `tests/e2e/seo.spec.ts`, `tests/e2e/pages.spec.ts` need no change (Tempo stays at `/projects/tempo/`).
 
 ## Phase 5: Visual baselines and polish
 
