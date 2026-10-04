@@ -2,18 +2,20 @@
 // playwright.config.ts project `sections`; scripts/build-fixture-site.ts). The fixture site is
 // the site's own posts (drafts included, as it is not a production build) plus three fixture
 // posts from tests/fixtures/posts/valid/: text-only.mdx, a post with no feature image
-// (2026-08-10; healthcare-leadership, technology-teams, fixture-cards), long-title.mdx, a post
-// whose title is very long and holds an unbroken word (2026-08-20; technology-teams,
+// (healthcare-leadership, technology-teams, fixture-cards), long-title.mdx, a post
+// whose title is very long and holds an unbroken word (technology-teams,
 // fixture-cards), and every-part.mdx, a featured post that shows every part of the post template
 // (2099-01-01, so it is always the lead; drift, compliant-data, healthcare-leadership,
-// fixture-cards). It also adds 13 generated posts, fixture-post-01 to -13, dated 2026-06-30 back
-// to 2026-06-18, all on agentic-ai; fixture-post-01 is featured. The lists these tests check
+// fixture-cards). It also adds 13 generated posts, fixture-post-01 to -13, dated 2026-06-29 back
+// to 2026-06-18, all on agentic-ai; fixture-post-01 is featured. text-only, long-title and
+// fixture-post-01 get far-future dates on the fixture site (2098-12-30, 2098-12-31 and 2098-12-29,
+// scripts/build-fixture-site.ts), so a real post never moves them out of the lists checked here. The lists these tests check
 // (landing, topic page, home) are computed from the site's own posts plus those, so a new story
 // never needs a test change; the assertions about the fixture posts themselves stay fixed.
 import { test, expect, type Page } from "@playwright/test";
 import { blog } from "../../src/config/blog.ts";
 import { selectLanding, selectRecent, sortNewestFirst } from "../../src/lib/content/post-order.ts";
-import { FIXTURE_POSTS, generateFixturePosts } from "../../scripts/build-fixture-site.ts";
+import { FIXTURE_POSTS, FIXTURE_POST_DATES, generateFixturePosts } from "../../scripts/build-fixture-site.ts";
 import { posts, postSummary, readEntries } from "../helpers/content.ts";
 
 const LANDING = "/writing/";
@@ -36,7 +38,12 @@ const generated = generateFixturePosts().map((post) => {
 });
 const fixtureOwned = readEntries("posts", "tests/fixtures/posts/valid")
   .filter((entry) => (FIXTURE_POSTS as readonly string[]).includes(`${entry.slug}.mdx`))
-  .map(postSummary);
+  .map(postSummary)
+  // The fixture site dates two of them in the far future (scripts/build-fixture-site.ts).
+  .map((post) => {
+    const date = FIXTURE_POST_DATES[`${post.slug}.mdx`];
+    return date === undefined ? post : { ...post, date: new Date(date) };
+  });
 // Every post the fixture site builds, newest first. It is not a production build, so drafts are built.
 const SITE_POSTS = sortNewestFirst([...posts.map(postSummary), ...fixtureOwned, ...generated]);
 const LANDING_POSTS = selectLanding(SITE_POSTS);
@@ -76,9 +83,9 @@ test.describe("landing page on the fixture site", () => {
 
   test("shows the text-only post as a card with no image and no empty picture box", async ({ page }) => {
     await page.goto(LANDING);
-    const textOnly = page.locator("[data-post-card][data-text-only]");
+    const textOnly = page.locator(`[data-post-card]:has(h3 a[href="${TEXT_ONLY}"])`);
     await expect(textOnly).toHaveCount(1);
-    await expect(textOnly.locator("h3 a")).toHaveAttribute("href", TEXT_ONLY);
+    await expect(textOnly).toHaveAttribute("data-text-only", /.*/);
     await expect(textOnly.locator("img")).toHaveCount(0);
   });
 });

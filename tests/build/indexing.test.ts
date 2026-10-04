@@ -14,6 +14,7 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { configSchema } from "../../scripts/setup-check/schemas.ts";
+import { isProductionBuild } from "../../src/lib/build-mode.ts";
 import { resolveSiteOrigin } from "../../src/lib/site-origin.ts";
 import { inBuild, pages, posts, projects, isSample, sitemapPaths } from "../helpers/content.ts";
 
@@ -49,6 +50,7 @@ const environments = [
 
 describe.each(environments)("astro build with the $label environment", ({ env }) => {
   const expectedOrigin = resolveSiteOrigin(env, setupConfig);
+  const production = isProductionBuild(env);
   let outDir = "";
   let files: string[] = [];
 
@@ -152,11 +154,10 @@ describe.each(environments)("astro build with the $label environment", ({ env })
     );
     // The sitemap lists every page, the listings and one page per topic, and the posts and projects
     // the build contains: a production build leaves drafts out, any other build lists them.
-    const expected = sitemapPaths({ production: env.WORKERS_CI_BRANCH === "main" });
+    const expected = sitemapPaths({ production });
     expect([...entries].sort()).toEqual(expected.map((path) => `${expectedOrigin}${path}`).sort());
   });
 
-  const production = env.WORKERS_CI_BRANCH === "main";
   const drafts = [...posts, ...projects].filter((entry) => entry.draft);
   const pageFile = (address: string) => join(outDir, address, "index.html");
   const listingOf = (entry: (typeof drafts)[number]) =>

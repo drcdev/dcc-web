@@ -599,3 +599,14 @@ item leaves `verify:quick` green, along with its targeted files:
 - **Parallel worktrees on port 4321** (memory). Rerun e2e when idle before treating a mass
   ECONNREFUSED as a failure.
 - **No `[PREVIEW-CHECK]` items.** Everything is verifiable locally.
+
+## Round 1 fixes
+
+Review round 1 (H1 to H4, L1) fixed; nothing else touched.
+
+- **H1** `blog-pagination.spec.ts`: the exactly-two-pages guard is now `total > pageSize`; `last` is computed from the total and `blog.pageSize`; page 2's count is `min(pageSize, total - pageSize)`; Next is absent only when page 2 is the last page; the past-the-last address is `last + 1`.
+- **H2** `scripts/build-fixture-site.ts` dates `long-title` (2098-12-31), `text-only` (2098-12-30) and `fixture-post-01` (2098-12-29) in the far future on the fixture site only, through `FIXTURE_POST_DATES` and `FEATURED_FIXTURE_DATE`. The fixture files keep their dates because `local-site.test.ts` reads them. `blog-fixtures.spec.ts` applies the same dates; the text-only landing card is found by its address instead of by a count of text-only cards.
+- **H3** `blog.spec.ts`: the lead-image attributes are asserted only when the lead has a `featureImage`; the text-only and image counts come from `featureImage` in the landing selection.
+- **H4** `projects-no-js.spec.ts`: the stand-in link name defaults to `` `${title} on drc.dev` `` and the local type makes `label` optional.
+- **L1** `indexing.test.ts`: `production` is `isProductionBuild(env)`, used for the sitemap and the drafts checks.
+- **Proof:** five scratch unfeatured, image-less posts dated 2026-10-03 (26 posts, three pages, text-only lead): `sections` pagination and fixtures specs and the `e2e` landing and no-JS specs all passed, then the scratch posts were deleted.

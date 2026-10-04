@@ -163,6 +163,8 @@ test.describe("post page", () => {
 // fixed-data cases on the fixture site, tests/e2e/blog-fixtures.spec.ts).
 const LANDING = "/writing/";
 const LANDING_SELECTION = selectLanding(BUILT_POSTS);
+/** Every built post's entry by address, for the front matter the summary leaves out. */
+const BUILT_ENTRY = new Map(inBuild(posts, { production: false }).map((entry) => [entry.address, entry]));
 const LEAD_TITLE = LANDING_SELECTION.lead!.title;
 
 test.describe("landing page", () => {
@@ -269,17 +271,25 @@ test.describe("landing page", () => {
     await expect(page.locator("[data-featured-grid] [data-featured-mark]")).toHaveCount(featured.length);
   });
 
-  // Every post here has a feature image; the text-only card is checked on the fixture site.
+  // featureImage is optional: a post without one is a text-only card, so the counts come from the selection.
   test("shows the lead story's image eagerly and every card with its image", async ({ page }) => {
     await page.goto(LANDING);
-    const img = page.locator("[data-lead-story] img");
-    await expect(img).toHaveAttribute("fetchpriority", "high");
-    await expect(img).toHaveAttribute("loading", "eager");
-    await expect(page.locator("[data-lead-story][data-text-only], [data-post-card][data-text-only]")).toHaveCount(0);
+    const hasImage = (href: string) => Boolean(BUILT_ENTRY.get(href)!.data.featureImage);
+    const lead = LANDING_SELECTION.lead!;
+    if (hasImage(lead.href)) {
+      const img = page.locator("[data-lead-story] img");
+      await expect(img).toHaveAttribute("fetchpriority", "high");
+      await expect(img).toHaveAttribute("loading", "eager");
+    } else {
+      await expect(page.locator("[data-lead-story][data-text-only]")).toHaveCount(1);
+    }
+    const cardPosts = [...LANDING_SELECTION.featured, ...LANDING_SELECTION.latest];
     const cards = page.locator("[data-featured-grid] [data-post-card], [data-latest-grid] [data-post-card]");
-    const shown = LANDING_SELECTION.featured.length + LANDING_SELECTION.latest.length;
-    await expect(cards).toHaveCount(shown);
-    await expect(cards.locator("img")).toHaveCount(shown);
+    await expect(cards).toHaveCount(cardPosts.length);
+    await expect(
+      page.locator("[data-featured-grid] [data-post-card][data-text-only], [data-latest-grid] [data-post-card][data-text-only]"),
+    ).toHaveCount(cardPosts.filter((post) => !hasImage(post.href)).length);
+    await expect(cards.locator("img")).toHaveCount(cardPosts.filter((post) => hasImage(post.href)).length);
   });
 
   test("advertises the feed in the head, and has its own title, description and canonical address", async ({

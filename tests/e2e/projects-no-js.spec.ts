@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 import { pickedStory } from "../helpers/content";
 
 const STORY = pickedStory.address;
-const data = pickedStory.data as { standIn?: { label: string }; source?: string; demo?: string };
+const data = pickedStory.data as { standIn?: { label?: string }; source?: string; demo?: string };
 const INDEX = "/projects/";
 
 test.describe("without JavaScript", () => {
@@ -24,7 +24,7 @@ test.describe("without JavaScript", () => {
     expect(await table.getByRole("columnheader").count()).toBeGreaterThan(2);
     await expect(page.getByRole("navigation", { name: "In this story" })).toHaveCount(0);
     // Each link is asserted only when the story's front matter declares it.
-    if (data.standIn) await expect(page.getByRole("link", { name: data.standIn.label })).toBeVisible();
+    if (data.standIn) await expect(page.getByRole("link", { name: data.standIn.label ?? `${pickedStory.title} on drc.dev` })).toBeVisible();
     if (data.source) await expect(page.getByRole("link", { name: `Source code for ${pickedStory.title}` })).toBeVisible();
     await expect(page.locator("[data-invitation-text]")).toBeVisible();
     await expect(page.getByRole("link", { name: `Tell me about a problem like ${pickedStory.title}` })).toBeVisible();

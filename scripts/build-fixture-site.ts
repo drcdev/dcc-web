@@ -6,7 +6,7 @@
 // too: a post with no feature image and a post with a very long title, the cases the removed
 // sample posts used to cover, and a post that shows every part of the post template, the lead
 // story and the subject of the post-template snapshot (FIXTURE_POSTS). Written to .cache/fixture-site/dist.
-import { cpSync, existsSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { deflateSync, crc32 } from "node:zlib";
@@ -29,6 +29,20 @@ export interface GeneratedPost {
  * exactly them. tests/e2e/blog-fixtures.spec.ts checks them on the served fixture site.
  */
 export const FIXTURE_POSTS = ["text-only.mdx", "long-title.mdx", "every-part.mdx"] as const;
+
+/**
+ * The dates the fixture site gives two of the fixture posts, in place of the dates in their files,
+ * which other tests read. Like every-part (2099-01-01) they sit in the far future, so a real post
+ * published later never pushes them out of the lists tests/e2e/blog-fixtures.spec.ts checks.
+ * long-title is the newer of the two, as it is in its file.
+ */
+export const FIXTURE_POST_DATES: Readonly<Record<string, string>> = {
+  "long-title.mdx": "2098-12-31",
+  "text-only.mdx": "2098-12-30",
+};
+
+/** The date of the featured generated post, fixture-post-01, in the far future for the same reason. */
+export const FEATURED_FIXTURE_DATE = "2098-12-29";
 
 /**
  * Fixture pages copied from tests/fixtures/pages/ into src/content/pages/ (with the pictures in
@@ -80,7 +94,7 @@ export function generateFixturePosts(count = MINIMUM_POSTS): GeneratedPost[] {
   return Array.from({ length: total }, (_, index) => {
     const number = String(index + 1).padStart(2, "0");
     const slug = `fixture-post-${number}`;
-    const date = new Date(Date.UTC(2026, 5, 30 - index)).toISOString().slice(0, 10);
+    const date = index === 0 ? FEATURED_FIXTURE_DATE : new Date(Date.UTC(2026, 5, 30 - index)).toISOString().slice(0, 10);
     // The oldest post also carries a free-form topic, so the fixture site has a free-form topic page.
     const topics = [
       "agentic-ai",
@@ -154,7 +168,15 @@ async function buildSite(): Promise<void> {
   }
   const postFixtures = resolve(repoRoot, "tests/fixtures/posts");
   cpSync(resolve(postFixtures, "images"), resolve(postsDir, "images"), copyOptions);
-  for (const name of FIXTURE_POSTS) cpSync(resolve(postFixtures, "valid", name), resolve(postsDir, name));
+  for (const name of FIXTURE_POSTS) {
+    const date = FIXTURE_POST_DATES[name];
+    if (date === undefined) {
+      cpSync(resolve(postFixtures, "valid", name), resolve(postsDir, name));
+    } else {
+      const source = readFileSync(resolve(postFixtures, "valid", name), "utf-8");
+      writeFileSync(resolve(postsDir, name), source.replace(/^date: .*$/m, `date: ${date}`));
+    }
+  }
 
   // Fixture projects (with their images) go into the projects collection.
   const projectFixtures = resolve(repoRoot, "tests/fixtures/projects");
