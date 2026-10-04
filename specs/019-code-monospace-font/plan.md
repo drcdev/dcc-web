@@ -122,10 +122,10 @@ a test goes"). Test titles cite contract rows (`M01` …); no `specs/...` path l
 | Head: a second font `<style>` with four mono faces (swap, range, same-origin woff2), four `local("Courier New")` adjusted fallback faces, `--font-jetbrains-mono` order ending `monospace`; still exactly two preloads, both Inter; no off-origin URL (FR-005, FR-006, FR-007; M01–M05) | component | `tests/component/BaseLayout.test.ts` (`fontStyle()` selects the Inter style by family instead of expecting one style; new mono cases) |
 | Build: `dist/_astro/fonts/` holds exactly eight hashed files, byte-identical to the eight committed ones; no font file elsewhere (FR-005, FR-011; M09) | build | `tests/build/local-site.test.ts` (update the existing describe; reads the L1 build, no new build) |
 | Drawn faces on the fixture post: block code and a Shiki token → `JetBrainsMono-Regular`; inline code by computed weight/style; code in `em` → `-BoldItalic`; in `strong` → `-Bold`; `kbd`, `samp` → `-Regular`; `samp` in `em` → `-Italic`; paragraph, heading, code caption and Copy button still Inter (FR-001, FR-004, SC-001; M13). The existing "inline code is drawn in Inter" case is superseded by this. | E2E | `tests/e2e/fonts.spec.ts` (CDP `CSS.getPlatformFontsForNode`, research R8) |
-| Equal advance: two code-block lines of equal length but different characters render at equal widths (Story 1 scenario 1; M14) | E2E | `tests/e2e/fonts.spec.ts`. Reason it is E2E: only the browser shows rendered widths; the unit file check proves the font, this proves the page uses it for every token. |
-| Font requests per template: same-origin `/_astro/fonts/*.woff2`, each once; at most four Inter and four mono; a template drawing no `code/pre/kbd/samp` text requests no mono file (FR-005, FR-007, SC-002, SC-003; M15) | E2E | `tests/e2e/fonts.spec.ts` (extend the template loop; mono files identified by SHA-256 of the committed files). **Second layer over M04's head check, reason**: head markup cannot show which files the browser actually requests. |
+| Equal advance: two code-block lines of equal length but different characters render at equal widths (Story 1 scenario 1; M14) | E2E | `tests/e2e/fonts.spec.ts`. Reason it is E2E: only the browser shows rendered widths, and checking advances in the file at unit level would need a font parser that reads `hmtx` (`fontace` does not), a new dependency ruled out by FR-017. |
+| Font requests per template: same-origin `/_astro/fonts/*.woff2`, each once; at most four Inter and four mono; a template drawing no `code/pre/kbd/samp` text requests no mono file; the mono files requested equal exactly the faces the page's code text draws, so a page with code but no italic or bold code requests neither (FR-005, FR-007, SC-002, SC-003; M15) | E2E | `tests/e2e/fonts.spec.ts` (extend the template loop; mono files identified by SHA-256 of the committed files; `writing-post` is the no-italic case, and a real no-code page fulfilled through `page.route` with one inserted code block is the no-bold case, so no fixture page is added and no other baseline moves). **Second layer over M04's head check, reason**: head markup cannot show which files the browser actually requests. |
 | JS off: code block drawn by `JetBrainsMono-Regular` (FR-016; M16) | E2E | `tests/e2e/fonts.spec.ts` |
-| Fonts blocked: code visible and drawn by a non-`JetBrainsMono-` face (FR-006, edge case; M17) | E2E | `tests/e2e/fonts.spec.ts` (extend the existing blocked-fonts test) |
+| Fonts blocked: code visible, drawn by a non-`JetBrainsMono-` face that is monospace (equal widths), no sideways page scroll at 320 CSS px and the code block's scroll region visible on focus (FR-006, FR-012 with the fallback, edge case; M17) | E2E | `tests/e2e/fonts.spec.ts` (extend the existing blocked-fonts test). **Second layer over the a11y reflow and focus checks, reason**: those run with the shipped face only. |
 | Served mono file: 200, `font/woff2`, exact immutable `Cache-Control`, security headers (FR-011; M12) | E2E | `tests/e2e/headers.spec.ts`: one new test. The existing font test reaches an Inter file through its preload link; mono files have no preload, so the new test takes a mono file URL from the home page's JetBrains Mono `@font-face` `src` and asserts the same headers. **Second layer over the unit `_headers` test, reason**: only the served response shows the rule reaches the new hashed files. |
 | CSP: no violation, one more style hash, no new source (FR-010; M06) | E2E | **No new test**: `tests/e2e/headers.spec.ts` CSP test already filters `sha256-` hashes and listens for violations on every template; `tests/unit/site/csp.test.ts` already pins the config, which does not change. |
 | Accessibility on every template, including reflow and scrollable code focus (FR-012, SC-006) | a11y | **No change**: `tests/e2e/a11y.spec.ts`, `blog.a11y.spec.ts`, `blog-fixture.a11y.spec.ts` run as they are (the fixture post is already in them). |
@@ -178,18 +178,22 @@ a test goes"). Test titles cite contract rows (`M01` …); no `specs/...` path l
 2. Recipe and mono font-file tests (RED); `scripts/fonts/subset-jetbrains-mono.ts`; run it; commit
    the four files and `OFL.txt` (GREEN; sizes and hashes match research R2).
 3. Guard extension with the mono self-check (seen to fail through the self-check), then green.
-4. Tests for config, tokens, head, build output, fonts E2E (faces, widths, requests, JS off,
-   blocked), served header assertion and the visual wait, all seen to fail.
-5. Code: `astro.config.mjs` second family, `BaseLayout` `<Font />`, `global.css` token and rules,
-   until step 4 passes.
-6. Fixture sentence (research R5); re-run `blog-fixtures` and `blog-pagination`.
+4. Fixture sentence (research R5), so the face tests have code in `em`, `strong`, `kbd` and
+   `samp` to observe; re-run `blog-fixtures` and `blog-pagination`.
+5. Tests for config, tokens, head, build output, fonts E2E (faces, widths, requests, JS off,
+   blocked), served header assertion and the visual wait, all seen to fail. The build-output
+   test is seen to fail before the config change, since the config alone may emit the files.
+6. Code: `astro.config.mjs` second family, `BaseLayout` `<Font />`, `global.css` token and rules,
+   until step 5 passes.
 7. `a11y` and `budget`; record the `writing-post` total and CLS, and the convergence total, in the
    PR body. Stop and tell Don if any page is over 153,600 bytes.
 8. Baselines: macOS, then Linux in Docker; exactly the 8 `post-template` images modified.
 9. Docs and comments.
 10. `[PREVIEW-CHECK]`: Don reviews a post with code on the preview in both themes and widths,
-    confirms the look beside Inter, that pages without code fetch no mono file, and that the
-    files are cached on reload.
+    confirms the look beside Inter and the I l 1 / O 0 glyphs, that pages without code fetch no
+    mono file, the served immutable cache header and cache hit on reload, the throttled swap,
+    and (since no real page draws italic code, `kbd` or `samp`) those faces in the 8
+    `post-template` baseline images.
 11. PR without the `visual-baselines` label, with `major-change`, auto-merge off; confirm the
     first CI visual run passes.
 

@@ -163,8 +163,9 @@ locally on macOS and in CI on Linux on the first run.
 - **Forced colours and dark mode**: no colour token, size or spacing changes, so contrast is
   unchanged; the existing checks must still pass. Bold and bold-italic code use the same colours
   as regular code (heavier strokes only raise apparent contrast), and inline code inside links,
-  headings and emphasis keeps today's colour combinations; the existing axe contrast checks on
-  every template cover all of these, with the shipped face and with the fallback.
+  headings and emphasis keeps today's colour combinations; contrast does not depend on the face,
+  so the existing axe contrast checks on every template, which run with the shipped face, hold
+  for the fallback too. Reflow and focus with the fallback are checked by the fonts-blocked test.
 - **Assistive technology and copying**: the change is typeface only. The text content, markup,
   accessible names, reading order and copied text of code are unchanged.
 
