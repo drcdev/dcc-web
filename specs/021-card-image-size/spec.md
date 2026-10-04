@@ -14,8 +14,8 @@ This feature implements GitHub issue #73, and the pull request closes it.
 
 A post card is the small summary of one post (image, title, summary, date and topics) that the
 site shows in a grid. Post cards appear on the writing landing page (the "latest" and
-"featured" grids), the all-posts listing, each topic page, each series page and the home page's
-recent-writing section.
+"featured" grids), the all-posts listing, each topic page, each series page, the home page's
+recent-writing section and the "Related posts" section at the end of a post.
 
 Today a card's image is offered in three sizes, and on a phone-width screen the browser picks
 a version about 480 pixels wide even though the card is drawn about 360 pixels wide. The image
@@ -134,8 +134,9 @@ Assumptions, "Expected page weight").
   viewport is not in them, and Chromium's selection usually picks 400 there anyway.
 - The lead story on the writing landing page is not a card and is usually the page's largest
   visible element; its image is unchanged.
-- A post's own page (its hero image) and the projects index are not card listings; their images
-  are unchanged by this feature.
+- A post's own hero image and the projects index are not cards; their images are unchanged by
+  this feature. The "Related posts" cards at the end of a post are post cards and change like
+  any other card.
 - Dark mode and forced colours: the same image file is drawn in the same 16:9 box with no
   filter or colour change, as today; the card's text and borders follow the existing theme
   rules.
@@ -151,8 +152,8 @@ Assumptions, "Expected page weight").
 - **FR-002**: On a phone-width screen at normal pixel density (the viewport the page budget
   check uses), the browser MUST choose the card-sized version for every card image, on every
   page that shows post cards. To make this hold on real phones too, the card's declared phone
-  display width MUST be the card's real width (about the screen width minus 2rem of page
-  margins, with the root font at 16 pixels) instead of the full screen width, so every screen
+  display width MUST be the card's real width (`calc(100vw - 2rem)`: the screen width minus
+  2rem of page margins, with the root font at 16 pixels) instead of the full screen width, so every screen
   up to 432 CSS pixels wide at normal density (card slot at most 400 pixels) picks the 400
   version or a narrower one. The tablet and desktop display widths stay as they are. This
   changes only which file the browser picks; the card's drawn size, shape and layout are
@@ -233,13 +234,17 @@ Assumptions, "Expected page weight").
 - **SC-004**: Card images show no visible blurring or artefacts at their drawn size, as defined
   in FR-003: the plan's side-by-side check (research.md R3) found none at the chosen quality,
   the listing-cards visual check covers the fixture cards, and the convergence cards are looked
-  at on the preview deployment.
+  at in a local build of the real site at 390 pixels wide (quickstart step 5). No preview
+  deployment check is needed for this criterion.
 
 ## Assumptions
 
 - "Listing cards" means post cards wherever they appear: writing landing (latest and featured
-  grids), all posts, topic pages, series pages and the home page's recent writing. They are one
-  card design, so one change covers them all.
+  grids), all posts, topic pages, series pages, the home page's recent writing and the "Related
+  posts" section at the end of a post. They are one card design, so one change covers them all.
+  The related-posts cards sit in the same page margins as a listing, so on a phone they have
+  the same real width and the same declared display width; SC-001's browser check uses the
+  listing pages, and the shared declared width (FR-002) covers the related-posts cards.
 - The phone-width viewport and network settings are those the existing page budget check uses:
   a 390 by 844 viewport at normal pixel density, simulated slow 4G (150 ms round trip, 1.6 Mbps
   down), 4x CPU slowdown and the browser cache disabled. Total transfer is the compressed bytes
@@ -257,15 +262,15 @@ Assumptions, "Expected page weight").
   loaded at once would weigh about 43 + 12 x 20 = 283 KB; it stays within budget only because
   lazy loading fetches just the cards near the first screen. Bringing such a page under budget
   if all its cards load early is out of scope (see Out of Scope).
-- The site's images are already WebP; the card stays WebP and only its quality drops, to a
-  value between 60 and 70 that the plan picks (FR-003).
+- The site's images are already WebP; the card stays WebP and only its quality drops, to 65,
+  the value the plan picked from the 60 to 70 range (FR-003, research.md R3).
 - The predicted visual change: the fixture listing-cards visual subject shows lighter, card-sized
   images, so its baselines are refreshed on both platforms as part of this feature. That diff is
   predicted here, so it is not a regression. Other visual subjects should not change; any other
   diff is a regression to fix.
 - This is not a major change under Principle III: it adds no dependency, changes no layout,
   design system or visual identity, and does not raise running costs. The card looks the same; it
-  only downloads a smaller file. Auto-merge applies unless the clarify phase decides otherwise.
+  only downloads a smaller file. The plan confirms this, so auto-merge applies.
 - The convergence figures (79 KB of 122 KB) are the issue's measurements on today's build and
   are the baseline for SC-002.
 

@@ -61,5 +61,7 @@ regression.
 
 ## 5. Manual look
 
-Open `/writing/convergence/` at a 390 px wide window (devtools device mode, 1x): the Network
-panel shows each card image as the 400w file, and the cards look as before.
+Serve the real-site build locally (`pnpm run preview` after `pnpm run build`) and open
+`/writing/convergence/` at a 390 px wide window (devtools device mode, 1x): the Network
+panel (cache disabled) shows each card image as the 400w file, its transferred size is the
+card-image figure for SC-002, and the cards look as before (SC-004).

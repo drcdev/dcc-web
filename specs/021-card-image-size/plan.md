@@ -79,7 +79,7 @@ The Astro Docs MCP was available and consulted; no fallback to memory.
 
 | Principle | Status | How this plan meets it |
 |---|---|---|
-| I. Test-First | Pass | Tests first and seen to fail: component tests (C1 to C5) fail on today's 480w, `100vw` and missing `q=`; the E2E test (C6) fails on today's 480w pick. Each test task names its layer (research R5). |
+| I. Test-First | Pass | Tests first and seen to fail: component tests C1 to C3 fail on today's 480w, `100vw` and missing `q=`; the E2E test (C6) fails on today's 480w pick. C4 and C5 guard behaviour that is kept, so each is seen to fail by a temporary local break (removing the card's shape classes; adding `quality` to `LeadStory`/`PostHero`) that is then reverted. Each test task names its layer (research R5). |
 | II. Automated Release Gate | Pass | No check is skipped or weakened; the budget stays at 150 KB; the full `pnpm run verify` gate runs before the PR. |
 | III. Human Review for Major Changes | Pass, **not major** | See the statement at the top: no criterion fires. The predicted `listing-cards` baseline refresh is not a design-system change. Auto-merge on. |
 | IV. First-Party Before Custom | Pass | `<Image>` `widths`, `sizes`, `quality` from `astro:assets`; alternatives named above with the reason each falls short; docs pages cited. |
@@ -110,7 +110,9 @@ component, its tests, one E2E case and the baselines.
 | SC-004 appearance | Visual | Existing `listing-cards` subject; refresh only that subject's baselines if they diff. |
 
 No behaviour is tested at a second layer. The component and E2E tests observe different
-behaviours (what is offered versus what is chosen).
+behaviours (what is offered versus what is chosen). The "Related posts" cards at the end of a
+post render the same `PostCard` inside the same `main` padding, so C2 covers their declared
+width; C6 checks the listing pages only.
 
 ## Visual baselines
 

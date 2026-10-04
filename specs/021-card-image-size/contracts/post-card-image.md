@@ -14,3 +14,6 @@ card's `<img>` when the post has a feature image. Row ids are cited in test titl
 | C5 | No other image component sets a quality: the lead story and post hero candidates carry no `q=` parameter. | Component: `LeadStory.test.ts`, `PostHero.test.ts` |
 | C6 | At a 390×844 viewport, 1x, on every fixture-site page that shows image cards (`/`, `/writing/`, `/writing/all/`, `/writing/topics/fixture-cards/`, `/writing/drift/`), each card image's chosen candidate (`currentSrc`) has a descriptor of at most 400w. | E2E: `blog-fixtures.spec.ts` (`sections` project) |
 | C7 | Every budget template and the 12-card fixture `/writing/all/` stay within 150 KB total transfer and the other budget limits. | Budget: `budget.spec.ts` (unchanged) |
+
+The "Related posts" cards at the end of a post are the same component with the same `sizes`, so
+C1 to C3 cover them; C6 checks the listing pages only.
