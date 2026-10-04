@@ -17,7 +17,11 @@
 // (maxDiffPixelRatio 0.001, animations disabled, caret hidden) and
 // updateSnapshots "none" (a missing baseline fails) come from
 // playwright.config.ts.
+//
+// The footer year is frozen to 2026 before every shot (freezeFooterYear), so a
+// new calendar year cannot fail the shell, not-found or sections shots (issue #45).
 import { test, expect, type Locator, type Page } from "@playwright/test";
+import { freezeFooterYear } from "./footer-year";
 
 const WIDTHS = [
   { name: "phone", width: 390, height: 844 },
@@ -36,6 +40,7 @@ async function open(page: Page, path: string, width: number, height: number, the
     }
   }, theme);
   await page.goto(path);
+  await freezeFooterYear(page);
   await expect(page.locator("html")).toHaveClass(theme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
   await settleImages(page);
 }
@@ -112,7 +117,7 @@ for (const size of WIDTHS) {
 // pages do is asserted elsewhere (blog-fixtures, projects-fixtures, contact,
 // projects and theme-tokens specs); this block adds only the pixels. Each shot
 // is the element, not the page, so Related posts, real project rows and the
-// footer's build-time year stay out of it. Reduced motion puts the story in its
+// footer stay out of it. Reduced motion puts the story in its
 // resting state (chapters final, no reading-progress bar).
 const FIXTURE = "http://localhost:4322";
 

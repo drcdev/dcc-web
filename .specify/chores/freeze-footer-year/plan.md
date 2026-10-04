@@ -139,7 +139,7 @@ runtime year), as does `shell.spec.ts` line 288.
 
 ### W2: Add the helper and call it from `open()`
 
-- [ ] W2 done
+- [x] W2 done
 - **Files:** `tests/e2e/footer-year.ts` (new), `tests/e2e/visual.spec.ts`.
 - **Test:** existing: W1 turns green; `--project=visual` stays 50/50 (W3).
 - **Shape:**
