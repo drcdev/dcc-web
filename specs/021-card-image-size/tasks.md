@@ -11,8 +11,8 @@ are seen to fail first. The source change is three props on one `<Image>`.
 
 ## Phase 1: Setup
 
-- [ ] T001 Run `node -v`; if it is not the `.nvmrc` major, use `source ~/.nvm/nvm.sh && nvm use` in the same Bash command as every toolchain call. Check `lsof -i :4321 -i :4322` shows no sibling Playwright server before any E2E run (CLAUDE.md, "Local toolchain").
-- [ ] T002 Read `src/components/post/PostCard.astro`, `tests/component/post/PostCard.test.ts` (the `withImage` card and its 1200 px fixture source) and `tests/e2e/blog-fixtures.spec.ts` to learn the existing helpers and patterns before writing tests.
+- [X] T001 Run `node -v`; if it is not the `.nvmrc` major, use `source ~/.nvm/nvm.sh && nvm use` in the same Bash command as every toolchain call. Check `lsof -i :4321 -i :4322` shows no sibling Playwright server before any E2E run (CLAUDE.md, "Local toolchain").
+- [X] T002 Read `src/components/post/PostCard.astro`, `tests/component/post/PostCard.test.ts` (the `withImage` card and its 1200 px fixture source) and `tests/e2e/blog-fixtures.spec.ts` to learn the existing helpers and patterns before writing tests.
 
 ---
 
