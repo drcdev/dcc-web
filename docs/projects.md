@@ -130,6 +130,10 @@ If you forget, the unit test `tests/unit/site/diagram-fonts.test.ts` fails and n
 and the character that is missing, and tells you to run the same command. It also fails when a
 label asks for a system font, or when a file is over 16 KB.
 
+The `fonts:diagrams` script does not check that a label fits. The browser test
+`tests/e2e/diagram-fonts.spec.ts` does that by measuring the drawn text: it checks for 16 units
+of clear space each side of a label and for labels that overlap.
+
 - Keep each diagram file under 16 KB.
 - Leave 16 units each side of a label inside its box.
 - If a label does not fit, wrap it onto a second line rather than shrinking or rewording it:

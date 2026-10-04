@@ -101,4 +101,4 @@ MVP is US1 (diagrams). Then US2, then the US3 gate proof and docs. Major change:
 
 ## Phase 7: Convergence
 
-- [ ] T033 In `docs/projects.md` "Text in a diagram", add that label fit (16 units each side, no overlap) is checked by the gate's browser test `tests/e2e/diagram-fonts.spec.ts` by measuring the drawn text, not by a character count, because letter widths vary, and that the font script does not check fit per FR-007 (partial)
+- [x] T033 In `docs/projects.md` "Text in a diagram", add that label fit (16 units each side, no overlap) is checked by the gate's browser test `tests/e2e/diagram-fonts.spec.ts` by measuring the drawn text, not by a character count, because letter widths vary, and that the font script does not check fit per FR-007 (partial)
