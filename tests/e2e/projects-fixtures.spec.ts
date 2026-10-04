@@ -1,18 +1,19 @@
 // The projects index on the fixture site (port 4322, playwright.config.ts project
-// `sections`): the repository's projects plus the fixtures, so filtering, clearing, sharing and
-// the unknown-theme message have something to work on (US4; contracts/filter-island.md;
-// FR-014).
+// `sections`). The fixture site holds the five fixture projects only (tests/fixtures/projects:
+// draft, minimal, every-part, every-setting, retired), so the counts and the order below are fixed
+// and filtering, clearing, sharing and the unknown-theme message have something to work on (US4;
+// contracts/filter-island.md; FR-014). Where the real content guarantees live: every real project
+// listed with a link is projects.spec.ts "the projects index ... one row for every project" (port
+// 4321), and real projects sitting among others newest first is the order rule in
+// tests/unit/content/project-order.test.ts.
 import { expect, test, type Page } from "@playwright/test";
-import { themeKey } from "../../src/lib/content/themes";
-import { projects, readEntries } from "../helpers/content.ts";
 import { cspViolations, recordCspViolations } from "./csp-violations.ts";
 
 const INDEX = "/projects/";
-// The fixture site is not a production build, so drafts count: every repository project plus the fixtures.
-const ALL_PROJECTS = [...projects, ...readEntries("projects", "tests/fixtures/projects")];
-const ALL = ALL_PROJECTS.length;
-const TOOLING = ALL_PROJECTS.filter((project) => (project.data.themes as string[]).map(themeKey).includes("tooling")).length;
-if (TOOLING < 2) throw new Error("The fixtures put Tooling on two projects, so the count is always plural.");
+// The fixture site is not a production build, so the draft fixture counts: five projects, two of
+// them (draft, minimal) on Tooling.
+const ALL = 5;
+const TOOLING = 2;
 const rows = (page: Page) => page.locator("[data-project]:not([hidden])");
 const status = (page: Page) => page.locator("[data-filter-status]");
 
@@ -27,7 +28,7 @@ test("lists every project, with the controls ready", async ({ page }) => {
 
 test("theme variants collapse to one button", async ({ page }) => {
   await page.goto(INDEX);
-  // Tooling and AI integration are each on several projects: one button each.
+  // Tooling is on two fixtures and AI integration on one: one button each.
   await expect(page.locator('button[data-theme="tooling"]')).toHaveCount(1);
   await expect(page.locator('button[data-theme="ai-integration"]')).toHaveCount(1);
 });
@@ -116,9 +117,7 @@ test("lists projects newest first", async ({ page }) => {
   await page.goto(INDEX);
   const slugs = await rows(page).evaluateAll((els) => els.map((el) => el.getAttribute("data-project")));
   // Fixture dates: draft 2026-01-02, minimal 2026-01-01, every-part 2025-12-01, every-setting 2025-06-01, retired 2025-01-01.
-  const fixtures = ["draft", "minimal", "every-part", "every-setting", "retired"];
-  const seen = slugs.filter((slug): slug is string => !!slug && fixtures.includes(slug));
-  expect(seen).toEqual(fixtures);
+  expect(slugs).toEqual(["draft", "minimal", "every-part", "every-setting", "retired"]);
 });
 
 test("row title links are at least 24x24 px (FR-027)", async ({ page }) => {

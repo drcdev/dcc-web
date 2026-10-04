@@ -144,7 +144,7 @@ already live, in the specs that run on the real site (port 4321) and the unit te
 - Coverage mapping: "real projects sit among fixtures newest first" → order rule in
   `tests/unit/content/project-order.test.ts`; every real project listed with a link →
   `projects.spec.ts` "the projects index … one row for every project" (4321).
-- [ ] done
+- [x] done
 
 ### W6 visual.spec.ts: drop the real-row workaround, keep the pixels
 - Replace `onlyFixtureRows` with a wait that only checks `project-filter[data-ready]` and exactly
