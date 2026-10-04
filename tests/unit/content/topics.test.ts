@@ -238,3 +238,19 @@ describe("series marker outline (FR-016c)", () => {
     expect(contrast(`${colour}-300`, "dusk-BASE"), "dark surface").toBeGreaterThanOrEqual(3);
   });
 });
+
+describe("neutral (dusk) pill edge in dark mode (issue #46)", () => {
+  // The neutral pill's dark fill is dusk-800, the same token as the card it sits on, so only a
+  // visible edge keeps its shape in dark mode. 3:1 is the non-text-contrast bar (WCAG 1.4.11).
+  const edge = /(?:^|\s)dark:border-(dusk-\d+)(?:\s|$)/.exec(topicStyles.dusk!.pill)?.[1];
+
+  it("carries a dark:border-dusk-N class", () => {
+    expect(edge, "dark border token on the dusk pill").toBeDefined();
+  });
+
+  it("has an edge of at least 3:1 against the card surface and the page", () => {
+    expect(edge).toBeDefined();
+    expect(contrast(edge!, "dusk-800"), "card surface").toBeGreaterThanOrEqual(3);
+    expect(contrast(edge!, "dusk-BASE"), "page surface").toBeGreaterThanOrEqual(3);
+  });
+});
