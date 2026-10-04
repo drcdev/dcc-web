@@ -124,6 +124,9 @@
      BaseLayout); the system stack is its fallback; no font service */
   --font-body: var(--font-inter);
   --font-heading: var(--font-inter);
+  /* Code - self-hosted JetBrains Mono, also through the Fonts API (--font-jetbrains-mono is
+     emitted by <Font /> in BaseLayout); Tailwind's preflight and font-mono read this token */
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -257,14 +260,23 @@ span,
 div,
 li,
 blockquote,
-pre,
-code,
 input,
 textarea,
 button,
 label,
 figcaption {
   font-family: var(--font-body);
+}
+
+/* Code font (feature 019, supersedes feature 018 D2): code, keys and sample output, and the
+   spans Shiki puts inside them, use JetBrains Mono. Unlayered and later than the rule above, so
+   it wins for those spans. No size, colour, weight, style or spacing is set here. */
+pre,
+code,
+kbd,
+samp,
+:is(pre, code, kbd, samp) * {
+  font-family: var(--font-mono);
 }
 
 h1,

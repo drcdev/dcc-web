@@ -93,10 +93,35 @@ describe("src/styles/global.css design tokens", () => {
     expect(css.match(/--font-heading:\s*([^;]+);/)?.[1]?.trim()).toBe("var(--font-inter)");
   });
 
-  it("keeps pre and code in the body-font element rule (F08, FR-008)", () => {
+  // Supersedes "keeps pre and code in the body-font element rule" (feature 018 D2): code now has
+  // its own face (feature 019, FR-001).
+  it("sets --font-mono to the self-hosted JetBrains Mono variable (M07, FR-001)", () => {
+    expect(css.match(/--font-mono:\s*([^;]+);/)?.[1]?.trim()).toBe("var(--font-jetbrains-mono)");
+  });
+
+  it("keeps pre and code out of the body-font element rule (M07)", () => {
     const rule = css.match(/([^{}]*)\{\s*font-family:\s*var\(--font-body\);\s*\}/)?.[1] ?? "";
-    expect(rule).toMatch(/\bpre\b/);
-    expect(rule).toMatch(/\bcode\b/);
+    expect(rule).toMatch(/\bspan\b/);
+    expect(rule).not.toMatch(/\bpre\b/);
+    expect(rule).not.toMatch(/\bcode\b/);
+  });
+
+  it("gives pre, code, kbd, samp and their descendants the mono font, after the body rule (M07)", () => {
+    const rules = [...css.matchAll(/([^{}]*)\{\s*font-family:\s*var\(--font-mono\);\s*\}/g)];
+    const rule = rules.find((m) => /\bkbd\b/.test(m[1]!));
+    expect(rule).toBeDefined();
+    for (const el of ["pre", "code", "kbd", "samp"]) expect(rule![1]).toMatch(new RegExp(`\\b${el}\\b`));
+    expect(rule![1]).toMatch(/\*/);
+    const bodyRule = css.match(/[^{}]*\{\s*font-family:\s*var\(--font-body\);\s*\}/)!;
+    expect(rule!.index!).toBeGreaterThan(bodyRule.index!);
+  });
+
+  it("sets no size, colour, weight, style, spacing, synthesis or feature declaration for code (M08, FR-004, FR-009)", () => {
+    const rule = css.match(/[^{}]*\bkbd\b[^{}]*\{([^{}]*)\}/g)?.find((r) => /--font-mono/.test(r)) ?? "";
+    expect(rule).not.toBe("");
+    expect(rule).not.toMatch(/font-size|color|font-weight|font-style|padding|line-height|font-synthesis|font-feature-settings/);
+    const hl = css.match(/\.hl-[^{}]*\{[^{}]*\}/g) ?? [];
+    for (const r of hl) expect(r).not.toMatch(/font-style|font-weight/);
   });
 
   it("has no @font-face declaration", () => {

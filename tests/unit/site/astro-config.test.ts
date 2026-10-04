@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { fontProviders } from "astro/config";
 import { resolveSiteOrigin } from "../../../src/lib/site-origin.ts";
-import { INTER_UNICODE_RANGE, SYSTEM_FONT_STACK } from "../../../src/lib/fonts/charset.ts";
+import { INTER_UNICODE_RANGE, MONO_FALLBACK_STACK, SYSTEM_FONT_STACK } from "../../../src/lib/fonts/charset.ts";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -126,8 +126,15 @@ describe("fonts", () => {
 
   async function inter(): Promise<Family> {
     const config = (await importFreshConfig()) as unknown as { fonts?: Family[] };
-    expect(config.fonts).toHaveLength(1);
+    // Two families since feature 019 (FR-001, FR-005); this supersedes the length-1 check of 018.
+    expect(config.fonts).toHaveLength(2);
     return config.fonts![0]!;
+  }
+
+  async function mono(): Promise<Family> {
+    const config = (await importFreshConfig()) as unknown as { fonts?: Family[] };
+    expect(config.fonts).toHaveLength(2);
+    return config.fonts![1]!;
   }
 
   it("declares one Inter family from the local provider on --font-inter", async () => {
@@ -155,6 +162,35 @@ describe("fonts", () => {
     const family = await inter();
     expect(family.fallbacks).toEqual([...SYSTEM_FONT_STACK]);
     expect(family.fallbacks.at(-1)).toBe("sans-serif");
+    expect(family.optimizedFallbacks).toBe(true);
+  });
+
+  it("declares JetBrains Mono from the local provider on --font-jetbrains-mono (M01, M02)", async () => {
+    const family = await mono();
+    expect(family.name).toBe("JetBrains Mono");
+    expect(family.cssVariable).toBe("--font-jetbrains-mono");
+    expect(family.provider.name).toBe(fontProviders.local().name);
+  });
+
+  it("has four mono variants from src/assets/fonts/jetbrains-mono, with swap and the shared unicode-range", async () => {
+    const { variants } = (await mono()).options;
+    const dir = "./src/assets/fonts/jetbrains-mono/";
+    expect(variants.map((v) => [String(v.weight), v.style, v.src])).toEqual([
+      ["400", "normal", [`${dir}JetBrainsMono-Regular.woff2`]],
+      ["400", "italic", [`${dir}JetBrainsMono-Italic.woff2`]],
+      ["700", "normal", [`${dir}JetBrainsMono-Bold.woff2`]],
+      ["700", "italic", [`${dir}JetBrainsMono-BoldItalic.woff2`]],
+    ]);
+    for (const variant of variants) {
+      expect(variant.display).toBe("swap");
+      expect(variant.unicodeRange).toEqual([...INTER_UNICODE_RANGE]);
+    }
+  });
+
+  it("falls back to the mono stack, generic last, with optimized fallbacks on (M03)", async () => {
+    const family = await mono();
+    expect(family.fallbacks).toEqual([...MONO_FALLBACK_STACK]);
+    expect(family.fallbacks.at(-1)).toBe("monospace");
     expect(family.optimizedFallbacks).toBe(true);
   });
 });

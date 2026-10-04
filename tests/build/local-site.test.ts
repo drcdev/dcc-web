@@ -458,16 +458,18 @@ describe("self-hosted fonts in the build", () => {
       entry.isDirectory() ? listFiles(join(dir, entry.name)) : [join(dir, entry.name)],
     );
 
-  it("emits exactly four hashed woff2 files, identical to the sources, and no other font file", () => {
+  it("emits exactly eight hashed woff2 files, identical to the sources, and no other font file (M09)", () => {
     const fontsDir = join(l1.dist, "_astro", "fonts");
     const emitted = readdirSync(fontsDir).sort();
-    expect(emitted).toHaveLength(4);
+    expect(emitted).toHaveLength(8);
     for (const name of emitted) expect(name).toMatch(/^[0-9a-f]+\.woff2$/);
-    const sources = readdirSync("src/assets/fonts")
-      .filter((n) => n.endsWith(".woff2"))
-      .map((n) => readFileSync(join("src/assets/fonts", n)));
+    const sources = ["src/assets/fonts", "src/assets/fonts/jetbrains-mono"].flatMap((dir) =>
+      readdirSync(dir)
+        .filter((n) => n.endsWith(".woff2"))
+        .map((n) => readFileSync(join(dir, n))),
+    );
     const outputs = emitted.map((n) => readFileSync(join(fontsDir, n)));
-    expect(sources).toHaveLength(4);
+    expect(sources).toHaveLength(8);
     for (const source of sources) expect(outputs.some((o) => o.equals(source))).toBe(true);
     const stray = listFiles(l1.dist).filter((f) => /\.(woff2?|ttf|otf|eot)$/i.test(f) && !f.startsWith(fontsDir));
     expect(stray).toEqual([]);

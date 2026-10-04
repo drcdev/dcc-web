@@ -18,17 +18,24 @@ const { fontace } = fromAstro("fontace") as {
   fontace: (buffer: Buffer) => { unicodeRangeArray: string[] };
 };
 
-/** The code points present in all four faces. fontace reports U+FFFF (the cmap end marker); drop it. */
-function coveredSet(): Set<number> {
-  const sets = readdirSync(fontsDir)
-    .filter((name) => name.endsWith(".woff2"))
-    .map((name) => {
-      const points = codePointsOf(fontace(readFileSync(join(fontsDir, name))).unicodeRangeArray);
+type Covered = { family: string; points: Set<number> };
+
+/** Per family, the code points present in all four faces of that family. fontace reports U+FFFF (the cmap end marker); drop it. */
+function coveredByFamily(): Covered[] {
+  return [
+    { family: "Inter", dir: fontsDir },
+    { family: "JetBrains Mono", dir: join(fontsDir, "jetbrains-mono") },
+  ].map(({ family, dir }) => {
+    const files = readdirSync(dir).filter((name) => name.endsWith(".woff2"));
+    const sets = files.map((name) => {
+      const points = codePointsOf(fontace(readFileSync(join(dir, name))).unicodeRangeArray);
       points.delete(0xffff);
-      return points;
+      return { name, points };
     });
-  expect(sets).toHaveLength(4);
-  return new Set([...sets[0]!].filter((cp) => sets.every((set) => set.has(cp))));
+    expect(sets).toHaveLength(4);
+    const points = new Set([...sets[0]!.points].filter((cp) => sets.every((set) => set.points.has(cp))));
+    return { family, points };
+  });
 }
 
 const EMOJI = /\p{Extended_Pictographic}/u;
@@ -42,13 +49,16 @@ function isExcluded(cp: number, char: string): boolean {
   return cp === 0x09 || cp === 0x0a || cp === 0x0d; // whitespace and line breaks
 }
 
-/** Every uncovered, non-excluded character in the text, as `U+XXXX <char> <label>`. */
-function uncovered(text: string, label: string, covered: Set<number>): string[] {
+/** Every uncovered, non-excluded character in the text, per family, as `U+XXXX <char> <label> (<family>, <file>)`. */
+function uncovered(text: string, label: string, covered: Covered[]): string[] {
   const found = new Set<string>();
   for (const char of text) {
     const cp = char.codePointAt(0)!;
-    if (covered.has(cp) || isExcluded(cp, char)) continue;
-    found.add(`U+${cp.toString(16).toUpperCase().padStart(4, "0")} ${char} ${label}`);
+    if (isExcluded(cp, char)) continue;
+    for (const { family, points } of covered) {
+      if (points.has(cp)) continue;
+      found.add(`U+${cp.toString(16).toUpperCase().padStart(4, "0")} ${char} ${label} (${family})`);
+    }
   }
   return [...found];
 }
@@ -81,15 +91,34 @@ function sources(): Array<{ label: string; text: string }> {
 
 describe("font coverage guard", () => {
   it("reports a character outside the four faces (the guard can fail)", () => {
-    expect(uncovered("Ā", "self-check", coveredSet())).toEqual(["U+0100 Ā self-check"]);
+    expect(uncovered("Ā", "self-check", coveredByFamily())).toEqual([
+      "U+0100 Ā self-check (Inter)",
+      "U+0100 Ā self-check (JetBrains Mono)",
+    ]);
+  });
+
+  it("reports a character missing from Inter only (self-check, M19)", () => {
+    const covered = coveredByFamily();
+    const inter = covered.find((c) => c.family === "Inter")!;
+    const withoutA = { family: "Inter", points: new Set([...inter.points].filter((cp) => cp !== 0x41)) };
+    const result = uncovered("A", "self-check", [withoutA, covered.find((c) => c.family === "JetBrains Mono")!]);
+    expect(result).toEqual(["U+0041 A self-check (Inter)"]);
+  });
+
+  it("reports a character missing from JetBrains Mono only (self-check, M19)", () => {
+    const covered = coveredByFamily();
+    const mono = covered.find((c) => c.family === "JetBrains Mono")!;
+    const withoutA = { family: "JetBrains Mono", points: new Set([...mono.points].filter((cp) => cp !== 0x41)) };
+    const result = uncovered("A", "self-check", [covered.find((c) => c.family === "Inter")!, withoutA]);
+    expect(result).toEqual(["U+0041 A self-check (JetBrains Mono)"]);
   });
 
   it("does not report excluded characters", () => {
-    expect(uncovered("─ \u{1F600} ­\n", "self-check", coveredSet())).toEqual([]);
+    expect(uncovered("─ \u{1F600} ­\n", "self-check", coveredByFamily())).toEqual([]);
   });
 
-  it("covers every character in the shell, templates and fixture site (F18)", () => {
-    const covered = coveredSet();
+  it("covers every character in the shell, templates and fixture site in both families (F18, F19)", () => {
+    const covered = coveredByFamily();
     const missing = sources().flatMap(({ label, text }) => uncovered(text, label, covered));
     expect(missing).toEqual([]);
   });
