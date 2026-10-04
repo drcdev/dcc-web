@@ -9,7 +9,8 @@ import { validateProjectStory } from "../../../src/lib/content/project-story.ts"
 import { projects } from "../../helpers/content.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
-const removed = ["order", "comparison", "demo", "clips", "pros", "cons"];
+// The demo setting itself stays (an address on drc.dev and a title); only its embed switch was removed.
+const removed = ["order", "comparison", "clips", "pros", "cons"];
 
 describe.each(projects.map((entry) => [entry.slug, entry] as const))("the %s project file", (_slug, entry) => {
   const { data: frontmatter, body: content } = entry;
@@ -25,6 +26,7 @@ describe.each(projects.map((entry) => [entry.slug, entry] as const))("the %s pro
     const result = projectSchema({ image: () => z.string() }).safeParse(frontmatter);
     expect(result.error?.message).toBeUndefined();
     for (const key of removed) expect(frontmatter).not.toHaveProperty(key);
+    expect(frontmatter.demo ?? {}).not.toHaveProperty("embed");
     expect(source).not.toMatch(/<(Chapter|OptionComparison|Demo|Invitation)\b/);
   });
 
@@ -54,10 +56,10 @@ describe.each(projects.map((entry) => [entry.slug, entry] as const))("the %s pro
     expect(visuals.some((picture) => picture.part === "build")).toBe(true);
   });
 
-  it("names its replacement when it is retired, and names none otherwise", () => {
+  it("names a replacement only when it is retired, and a retired project may name none (#65)", () => {
     const replacedBy = frontmatter.replacedBy as { project?: unknown; name?: string } | undefined;
-    if (frontmatter.status === "retired") expect(Boolean(replacedBy?.project) || Boolean(replacedBy?.name)).toBe(true);
-    else expect(replacedBy).toBeUndefined();
+    if (frontmatter.status !== "retired") expect(replacedBy).toBeUndefined();
+    else if (replacedBy) expect(Boolean(replacedBy.project) !== Boolean(replacedBy.name)).toBe(true);
   });
 });
 

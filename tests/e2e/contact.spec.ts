@@ -319,17 +319,17 @@ test.describe("spam and abuse", () => {
 });
 
 test.describe("coming from a project story", () => {
-  test("?project=Cadence shows the About line and stores the project", async ({ page, request }) => {
+  test("?project=Metronome shows the About line and stores the project", async ({ page, request }) => {
     await uniqueSender(page);
     const name = `Project ${Date.now()}`;
-    await page.goto("/contact/?project=Cadence");
-    await expect(page.locator("#contact-project")).toHaveText("About: Cadence");
+    await page.goto("/contact/?project=Metronome");
+    await expect(page.locator("#contact-project")).toHaveText("About: Metronome");
     await expect(page.locator("#contact-project")).toBeVisible();
     await fillValid(page);
     await page.getByLabel("Name", { exact: true }).fill(name);
     await send(page).click();
     await expect(page.locator("#contact-success")).toBeVisible({ timeout: 5000 });
-    expect((await listNew(request, name))?.project).toBe("Cadence");
+    expect((await listNew(request, name))?.project).toBe("Metronome");
   });
 
   test("a 150-character markup value renders as text, is cut to 100 and is stored the same way", async ({
