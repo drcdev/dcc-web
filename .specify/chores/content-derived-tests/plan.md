@@ -505,7 +505,7 @@ item leaves `verify:quick` green, along with its targeted files:
 | Tooling count 2 | Computed |
 | Focus Pocus stand-in on the fixture site | `every-part` stand-in on the fixture site, plus W5's stand-in rule on every real story |
 
-### W11. Sample posts series rule and not-found built addresses
+### W11. Sample posts series rule and not-found built addresses (Done: FR-005 rule runs over every real post; built addresses come from pages)
 
 - **Files:** `tests/unit/content/sample-posts.test.ts` (L120 to L141), `tests/e2e/not-found.spec.ts`.
 - **Test:** existing, rewritten. sample-posts is **unit layer**; not-found is **e2e layer**
