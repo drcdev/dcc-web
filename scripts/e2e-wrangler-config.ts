@@ -6,9 +6,12 @@
 // config's own directory, and is gitignored.
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { stripJsonc } from "./setup-check/checks/contact-shared.ts";
 
 const root = new URL("../", import.meta.url);
-const config = JSON.parse(readFileSync(fileURLToPath(new URL("wrangler.jsonc", root)), "utf8")) as Record<string, unknown>;
+const config = JSON.parse(
+  stripJsonc(readFileSync(fileURLToPath(new URL("wrangler.jsonc", root)), "utf8")),
+) as Record<string, unknown>;
 delete config.ai;
 delete config.$schema;
 writeFileSync(fileURLToPath(new URL("wrangler.e2e.json", root)), `${JSON.stringify(config, null, 2)}\n`);

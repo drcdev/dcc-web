@@ -149,6 +149,12 @@ Don has already completed are skipped as usual:
 8. `contact-production-deploy` (item 25) — `phase: after-merge`, so the after-merge rule in
    step 5 of Behaviour applies: give the PR link and wait for the merge. It is reported as an
    after-merge item and does not fail the check before the merge.
+   When it comes to deleting the retired databases, show the order from `docs/setup.md` item 25:
+   only after the production deploy is green, `pnpm exec wrangler d1 migrations list dcc-web
+   --remote --env-file /dev/null` shows nothing pending and `pnpm setup:check --item
+   contact-d1-databases` passes; delete `dcc-web-contact-preview` first, then `dcc-web-contact`, and
+   before each delete run `pnpm exec wrangler d1 execute <old name> --remote --env-file /dev/null
+   --command "SELECT count(*) FROM messages"`, stopping to export the rows if it is not 0.
 
 ### Item 19: region confirmation (FR-027a, FR-027b)
 

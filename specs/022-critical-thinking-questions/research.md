@@ -281,7 +281,7 @@ under Principle III; visual baselines must be refreshed, see plan).
 ## R12. Testing Workers AI and assets in the worker tests and E2E
 
 **Implement-phase result (T001 spike, no Cloudflare credentials, empty `WRANGLER_HOME`)**: all
-three paths passed, so no fallback is needed. (a) `wrangler dev` with `ai` and `ASSETS` bindings
+three paths passed in the spike, but the E2E fallback was adopted after all (commit "run the E2E Worker from a generated config without the remote-only ai binding"): `scripts/e2e-wrangler-config.ts` writes `wrangler.e2e.json` without `ai`, because the remote proxy demands a token in non-interactive shells. The committed `worker/worker-configuration.d.ts` declares `AI: Ai` (a) `wrangler dev` with `ai` and `ASSETS` bindings
 starts and serves `/api/*` and static assets; the only output is the "AI bindings always access
 remote resources" warning, with no login demand. (b) The worker Vitest pool starts with the `ai`
 binding present and `remoteBindings: false`, and the existing 132 worker tests pass. Without

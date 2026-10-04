@@ -61,13 +61,13 @@ const isSource = (value: unknown): value is SourceFile => {
 };
 
 export async function handleQuestions(request: Request, env: Env): Promise<Response> {
-  if (request.method !== "POST") return fail(405, "method_not_allowed", "method_not_allowed", { Allow: "POST" });
+  if (request.method !== "POST") return fail(405, "method_not_allowed", "invalid", { Allow: "POST" });
   if (!isSameOriginRequest(request, new URL(request.url))) return fail(403, "forbidden", "forbidden");
   const contentType = (request.headers.get("Content-Type") ?? "").split(";")[0]!.trim().toLowerCase();
-  if (contentType !== "application/json") return fail(415, "unsupported_media_type", "unsupported_media_type");
+  if (contentType !== "application/json") return fail(415, "unsupported_media_type", "invalid");
 
   const raw = await readCapped(request);
-  if (raw === null) return fail(413, "too_large", "too_large");
+  if (raw === null) return fail(413, "too_large", "invalid");
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);

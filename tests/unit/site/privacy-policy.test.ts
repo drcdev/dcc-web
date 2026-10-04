@@ -93,6 +93,13 @@ describe("privacy policy: reading questions (specs/022 FR-023)", () => {
   it("says where the questions are stored", () => {
     expect(questions).toContain("d1");
   });
+
+  it("says Cloudflare's own logs see the reader's IP address and the site does not read them", () => {
+    expect(questions).toMatch(/cloudflare[^.]*(platform )?logs/);
+    expect(questions).toContain("ip address");
+    expect(questions).toMatch(/(not read|does not read|never read)/);
+    expect(questions).toMatch(/no personal data|collects no personal/);
+  });
 });
 
 describe("privacy policy: whole page", () => {

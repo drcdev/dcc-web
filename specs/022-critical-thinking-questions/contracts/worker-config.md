@@ -55,7 +55,7 @@ in the dashboard.
 - W04: every `d1 migrations apply <target>` in `scripts/deploy/*.ts` and `playwright.config.ts`
   targets the binding `DB` (Wrangler resolves a binding name to the environment's database),
   the preview script with `--env preview` and the others without. No script names a database,
-  so the swap commit touches `wrangler.jsonc` only.
+  so the swap commit touches `wrangler.jsonc` only. The E2E web server follows the same rule through the generated `wrangler.e2e.json` (see the `playwright.config.ts` row).
 - W05: `worker/worker-configuration.d.ts` is regenerated (`pnpm run types:worker`) so `Env`
   has `AI: Ai` and `ASSETS: Fetcher`; `pnpm run typecheck` (`wrangler types --check`) fails if not.
 
@@ -68,7 +68,7 @@ During implementation (agent), with the current databases still bound:
 | `wrangler.jsonc` | `ai` in both environments and `assets.binding`; `database_name` and `database_id` unchanged |
 | `scripts/deploy/production.ts` | `d1 migrations apply DB --remote` |
 | `scripts/deploy/preview.ts` | `d1 migrations apply DB --remote --env preview` |
-| `playwright.config.ts` | local `d1 migrations apply DB --local --persist-to .cache/e2e-state` |
+| `playwright.config.ts` | the E2E web server runs `node scripts/e2e-wrangler-config.ts`, which writes the gitignored `wrangler.e2e.json` (`wrangler.jsonc` minus `ai`), then `d1 migrations apply DB --local --persist-to .cache/e2e-state --config wrangler.e2e.json` (binding `DB`), then `wrangler dev --config wrangler.e2e.json`, because the Workers AI remote proxy demands a token in non-interactive shells |
 | `scripts/setup-check/checks/contact-shared.ts` | checks use the names read from `wrangler.jsonc`; fallback constants `dcc-web` / `dcc-web-preview`; `RETIRED_DB_NAMES` (`dcc-web-contact`, `dcc-web-contact-preview`) for the old-database note |
 | `scripts/setup-check/items.ts` | items 19 and 24 text; item 19 title "Site databases" (id `contact-d1-databases` kept, so links and tests that use the id do not move). Item 19 fails naming each configured database missing from the account ("`dcc-web` not found in the account"); a retired database still present while `wrangler.jsonc` names a different one is reported as a separate note ("old database `dcc-web-contact` still present: delete it after the production deploy"), not a failure |
 | `docs/setup.md` | items 19, 24, 25: new names in prose and in the `d1 create` / `d1 delete` commands Don runs; item 19 says the databases hold contact messages and the questions cache and bucket |
@@ -83,7 +83,7 @@ environments.
 deploy scripts): no change. `specs/007-*` and `.specify/bugs/*` are history: no change.
 Stragglers: a repository search for `dcc-web-contact` (`git grep -n dcc-web-contact`) MUST
 return matches only under `specs/` and `.specify/bugs/`, in the setup-check retired-name list
-and note text, and (until the swap commit only) the two `database_name` values in
+and note text, in `docs/setup.md` items 19 and 25 (the retired names Don deletes), in the setup-check unit-test fixtures that use the current names, and (until the swap commit only) the two `database_name` values in
 `wrangler.jsonc`; the review step and the swap step run it. Tests that pinned the old names or
 ids are rewritten as shape and consistency assertions with the reason stated in `tasks.md`
 (T008): the pins would turn red on the planned swap by design; no structural guarantee is

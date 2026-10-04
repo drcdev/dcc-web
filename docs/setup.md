@@ -736,12 +736,18 @@ Build → production deploy command → `pnpm run deploy:production`, then Retry
 build. Until this is done, production's contact form answers "service unavailable". Production
 traffic is still only the review address.
 
-Once production has deployed against the new databases, delete the retired ones. These are shown for
-Don to run himself (the data they hold is replaced by the new databases):
+Delete the retired databases only after the production deploy is green,
+`pnpm exec wrangler d1 migrations list dcc-web --remote --env-file /dev/null` shows nothing pending
+and `pnpm setup:check --item contact-d1-databases` passes. Contact data is not migrated to the new
+databases; the count below proves the old ones hold none. These are shown for Don to run himself.
+Delete `dcc-web-contact-preview` first, then `dcc-web-contact`. Before each delete, run the count and
+stop and export the rows if it is not 0:
 
 ```sh
-pnpm exec wrangler d1 delete dcc-web-contact --env-file /dev/null
+pnpm exec wrangler d1 execute dcc-web-contact-preview --remote --env-file /dev/null --command "SELECT count(*) FROM messages"
 pnpm exec wrangler d1 delete dcc-web-contact-preview --env-file /dev/null
+pnpm exec wrangler d1 execute dcc-web-contact --remote --env-file /dev/null --command "SELECT count(*) FROM messages"
+pnpm exec wrangler d1 delete dcc-web-contact --env-file /dev/null
 ```
 
 **How it will be confirmed**

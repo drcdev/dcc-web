@@ -2,7 +2,7 @@
 // (specs/022 contracts/questions-api.md rows Q01 to Q07, Q09 to Q12; guarantees Q24, Q25, Q27, Q29).
 import { env } from "cloudflare:workers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { BUCKET_CAPACITY, BUCKET_REFILL_PER_DAY, MODEL_TIMEOUT_MS, QUESTIONS_MODEL } from "../src/questions/config";
+import { BODY_MAX_BYTES, BUCKET_CAPACITY, BUCKET_REFILL_PER_DAY, MODEL_TIMEOUT_MS, QUESTIONS_MODEL } from "../src/questions/config";
 import { fakeAi, fakeAssets, makeSource, ORIGIN, run } from "./helpers";
 
 const SLUG = "a-post";
@@ -306,6 +306,23 @@ describe("questions API: privacy (FR-019, FR-022)", () => {
       expect(line).not.toMatch(/203\.0\.113|UA-MARKER|a-post|evidence supports/);
     }
     expect(logs.join("\n")).not.toContain("evidence supports");
+  });
+
+  it("Q24: logs only the ten FR-022 outcomes, and a wrong method, type and size each log invalid", async () => {
+    const { assets, hash } = await setup();
+    const env_ = { AI: fakeAi({ text: MODEL_TEXT }), ASSETS: assets };
+    const wrongMethod = await run(request({}, {}, { method: "GET", body: undefined }), env_);
+    expect(wrongMethod.status).toBe(405);
+    const wrongType = await run(request({ slug: SLUG, hash }, { "Content-Type": "text/plain" }), env_);
+    expect(wrongType.status).toBe(415);
+    const tooLarge = await run(request("x".repeat(BODY_MAX_BYTES + 10)), env_);
+    expect(tooLarge.status).toBe(413);
+    const outcomes = logs
+      .filter((line) => line.includes('"event":"questions"'))
+      .map((line) => (JSON.parse(line) as { outcome: string }).outcome);
+    expect(outcomes).toEqual(["invalid", "invalid", "invalid"]);
+    const allowed = ["cached", "generated", "fresh", "limited", "not_found", "stale", "forbidden", "invalid", "malformed", "unavailable"];
+    for (const outcome of outcomes) expect(allowed).toContain(outcome);
   });
 
   it("Q25: never reads CF-Connecting-IP and sets no cookie", async () => {

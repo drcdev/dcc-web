@@ -48,7 +48,7 @@
 | State | Visible | Status (live region) text | Focus |
 |---|---|---|---|
 | Idle | heading, sentence, "Get questions" | empty | unchanged |
-| Loading | "Get questions" (or "New questions") marked `aria-disabled="true"` (not the `disabled` attribute, so it keeps focus and stays in the tab order; presses are ignored) | "Getting questions…" | stays on the pressed button; the reader can Tab on into the article meanwhile |
+| Loading | "Get questions" (or "New questions") marked `aria-disabled="true"` (not the `disabled` attribute, so it keeps focus and stays in the tab order; presses are ignored) | "Getting questions..." (three ASCII dots) | stays on the pressed button; the reader can Tab on into the article meanwhile |
 | Ready | numbered list of 2–4 questions, AI note, "New questions" (Get button removed) | "Questions are ready." | moves to "New questions" if it was on "Get questions"; otherwise unchanged |
 | Ready again ("New questions") | the list's items are replaced in place by the fresh set; AI note and "New questions" stay | "New questions are ready." | stays on "New questions" |
 | Limited (429) | message: "Questions are unavailable for now because today's limit has been reached. Try again in about {n} minutes." ("about {n} hours" when over 90 minutes) and the previous button, available again | same message | stays on the pressed button |

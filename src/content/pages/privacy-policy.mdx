@@ -36,6 +36,8 @@ Each writing post has a button that gives you a few questions to think about bef
 
 The questions for each version of a post are kept in the site's Cloudflare D1 database so the next reader gets them without another request to the model. The database also holds one site-wide counter of how many sets of questions were written, which is how the site stays within its daily limit. A post's saved questions are replaced when the post changes.
 
+Cloudflare, as the host of this site, handles every request, including your IP address, in its own platform logs and security systems. Those are outside this site's control and this site does not read them. The questions feature collects no personal data.
+
 ## Spam protection
 
 Sending the contact form uses Cloudflare Turnstile to tell people from automated submissions. It loads when you start filling in the form and receives your IP address and the browser and device signals its own script collects, plus a one-time token. No form field is sent to it. It sets no tracking cookies. Read [Cloudflare's Turnstile privacy addendum](https://www.cloudflare.com/turnstile-privacy-policy/) for how Cloudflare handles that information.

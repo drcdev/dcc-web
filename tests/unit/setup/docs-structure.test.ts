@@ -169,6 +169,16 @@ describe("docs/setup.md contact-form part (items 19 to 25)", () => {
     expect(s).toContain("pnpm exec wrangler d1 delete dcc-web-contact-preview --env-file /dev/null");
   });
 
+  it("item 25 checks each retired database is empty and deletes the preview one first", () => {
+    const s = extractSection(contents, "contact-production-deploy");
+    expect(s).toContain("SELECT count(*) FROM messages");
+    expect(s).toContain("pnpm exec wrangler d1 migrations list dcc-web --remote --env-file /dev/null");
+    expect(s).toContain("pnpm setup:check --item contact-d1-databases");
+    expect(s.indexOf("d1 delete dcc-web-contact-preview")).toBeGreaterThan(-1);
+    expect(s.indexOf("d1 delete dcc-web-contact-preview")).toBeLessThan(s.indexOf("d1 delete dcc-web-contact --env-file"));
+    expect(s).not.toContain("is replaced by the new databases");
+  });
+
   it("item 21 gives secret put commands and the replacement rule, and never asks for a value in chat", () => {
     const s = extractSection(contents, "contact-worker-secrets");
     for (const name of ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"]) {

@@ -75,7 +75,7 @@ local bucket is in the local D1.
 
 1. Open any post. The "Think before you read" panel shows a sentence and "Get questions"; the
    Network panel shows no `/api/questions` request (FR-002).
-2. Press "Get questions": the button disables, "Getting questions…" is announced, then 2–4
+2. Press "Get questions": the button is marked unavailable (`aria-disabled`), "Getting questions..." (three ASCII dots) is announced, then 2–4
    numbered questions, the AI note and "New questions" appear (US1).
 3. Reload and press again: the same questions return at once (`source: "cached"` in the
    response) and the bucket row is unchanged (`wrangler d1 execute DB --local --command
