@@ -87,3 +87,7 @@ No tasks of its own: the link's browser test is T020 (with the resolver cases in
 ## Strategy
 
 MVP is Phase 1 plus User Story 1 (schema, pill, note, fixture). Then the US2 journey (green from Phase 2), the Tempo content, then baselines. Auto-merge off (major change).
+
+## Phase 6: Convergence
+
+- [ ] T033 Layer unit. Complete the retired documentation in `src/content/projects/_template.mdx` per FR-011 (partial): the optional-details comment names `retired` and `replacedBy` but does not say that `href` must be an https address or that the note's wording is fixed and cannot be customised. First extend "names the optional details in comments" in `tests/unit/content/project-template.test.ts` to also require `https` and a phrase saying the note is fixed (for example "cannot be customised"), see it fail, then reword the comment (front matter unchanged, still only example.com links) until green.
