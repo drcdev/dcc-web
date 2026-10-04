@@ -159,7 +159,9 @@ Fonts (feature 018): the site self-hosts Inter through Astro's Fonts API from fo
 files in `src/assets/fonts/`. The unit tests `font-files.test.ts`, `font-coverage.test.ts` and
 `astro-config.test.ts` check the files, the charset coverage guard and the config; the E2E
 spec `fonts.spec.ts` proves the faces and at most four font requests, and `headers.spec.ts`
-the `immutable` cache header. The total-transfer budget is 150 KB. The Linux baselines come
+that the fonts and every other fingerprinted file under `/_astro/` (stylesheets and scripts)
+are served with the year-long `immutable` cache header (#74), while `headers.test.ts` checks
+the rule itself. The total-transfer budget is 150 KB. The Linux baselines come
 from the Docker image, which keeps DejaVu as the system fallback, so only Inter text is
 pinned by the web font and any glyph outside the subset falls back to DejaVu there.
 
