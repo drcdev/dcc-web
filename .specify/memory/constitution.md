@@ -1,35 +1,45 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 2.0.0 → 2.1.0
-Bump rationale: MINOR. The Development Workflow section gains a binding
-test-placement rule (one primary layer per behaviour, named per test task, a
-reason for any second layer), which materially expands how Principle I's test
-layers are applied. No principle is removed or redefined, and it is more than a
-wording change. Source: issue #26 decision D7.
+Version change: 2.1.0 → 2.2.0
+Bump rationale: MINOR. Principle V is materially expanded: the server-side code
+allowed under `/api/` grows from the contact API alone to a named list of
+first-party endpoints, each stated with its data and limits, and a second
+endpoint (the critical-thinking questions API) is added to it. No principle is
+removed or redefined; the contact API's rules are unchanged. Source: feature
+022-critical-thinking-questions (spec "Dependencies and Governance").
 
-Modified principles: none (Principle I's text is unchanged).
+Modified principles:
+- I. Test-First — "the contact API" generalised to "the API endpoints" in the
+  scope list and the integration-test layer.
+- V. Static by Default — the single-endpoint sentence replaced by the named
+  endpoint list (contact API; critical-thinking questions API), with the rule
+  that adding an endpoint is an amendment.
+- VIII. Cloudflare Best Practices — Workers AI added to the best-practice
+  list; "the site and the contact API run in one Worker" generalised to the
+  site's API endpoints; the origin/HTTPS rule now applies to every endpoint,
+  with each endpoint's own abuse limits stated.
 
 Added sections: none
 
 Removed sections: none
 
 Other changes:
-- Development Workflow: new test-placement bullet, directly after "Tasks are
-  ordered so tests come before the implementation they cover."
-- Ratified stays 2026-09-28; Last Amended is 2026-10-02.
+- Technology Constraints: new "Questions API" line (Workers AI through the
+  Worker's `ai` binding, D1 for cached question sets and the usage bucket).
+- Ratified stays 2026-09-28; Last Amended is 2026-10-04.
 
 Templates reviewed (read at runtime, not modified by this command):
-- .specify/templates/plan-template.md — no change required.
+- .specify/templates/plan-template.md — no change required (its Constitution
+  Check gate reads the principles at runtime).
 - .specify/templates/spec-template.md — no change required.
-- .specify/templates/tasks-template.md — still calls tests optional and has no
-  layer field. The /deliver, /tweak, /squash and /chore pipeline instructions
-  override it and now require the layer, so the template change is deferred. The
-  four pipeline skills were updated in the same change.
+- .specify/templates/tasks-template.md — no change required for this amendment
+  (the earlier layer-field TODO still stands).
 
 Follow-up TODOs:
-- Add a layer field to the tasks template and speckit-tasks.
-- Principle I's layer list does not yet name build, visual or budget tests.
+- Add a layer field to the tasks template and speckit-tasks (carried from 2.1.0).
+- Principle I's layer list does not yet name build, visual or budget tests
+  (carried from 2.1.0).
 No placeholders deferred.
 -->
 
@@ -46,15 +56,15 @@ document wins.
 
 - Every change starts with tests that describe the expected behaviour. Tests are written,
   reviewed against the spec, and seen to fail before implementation begins.
-- This applies to everything: content schemas, components, pages, the contact API, redirects,
-  build configuration and deployment scripts.
+- This applies to everything: content schemas, components, pages, the API endpoints,
+  redirects, build configuration and deployment scripts.
 - Test layers, using the tools each platform recommends:
   - Unit and schema tests for logic, utilities and content collection schemas.
   - Component tests for Astro components, using Astro's own testing support.
   - End-to-end tests in a real browser for user journeys (navigation, reading a post,
     submitting the contact form).
   - Automated accessibility checks on every page template.
-  - Integration tests for the contact API against a real local database.
+  - Integration tests for each API endpoint against a real local database.
 - A task is not done until its tests pass locally and in CI.
 
 ### II. Automated Release Gate
@@ -105,7 +115,17 @@ the change as major.
 ### V. Static by Default
 
 - Every public page is prerendered at build time. There is no server-side rendering for public
-  content. The only server-side code is the contact API under `/api/`.
+  content. The only server-side code is the API endpoints under `/api/` named below, each with
+  its data and limits. Adding an endpoint is an amendment to this list.
+  - **Contact API:** receives and stores contact form submissions, the site's only personal
+    data (Principle VII), and lets Don retrieve them. It verifies Turnstile and rate-limits each
+    sender.
+  - **Critical-thinking questions API:** handles no personal data and identifies no reader. It
+    generates questions only for the site's own posts, never for text a caller supplies, through
+    the Workers AI binding. It caches each post version's question set in D1 (derived output,
+    not authored content, so Principle VI still holds) and serves a cached set at no cost. Every
+    generation draws from one site-wide token bucket per environment, stored in D1 and sized in
+    one configuration module.
 - Pages ship no client-side JavaScript unless a component genuinely needs interactivity.
   Interactive pieces are isolated islands loaded as late as possible.
 - Core content (pages, posts, project stories) must be readable with JavaScript turned off.
@@ -133,14 +153,15 @@ the change as major.
 
 ### VIII. Cloudflare Best Practices
 
-- Follow Cloudflare's documented best practices for Workers, D1 and Turnstile, covering
-  deployment, security and performance.
-- The site and the contact API run in one Worker. Only `/api/*` invokes Worker code; every
+- Follow Cloudflare's documented best practices for Workers, D1, Turnstile and Workers AI,
+  covering deployment, security and performance.
+- The site and its API endpoints run in one Worker. Only `/api/*` invokes Worker code; every
   other request is served as a static asset.
 - Worker configuration, D1 migrations and Cron Triggers are committed and applied through CI,
   never by hand in the dashboard.
-- The contact API accepts requests only from the site's own origin, verifies Turnstile
-  server-side, rate-limits submissions, and serves HTTPS only.
+- Every API endpoint accepts requests only from the site's own origin and serves HTTPS only.
+  The contact API also verifies Turnstile server-side and rate-limits submissions. The
+  questions API is limited by its site-wide bucket and calls no model when the bucket is empty.
 - Usage stays within Cloudflare's free plan limits. D1 queries are indexed so they stay well
   under the free plan's daily row limits.
 
@@ -175,6 +196,8 @@ the change as major.
   deployment per branch.
 - **Contact API:** TypeScript in the site's Worker, handling `/api/*`, with Cloudflare D1 for
   storage and a Cron Trigger for retention.
+- **Questions API:** TypeScript in the same Worker, Cloudflare Workers AI through the Worker's
+  `ai` binding, and Cloudflare D1 for cached question sets and the usage bucket.
 - **Spam protection:** Cloudflare Turnstile, verified by the contact API.
 - **Analytics:** Cloudflare Web Analytics or none.
 - **CI:** GitHub Actions.
@@ -211,4 +234,4 @@ the change as major.
   - PATCH for wording and clarifications.
 - Every pull request review checks compliance with this document.
 
-**Version**: 2.1.0 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-10-02
+**Version**: 2.2.0 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-10-04
