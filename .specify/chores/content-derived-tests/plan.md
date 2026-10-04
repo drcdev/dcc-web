@@ -401,7 +401,7 @@ item leaves `verify:quick` green, along with its targeted files:
 | `?theme=macos` shows 1 row | Computed count for `pickedStory`'s first theme |
 | Index has a Focus Pocus row | Every project in the build has a row |
 
-### W6. Picked story and post: no-JS, motion, forced colours, a11y, headers, templates
+### W6. Picked story and post: no-JS, motion, forced colours, a11y, headers, templates (Done: a11y and budget pass on the picked story, drcdev-github-io; no-JS stand-in and source links are asserted only when the front matter declares them)
 
 - **Files:**
   - `tests/e2e/templates.ts` (the `project-story` row);

@@ -3,8 +3,9 @@
 // motion, and none of it hides content. The heading uncover and the sticky picture are gone.
 import { expect, test, type Page } from "@playwright/test";
 import { cspViolations, recordCspViolations } from "./csp-violations.ts";
+import { pickedStory } from "../helpers/content";
 
-const STORY = "/projects/focus-pocus/";
+const STORY = pickedStory.address;
 
 /** The @view-transition rules that apply to this page right now, nested rules included. */
 const activeViewTransitionRules = (page: Page) =>
@@ -61,12 +62,12 @@ test.describe("with motion allowed", () => {
     const rules = await activeViewTransitionRules(page);
     expect(rules).toHaveLength(1);
     expect(rules[0]).toMatch(/navigation:\s*auto/);
-    await expect(page.locator("h1")).toHaveCSS("view-transition-name", "project-focus-pocus");
+    await expect(page.locator("h1")).toHaveCSS("view-transition-name", `project-${pickedStory.slug}`);
     await page.goto("/projects/");
     expect(await activeViewTransitionRules(page)).toHaveLength(1);
-    await expect(page.locator('[data-project="focus-pocus"] [data-project-title]')).toHaveCSS(
+    await expect(page.locator(`[data-project="${pickedStory.slug}"] [data-project-title]`)).toHaveCSS(
       "view-transition-name",
-      "project-focus-pocus",
+      `project-${pickedStory.slug}`,
     );
   });
 
