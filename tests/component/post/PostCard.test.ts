@@ -7,6 +7,7 @@ import PostCard from "../../../src/components/post/PostCard.astro";
 import { topicStyles } from "../../../src/components/post/topic-styles.ts";
 import { topics } from "../../../src/config/topics.ts";
 import { byName, classList, textOf } from "../html.ts";
+import sample from "../../fixtures/pages/images/sample.png";
 import { summary, withImage } from "./fixtures.ts";
 
 let container: AstroContainer;
@@ -152,6 +153,43 @@ describe("PostCard marks", () => {
       const html = await render(summary("t", { topics }));
       const article = byName(html, "article")[0]!;
       for (const cls of border.split(/\s+/)) expect(classList(article)).toContain(cls);
+    }
+  });
+});
+
+describe("PostCard image candidates (issue #73)", () => {
+  const SIZES = "(min-width: 1024px) 320px, (min-width: 640px) 45vw, calc(100vw - 2rem)";
+  const candidates = (html: string) => {
+    const [img] = byName(html, "img");
+    return (img!.attrs.srcset ?? "").split(",").map((entry) => {
+      const [url, descriptor] = entry.trim().split(/\s+/);
+      return { url: url!, descriptor: descriptor! };
+    });
+  };
+
+  it("offers 320w, 400w and 640w for a wide source (C1)", async () => {
+    const html = await render(withImage("pic"));
+    expect(candidates(html).map((c) => c.descriptor)).toEqual(["320w", "400w", "640w"]);
+  });
+
+  it("never enlarges a narrower source (C1)", async () => {
+    const narrow = withImage("pic");
+    narrow.featureImage = { ...narrow.featureImage!, src: { ...sample, width: 480, height: 270 } };
+    const html = await render(narrow);
+    expect(candidates(html).map((c) => c.descriptor)).toEqual(["320w", "400w", "480w"]);
+  });
+
+  it("sizes the image for the phone column minus the page gutters (C2)", async () => {
+    const [img] = byName(await render(withImage("pic")), "img");
+    expect(img!.attrs.sizes).toBe(SIZES);
+  });
+
+  it("requests WebP at quality 65 for src and every candidate (C3)", async () => {
+    const html = await render(withImage("pic"));
+    const [img] = byName(html, "img");
+    for (const url of [img!.attrs.src!, ...candidates(html).map((c) => c.url)]) {
+      expect(url).toContain("q=65");
+      expect(url).toContain("f=webp");
     }
   });
 });
