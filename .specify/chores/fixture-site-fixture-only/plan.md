@@ -113,7 +113,7 @@ already live, in the specs that run on the real site (port 4321) and the unit te
   only). `buildSite` = `prepareFixtureSite` + `build()`.
 - Test: existing W1 turns green. `verify:quick` does not build the fixture site, so also run
   `pnpm run build:fixtures` once through the wrapper and check that it succeeds.
-- [ ] done
+- [x] done
 
 ### W3 blog-pagination.spec.ts: fixed totals
 - Drop the `posts` import and `SITE_TOPICS`; `TOTALS` = `[ALL, 16]`, `[TOPIC, 13]` with a
