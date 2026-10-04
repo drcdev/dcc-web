@@ -8,32 +8,32 @@
 
 ## Text alternatives
 
-- [ ] CHK001 Is the unchanged accessible name (alt text and the diagram's own label) specified for every one of the five diagrams and the starter diagram? [Completeness, Spec §FR-003]
-- [ ] CHK002 Is the visible description under each diagram required to stay equal to today's wording, including where wrapped labels change what the picture says? [Consistency, Spec §FR-003]
-- [ ] CHK003 Is it stated how the alt text and the SVG's own title/desc stay in sync with a label edited through the documented path? [Gap, Spec §FR-007]
-- [ ] CHK004 Is the fallback when a diagram fails to load tied to a testable requirement (description and name still present)? [Edge Case, Spec Edge Cases]
-- [ ] CHK005 Is the sharing image's alt text required to stay identical, and to carry the wording "Don Coleman" shown in the image? [Clarity, Spec §FR-005]
-- [ ] CHK006 Is the requirement that labels remain real text (not outlines) tied to a reason, so text stays selectable and readable by assistive technology when the SVG is opened on its own? [Coverage, Spec §FR-003a]
+- [x] CHK001 Is the unchanged accessible name (alt text and the diagram's own label) specified for every one of the five diagrams and the starter diagram? [Completeness, Spec §FR-003]
+- [x] CHK002 Is the visible description under each diagram required to stay equal to today's wording, including where wrapped labels change what the picture says? [Consistency, Spec §FR-003]
+- [x] CHK003 Is it stated how the alt text and the SVG's own title/desc stay in sync with a label edited through the documented path? [Gap, Spec §FR-007]
+- [x] CHK004 Is the fallback when a diagram fails to load tied to a testable requirement (description and name still present)? [Edge Case, Spec Edge Cases]
+- [x] CHK005 Is the sharing image's alt text required to stay identical, and to carry the wording "Don Coleman" shown in the image? [Clarity, Spec §FR-005]
+- [x] CHK006 Is the requirement that labels remain real text (not outlines) tied to a reason, so text stays selectable and readable by assistive technology when the SVG is opened on its own? [Coverage, Spec §FR-003a]
 
 ## Contrast and colour
 
-- [ ] CHK007 Is the contrast of each label colour against its box fill stated as a measurable WCAG 2.2 AA ratio (4.5:1 for normal text), not only as "unchanged"? [Measurability, Spec Edge Cases]
-- [ ] CHK008 Are the label and fill colour pairs of all diagrams enumerated or referenced so a reviewer can check the ratio? [Gap]
-- [ ] CHK009 Is the contrast of the sharing image's rust lettering on the dusk background stated numerically? [Gap, Spec §FR-005]
-- [ ] CHK010 Is it specified that colours are not altered even though Inter's stroke weight changes perceived contrast? [Assumption, Spec Edge Cases "Dark mode"]
-- [ ] CHK011 Is the diagram's own light background in the dark site theme covered by a requirement for its edge against the dark page? [Coverage, Spec Edge Cases]
+- [x] CHK007 Is the contrast of each label colour against its box fill stated as a measurable WCAG 2.2 AA ratio (4.5:1 for normal text), not only as "unchanged"? [Measurability, Spec Edge Cases]
+- [x] CHK008 Are the label and fill colour pairs of all diagrams enumerated or referenced so a reviewer can check the ratio? [Gap]
+- [x] CHK009 Is the contrast of the sharing image's rust lettering on the dusk background stated numerically? [Gap, Spec §FR-005]
+- [x] CHK010 Is it specified that colours are not altered even though Inter's stroke weight changes perceived contrast? [Assumption, Spec Edge Cases "Dark mode"]
+- [x] CHK011 Is the diagram's own light background in the dark site theme covered by a requirement for its edge against the dark page? [Coverage, Spec Edge Cases]
 
 ## Legibility at small sizes
 
-- [ ] CHK012 Is "at least as legible as today" at the smallest displayed width quantified (a minimum rendered text size in px at the narrowest viewport)? [Ambiguity, Spec Edge Cases]
-- [ ] CHK013 Is the smallest page width the diagram is shown at defined, including 320 CSS px and 400% zoom reflow? [Gap]
-- [ ] CHK014 Are requirements stated for text size changes and text spacing, given text inside an image does not reflow? [Gap, WCAG 1.4.4 / 1.4.12]
-- [ ] CHK015 Is the 16-unit clear space expressed as a rendered size at the smallest width, so legibility and clearance are both measurable? [Measurability, Spec §FR-003]
-- [ ] CHK016 Is a wrapped two-line label required to keep a line spacing that is legible and shows the two lines belong together? [Clarity, Spec §FR-003]
+- [x] CHK012 Is "at least as legible as today" at the smallest displayed width quantified (a minimum rendered text size in px at the narrowest viewport)? [Ambiguity, Spec Edge Cases]
+- [x] CHK013 Is the smallest page width the diagram is shown at defined, including 320 CSS px and 400% zoom reflow? [Gap]
+- [x] CHK014 Are requirements stated for text size changes and text spacing, given text inside an image does not reflow? [Gap, WCAG 1.4.4 / 1.4.12]
+- [x] CHK015 Is the 16-unit clear space expressed as a rendered size at the smallest width, so legibility and clearance are both measurable? [Measurability, Spec §FR-003]
+- [x] CHK016 Is a wrapped two-line label required to keep a line spacing that is legible and shows the two lines belong together? [Clarity, Spec §FR-003]
 
 ## Sharing image and page template checks
 
-- [ ] CHK017 Is it specified that the automated accessibility checks on the project story template run with the new diagrams, with "no new violations" as the pass condition? [Acceptance Criteria, Spec §SC-005]
-- [ ] CHK018 Is the lettering size of "Don Coleman" in the sharing image required to be legible at typical link-preview thumbnail sizes? [Gap, Spec §FR-005]
-- [ ] CHK019 Is it stated that diagrams do not convey meaning by colour alone (arrows and labels carry the relationships)? [Coverage, Gap]
-- [ ] CHK020 Are the accessibility requirements for the starter diagram in the project template defined to match the published ones? [Consistency, Spec §FR-004]
+- [x] CHK017 Is it specified that the automated accessibility checks on the project story template run with the new diagrams, with "no new violations" as the pass condition? [Acceptance Criteria, Spec §SC-005]
+- [x] CHK018 Is the lettering size of "Don Coleman" in the sharing image required to be legible at typical link-preview thumbnail sizes? [Gap, Spec §FR-005]
+- [x] CHK019 Is it stated that diagrams do not convey meaning by colour alone (arrows and labels carry the relationships)? [Coverage, Gap]
+- [x] CHK020 Are the accessibility requirements for the starter diagram in the project template defined to match the published ones? [Consistency, Spec §FR-004]

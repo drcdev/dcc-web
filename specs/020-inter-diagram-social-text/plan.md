@@ -22,7 +22,7 @@ labels stay real `<text>`. Labels are edited by hand in the SVG, then
 `pnpm run fonts:diagrams -- <file>` (`scripts/fonts/embed-diagram-fonts.ts`, `uvx` fonttools)
 rewrites the font block. Nothing runs at build time; Astro serves the SVG byte for byte. Six
 detail labels that do not fit their 300-unit boxes with 16 units each side in Inter wrap onto two
-lines and their boxes grow (one more than the spec listed, research R8). A unit test holds every
+lines and their boxes grow (the sixth found by research R8, now listed in the spec too). A unit test holds every
 SVG with text under `src/content/` to the contract (Inter only, glyphs present in the embedded
 cmaps, licence notice, self-contained, at most 16 KB); an E2E test proves in Chromium that the
 faces load and the labels fit. The sharing-image script inlines `Inter-Bold.woff2` through a
@@ -158,10 +158,14 @@ in the visual run is a regression to fix.
   `<text>` in the SVG with the root `font-family="Inter, sans-serif"`; after adding or changing a
   label run `pnpm run fonts:diagrams -- <file>` (needs `uv`); the gate fails naming the file and
   character if you forget; keep each file under 16 KB; leave 16 units each side of a label inside
-  its box and wrap onto a second line rather than shrinking or rewording. This is where FR-007
-  documents the editing path.
+  its box and wrap onto a second line rather than shrinking or rewording (34 units between
+  lines, the box 34 units taller per line); when an edit changes what the diagram says, update
+  the alt text, the SVG's `aria-label` and the `description` in the same change. This is where
+  FR-007 documents the editing path.
 - `docs/testing.md`: the Fonts paragraph gains the diagram unit and E2E tests and the og unit
-  test.
+  test, and says the gate checks the og script, not the PNG: re-run
+  `node scripts/og-image/render.ts` and commit `public/og-default.png` whenever the script
+  changes (the documented re-render step of FR-006). The script's header comment says the same.
 
 ### FR-011: sizes before and after
 

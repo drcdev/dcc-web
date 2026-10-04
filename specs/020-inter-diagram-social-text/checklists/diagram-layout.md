@@ -8,37 +8,37 @@
 
 ## Clear space and fit
 
-- [ ] CHK001 Is the 16-unit clear space defined precisely: measured from the text's advance width or ink bounds, to the box edge or its stroke? [Clarity, Spec §FR-003]
-- [ ] CHK002 Is the text-width measurement fixed (Inter metrics at which size, weight and kerning setting) so the fit decision is reproducible? [Measurability, Spec Edge Cases]
-- [ ] CHK003 Is the clear-space requirement applied to titles as well as details, and to all boxes in all diagrams, not just the five named labels? [Coverage, Spec Edge Cases]
-- [ ] CHK004 Is the list of five overflowing labels reconciled with a rule that any other label found to overflow is also wrapped? [Consistency, Spec Edge Cases]
-- [ ] CHK005 Is a requirement defined for vertical clear space inside a grown box? [Gap]
-- [ ] CHK006 Is the automated check that enforces clear space specified, or is fit left to manual review? [Gap, Spec §SC-004]
+- [x] CHK001 Is the 16-unit clear space defined precisely: measured from the text's advance width or ink bounds, to the box edge or its stroke? [Clarity, Spec §FR-003]
+- [x] CHK002 Is the text-width measurement fixed (Inter metrics at which size, weight and kerning setting) so the fit decision is reproducible? [Measurability, Spec Edge Cases]
+- [x] CHK003 Is the clear-space requirement applied to titles as well as details, and to all boxes in all diagrams, not just the five named labels? [Coverage, Spec Edge Cases]
+- [x] CHK004 Is the list of five overflowing labels reconciled with a rule that any other label found to overflow is also wrapped? [Consistency, Spec Edge Cases]
+- [x] CHK005 Is a requirement defined for vertical clear space inside a grown box? [Gap]
+- [x] CHK006 Is the automated check that enforces clear space specified, or is fit left to manual review? [Gap, Spec §SC-004]
 
 ## Wrapping rules
 
-- [ ] CHK007 Is the break point for each two-line label specified (which words go on each line) rather than left to the implementer? [Ambiguity, Spec §FR-003]
-- [ ] CHK008 Is the line height of a wrapped label defined in diagram units? [Gap, Spec §FR-003]
-- [ ] CHK009 Is it stated that each line of a wrapped label must satisfy the 16-unit clear space? [Completeness, Spec §FR-003]
-- [ ] CHK010 Is the case where two lines still do not fit addressed, given labels are never shrunk, reworded or clipped? [Edge Case, Gap]
-- [ ] CHK011 Is it clear how a wrapped label stays one phrase for tools reading the SVG? [Clarity, Gap]
-- [ ] CHK012 Are the visible description and accessible name checked for wording that refers to a wrapped label? [Consistency, Spec §FR-003]
+- [x] CHK007 Is the break point for each two-line label specified (which words go on each line) rather than left to the implementer? [Ambiguity, Spec §FR-003]
+- [x] CHK008 Is the line height of a wrapped label defined in diagram units? [Gap, Spec §FR-003]
+- [x] CHK009 Is it stated that each line of a wrapped label must satisfy the 16-unit clear space? [Completeness, Spec §FR-003]
+- [x] CHK010 Is the case where two lines still do not fit addressed, given labels are never shrunk, reworded or clipped? [Edge Case, Gap]
+- [x] CHK011 Is it clear how a wrapped label stays one phrase for tools reading the SVG? [Clarity, Gap]
+- [x] CHK012 Are the visible description and accessible name checked for wording that refers to a wrapped label? [Consistency, Spec §FR-003]
 
 ## Box growth, arrows and canvas
 
-- [ ] CHK013 Is the box height growth stated per added line, and are boxes below required to shift by the same amount? [Clarity, Spec §FR-003]
-- [ ] CHK014 Is "arrows move only as far as needed" defined, including which endpoint attaches to which box edge? [Ambiguity, Spec §FR-003]
-- [ ] CHK015 Are arrow endpoints required to stay on box edges after growth, with arrowheads not overlapping text or borders? [Completeness, Gap]
-- [ ] CHK016 Is the vertical spacing between boxes after growth required to stay at least today's value so arrows remain visible? [Gap]
-- [ ] CHK017 Are canvas bounds addressed: does the viewBox grow, and is that consistent with "image dimensions unchanged"? [Conflict, Spec §FR-003]
-- [ ] CHK018 Is the effect on displayed height at 26rem wide and on full-width phones stated, given layout shift (CLS) limits apply? [Gap, Spec §FR-010]
-- [ ] CHK019 Are the image width and height attributes in the page consistent with a changed aspect ratio? [Consistency, Spec §FR-003]
-- [ ] CHK020 Does the plan list every adjustment per diagram (Cadence, Tempo, Flux) as FR-003 requires, with before and after coordinates? [Traceability, Spec §FR-003]
+- [x] CHK013 Is the box height growth stated per added line, and are boxes below required to shift by the same amount? [Clarity, Spec §FR-003]
+- [x] CHK014 Is "arrows move only as far as needed" defined, including which endpoint attaches to which box edge? [Ambiguity, Spec §FR-003]
+- [x] CHK015 Are arrow endpoints required to stay on box edges after growth, with arrowheads not overlapping text or borders? [Completeness, Gap]
+- [x] CHK016 Is the vertical spacing between boxes after growth required to stay at least today's value so arrows remain visible? [Gap]
+- [x] CHK017 Are canvas bounds addressed: does the viewBox grow, and is that consistent with "image dimensions unchanged"? [Conflict, Spec §FR-003]
+- [x] CHK018 Is the effect on displayed height at 26rem wide and on full-width phones stated, given layout shift (CLS) limits apply? [Gap, Spec §FR-010]
+- [x] CHK019 Are the image width and height attributes in the page consistent with a changed aspect ratio? [Consistency, Spec §FR-003]
+- [x] CHK020 Does the plan list every adjustment per diagram (Cadence, Tempo, Flux) as FR-003 requires, with before and after coordinates? [Traceability, Spec §FR-003]
 
 ## Template starter diagram and consistency
 
-- [ ] CHK021 Is the starter diagram required to meet the same fit, size and font rules as the published ones? [Consistency, Spec §FR-004]
-- [ ] CHK022 Is it specified that the starter's placeholder labels have 16 units of clear space in Inter, so a new story starts valid? [Gap, Spec §FR-004]
-- [ ] CHK023 Is author guidance on writing labels that fit (for example a maximum length per line) documented as a requirement? [Gap, Spec §FR-007]
-- [ ] CHK024 Are the diagrams that need no wrapping (Focus Pocus, drcdev.github.io) required to keep identical geometry? [Coverage, Spec §FR-003]
-- [ ] CHK025 Is the expectation of no visual baseline change reconciled with changed diagram geometry, given the fixture site uses raster pictures? [Consistency, Spec Edge Cases "Fixture site"]
+- [x] CHK021 Is the starter diagram required to meet the same fit, size and font rules as the published ones? [Consistency, Spec §FR-004]
+- [x] CHK022 Is it specified that the starter's placeholder labels have 16 units of clear space in Inter, so a new story starts valid? [Gap, Spec §FR-004]
+- [x] CHK023 Is author guidance on writing labels that fit (for example a maximum length per line) documented as a requirement? [Gap, Spec §FR-007]
+- [x] CHK024 Are the diagrams that need no wrapping (Focus Pocus, drcdev.github.io) required to keep identical geometry? [Coverage, Spec §FR-003]
+- [x] CHK025 Is the expectation of no visual baseline change reconciled with changed diagram geometry, given the fixture site uses raster pictures? [Consistency, Spec Edge Cases "Fixture site"]
