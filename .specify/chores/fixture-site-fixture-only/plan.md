@@ -159,7 +159,7 @@ already live, in the specs that run on the real site (port 4321) and the unit te
 - `blog-fixture.a11y.spec.ts` header "17 posts" → 16; `budget.spec.ts` line 86-88 "21 posts (the
   real ones, dated 2025, fall on page 2)" → 16 fixture posts, page 1 still 12 cards.
 - Test: `no behaviour: n/a (comments only)`.
-- [ ] done
+- [x] done
 
 ### W8 Docs
 - `docs/testing.md`: in "Real content in tests", say the fixture site (port 4322) is built from

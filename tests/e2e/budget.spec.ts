@@ -83,10 +83,9 @@ async function measure(browser: Browser, path: string): Promise<Measurement> {
   return { ...vitals, jsBytes, totalBytes };
 }
 
-// Page weight of a full listing (specs/008-blog T058; FR-041). The fixture site (port 4322) has 21
-// posts (the real ones, dated 2025, fall on page 2), so `/writing/all/` shows 12 cards; the existing
-// budget applies unchanged. `measure` takes an absolute address, so this case needs no project of its
-// own.
+// Page weight of a full listing (specs/008-blog T058; FR-041). The fixture site (port 4322) has 16
+// fixture posts, so `/writing/all/` shows 12 cards on page 1; the existing budget applies unchanged.
+// `measure` takes an absolute address, so this case needs no project of its own.
 test.describe("writing-all template with 12 cards on the fixture site — page budget", () => {
   test("meets LCP, CLS, long-task, JavaScript and total-transfer budgets on simulated mobile", async ({ browser }) => {
     const m = await measure(browser, "http://localhost:4322/writing/all/");
