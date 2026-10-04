@@ -4,8 +4,6 @@
 
 ## Prerequisites
 
-- Gate **G0** in [plan.md](./plan.md) is resolved (the convergence page fits the budget with
-  Inter, research R4). Until then nothing below is expected to pass.
 - Node from `.nvmrc` (`node -v`; if not 24, `source ~/.nvm/nvm.sh && nvm use` in the same
   command). In a worktree, use `corepack pnpm` or a `pnpm` shim.
 - To regenerate the font files only: `uv` on the PATH (`brew install uv`) and `unzip`.
@@ -48,8 +46,10 @@ pnpm run test:budget
 
 Expected: faces drawn per F13, same-origin fonts per F14, JS-off per F15, blocked fonts per F16,
 the font `Cache-Control` per F10 and F11, the CSP unchanged apart from one style hash (F06), and
-every budget template at or under 102,400 bytes with CLS < 0.1 (SC-004). Read the `budget`
-annotations for the heaviest pages and compare them with research R4.
+every budget template at or under 153,600 bytes (150 KB, spec D3) with CLS < 0.1, LCP ≤ 2.5 s
+and the long-task and JS limits unchanged (SC-004, F21). Read the `budget` annotations for the
+heaviest pages and compare them with research R4: `/writing/convergence/` about 121,654 bytes
+plus a few hundred bytes of fallback CSS.
 
 ## 5. Visual baselines (all 132)
 
@@ -71,4 +71,5 @@ On the preview deployment, in both themes at phone and desktop width: home, a po
 italic and bold italic, the projects index and a story. Look at headings, medium-weight labels
 (now Regular) and semibold labels (now Bold). DevTools Network shows four or fewer
 `/_astro/fonts/*.woff2` requests with `immutable`, and a reload shows them served from cache
-(SC-009).
+(SC-009). With the network throttled to slow 4G and the cache disabled, the swap from the
+adjusted Arial fallback to Inter shows no visible jump.

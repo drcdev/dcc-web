@@ -22,8 +22,8 @@ fonts: [{
   provider: fontProviders.local(),
   name: "Inter",
   cssVariable: "--font-inter",
-  fallbacks: [...SYSTEM_FONT_STACK],   // today's stack, exactly (FR-005)
-  optimizedFallbacks: false,           // R6
+  fallbacks: [...SYSTEM_FONT_STACK],   // today's families, generic sans-serif last (FR-005, R6)
+  optimizedFallbacks: true,            // metric-adjusted fallback faces (FR-006, R6)
   options: {
     variants: [
       { weight: 400, style: "normal", src: ["./src/assets/fonts/Inter-Regular.woff2"],    display: "swap", unicodeRange: [...INTER_UNICODE_RANGE] },
@@ -90,7 +90,7 @@ What the build emits (from the installed source, to be pinned by the build test)
   names, no preload links and no automatic CSP hash.
 - `fontProviders.fontsource()` or `fontProviders.npm()` with `@fontsource/inter`: first-party
   providers, but they fetch Fontsource's own `latin` subset (23.7 to 25.9 KB a face, 99 KB for
-  four), which cannot fit the budget (R3), they cannot apply our own character set and feature
+  four), about twice the bytes of our own subset (R3), they cannot apply our own character set and feature
   list, and `npm` adds a dependency (major change, more surface). Fontsource is also a font
   service at build time.
 - `fontProviders.google()` with `experimental.glyphs`: a third-party service at build time and
@@ -195,7 +195,7 @@ documented exception rather than a missing glyph.
 - `glyphhanger`: wraps `pyftsubset` and adds a crawler; no gain here.
 - Committing the release's own `web/Inter-*.woff2` (111 to 121 KB each): far over budget.
 
-## R4. Budget feasibility (FR-007, SC-004): measured, and one page does not fit
+## R4. Budget feasibility (FR-007, SC-004): measured against the 150 KB budget
 
 **Method**: the budget test's own conditions, reproduced with a script: Chromium at 390 x 844,
 cache disabled, slow 4G (150 ms RTT, 1.6 Mbps down), `encodedDataLength` summed per response
@@ -212,50 +212,57 @@ Each font response adds about 700 bytes of headers (security headers plus the ne
 47,748 + 2,800 = **50,548 bytes**. Every page draws at least Regular and Bold (body text and the
 header's bold name and semibold links).
 
-**Today and with fonts** (budget limit 102,400 bytes):
+**Today and with fonts** (budget limit **153,600 bytes**, 150 × 1024, D3; it was 102,400):
 
-| Page (budget template) | Faces drawn | Today | With Inter | Headroom |
+| Page (budget template) | Faces drawn | Today | With Inter | Headroom at 150 KB |
 |---|---|---|---|---|
-| writing-series-convergence `/writing/convergence/` | 400, 700 | 97,374 | **121,654** | **−19,254 (over)** |
-| writing-all `/writing/all/` | 400, 700 | 64,888 | 89,168 | 13,232 |
-| projects `/projects/` | 400, 700 | 59,833 | 84,113 | 18,287 |
-| writing-post `/writing/sample-everything/` | all four | 33,576 | 84,124 | 18,276 |
-| writing-landing `/writing/` | 400, 700 | 53,368 | 77,648 | 24,752 |
-| about | 400, 700 | 46,523 | 70,803 | 31,597 |
-| home | 400, 700 | 36,305 | 60,585 | 41,815 |
-| writing-post-text-only (fixture) | 400, 700, 400 italic | 42,457 | 79,745 | 22,655 |
-| writing-all, 12 cards (fixture) | 400, 700 | 43,606 | 67,886 | 34,514 |
-| every other template | 400, 700 | ≤ 34,044 | ≤ 58,324 | ≥ 44,076 |
-| *fixture post `/writing/every-part/` (visual subject, not a budget template)* | *all four after R9* | *43,611* | *94,159* | *8,241* |
+| writing-series-convergence `/writing/convergence/` | 400, 700 | 97,374 | **121,654** | **31,946** |
+| writing-all `/writing/all/` | 400, 700 | 64,888 | 89,168 | 64,432 |
+| projects `/projects/` | 400, 700 | 59,833 | 84,113 | 69,487 |
+| writing-post `/writing/sample-everything/` | all four | 33,576 | 84,124 | 69,476 |
+| writing-landing `/writing/` | 400, 700 | 53,368 | 77,648 | 75,952 |
+| about | 400, 700 | 46,523 | 70,803 | 82,797 |
+| home | 400, 700 | 36,305 | 60,585 | 93,015 |
+| writing-post-text-only (fixture) | 400, 700, 400 italic | 42,457 | 79,745 | 73,855 |
+| writing-all, 12 cards (fixture) | 400, 700 | 43,606 | 67,886 | 85,714 |
+| every other template | 400, 700 | ≤ 34,044 | ≤ 58,324 | ≥ 95,276 |
+| *fixture post `/writing/every-part/` (visual subject, not a budget template)* | *all four after R9* | *43,611* | *94,159* | *59,441* |
+
+The "With Inter" column was measured before optimized fallbacks were switched on (R6). They add
+four metric-adjusted `@font-face` rules and two family names to the `<Font />` `<style>` inlined
+in every page's head: well under 1 KB of HTML before compression, a few hundred bytes after.
+That cost is not yet measured; implementation reads it from the `budget` annotations, and it
+does not change any conclusion here.
 
 The fixture post page today is 8,152 bytes of HTML and 34,978 bytes of CSS (the fixture site's
-CSS is larger than the real site's 12,322 bytes) plus a 481-byte image. Even if it drew all four
-faces it would stay under the limit.
+CSS is larger than the real site's 12,322 bytes) plus a 481-byte image. Drawing all four faces,
+it stays far under the limit.
 
-**Finding: `writing-series-convergence` cannot fit.** It is 97,374 bytes today (5,026 bytes of
-headroom), and 78,604 bytes of that are the two real posts' card
-images (`starting-new-hero` 480w WebP 47,050 bytes, `wayfinder-hero` 480w WebP 31,554 bytes).
-The smallest Inter that satisfies D1 (Regular and Bold, no features at all, 17,516 bytes) would
-still put it at about 116 KB. No font choice inside the spec fits this page.
+**Finding and decision: the budget is raised to 150 KB (D3, revised 2026-10-03).**
+`writing-series-convergence` is 97,374 bytes today, and 78,604 bytes of that are the two real
+posts' card images (`starting-new-hero` 480w WebP 47,050 bytes, `wayfinder-hero` 480w WebP
+31,554 bytes). With Inter Regular and Bold it is 121,654 bytes, which was 19,254 bytes over the
+old 102,400-byte limit; the smallest Inter that satisfies D1 (Regular and Bold, no features,
+17,516 bytes) would still have been about 116 KB. The plan stopped there and put the choice to
+Don. He chose to raise the total-transfer limit in `tests/e2e/budget.spec.ts` from
+`100 * 1024` to `150 * 1024` as a stated design decision recorded in the spec (D3, FR-007,
+SC-004), rather than right-size the card images inside or ahead of this feature. The LCP, CLS,
+long-task and JavaScript limits and the slow-4G conditions are unchanged.
 
-Under D3 and the spec's "Heaviest page" edge case, **the work stops at this point and is
-reported to Don; the budget is not raised.** The plan records this as gate **G0** (plan.md):
-no implementation task may start until Don decides. The options, with measurements:
+Under the new limit every page fits: the convergence page with 31,946 bytes of headroom, every
+other page with at least 59,441 bytes. Images are not shrunk or re-encoded in this feature.
 
-| Option | What changes | Convergence page with Inter | In this feature? |
+**Alternatives considered** (measured before the decision):
+
+| Option | What it changes | Convergence page with Inter | Outcome |
 |---|---|---|---|
-| **A (recommended)**: right-size listing-card images first, in its own reviewed change (a `/squash` or `/tweak` before this feature resumes). Add a 400w candidate to the card `widths` and encode card images at WebP quality 60. | Card images only; a 390 px phone picks 400w instead of 480w. Measured with sharp on the source photos: starting-new-hero 24,124 bytes, wayfinder-hero 14,530 bytes (38,654 for both, against 78,604 today). | about 82,700 bytes, about 19.7 KB headroom | No: image handling is out of this feature's scope; it is a prerequisite PR. |
-| A1: 400w candidate only, default quality 80 | 33,392 + 21,500 = 54,892 bytes of images | about 98,900 bytes, about 3.5 KB headroom | Too thin to recommend; the next post in the series breaks it. |
-| A2: quality 60 only, keep 480w | 33,934 + 21,082 = 55,016 bytes of images | about 99,100 bytes, about 3.3 KB headroom | Too thin. |
-| B: Don amends D1 (for example a single Regular face with synthesized bold) | Contradicts FR-002, FR-003 and FR-017 | about 109,400 bytes, still over | No. |
-| C: Don raises the budget or exempts the real-content listing pages from it | Contradicts D3; weakening a check is its own reviewed change (Principle II) | n/a | No. |
+| Right-size listing-card images first (a 400w candidate, WebP quality 60), in a separate PR | Card images only: 38,654 bytes for both, against 78,604 | about 82,700 bytes | Not chosen for this feature; kept as follow-up work (spec "Follow-up work"), after which the budget can be revisited. |
+| 400w candidate only, or quality 60 only | Card images only | about 98,900 or 99,100 bytes | Too thin under the old limit. |
+| Amend D1 (one Regular face with synthesized bold) | Contradicts FR-002, FR-003, FR-017 | about 109,400 bytes, still over the old limit | Rejected. |
+| **Raise the total-transfer budget to 150 KB** | One constant in the budget test, recorded as D3 | 121,654 of 153,600 bytes | **Chosen by Don.** |
 
-The convergence page is fragile even without fonts: one more post in the series adds about
-30 to 47 KB of card image. Option A fixes that cause as well, so it is the recommendation.
-
-After option A lands, the font work proceeds unchanged and the heaviest pages are
-writing-all (about 89 KB, or less once its cards also shrink) and the sample post with all four
-faces (about 84 KB).
+The convergence page grows by about 30 to 47 KB of card image with each new post in the series,
+so its headroom is about one more post; the card-image follow-up addresses that cause.
 
 ## R5. Guard test for uncovered characters (FR-016)
 
@@ -299,25 +306,73 @@ superset already covers every string those subjects can show.
 
 ## R6. Fallback stack and optimized fallbacks
 
-**Decision**: `fallbacks` is exactly today's stack, `ui-sans-serif, system-ui, -apple-system,
-"Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"`, and
-`optimizedFallbacks: false`.
+**Decision** (Don, 2026-10-03): `optimizedFallbacks: true`, with `fallbacks` set to today's
+families in this order, the generic family last:
 
-**Rationale**: FR-005 says the fallback is "the stack the site uses today". Astro's optimized
-fallback inserts metric-adjusted `local("Arial")` faces ahead of the stack, which would change
-what a visitor sees while Inter loads (Arial instead of the system UI font), and on Linux it
-would depend on whether a font named Arial exists. Astro only optimizes when the last fallback
-is a generic family; ours ends with the emoji families, so it would not optimize anyway, but
-setting it to `false` states the intent. The stack moves from `global.css` into
-`SYSTEM_FONT_STACK` in `src/lib/fonts/charset.ts` so one constant feeds the config and the test.
+```text
+ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+"Apple Color Emoji", "Segoe UI Emoji", sans-serif
+```
 
-**CLS risk and mitigation**: with `font-display: swap`, text first drawn in the fallback and
-redrawn in Inter can move. Regular and Bold are preloaded, so on most loads they arrive with the
-render-blocking CSS and the first paint is already in Inter. Italic faces are not preloaded and
-can swap late, but italic text is a small share of any page. The budget test's CLS < 0.1 check
-is the gate (FR-006); today's worst page is 0.036 (contact). If CLS fails, the remedy is a
-spec question for Don (size-adjusted fallback faces would contradict FR-005), not a silent
-change.
+The stack moves from `global.css` into `SYSTEM_FONT_STACK` in `src/lib/fonts/charset.ts` so one
+constant feeds the config and the tests.
+
+**Why the order changes, and only that**: Astro optimizes only when the **last** fallback is a
+generic family (`node_modules/astro/dist/assets/fonts/core/optimize-fallbacks.js`:
+`if (!isGenericFontFamily(lastFallback)) return null`). Today's stack ends with the two emoji
+families, so `optimizedFallbacks: true` with today's exact order would silently generate
+nothing. Moving `sans-serif` from before the emoji families to the end is the smallest change
+that makes the option work: the set of families is identical, and the emoji families still sit
+after every text family that has Latin glyphs. No visual subject draws a character that falls
+through to them (the guard, R5).
+
+**What Astro emits** (from the installed source, Astro 7.3.5):
+
+- For a last fallback of `sans-serif`, the system fallback provider picks `Arial` for the
+  normal-weight faces and `Arial Bold` for the bold ones (`infra/system-fallbacks-provider.js`).
+  Arial is already in today's stack.
+- Inter's metrics are read from the committed font with Capsize
+  (`infra/capsize-font-metrics-resolver.js`) and compared with Arial's built-in metrics. For
+  each of the four Inter faces Astro writes one extra `@font-face` with `src: local("Arial")`
+  (or `local("Arial Bold")` for 700), the same `font-weight`, `font-style`, `font-display: swap`
+  and `unicode-range` as that Inter face, and `size-adjust`, `ascent-override`,
+  `descent-override` and `line-gap-override` so the fallback occupies Inter's space. They belong
+  to two families named `Inter-<hash> fallback: Arial` and `Inter-<hash> fallback: Arial Bold`.
+- `--font-inter` becomes `Inter-<hash>, "Inter-<hash> fallback: Arial", "Inter-<hash> fallback:
+  Arial Bold",` followed by `SYSTEM_FONT_STACK` in the order above.
+- No file is downloaded for the fallback faces (`local()` only), so they add only inline CSS
+  (R4).
+
+**Effect for visitors**: while Inter loads (or if it fails), a visitor who has Arial (macOS,
+Windows) sees size-adjusted Arial, so the swap to Inter keeps line boxes and line breaks close to
+the same. A visitor without Arial (most Linux machines, likely including the Docker and CI
+runners) skips the two adjusted families and sees the rest of today's stack, as without the
+option. Because the adjusted faces carry Inter's `unicode-range`, characters outside the shipped
+set skip them and fall through to the system stack. Synthesis is not turned off, so fallback
+italic and bold still show (FR-003).
+
+**Known limit**: Astro puts the bold adjusted face in its own family, after the regular one. A
+bold run in the fallback is matched in `fallback: Arial` first, which has only 400 faces, so it is
+most likely drawn as Arial Regular with synthesized bold and Regular's adjustments. Vertical
+metrics still match Inter; widths are approximate. The budget CLS check decides whether that is
+good enough.
+
+**CLS**: with `font-display: swap`, text first drawn in the fallback and redrawn in Inter could
+move. Regular and Bold are preloaded, so on most loads the first paint is already in Inter; the
+metric-adjusted faces cover the rest. Italic faces are not preloaded and can swap late, but
+italic text is a small share of any page. The budget test's unchanged CLS < 0.1 check is the
+gate (FR-006); today's worst page is 0.036 (contact). On a runner without Arial the adjusted
+faces do not apply, so that run measures the unadjusted swap, the stricter case.
+
+**Alternatives considered**:
+
+- `optimizedFallbacks: false` with today's exact order (the earlier plan): keeps the fallback
+  untouched but leaves the swap unadjusted; superseded by Don's decision.
+- `system-ui` as the last fallback: Astro would generate faces for BlinkMacSystemFont, Segoe UI,
+  Roboto, Helvetica Neue and Arial (up to 20 faces in five families), more inline CSS, and a
+  larger reorder of the stack. Rejected for the smaller change.
+- Hand-written `size-adjust` faces in `global.css`: custom code where Astro has a first-party
+  option (Principle IV).
 
 ## R7. Weight mapping (FR-017)
 
@@ -330,7 +385,7 @@ change.
   `bolder` (from 400 gives 700; from 600 gives 900) render with **700**.
 - With all four faces declared there is a real face for every weight and style, so the browser
   never synthesizes bold or italic for text in Inter (FR-003). Synthesis stays on for the
-  fallback stack (`font-synthesis` is not touched).
+  fallback stack and the metric-adjusted fallback faces (`font-synthesis` is not touched).
 
 Components affected (22 `font-medium`, 23 `font-semibold`, 3 `font-extrabold`, 2
 `font-weight: bolder` uses), listed for the review:

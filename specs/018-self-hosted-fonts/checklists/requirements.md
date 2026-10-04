@@ -31,8 +31,10 @@
 
 ## Notes
 
-- Typeface, faces, code-font scope and the fixed budget are settled decisions (D1 to D3) from
-  Don, recorded in the spec's Decisions section; no clarification markers were needed.
+- Typeface, faces, code-font scope and the page budget are settled decisions (D1 to D3) from
+  Don, recorded in the spec's Decisions section; no clarification markers were needed. D3 was
+  revised on 2026-10-03 (budget raised to 150 KB; optimized fallbacks on), recorded in the
+  Clarifications.
 - Naming Inter, the latin subset and the Docker/CI baseline workflow is deliberate: they are the
   user-visible decision and the problem statement, not implementation choices.
 - This is a major change under Constitution Principle III.

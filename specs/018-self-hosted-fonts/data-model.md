@@ -61,11 +61,16 @@ committed.
 
 ## Fallback stack
 
+`SYSTEM_FONT_STACK` is today's families with the generic `sans-serif` moved last, so Astro's
+optimized fallbacks apply (research R6): `ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif`.
+
 The value of `--font-inter` that `<Font />` writes on `:root`:
-`Inter-<hash>, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
-sans-serif, "Apple Color Emoji", "Segoe UI Emoji"`. `--font-body` and `--font-heading` in
-`src/styles/global.css` are `var(--font-inter)`. No optimized (`local()`) fallback faces are
-generated.
+`Inter-<hash>, "Inter-<hash> fallback: Arial", "Inter-<hash> fallback: Arial Bold"`, then
+`SYSTEM_FONT_STACK`. `--font-body` and `--font-heading` in `src/styles/global.css` are
+`var(--font-inter)`. The two fallback families hold four metric-adjusted `@font-face` rules
+(`local("Arial")` for 400, `local("Arial Bold")` for 700, each with `size-adjust` and metric
+overrides and the same weight, style and `unicode-range` as its Inter face).
 
 ## Guard exclusions
 

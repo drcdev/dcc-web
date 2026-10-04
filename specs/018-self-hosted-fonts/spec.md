@@ -27,7 +27,9 @@ then draws text from the same glyphs.
 This is a change to the design system and visual identity, so it is a **major change** under
 Constitution Principle III: Don approves the pull request after checking the preview
 deployment. It also supersedes the "system font stack, no web fonts" part of the site
-foundation's FR-003 (feature 002, site foundation).
+foundation's FR-003 (feature 002, site foundation), and the 100 KB total-transfer figure in
+that feature's SC-004 and the budget test, which becomes 150 KB (D3). The other budget limits
+are unchanged.
 
 ## Clarifications
 
@@ -41,6 +43,8 @@ foundation's FR-003 (feature 002, site foundation).
 - Q: Should the one-year immutable cache header apply only to the font files, or to every fingerprinted build file under `/_astro/`? → A: Only the four fingerprinted Inter files. Other build files keep today's caching; a long cache for all of `/_astro/` is follow-up work.
 - Q: Should the project architecture diagrams (SVG images whose text uses the system font) switch to Inter as part of this feature? → A: No. Text inside images (the SVG diagrams and the og image) is out of scope and keeps its current font; converting it is follow-up work.
 - Q: What happens if Linux baselines regenerated locally in Docker still fail CI's visual project on the first run after the font change? → A: First investigate the remaining cause within this feature (Docker image fonts, rendering flags). If the Docker-to-CI match still cannot be shown, stop and report the diff details to Don. CI-artifact baselines are never landed for this PR, and issue #62 is not closed until the match is shown.
+- Q: The planned measurement shows `/writing/convergence/` at 97,374 bytes today (78,604 of them two real card images) and 121,654 bytes with Inter Regular and Bold, over the 100 KB total-transfer limit. Shrink the card images first, or change the budget? (2026-10-03) → A: Raise the per-page total-transfer budget to 150 KB (153,600 bytes) as a deliberate design decision recorded here (D3, FR-007); do not shrink or re-encode any image in this feature. LCP, CLS, long-task and JavaScript limits and the slow-4G measurement conditions stay exactly as they are. Right-sizing card images is follow-up work.
+- Q: Should the fallback shown while Inter loads use Astro's metric-adjusted (optimized) fallback faces, so the swap does not shift layout? (2026-10-03) → A: Yes. Astro's optimized fallbacks are turned on: it generates metric-adjusted fallback faces from local system fonts that are already in today's stack, so fallback text takes up the same space as Inter. The fallback family list keeps today's system fonts; only their metrics are adjusted (FR-005, FR-006).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -92,8 +96,9 @@ passes.
 2. **Given** any page, **When** its network requests are inspected, **Then** every font file
    comes from the site's own origin and no request goes to a font service or other third party.
 3. **Given** a slow connection, **When** a page loads, **Then** text is visible immediately in
-   the current system font stack and swaps to Inter without layout shift beyond the existing
-   cumulative layout shift budget.
+   the system font stack, drawn with metric-adjusted fallback faces where the visitor has those
+   fonts, and swaps to Inter without layout shift beyond the existing cumulative layout shift
+   budget.
 4. **Given** code and preformatted blocks, **When** they render, **Then** they use the same
    body font as the surrounding text, exactly as today (now Inter).
 5. **Given** the site's Content Security Policy, **When** any page loads, **Then** the fonts load
@@ -123,8 +128,9 @@ baselines must be complete and correct for the gate to stay meaningful.
 
 ### Edge Cases
 
-- **Font fails to load** (blocked, offline, slow): text stays readable in the current system
-  font stack; nothing is hidden or blank while waiting.
+- **Font fails to load** (blocked, offline, slow): text stays readable in the system font
+  stack, through the metric-adjusted fallback faces where the visitor has those fonts; nothing
+  is hidden or blank while waiting.
 - **Characters outside the shipped character set** (for example a letter outside Latin-1, an
   emoji or a box-drawing symbol in a post): the browser falls back to the system stack for those
   characters only; the page still renders and the build does not fail. Visual-test subjects are
@@ -134,9 +140,11 @@ baselines must be complete and correct for the gate to stay meaningful.
   standard CSS font matching, with no class changes and no synthesized weight: medium (500)
   renders as regular (400); semibold (600) and extrabold (800) render as bold (700). The plan
   lists the affected components.
-- **Heaviest page**: the page with the most content transferred must still fit the 100 KB total
-  transfer budget with the fonts included. If any page cannot fit, the work stops and is reported
-  to Don; the budget is not raised.
+- **Heaviest page**: the page with the most content transferred must fit the 150 KB total
+  transfer budget with the fonts included (D3). Today that is `/writing/convergence/`, whose
+  weight is dominated by two real posts' card images; with Inter it measures 121,654 of
+  153,600 bytes. If any page still cannot fit, the work stops and is reported to Don; the budget
+  is not raised again within this feature and images are not shrunk here (follow-up work).
 - **Repeat visits**: font files are cached by the browser so a second page view does not
   download them again. Only the font files get the long cache; other build files keep today's
   caching.
@@ -172,13 +180,21 @@ baselines must be complete and correct for the gate to stay meaningful.
 - **FR-004**: Font files MUST be committed to the repository and served from the site's own
   origin. The site MUST NOT request fonts, stylesheets or anything else from a font service or
   any third party.
-- **FR-005**: While Inter is loading, or if it fails to load, text MUST be visible in the current
-  system font stack (the stack the site uses today).
+- **FR-005**: While Inter is loading, or if it fails to load, text MUST be visible in the
+  system font stack: the same system font families the site uses today. Metric-adjusted
+  fallback faces (Astro's optimized fallbacks) generated from local system fonts in that stack
+  MAY come first, so fallback text occupies the same space as Inter; they change only size and
+  line metrics, never the families offered. If the stack has to be reordered for the fallback
+  faces to be generated, the plan states the exact order.
 - **FR-006**: Swapping from the fallback font to Inter MUST NOT push any page over the existing
-  cumulative layout shift budget.
-- **FR-007**: Every page MUST stay within the existing performance budget, including 100 KB
-  total transfer per page on simulated slow 4G, with fonts counted. The budget MUST NOT be
-  raised; if a page cannot fit, the work stops and is reported.
+  cumulative layout shift budget (CLS below 0.1), which is unchanged. Metric-adjusted fallback
+  faces MUST be used to keep that swap from shifting layout.
+- **FR-007**: Every page MUST stay within the performance budget on simulated slow 4G, with
+  fonts counted. The total-transfer limit is **150 KB (153,600 bytes) per page**, raised from
+  100 KB by Don's decision D3; the LCP (2.5 s), CLS (below 0.1), long-task (200 ms) and
+  JavaScript (10 KB) limits and the measurement conditions are unchanged. Images MUST NOT be
+  shrunk or re-encoded in this feature. If a page still cannot fit, the work stops and is
+  reported.
 - **FR-008**: Code and preformatted blocks MUST continue to use the body font, exactly as today.
 - **FR-009**: The site's Content Security Policy MUST continue to allow the fonts with no
   violation and MUST NOT be loosened for this change.
@@ -216,8 +232,9 @@ baselines must be complete and correct for the gate to stay meaningful.
   in bytes, which counts against the page budget.
 - **Shipped character set**: printable ASCII, Latin-1, – — ‘ ’ “ ” … • and → ✓ ✗ (where Inter
   has them); the same set in all four faces.
-- **Fallback stack**: the current system font stack, used while Inter loads, if it fails, and
-  for characters outside the shipped character set.
+- **Fallback stack**: the system font families the site uses today, used while Inter loads, if
+  it fails, and for characters outside the shipped character set, preceded by metric-adjusted
+  fallback faces generated from local system fonts in that stack (FR-005).
 - **Visual baseline**: a committed reference screenshot per subject and platform; 66 per
   platform, 132 in total.
 
@@ -233,8 +250,10 @@ baselines must be complete and correct for the gate to stay meaningful.
   Inter, with zero synthesized italic or bold faces. Text inside images (SVG diagrams, og image)
   is not counted.
 - **SC-003**: Zero font requests leave the site's own origin on any page.
-- **SC-004**: Every page measured by the budget test stays at or under 100 KB total transfer and
-  under the existing layout shift budget on simulated slow 4G, with fonts included.
+- **SC-004**: Every page measured by the budget test stays at or under 150 KB (153,600 bytes)
+  total transfer, with LCP, CLS, long-task and JavaScript limits unchanged, on simulated slow 4G
+  with fonts included. The heaviest page, `/writing/convergence/`, measures about 121,654 bytes
+  (about 31,900 bytes of headroom).
 - **SC-005**: Accessibility checks report zero WCAG 2.2 AA violations on every page template,
   unchanged from today.
 - **SC-006**: All 132 visual baselines are refreshed in one pull request, and no other visual
@@ -255,9 +274,19 @@ These were settled by Don before the specification and are not open for clarific
   body both use Inter. No font service, no third-party request, no new recurring cost.
 - **D2 - Code font**: code and preformatted blocks keep inheriting the body font exactly as
   today. A monospace code font is out of scope (see Follow-up work).
-- **D3 - Budget**: the performance budget, including 100 KB total transfer per page on slow 4G
-  enforced by the budget test, is fixed. Fonts must fit inside it. If a page cannot fit, the work
-  stops and reports rather than raising the limit.
+- **D3 - Budget** (revised by Don, 2026-10-03): the per-page total-transfer limit in the budget
+  test is raised from 100 KB to **150 KB** (150 × 1024 = 153,600 bytes) on slow 4G, so the site
+  can carry its own typeface. The LCP, CLS, long-task and JavaScript limits and the slow-4G
+  conditions are unchanged.
+
+  Rationale: the budget is a design decision owned by the maintainer, not a check this feature
+  can bend. It is raised deliberately, here in the specification and reviewed with this
+  major-change pull request, to make room for self-hosted type; it is not weakened to get a red
+  check through. The original D3 ("budget is fixed; fonts must fit") stopped the plan because
+  `/writing/convergence/` was already 97,374 bytes, of which 78,604 bytes are two real posts'
+  card images; with Inter Regular and Bold (24,280 bytes) it is 121,654 bytes. The page's weight
+  is dominated by those images, which can be optimised as follow-up work; this feature does not
+  touch images. Core Web Vitals "good" stays enforced through the unchanged LCP and CLS limits.
 
 ## Assumptions
 
@@ -265,8 +294,9 @@ These were settled by Don before the specification and are not open for clarific
   the fixture post visual subject because it is the only subject with italic text, and the Docker
   baseline image's only installed font has no italic face, so the browser synthesizes the slant
   differently from the CI runner. Shipping real italic faces removes the cause.
-- Text before Inter loads uses the current system stack and swaps to Inter when the font is
-  ready (the fallback is shown immediately rather than hiding text).
+- Text before Inter loads uses the system stack, through metric-adjusted fallback faces where
+  the visitor has those fonts, and swaps to Inter when the font is ready (the fallback is shown
+  immediately rather than hiding text).
 - Only the faces a page actually renders count against its transfer budget. The plan measures
   the heaviest pages with fonts included before committing to an approach.
 - The site's existing Content Security Policy already permits same-origin fonts, so no policy
@@ -291,6 +321,10 @@ These were settled by Don before the specification and are not open for clarific
 
 ## Follow-up work
 
+- Right-size listing-card images (for example a 400w candidate and a lower WebP quality for
+  card images), which dominate `/writing/convergence/` (78,604 of its 97,374 bytes today) and
+  grow with every post in a series; then consider whether the 150 KB budget (D3) can come back
+  down.
 - Consider a one-year immutable cache header for all fingerprinted build files under
   `/_astro/` (CSS and scripts), not only the font files (FR-015).
 - Consider a self-hosted monospace font for code and preformatted blocks (D2).
