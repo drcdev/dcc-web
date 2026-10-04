@@ -190,7 +190,7 @@ fails on 8 missing baselines (record the red).
 
 **Run:** `run.sh 600 pnpm exec playwright test --project=visual`: 58 passed.
 
-### W3 Update `docs/testing.md`
+### [x] W3 Update `docs/testing.md`
 
 **Files:** `docs/testing.md`.
 
