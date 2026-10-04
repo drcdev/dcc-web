@@ -164,7 +164,7 @@ runtime year), as does `shell.spec.ts` line 288.
 
 ### W3: Prove it on pixels (scratch run, no commit of the scratch edit)
 
-- [ ] W3 done
+- [x] W3 done
 - **Files:** none committed. Scratch edit of `src/components/SiteFooter.astro` line 12,
   reverted in the same step.
 - **Test:** existing visual project. **Layer: visual**, because only a screenshot shows the
@@ -177,6 +177,13 @@ runtime year), as does `shell.spec.ts` line 288.
      Optionally, with W2's call commented out, the same run shows the 12 expected failures.
      Record the result in the implement summary either way.
   3. Revert, `pnpm run build`, and confirm `git status --porcelain src/` is empty.
+- **Result (implement phase, macOS):** with `const year = 2027;` and a fresh `pnpm run build`
+  (`dist/404.html` showed `© 2027`), `--project=visual` passed **50 of 50** on three
+  consecutive runs (13.1 to 15.2 s each), no `--update-snapshots`, and no PNG changed. The
+  scratch edit is reverted (`git status --short` empty) and `dist/` rebuilt (`© 2026`). The
+  without-freeze variant (12 expected failures) was not run. Earlier runs under machine load
+  (load average 28 to 47) failed 1 to 2 random fixture element or sections shots per run,
+  different ones each time, with the real year too (not a year leak); they cleared on rerun.
 - macOS run only. The Linux baselines are not touched; CI's `verify` compares them on the PR.
 
 ### W4: Note the frozen year in `docs/testing.md`
