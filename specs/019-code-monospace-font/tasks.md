@@ -128,3 +128,7 @@ code requests no italic or bold mono face; T021 tests that.
 ## Implementation strategy
 
 MVP is Phases 1 to 3: the code font is served and proven drawn in a real browser. Phase 4 proves the loading, serving, budget and accessibility behaviour; Phase 5 turns the visual project green and proves the first-run Docker-to-CI match. T040 is the only task left for Don.
+
+## Phase 7: Convergence
+
+- [ ] T041 Merge `origin/main` into `019-code-monospace-font` before T037 (main gained PR #78, chore #74, which changed `public/_headers` from `/_astro/fonts/*` to `/_astro/*` and edited `tests/e2e/headers.spec.ts`); `git merge-tree` shows conflicts in `.specify/feature.json` (keep this feature's `specs/019-code-monospace-font` value) and `tests/e2e/headers.spec.ts` (keep main's new `/_astro/` immutable tests and this branch's M12 mono-font test side by side, sharing one `HEADERS` import). Do not edit `public/_headers` on this branch (FR-011: the mono files now ride main's wider `/_astro/*` rule, header value unchanged). Then run `tests/unit/site/headers.test.ts`, `tests/e2e/headers.spec.ts` and `pnpm run verify:quick`, and check the auto-merged `docs/testing.md` reads correctly, per FR-011 (partial)
