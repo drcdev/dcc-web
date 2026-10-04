@@ -8,41 +8,44 @@ How to set up, run and validate the feature. Contracts:
 
 - Node from `.nvmrc`: run `node -v`; if it differs, `source ~/.nvm/nvm.sh && nvm use` in the same
   shell command as any `pnpm`/`wrangler` call (CLAUDE.md "Local toolchain").
-- Wrangler calls that use the dashboard login pass `--env-file /dev/null`, so the repository
-  `.env` token does not replace the OAuth login.
+- The repository `.env` token takes precedence over `wrangler login`; Wrangler calls that use
+  the dashboard login pass `--env-file /dev/null` when that gets in the way.
 - **Never** run `wrangler versions secret put` or `wrangler versions deploy` on this Worker (it
   once wiped every secret).
 
-## 1. Cloudflare steps (live access; Don runs the ones marked LIVE)
+## 1. Cloudflare steps (live access; all remote database work is Don's)
+
+Until step 4, `wrangler.jsonc` keeps the current databases (`dcc-web-contact`,
+`dcc-web-contact-preview`) and their ids, so the branch's previews, deploys and tests stay green
+throughout implementation. The new migration `0002` only adds tables, so it applies to whichever
+database `DB` is bound to. Deploy scripts and the Playwright command apply migrations by the
+binding name `DB`, and the setup check reads the names from `wrangler.jsonc`, so the swap in step
+4 changes `wrangler.jsonc` only. Every test is green before and after it.
 
 | # | Who | Command / action | Live? |
 |---|---|---|---|
 | 1 | Don | `pnpm exec wrangler login` (if not signed in) | LIVE |
 | 2 | Don | `pnpm exec wrangler d1 create dcc-web --location wnam --env-file /dev/null` (answer **no** if Wrangler offers to add the binding) | LIVE |
 | 3 | Don | `pnpm exec wrangler d1 create dcc-web-preview --location wnam --env-file /dev/null` (answer **no**) | LIVE |
-| 4 | Agent | `pnpm exec wrangler d1 list --json --env-file /dev/null`, copy the two UUIDs into `wrangler.jsonc` (`dcc-web` top level, `dcc-web-preview` under `env.preview`), run `pnpm exec vitest run --project unit tests/unit/site/config-files.test.ts`, commit, push | reads LIVE |
-| 5 | CI | The branch's preview build runs `pnpm run deploy:preview`: applies `0001` and `0002` to `dcc-web-preview`, deploys the preview Worker with `DB`, `AI` and `ASSETS` | automatic |
-| 6 | Don | `pnpm setup:check --item contact-d1-databases` and `--item contact-preview-deploy` report complete | LIVE (read) |
-| 7 | CI | After merge, `pnpm run deploy:production` applies both migrations to `dcc-web` and deploys | automatic |
-| 8 | Don | `pnpm setup:check --item contact-production-deploy` reports complete | LIVE (read) |
-| 9 | Don | `pnpm exec wrangler d1 delete dcc-web-contact-preview --env-file /dev/null` (only after step 5 succeeded) | LIVE |
-| 10a | Don | `pnpm exec wrangler d1 execute dcc-web-contact --remote --command "SELECT count(*) FROM messages" --env-file /dev/null` must print 0; if not, stop and export the rows before step 10 | LIVE (read) |
-| 10 | Don | `pnpm exec wrangler d1 delete dcc-web-contact --env-file /dev/null` (only after step 7 succeeded and step 10a printed 0) | LIVE |
+| 4 | Don | `pnpm exec wrangler d1 list --json --env-file /dev/null`; in **one commit on the feature branch**, set `database_name` and `database_id` in `wrangler.jsonc` for both environments (`dcc-web` top level, `dcc-web-preview` under `env.preview`); `pnpm exec vitest run --project unit tests/unit/site/config-files.test.ts` stays green and `git grep -n dcc-web-contact` matches only under `specs/`, `.specify/bugs/` and the setup-check retired-name list and note; push | LIVE (read) + commit |
+| 5 | CI | The branch's preview build runs `pnpm run deploy:preview`: `d1 migrations apply DB --remote --env preview` applies `0001` and `0002` to `dcc-web-preview`, then it deploys the preview Worker with `DB`, `AI` and `ASSETS`. The PR's `verify` check is green on the swap commit | automatic |
+| 6 | Don | `pnpm setup:check --item contact-d1-databases` and `--item contact-preview-deploy` report complete; `pnpm exec wrangler d1 migrations list dcc-web-preview --remote --env preview --env-file /dev/null` shows none pending | LIVE (read) |
+| 7 | CI | After merge, `pnpm run deploy:production` runs `d1 migrations apply DB --remote` (both migrations to `dcc-web`) and deploys | automatic |
+| 8 | Don | `pnpm setup:check --item contact-production-deploy` reports complete; `pnpm exec wrangler d1 migrations list dcc-web --remote --env-file /dev/null` shows none pending | LIVE (read) |
+| 9a | Don | Confirm no open branch still builds a preview against the old preview id (open PRs have merged `main`), then `pnpm exec wrangler d1 execute dcc-web-contact-preview --remote --env-file /dev/null --command "SELECT count(*) FROM messages"` prints 0 | LIVE (read) |
+| 9 | Don | `pnpm exec wrangler d1 delete dcc-web-contact-preview --env-file /dev/null` (only after steps 6, 8 and 9a) | LIVE |
+| 10a | Don | `pnpm exec wrangler d1 execute dcc-web-contact --remote --env-file /dev/null --command "SELECT count(*) FROM messages"` must print 0; if not, stop and export the rows before step 10 | LIVE (read) |
+| 10 | Don | `pnpm exec wrangler d1 delete dcc-web-contact --env-file /dev/null` (only after step 8 and step 10a printed 0) | LIVE |
 
-If step 5 or step 7 fails against the new ids, do not delete anything: revert the id commit so
-CI redeploys against the old databases, fix the cause, and repeat from step 4 (rollback in
-`contracts/worker-config.md`).
+If step 5 or step 7 fails against the new ids, do not delete anything: revert the swap commit
+(on the branch, or by a PR on `main` after the merge) so CI redeploys against the old databases,
+fix the cause, and repeat from step 4 (rollback in `contracts/worker-config.md`). Never use
+`wrangler versions deploy`, `rollback` or `versions secret put` on this Worker.
 
 No Workers AI setup is needed: the `ai` binding uses the account's Workers AI with no key or
 dashboard step. If the preview deploy (step 5) fails with an authorisation error that names
 Workers AI, the Workers Builds API token needs the Workers AI permission added in the dashboard
 (Don, LIVE); record that in `docs/setup.md` item 24 if it happens.
-
-Remote check of the new databases (agent may run, read-only; required before steps 9 and 10):
-`pnpm exec wrangler d1 migrations list dcc-web-preview --remote --env preview --env-file /dev/null`
-shows no pending migrations after step 5, and
-`pnpm exec wrangler d1 migrations list dcc-web --remote --env-file /dev/null` shows none after
-step 7.
 
 ## 2. Local validation
 
@@ -58,7 +61,9 @@ with `ASTRO_PREVIEW_BACKGROUND=1`): `pnpm run verify`.
 Expected:
 
 - Worker tests: rows Q01–Q12 and guarantees Q20–Q29 in `contracts/questions-api.md` pass in the
-  `production` project; `environments.test.ts` passes in both projects with the new names.
+  `production` project; `environments.test.ts` passes in both projects with whatever names `wrangler.jsonc` binds
+  (before and after the swap).
+- Nothing is red by design: `verify:quick` and the full gate exit zero.
 - `dist/writing/<slug>/question-source.json` exists for every visible post and not for drafts
   in a production build; `dist/sitemap-*.xml` lists none of them.
 
@@ -73,8 +78,8 @@ local bucket is in the local D1.
 2. Press "Get questions": the button disables, "Getting questions…" is announced, then 2–4
    numbered questions, the AI note and "New questions" appear (US1).
 3. Reload and press again: the same questions return at once (`source: "cached"` in the
-   response) and the bucket row is unchanged (`wrangler d1 execute dcc-web --local --command
-   "SELECT * FROM usage_bucket"`).
+   response) and the bucket row is unchanged (`wrangler d1 execute DB --local --command
+   "SELECT * FROM usage_bucket"`; the binding name works before and after the swap).
 4. Press "New questions": a different set appears (`source: "fresh"`); the bucket drops by one.
 5. Set `BUCKET_CAPACITY = 1` in `worker/src/questions/config.ts` locally, reset the row
    (`UPDATE usage_bucket SET tokens = 0, updated_at = <now ms>`), press "New questions": the panel
@@ -97,7 +102,8 @@ both themes. Pass criteria:
 - **Placement**: at 390 px a block between title card and body; at 1280 px a sidebar that stays
   beside the body while scrolling and never covers text, header, footer or a focused link.
 - **Themes**: panel text and buttons readable in light and dark.
-- **Live database steps**: steps 5, 6 and the preview `migrations list` check above pass.
+- **Live database steps**: steps 4 to 6 of section 1 pass.
+- **Speed** (SC-001): a first-generation press shows questions within about 5 seconds.
 
 ## 4. Visual baselines
 

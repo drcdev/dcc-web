@@ -112,6 +112,7 @@ The first 4 valid lines are kept; fewer than 2 makes the result `malformed`.
 ## 6. Migration
 
 `migrations/0002_create_questions.sql` creates both tables and seeds the bucket row. It is
-applied, with `0001_create_messages.sql`, to the new databases by the existing deploy scripts
-(`d1 migrations apply <name> --remote`) and locally by the Playwright web-server command and the
+additive, so it applies to whichever database the `DB` binding points at: the current databases
+while the branch is implemented, and, with `0001_create_messages.sql`, the new databases after
+Don's swap commit. The deploy scripts apply it by binding (`d1 migrations apply DB --remote`) and locally by the Playwright web-server command and the
 worker test setup (`applyD1Migrations`). No change to `messages`.

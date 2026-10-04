@@ -374,8 +374,9 @@ cached still shows them.
   and the per-post cache lives only in D1 (FR-016).
 - No bot protection beyond the origin check and the site-wide limit (no Turnstile); the limit
   alone keeps cost bounded.
-- The large-screen breakpoint is the site's existing breakpoint at which the reading column
-  leaves room for a sidebar; the plan names it.
+- The large-screen breakpoint is the width at which the reading column leaves room for a
+  sidebar: Tailwind's default `xl` (1280 CSS px, FR-009). It is new to the site's templates
+  (the site uses `sm`/`md`/`lg` today) but needs no theme change.
 
 ## Dependencies and Governance
 

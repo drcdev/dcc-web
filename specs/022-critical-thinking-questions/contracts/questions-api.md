@@ -80,8 +80,8 @@ HSTS) and no CORS headers. Error bodies name no provider, model, prompt or inter
 
 `questions` always holds 2–4 plain strings that passed data-model §5, sent as JSON
 (`application/json`, `nosniff`); the panel inserts them as text, never HTML. `retryAfter` is
-the time until at least one token is available, `ceil((1 − available) / rate)` in whole
-seconds, at least 1, and equal to the `Retry-After` header. Q06 is byte-for-byte the same for
+the time until at least one token is available, `ceil((1 − available) / ratePerSecond)` in
+whole seconds (`ratePerSecond = BUCKET_REFILL_PER_DAY / 86,400`), at least 1, and equal to the `Retry-After` header. Q06 is byte-for-byte the same for
 an unknown slug and for a draft slug on production.
 
 ## Guarantees (tested)

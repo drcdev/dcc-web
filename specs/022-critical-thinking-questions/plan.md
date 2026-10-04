@@ -94,7 +94,7 @@ specs/022-critical-thinking-questions/
 ├── plan.md              # this file
 ├── research.md          # R1–R14
 ├── data-model.md        # question source, question_sets, usage_bucket, config, validation
-├── quickstart.md        # Cloudflare steps (LIVE marked), local validation, journeys, baselines
+├── quickstart.md        # Cloudflare steps (Don's live steps), local validation, journeys, baselines
 ├── contracts/
 │   ├── questions-api.md # POST /api/questions, Q01–Q29
 │   ├── questions-panel.md # panel markup, states, placement, P01–P23
@@ -125,7 +125,7 @@ worker/test/
 ├── questions.test.ts                    # new: Q01–Q29
 ├── questions-validate.test.ts           # new: validator rules
 ├── questions-bucket.test.ts             # new: bucket against local D1
-├── environments.test.ts                 # new names; per-environment bucket
+├── environments.test.ts                 # name-independent; per-environment bucket
 └── schema.test.ts / query-plans.test.ts # extended for the new tables
 worker/vitest.config.ts                  # remoteBindings: false
 worker/worker-configuration.d.ts         # regenerated (AI, ASSETS)
@@ -139,10 +139,10 @@ src/
 
 astro.config.mjs                         # sitemap filter excludes question-source.json
 public/_headers                          # X-Robots-Tag: noindex for question-source.json
-wrangler.jsonc                           # ai, assets.binding, new D1 names and ids
-playwright.config.ts                     # local migrations target dcc-web
-scripts/deploy/{production,preview}.ts   # new database names
-scripts/setup-check/checks/contact-shared.ts, scripts/setup-check/items.ts
+wrangler.jsonc                           # ai, assets.binding; D1 names/ids swapped by Don's commit
+playwright.config.ts                     # local migrations by binding `DB`
+scripts/deploy/{production,preview}.ts   # migrations by binding `DB` (name-independent)
+scripts/setup-check/checks/contact-shared.ts, scripts/setup-check/items.ts  # names from wrangler.jsonc
 docs/setup.md, docs/testing.md, .claude/skills/setup-walkthrough/SKILL.md
 
 tests/
@@ -169,9 +169,9 @@ Each behaviour has one primary layer, the cheapest that can observe it (`docs/te
 | Text preparation, 24,000-char cap, hash changes on title/summary/body edit only (R3, R4) | Unit | `tests/unit/questions/source.test.ts` | Pure function |
 | Bucket take/refund/refill/retryAfter against D1 (FR-017, FR-020, SC-003) | Worker integration | `worker/test/questions-bucket.test.ts` | Needs real local D1 SQL semantics |
 | API rows Q01–Q12, guarantees Q20–Q25, Q27 | Worker integration | `worker/test/questions.test.ts` | Endpoint against local D1 with fake `AI`/`ASSETS` |
-| Environment isolation Q26, new database names | Worker integration (both projects) | `worker/test/environments.test.ts` | Only the two Vitest projects load both envs |
+| Environment isolation Q26, database names differ per environment (read from config, not pinned) | Worker integration (both projects) | `worker/test/environments.test.ts` | Only the two Vitest projects load both envs |
 | Migration schema and constraints; primary-key query plans | Worker integration | `schema.test.ts`, `query-plans.test.ts` | D1/SQLite behaviour |
-| `wrangler.jsonc` shape W01–W04; deploy scripts; Playwright command | Unit | `tests/unit/site/config-files.test.ts`, `deploy-*.test.ts` | Reads config files |
+| `wrangler.jsonc` shape and consistency W01–W04 (no live ids or names pinned); deploy scripts and Playwright command apply by binding `DB` | Unit | `tests/unit/site/config-files.test.ts`, `deploy-*.test.ts` | Reads config files |
 | Generated types W05 | Typecheck | `pnpm run typecheck` (`wrangler types --check`) | Existing guard |
 | Setup-check names, items, docs commands | Unit | `tests/unit/setup-check/**`, `tests/unit/setup/**` | Existing fixtures |
 | Panel markup P01 (component part), P02 attributes, copy P14, AI note text | Component | `tests/component/post/QuestionsPanel.test.ts` | One component, container API |
@@ -209,20 +209,28 @@ task.
 
 ## Risks and open points
 
-- **`ai` binding in local test runners** (research R12): Wrangler treats `ai` as remote-only. The
-  plan sets `remoteBindings: false` for the worker pool and stubs the API in E2E; the implement
-  phase must confirm `wrangler dev` and the pool start in CI without a Cloudflare login, using
-  the documented fallbacks if not.
+- **`ai` and `ASSETS` bindings in local test runners** (research R12): Wrangler treats `ai` as
+  remote-only, and `ASSETS` points at `./dist`, which does not exist when `verify:quick` runs
+  the worker tests before the build. The plan sets `remoteBindings: false` for the worker pool
+  and stubs the API in E2E; spike T001 confirms, with no Cloudflare credentials, that
+  `wrangler dev`, the worker pool and `wrangler types --check` start. Every outcome ends in a
+  green suite: if not, the fallbacks are a test-only E2E config without `ai`, and stub `AI` /
+  `ASSETS` objects in `miniflare.bindings` (tests inject their own fakes per request anyway).
 - **Workers Builds token**: if deploying with an `ai` binding needs an extra token permission,
   the first preview deploy fails; Don adds it (quickstart §1).
 - **Question quality** from a ~3B model: judged by Don on the preview (`[PREVIEW-CHECK]`). The
   fallback model and its lower bucket are named in research R1; switching is a config edit.
-- **Live database steps** need Don (quickstart §1, LIVE rows). Until the new ids land, the branch
-  keeps the old ids with the new names and setup-check items 19, 24, 25 report the new names
-  missing; do not merge in that state. The rule is enforced by W01 in `config-files.test.ts`
-  (ids must differ from the old ones), which fails `verify` until the new ids land. Old
-  databases are deleted only after each environment deploys green against its new id; the
-  rollback path is in `contracts/worker-config.md`.
+- **Live database steps** are all Don's (quickstart §1, `[PREVIEW-CHECK]` tasks in Phase 7).
+  During implementation `wrangler.jsonc` keeps the current database names and ids, so every
+  deploy, preview and test stays green; `0002` is additive and applies to whichever database
+  `DB` is bound to. Deploy scripts and the Playwright command apply migrations by the binding
+  name `DB`, and the setup check reads names from `wrangler.jsonc`, so Don's swap commit changes
+  `wrangler.jsonc` only. The config and environment tests assert shape and consistency (W01),
+  not live ids or names, so nothing is red by design before or after the swap (Principle II).
+  The PR does not merge until Don's swap commit is pushed and its preview deploy is green
+  (Phase 7 order). Old databases are deleted only after each environment deploys green against
+  its new id and `SELECT count(*) FROM messages` returns 0; the rollback path is in
+  `contracts/worker-config.md`.
 - **Shared allowance**: production and preview share one account's 10,000 neurons/day; the
   default buckets use at most about half of it. Raising either bucket should keep
   2 × capacity × 13 ≤ 10,000.

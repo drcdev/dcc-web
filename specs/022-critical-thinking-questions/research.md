@@ -288,8 +288,11 @@ under Principle III; visual baselines must be refreshed, see plan).
   serves a fixture `question-source.json`. `worker/vitest.config.ts` sets
   `remoteBindings: false` so a test run never reaches Cloudflare or needs a login; the
   implement phase confirms the pool starts with the `ai` binding present (wrangler classes
-  `ai` as remote-only and, with no `remote` key, only warns). Fallback if the pool refuses:
-  override the binding in `miniflare.bindings` with a stub.
+  `ai` as remote-only and, with no `remote` key, only warns), with no Cloudflare credentials,
+  and with no `dist/` directory for the `ASSETS` binding (`verify:quick` runs the worker tests
+  before the build). Fallback if the pool refuses: override `AI` (and, if needed, `ASSETS`) in
+  `miniflare.bindings` with a stub object; tests pass their own fakes per request, so every
+  path ends in a green suite.
 - **E2E** (`wrangler dev` on 4321): panel journeys stub `/api/questions` with `page.route`, as
   `contact.spec.ts` stubs `/api/contact`, so no model is called in CI. The implement phase
   confirms `wrangler dev` still starts in CI with the `ai` binding and no Cloudflare login (it
@@ -322,6 +325,16 @@ tests `tests/unit/site/config-files.test.ts`, `deploy-preview.test.ts`,
 `deploy-production.test.ts`, `tests/unit/setup/docs-structure.test.ts`, `items.test.ts`,
 `tests/unit/setup-check/checks/contact-*.ts` and `providers/contact-readers.test.ts`.
 `.github/workflows/*.yml` name no database. `specs/007-*` and `.specify/bugs/*` stay as history.
+
+**How the swap stays green**: migrations are applied on deploy by the Workers Builds deploy
+commands (`pnpm run deploy:preview` / `deploy:production`, `scripts/deploy/*.ts`), not by the
+GitHub Actions workflow. Those scripts and the Playwright web-server command apply migrations by
+the binding name `DB` (Wrangler's `getDatabaseInfoFromConfig` matches a `database_name` or a
+`binding`), and the setup check reads the database names from `wrangler.jsonc`. The branch
+therefore keeps today's names and ids while it is implemented (the new migration is additive and
+applies to whichever database is bound), and Don's swap of `database_name`/`database_id` is a
+one-file commit. Tests assert the D1 configuration's shape and consistency, not live ids or
+names, so nothing is red before or after the swap.
 
 ## R14. Privacy and logging
 

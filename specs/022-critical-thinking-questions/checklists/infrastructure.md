@@ -12,7 +12,7 @@
 - [x] CHK002 Is the order of operations defined (create, migrate, swap ids, deploy, verify, delete old) with the explicit rule that old databases are deleted only after a successful deploy? [Completeness, Spec §FR-025]
 - [x] CHK003 Is the claim "existing contact data need not be kept" backed by a stated assumption and a stop condition if contact data turns out to exist? [Assumption, Spec §FR-025]
 - [x] CHK004 Is a rollback path defined if the deploy fails after the new ids land (old databases still present, ids reverted)? [Gap, Spec §FR-025]
-- [x] CHK005 Is the interim state (new names with old ids on the branch) specified, with the rule that it cannot merge, and is that rule enforced by a named check? [Clarity, Plan §Risks]
+- [x] CHK005 Is the branch state before the swap specified (current names and ids kept, everything green), with the swap as one `wrangler.jsonc`-only commit by Don that must land and deploy green on preview before the merge, and no test red by design? [Clarity, Plan §Risks]
 - [x] CHK006 Are all migrations (`0001` contact and `0002` questions) required to run on both new databases, with a defined way to confirm they were applied? [Completeness, Spec §FR-025]
 - [x] CHK007 Is the Cron Trigger and contact retention behaviour specified as unchanged on the renamed databases? [Coverage, Constitution §VII]
 - [x] CHK008 Is the D1 limitation (no rename, so create-and-swap) recorded as the reason for the approach? [Traceability, Spec §Clarifications]
