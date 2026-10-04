@@ -137,7 +137,7 @@ test goes"). Test titles cite contract rows (`F01` …); no `specs/...` path lit
 | Head of every page: one Font `<style>` with four Inter `@font-face` (swap, unicode-range, same-origin woff2 `src`) and four metric-adjusted fallback `@font-face` (`local("Arial")` / `local("Arial Bold")` only, `size-adjust` and the three overrides, matching weight, style and unicode-range), `--font-inter` = Inter, the two fallback families, then the stack; exactly two preloads (400 and 700 normal) (FR-001, FR-004, FR-005, FR-006, FR-012; F01 to F05) | component | `tests/component/BaseLayout.test.ts` (new `describe("fonts")`; the container loads `astro.config.mjs` through `getViteConfig`, so the Fonts API virtual module resolves. If it does not in the container, the same assertions move to the build layer row below, with that reason written in the test comment) |
 | Built output: `dist/_astro/fonts/` holds exactly four content-hashed `.woff2` files, byte-identical to `src/assets/fonts/`; no font file elsewhere in `dist/` (FR-004, FR-015; F09) | build | `tests/build/local-site.test.ts` (new `describe` reading the existing L1 build; no new build) |
 | Faces actually drawn on the fixture post `/writing/every-part/`: paragraph `Inter-Regular`, `strong` `Inter-Bold`, `em`, block quote and views note `Inter-Italic`, bold italic `Inter-BoldItalic`, `code` `Inter-Regular`, a `font-medium` header link `Inter-Regular`, a `font-semibold`/`font-bold` heading `Inter-Bold`; all `isCustomFont` (FR-001, FR-003, FR-008, FR-017, SC-002; F13) | E2E | `tests/e2e/fonts.spec.ts` (new; CDP `CSS.getPlatformFontsForNode`, research R8) |
-| Font requests on every budget template are same-origin `/_astro/fonts/*.woff2`, none to another origin (FR-004, SC-003; F14) | E2E | `tests/e2e/fonts.spec.ts` (loops `TEMPLATES`) |
+| Font requests on every budget template are same-origin `/_astro/fonts/*.woff2`, none to another origin; each file at most once (at most four); a template that draws no italic (home) requests no italic face (FR-004, FR-018, SC-003; F14) | E2E | `tests/e2e/fonts.spec.ts` (loops `TEMPLATES`). **Second layer over the F05 head check, reason**: head markup cannot show which requests the browser makes or how many. |
 | JS off: paragraph still drawn by `Inter-Regular` (FR-012; F15) | E2E | `tests/e2e/fonts.spec.ts` |
 | Fonts blocked (`page.route` aborts `/_astro/fonts/**`): text visible, drawn by a font whose PostScript name is not `Inter-*` (an adjusted Arial or a system font, depending on the machine), italic still slanted (FR-003, FR-005; F16) | E2E | `tests/e2e/fonts.spec.ts` |
 | Served font file: 200, `font/woff2`, exact `Cache-Control`, full security headers; page stylesheet under `/_astro/` without `immutable` (FR-015, SC-009; F10, F11) | E2E | `tests/e2e/headers.spec.ts` (two new tests). **Second layer, reason**: the unit test reads the rule text; only the served response shows that `wrangler`'s `_headers` matching reaches Astro's real output path and that the value replaces the default `Cache-Control` (research R2). |
@@ -241,9 +241,12 @@ specs/018-self-hosted-fonts/
 ├── data-model.md        # Phase 1: charset, faces, recipe, exclusions
 ├── quickstart.md        # Phase 1: validation run guide
 ├── contracts/
-│   └── fonts.md         # Phase 1: rows F01–F20
+│   └── fonts.md         # Phase 1: rows F01–F21
 ├── checklists/
-│   └── requirements.md  # From specify
+│   ├── requirements.md  # From specify
+│   ├── accessibility.md
+│   ├── headers-csp.md
+│   └── performance-visual-parity.md
 └── tasks.md             # Phase 2 (/speckit-tasks; not created here)
 ```
 

@@ -40,7 +40,7 @@ must not contain `specs/...` path literals (the changed-paths drift guard reject
 | Row | Rule |
 |---|---|
 | F13 | Body text is drawn by `Inter-Regular`; `strong` and `font-semibold`/`font-bold`/`font-extrabold` text by `Inter-Bold`; `em`, the block quote and the views note by `Inter-Italic`; `strong em` (bold italic) by `Inter-BoldItalic`; `font-medium` text and `code` by `Inter-Regular`. All report `isCustomFont: true`. |
-| F14 | On every budget template, every font response comes from the page's own origin under `/_astro/fonts/`, and no font or stylesheet request goes to any other origin. |
+| F14 | On every budget template, every font response comes from the page's own origin under `/_astro/fonts/`, and no font or stylesheet request goes to any other origin. Each template requests each font file at most once (at most four font requests), and a template that draws no italic text (for example home) requests no italic face (FR-018). |
 | F15 | With JavaScript disabled, body text is still drawn by `Inter-Regular` (FR-012). |
 | F16 | With font requests blocked, text is visible and drawn by a font whose PostScript name is not `Inter-*` (a metric-adjusted Arial where the machine has Arial, otherwise a system font), and italic text still renders slanted (fallback synthesis, FR-003, FR-005). |
 | F17 | Every visual shot is taken after `document.fonts.ready`, with no `FontFace` still loading. |

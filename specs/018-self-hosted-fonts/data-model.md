@@ -15,7 +15,7 @@ tests can all load it):
 | `INTER_UNICODE_RANGE` | `readonly string[]` (CSS `unicode-range` tokens) | `U+0020-007E`, `U+00A0-00FF`, `U+2013`, `U+2014`, `U+2018`, `U+2019`, `U+201C`, `U+201D`, `U+2022`, `U+2026`, `U+2192`, `U+2713`, `U+2717` (FR-002) |
 | `codePointsOf(range)` | `(tokens: readonly string[]) => Set<number>` | Expands the tokens to code points (202 code points; 201 once U+00AD is set aside, matching the 201 cmap entries measured in each face). |
 | `NOT_IN_INTER` | `readonly number[]` | `[0x00AD]`: inside the range, absent from Inter's cmap, never drawn as a glyph (research R3). |
-| `SYSTEM_FONT_STACK` | `readonly string[]` | `ui-sans-serif`, `system-ui`, `-apple-system`, `Segoe UI`, `Roboto`, `Helvetica`, `Arial`, `sans-serif`, `Apple Color Emoji`, `Segoe UI Emoji`: today's stack, unchanged (FR-005). |
+| `SYSTEM_FONT_STACK` | `readonly string[]` | `ui-sans-serif`, `system-ui`, `-apple-system`, `Segoe UI`, `Roboto`, `Helvetica`, `Arial`, `Apple Color Emoji`, `Segoe UI Emoji`, `sans-serif`: today's families, none added or removed, with the generic `sans-serif` moved from before the emoji families to the end so Astro's optimized fallbacks apply (FR-005, research R6; see "Fallback stack" below). |
 
 Rules: the covered set of every face equals `codePointsOf(INTER_UNICODE_RANGE)` minus
 `NOT_IN_INTER`, exactly (no more, no less).

@@ -7,7 +7,7 @@
 - Node from `.nvmrc` (`node -v`; if not 24, `source ~/.nvm/nvm.sh && nvm use` in the same
   command). In a worktree, use `corepack pnpm` or a `pnpm` shim.
 - To regenerate the font files only: `uv` on the PATH (`brew install uv`) and `unzip`.
-- For Linux baselines: Docker Desktop running (ask Don).
+- For Linux baselines: Docker Desktop running (`docker info`; if it fails, ask Don).
 
 ## 1. Font files (only when (re)subsetting)
 
@@ -33,7 +33,7 @@ Expected green: font files and recipe (F19, F20), coverage guard (F18), design t
 ```sh
 pnpm run build
 ls dist/_astro/fonts/          # exactly four <hash>.woff2 files (F09)
-pnpm run test:build            # local-site build test asserts F09 and the head on built pages
+pnpm run test:build            # local-site build test asserts F09 (and F01 to F05 only if they moved there from the component test)
 ```
 
 ## 4. Browser
@@ -44,7 +44,7 @@ pnpm run test:a11y
 pnpm run test:budget
 ```
 
-Expected: faces drawn per F13, same-origin fonts per F14, JS-off per F15, blocked fonts per F16,
+Expected: faces drawn per F13, same-origin fonts per F14 (each file at most once, no italic face on home), JS-off per F15, blocked fonts per F16,
 the font `Cache-Control` per F10 and F11, the CSP unchanged apart from one style hash (F06), and
 every budget template at or under 153,600 bytes (150 KB, spec D3) with CLS < 0.1, LCP ≤ 2.5 s
 and the long-task and JS limits unchanged (SC-004, F21). Read the `budget` annotations for the
@@ -69,7 +69,7 @@ report the diff to Don. Never commit CI-artifact baselines for this PR.
 
 On the preview deployment, in both themes at phone and desktop width: home, a post with
 italic and bold italic, the projects index and a story. Look at headings, medium-weight labels
-(now Regular) and semibold labels (now Bold). DevTools Network shows four or fewer
+(now Regular, each keeping a cue other than weight, FR-017) and semibold labels (now Bold). DevTools Network shows four or fewer
 `/_astro/fonts/*.woff2` requests with `immutable`, and a reload shows them served from cache
 (SC-009). With the network throttled to slow 4G and the cache disabled, the swap from the
 adjusted Arial fallback to Inter shows no visible jump.
