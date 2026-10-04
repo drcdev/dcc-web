@@ -89,8 +89,8 @@ code requests no italic or bold mono face; T021 tests that.
 
 ### Verification (US2, existing gates, no new tests)
 
-- [ ] T027 [US2] [budget] Run `pnpm run test:budget` unchanged (M20, FR-008, SC-004; no limit edited). Layer budget: the existing test is the proof, so there is no red step. Record the `writing-post` total (research R4 estimate about 100,800 bytes) and CLS before and after, and the `writing-series-convergence` total, for the PR body. If any template exceeds 153,600 bytes or CLS reaches 0.1, stop and report rather than adding a preload or editing a limit.
-- [ ] T028 [US2] [a11y] Run `pnpm run test:a11y` (the a11y project: `a11y.spec.ts`, `blog.a11y.spec.ts`, `blog-fixture.a11y.spec.ts`) unchanged (FR-012, SC-006), plus `tests/e2e/geometry.spec.ts`, `tests/e2e/blog.spec.ts` (code block scroll and Copy button) and `tests/e2e/projects.spec.ts`. No new test: templates are already covered. Wider mono glyphs that cause a wrap, overflow or reflow failure are a design regression to fix, not a threshold to loosen.
+- [X] T027 [US2] [budget] Run `pnpm run test:budget` unchanged (M20, FR-008, SC-004; no limit edited). Layer budget: the existing test is the proof, so there is no red step. Record the `writing-post` total (research R4 estimate about 100,800 bytes) and CLS before and after, and the `writing-series-convergence` total, for the PR body. If any template exceeds 153,600 bytes or CLS reaches 0.1, stop and report rather than adding a preload or editing a limit.
+- [X] T028 [US2] [a11y] Run `pnpm run test:a11y` (the a11y project: `a11y.spec.ts`, `blog.a11y.spec.ts`, `blog-fixture.a11y.spec.ts`) unchanged (FR-012, SC-006), plus `tests/e2e/geometry.spec.ts`, `tests/e2e/blog.spec.ts` (code block scroll and Copy button) and `tests/e2e/projects.spec.ts`. No new test: templates are already covered. Wider mono glyphs that cause a wrap, overflow or reflow failure are a design regression to fix, not a threshold to loosen.
 
 **Checkpoint**: US2 testable on its own: requests, serving, budget and a11y green.
 
