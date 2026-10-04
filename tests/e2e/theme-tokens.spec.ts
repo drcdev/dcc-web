@@ -126,7 +126,14 @@ const PAGES: Page_[] = [
       {
         name: "free-form pill",
         selector: "[data-title-card] a[data-free-form]",
-        props: { "background-color": ["dusk-100", "dusk-800"], color: ["dusk-900", "dusk-100"] },
+        // The border is the dark-mode edge that keeps this pill visible on a dusk-800 card
+        // (issue #46). Only a browser shows that Tailwind's `dark:` variant applies the token;
+        // the unit test reads class strings only.
+        props: {
+          "background-color": ["dusk-100", "dusk-800"],
+          color: ["dusk-900", "dusk-100"],
+          "border-top-color": ["transparent", "dusk-400"],
+        },
       },
       {
         name: "series marker",

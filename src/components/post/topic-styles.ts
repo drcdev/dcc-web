@@ -4,7 +4,9 @@
 // pair is at least 4.5:1 in both themes, and the 2px series-marker outline is at least 3:1
 // against its fill and the page surface; the unit test tests/unit/content/topics.test.ts
 // computes both from the tokens in src/styles/global.css (FR-010, FR-016c, FR-017). The
-// computed values are recorded in the feature's research notes.
+// computed values are recorded in the feature's research notes. The neutral (dusk) pill's dark
+// fill is the card's own colour (dusk-800), so it keeps a 1px dusk-400 edge in dark mode, at
+// least 3:1 against the card and the page (issue #46).
 import type { Palette } from "../../config/topics.ts";
 
 export interface TopicStyle {
@@ -68,7 +70,7 @@ export const topicStyles: Partial<Record<Palette, TopicStyle>> = {
   },
   // Free-form topics: a neutral pill and a plain banner (FR-010a).
   dusk: {
-    pill: `${pillBase} bg-dusk-100 text-dusk-900 dark:bg-dusk-800 dark:text-dusk-100`,
+    pill: `${pillBase} bg-dusk-100 text-dusk-900 dark:border-dusk-400 dark:bg-dusk-800 dark:text-dusk-100`,
     border: "border-dusk-300 dark:border-dusk-500",
     banner: "bg-dusk-100 text-dusk-950 dark:bg-dusk-800 dark:text-dusk-50",
     marker: `${markerBase} border-dusk-700 dark:border-dusk-300 bg-dusk-100 text-dusk-900 dark:bg-dusk-800 dark:text-dusk-100`,
