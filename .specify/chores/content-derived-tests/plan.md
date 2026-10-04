@@ -367,7 +367,7 @@ item leaves `verify:quick` green, along with its targeted files:
 | `PAGES` draft flags | Computed from frontmatter, with the same notice assertion |
 | redirect slugs `["tempo"]` | Every page under `privacy/` |
 
-### W5. Projects e2e spec
+### W5. Projects e2e spec (Done: stand-in and draft-notice rules run per project in loops; the contact click-through stays on pickedStory)
 
 - **Files:** `tests/e2e/projects.spec.ts`.
 - **Test:** existing, rewritten, **e2e layer** (browser layout, focus, scrolling and the DOM).
