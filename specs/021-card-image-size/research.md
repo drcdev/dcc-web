@@ -161,3 +161,23 @@ requires. After the change the slot is 358 px and the browser picks 400w.
 Chromium at 1x picks the smallest candidate whose density is at least 1, or a smaller one when
 the geometric-mean rule allows; either way it never picks above 400w for a 358 px slot when 400w
 is offered, so the assertion is stable.
+
+## After (T014, SC-002 measurement)
+
+Method. Page total: the `totalBytes` field of the `budget` annotation for the
+`writing-series-convergence` template, from `pnpm run test:budget` re-run with the JSON reporter
+(compressed transfer, headers included). Card images: the two 400w `_astro/` WebP files that the
+built `/writing/convergence/` HTML offers at the 390 px slot (`sizes` resolves to 358 px, so 1x
+picks 400w), summed from `dist/`. No Network-panel capture was taken; the built file sizes stand
+in for the browser-measured transfer figure, so the card figure is file size, not transferred
+bytes with headers.
+
+| Measure | Before (R4) | After | Change |
+|---|---|---|---|
+| Card images (two cards) | 77,520 B (480w files; 78,604 B transferred) | 42,366 B (15,462 + 26,904, 400w q=65) | -35,154 B, -45.3% (-46.1% against 78,604 B transferred) |
+| Convergence page total | 121,654 B | 86,741 B | -34,913 B, -28.7% |
+
+Targets. Card images at most about 47 KB: met (42.4 KB). Cut of at least 40%: met (45.3%).
+Page below 100 KB: met (86.7 KB, against the unchanged 150 KB budget). The other writing
+templates report 69,258 B (`writing-all`) and 67,396 B (12-card fixture `/writing/all/`); the
+`budget` project passed in full (73 of 73). No follow-up needed.
