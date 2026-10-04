@@ -1,5 +1,7 @@
-// Builds the fixture site used by the browser tests: a copy of this
-// repository's site with the fixture pages added as extra pages (FIXTURE_PAGES: the sections page,
+// Builds the fixture site used by the browser tests: this repository's site code and real pages
+// with fixture posts and fixture projects only (issue #69), so the specs that run on it own every
+// item they assert on. The real posts and projects are left out. The fixture pages are added as
+// extra pages (FIXTURE_PAGES: the sections page,
 // specs/003-standalone-pages/tasks.md, T004, T005, and a page holding the contact form) and with
 // generated blog posts added, so pagination has a second page to test
 // (specs/008-blog/tasks.md, T026). Three fixture posts from tests/fixtures/posts/valid/ are added
@@ -113,9 +115,9 @@ export function generateFixturePosts(count = MINIMUM_POSTS): GeneratedPost[] {
   });
 }
 
-async function buildSite(): Promise<void> {
+/** Lays out the fixture site's source tree in `siteRoot` (everything but the Astro build). */
+export function prepareFixtureSite(siteRoot: string): void {
   const repoRoot = fileURLToPath(new URL("../", import.meta.url));
-  const siteRoot = resolve(repoRoot, ".cache/fixture-site");
   const pageFixtures = resolve(repoRoot, "tests/fixtures/pages");
 
   rmSync(siteRoot, { recursive: true, force: true });
@@ -129,6 +131,13 @@ async function buildSite(): Promise<void> {
 
   for (const entry of ["src", "public", "setup", "astro.config.mjs", "tsconfig.json", "package.json"]) {
     cpSync(resolve(repoRoot, entry), resolve(siteRoot, entry), copyOptions);
+  }
+  // The site holds fixture posts and projects only: drop the real ones the src copy brought in,
+  // and the fixture writes below fill the emptied folders.
+  for (const collection of ["posts", "projects"]) {
+    const dir = resolve(siteRoot, "src/content", collection);
+    rmSync(dir, { recursive: true, force: true });
+    mkdirSync(dir, { recursive: true });
   }
   // Dependencies resolve through the repository's node_modules.
   symlinkSync(resolve(repoRoot, "node_modules"), resolve(siteRoot, "node_modules"), "dir");
@@ -166,6 +175,11 @@ async function buildSite(): Promise<void> {
     });
   }
 
+}
+
+async function buildSite(): Promise<void> {
+  const siteRoot = resolve(fileURLToPath(new URL("../", import.meta.url)), ".cache/fixture-site");
+  prepareFixtureSite(siteRoot);
   await build({ root: siteRoot, logLevel: "warn" });
 }
 

@@ -1,7 +1,7 @@
 // Accessibility of the blog templates the default build cannot show (specs/008-blog/tasks.md T093;
 // FR-039, FR-014). Runs in the `a11y` project (the file name matches its testMatch) with the same
 // axe WCAG 2.2 AA conditions as a11y.spec.ts and the structure checks of blog.a11y.spec.ts:
-//   (a) the fixture site on port 4322: all posts page 2 and the page-2 topic (17 posts, every
+//   (a) the fixture site on port 4322: all posts page 2 and the page-2 topic (16 posts, every
 //       generated post on `agentic-ai`);
 //   (b) the empty landing, all posts and topic pages, from a production-mode build made here
 //       (WORKERS_CI=1, WORKERS_CI_BRANCH=main, so the sample drafts are left out) and served from its

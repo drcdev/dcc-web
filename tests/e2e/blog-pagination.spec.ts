@@ -1,31 +1,23 @@
 // Pagination on the fixture site (port 4322, playwright.config.ts project `sections`; specs/008-blog
-// tasks.md T057; FR-012). The fixture site has the site's own posts (drafts included), the three
-// fixture posts (text-only, long-title and every-part) and 13 generated posts, so the all posts
-// listing and the agentic-ai topic (which every generated post carries) each have a second page at
-// least. The counts are computed from the content: every page but the last holds blog.pageSize posts.
+// tasks.md T057; FR-012). The fixture site holds fixture posts only: the three FIXTURE_POSTS
+// (text-only, long-title and every-part) and 13 generated posts, 16 in all. Every generated post
+// carries the agentic-ai topic, so the all posts listing and that topic each have a second page.
+// The totals are fixed, so the cases do not move when a real post is published. Where the real
+// content guarantees live: every real post is listed as a card, newest first, by blog.spec.ts "all
+// posts page" (port 4321).
 import { test, expect } from "@playwright/test";
 import { blog } from "../../src/config/blog.ts";
-import { FIXTURE_POSTS, generateFixturePosts } from "../../scripts/build-fixture-site.ts";
-import { posts, readEntries } from "../helpers/content.ts";
 
 const ALL = "/writing/all/";
 const TOPIC = "/writing/topics/agentic-ai/";
 
-const topicsOf = (entry: { data: Record<string, unknown> }) => (entry.data.topics as string[] | undefined) ?? [];
-const fixtureOwned = readEntries("posts", "tests/fixtures/posts/valid").filter((entry) =>
-  (FIXTURE_POSTS as readonly string[]).includes(`${entry.slug}.mdx`),
-);
-// Every post's topics on the fixture site; it is not a production build, so drafts are listed.
-const SITE_TOPICS = [
-  ...[...posts, ...fixtureOwned].map(topicsOf),
-  ...generateFixturePosts().map((post) => [...post.source.matchAll(/^ {2}- (.*)$/gm)].map((match) => match[1]!)),
-];
+// 13 generated posts + 3 fixture posts = 16 posts; the topic is on the 13 generated ones only.
 const TOTALS = new Map<string, number>([
-  [ALL, SITE_TOPICS.length],
-  [TOPIC, SITE_TOPICS.filter((list) => list.includes("agentic-ai")).length],
+  [ALL, 16],
+  [TOPIC, 13],
 ]);
 for (const [first, total] of TOTALS) {
-  // Page 2 must exist, which the cases below rely on; the 13 generated posts guarantee it.
+  // Page 2 must exist, which the cases below rely on; the fixed totals above guarantee it.
   if (total <= blog.pageSize) {
     throw new Error(`tests/e2e/blog-pagination.spec.ts: ${first} has ${total} posts; the cases need a second page.`);
   }
