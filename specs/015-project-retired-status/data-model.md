@@ -24,7 +24,18 @@ theme filtering (FR-002).
 | `replacedBy` has `href` together with `project` | `href goes with name: a project on the site is linked to its own page` (path `replacedBy.href`) | RP02 |
 | `replacedBy.href` not https | `use an address that starts with https://` (existing `httpsUrl`) | RP03 |
 | `replacedBy` has an unknown key | strict object: Zod names the key | RP03 |
-| `replacedBy.name` empty | existing `requiredText` message | RP03 |
+| `replacedBy.name` empty or whitespace-only (trimmed, `requiredText`) | existing `requiredText` message | RP03 |
+| `replacedBy` present with no value (YAML null) | Zod's type message (expected an object) | RP03 |
+| `replacedBy: {}` (no fields) | the RP02 "either project ... or name" message | RP02 |
+
+`replacedBy.name` has no maximum length and is rendered as escaped text. `replacedBy.href`
+uses the existing `httpsUrl` (a full URL, `https` scheme only). `project` matches a project
+file name exactly (the entry id, lower case like every project file name).
+
+Order: the schema runs during content sync, before any route, so a file that breaks a schema
+rule and a replacement rule reports the schema rule first (contracts/build-errors.md). A
+replacement that is itself retired, and two projects naming each other, are allowed and not
+checked.
 
 ### Validation rules (collection, `src/lib/content/project-replacement.ts`)
 
@@ -75,6 +86,11 @@ the `replacement` prop.
 |---|---|---|---|
 | light | `mauve-50` | `mauve-800` | `mauve-950` |
 | dark | `mauve-800` | `mauve-300` | `mauve-100` |
+
+Contrast (computed from the tokens, research R6; thresholds FR-004): light text 17.4:1 on
+the fill, light border 12.9:1 against the white page; dark text 10.2:1 on the fill, dark
+border 7.9:1 against the dark page (`dusk-BASE`). The dark fill alone is only 1.3:1 against
+the dark page, which is why the mauve-300 border carries the pill's edge in dark mode.
 
 Used only by the Retired status. Theme pills stay `neutral` (white or `dusk-900` fill).
 

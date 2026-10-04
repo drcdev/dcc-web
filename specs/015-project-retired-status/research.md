@@ -135,9 +135,22 @@ versions: `astro` 7.3.5, `@astrojs/mdx` 8.0.2, Zod 4 through `astro/zod`.
   ("filled mauve-800/900 background with mauve-100 text"). Mauve-800 (20% lightness) is
   chosen over 900 (10%) because the page background `dusk-900` is also 10% lightness, so
   900 would not read as a fill. The dark border follows the other tones' `-300` border.
-  Contrast estimate: mauve-950 on mauve-50 and mauve-100 on mauve-800 are both above 10:1
-  (palette lightness 5/95 and 90/20 at about 6% saturation), well above AA 4.5:1; the
-  `a11y` project confirms it. The tokens already exist (`src/styles/global.css`
+  Contrast, computed from the tokens (`--color-mauve-BASE` #736775 at each step's
+  lightness; page backgrounds `white` and `dusk-BASE` #1c1a29 from `BaseLayout`), against
+  FR-004's thresholds (4.5:1 text, 3:1 border):
+
+  | Pair | Light | Dark |
+  |---|---|---|
+  | Pill text on pill fill (950 on 50 / 100 on 800) | 17.4:1 | 10.2:1 |
+  | Pill border against page (800 on white / 300 on dusk-BASE) | 12.9:1 | 7.9:1 |
+  | Pill border against pill fill | 11.5:1 | 6.0:1 |
+  | Pill fill against page (information only) | n/a | 1.3:1 |
+  | Note text and link (dusk-900 on white / mist-100 on dusk-BASE) | 18.2:1 | 15.2:1 |
+  | Note edge bar (mauve-700 on white / mauve-300 on dusk-BASE, decorative) | 8.8:1 | 7.9:1 |
+
+  All pass. The `a11y` project (axe) confirms rendered text contrast in both themes; axe
+  does not measure non-text contrast, so the border ratios rest on this computation and on
+  the theme-tokens test that pins the rendered colours to the tokens. The tokens already exist (`src/styles/global.css`
   `--color-mauve-*`), so no palette change.
 - **Major change**: a new tone in the shared pill changes the design system (Principle III).
 - **Alternatives**: the neutral tone (rejected: the theme pills beside it are neutral, so the
