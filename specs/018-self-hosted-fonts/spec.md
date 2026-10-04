@@ -39,6 +39,8 @@ foundation's FR-003 (feature 002, site foundation).
 - Q: How should font files be cached between page views? → A: Fingerprinted filenames emitted by the Astro build, served with `Cache-Control: public, max-age=31536000, immutable`.
 - Q: Should the "never synthesize a slant or weight" rule also apply when text is shown in the system fallback font? → A: No. The rule covers Inter only: all four faces are declared, so Inter text always uses real faces, and tests check the rendered face. Fallback text keeps the browser's default synthesis so emphasis still shows.
 - Q: Should the one-year immutable cache header apply only to the font files, or to every fingerprinted build file under `/_astro/`? → A: Only the four fingerprinted Inter files. Other build files keep today's caching; a long cache for all of `/_astro/` is follow-up work.
+- Q: Should the project architecture diagrams (SVG images whose text uses the system font) switch to Inter as part of this feature? → A: No. Text inside images (the SVG diagrams and the og image) is out of scope and keeps its current font; converting it is follow-up work.
+- Q: What happens if Linux baselines regenerated locally in Docker still fail CI's visual project on the first run after the font change? → A: First investigate the remaining cause within this feature (Docker image fonts, rendering flags). If the Docker-to-CI match still cannot be shown, stop and report the diff details to Don. CI-artifact baselines are never landed for this PR, and issue #62 is not closed until the match is shown.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -142,6 +144,11 @@ baselines must be complete and correct for the gate to stay meaningful.
   the shipped set, italic and bold text in the fallback stack keeps the browser's default
   synthesis, so emphasis still shows even where the system font has no real italic or bold
   face.
+- **Docker baselines still fail CI**: if Linux baselines regenerated in Docker still fail CI's
+  visual project on the first run, the remaining cause is investigated within this feature; if
+  the match still cannot be shown, the work stops and the diff is reported to Don (FR-011).
+- **Text inside images**: the SVG architecture diagrams and the og image keep their current font
+  (FR-001).
 - **Forced colours and dark mode**: the font change does not affect contrast, focus indicators
   or forced-colours rendering.
 - **JavaScript off**: fonts load and apply without any client-side script.
@@ -150,7 +157,9 @@ baselines must be complete and correct for the gate to stay meaningful.
 
 ### Functional Requirements
 
-- **FR-001**: Every public page MUST render headings and body text in the Inter typeface.
+- **FR-001**: Every public page MUST render headings and body text in the Inter typeface. Text
+  inside images (the SVG architecture diagrams and the og image) is out of scope and keeps its
+  current font.
 - **FR-002**: The site MUST ship exactly four Inter faces: regular (400), italic (400),
   bold (700) and bold italic (700). Each MUST contain exactly the shipped character set:
   printable ASCII, all of Latin-1 (U+00A0–U+00FF), the typographic punctuation – — ‘ ’ “ ” … •,
@@ -177,7 +186,11 @@ baselines must be complete and correct for the gate to stay meaningful.
   thresholds on mobile.
 - **FR-011**: All 132 visual baselines (66 macOS, 66 Linux) MUST be regenerated as a predicted
   change, and the visual project MUST pass on both platforms. Linux baselines regenerated
-  locally in Docker MUST pass CI's visual project on the first run.
+  locally in Docker MUST pass CI's visual project on the first run. If they do not, the
+  remaining cause is investigated within this feature (Docker image fonts, rendering flags); if
+  the Docker-to-CI match still cannot be shown, the work stops and the diff details are reported
+  to Don. Baselines produced by CI (the `visual-baselines` label artifact) MUST NOT be landed
+  for this pull request, and issue #62 is not closed until the match is shown.
 - **FR-012**: Fonts MUST load and apply with JavaScript turned off and MUST add no client-side
   script.
 - **FR-013**: The Inter licence (SIL Open Font License) MUST be included alongside the font files
@@ -214,9 +227,11 @@ baselines must be complete and correct for the gate to stay meaningful.
 
 - **SC-001**: A pull request whose Linux baselines were regenerated locally in Docker passes the
   CI visual project on its first run, including the fixture post page (0 subjects failing,
-  compared with 1 failing at about 1% of pixels today).
+  compared with 1 failing at about 1% of pixels today), using only Docker-generated Linux
+  baselines, never CI-artifact images.
 - **SC-002**: 100% of page templates render headings, body, italic, bold and bold-italic text in
-  Inter, with zero synthesized italic or bold faces.
+  Inter, with zero synthesized italic or bold faces. Text inside images (SVG diagrams, og image)
+  is not counted.
 - **SC-003**: Zero font requests leave the site's own origin on any page.
 - **SC-004**: Every page measured by the budget test stays at or under 100 KB total transfer and
   under the existing layout shift budget on simulated slow 4G, with fonts included.
@@ -261,7 +276,8 @@ These were settled by Don before the specification and are not open for clarific
 - Any weight other than 400 and 700 that components request resolves through standard CSS font
   matching (FR-017); the plan lists any such usage.
 - Docker remains the local way to regenerate Linux baselines; the CI label fallback stays
-  available but should no longer be needed for a predicted change.
+  available for other work but should no longer be needed for a predicted change, and it is not
+  used to land this pull request's baselines (FR-011).
 - This is a major change under Constitution Principle III (design system and visual identity);
   auto-merge stays off and Don approves after checking the preview deployment.
 
@@ -271,11 +287,15 @@ These were settled by Don before the specification and are not open for clarific
 - Weights other than 400 and 700, variable fonts, and non-latin subsets.
 - Changes to colours, spacing, type scale or layout beyond what the new typeface itself causes.
 - Changes to the visual comparison threshold or how baselines are generated.
+- Text inside images: the SVG architecture diagrams and the og image keep their current font.
 
 ## Follow-up work
 
 - Consider a one-year immutable cache header for all fingerprinted build files under
   `/_astro/` (CSS and scripts), not only the font files (FR-015).
 - Consider a self-hosted monospace font for code and preformatted blocks (D2).
+- Consider drawing text inside images (the SVG architecture diagrams and the og image) in Inter,
+  for example by embedding the subset font or converting the text to outlines, within the page
+  budget.
 - Revisit the "Visual baselines" guidance in the agent notes and pipeline skills if the CI-label
   fallback proves unnecessary for predicted changes over the next few pull requests.
