@@ -159,7 +159,9 @@ Fonts (feature 018): the site self-hosts Inter through Astro's Fonts API from fo
 files in `src/assets/fonts/`. The unit tests `font-files.test.ts`, `font-coverage.test.ts` and
 `astro-config.test.ts` check the files, the charset coverage guard and the config; the E2E
 spec `fonts.spec.ts` proves the faces and at most four font requests, and `headers.spec.ts`
-the `immutable` cache header. The total-transfer budget is 150 KB. The Linux baselines come
+that the fonts and every other fingerprinted file under `/_astro/` (stylesheets and scripts)
+are served with the year-long `immutable` cache header (#74), while `headers.test.ts` checks
+the rule itself. The total-transfer budget is 150 KB. The Linux baselines come
 from the Docker image, which keeps DejaVu as the system fallback, so only Inter text is
 pinned by the web font and any glyph outside the subset falls back to DejaVu there.
 
@@ -176,7 +178,7 @@ waits for the code faces. Only the `post-template` baselines show code.
 | `home` | Header, footer and menu: the kept shell snapshots, taken on `/`. Layout breakage: the geometry test. Contrast in both themes: `a11y` (axe on every template, both widths and themes). Introduction card and copy: `pages.spec.ts` and the build tests. Home intro card pixels: review-only by decision (#40 phase 2): it is site copy, not a template. |
 | `about` | Shell snapshots; geometry test; `a11y`; About sections and Recognition links: `pages.spec.ts`. |
 | `contact` | Shell snapshots; geometry test; `a11y`; the form and its states: `contact.spec.ts`. The contact form's pixels: the `contact-form` snapshot of the fixture page `/contact-form/` (#40 phase 2). |
-| `writing-landing` | Shell snapshots; geometry test; `a11y`; listing behaviour: `blog.spec.ts` and the `sections` project's `blog-fixtures.spec.ts` and `blog-pagination.spec.ts`. Listing card pixels: `listing-cards`, the three fixture cards on `/writing/topics/fixture-cards/`. Lead-story pixels: `lead-story` on the fixture `/writing/`, whose lead is the fixture post `every-part` (dated 2099 so it is the lead). |
+| `writing-landing` | Shell snapshots; geometry test; `a11y`; listing behaviour: `blog.spec.ts` and the `sections` project's `blog-fixtures.spec.ts` and `blog-pagination.spec.ts`. Listing card pixels: `listing-cards`, the three fixture cards on `/writing/topics/fixture-cards/`. Lead-story pixels: `lead-story` on the fixture `/writing/`, whose lead is the fixture post `every-part` (dated 2099 so it is the lead). Card image widths and quality: component tests in `PostCard.test.ts`, E2E in the `sections` project's `blog-fixtures.spec.ts`. |
 | `writing-all` | As `writing-landing`, including the card snapshot. Pagination: `blog-pagination.spec.ts`. |
 | `writing-topic` | As `writing-landing`, including the card snapshot. |
 | `writing-post` | Shell snapshots; geometry test (includes the code block and table scroll containers); `a11y` (`blog.a11y.spec.ts`, `blog-fixture.a11y.spec.ts`); Copy button and table region: `blog.spec.ts`; forced colours: `blog-forced-colors.spec.ts`. Post template pixels: `post-template`, the article of the fixture post `/writing/every-part/`. Related posts are left out because they are chosen from all posts; their cards are the `listing-cards` component. |

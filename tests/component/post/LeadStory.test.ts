@@ -45,6 +45,12 @@ describe("LeadStory", () => {
     expect("data-text-only" in byName(html, "article")[0]!.attrs).toBe(false);
   });
 
+  it("puts no quality parameter on any image candidate URL (FR-006)", async () => {
+    const html = await render(withImage("one"));
+    const [img] = byName(html, "img");
+    expect(`${img!.attrs.src} ${img!.attrs.srcset ?? ""}`).not.toMatch(/[?&]q=/);
+  });
+
   it("is a text-only card bordered in the main topic colour, with no image, without an image", async () => {
     const html = await render(summary("one", { topics: ["technology-teams"] }));
     expect(byName(html, "img")).toHaveLength(0);
