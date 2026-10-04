@@ -28,7 +28,7 @@ owns porting it.
 |---|---|---|
 | `@theme` palettes dusk, rust, sage, lavender, mist, sand, mauve (50–950) | Tailwind theme tokens in `src/styles/global.css`, ported as-is, keeping "change the BASE value to update the palette" | Foundation |
 | `accent-*` palette from Ghost's `--ghost-accent-color` | Fixed accent palette derived from rust `#d68844` | Foundation |
-| `--gh-font-body` / `--gh-font-heading` | System font stack now; follow-up for the real Ghost fonts, self-hosted later via Astro's built-in font support | Foundation (follow-up: fonts) |
+| `--gh-font-body` / `--gh-font-heading` | Self-hosted Inter 4.1 through Astro's Fonts API, system stack as fallback (feature 018) | Foundation |
 | `@custom-variant dark`, `.prose-accent`, heading colours (H1/H2 rust, H3 sage, H4 lavender), `.table-wrapper`, focus rings | Global styles, as-is | Foundation |
 | Prism token colours + `kg-code-card` | Shiki with one semantic theme whose colours become `hl-*` classes (no inline styles, so the CSP is unchanged), coloured in `src/styles/global.css` for light and dark, plus the `CodeBlock` component (done; spec 008 R7, R8) | Blog |
 | `kg-width-wide` / `kg-width-full` + `content-feature-image.hbs` | `WideImage` and `FullImage` sections, `FeatureImage` page component, and `.kg-width-*` rules in `src/styles/global.css` (done) | Pages |

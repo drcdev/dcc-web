@@ -99,9 +99,9 @@ first; US3 produces the images; US1 is proven by the first CI run.
 
 ## Phase 6: Polish and cross-cutting
 
-- [ ] T036 [P] Update `docs/testing.md`: "Layers" rows for the new unit, component, build and E2E tests and the visual note; "Visual coverage" paragraph on self-hosted Inter, the fonts wait, the coverage guard and why Docker keeps DejaVu.
-- [ ] T037 [P] Update `docs/design-source.md`: the `--gh-font-body` / `--gh-font-heading` row records self-hosted Inter 4.1 through Astro's Fonts API (feature 018), system stack as fallback. Confirm no other doc says "no web fonts" (research R11).
-- [ ] T038 Run quickstart sections 2 to 5 in `specs/018-self-hosted-fonts/quickstart.md` and fix any drift between it and the real commands; run `pnpm run lint` and the type check before the PR.
+- [X] T036 [P] Update `docs/testing.md`: "Layers" rows for the new unit, component, build and E2E tests and the visual note; "Visual coverage" paragraph on self-hosted Inter, the fonts wait, the coverage guard and why Docker keeps DejaVu.
+- [X] T037 [P] Update `docs/design-source.md`: the `--gh-font-body` / `--gh-font-heading` row records self-hosted Inter 4.1 through Astro's Fonts API (feature 018), system stack as fallback. Confirm no other doc says "no web fonts" (research R11).
+- [X] T038 Run quickstart sections 2 to 5 in `specs/018-self-hosted-fonts/quickstart.md` and fix any drift between it and the real commands; run `pnpm run lint` and the type check before the PR.
 - [ ] T039 [PREVIEW-CHECK] Don reviews the preview deployment in light and dark mode at phone and desktop width: home, a post with italic and bold italic, the projects index and a story; checks headings, medium labels (now Regular) and semibold labels (now Bold), and that each 500 → 400 element listed in research R7 still has a cue other than weight (FR-017); in DevTools Network sees four or fewer `/_astro/fonts/*.woff2` requests with `immutable`, and a reload serves them from cache (SC-009); with slow 4G and cache disabled sees no visible jump on the swap from the adjusted Arial fallback to Inter. Needs the live preview and Don's eyes, so a subagent cannot verify it.
 
 ## Dependencies and order
