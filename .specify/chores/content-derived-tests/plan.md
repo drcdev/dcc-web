@@ -336,7 +336,7 @@ item leaves `verify:quick` green, along with its targeted files:
 | `listing` contains the Wayfinder href | `listing` contains every published post's href (stronger) |
 | `writing/sample-everything/index.html` handling | Rule over every draft post and project (stronger: projects too) |
 
-### W4. SEO and pages e2e specs
+### W4. SEO and pages e2e specs (Done: every page, contact included, passes the h1-is-title rule; the pages sitemap duplicate is removed after the cookie-policy assertion landed in seo.spec)
 
 - **Files:** `tests/e2e/seo.spec.ts`, `tests/e2e/pages.spec.ts`.
 - **Test:** existing, rewritten, **e2e layer** (served responses, head metadata and the DOM
