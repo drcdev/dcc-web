@@ -7,14 +7,24 @@
 // run against the fixture site in tests/e2e/blog-fixtures.spec.ts.
 import { test, expect, type Page } from "@playwright/test";
 import { cspViolations, recordCspViolations } from "./csp-violations.ts";
+import { blog } from "../../src/config/blog.ts";
+import { topics, topicHref } from "../../src/config/topics.ts";
+import { selectLanding, sortNewestFirst } from "../../src/lib/content/post-order.ts";
+import { inBuild, posts, postSummary } from "../helpers/content.ts";
 
 const POST = "/writing/sample-everything/";
 const WAYFINDER = "/writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/";
 const FOCUS_POCUS = "/writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/";
 const GHOST_THEMES = "/writing/self-contained-development-for-ghost-themes/";
 const STARTING = "/writing/starting-something-new/";
-/** A post with no update date (the Wayfinder post). */
-const PLAIN_POST = WAYFINDER;
+// The e2e server serves a local build, which is not a production build, so drafts are built and listed.
+const BUILT_POSTS = inBuild(posts, { production: false }).map(postSummary);
+/** The newest post with no update date. */
+const PLAIN_POST = (() => {
+  const plain = sortNewestFirst(BUILT_POSTS.filter((post) => !post.updated))[0];
+  if (!plain) throw new Error("tests/e2e/blog.spec.ts: no post lacks an update date.");
+  return plain.href;
+})();
 const CAPTIONED_CODE = "const { title, summary } = entry.data;\nconsole.log(`${title}: ${summary}`);";
 
 const noSidewaysScroll = async (page: Page) => {
@@ -146,14 +156,12 @@ test.describe("post page", () => {
   });
 });
 
-// The landing page (T042; contracts/blog-pages.md "Landing"). This build is not a production
-// build, so the sample post (dated 2026) shows next to the four real posts (dated 2025).
-// sample-everything is the newest (the lead story). The other three featured posts, newest first,
-// fill Featured: the Wayfinder post, the Focus Pocus post and Starting something new. The one
-// unfeatured post, Ghost themes, is all of Latest. A fourth featured post falling to Latest, and a
-// text-only card, are checked on the fixture site (tests/e2e/blog-fixtures.spec.ts).
+// The landing page (T042; contracts/blog-pages.md "Landing"). The expected lead, Featured and
+// Latest come from selectLanding over the posts the build holds (the rule has its own unit test and
+// fixed-data cases on the fixture site, tests/e2e/blog-fixtures.spec.ts).
 const LANDING = "/writing/";
-const LEAD_TITLE = "Sample: Every kind of content a post can hold";
+const LANDING_SELECTION = selectLanding(BUILT_POSTS);
+const LEAD_TITLE = LANDING_SELECTION.lead!.title;
 
 test.describe("landing page", () => {
   test("shows the parts in order: eyebrow and h1, feed link, lead story, pills, Featured, Latest, All posts", async ({
@@ -249,9 +257,9 @@ test.describe("landing page", () => {
     const featured = await hrefs("[data-featured-grid]");
     const latest = await hrefs("[data-latest-grid]");
     const lead = await page.locator("[data-lead-story] h2 a").getAttribute("href");
-    expect(lead).toBe("/writing/sample-everything/");
-    expect(featured).toEqual([WAYFINDER, FOCUS_POCUS, STARTING]);
-    expect(latest).toEqual([GHOST_THEMES]);
+    expect(lead).toBe(LANDING_SELECTION.lead!.href);
+    expect(featured).toEqual(LANDING_SELECTION.featured.map((post) => post.href));
+    expect(latest).toEqual(LANDING_SELECTION.latest.map((post) => post.href));
     expect(featured).not.toContain(lead);
     expect(latest).not.toContain(lead);
     for (const href of featured) expect(latest).not.toContain(href);
@@ -267,8 +275,9 @@ test.describe("landing page", () => {
     await expect(img).toHaveAttribute("loading", "eager");
     await expect(page.locator("[data-lead-story][data-text-only], [data-post-card][data-text-only]")).toHaveCount(0);
     const cards = page.locator("[data-featured-grid] [data-post-card], [data-latest-grid] [data-post-card]");
-    await expect(cards).toHaveCount(4);
-    await expect(cards.locator("img")).toHaveCount(4);
+    const shown = LANDING_SELECTION.featured.length + LANDING_SELECTION.latest.length;
+    await expect(cards).toHaveCount(shown);
+    await expect(cards.locator("img")).toHaveCount(shown);
   });
 
   test("advertises the feed in the head, and has its own title, description and canonical address", async ({
@@ -321,13 +330,14 @@ test.describe("landing page", () => {
 });
 
 // The all posts and topic pages (T057; contracts/blog-pages.md "All posts" and "Topic"). The default
-// build has the sample post, sample-everything (2026-08-27), then the four real posts: the Wayfinder
-// post (2025-08-27), Focus Pocus (08-16), Ghost themes (08-07) and Starting something new (03-15).
-// Pagination runs against the fixture site in tests/e2e/blog-pagination.spec.ts. The topic checked
-// here is healthcare-leadership, the one topic with two posts (Wayfinder and Starting something new).
+// build lists every post, newest first. Pagination runs against the fixture site in
+// tests/e2e/blog-pagination.spec.ts. The topic checked here is the first controlled, non-series
+// topic that a built post uses.
 const ALL = "/writing/all/";
-const TOPIC = "/writing/topics/healthcare-leadership/";
-const TOPIC_NAME = "Healthcare technology leadership";
+const TOPIC_ENTRY = topics.find((topic) => !("series" in topic) && BUILT_POSTS.some((post) => post.topics.includes(topic.id)));
+if (!TOPIC_ENTRY) throw new Error("tests/e2e/blog.spec.ts: no post uses a non-series topic.");
+const TOPIC = topicHref(TOPIC_ENTRY.id);
+const TOPIC_NAME = TOPIC_ENTRY.name;
 
 test.describe("all posts page", () => {
   test("shows the h1, the pill row and every post as a card, newest first", async ({ page }) => {
@@ -338,9 +348,11 @@ test.describe("all posts page", () => {
     const hrefs = await main
       .locator("[data-post-card] h2 a")
       .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
-    expect(hrefs).toEqual([POST, WAYFINDER, FOCUS_POCUS, GHOST_THEMES, STARTING]);
-    // Five posts fit on one page (12), so there is no pagination.
-    await expect(main.getByRole("navigation", { name: "Pages" })).toHaveCount(0);
+    expect(hrefs).toEqual(sortNewestFirst(BUILT_POSTS).slice(0, blog.pageSize).map((post) => post.href));
+    // Pagination is checked on the fixture site; here the posts fit on one page, so there is none.
+    if (BUILT_POSTS.length <= blog.pageSize) {
+      await expect(main.getByRole("navigation", { name: "Pages" })).toHaveCount(0);
+    }
   });
 
   test("advertises the feed and keeps Writing current in the header", async ({ page }) => {
@@ -361,7 +373,7 @@ test.describe("all posts page", () => {
 
   test("reaches a topic page from a pill on a card", async ({ page }) => {
     await page.goto(ALL);
-    await page.locator("main [data-post-card] a[data-topic-pill][href$='/healthcare-leadership/']").first().click();
+    await page.locator(`main [data-post-card] a[data-topic-pill][href="${TOPIC}"]`).first().click();
     await page.waitForURL(`**${TOPIC}`);
     await expect(page.locator("main h1")).toHaveText(TOPIC_NAME);
   });
@@ -385,8 +397,8 @@ test.describe("topic page", () => {
     const hrefs = await main
       .locator("[data-post-card] h2 a")
       .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
-    // Newest first: the Wayfinder post (2025-08-27), then Starting something new (2025-03-15).
-    expect(hrefs).toEqual([WAYFINDER, STARTING]);
+    const inTopic = BUILT_POSTS.filter((post) => post.topics.includes(TOPIC_ENTRY.id));
+    expect(hrefs).toEqual(sortNewestFirst(inTopic).slice(0, blog.pageSize).map((post) => post.href));
     expect(await page.title()).toBe(`${TOPIC_NAME} · Don Coleman`);
   });
 

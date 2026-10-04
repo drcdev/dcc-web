@@ -423,7 +423,7 @@ item leaves `verify:quick` green, along with its targeted files:
   Principle X (do not loosen the budget).
 - **Coverage mapping:** the same checks on a computed story. Nothing is removed.
 
-### W7. Blog e2e spec, part 1: post page, landing, all posts, topic page
+### W7. Blog e2e spec, part 1: post page, landing, all posts, topic page (Done: the four real-post constants stay declared until W8 rewrites the blocks that still use them)
 
 - **Files:** `tests/e2e/blog.spec.ts`. Only the describe blocks "post page", "landing page",
   "all posts page" and "topic page" change.
