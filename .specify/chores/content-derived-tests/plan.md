@@ -264,7 +264,7 @@ item leaves `verify:quick` green, along with its targeted files:
 `run.sh 900 pnpm run test:build:content` for build tests, and
 `run.sh 900 pnpm exec playwright test <files> --project=<p>` after `pnpm run build` for e2e.
 
-### W1. The content helper and its unit test
+### W1. The content helper and its unit test (Done: `require()` of the ES module works under both Vitest and Playwright)
 
 - **Files:** new `tests/helpers/content.ts`, new `tests/unit/content/content-helper.test.ts`.
 - **Test:** new-first, **unit layer** (it reads files and builds nothing). The test is written
