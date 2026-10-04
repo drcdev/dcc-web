@@ -66,7 +66,7 @@ Copy the `budget` annotation's `totalBytes` and each file size into the plan's F
 On the PR's preview deployment:
 - Each published project story: the architecture diagram labels are Inter (compare the `g`, `a`
   and `t` shapes with the story text), bold titles, regular details, all inside their boxes; open
-  the diagram image on its own in a new tab and check the same, in Safari and in Chrome or
-  Firefox.
+  the diagram image on its own in a new tab and check the same, in Safari and in Firefox
+  (Chromium is covered by the E2E check).
 - `/og-default.png`: "Don Coleman" in Inter Bold, rust on dusk, rule underneath, same size.
 - The visual baselines did not change, and a11y passes on the project story template.

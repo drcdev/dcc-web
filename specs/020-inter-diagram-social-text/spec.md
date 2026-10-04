@@ -301,7 +301,9 @@ system font and confirm the gate fails with a message naming that diagram.
   beside the `diagram` picture kind, and that guidance states the fit rules of FR-003b (16 units
   each side; wrap rather than shrink or reword) and the 16 KB limit; label width is checked by
   the gate rather than by a character count, because widths vary by letter. The script checks
-  its result against the same rules as the gate before writing; on any problem it prints the
+  its result against the gate's file rules (FR-008, FR-009, FR-009a, FR-012 and the FR-013
+  notice) before writing; label fit (FR-003b) needs a browser, so it is checked by the gate's
+  browser check (SC-004), not by the script. On any file-rule problem the script prints the
   messages, writes nothing for that file and exits with an error. Running it again on an
   unchanged file gives a byte-identical file. The guidance also tells the author that when a
   label edit changes what the diagram says, the alt text, the SVG's `aria-label` and the visible
@@ -356,7 +358,7 @@ system font and confirm the gate fails with a message naming that diagram.
   no Reserved Font Name, so a subset may keep the name Inter. The licence's redistribution terms
   are met inside each diagram: the embedded subsets keep the font's copyright notice in their
   name table ("Copyright 2016 The Inter Project Authors"), and an XML comment directly before
-  the font block names Inter 4.1, that copyright holder, the SIL Open Font License 1.1 with its
+  the `<style>` that holds the embedded faces names Inter 4.1, that copyright holder, the SIL Open Font License 1.1 with its
   address, and the full licence text in `src/assets/fonts/LICENSE.txt`. The subsets are only
   distributed inside the diagrams, never sold on their own, and stay under the same licence.
   The sharing image is a picture of rendered text, not a font, so the licence places no
@@ -433,3 +435,5 @@ system font and confirm the gate fails with a message naming that diagram.
   from feature 018).
 - Restyling the diagrams themselves (colours, dark-mode variants, new layouts) beyond what is
   needed to keep labels inside their boxes.
+- Running the automated diagram font and fit check in WebKit and Firefox as well as Chromium
+  (this feature covers those engines by Don's preview check, SC-001).

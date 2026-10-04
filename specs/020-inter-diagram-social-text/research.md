@@ -204,8 +204,9 @@ adjustments is in [data-model.md](./data-model.md#wrapped-labels-and-box-changes
 - the Chromium launch moves under `if (import.meta.main)` with a dynamic import of
   `@playwright/test`, so the unit test imports the module without launching a browser (the same
   guard `subset-inter.ts` uses);
-- before the screenshot it awaits `document.fonts.ready` and throws unless
-  `document.fonts.check("700 112px Inter", "Don Coleman")` is true, so a run that would fall back
+- before the screenshot it awaits `document.fonts.ready` and throws unless an `Inter` 700
+  `FontFace` has status `loaded` and `document.fonts.check("700 112px Inter", "Don Coleman")`
+  is true (`check()` alone can pass when no face matches), so a run that would fall back
   fails instead of writing a wrong PNG.
 
 Size (1200×630), colours, padding, letter spacing, rule and wording stay as they are (FR-005).

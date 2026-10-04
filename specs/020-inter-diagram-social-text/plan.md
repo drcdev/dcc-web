@@ -107,8 +107,9 @@ Tracking.*
 - **Family and fallback**: `@font-face` family `Inter`; root `font-family="Inter, sans-serif"`;
   the gate accepts exactly that stack and no named system family (research R4).
 - **OFL attribution**: copyright kept in name ID 0 of each subset, plus a human-readable XML
-  comment before the block naming Inter 4.1, the copyright holder, the SIL OFL 1.1 and
-  `src/assets/fonts/LICENSE.txt` (research R5).
+  comment directly before the `<style data-inter-subset>` naming Inter 4.1, the copyright
+  holder, the SIL OFL 1.1 with its address (`https://openfontlicense.org`) and
+  `src/assets/fonts/LICENSE.txt` (research R5, contract D07).
 - **Script**: `scripts/fonts/embed-diagram-fonts.ts`, run as
   `pnpm run fonts:diagrams [-- <file.svg> ...]` (no argument: every SVG with text under
   `src/content/`).
@@ -217,8 +218,8 @@ figures; the after run notes whether a diagram request appears. Prototype estima
   leave them 6 units from the canvas edge, so each moves up 24 units (arrows unchanged). Called
   out in the PR body.
 - **Other engines.** The E2E check runs in Chromium only. WebKit and Gecko support data-URI WOFF2
-  fonts inside SVG images, but the `[PREVIEW-CHECK]` includes opening a diagram in Safari to
-  confirm.
+  fonts inside SVG images, but the `[PREVIEW-CHECK]` (T032) includes opening a diagram in
+  Safari and Firefox to confirm (SC-001).
 - **Downloadable fonts turned off** (iOS Lockdown Mode, some privacy settings): labels fall back
   to the generic `sans-serif`, by design (research R4).
 - **fontace output shape**: the tests rely on `unicodeRangeArray` and `weight`, as
