@@ -176,12 +176,12 @@ compressed transfer.
 
 | File | Before bytes | Before gzip | After bytes | After gzip |
 |---|---|---|---|---|
-| `images/cadence/architecture.svg` | 2,170 | 776 | | |
-| `images/drcdev-github-io/architecture.svg` | 1,774 | 672 | | |
-| `images/flux/architecture.svg` | 1,821 | 696 | | |
-| `images/focus-pocus/architecture.svg` | 1,472 | 585 | | |
-| `images/tempo/architecture.svg` | 2,119 | 740 | | |
-| `images/template/diagram.svg` (never published) | 689 | 334 | | |
+| `images/cadence/architecture.svg` | 2,170 | 776 | 10,384 | 6,836 |
+| `images/drcdev-github-io/architecture.svg` | 1,774 | 672 | 10,456 | 7,191 |
+| `images/flux/architecture.svg` | 1,821 | 696 | 9,924 | 6,711 |
+| `images/focus-pocus/architecture.svg` | 1,472 | 585 | 9,634 | 6,702 |
+| `images/tempo/architecture.svg` | 2,119 | 740 | 10,496 | 7,001 |
+| `images/template/diagram.svg` (never published) | 689 | 334 | 4,265 | 2,916 |
 | `public/og-default.png` | 15,938 | n/a | | n/a |
 
 | Page (budget spec, simulated mobile) | Before total transfer | After total transfer | Limit |

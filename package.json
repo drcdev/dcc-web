@@ -13,6 +13,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "build:fixtures": "node scripts/build-fixture-site.ts",
+    "fonts:diagrams": "node scripts/fonts/embed-diagram-fonts.ts",
     "lint:secrets": "secretlint \"**/*\"",
     "lint": "eslint .",
     "typecheck": "astro check && tsc -p worker && wrangler types worker/worker-configuration.d.ts --check",
