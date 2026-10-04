@@ -153,7 +153,7 @@ already live, in the specs that run on the real site (port 4321) and the unit te
   block comments (lines 110-125): every subject is still an element shot, to keep the shell out.
 - Test: existing visual project, 66 images per platform, must pass with no update
   (Acceptance 4). Layer: visual, unchanged.
-- [ ] done
+- [x] done
 
 ### W7 Comments that count posts
 - `blog-fixture.a11y.spec.ts` header "17 posts" → 16; `budget.spec.ts` line 86-88 "21 posts (the
