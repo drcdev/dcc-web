@@ -1,7 +1,8 @@
 ---
 // An optional message and one prominent link styled as a button. The colours
-// are the nearest passing shades (rust-600 with white text, both themes), the
-// same swap the home introduction made for its call to action.
+// are the nearest passing shades: rust-600 with white text in light mode, and
+// the inverted rust-300 fill with dusk-900 text in dark mode. The home
+// introduction's call to action makes the same swap.
 import { checkSection } from "./validate.ts";
 
 export interface Props {
@@ -18,7 +19,7 @@ const { label, href } = Astro.props;
   {html.trim() !== "" && <div class="prose-message mb-4 text-lg text-dusk-700 dark:text-mist-300" set:html={html} />}
   <a
     href={href}
-    class="inline-block min-h-6 rounded-lg bg-rust-600 px-6 py-3 text-lg font-semibold text-white underline underline-offset-4 hover:bg-rust-700"
+    class="inline-block min-h-6 rounded-lg bg-rust-600 px-6 py-3 text-lg font-semibold text-white underline underline-offset-4 hover:bg-rust-700 dark:bg-rust-300 dark:text-dusk-900 dark:hover:bg-rust-200"
   >
     {label}
   </a>
