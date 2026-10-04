@@ -5,7 +5,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { fontProviders } from "astro/config";
 import { resolveSiteOrigin } from "../../../src/lib/site-origin.ts";
+import { INTER_UNICODE_RANGE, SYSTEM_FONT_STACK } from "../../../src/lib/fonts/charset.ts";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -107,6 +109,53 @@ describe("astro.config.mjs site resolution", () => {
     expect(config.markdown?.processor?.name).toBe("satteri");
     const names = (config.markdown?.processor?.options?.mdastPlugins ?? []).map((plugin) => plugin?.name);
     expect(names).toContain("reading-time");
+  });
+});
+
+// Self-hosted Inter through Astro's Fonts API (FR-001, FR-002, FR-005, FR-006).
+describe("fonts", () => {
+  type Variant = { weight: number | string; style: string; src: string[]; display?: string; unicodeRange?: string[] };
+  type Family = {
+    name: string;
+    cssVariable: string;
+    provider: { name: string };
+    fallbacks: string[];
+    optimizedFallbacks: boolean;
+    options: { variants: Variant[] };
+  };
+
+  async function inter(): Promise<Family> {
+    const config = (await importFreshConfig()) as unknown as { fonts?: Family[] };
+    expect(config.fonts).toHaveLength(1);
+    return config.fonts![0]!;
+  }
+
+  it("declares one Inter family from the local provider on --font-inter", async () => {
+    const family = await inter();
+    expect(family.name).toBe("Inter");
+    expect(family.cssVariable).toBe("--font-inter");
+    expect(family.provider.name).toBe(fontProviders.local().name);
+  });
+
+  it("has four variants from src/assets/fonts, with swap and the shared unicode-range", async () => {
+    const { variants } = (await inter()).options;
+    expect(variants.map((v) => [String(v.weight), v.style, v.src])).toEqual([
+      ["400", "normal", ["./src/assets/fonts/Inter-Regular.woff2"]],
+      ["400", "italic", ["./src/assets/fonts/Inter-Italic.woff2"]],
+      ["700", "normal", ["./src/assets/fonts/Inter-Bold.woff2"]],
+      ["700", "italic", ["./src/assets/fonts/Inter-BoldItalic.woff2"]],
+    ]);
+    for (const variant of variants) {
+      expect(variant.display).toBe("swap");
+      expect(variant.unicodeRange).toEqual([...INTER_UNICODE_RANGE]);
+    }
+  });
+
+  it("falls back to today's system stack, generic last, with optimized fallbacks on", async () => {
+    const family = await inter();
+    expect(family.fallbacks).toEqual([...SYSTEM_FONT_STACK]);
+    expect(family.fallbacks.at(-1)).toBe("sans-serif");
+    expect(family.optimizedFallbacks).toBe(true);
   });
 });
 

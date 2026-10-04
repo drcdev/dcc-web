@@ -2,7 +2,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { defineConfig, envField } from "astro/config";
+import { defineConfig, envField, fontProviders } from "astro/config";
 
 import tailwindcss from "@tailwindcss/vite";
 import sitemap from "@astrojs/sitemap";
@@ -10,6 +10,7 @@ import mdx from "@astrojs/mdx";
 import { satteri } from "@astrojs/markdown-satteri";
 
 import { pruneDraftAssets } from "./src/lib/prune-unreferenced-assets.ts";
+import { INTER_UNICODE_RANGE, SYSTEM_FONT_STACK } from "./src/lib/fonts/charset.ts";
 import { resolveSiteOrigin } from "./src/lib/site-origin.ts";
 import { readingTimePlugin } from "./src/lib/markdown/reading-time.ts";
 import { projectPartsPlugin } from "./src/lib/markdown/project-parts.ts";
@@ -34,6 +35,10 @@ const themeInitSource = readFileSync(new URL("./src/scripts/theme-init.js", impo
 /** @type {`sha256-${string}`} */
 const themeInitHash = `sha256-${createHash("sha256").update(themeInitSource).digest("base64")}`;
 
+// What the four Inter faces share: swap while loading, and the subset's unicode-range.
+/** @type {{ display: "swap"; unicodeRange: [string, ...string[]] }} */
+const interFace = { display: "swap", unicodeRange: [INTER_UNICODE_RANGE[0], ...INTER_UNICODE_RANGE.slice(1)] };
+
 // https://astro.build/config
 export default defineConfig({
   site,
@@ -57,6 +62,28 @@ export default defineConfig({
     processor: satteri({ mdastPlugins: [readingTimePlugin, projectPartsPlugin] }),
     shikiConfig: { theme: shikiTheme, transformers: [shikiClassTransformer] },
   },
+
+  // Self-hosted Inter through Astro's Fonts API: four committed subset files, hashed into
+  // /_astro/fonts/ at build, preloaded by <Font /> in BaseLayout. The system stack is the fallback
+  // and Astro adjusts the last generic entry's metrics so the swap does not shift the layout
+  // (docs.astro.build/en/guides/fonts/; specs/018-self-hosted-fonts/research.md R1, R6).
+  fonts: [
+    {
+      provider: fontProviders.local(),
+      name: "Inter",
+      cssVariable: "--font-inter",
+      fallbacks: [...SYSTEM_FONT_STACK],
+      optimizedFallbacks: true,
+      options: {
+        variants: [
+          { weight: 400, style: "normal", src: ["./src/assets/fonts/Inter-Regular.woff2"], ...interFace },
+          { weight: 400, style: "italic", src: ["./src/assets/fonts/Inter-Italic.woff2"], ...interFace },
+          { weight: 700, style: "normal", src: ["./src/assets/fonts/Inter-Bold.woff2"], ...interFace },
+          { weight: 700, style: "italic", src: ["./src/assets/fonts/Inter-BoldItalic.woff2"], ...interFace },
+        ],
+      },
+    },
+  ],
 
   // Page content security policy, rendered by Astro as a <meta> tag with hashes
   // of every script and style it emits (docs.astro.build/en/reference/configuration-reference/#securitycsp;

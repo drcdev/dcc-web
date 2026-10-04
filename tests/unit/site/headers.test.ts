@@ -28,11 +28,23 @@ function rules(): Map<string, Map<string, string>> {
 const starRule = () => rules().get("/*") ?? new Map<string, string>();
 
 const WORKERS_DEV_RULE = "https://:worker.:subdomain.workers.dev/*";
-const REVIEW_HOST_RULE = "https://new.doncoleman.ca/*";
+const FONTS_RULE = "/_astro/fonts/*";
+const REVIEW_HOST_RULE ="https://new.doncoleman.ca/*";
 
 describe("public/_headers", () => {
-  it("has exactly three rules: every path, workers.dev previews and the review host", () => {
-    expect([...rules().keys()]).toEqual(["/*", WORKERS_DEV_RULE, REVIEW_HOST_RULE]);
+  it("has exactly four rules, in order: every path, the font files, workers.dev previews and the review host", () => {
+    expect([...rules().keys()]).toEqual(["/*", FONTS_RULE, WORKERS_DEV_RULE, REVIEW_HOST_RULE]);
+  });
+
+  // F12, FR-015: only the content-hashed font files are cached for a year; nothing else sets Cache-Control.
+  it("sets only the immutable year-long Cache-Control on /_astro/fonts/*", () => {
+    expect([...rules().get(FONTS_RULE)!.entries()]).toEqual([["cache-control", "public, max-age=31536000, immutable"]]);
+  });
+
+  it("sets Cache-Control on no other rule", () => {
+    for (const [path, rule] of rules()) {
+      if (path !== FONTS_RULE) expect(rule.has("cache-control"), path).toBe(false);
+    }
   });
 
   it("does not set X-Robots-Tag on /* (the live domain is indexable, FR-010d)", () => {
