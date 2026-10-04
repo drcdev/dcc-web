@@ -23,14 +23,10 @@
 // focus probes also prove that the ring is the site's rule and not `currentColor`: no outline
 // before focus, the site's ring shape after it, and a ring colour that ignores the text colour.
 //
-// Two notes on the probe tables:
+// A note on the probe tables:
 // - The site has no callout component (post row P19 uses `Callout` only as an example of an
 //   unknown section tag), so the prose blockquote, the one set-apart block of text a post
 //   renders, stands in for "callouts".
-// - The call-to-action button is `bg-rust-600 text-white` in both themes: it has no `dark:`
-//   variant today. Its light and dark tokens are therefore equal here, so the test pins it as
-//   theme-invariant and an accidental flip fails. Giving it a dark variant would be a design
-//   change, which is outside this test.
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { FIXTURE_SITE } from "./templates";
 import { expectThemeClass, setTheme, type Theme } from "./color-theme.ts";
@@ -93,13 +89,12 @@ const PAGES: Page_[] = [
         first: true,
         props: { color: ["mauve-600", "mauve-400"] },
       },
-      // Theme-invariant by design today (see the head comment).
       {
         name: "CTA button",
         selector: "main a",
         hasText: "Get in touch",
         first: true,
-        props: { "background-color": ["rust-600", "rust-600"], color: ["white", "white"] },
+        props: { "background-color": ["rust-600", "rust-300"], color: ["white", "dusk-900"] },
       },
       {
         name: "CTA button focus ring",
@@ -108,6 +103,20 @@ const PAGES: Page_[] = [
         first: true,
         focus: true,
         props: { "outline-color": ["accent-500", "accent-400"] },
+      },
+    ],
+  },
+  {
+    path: "/",
+    ready: async (page) => {
+      await expect(page.locator("[data-theme-switch]")).toBeVisible();
+    },
+    probes: [
+      {
+        name: "home intro CTA button",
+        selector: 'main section a[href="/services/"]',
+        first: true,
+        props: { "background-color": ["rust-600", "rust-300"], color: ["white", "dusk-900"] },
       },
     ],
   },
