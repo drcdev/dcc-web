@@ -21,6 +21,7 @@
 // The footer year is frozen to 2026 before every shot (freezeFooterYear), so a
 // new calendar year cannot fail the shell, not-found or sections shots (issue #45).
 import { test, expect, type Locator, type Page } from "@playwright/test";
+import { expectThemeClass, setTheme, type Theme } from "./color-theme.ts";
 import { freezeFooterYear } from "./footer-year";
 
 const WIDTHS = [
@@ -30,18 +31,12 @@ const WIDTHS = [
 
 const THEMES = ["dark", "light"] as const;
 
-async function open(page: Page, path: string, width: number, height: number, theme: "dark" | "light") {
+async function open(page: Page, path: string, width: number, height: number, theme: Theme) {
   await page.setViewportSize({ width, height });
-  await page.addInitScript((value) => {
-    try {
-      localStorage.setItem("color-theme", value);
-    } catch {
-      // Storage unavailable: the page falls back to dark.
-    }
-  }, theme);
+  await setTheme(page, theme);
   await page.goto(path);
   await freezeFooterYear(page);
-  await expect(page.locator("html")).toHaveClass(theme === "dark" ? /\bdark\b/ : /^(?!.*\bdark\b)/);
+  await expectThemeClass(page, theme);
   await settleImages(page);
 }
 
