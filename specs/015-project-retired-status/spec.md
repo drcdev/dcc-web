@@ -19,6 +19,9 @@ This feature implements GitHub issue #50.
 - Q: Which colour should the "Retired" status pill use? → A: A new muted tone (for example a mauve or grey border and background, AA contrast in both light and dark themes) used only for Retired. This is a design-system change and so a major change under Principle III.
 - Q: In the production build, what should a retired project's note do when its replacement is a draft project with no page there? → A: Name the replacement by its title without a link in production; link it in builds that include drafts.
 - Q: Should the retired note's wording be one fixed sentence or per-project text? → A: One fixed template sentence plus the replacement clause when there is one; no per-project note text.
+- Q: How should the "Retired" pill look different from the theme pills beside it? → A: Filled mauve: mauve-50 background, mauve-800 border, mauve-950 text; in dark mode a filled mauve-800/900 background with mauve-100 text. Theme pills stay white-filled. AA contrast in both themes.
+- Q: What exact wording should the fixed retired note use? → A: "**Retired.** I no longer use or maintain this project." plus " It was replaced by <name>." when there is a replacement.
+- Q: Should a retired project record when it was retired and show that date? → A: No. No retired date is recorded or shown.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -128,14 +131,17 @@ on stories 1 and 2.
 - **FR-003**: A retired project's story page MUST be built and shown in full, with nothing
   removed because of the status.
 - **FR-004**: Wherever a project's status is shown (index row and story header), a retired
-  project MUST show the label "Retired" in the shared status pill using a new muted tone (for
-  example a mauve or grey border and background) that is used only for Retired, is distinct
-  from the existing neutral, sage, lavender and rust tones, and meets AA contrast in both
-  light and dark themes. Adding this tone is a design-system change (see Assumptions).
+  project MUST show the label "Retired" in the shared status pill using a new filled mauve
+  tone used only for Retired: a mauve-50 background, mauve-800 border and mauve-950 text in
+  the light theme, and a filled mauve-800/900 background with mauve-100 text in the dark
+  theme. The fill sets it apart from the white-filled neutral theme pills beside it and from
+  the sage, lavender and rust tones, and it MUST meet AA contrast in both themes. Adding this
+  tone is a design-system change (see Assumptions).
 - **FR-005**: A retired project's story page MUST show a short plain-language note near the
   top of the story saying the project is retired and no longer used or maintained. The note
-  is one fixed sentence from the template, followed by a replacement clause when a
-  replacement is named; projects cannot supply their own note text.
+  is exactly "**Retired.** I no longer use or maintain this project." followed by
+  " It was replaced by <name>." when a replacement is named (the name linked as FR-007
+  says); projects cannot supply their own note text.
 - **FR-006**: A retired project MAY name the project that replaced it. The replacement MUST be
   exactly one of: a reference to another project on the site (checked at build time), or a
   name with an optional https address for a replacement off the site.
@@ -158,7 +164,8 @@ on stories 1 and 2.
 ### Key Entities
 
 - **Project**: an existing content entry with a title, problem, themes, status, date and
-  story. Gains the status value "retired".
+  story. Gains the status value "retired". No retired date is recorded; a retired project's
+  date stays the project's own date.
 - **Replacement**: an optional part of a retired project naming what replaced it: either a
   reference to another project on the site, or a name with an optional off-site https
   address.
@@ -185,11 +192,11 @@ on stories 1 and 2.
   (confirmed in clarify). Once a Cadence project exists, Tempo's replacement is switched to
   point to it (follow-up).
 - The retired note sits with the story header (status, problem, themes) so it is seen before
-  the story; its wording is one fixed sentence in the site's voice plus the replacement
-  clause when there is one, for example "Retired.
-  I no longer use or maintain this project. It was replaced by Cadence."
-- **This is a major change.** The "Retired" status gets a new muted pill tone used only for
-  Retired. A new tone changes the design system, so under Constitution Principle III the PR
+  the story; its wording is fixed (FR-005), for Tempo: "**Retired.** I no longer use or
+  maintain this project. It was replaced by Cadence."
+- No retired date is recorded or shown (confirmed in clarify).
+- **This is a major change.** The "Retired" status gets a new filled mauve pill tone used
+  only for Retired. A new tone changes the design system, so under Constitution Principle III the PR
   needs Don's explicit approval after he has looked at the preview deployment, and
   auto-merge stays off.
 - Visual baselines need refreshing only if the shell, not-found or fixture-site snapshots

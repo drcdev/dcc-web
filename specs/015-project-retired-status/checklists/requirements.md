@@ -31,8 +31,8 @@
 
 ## Notes
 
-- No [NEEDS CLARIFICATION] markers were used; the one real open question (Cadence has no
-  project page or known public address, so Tempo names Cadence without a link) is recorded in
-  Assumptions with a default, for `/speckit-clarify` to confirm with Don.
-- The "Retired" pill reuses an existing palette tone so the change stays outside Principle
-  III's design-system clause; the plan must confirm this.
+- No [NEEDS CLARIFICATION] markers were used. Clarify confirmed that Tempo names Cadence in
+  plain text without a link until a Cadence project story exists.
+- The "Retired" pill uses a new filled mauve tone used only for Retired. That is a
+  design-system change, so this feature is a major change under Constitution Principle III
+  (Don approves after checking the preview; auto-merge stays off).
