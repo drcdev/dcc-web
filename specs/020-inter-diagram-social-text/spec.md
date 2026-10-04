@@ -38,6 +38,31 @@ diagrams and the sharing image), so it is treated as a **major change**: Don app
 request after checking the preview deployment. Whether it also adds a dependency or tool is a
 plan decision; if it does, that is a further Principle III trigger covered by the same review.
 
+## Clarifications
+
+### Session 2026-10-04
+
+- Q: How should the Inter lettering get into the architecture diagrams? → A: Each diagram carries
+  its own glyph subset: an inline data-URI `@font-face` with Inter Regular and Inter Bold cut down
+  to only the characters that diagram uses, and the labels stay real text.
+- Q: What should the editing path for a diagram label be, and when should the font step run? →
+  A: Edit the label in the published SVG itself, then run one script (fonttools through `uvx`,
+  like `scripts/fonts/subset-inter.ts`) that rewrites that file's embedded font block. Nothing
+  runs at build time. The gate fails, naming the file and the character, if a label uses a glyph
+  the embedded font does not contain.
+- Q: How should the labels that do not fit their boxes in Inter be fixed (Cadence "sync and AI
+  routines, when online", "via a Shortcuts handoff, optional", "local store and write queue";
+  Tempo "or Health Connect, optional"; Flux "Supabase Edge Functions")? → A: Wrap each
+  overflowing detail label onto two lines at the same size and weight, growing that box's height
+  and moving arrows only where needed. Every label keeps at least 16 units of clear space on each
+  side.
+- Q: Should each diagram have its own file-size ceiling, beyond the page budget? → A: Yes. Each
+  published diagram and the template's starter diagram is at most 16 KB, enforced by a unit test.
+- Q: How should the gate confirm the sharing image's lettering is Inter Bold? → A: A unit test
+  checks that `scripts/og-image/render.ts` loads `src/assets/fonts/Inter-Bold.woff2` through an
+  inline `@font-face` and names no system font. The committed `public/og-default.png` is
+  re-rendered once by hand, and Don confirms it on the preview (a `[PREVIEW-CHECK]` item).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Diagram labels match the page (Priority: P1)
@@ -127,8 +152,13 @@ system font and confirm the gate fails with a message naming that diagram.
   phones. Labels in Inter must stay at least as legible as today at the smallest width the page
   shows them.
 - **Wider or narrower glyphs**: Inter's letters are not the same width as each system font's.
-  Every label must still fit inside its box with clear space on each side; if one does not, the
-  diagram's layout is adjusted rather than the label clipped or overlapping a border.
+  Every label must fit inside its box with at least 16 units (in the diagram's own coordinates)
+  of clear space on each side. Measured from Inter's metrics, five detail labels do not fit their
+  300-unit boxes: Cadence "sync and AI routines, when online", "via a Shortcuts handoff,
+  optional" and "local store and write queue", Tempo "or Health Connect, optional", and Flux
+  "Supabase Edge Functions". Each of these wraps onto two lines at the same size and weight,
+  and that box grows taller (with its arrows moved) only where the extra line needs room. Labels
+  are never shrunk, reworded, clipped or allowed to overlap a border.
 - **Dark mode**: the diagrams keep their own light background in both site themes, as today.
   The lettering change does not alter diagram colours or contrast.
 - **Images with no text**: project photos and screenshots (raster pictures such as Focus Pocus's
@@ -155,23 +185,34 @@ system font and confirm the gate fails with a message naming that diagram.
   device, including when the diagram image is opened on its own, outside the page.
 - **FR-003**: Each diagram MUST keep its current wording, layout, colours, arrows, image
   dimensions, accessible name (the alt text and the diagram's own label) and visible
-  description. Only the lettering changes, except where a label no longer fits its box (Edge
-  Cases), in which case the smallest layout adjustment that restores clear space is allowed and
-  is listed in the plan.
+  description. Only the lettering changes, except where a label no longer fits its box with
+  16 units of clear space on each side (Edge Cases). Such a label wraps onto two lines at the
+  same size and weight, its box grows taller and its arrows move only as far as needed, and the
+  plan lists every such adjustment.
+- **FR-003a**: Each diagram MUST carry its Inter lettering inside the file as an inline data-URI
+  `@font-face` holding Inter Regular and Inter Bold subset to only the characters that diagram's
+  labels use. The labels MUST remain real text, not outlines.
 - **FR-004**: The project template's starter diagram MUST follow FR-001 and FR-002, so a new
   project story's diagram starts in Inter.
 - **FR-005**: The site's default sharing image MUST show "Don Coleman" in Inter Bold, keeping its
   current size (1200 by 630), colours, layout, rule and wording. Every page MUST keep naming the
   same sharing image address and alt text.
 - **FR-006**: Producing the sharing image again from its source MUST give Inter lettering on any
-  machine, without relying on fonts installed on that machine.
+  machine, without relying on fonts installed on that machine: `scripts/og-image/render.ts` loads
+  `src/assets/fonts/Inter-Bold.woff2` through an inline `@font-face` and names no system font. A
+  unit test checks this. The committed `public/og-default.png` is re-rendered once by hand, and
+  Don confirms it on the preview deployment.
 - **FR-007**: Changing a diagram's wording MUST remain a plain file edit in the repository
-  (Constitution Principle VI), through one documented path that yields Inter lettering. The plan
-  says where that path is documented.
+  (Constitution Principle VI): the label is edited in the published SVG itself, then one script
+  (fonttools through `uvx`, as `scripts/fonts/subset-inter.ts` uses) rewrites that file's
+  embedded font block. Nothing runs at build time. The plan says where that path is documented.
 - **FR-008**: The release gate MUST fail, naming the file, when a diagram on a published project
   story or the template's starter diagram would draw any text in a font other than Inter.
 - **FR-009**: The release gate MUST fail, naming the diagram and the character, when a diagram
-  label uses a character that the Inter glyphs available to it do not contain.
+  label uses a character that the Inter glyphs embedded in that diagram do not contain (for
+  example, after a label edit without re-running the font script).
+- **FR-009a**: Each published diagram and the template's starter diagram MUST be at most 16 KB,
+  enforced by a unit test.
 - **FR-010**: The per-page performance budget MUST NOT be raised. Every page template, including
   the project story template, MUST stay within today's limits (150 KB total transfer, and the
   unchanged LCP, CLS, long-task and JavaScript limits) under the existing measurement
@@ -204,12 +245,14 @@ system font and confirm the gate fails with a message naming that diagram.
 - **SC-001**: All five published architecture diagrams and the template's starter diagram draw
   100% of their labels in Inter, and each diagram renders with the same glyphs in the macOS,
   Linux CI and Linux Docker browsers the project tests in.
-- **SC-002**: The sharing image's lettering is Inter Bold, confirmed by comparing it with the same
-  text set in the site's own Inter Bold face.
+- **SC-002**: The sharing image's lettering is Inter Bold: a unit test confirms the render script
+  embeds the site's own Inter Bold face and names no system font, and Don confirms the committed
+  image on the preview deployment (a `[PREVIEW-CHECK]` item).
 - **SC-003**: Every page template, including the project story template, stays within the
   150 KB total-transfer budget and the other budget limits, with no limit raised.
-- **SC-004**: An automated check fails when a diagram asks for a non-Inter font or uses a
-  character outside the available Inter glyphs, and passes on all current diagrams.
+- **SC-004**: An automated check fails when a diagram asks for a non-Inter font, uses a
+  character outside its embedded Inter glyphs, or exceeds 16 KB, and passes on all current
+  diagrams.
 - **SC-005**: No visual baseline changes, and the accessibility checks on the project story
   template still pass with no new violations.
 - **SC-006**: Don confirms on the preview deployment that the diagrams and the sharing image look
@@ -227,9 +270,9 @@ system font and confirm the gate fails with a message naming that diagram.
 - The site has a single default sharing image; pages do not have their own sharing images, and
   adding per-page images is not part of this feature.
 - Diagrams are shown as images, not inlined into the page, and that stays as it is.
-- How the Inter lettering gets into each image (carrying the font inside the image, turning
-  letters into shapes, or another means) is a planning decision, judged on size, legibility,
-  editability (FR-007) and the Inter licence.
+- The Inter lettering is carried inside each diagram as a per-diagram glyph subset (FR-003a),
+  made from the same Inter 4.1 files as feature 018. Measured: a subset covering every current
+  diagram label is about 4 KB per weight, so each diagram stays well under the 16 KB ceiling.
 
 ## Follow-up work (out of scope)
 
