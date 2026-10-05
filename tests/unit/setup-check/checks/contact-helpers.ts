@@ -1,4 +1,4 @@
-// Fixtures shared by the contact-form check tests (items 19 to 25). Not a test file.
+// Fixtures shared by the contact-form check tests (items 18 to 24). Not a test file.
 import { vi } from "vitest";
 import type { CloudflareBuildTrigger, ProviderContext } from "../../../../scripts/setup-check/types.ts";
 import { envFrom, fakeProviderContext, type FakeProviderOverrides } from "./test-helpers.ts";

@@ -1,9 +1,9 @@
-// checks/launch-main-checks.ts (setup item 27, contracts/setup-items.md; FR-003, FR-004): the
+// checks/launch-main-checks.ts (setup item 26, contracts/setup-items.md; FR-003, FR-004): the
 // newest `verify` check run on main succeeded.
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, couldNotCheck, fromProviderError, missing, pending } from "./shared.ts";
 
-const ITEM = { id: "launch-main-checks", order: 27 };
+const ITEM = { id: "launch-main-checks", order: 26 };
 const READ_FAILED = "Could not read the verify check on main.";
 const READ_NEXT = "Run gh auth status to confirm the sign-in, then try again.";
 

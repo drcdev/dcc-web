@@ -176,48 +176,55 @@ the Astro Cloudflare deploy guide. Package versions were read from the npm regis
 - **CI**: the live check is **not** run in CI (it needs Don's credentials; scheduled drift
   detection is listed as follow-up in the spec). Its logic is fully covered by unit tests in CI.
 
-## R9. GitHub branch protection, CI check names, and how a PR is marked "major"
+## R9. GitHub branch protection, CI check names, and review on every PR
 
-- **Decision — protection**: a **repository ruleset** named `main-protection`, stored as
-  `setup/github-ruleset.json` and imported by Don (`gh api -X POST repos/drcdev/dcc-web/rulesets --input setup/github-ruleset.json`).
-  Rules on `refs/heads/main`: `deletion`, `non_fast_forward`, `pull_request`
-  (`required_approving_review_count: 0`, `require_code_owner_review: true`,
+- **Decision, protection**: a **repository ruleset** named `main-protection`, stored as
+  `setup/github-ruleset.json`. Rules on `refs/heads/main`: `deletion`, `non_fast_forward`,
+  `pull_request` (`required_approving_review_count: 1`, `require_code_owner_review: true`,
   `dismiss_stale_reviews_on_push: true`, `required_review_thread_resolution: false`),
-  `required_status_checks` (`strict_required_status_checks_policy: true`, contexts **`verify`**
-  and **`major-change-approval`**), and **no bypass actors**. The check compares the live ruleset
-  with this file and names each missing or weaker rule (spec edge case).
-- **Decision — marking a change major (two layers, native first)**:
-  1. **CODEOWNERS paths (native)**: `.github/CODEOWNERS` assigns `@drcdev` to the paths that are
-     major by definition: `/.github/`, `/package.json`, `/pnpm-lock.yaml`, `/.nvmrc`,
-     `/wrangler.jsonc`, `/astro.config.mjs`, `/public/_headers`, `/scripts/ci/`, `/setup/`,
-     `/.specify/memory/constitution.md`, and the CODEOWNERS file itself. With
-     `require_code_owner_review`, GitHub itself blocks the merge until Don approves.
-  2. **`major-change` label (for everything CODEOWNERS paths cannot see: design, layout,
-     navigation, cost, contact data)**: a separate workflow `.github/workflows/major-change.yml`
-     with one job, **`major-change-approval`**, which is a required check. It passes when the PR
-     has no `major-change` label; when it has the label, it passes only if `@drcdev`'s latest
-     review is `APPROVED` on the current head commit, and it fails with a plain explanation if
-     the PR author is `drcdev` ("Don's approval will not count on his own PR; reopen from
-     drc-agents"). It runs on `pull_request` (opened, synchronize, reopened, labeled, unlabeled,
-     ready_for_review) and `pull_request_review` (submitted, edited, dismissed), with
-     `permissions: pull-requests: read`. The decision logic is a pure function in
-     `scripts/ci/major-change-gate.ts` with unit tests; the workflow feeds it `gh api` output.
-  The `/deliver` skill already applies the `major-change` label when Don chooses "Major".
-- **Rationale**: GitHub has no native "require review when label X is present", and CODEOWNERS
-  cannot express non-path criteria. Using CODEOWNERS for path-defined majors keeps the common
-  case entirely first-party; the small label job covers the rest. The gate script is itself under
-  CODEOWNERS, so a PR cannot weaken it without Don's approval.
-- **Alternatives**: label only (misses unlabeled infra changes); CODEOWNERS `*` (forces Don to
-  review every PR, contradicting Principle III's auto-merge for non-major work); a third-party
-  "required labels/approvals" Action (third-party, rejected).
+  `required_status_checks` (`strict_required_status_checks_policy: true`, context **`verify`**,
+  pinned to GitHub Actions with `integration_id` 15368), and **no bypass actors**.
+  `require_last_push_approval` stays off, because stale-review dismissal already forces a fresh
+  approval after every push (#86, 2026-10-04). The live ruleset is updated in the dashboard, or
+  by a `PUT` built from the live ruleset, until #86 adds the live-only parameters to the file;
+  a `PUT` of the file as it stands would drop them. The `github-main-protection` check names
+  each missing or weaker rule (spec edge case).
+- **Decision, review (#85, 2026-10-04)**: one approving review on every PR. `.github/CODEOWNERS`
+  is the single line `* @drcdev`, so with `require_code_owner_review` the approval that counts is
+  always Don's, even on a PR opened as `drcdev` by mistake. The `major-change` label, the
+  `major-change-approval` workflow and gate script, the `github-major-label` setup item and the
+  pre-PR major-change / merge-mode pause in the pipelines are retired. "Major change" is now a
+  classification in the plan and the PR body (constitution 2.3.0, Principle III), not a gate.
+- **Decision, deploy only after CI (#86, revised 2026-10-04)**: strict required status checks
+  are the accepted mitigation. With `verify` required, `strict_required_status_checks_policy: true`
+  and merge commits only, the tree that lands on `main` is the tree `verify` already passed, so
+  Principle II's "only after CI passes" is met before the merge. Workers Builds keeps deploying
+  on push to `main`: no Deploy Hook, no trigger change and no Cloudflare credential in GitHub.
+  Residual risks:
+  - ruleset drift (strict or stale-review dismissal turned off silently): a scheduled read-only
+    drift check, deferred to #86;
+  - a PR weakening `ci.yml` so `verify` passes trivially: the required approval on every PR;
+  - a flaky or time-dependent test passing on the PR and failing on `main`: accepted, because
+    rollback is one command.
+- **Deferred to #86**: the scheduled ruleset drift check, `persist-credentials: false` on
+  checkouts, and the repository Actions settings (SHA pinning, allowed actions, fork-PR
+  approval).
+- **Rationale**: native required approval and CODEOWNERS need no custom code, where the earlier
+  CODEOWNERS-paths plus label gate needed a workflow and a script (Principle IV).
+- **Alternatives**: keep the label gate (rejected: custom code for a native feature);
+  CODEOWNERS paths only (rejected: misses majors that are not path-defined); drop CODEOWNERS
+  (rejected by Don: the catch-all makes every approval his).
 - **Machine account**: `drc-agents` (name confirmed by Don during the walkthrough and stored in
   `setup/config.json` as a non-secret) is a repository collaborator with **write** permission.
   Its credential lives only in the agent's `gh` keyring (`gh auth login` as drc-agents, switched
   with `gh auth switch`). The check confirms access via
-  `GET /repos/drcdev/dcc-web/collaborators/drc-agents/permission`. The repository must also allow
-  auto-merge (`allow_auto_merge: true`) because `/deliver` enables it for non-major PRs.
-- **Bootstrap exception**: this slice's own PR is opened before `drc-agents` and the ruleset exist,
-  so Don merges it by hand after viewing the preview; every later PR follows the rules above.
+  `GET /repos/drcdev/dcc-web/collaborators/drc-agents/permission`. GitHub does not count an
+  author's approval on their own PR, so agents open PRs from this account. #87 (stop the agent
+  switching back to `drcdev`) is won't-fix: agent sessions keep both `gh` accounts. The
+  repository allows auto-merge (`allow_auto_merge: true`), and the pipelines arm it on every PR;
+  the merge still waits for Don's approval and a green `verify`.
+- **Bootstrap exception (historical)**: this slice's own PR was opened before `drc-agents` and
+  the ruleset existed, so Don merged it by hand after viewing the preview.
 
 ## R10. CI workflow
 

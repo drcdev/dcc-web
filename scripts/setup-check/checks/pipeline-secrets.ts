@@ -1,4 +1,4 @@
-// checks/pipeline-secrets.ts (setup item 15, data-model.md
+// checks/pipeline-secrets.ts (setup item 14, data-model.md
 // "pipeline-secrets"): GitHub Actions secret and variable names equal the
 // manifest's store: "github-actions" entries (currently none) — no extras,
 // none missing (FR-021; spec Edge Cases "Secret names drift").
@@ -6,7 +6,7 @@ import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { secretManifest } from "../secrets.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "pipeline-secrets", order: 15 };
+const ITEM = { id: "pipeline-secrets", order: 14 };
 
 interface ActionsSecretsResponse {
   secrets: Array<{ name: string }>;

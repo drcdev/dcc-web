@@ -122,7 +122,7 @@ describe("docs/launch.md Part A readiness", () => {
     expect(s).toContain("Part B");
   });
 
-  it("L1 expects item 16 to report waiting", () => {
+  it("L1 expects item 15 to report waiting", () => {
     expect(step("L1")).toMatch(/waiting/);
     expect(step("L1")).toContain("pnpm setup:check");
   });
@@ -188,7 +188,7 @@ describe("docs/launch.md Parts B to D", () => {
     expect(s).toContain("Problem:");
   });
 
-  it("L14 checks items 28 to 32, the mail test, and lists the four rollback triggers", () => {
+  it("L14 checks items 27 to 31, the mail test, and lists the four rollback triggers", () => {
     const s = step("L14");
     for (const id of ["live-apex", "live-www-redirect", "live-sitemap", "live-contact-endpoint", "mail-records"]) {
       expect(s).toContain(id);
@@ -409,7 +409,7 @@ describe("docs/launch.md safety", () => {
     for (const id of named) expect(ids.has(id), `${id} is not a registry id`).toBe(true);
   });
 
-  it("docs/setup.md intro links to docs/launch.md and its Launch part precedes section 26", () => {
+  it("docs/setup.md intro links to docs/launch.md and its Launch part precedes section 25", () => {
     const setup = read("docs/setup.md");
     expect(setup.slice(0, setup.indexOf("## 1."))).toContain("docs/launch.md");
     expect(setup.indexOf("# Launch")).toBeLessThan(setup.indexOf("{#launch-content-ready}"));

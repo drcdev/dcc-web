@@ -33,15 +33,15 @@ Commands are run from the repository root on `main`. The setup check (`pnpm setu
 ### L1. Pull main and run the full setup check {#l1}
 
 **What to do**
-Update `main` and run the whole setup check. Items 1 to 25 must be complete, except item 16
-(review address removed), which reports `waiting` until the switch. Items 26 to 32 may report
+Update `main` and run the whole setup check. Items 1 to 24 must be complete, except item 15
+(review address removed), which reports `waiting` until the switch. Items 25 to 31 may report
 `waiting` or `missing` for now.
 
 **Where**
 A terminal in the repository: `git switch main && git pull`, then `pnpm setup:check`.
 
 **How to confirm**
-The report lists items 1 to 25 as complete, with item 16 as `waiting`.
+The report lists items 1 to 24 as complete, with item 15 as `waiting`.
 
 **If it does not confirm**
 Fix the first item that is not complete using its section in `docs/setup.md`, then run the check
@@ -122,7 +122,7 @@ reports complete (the widget allows the bare domain).
 
 **If it does not confirm**
 If the form refuses the message, open the spam-protection widget in the Cloudflare dashboard and
-check that `doncoleman.ca` is in its hostname list (item 20 in `docs/setup.md`), then try again.
+check that `doncoleman.ca` is in its hostname list (item 19 in `docs/setup.md`), then try again.
 If the message never arrives, stop and fix the contact form first.
 
 ### L6. Main branch checks are passing {#l6}
@@ -149,7 +149,7 @@ continue to Part B.
 
 | Readiness row | Step | Result |
 |---|---|---|
-| Items 1 to 25 complete (16 `waiting`) | L1 | |
+| Items 1 to 24 complete (15 `waiting`) | L1 | |
 | Pages published, privacy policy correct | L2 | |
 | Every Ghost post is on the new site | L3 | |
 | No broken internal links, bare domain as main address | L4 | |
@@ -288,7 +288,7 @@ switch.
 A terminal in the repository: `pnpm setup:check`.
 
 **How to confirm**
-Items 28 and 29 report complete.
+Items 27 and 28 report complete.
 
 **If it does not confirm**
 A `Problem:` that cannot be fixed in the sitting means go to Part E. A check still pending 24 hours
@@ -299,7 +299,7 @@ after the switch date is also a problem: go to Part E.
 ### L14. Run the post-launch checks {#l14}
 
 **What to do**
-Run the post-launch checks (items 28 to 32). Then send a test message starting "Launch test" from
+Run the post-launch checks (items 27 to 31). Then send a test message starting "Launch test" from
 `https://doncoleman.ca/contact/`, confirm it arrived and delete it. Send an email to and from the domain address again
 and confirm both arrive.
 
