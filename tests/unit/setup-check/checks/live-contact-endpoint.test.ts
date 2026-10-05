@@ -8,11 +8,11 @@ import { expectPendingSuffix, liveContext, tlsError } from "./live-helpers.ts";
 
 const good = loadFixture<HttpResponseSummary>("http", "live-contact-method-not-allowed");
 
-describe("checks/live-contact-endpoint (item 31)", () => {
+describe("checks/live-contact-endpoint (item 30)", () => {
   it("is waiting before the switch", async () => {
     const result = await check(liveContext({ phase: "before-switch" }));
     expect(result.status).toBe("waiting");
-    expect(result.step).toBe(`Step 31 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 30 of ${setupItems.length}`);
   });
 
   it("is complete for 405, Allow: POST and the JSON body, with exactly one GET and no POST", async () => {

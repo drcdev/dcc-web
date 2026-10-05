@@ -1,4 +1,4 @@
-// Shared fixtures for the post-launch check tests (items 28 to 32). Not a test file itself.
+// Shared fixtures for the post-launch check tests (items 27 to 31). Not a test file itself.
 import { expect } from "vitest";
 import { ProviderAccessError } from "../../../../scripts/setup-check/types.ts";
 import type {

@@ -4,16 +4,16 @@ This is the plain-language record of every account-side setup item this reposito
 what each item is for, where Don does it, how it is confirmed, which constitution principle it
 serves, and the names (never values) of any secrets involved. It is the no-agent fallback for
 the `/setup-walkthrough` Claude Code skill, and the two must never disagree — both read the same
-32-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
+31-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
 
-Run `pnpm setup:check` at any time to see which of the 32 items below are complete. Each item's
+Run `pnpm setup:check` at any time to see which of the 31 items below are complete. Each item's
 step number and anchor match the setup item table in `specs/001-setup-walkthrough/spec.md` (the first eighteen items) and
-`specs/007-contact-form/contracts/setup-items.md` (items 19 to 25, the "Contact form" part) and
-`specs/011-launch/contracts/setup-items.md` (items 26 to 32, the "Launch" part at the end).
+`specs/007-contact-form/contracts/setup-items.md` (items 18 to 24, the "Contact form" part) and
+`specs/011-launch/contracts/setup-items.md` (items 25 to 31, the "Launch" part at the end).
 
 The domain switch itself, its rollback and the later retirement of the old services are not
 setup items; they are walked through step by step in `docs/launch.md`, which the `/setup-walkthrough`
-skill hands over to once items 1 to 25 are done.
+skill hands over to once items 1 to 24 are done.
 
 A few terms used below: a **nameserver** is the server that answers "where is doncoleman.ca's
 DNS?" — moving it to Cloudflare is what puts Cloudflare in charge of the domain's DNS records. A
@@ -53,7 +53,7 @@ Create a read-only Cloudflare API token first (Cloudflare dashboard → My Profi
 Create Token), scoped to Don's account and the `doncoleman.ca` zone only, with permissions Zone →
 Zone: Read, Zone → DNS: Read, Account → Workers Scripts: Read, Account → Account Settings: Read
 (the permission Cloudflare's API requires to list Web Analytics sites; there is no "Web
-Analytics" token permission), and, for the contact form (items 19 to 25), Account → D1: Read,
+Analytics" token permission), and, for the contact form (items 18 to 24), Account → D1: Read,
 Account → Workers Builds Configuration: Read and Account → Turnstile Sites: Read. If you made
 the token before the contact form, edit it and add those three. Then copy `.env.example` to `.env` in the repository root and fill in the values in your own
 editor.
@@ -202,7 +202,7 @@ it reports complete when the public A/AAAA/CNAME answers for the apex and `www` 
 target records in the baseline, and after a rollback it confirms Ghost again. Any difference
 reports `missing` with a summary starting "Problem:". The details report the apex and `www`
 separately (`apex: …`, `www: …`), so a half-switched domain is visible. Mail records are checked
-by item 32, not here. If the phase cannot be read it reports `could-not-check`.
+by item 31, not here. If the phase cannot be read it reports `could-not-check`.
 
 **Constitution principle**
 X (Accessible, Fast and Private), via success criterion SC-005 — the live domain must not change
@@ -291,13 +291,13 @@ from `main` on the `dcc-web` Worker, and a preview for every other branch on the
 its own served address (for its canonical link, `og:url` and `robots.txt`), and Cloudflare does
 not hand a non-aliased preview upload a predictable URL, so the preview deploy command uploads an
 aliased preview instead of a plain one. Previews live on their own Worker so they use the preview
-database and the preview secrets, never production's (see step 22).
+database and the preview secrets, never production's (see step 21).
 
 **Where to do it**
-Nothing new beyond step 7 for the `dcc-web` Worker, and the preview Worker is connected in step 22.
+Nothing new beyond step 7 for the `dcc-web` Worker, and the preview Worker is connected in step 21.
 On `dcc-web`, the **build command stays `pnpm run build`, unchanged**. Its production deploy command
-is `pnpm run deploy:production` once this feature has merged (step 25); until then it stays
-`pnpm exec wrangler deploy`. Non-production branch builds are turned **off** on `dcc-web` (step 22)
+is `pnpm run deploy:production` once this feature has merged (step 24); until then it stays
+`pnpm exec wrangler deploy`. Non-production branch builds are turned **off** on `dcc-web` (step 21)
 — they now belong to `dcc-web-preview`, whose Workers Builds connection uses `pnpm run build` and
 `pnpm run deploy:preview` for every branch. No secret or token is involved in the deploy command:
 `pnpm run deploy:preview` runs `scripts/deploy/preview.ts`, which derives a stable alias from the
@@ -369,28 +369,7 @@ III (Human Review for Major Changes).
 **Secrets**
 None.
 
-## 13. GitHub major-change label {#github-major-label}
-
-**What it is for**
-The `major-change` label is the second way (alongside CODEOWNERS paths) of marking a pull request
-as needing Don's review — for changes that are major but touch no CODEOWNERS path, such as design
-or running-cost changes.
-
-**Where to do it**
-Repository → Labels → create a label named `major-change`. Repository Settings → General → turn
-on "Allow auto-merge".
-
-**How it will be confirmed**
-`pnpm setup:check --item github-major-label` reports complete when the `major-change` label
-exists and the repository allows auto-merge.
-
-**Constitution principle**
-III (Human Review for Major Changes).
-
-**Secrets**
-None.
-
-## 14. GitHub main branch protection {#github-main-protection}
+## 13. GitHub main branch protection {#github-main-protection}
 
 **What it is for**
 This is what actually stops an unreviewed or failing change from reaching `main`: required pull
@@ -414,7 +393,7 @@ II (Automated Release Gate) and III (Human Review for Major Changes).
 **Secrets**
 None.
 
-## 15. Pipeline secrets {#pipeline-secrets}
+## 14. Pipeline secrets {#pipeline-secrets}
 
 **What it is for**
 Confirms the pipeline has exactly the secrets and variables this slice documents — none more,
@@ -434,7 +413,7 @@ VII (Private Data) and the minimum-scope-credentials rule (FR-021).
 **Secrets**
 None defined for GitHub Actions in this slice.
 
-## 16. Review address removed {#review-address-removed}
+## 15. Review address removed {#review-address-removed}
 
 **What it is for**
 Once the bare domain is live, the temporary review address `new.doncoleman.ca` goes away so only
@@ -456,7 +435,7 @@ X (Accessible, Fast and Private).
 **Secrets**
 None.
 
-## 17. Preview no-index {#preview-noindex}
+## 16. Preview no-index {#preview-noindex}
 
 **What it is for**
 Preview addresses on `workers.dev` must never be indexed by search engines, so only
@@ -488,7 +467,7 @@ X (Accessible, Fast and Private).
 **Secrets**
 None.
 
-## 18. Web Analytics {#web-analytics}
+## 17. Web Analytics {#web-analytics}
 
 **What it is for**
 Gives Don basic, privacy-focused visitor statistics for the site with no cookies and no personal
@@ -519,7 +498,7 @@ None.
 
 # Contact form
 
-Items 19 to 25 set up the contact form's storage, spam protection, secrets and deployments. They
+Items 18 to 24 set up the contact form's storage, spam protection, secrets and deployments. They
 are done in the order shown. Two rules apply to every step:
 
 - **You never paste a secret into the chat or into a repository file.** Type or pipe secrets straight
@@ -530,13 +509,13 @@ are done in the order shown. Two rules apply to every step:
   Cloudflare, or whose token lacks a permission, says "could not check" with the permission to add;
   it is never shown as complete.
 
-## 19. Site databases {#contact-d1-databases}
+## 18. Site databases {#contact-d1-databases}
 
 **What it is for**
 The site's Worker keeps its data in Cloudflare D1: contact messages, and the cached critical
 thinking questions and their usage bucket. Production (`dcc-web`) and preview (`dcc-web-preview`)
 are separate databases so a test message never lands in the real one. These replace the earlier
-`dcc-web-contact` and `dcc-web-contact-preview` databases, which item 25 deletes after the
+`dcc-web-contact` and `dcc-web-contact-preview` databases, which item 24 deletes after the
 production deploy.
 
 **Where to do it**
@@ -576,7 +555,7 @@ VII (Private Data: Minimal and Protected), VIII (Secure by Default) and IX (Free
 **Secrets**
 None.
 
-## 20. Spam-protection widget {#contact-turnstile-widget}
+## 19. Spam-protection widget {#contact-turnstile-widget}
 
 **What it is for**
 A Cloudflare Turnstile widget keeps bots from filling the contact form, without a visible puzzle for
@@ -585,7 +564,7 @@ real visitors.
 **Where to do it**
 Cloudflare dashboard → Turnstile → Add widget. Name it `dcc-web contact`; hostnames `doncoleman.ca`
 (this covers `new.doncoleman.ca`) and `drc-dev.workers.dev` (this covers preview addresses); mode
-**Managed**; no pre-clearance. Keep the page open, because steps 21 and 23 need the secret key and
+**Managed**; no pre-clearance. Keep the page open, because steps 20 and 22 need the secret key and
 the site key. If the dashboard refuses `drc-dev.workers.dev`, use Turnstile's always-pass test keys
 for **preview only** (research R6 in `specs/007-contact-form/research.md`).
 
@@ -599,9 +578,9 @@ permission (step 2), and reads only the widget's name, domains and mode, never i
 VIII (Secure by Default) and X (Accessible, Fast and Private).
 
 **Secrets**
-None read. The widget's secret key is used in step 21.
+None read. The widget's secret key is used in step 20.
 
-## 21. Contact secrets {#contact-worker-secrets}
+## 20. Contact secrets {#contact-worker-secrets}
 
 **What it is for**
 The contact form's Workers need three secrets, stored as Worker secrets and never in the repository:
@@ -653,7 +632,7 @@ VII (Private Data: Minimal and Protected) and VIII (Secure by Default).
 **Secrets**
 `TURNSTILE_SECRET_KEY`, `CONTACT_READ_TOKEN` and `IP_HASH_SALT` (Worker secrets, on both Workers).
 
-## 22. Preview Worker builds {#contact-preview-builds}
+## 21. Preview Worker builds {#contact-preview-builds}
 
 **What it is for**
 Branch previews are built and deployed by their own Worker, `dcc-web-preview`, so a preview uses the
@@ -679,7 +658,7 @@ II (Automated Release Gate), VII (Private Data: Minimal and Protected) and VIII 
 **Secrets**
 None.
 
-## 23. Site key build variable {#contact-turnstile-site-key}
+## 22. Site key build variable {#contact-turnstile-site-key}
 
 **What it is for**
 The page needs the widget's public site key at build time. It is public, but it is set in the build
@@ -689,7 +668,7 @@ fallback.
 **Where to do it**
 For each of `dcc-web` and `dcc-web-preview`: Settings → Build → Variables and secrets → add a
 **build** variable named `PUBLIC_TURNSTILE_SITE_KEY` (plain text) with the widget's site key from
-step 20.
+step 19.
 
 **How it will be confirmed**
 `pnpm setup:check --item contact-turnstile-site-key` reports complete when the name
@@ -701,7 +680,7 @@ VIII (Secure by Default) and X (Accessible, Fast and Private).
 **Secrets**
 `PUBLIC_TURNSTILE_SITE_KEY` (a public build variable, not a secret).
 
-## 24. Preview migrations and clean-up schedule {#contact-preview-deploy}
+## 23. Preview migrations and clean-up schedule {#contact-preview-deploy}
 
 **What it is for**
 The preview deployment applies the database migrations to the `dcc-web-preview` database and registers the daily
@@ -725,7 +704,7 @@ II (Automated Release Gate), VII (Private Data: Minimal and Protected) and VIII 
 **Secrets**
 None.
 
-## 25. Production migrations and clean-up schedule {#contact-production-deploy}
+## 24. Production migrations and clean-up schedule {#contact-production-deploy}
 
 **What it is for**
 After the merge, production applies its migrations and registers the clean-up schedule, so the live
@@ -765,10 +744,10 @@ None.
 
 # Launch
 
-Items 26 and 27 confirm the site is ready to go live, item 32 guards the mail records throughout, and items 28 to 31 prove the live domain after the switch. The domain switch itself is walked through in
+Items 25 and 26 confirm the site is ready to go live, item 31 guards the mail records throughout, and items 27 to 30 prove the live domain after the switch. The domain switch itself is walked through in
 `docs/launch.md`.
 
-## 26. Launch content ready {#launch-content-ready}
+## 25. Launch content ready {#launch-content-ready}
 
 **What it is for**
 Every page the launch needs is published with real copy, and the privacy policy matches how the site
@@ -783,7 +762,7 @@ make `src/content/pages/privacy-policy.mdx` state that contact messages are stor
 `pnpm setup:check --item launch-content-ready` reports complete when every expected page exists and is
 not a draft, no published page says "placeholder copy", no published project visual is marked
 `placeholder: true`, and the privacy policy states Cloudflare D1 storage and names none of Ghost,
-Supabase, Mailgun or Fly.io. Spam protection accepting the bare domain is confirmed by item 20
+Supabase, Mailgun or Fly.io. Spam protection accepting the bare domain is confirmed by item 19
 (`contact-turnstile-widget`).
 
 **Constitution principle**
@@ -792,7 +771,7 @@ VII (Private Data: Minimal and Protected).
 **Secrets**
 None.
 
-## 27. Main branch checks passing {#launch-main-checks}
+## 26. Main branch checks passing {#launch-main-checks}
 
 **What it is for**
 The newest commit on `main` passes the full verify gate before the domain switch.
@@ -810,7 +789,7 @@ II (Automated Release Gate).
 **Secrets**
 None.
 
-## 28. Bare domain serves the new site {#live-apex}
+## 27. Bare domain serves the new site {#live-apex}
 
 **What it is for**
 After the switch, `doncoleman.ca` serves the new site over https, is open to search engines, and plain
@@ -834,7 +813,7 @@ V (Static by Default).
 **Secrets**
 None.
 
-## 29. www redirects to the bare domain {#live-www-redirect}
+## 28. www redirects to the bare domain {#live-www-redirect}
 
 **What it is for**
 After the switch, `www.doncoleman.ca` sends every visitor to the same page on `doncoleman.ca` with one
@@ -856,7 +835,7 @@ V (Static by Default).
 **Secrets**
 None.
 
-## 30. Live sitemap pages load {#live-sitemap}
+## 29. Live sitemap pages load {#live-sitemap}
 
 **What it is for**
 After the switch, every page the live sitemap lists returns a page, and every path the launch expects is
@@ -878,7 +857,7 @@ V (Static by Default).
 **Secrets**
 None.
 
-## 31. Live contact endpoint responds {#live-contact-endpoint}
+## 30. Live contact endpoint responds {#live-contact-endpoint}
 
 **What it is for**
 After the switch, the Worker answers `/api/contact` on `doncoleman.ca`, proven without sending a message.
@@ -898,7 +877,7 @@ VII (Private Data: Minimal and Protected).
 **Secrets**
 None.
 
-## 32. Mail records unchanged {#mail-records}
+## 31. Mail records unchanged {#mail-records}
 
 **What it is for**
 The domain's mail keeps working: every mail record recorded in `setup/dns-baseline.json` still answers

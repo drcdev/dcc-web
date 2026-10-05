@@ -15,7 +15,6 @@ import { check as checkGithubCiWorkflow } from "../../../scripts/setup-check/che
 import { check as checkGithubCodeowners } from "../../../scripts/setup-check/checks/github-codeowners.ts";
 import { check as checkGithubMachineAccount } from "../../../scripts/setup-check/checks/github-machine-account.ts";
 import { check as checkGithubMainProtection } from "../../../scripts/setup-check/checks/github-main-protection.ts";
-import { check as checkGithubMajorLabel } from "../../../scripts/setup-check/checks/github-major-label.ts";
 import { check as checkGithubSecretScanning } from "../../../scripts/setup-check/checks/github-secret-scanning.ts";
 import { check as checkLiveDomainGhost } from "../../../scripts/setup-check/checks/live-domain-ghost.ts";
 import { check as checkLocalCredentials } from "../../../scripts/setup-check/checks/local-credentials.ts";
@@ -327,32 +326,6 @@ const scenarios: Scenario[] = [
           github: {
             api: async () => {
               throw new ProviderAccessError("gh is not signed in as Don; run gh auth login and try again");
-            },
-          },
-        }),
-      ),
-  },
-  {
-    name: "github-major-label",
-    missing: () =>
-      checkGithubMajorLabel(
-        fakeProviderContext({
-          fs: { readJson: fsJson({ "setup/config.json": CONFIG }) },
-          github: {
-            api: githubApiRoutes({
-              "/labels": loadFixture("github", "labels-without-major-change"),
-              "repos/drcdev/dcc-web": loadFixture("github", "repo-settings-no-auto-merge"),
-            }),
-          },
-        }),
-      ),
-    couldNotCheck: () =>
-      checkGithubMajorLabel(
-        fakeProviderContext({
-          fs: { readJson: fsJson({ "setup/config.json": CONFIG }) },
-          github: {
-            api: async () => {
-              throw new ProviderAccessError("gh api access denied (401/403)");
             },
           },
         }),

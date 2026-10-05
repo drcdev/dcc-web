@@ -1,4 +1,4 @@
-// checks/live-apex.ts (setup item 28, 011-launch contracts/setup-items.md; FR-013, FR-018, FR-010a):
+// checks/live-apex.ts (setup item 27, 011-launch contracts/setup-items.md; FR-013, FR-018, FR-010a):
 // once switched, the bare domain serves the new site over https and http redirects to https.
 // Order: DNS settling and a missing certificate are `pending` (with the 24-hour sentence), any other
 // network failure is `could-not-check`, anything wrong with the page is a `Problem:`.
@@ -6,7 +6,7 @@ import type { CheckResult, HttpResponseSummary, ProviderContext } from "../types
 import { complete, fromProviderError, missing } from "./shared.ts";
 import { dnsSettling, gateOnSwitch, isTlsError, pendingLive } from "./live-shared.ts";
 
-const ITEM = { id: "live-apex", order: 28 };
+const ITEM = { id: "live-apex", order: 27 };
 
 function header(response: HttpResponseSummary, name: string): string | undefined {
   const key = Object.keys(response.headers).find((k) => k.toLowerCase() === name);

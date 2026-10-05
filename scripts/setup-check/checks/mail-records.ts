@@ -1,4 +1,4 @@
-// checks/mail-records.ts (setup item 32, 011-launch contracts/setup-items.md; FR-016, SC-004): the
+// checks/mail-records.ts (setup item 31, 011-launch contracts/setup-items.md; FR-016, SC-004): the
 // mail records recorded in the baseline still answer unchanged at both public resolvers, before and
 // after the switch. A group is every baseline record with `decision: "keep"` of one name and type
 // (MX, TXT, and CNAMEs under `._domainkey.`); MX is compared as `priority:host`, TXT joined and
@@ -10,7 +10,7 @@ import { complete, fromProviderError, missing } from "./shared.ts";
 import { normalizeTxtContent } from "./shared.ts";
 import { pendingLive } from "./live-shared.ts";
 
-const ITEM = { id: "mail-records", order: 32 };
+const ITEM = { id: "mail-records", order: 31 };
 const ROLLBACK_NEXT =
   "Restore the record in Cloudflare → DNS exactly as listed; if the switch caused it, follow docs/launch.md#rollback.";
 

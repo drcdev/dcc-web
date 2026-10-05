@@ -1,11 +1,11 @@
-// Shared helpers for the contact-form setup items 19 to 25 (specs/007-contact-form/contracts/setup-items.md).
+// Shared helpers for the contact-form setup items 18 to 24 (specs/007-contact-form/contracts/setup-items.md).
 // Everything here is read-only and names-only: no helper returns a secret or variable value.
 import type { CheckResult, CloudflareBuildTrigger, ProviderContext, SetupConfig } from "../types.ts";
 import { couldNotCheck, type ItemLabel } from "./shared.ts";
 
 export const PRODUCTION_DB_NAME = "dcc-web";
 export const PREVIEW_DB_NAME = "dcc-web-preview";
-/** Databases the site used before the rename; item 19 notes one that is still in the account once wrangler.jsonc names others. */
+/** Databases the site used before the rename; item 18 notes one that is still in the account once wrangler.jsonc names others. */
 export const RETIRED_DB_NAMES = ["dcc-web-contact", "dcc-web-contact-preview"] as const;
 export const REQUIRED_WORKER_SECRETS = ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"] as const;
 export const SITE_KEY_VARIABLE = "PUBLIC_TURNSTILE_SITE_KEY";
@@ -54,7 +54,7 @@ export interface ContactDatabaseConfig {
   name: string;
   /** The `database_id` committed in wrangler.jsonc ("" when absent). */
   id: string;
-  /** True for the all-zero placeholder IDs that stand in until item 19 is done. */
+  /** True for the all-zero placeholder IDs that stand in until item 18 is done. */
   placeholder: boolean;
 }
 

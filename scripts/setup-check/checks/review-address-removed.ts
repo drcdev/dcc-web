@@ -1,4 +1,4 @@
-// checks/review-address-removed.ts (setup item 16, 011-launch contracts/setup-items.md): once the
+// checks/review-address-removed.ts (setup item 15, 011-launch contracts/setup-items.md): once the
 // bare domain is live, new.doncoleman.ca goes away. Waiting before the switch; missing while a
 // Custom Domain for the review host still exists; pending while a public resolver still answers
 // (cached answers expire within the record's TTL); complete when both resolvers are empty.
@@ -6,7 +6,7 @@ import type { CheckResult, DnsRecordType, ProviderContext, SetupConfig } from ".
 import { detectLaunchPhase } from "./launch-phase.ts";
 import { complete, fromProviderError, missing, pending, waiting } from "./shared.ts";
 
-const ITEM = { id: "review-address-removed", order: 16 };
+const ITEM = { id: "review-address-removed", order: 15 };
 const ANSWER_TYPES: DnsRecordType[] = ["A", "AAAA", "CNAME"];
 
 export async function check(ctx: ProviderContext): Promise<CheckResult> {

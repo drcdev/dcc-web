@@ -1,4 +1,4 @@
-// checks/github-main-protection.ts (setup item 14, data-model.md
+// checks/github-main-protection.ts (setup item 13, data-model.md
 // "github-main-protection"): the active ruleset on main matches
 // setup/github-ruleset.json, evaluated against the closed list of 10 rules in
 // spec.md's Edge Cases ("Partially configured branch protection"); each gap
@@ -6,7 +6,7 @@
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "github-main-protection", order: 14 };
+const ITEM = { id: "github-main-protection", order: 13 };
 const RULESET_NAME = "main-protection";
 
 interface RulesetSummary {

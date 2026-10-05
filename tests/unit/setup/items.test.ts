@@ -21,10 +21,10 @@ const CONTACT_IDS = [
 const secretNames = new Set(secretManifest.map((s) => s.name));
 
 describe("setupItems registry invariants", () => {
-  it("has exactly 32 items, the contact-form items at 19 to 25 and the launch items at 26 to 32", () => {
-    expect(setupItems).toHaveLength(32);
-    expect(setupItems.slice(18, 25).map((i) => i.id)).toEqual(CONTACT_IDS);
-    expect(setupItems.slice(25).map((i) => i.id)).toEqual([
+  it("has exactly 31 items, the contact-form items at 18 to 24 and the launch items at 25 to 31", () => {
+    expect(setupItems).toHaveLength(31);
+    expect(setupItems.slice(17, 24).map((i) => i.id)).toEqual(CONTACT_IDS);
+    expect(setupItems.slice(24).map((i) => i.id)).toEqual([
       "launch-content-ready",
       "launch-main-checks",
       "live-apex",
@@ -35,9 +35,9 @@ describe("setupItems registry invariants", () => {
     ]);
   });
 
-  it("items 16 to 18 follow the switch (T051): review-address-removed, preview-noindex, web-analytics", () => {
-    expect(setupItems.slice(15, 18).map((i) => i.id)).toEqual(["review-address-removed", "preview-noindex", "web-analytics"]);
-    const [removed, noindex, analytics] = setupItems.slice(15, 18);
+  it("items 15 to 17 follow the switch (T051): review-address-removed, preview-noindex, web-analytics", () => {
+    expect(setupItems.slice(14, 17).map((i) => i.id)).toEqual(["review-address-removed", "preview-noindex", "web-analytics"]);
+    const [removed, noindex, analytics] = setupItems.slice(14, 17);
     expect(removed!.postLaunch).toBe(true);
     expect(removed!.dependsOn).toEqual(["dns-nameservers"]);
     expect(noindex!.postLaunch).toBeUndefined();
@@ -46,27 +46,27 @@ describe("setupItems registry invariants", () => {
     expect(setupItems.find((i) => i.id === "live-domain-ghost")!.title).toBe("Live domain: Ghost or switched");
   });
 
-  it("item 26 is before-merge and needs Don, item 27 is after-merge (011-launch)", () => {
-    const item26 = setupItems[25]!;
-    expect(item26.phase).toBe("before-merge");
-    expect(item26.needsDon).toBe(true);
-    expect(setupItems[26]!.phase).toBe("after-merge");
+  it("item 25 is before-merge and needs Don, item 26 is after-merge (011-launch)", () => {
+    const item25 = setupItems[24]!;
+    expect(item25.phase).toBe("before-merge");
+    expect(item25.needsDon).toBe(true);
+    expect(setupItems[25]!.phase).toBe("after-merge");
   });
 
-  it("items 28 to 31 are postLaunch and after-merge, item 32 always applies and is before-merge (T062)", () => {
-    for (const item of setupItems.slice(27, 31)) {
+  it("items 27 to 30 are postLaunch and after-merge, item 31 always applies and is before-merge (T062)", () => {
+    for (const item of setupItems.slice(26, 30)) {
       expect(item.postLaunch).toBe(true);
       expect(item.phase).toBe("after-merge");
     }
-    const mail = setupItems[31]!;
+    const mail = setupItems[30]!;
     expect(mail.postLaunch).toBeUndefined();
     expect(mail.phase).toBe("before-merge");
-    expect(setupItems.filter((i) => i.postLaunch).map((i) => i.order)).toEqual([16, 28, 29, 30, 31]);
+    expect(setupItems.filter((i) => i.postLaunch).map((i) => i.order)).toEqual([15, 27, 28, 29, 30]);
   });
 
-  it("contact items 19 to 24 are before-merge and item 25 is after-merge and deferred until merge (FR-028a)", () => {
-    for (const item of setupItems.slice(18, 24)) expect(item.phase).toBe("before-merge");
-    const last = setupItems[24]!;
+  it("contact items 18 to 23 are before-merge and item 24 is after-merge and deferred until merge (FR-028a)", () => {
+    for (const item of setupItems.slice(17, 23)) expect(item.phase).toBe("before-merge");
+    const last = setupItems[23]!;
     expect(last.phase).toBe("after-merge");
     expect(last.deferredUntilMerge).toBe(true);
     expect(setupItems.filter((i) => i.deferredUntilMerge)).toHaveLength(1);
@@ -79,7 +79,7 @@ describe("setupItems registry invariants", () => {
     expect(item10.where).toContain("dcc-web-preview");
   });
 
-  it("item 19's where text restates the region and gives the exact d1 create commands (FR-027a)", () => {
+  it("item 18's where text restates the region and gives the exact d1 create commands (FR-027a)", () => {
     const where = setupItems.find((i) => i.id === "contact-d1-databases")!.where;
     expect(where).toContain("wnam");
     expect(where).toMatch(/cannot be changed/i);
@@ -148,9 +148,9 @@ describe("setupItems registry invariants", () => {
     for (const item of setupItems) {
       expect(["before-merge", "after-merge"]).toContain(item.phase);
     }
-    // Items 1-9 and 19-24 are before-merge, 10-18 and 25 are after-merge (plan.md walkthrough order).
-    const beforeMerge = setupItems.filter((i) => i.order <= 9 || (i.order >= 19 && i.order <= 24) || i.order === 26 || i.order === 32);
-    const afterMerge = setupItems.filter((i) => (i.order >= 10 && i.order <= 18) || i.order === 25 || (i.order >= 27 && i.order <= 31));
+    // Items 1-9 and 18-23 are before-merge, 10-17 and 24 are after-merge (plan.md walkthrough order).
+    const beforeMerge = setupItems.filter((i) => i.order <= 9 || (i.order >= 18 && i.order <= 23) || i.order === 25 || i.order === 31);
+    const afterMerge = setupItems.filter((i) => (i.order >= 10 && i.order <= 17) || i.order === 24 || (i.order >= 26 && i.order <= 30));
     expect(beforeMerge.every((i) => i.phase === "before-merge")).toBe(true);
     expect(afterMerge.every((i) => i.phase === "after-merge")).toBe(true);
   });

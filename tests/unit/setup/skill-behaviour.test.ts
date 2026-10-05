@@ -15,7 +15,7 @@ describe(".claude/skills/setup-walkthrough/SKILL.md", () => {
   it("never invokes a mutating command outside a 'show Don this command' block", () => {
     // Every mutating command example must appear inside a fenced code block
     // introduced as something Don runs himself, not something the skill runs.
-    const mutatingPatterns = [/gh api -X/, /gh label create/, /wrangler deploy/];
+    const mutatingPatterns = [/gh api -X/, /wrangler deploy/];
     for (const pattern of mutatingPatterns) {
       const match = pattern.exec(contents);
       expect(match, `expected an example of ${pattern} shown for Don`).not.toBeNull();
@@ -93,7 +93,7 @@ describe(".claude/skills/setup-walkthrough/SKILL.md", () => {
       lastEnd = end;
     }
 
-    const mutatingPatterns = [/gh api -X/, /gh label create/, /wrangler deploy/, /wrangler versions upload/];
+    const mutatingPatterns = [/gh api -X/, /wrangler deploy/, /wrangler versions upload/];
     for (const pattern of mutatingPatterns) {
       const occurrences = new RegExp(pattern.source, "g");
       let occurrence: RegExpExecArray | null;
@@ -122,7 +122,7 @@ describe(".claude/skills/setup-walkthrough/SKILL.md", () => {
     expect(contents.toLowerCase()).toContain("registry length");
   });
 
-  it("restates the D1 region inside the item 19 AskUserQuestion text and stops before creating anything if not confirmed (FR-027a, FR-027b)", () => {
+  it("restates the D1 region inside the item 18 AskUserQuestion text and stops before creating anything if not confirmed (FR-027a, FR-027b)", () => {
     expect(contents).toContain("contact-d1-databases");
     expect(contents).toContain("Western North America");
     expect(contents).toContain("`wnam`");
@@ -156,7 +156,7 @@ describe(".claude/skills/setup-walkthrough/SKILL.md", () => {
     }
   });
 
-  it("allows exactly one non-check command after Don confirms item 19: wrangler d1 list --json, then editing wrangler.jsonc", () => {
+  it("allows exactly one non-check command after Don confirms item 18: wrangler d1 list --json, then editing wrangler.jsonc", () => {
     expect(contents).toContain("pnpm exec wrangler d1 list --json");
     expect(contents).toContain("wrangler.jsonc");
   });
@@ -189,12 +189,12 @@ describe(".claude/skills/setup-walkthrough/SKILL.md", () => {
     expect(contents).toMatch(/`waiting`[\s\S]{0,200}like a\s+completed step[\s\S]{0,200}one line[\s\S]{0,200}no pause/i);
   });
 
-  it("hands over to docs/launch.md at item 26 and gates on the readiness checks", () => {
+  it("hands over to docs/launch.md at item 25 and gates on the readiness checks", () => {
     expect(contents).toContain("## Launch hand-over");
     const section = contents.slice(contents.indexOf("## Launch hand-over"));
     expect(section).toContain("docs/launch.md");
     expect(section).toContain("launch-content-ready");
-    expect(section).toMatch(/item 26/);
+    expect(section).toMatch(/item 25/);
     expect(section.toLowerCase()).toMatch(/readiness gate/);
     for (const answer of ["Done — check it", "Skip for now", "Stop here"]) expect(section).toContain(answer);
   });

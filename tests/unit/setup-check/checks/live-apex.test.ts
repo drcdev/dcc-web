@@ -18,11 +18,11 @@ function serve(https: HttpResponseSummary | ProviderAccessError, http: HttpRespo
   return (url: string) => (url.startsWith("https://") ? https : http);
 }
 
-describe("checks/live-apex (item 28)", () => {
+describe("checks/live-apex (item 27)", () => {
   it("is waiting before the switch", async () => {
     const result = await check(liveContext({ phase: "before-switch" }));
     expect(result.status).toBe("waiting");
-    expect(result.step).toBe(`Step 28 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 27 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#live-apex");
   });
 

@@ -1,4 +1,4 @@
-// checks/live-contact-endpoint.ts (setup item 31, 011-launch contracts/setup-items.md; FR-015): once
+// checks/live-contact-endpoint.ts (setup item 30, 011-launch contracts/setup-items.md; FR-015): once
 // switched, `GET /api/contact` on the bare domain answers 405 with `Allow: POST` and the JSON
 // `{ ok: false, error: "method_not_allowed" }`, which proves the Worker answers /api/* there. It
 // sends one GET and never a POST, so no message is ever created.
@@ -6,7 +6,7 @@ import type { CheckResult, HttpResponseSummary, ProviderContext } from "../types
 import { complete, fromProviderError, missing } from "./shared.ts";
 import { gateOnSwitch, isTlsError, pendingLive } from "./live-shared.ts";
 
-const ITEM = { id: "live-contact-endpoint", order: 31 };
+const ITEM = { id: "live-contact-endpoint", order: 30 };
 
 function header(response: HttpResponseSummary, name: string): string | undefined {
   const key = Object.keys(response.headers).find((k) => k.toLowerCase() === name);

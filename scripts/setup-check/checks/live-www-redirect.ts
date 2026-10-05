@@ -1,11 +1,11 @@
-// checks/live-www-redirect.ts (setup item 29, 011-launch contracts/setup-items.md; FR-010a, FR-013):
+// checks/live-www-redirect.ts (setup item 28, 011-launch contracts/setup-items.md; FR-010a, FR-013):
 // once switched, `www` answers with one permanent redirect to the same path on the bare domain, over
 // https and over http. Settling DNS and a missing certificate are `pending`.
 import type { CheckResult, HttpResponseSummary, ProviderContext } from "../types.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 import { dnsSettling, gateOnSwitch, isTlsError, pendingLive } from "./live-shared.ts";
 
-const ITEM = { id: "live-www-redirect", order: 29 };
+const ITEM = { id: "live-www-redirect", order: 28 };
 const PATH = "/about/?launch-check=1";
 
 function location(response: HttpResponseSummary): string | undefined {

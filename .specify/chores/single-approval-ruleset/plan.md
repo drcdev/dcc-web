@@ -308,7 +308,7 @@ only `ci.yml`. Coverage mapping (unchanged from the first plan):
 - **Test:** one new case in `github-main-protection.test.ts`, written first and seen failing
   (unit).
 
-### W5 Delete the `github-major-label` item and renumber 14–32 to 13–31
+### [x] W5 Delete the `github-major-label` item and renumber 14–32 to 13–31
 
 - **Files:**
   - delete `scripts/setup-check/checks/github-major-label.ts`,

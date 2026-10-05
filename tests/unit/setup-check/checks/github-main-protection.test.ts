@@ -64,7 +64,7 @@ describe("checks/github-main-protection", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("complete");
-    expect(result.step).toBe(`Step 14 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 13 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#github-main-protection");
   });
 
