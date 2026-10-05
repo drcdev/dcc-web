@@ -271,7 +271,7 @@ by no cheaper layer, because only a build can show it.
 Call-site runs, all in `build/page-validation.test.ts`:
 
 - **sync**: "rows 1 to 5: the pages schema is wired and Astro names the file";
-  "row 6: generateId runs assertFrontmatterImagesExist"; "row 17: generateId runs idFromPath".
+  "row 6: generateId runs assertImagesExist"; "row 17: generateId runs idFromPath".
 - **build**: "row 7: Astro rejects a body image that does not exist"; "row 13: the route checks
   addresses over the file-system page list"; "rows 8 to 10 and 16: the route runs
   validatePageBody"; "rows 11 and 12: a section check names the section and the page file".
@@ -302,7 +302,7 @@ Call-site runs, all in `build/post-validation.test.ts`:
 
 - **sync**: "validates drafts too: the posts schema is wired and Astro names the file (P23,
   FR-012a)"; "P4: generateId runs assertPostDates"; "P9: generateId runs
-  assertFrontmatterImagesExist with the post wording"; "P21 (changed): a removed controlled
+  assertImagesExist with the post wording"; "P21 (changed): a removed controlled
   topic id is accepted as a free-form topic".
 - **build**: "P22: Astro rejects a body image that does not exist"; "P13: getCheckedPosts runs
   assertPostFiles"; "P20: getCheckedPosts runs validatePageBody with the post wording".
@@ -346,7 +346,7 @@ asserts that the message does not contain it (no environment value or secret in 
 Call-site runs:
 
 - **sync**: "validates drafts too: the projects schema is wired and Astro names the file (row 03,
-  FR-073)" (production environment); "row 17: generateId runs assertProjectImagesExist";
+  FR-073)" (production environment); "row 17: generateId runs assertImagesExist";
   "row 27: generateId runs slugFromPath (and rejects a nested file the same way)"; "R01: a
   removed setting in a draft fails at sync under production".
 - **build**: "row 26: the route runs assertUniqueProjectFiles"; "a malformed options table in a

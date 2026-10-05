@@ -342,7 +342,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W4: One image-exists helper for pages, posts and projects
 
-- [ ] W4 done
+- [x] W4 done
 - **Files:** `src/lib/content/images.ts` (rewritten), delete `src/lib/content/project-images.ts`,
   `src/content.config.ts` (project `generateId`), `tests/unit/content/images.test.ts`.
 - **Shape:** `assertImagesExist(kind, root, file, data)`. A per-kind source picker covers pages and

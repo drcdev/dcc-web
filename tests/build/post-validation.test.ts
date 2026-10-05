@@ -36,7 +36,7 @@ describe("post schema and loader wiring (sync)", () => {
   it("P4: generateId runs assertPostDates", () =>
     expectRejected("sync", [broken("p04-date-impossible.mdx")], "p04-date-impossible", "date", "2026-02-30"));
 
-  it("P9: generateId runs assertFrontmatterImagesExist with the post wording", () =>
+  it("P9: generateId runs assertImagesExist with the post wording", () =>
     expectRejected("sync", [broken("p09-image-missing.mdx")], "Post file", "p09-image-missing", "./images/missing.png"));
 
   // Changed by 013 (research R9): ids outside the controlled list are free-form topics. Rendering a

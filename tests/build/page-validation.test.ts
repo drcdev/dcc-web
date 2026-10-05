@@ -27,7 +27,7 @@ describe("page schema and loader wiring (sync)", () => {
   it("rows 1 to 5: the pages schema is wired and Astro names the file", () =>
     expectRejected("sync", [broken("01-no-title.mdx")], "01-no-title", "title"));
 
-  it("row 6: generateId runs assertFrontmatterImagesExist", () =>
+  it("row 6: generateId runs assertImagesExist", () =>
     expectRejected(
       "sync",
       [broken("06-missing-image-frontmatter.mdx")],

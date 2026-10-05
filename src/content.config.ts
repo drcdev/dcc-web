@@ -12,12 +12,11 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertNoTwin, idFromPath, slugFromPath, slugFromPostPath } from "./lib/content/addresses.ts";
-import { assertFrontmatterImagesExist } from "./lib/content/images.ts";
+import { assertImagesExist } from "./lib/content/images.ts";
 import { assertPostDates } from "./lib/content/post-dates.ts";
 import { pageSchema } from "./content/schemas/page.ts";
 import { postSchema } from "./content/schemas/post.ts";
 import { projectSchema } from "./content/schemas/project.ts";
-import { assertProjectImagesExist } from "./lib/content/project-images.ts";
 
 const pages = defineCollection({
   loader: glob({
@@ -29,7 +28,7 @@ const pages = defineCollection({
     generateId: ({ entry, base, data }) => {
       const id = idFromPath(entry);
       assertNoTwin("page", fileURLToPath(base), entry);
-      assertFrontmatterImagesExist(fileURLToPath(base), entry, data);
+      assertImagesExist("page", fileURLToPath(base), entry, data);
       return id;
     },
   }),
@@ -47,7 +46,7 @@ const posts = defineCollection({
     generateId: ({ entry, base, data }) => {
       assertNoTwin("post", fileURLToPath(base), entry);
       assertPostDates(`src/content/posts/${entry}`, readFileSync(resolve(fileURLToPath(base), entry), "utf-8"));
-      assertFrontmatterImagesExist(fileURLToPath(base), entry, data, "post");
+      assertImagesExist("post", fileURLToPath(base), entry, data);
       return slugFromPostPath(entry);
     },
   }),
@@ -64,7 +63,7 @@ const projects = defineCollection({
     generateId: ({ entry, base, data }) => {
       const slug = slugFromPath(entry);
       assertNoTwin("project", fileURLToPath(base), entry);
-      assertProjectImagesExist(fileURLToPath(base), entry, data);
+      assertImagesExist("project", fileURLToPath(base), entry, data);
       return slug;
     },
   }),
