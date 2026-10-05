@@ -13,20 +13,20 @@ import PageLayout from "../layouts/PageLayout.astro";
 import { futureDestinations } from "../config/navigation";
 import { sectionComponents } from "../components/sections/index";
 import { allowTurnstile } from "../components/sections/contact-csp";
-import { assertUniqueAddresses } from "../lib/content/address";
+import { assertPageAddressesFree } from "../lib/content/addresses";
 import { validatePageBody } from "../lib/content/body";
 import { addressOf, fileOf, getNavigation } from "../lib/pages";
 
 export async function getStaticPaths() {
-  // File lists come from the file system, not the collection, so two files that
-  // make the same address are both seen (the collection keeps only one).
+  // File lists come from the file system, not the collection. Two files with one address are
+  // caught earlier, in generateId (src/content.config.ts).
   const pageFiles = Object.keys(import.meta.glob("/src/content/pages/**/*.{md,mdx}", { query: "?url" })).map(
     (path) => path.slice("/src/content/pages/".length),
   );
   const routeFiles = Object.keys(import.meta.glob("./**/*.{astro,md,mdx,ts,js}"))
     .map((path) => path.slice(2))
     .filter((path) => path !== "[...slug].astro");
-  assertUniqueAddresses({ pageFiles, routeFiles, reserved: futureDestinations });
+  assertPageAddressesFree({ pageFiles, routeFiles, reserved: futureDestinations });
 
   const entries = await getCollection("pages");
   for (const entry of entries) validatePageBody(fileOf(entry), entry.body ?? "");

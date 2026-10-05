@@ -7,7 +7,7 @@ import { getCollection, render, type CollectionEntry } from "astro:content";
 import { WORKERS_CI, WORKERS_CI_BRANCH } from "astro:env/server";
 import { includeDrafts } from "./build-mode.ts";
 import { validatePageBody } from "./content/body.ts";
-import { assertPostFiles, postHref } from "./content/post-address.ts";
+import { assertPostFiles, postHref } from "./content/addresses.ts";
 import { sortNewestFirst } from "./content/post-order.ts";
 import type { PostSummary } from "./content/post-summary.ts";
 

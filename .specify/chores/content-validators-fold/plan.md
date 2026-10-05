@@ -305,7 +305,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W3: One address helper keyed by collection (`addresses.ts`)
 
-- [ ] W3 done
+- [x] W3 done
 - **Files:** new `src/lib/content/addresses.ts`; delete `address.ts`, `post-address.ts`,
   `project-address.ts`; `src/content.config.ts`, `src/pages/[...slug].astro`,
   `src/pages/projects/[slug].astro`, `src/lib/posts.ts`, `src/lib/feed.ts`,

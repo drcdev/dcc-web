@@ -3,7 +3,7 @@
 // posts and the build's own origin. Pattern from docs.astro.build/en/recipes/rss/.
 import type { RSSFeedItem, RSSOptions } from "@astrojs/rss";
 import { blog } from "../config/blog.ts";
-import { postHref } from "./content/post-address.ts";
+import { postHref } from "./content/addresses.ts";
 
 /** The fields of a post the feed needs. */
 export interface FeedPost {
