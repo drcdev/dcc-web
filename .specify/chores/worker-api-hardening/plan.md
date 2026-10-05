@@ -281,7 +281,7 @@ site, `https://new.doncoleman.ca/` still does, and Don's assistant (re-pointed a
 
 ### W6: Preview deploy uploads only on branches (test first, then script)
 
-- [ ] W6 done
+- [x] W6 done
 - **Files:** `tests/unit/site/deploy-preview.test.ts`, then `scripts/deploy/preview.ts`.
 - **Test:** unit, new-first. **Layer: unit** (the pure step builder; nothing is spawned).
   - "applies preview migrations first, deploys the preview env, then uploads an aliased version"
