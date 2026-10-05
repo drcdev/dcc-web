@@ -205,7 +205,7 @@ site, `https://new.doncoleman.ca/` still does, and Don's assistant (re-pointed a
 
 ### W2: `wrangler.jsonc`, `e2e.env` and Env types
 
-- [ ] W2 done
+- [x] W2 done
 - **Files:** `wrangler.jsonc`, `tests/fixtures/worker/e2e.env`, `worker/worker-configuration.d.ts`.
 - **Test:** W1 (unit over config) goes green; `pnpm run typecheck` checks the generated types.
 - **Edits:**
