@@ -38,7 +38,7 @@ chore; the before-state is the current configuration and tests at c87fb86.
 1. **Tests seen failing first.** Every new or changed assertion in W1, W3, W5, W6 and W7 is run red
    against the current code before the matching implementation, and the implement summary
    records each red run.
-2. **Production config.** Top-level `wrangler.jsonc` has `"preview_urls": false` and (per the W2
+2. **Production config.** Top-level `wrangler.jsonc` has `"preview_urls": false` and (Don's W2
    decision) `"workers_dev": false`, and no `vars` key containing `ALLOW_TURNSTILE_TESTING`.
 3. **Preview config.** `env.preview` sets `"workers_dev": true`, `"preview_urls": true` and
    `"vars": { "ALLOW_TURNSTILE_TESTING": "true" }` explicitly (no longer inherited).
@@ -97,10 +97,13 @@ the PR exists; this branch's own Workers Builds run uses the new `scripts/deploy
 - [ ] `curl -s -o /dev/null -w '%{http_code}' http://br-chore-worker-api-hardening-dcc-web-preview.drc-dev.workers.dev/api/messages/new` prints `403` [PREVIEW-CHECK]
 - [ ] A contact form submission on the branch alias still succeeds (preview has `ALLOW_TURNSTILE_TESTING`, so the preview fallback test keys keep working) [PREVIEW-CHECK]
 
-After the merge (production deploy, Don, recorded in the PR body, not preview checks): the
-`dcc-web` Worker's Settings → Domains & Routes shows `workers.dev` and Preview URLs off (Wrangler
-applies both from the config on `wrangler deploy`), `https://dcc-web.drc-dev.workers.dev/`
-no longer serves the site, and `https://new.doncoleman.ca/` still does.
+- [ ] Before approving: Don confirms his assistant calls `https://new.doncoleman.ca/api/messages/...`, not `dcc-web.drc-dev.workers.dev`, or is ready to switch it when production deploys [PREVIEW-CHECK]
+
+After the merge (production deploy, Don, recorded in the PR body): the `dcc-web` Worker's
+Settings → Domains & Routes shows `workers.dev` and Preview URLs off (Wrangler applies both from
+the config on `wrangler deploy`), `https://dcc-web.drc-dev.workers.dev/` no longer serves the
+site, `https://new.doncoleman.ca/` still does, and Don's assistant (re-pointed at
+`https://new.doncoleman.ca/api/messages/...` if it used `workers.dev`) retrieves messages.
 
 ## Scope
 
@@ -141,8 +144,6 @@ no longer serves the site, and `https://new.doncoleman.ca/` still does.
 
 - Setup check: read each Worker's own `workers.dev` and preview-URL state through the per-script
   subdomain API, so items 7 and 22 confirm the real setting rather than the account subdomain.
-- If Don picks option B in W2: a follow-up PR after launch L16 sets production
-  `workers_dev: false` and drops the production host from the item 17 check.
 - Don's dashboard rule `api-per-ip` can be added once production is off `workers.dev`.
 
 ## Constitution Check
@@ -189,9 +190,8 @@ no longer serves the site, and `https://new.doncoleman.ca/` still does.
   config text.
 - **Edits:**
   - Replace "enables workers_dev and preview_urls" (l.70-72) with "keeps production off
-    workers.dev and version URLs (#89)": top-level `workers_dev` is `false` (W2 decision;
-    under option B it stays `true` with a comment naming the follow-up) and `preview_urls` is
-    `false`.
+    workers.dev and version URLs (#89)": top-level `workers_dev` is `false` (Don's W2
+    decision) and `preview_urls` is `false`.
   - New: "turns on workers.dev and version URLs for the preview Worker explicitly":
     `config.env.preview.workers_dev === true` and `config.env.preview.preview_urls === true`.
   - New: "allows Turnstile testing keys only for preview": `env.preview.vars.ALLOW_TURNSTILE_TESTING`
@@ -209,27 +209,23 @@ no longer serves the site, and `https://new.doncoleman.ca/` still does.
 - **Files:** `wrangler.jsonc`, `tests/fixtures/worker/e2e.env`, `worker/worker-configuration.d.ts`.
 - **Test:** W1 (unit over config) goes green; `pnpm run typecheck` checks the generated types.
 - **Edits:**
-  - Top level: `"preview_urls": false`; `"workers_dev": false` (option A below). No top-level
+  - Top level: `"preview_urls": false`; `"workers_dev": false` (decision below). No top-level
     `vars`.
   - `env.preview`: `"workers_dev": true`, `"preview_urls": true`,
     `"vars": { "ALLOW_TURNSTILE_TESTING": "true" }`.
   - `e2e.env`: add `ALLOW_TURNSTILE_TESTING=true` with a comment ("lets the always-pass test
     secret above pass; never set for production").
   - Run `pnpm run types:worker` and commit the result.
-- **[NEEDS DECISION] When does production `workers_dev` go off?** The issue says "once the DNS
-  switch is done". It is not done: `https://doncoleman.ca` still answers `301` from Caddy (the
-  Ghost host), while `https://new.doncoleman.ca` is already served by `dcc-web` on Cloudflare
-  (checked with `curl -sI` during this plan). Production therefore keeps a zone hostname without
-  `workers.dev` until launch L16 removes the review address, by which time the apex Custom
-  Domain serves it.
-  - **A (recommended): set `workers_dev: false` in this PR.** Production is reachable only on
-    `new.doncoleman.ca` now and `doncoleman.ca` after the switch, both inside the zone, so the
-    `api-per-ip` rule and Always Use HTTPS cover every production request. Requires that Don's
-    assistant calls `https://new.doncoleman.ca/api/messages/...`, not the `workers.dev` host;
-    if it uses `workers.dev`, he changes that URL when this deploys. Item 17 (W7) drops the
-    production `workers.dev` host.
-  - **B: keep `workers_dev: true` now**, set `preview_urls: false` only, and do
-    `workers_dev: false` plus the item 17 change in a follow-up PR after launch L16.
+- **Decision (Don, 2026-10-04): production `workers_dev` goes off in this PR.** The issue said
+  "once the DNS switch is done". It is not done: `https://doncoleman.ca` still answers `301`
+  from Caddy (the Ghost host), but `https://new.doncoleman.ca` is already served by `dcc-web` on
+  Cloudflare (checked with `curl -sI` during this plan). So production keeps a zone hostname
+  without `workers.dev`: `new.doncoleman.ca` now, and `doncoleman.ca` once launch L16 removes
+  the review address. The `api-per-ip` rule and Always Use HTTPS then cover every production
+  request. If Don's assistant calls the `workers.dev` host, he points it at
+  `https://new.doncoleman.ca/api/messages/...` when this deploys (post-deploy item above).
+  Item 17 (W7) drops the production `workers.dev` host. The rejected option was keeping
+  `workers_dev: true` until after L16.
 
 ### W3: HTTPS-only retrieval API (tests first, then code)
 
@@ -316,15 +312,15 @@ no longer serves the site, and `https://new.doncoleman.ca/` still does.
     "Worker dcc-web exists and the account's workers.dev subdomain is on (used by the preview
     Worker)"; the missing-subdomain next action says to turn on the account subdomain, not the
     Worker's preview URLs. Logic is unchanged (it reads the account subdomain).
-  - `preview-noindex` (option A only): checks only the preview Worker's `workers.dev` host; the
+  - `preview-noindex`: checks only the preview Worker's `workers.dev` host; the
     test that expects both hosts expects one, and a new case asserts the production host is not
-    requested. Under option B this check is unchanged.
+    requested.
 - **Docs:**
   - Item 7: replace "Then turn on its `workers.dev` address and preview URLs" with: leave
     `workers.dev` and Preview URLs off for `dcc-web`; `wrangler.jsonc` sets both to `false` and
     Wrangler applies them on each deploy; production is served only on the zone's Custom Domain.
     Update "How it will be confirmed" and the Constitution line (VIII, not II).
-  - Item 17: say only the preview Worker has a `workers.dev` host (option A).
+  - Item 17: say only the preview Worker has a `workers.dev` host.
   - Item 22: keep "turn on the `workers.dev` address and preview URLs" for `dcc-web-preview`,
     noting `wrangler.jsonc` `env.preview` now sets both explicitly; add that only `main`
     replaces the active deployment and branches upload an aliased version.
@@ -397,7 +393,7 @@ All confirmed with WebFetch during this plan (2026-10-04).
 
 ## Risks
 
-- **Assistant on `workers.dev` (option A).** If Don's assistant calls the production
+- **Assistant on `workers.dev`.** If Don's assistant calls the production
   `workers.dev` host, retrieval stops when this deploys. Mitigation: the PR body says so first;
   the fix is changing the assistant's base URL to `https://new.doncoleman.ca` (later
   `https://doncoleman.ca`).
