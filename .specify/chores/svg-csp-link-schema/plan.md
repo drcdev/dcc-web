@@ -208,7 +208,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W5: Research and testing docs
 
-- [ ] W5 done
+- [x] W5 done
 - **Files:** `specs/002-site-foundation/research.md`, `docs/testing.md`.
 - **Test:** `no behaviour: n/a (documentation only; the code never sent upgrade-insecure-requests)`.
 - **Edits:**
