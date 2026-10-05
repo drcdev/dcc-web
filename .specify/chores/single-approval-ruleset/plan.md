@@ -426,7 +426,7 @@ only `ci.yml`. Coverage mapping (unchanged from the first plan):
 - **Layer:** n/a.
 - **Coverage mapping:** none.
 
-### W7 Untrusted-data note in the retrieval API contract
+### [x] W7 Untrusted-data note in the retrieval API contract
 
 - **Files:** `specs/007-contact-form/contracts/retrieval-api.md`. Add a short section after
   "Authorization", for example "### Message content is untrusted". Its text: every message field
