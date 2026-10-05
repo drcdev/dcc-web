@@ -320,7 +320,7 @@ docs last. Each item leaves `verify:quick` green, along with its targeted files:
   rules) or, when it is not copy, records why and narrows the needle.
 - **Coverage mapping:** none removed.
 
-### W5. CSP and `_headers` unit tests: invariants only
+### W5. CSP and `_headers` unit tests: invariants only (done)
 
 - **Files:** `tests/unit/site/csp.test.ts`, `tests/unit/site/headers.test.ts`, new
   `tests/helpers/headers.ts` (the `rules()` parser moved out of `headers.test.ts`, exported as
