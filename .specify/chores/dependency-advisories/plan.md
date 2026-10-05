@@ -13,8 +13,8 @@ no scheduled `pnpm audit` job. The finding is GHSA-ch52-4w7c-c8xp (`http-cache-s
 <=4.2.0, high), which comes in through Astro. The fix is pnpm's own audit fix, reviewed in the
 PR. All 14 `minimumReleaseAgeExclude` entries are stale and are deleted. pnpm 11's built-in
 release-age delay and the `allowBuilds` list stay as they are. The setup check gains a
-mechanical check that Dependabot security updates are on. Whether Dependabot also runs
-scheduled version updates is Don's call (D1 below). Nothing on the site changes: the built
+mechanical check that Dependabot security updates are on. Don chose (D1 below) monthly, grouped
+Dependabot version updates for GitHub Actions only, set in `.github/dependabot.yml`. Nothing on the site changes: the built
 pages are the same before and after.
 
 ## Acceptance
@@ -37,9 +37,9 @@ Mechanical criteria (the review phase checks each one):
    check changes, then pass. `pnpm setup:check --item github-secret-scanning` reports
    **complete** against the live repository (where `dependabot_security_updates` is already
    `enabled`).
-6. **Dependabot config (only if D1 is B or C).** `tests/unit/ci/dependabot.test.ts` is seen
-   failing before `.github/dependabot.yml` exists, then passes. If D1 is A, no
-   `.github/dependabot.yml` exists.
+6. **Dependabot config (D1 = C).** `tests/unit/ci/dependabot.test.ts` is seen failing before
+   `.github/dependabot.yml` exists, then passes. The file configures only `github-actions`,
+   monthly, in one group.
 7. **Nothing a reader sees changes.** No file under `src/`, `public/` or `worker/src/` changes,
    and no visual baseline changes.
 8. **Scope of the diff:** `git diff --name-only main` lists only `pnpm-workspace.yaml`,
@@ -47,8 +47,8 @@ Mechanical criteria (the review phase checks each one):
    `scripts/setup-check/items.ts`, `docs/setup.md`,
    `tests/unit/setup-check/checks/github-secret-scanning.test.ts`, the two
    `tests/fixtures/providers/github/repo-settings-secret-scanning-*.json` fixtures, and
-   `.specify/chores/dependency-advisories/**`. With D1 = B or C, also `.github/dependabot.yml`
-   and `tests/unit/ci/dependabot.test.ts`. Not `package.json`, `worker/package.json` or
+   `.specify/chores/dependency-advisories/**`, `.github/dependabot.yml` and
+   `tests/unit/ci/dependabot.test.ts`. Not `package.json`, `worker/package.json` or
    `CLAUDE.md`.
 9. `pnpm run verify:quick` is green, then the full gate before the PR.
 
@@ -83,7 +83,7 @@ while the npm bulk advisory endpoint that `pnpm audit` reads says `>=4.2.1`.
   policy (W3).
 - Setup item 9: also require Dependabot security updates (`scripts/setup-check/checks/github-secret-scanning.ts`,
   `scripts/setup-check/items.ts`, `docs/setup.md` §9, its unit test and two fixtures) (W1).
-- `.github/dependabot.yml` and its unit test, **only if D1 is B or C** (W4).
+- `.github/dependabot.yml` (GitHub Actions only, monthly, grouped) and its unit test (W4).
 - This plan, and the review report later.
 
 **Out:**
@@ -124,7 +124,10 @@ while the npm bulk advisory endpoint that `pnpm audit` reads says `>=4.2.1`.
 
 ## Decisions
 
-### [NEEDS DECISION] D1: Dependabot version updates
+### D1: Dependabot version updates (decided: C)
+
+**Don's answer: C. Monthly, grouped, GitHub Actions only.** W4 is unconditional and the PR is a
+major change (see the Constitution Check). The options as they were put to him:
 
 Security updates are already on and need no config file. They open a PR only when an advisory
 hits a dependency. The question is whether Dependabot should **also** open routine
@@ -146,10 +149,9 @@ gate (about 6 minutes of CI, because `.github/` and lockfile changes are not ski
   rewrites the SHA and the `# vX.Y.Z` comment). It never touches the lockfile, so pnpm 11
   support does not matter. npm stays deliberate, with advisories covered by security updates.
 
-**Recommended: C.** It keeps Don's approval load to at most one small PR a month, covers the
-one ecosystem nobody updates by hand, and stays out of the pnpm lockfile, where exact pins and
-the release-age delay already govern upgrades. Choosing C or B makes this PR a major change
-under Principle III (see the Constitution Check). A keeps it not major.
+**Chosen: C** (it was also the recommendation). It keeps Don's approval load to at most one
+small PR a month, covers the one ecosystem nobody updates by hand, and stays out of the pnpm
+lockfile, where exact pins and the release-age delay already govern upgrades.
 
 ### Judgment calls made in this plan (no decision needed unless Don disagrees)
 
@@ -181,15 +183,13 @@ under Principle III (see the Constitution Check). A keeps it not major.
 - **II. Automated Release Gate:** no check is skipped or weakened. The release-age delay stays
   in force, and with no exclusions left it applies to every package again. CI's frozen install
   and gate are unchanged.
-- **III. Human Review for Major Changes:** depends on D1. With **A**, no criterion fires: no
-  dependency is added, removed or replaced (one transitive version moves inside its declared
-  range), there is no contact-data, design, cost or constitution change, and repository settings
-  are unchanged (already on). `pnpm-workspace.yaml` loses only inert exclusions. Verdict A:
-  **not major**, auto-merge applies. With **B or C**, "changes CI, deployment or infrastructure
-  configuration" fires, because `.github/dependabot.yml` makes GitHub open PRs on a schedule (B
-  also arguably brings in an integration). Verdict B/C: **major**, auto-merge off, and the PR
-  body says why. Under Don's #85 ruling every PR needs his approval anyway, so the practical
-  difference is only the auto-merge setting.
+- **III. Human Review for Major Changes:** "changes CI, deployment or infrastructure
+  configuration" **fires**, because `.github/dependabot.yml` (D1 = C) makes GitHub open PRs on a
+  schedule. No other criterion fires: no dependency is added, removed or replaced (one
+  transitive version moves inside its declared range), and there is no contact-data, design,
+  cost or constitution change. Repository settings are unchanged (already on), and
+  `pnpm-workspace.yaml` loses only inert exclusions. Verdict: **major**. Auto-merge is off, and
+  the PR body says why.
 - **IV. First-Party Before Custom:** first-party options throughout: GitHub's Dependabot alerts
   and security updates (no custom audit job), pnpm's `audit --fix=update` (or `audit --fix`) to
   clear the finding instead of hand-editing the lockfile, pnpm's built-in `minimumReleaseAge`
@@ -249,13 +249,10 @@ under Principle III (see the Constitution Check). A keeps it not major.
 - **Test:** existing tool check. `corepack pnpm audit` exit 1 (red, recorded above) → exit 0.
   No unit test: a test pinning one advisory's version would guard one CVE, not a behaviour, and
   Dependabot alerts are the standing guard. **Layer: n/a** (tool check, not a test file).
-- **Timing (do not skip):** 4.3.0 was published at 2026-10-04T02:56Z. Until
-  **2026-10-05T02:56Z** it is younger than pnpm's 1440-minute default. Inside `^4.2.0` the
-  resolver would keep the aged 4.2.0, so `--fix=update` does nothing. An override would fall
-  back to 4.3.0 under non-strict mode, but the install-time lockfile check could then reject it.
-  Run W2 after that time. Do **not** add a `minimumReleaseAgeExclude` entry to get around it;
-  the wait is hours, and an exclusion would be the next stale entry. If the implement phase
-  starts earlier, do W1 and W3 first and W2 last, or wait.
+- **Timing (satisfied):** 4.3.0 was published at 2026-10-04T02:56Z and passed pnpm's
+  1440-minute default at 2026-10-05T02:56Z, which has now gone by. W2 is not blocked. Do
+  **not** add a `minimumReleaseAgeExclude` entry for it. If `--fix=update` still keeps 4.2.0,
+  confirm the clock with `npm view http-cache-semantics time` before using the fallback.
 - **Steps:** with the `.nvmrc` Node active (`node -v` → v24), run `corepack pnpm install
   --frozen-lockfile` (the worktree has no `node_modules`), then `corepack pnpm audit
   --fix=update`. Check that `git diff pnpm-lock.yaml` touches only `http-cache-semantics`
@@ -282,9 +279,9 @@ under Principle III (see the Constitution Check). A keeps it not major.
 - If the frozen install unexpectedly fails on release age, stop and record which entry it
   names. The dates above say it should not.
 
-### W4: `.github/dependabot.yml` (only if D1 is B or C; skip entirely for A)
+### W4: `.github/dependabot.yml` (D1 = C: GitHub Actions only, monthly, grouped)
 
-- [ ] W4 done (or n/a: D1 = A)
+- [ ] W4 done
 - **Files:** `tests/unit/ci/dependabot.test.ts` (new), `.github/dependabot.yml` (new).
 - **Test:** new-first. **Layer: unit** (unit over config): the file's only observable effect
   before GitHub reads it is its text, and the repo's other workflow tests read YAML as text the
@@ -292,9 +289,7 @@ under Principle III (see the Constitution Check). A keeps it not major.
   validates the file on push, and the PR's "Dependabot" check shows parse errors.
 - **Cases (C):** the file exists; `version: 2`; exactly one `package-ecosystem:` and it is
   `"github-actions"` with `directory: "/"`; `interval: "monthly"`; a `groups:` block with
-  `patterns:` containing `"*"`; no `package-ecosystem: "npm"`. **For B**, the npm entry also
-  exists for `/` and `/worker` (or `directories:`), with monthly interval and a group with
-  `"*"`.
+  `patterns:` containing `"*"`; no `package-ecosystem: "npm"`.
 - **Shape (C):**
 
   ```yaml
@@ -358,8 +353,8 @@ so no Astro Docs MCP lookup is cited.
 
 ## Risks
 
-- **Release-age window (W2).** Before 2026-10-05T02:56Z, 4.3.0 is under a day old. Doing W2
-  early either does nothing (`--fix=update` keeps 4.2.0) or invites an exclusion. Wait instead.
+- **Release-age window (W2).** This has cleared: 4.3.0 turned a day old at 2026-10-05T02:56Z.
+  Never add an exclusion for it.
 - **4.3.0 is a minor release published today.** Its changes are in Vary handling plus a new
   `status` getter, all additive, so Astro's use (remote-image cache policy) should be
   unaffected, and the build and full gate exercise Astro. The path is unreachable at runtime
