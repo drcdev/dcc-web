@@ -229,7 +229,7 @@ site, `https://new.doncoleman.ca/` still does, and Don's assistant (re-pointed a
 
 ### W3: HTTPS-only retrieval API (tests first, then code)
 
-- [ ] W3 done
+- [x] W3 done
 - **Files:** `worker/test/same-origin.test.ts`, `worker/test/retrieval.contract.test.ts`, then
   `worker/src/same-origin.ts`, `worker/src/messages/router.ts`, `worker/src/messages/log.ts`.
 - **Test:** new-first. **Layer: worker** (the Workers Vitest pool with the real router and local
