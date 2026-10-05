@@ -1,4 +1,4 @@
-// checks/contact-worker-secrets.ts (setup item 21, contracts/setup-items.md): the secret NAMES
+// checks/contact-worker-secrets.ts (setup item 20, contracts/setup-items.md): the secret NAMES
 // TURNSTILE_SECRET_KEY, CONTACT_READ_TOKEN and IP_HASH_SALT exist on both the production and
 // the preview Worker. Only names are read; the reader never returns a value. Missing names are
 // listed per Worker.
@@ -6,7 +6,7 @@ import type { CheckResult, ProviderContext } from "../types.ts";
 import { REQUIRED_WORKER_SECRETS, isCheckResult, requireCloudflareAccess, workerNames } from "./contact-shared.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "contact-worker-secrets", order: 21 };
+const ITEM = { id: "contact-worker-secrets", order: 20 };
 const SUMMARY = "Could not read the contact secrets.";
 
 export async function check(ctx: ProviderContext): Promise<CheckResult> {

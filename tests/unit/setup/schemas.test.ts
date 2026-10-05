@@ -140,7 +140,7 @@ describe("githubRulesetSchema (setup/github-ruleset.json)", () => {
       {
         type: "pull_request",
         parameters: {
-          required_approving_review_count: 0,
+          required_approving_review_count: 1,
           require_code_owner_review: true,
           dismiss_stale_reviews_on_push: true,
           required_review_thread_resolution: false,
@@ -150,7 +150,7 @@ describe("githubRulesetSchema (setup/github-ruleset.json)", () => {
         type: "required_status_checks",
         parameters: {
           strict_required_status_checks_policy: true,
-          required_status_checks: [{ context: "verify" }, { context: "major-change-approval" }],
+          required_status_checks: [{ context: "verify" }],
         },
       },
     ],

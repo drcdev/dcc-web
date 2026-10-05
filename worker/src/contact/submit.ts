@@ -129,6 +129,7 @@ export async function handleSubmit(request: Request, env: Env): Promise<Response
       remoteIp,
       idempotencyKey: submission.id,
       hostname: url.hostname,
+      allowTestingKey: env.ALLOW_TURNSTILE_TESTING === "true",
     });
     if (!verified) {
       log("turnstile_failed");

@@ -1,10 +1,10 @@
-// checks/preview-noindex.ts (setup item 17, 011-launch contracts/setup-items.md): both Workers'
-// workers.dev hosts (production Worker and preview Worker) send `X-Robots-Tag: noindex` on `/` and
+// checks/preview-noindex.ts (setup item 16, 011-launch contracts/setup-items.md): the preview
+// Worker's workers.dev host (production is off workers.dev) sends `X-Robots-Tag: noindex` on `/` and
 // `/projects/`, so previews are never indexed. Independent of the launch phase and of credentials.
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, couldNotCheck, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "preview-noindex", order: 17 };
+const ITEM = { id: "preview-noindex", order: 16 };
 const PATHS = ["/", "/projects/"];
 const NEXT_ACTION = "Confirm public/_headers has the https://:worker.:subdomain.workers.dev/* noindex rule and redeploy.";
 
@@ -24,7 +24,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       "Add workersSubdomain (the account's workers.dev subdomain) to setup/config.json, then try again.",
     );
   }
-  const workers = [config?.workerName ?? "dcc-web", config?.previewWorkerName ?? "dcc-web-preview"];
+  const workers = [config?.previewWorkerName ?? "dcc-web-preview"];
 
   try {
     const failing: string[] = [];
@@ -44,7 +44,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
         failing,
       );
     }
-    return complete(ITEM, "Both workers.dev hosts send X-Robots-Tag: noindex on / and /projects/.");
+    return complete(ITEM, "The preview workers.dev host sends X-Robots-Tag: noindex on / and /projects/.");
   } catch (err) {
     return fromProviderError(
       ITEM,

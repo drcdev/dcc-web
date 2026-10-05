@@ -190,7 +190,7 @@ describe("checks/web-analytics", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("complete");
-    expect(result.step).toBe(`Step 18 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 17 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#web-analytics");
   });
 

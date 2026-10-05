@@ -20,7 +20,6 @@ const ITEM_IDS = [
   "workers-builds",
   "github-ci-workflow",
   "github-codeowners",
-  "github-major-label",
   "github-main-protection",
   "pipeline-secrets",
   "review-address-removed",
@@ -66,7 +65,7 @@ function extractSections(markdown: string): { id: string; body: string }[] {
 }
 
 describe("docs/setup.md structure", () => {
-  it("has exactly 32 item sections whose anchors are the spec's fixed item IDs in step order", () => {
+  it("has exactly 31 item sections whose anchors are the spec's fixed item IDs in step order", () => {
     const sections = extractSections(contents);
     expect(sections.map((s) => s.id)).toEqual(ITEM_IDS);
   });
@@ -117,17 +116,17 @@ describe("docs/setup.md edge-case content", () => {
   });
 });
 
-describe("docs/setup.md contact-form part (items 19 to 25)", () => {
+describe("docs/setup.md contact-form part (items 18 to 24)", () => {
   const registryLength = ITEM_IDS.length;
 
-  it("the intro counts items from the registry length (32) and no longer says 18", () => {
+  it("the intro counts items from the registry length (31) and no longer says 18", () => {
     const intro = contents.slice(0, contents.indexOf("## 1."));
     expect(intro).toContain(`${registryLength}-item registry`);
     expect(intro).toContain(`of the ${registryLength} items`);
-    expect(intro).not.toMatch(/\b18\b/);
+    expect(intro).not.toMatch(/\b18-item|\b18 items/);
   });
 
-  it("has a Contact form part heading before section 19", () => {
+  it("has a Contact form part heading before section 18", () => {
     const part = contents.indexOf("# Contact form");
     expect(part).toBeGreaterThan(contents.indexOf("{#web-analytics}"));
     expect(part).toBeLessThan(contents.indexOf("{#contact-d1-databases}"));
@@ -148,7 +147,7 @@ describe("docs/setup.md contact-form part (items 19 to 25)", () => {
     expect(s).not.toContain("only the non-production branch command changes");
   });
 
-  it("item 19 restates the region, says it cannot be changed, and shows the exact commands", () => {
+  it("item 18 restates the region, says it cannot be changed, and shows the exact commands", () => {
     const s = extractSection(contents, "contact-d1-databases");
     expect(s).toContain("Western North America");
     expect(s).toContain("`wnam`");
@@ -159,17 +158,17 @@ describe("docs/setup.md contact-form part (items 19 to 25)", () => {
     expect(s).toContain("usage bucket");
   });
 
-  it("item 24 notes the Workers Builds token may need the Workers AI permission", () => {
+  it("item 23 notes the Workers Builds token may need the Workers AI permission", () => {
     expect(extractSection(contents, "contact-preview-deploy")).toContain("Workers AI");
   });
 
-  it("item 25 deletes the retired dcc-web-contact databases after the production deploy", () => {
+  it("item 24 deletes the retired dcc-web-contact databases after the production deploy", () => {
     const s = extractSection(contents, "contact-production-deploy");
     expect(s).toContain("pnpm exec wrangler d1 delete dcc-web-contact --env-file /dev/null");
     expect(s).toContain("pnpm exec wrangler d1 delete dcc-web-contact-preview --env-file /dev/null");
   });
 
-  it("item 25 checks each retired database is empty and deletes the preview one first", () => {
+  it("item 24 checks each retired database is empty and deletes the preview one first", () => {
     const s = extractSection(contents, "contact-production-deploy");
     expect(s).toContain("SELECT count(*) FROM messages");
     expect(s).toContain("pnpm exec wrangler d1 migrations list dcc-web --remote --env-file /dev/null");
@@ -179,7 +178,7 @@ describe("docs/setup.md contact-form part (items 19 to 25)", () => {
     expect(s).not.toContain("is replaced by the new databases");
   });
 
-  it("item 21 gives secret put commands and the replacement rule, and never asks for a value in chat", () => {
+  it("item 20 gives secret put commands and the replacement rule, and never asks for a value in chat", () => {
     const s = extractSection(contents, "contact-worker-secrets");
     for (const name of ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"]) {
       expect(s).toContain(name);
@@ -192,7 +191,7 @@ describe("docs/setup.md contact-form part (items 19 to 25)", () => {
     expect(s).toMatch(/never[^.]*chat/i);
   });
 
-  it("items 22 to 25 name the deploy commands, the site-key variable and the D1 Edit permission", () => {
+  it("items 21 to 24 name the deploy commands, the site-key variable and the D1 Edit permission", () => {
     expect(extractSection(contents, "contact-preview-builds")).toContain("pnpm run deploy:preview");
     expect(extractSection(contents, "contact-turnstile-site-key")).toContain("PUBLIC_TURNSTILE_SITE_KEY");
     expect(extractSection(contents, "contact-preview-deploy")).toContain("D1: Edit");
@@ -202,14 +201,14 @@ describe("docs/setup.md contact-form part (items 19 to 25)", () => {
   });
 });
 
-describe("docs/setup.md launch part (items 26 to 32)", () => {
-  it("has a Launch part heading before section 26 and an intro linking docs/launch.md", () => {
+describe("docs/setup.md launch part (items 25 to 31)", () => {
+  it("has a Launch part heading before section 25 and an intro linking docs/launch.md", () => {
     expect(contents.indexOf("\n# Launch")).toBeGreaterThan(contents.indexOf("{#contact-production-deploy}"));
     expect(contents.indexOf("\n# Launch")).toBeLessThan(contents.indexOf("{#launch-content-ready}"));
     expect(contents.slice(0, contents.indexOf("## 1."))).toContain("docs/launch.md");
   });
 
-  it("items 6, 16 and 18 describe the launch phase", () => {
+  it("items 6, 15 and 17 describe the launch phase", () => {
     expect(extractSection(contents, "live-domain-ghost")).toContain("docs/launch.md");
     expect(extractSection(contents, "review-address-removed")).toMatch(/waiting/);
     expect(extractSection(contents, "web-analytics")).toContain("launch switch");

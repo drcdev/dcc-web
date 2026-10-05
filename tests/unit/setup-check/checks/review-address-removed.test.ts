@@ -43,7 +43,7 @@ describe("checks/review-address-removed (T046)", () => {
     expect(result.status).toBe("waiting");
     expect(result.summary).toBe("Waiting for the switch: new.doncoleman.ca stays until the bare domain is live.");
     expect(result.nextAction).toBe("Nothing to do yet. Follow docs/launch.md Part C when the readiness checklist is complete.");
-    expect(result.step).toBe(`Step 16 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 15 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#review-address-removed");
   });
 

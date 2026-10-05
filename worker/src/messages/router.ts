@@ -1,4 +1,5 @@
 import { json } from "../http";
+import { isSecureRequest } from "../same-origin";
 import { isAuthorized } from "./auth";
 import { handleListNew } from "./list-new";
 import { log } from "./log";
@@ -6,8 +7,17 @@ import { handleMarkRead } from "./mark-read";
 
 const READ_PATH = /^\/api\/messages\/([^/]+)\/read$/;
 
-/** Owns `/api/messages` and everything under it. Authorization comes first, for every method. */
+/**
+ * Owns `/api/messages` and everything under it. The scheme check comes first (a refusal, not a
+ * redirect, so a client that sent its token in clear does not carry on silently), then
+ * authorization, for every method.
+ */
 export async function handleMessages(request: Request, env: Env, pathname: string): Promise<Response> {
+  if (!isSecureRequest(new URL(request.url))) {
+    log("https_required");
+    return json({ error: "https_required" }, 403);
+  }
+
   if (!(await isAuthorized(request, env))) {
     log("unauthorized");
     return json({ error: "unauthorized" }, 401, { "WWW-Authenticate": "Bearer" });

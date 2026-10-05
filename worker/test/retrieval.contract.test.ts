@@ -100,6 +100,41 @@ describe("authorization (FR-023, FR-023b)", () => {
   });
 });
 
+describe("HTTPS only (#89)", () => {
+  const plain = (path: string, init: { method?: string; token?: string | null } = {}) => {
+    const { method = "GET", token = READ_TOKEN } = init;
+    return new Request(`http://example.com${path}`, {
+      method,
+      headers: token === null ? {} : { Authorization: `Bearer ${token}` },
+    });
+  };
+
+  it("refuses plain http with 403 before authorization, token or not", async () => {
+    for (const token of [READ_TOKEN, null, "wrong-token"]) {
+      const response = await run(plain("/api/messages/new", { token }));
+      expect(response.status, String(token)).toBe(403);
+      expect(await response.json()).toEqual({ error: "https_required" });
+    }
+  });
+
+  it("refuses plain http for every method and leaves the row unread", async () => {
+    const id = await seedMessage();
+    for (const method of ["GET", "POST", "PUT", "DELETE", "OPTIONS"]) {
+      const response = await run(plain(`/api/messages/${id}/read`, { method }));
+      expect(response.status, method).toBe(403);
+    }
+    const row = await env.DB.prepare("SELECT status FROM messages WHERE id = ?").bind(id).first();
+    expect(row).toEqual({ status: "new" });
+  });
+
+  it("allows plain http on 127.0.0.1 for local development", async () => {
+    const request = new Request("http://127.0.0.1:4321/api/messages/new", {
+      headers: { Authorization: `Bearer ${READ_TOKEN}` },
+    });
+    expect((await run(request)).status).toBe(200);
+  });
+});
+
 describe("GET /api/messages/new", () => {
   it("returns an empty list and null cursor when nothing is new", async () => {
     const response = await run(api("/api/messages/new"));

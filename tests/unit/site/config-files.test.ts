@@ -67,9 +67,28 @@ describe("wrangler.jsonc", () => {
     expect(config.assets?.directory).toBe("./dist");
   });
 
-  it("enables workers_dev and preview_urls", () => {
-    expect(config.workers_dev).toBe(true);
-    expect(config.preview_urls).toBe(true);
+  it("keeps production off workers.dev and version URLs (#89)", () => {
+    expect(config.workers_dev).toBe(false);
+    expect(config.preview_urls).toBe(false);
+  });
+
+  it("turns on workers.dev and version URLs for the preview Worker explicitly", () => {
+    expect(config.env.preview.workers_dev).toBe(true);
+    expect(config.env.preview.preview_urls).toBe(true);
+  });
+
+  it("allows Turnstile testing keys only for preview", () => {
+    expect(config.env.preview.vars?.ALLOW_TURNSTILE_TESTING).toBe("true");
+    expect(config.vars ?? {}).not.toHaveProperty("ALLOW_TURNSTILE_TESTING");
+  });
+
+  it("reaches the e2e Worker's flag only through the wrangler dev --var, never the generated config", () => {
+    const generator = readFileSync(
+      fileURLToPath(new URL("../../../scripts/e2e-wrangler-config.ts", import.meta.url)),
+      "utf-8",
+    );
+    expect(generator).not.toContain("ALLOW_TURNSTILE_TESTING");
+    expect(generator).not.toMatch(/\.vars\b/);
   });
 
   it("runs the Worker only for /api/* (Principle VIII)", () => {
@@ -106,7 +125,7 @@ describe("wrangler.jsonc", () => {
   });
 
   it("has two different database ids, each a real UUID (no placeholder)", () => {
-    // Don created both databases on 2026-09-29 (setup item 19); placeholders no longer pass.
+    // Don created both databases on 2026-09-29 (setup item 18); placeholders no longer pass.
     const isAllowed = (id: unknown) =>
       typeof id === "string" &&
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) &&
@@ -259,6 +278,8 @@ describe("playwright.config.ts", () => {
     expect(server?.command).toContain("wrangler dev --config wrangler.e2e.json --ip 127.0.0.1 --port 4321");
     expect(server?.command).toContain("--persist-to .cache/e2e-state");
     expect(server?.command).toContain("--env-file tests/fixtures/worker/e2e.env");
+    // The env file only supplies names listed in secrets.required, so the flag is a --var.
+    expect(server?.command).toContain("--var ALLOW_TURNSTILE_TESTING:true");
     expect(server?.command).toContain("wrangler d1 migrations apply DB --local --persist-to .cache/e2e-state");
     expect(server?.env?.WRANGLER_SEND_METRICS).toBe("false");
     expect(server?.env?.ASTRO_PREVIEW_BACKGROUND).toBeUndefined();
@@ -524,5 +545,6 @@ describe("contact Worker files", () => {
     expect(text).toContain("TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA");
     expect(text).toMatch(/^CONTACT_READ_TOKEN=.+/m);
     expect(text).toMatch(/^IP_HASH_SALT=.+/m);
+    expect(text).not.toContain("ALLOW_TURNSTILE_TESTING");
   });
 });

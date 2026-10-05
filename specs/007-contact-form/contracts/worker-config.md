@@ -33,6 +33,12 @@
 }
 ```
 
+Superseded by #89 (2026-10), the `workers_dev` and `preview_urls` lines above: production sets
+both to `false`, and `env.preview` sets both to `true` explicitly instead of inheriting them.
+`env.preview` also gains `"vars": { "ALLOW_TURNSTILE_TESTING": "true" }`; production has no
+`vars`. The reason recorded in `docs/setup.md` for production previews (Principle II previews on
+`dcc-web`) ended when spec 007 moved previews to `dcc-web-preview`.
+
 Rules enforced by `tests/unit/site/config-files.test.ts` (extended):
 
 - `run_worker_first` is exactly `["/api/*"]`. Nothing else runs Worker code (Principle VIII).
@@ -68,6 +74,12 @@ Rules enforced by `tests/unit/site/config-files.test.ts` (extended):
 |---|---|---|
 | `pnpm run deploy:production` → `scripts/deploy/production.ts` | `dcc-web` Workers Builds, production branch `main` | refuse unless `WORKERS_CI_BRANCH === "main"` and `WRANGLER_CI_OVERRIDE_NAME` is unset or `dcc-web`; `wrangler d1 migrations apply contact --remote`; `wrangler deploy` |
 | `pnpm run deploy:preview` → `scripts/deploy/preview.ts` (rewritten) | `dcc-web-preview` Workers Builds, every branch | refuse unless `WRANGLER_CI_OVERRIDE_NAME` is unset or `dcc-web-preview`; `wrangler d1 migrations apply contact-preview --remote --env preview`; `wrangler deploy --env preview`; if the branch is not `main`: `wrangler versions upload --env preview --preview-alias <previewAlias(branch)>` |
+
+Superseded by #89 (2026-10): `deploy:preview` now runs `wrangler d1 migrations apply DB --remote
+--env preview` on every build, then on `main` only `wrangler deploy --env preview`, and on any
+other branch only `wrangler versions upload --env preview --preview-alias <previewAlias(branch)>`.
+A branch never runs `wrangler deploy`, so only `main` changes the preview Worker's active
+deployment.
 
 Both scripts stop at the first failing step with a plain-language message. They never print an
 environment value, and they pass `stdio: "inherit"` only to Wrangler itself. Unit tests

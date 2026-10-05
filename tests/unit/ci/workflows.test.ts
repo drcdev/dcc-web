@@ -56,8 +56,6 @@ describe(".github/workflows/ci.yml", () => {
       names.push(m![1]!);
     }
     expect(new Set(names).size).toBe(names.length);
-    expect(contents).not.toMatch(/name:\s*major-change-approval\b/);
-    expect(contents).not.toMatch(/^\s{2}major-change-approval:/m);
   });
 
   it("triggers on pull_request and push to main", () => {
@@ -233,60 +231,6 @@ describe(".github/workflows/ci.yml change detection and job topology", () => {
   });
 });
 
-describe(".github/workflows/major-change.yml", () => {
-  const contents = read(".github/workflows/major-change.yml");
-
-  it("names the job `gate`, not the required status context, so its check run cannot collide with the status", () => {
-    expect(contents).toMatch(/^\s{2}gate:/m);
-    expect(contents).toMatch(/^\s{4}name:\s*gate\s*$/m);
-    expect(contents).not.toMatch(/^\s{2}major-change-approval:/m);
-    expect(contents).not.toMatch(/name:\s*major-change-approval\b/);
-  });
-
-  it("triggers on the documented pull_request and pull_request_review events", () => {
-    expect(contents).toMatch(/pull_request:/);
-    for (const type of ["opened", "synchronize", "reopened", "labeled", "unlabeled", "ready_for_review"]) {
-      expect(contents).toContain(type);
-    }
-    expect(contents).toMatch(/pull_request_review:/);
-    for (const type of ["submitted", "edited", "dismissed"]) {
-      expect(contents).toContain(type);
-    }
-  });
-
-  it("sets permissions to exactly pull-requests: read and statuses: write", () => {
-    const block = contents.match(/^permissions:\s*\n((?:\s{2}.+\n)+)/m);
-    expect(block, "expected a top-level permissions block").toBeTruthy();
-    const lines = block![1]!.split("\n").map((l) => l.trim()).filter(Boolean).sort();
-    expect(lines).toEqual(["pull-requests: read", "statuses: write"]);
-  });
-
-  it("passes GITHUB_TOKEN, GITHUB_REPOSITORY, PR_NUMBER and RUN_URL to the gate step", () => {
-    for (const name of ["GITHUB_TOKEN", "GITHUB_REPOSITORY", "PR_NUMBER", "RUN_URL"]) {
-      expect(contents).toMatch(new RegExp(`^\\s+${name}:`, "m"));
-    }
-  });
-
-  it("reports the verdict as a commit status, not through the script's exit code", () => {
-    const script = read("scripts/ci/major-change-gate.ts");
-    expect(script).toContain("/statuses/");
-    expect(script).not.toContain("process.exit(decision.pass ? 0 : 1)");
-  });
-
-  it("runs scripts/ci/major-change-gate.ts", () => {
-    expect(contents).toMatch(/scripts\/ci\/major-change-gate\.ts/);
-  });
-
-  it("has no continue-on-error, no always-false if:, and no secrets other than GITHUB_TOKEN", () => {
-    expect(contents).not.toMatch(/continue-on-error/);
-    expect(contents).not.toMatch(/if:\s*false/);
-    const secretRefs = [...contents.matchAll(/secrets\.([A-Z0-9_]+)/g)].map((m) => m[1]);
-    for (const name of secretRefs) {
-      expect(name).toBe("GITHUB_TOKEN");
-    }
-  });
-});
-
 describe(".github/workflows/visual-baselines.yml", () => {
   const contents = read(".github/workflows/visual-baselines.yml");
 
@@ -384,32 +328,5 @@ describe(".github/workflows/ci.yml preview crawl (011-launch FR-001a, FR-002a)",
     const secrets = step.match(/secrets\.[A-Za-z_]+/g) ?? [];
     expect(new Set(secrets)).toEqual(new Set(["secrets.GITHUB_TOKEN"]));
     expect(step).not.toMatch(/CLOUDFLARE|CF_/);
-  });
-});
-
-describe(".github/CODEOWNERS", () => {
-  const contents = read(".github/CODEOWNERS");
-  const majorPaths = [
-    "/.github/",
-    "/package.json",
-    "/pnpm-lock.yaml",
-    "/.nvmrc",
-    "/wrangler.jsonc",
-    "/astro.config.mjs",
-    "/public/_headers",
-    "/scripts/ci/",
-    "/setup/",
-    "/.specify/memory/constitution.md",
-    "/.github/CODEOWNERS",
-  ];
-
-  it("assigns @drcdev to every major path", () => {
-    for (const path of majorPaths) {
-      const line = contents
-        .split("\n")
-        .find((l) => l.trim().startsWith(path));
-      expect(line, `missing CODEOWNERS line for ${path}`).toBeDefined();
-      expect(line).toContain("@drcdev");
-    }
   });
 });

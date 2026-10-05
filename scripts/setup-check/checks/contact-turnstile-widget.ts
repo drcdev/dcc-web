@@ -1,8 +1,8 @@
-// checks/contact-turnstile-widget.ts (setup item 20, contracts/setup-items.md): a managed
+// checks/contact-turnstile-widget.ts (setup item 19, contracts/setup-items.md): a managed
 // Turnstile widget named "dcc-web contact" exists and covers doncoleman.ca. It must also cover
 // drc-dev.workers.dev, unless the dashboard refused that hostname and the preview fallback
 // (research R6, always-pass test keys for preview only) is in use. The fallback is recognised
-// by the preview site-key build variable existing (item 23). The reader keeps only name,
+// by the preview site-key build variable existing (item 22). The reader keeps only name,
 // domains and mode; the site key and secret never reach this module.
 import type { CheckResult, ProviderContext } from "../types.ts";
 import {
@@ -13,7 +13,7 @@ import {
 } from "./contact-shared.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "contact-turnstile-widget", order: 20 };
+const ITEM = { id: "contact-turnstile-widget", order: 19 };
 const SUMMARY = "Could not read the Turnstile widget.";
 const WIDGET_NAME = "dcc-web contact";
 const PRODUCTION_HOST = "doncoleman.ca";
