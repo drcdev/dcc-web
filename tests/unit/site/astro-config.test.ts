@@ -57,6 +57,11 @@ describe("astro.config.mjs site resolution", () => {
     expect(config.trailingSlash).toBe("ignore");
   });
 
+  it("sets prerenderConflictBehavior to error", async () => {
+    const config = await importFreshConfig();
+    expect(config.prerenderConflictBehavior).toBe("error");
+  });
+
   it("registers the @astrojs/sitemap integration", async () => {
     const config = (await importFreshConfig()) as unknown as { integrations: Array<{ name?: string }> };
     const names = (config.integrations ?? []).map((integration) => integration?.name);

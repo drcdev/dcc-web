@@ -61,6 +61,28 @@ describe("page route and component wiring (build)", () => {
   it("row 14: the route checks addresses over the src/pages route-file list (404.mdx against 404.astro)", () =>
     expectRejected("build", [broken("14-route-conflict.mdx", "404.mdx")], "404.mdx", "404.astro", "/404/"));
 
+  // Second layer: the unit test sees only the configured value; only a real build shows that Astro
+  // raises its own error. The custom route check is bypassed here, so this proves the backstop.
+  it("Astro's prerenderConflictBehavior: 'error' fails a page that clashes with a code route (custom check bypassed)", async () => {
+    const route = "src/pages/[...slug].astro";
+    const needle = "assertUniqueAddresses({ pageFiles, routeFiles, reserved";
+    let patched = false;
+    result = await buildFixtureSite([broken("14-route-conflict.mdx", "404.mdx")], {
+      mode: "build",
+      overrides: {
+        [route]: (text) => {
+          const next = text.replace(needle, "assertUniqueAddresses({ pageFiles, routeFiles: [], reserved");
+          patched = next !== text;
+          return next;
+        },
+      },
+    });
+    expect(patched, "the route override should have matched").toBe(true);
+    expect(result.ok, "the build should fail").toBe(false);
+    expect(result.message).toContain("conflicts with higher priority route");
+    expect(result.message).toContain("`/404`");
+  });
+
   it("rows 8 to 10 and 16: the route runs validatePageBody", () =>
     expectRejected("build", [broken("16-level-one-heading.mdx")], "Page file", "16-level-one-heading", "use ##"));
 

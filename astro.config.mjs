@@ -44,6 +44,9 @@ const subsetFace = { display: "swap", unicodeRange: [INTER_UNICODE_RANGE[0], ...
 export default defineConfig({
   site,
   trailingSlash: "ignore",
+  // Fail the build when two routes make the same URL (configuration reference, prerenderConflictBehavior).
+  // The custom route check in the pages route still runs first, so its message names the files.
+  prerenderConflictBehavior: "error",
 
   vite: {
     plugins: [tailwindcss()],

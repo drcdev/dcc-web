@@ -259,7 +259,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W1: Turn on Astro's conflict check (test first)
 
-- [ ] W1 done
+- [x] W1 done
 - **Files:** `tests/unit/site/astro-config.test.ts`, `astro.config.mjs`,
   `tests/build/page-validation.test.ts`.
 - **Test, unit (new-first, unit over config):** add "sets prerenderConflictBehavior to error"
