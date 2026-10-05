@@ -49,17 +49,23 @@ observed: about 480 prompt tokens and 60 to 120 completion tokens per request.
 | Measured typical request | ~480 | ~120 | 480 x 0.004625 + 120 x 0.030475 = 2.2 + 3.7 = **5.9** |
 | Worst case (input capped, R4) | ~6,350 | 300 (`max_tokens`) | 29.4 + 9.1 = **39** |
 
-- Default bucket: 200 generations a day per environment, two environments (production and
-  preview share one account allowance). At the measured typical request: 2 x 200 x 5.9 =
-  **about 2,400 neurons/day**, a quarter of the 10,000 neurons/day free allocation. **Expected
+- Default bucket: 60 generations a day per environment (capacity 60), two environments
+  (production and preview share one account allowance). At the measured typical request:
+  2 x 60 x 5.9 = **about 710 neurons/day**, well under a tenth of the 10,000 neurons/day free allocation. **Expected
   monthly cost: $0.**
-- Ceiling if both buckets are exhausted every day on typical requests: still about 2,400
+- Ceiling if both buckets are exhausted every day on typical requests: still about 710
   neurons/day, inside the free allocation, so **$0**. If the same usage were billed in full at
-  $0.011 per 1,000 neurons it would be 2,400 x 30 x 0.011 / 1,000 = **about $0.79/month**. Even
-  at the all-worst-case extreme (15,600 neurons/day, over the free allocation) a full bill would
-  be about $5.15/month, under the $13 ceiling.
+  $0.011 per 1,000 neurons it would be 710 x 30 x 0.011 / 1,000 = **about $0.23/month**. Even
+  at the all-worst-case extreme a full bill would be about $5.15/month, under the $13 ceiling.
+- Sizing rule: the free allocation resets daily but the bucket refills continuously, so one
+  environment can spend a full bucket plus a day's refill in a day. Both environments must fit:
+  2 x (capacity + refill per day) x 39 <= 10,000. At 60/60 that is 2 x 120 x 39 = **9,360**.
+  The earlier 200/200 gave 31,200, which would exhaust the allocation and fail production
+  generations for the rest of the day. "New questions" (`fresh`) is uncached and takes a token
+  every call, so it takes only while more than `FRESH_RESERVE = 20` tokens remain; the last 20
+  stay for first generations, which are cached and bounded by the number of post versions.
 - The account is on Workers Free (spec 007 plan, Principle VIII), where Workers AI use past the
-  daily allocation is refused rather than billed; the bucket keeps usage under it anyway.
+  daily allocation is refused rather than billed; the bucket is sized so that usage stays under it (sizing rule above).
 - D1 cost: one bucket UPDATE and at most one INSERT plus one DELETE per generation, one indexed
   primary-key read per cached press: well under 0.5% of the free daily row limits.
 
@@ -78,7 +84,7 @@ model-agnostic, so a later model swap needs no parser change.
   the documented cheaper alternative if cost ever matters. Not the default: only 6 of 12
   generations were valid in live sampling (see Measured above). Switching is a `config.ts` edit.
 - `@cf/meta/llama-3.1-8b-instruct-fp8` (~13,800 input neurons per M): ~92 neurons worst case,
-  over the allocation at 200/day. Rejected.
+  over the allocation even at 60/day (2 x 120 x 92). Rejected.
 - `@cf/zai-org/glm-4.7-flash`: reasoning model, its thinking tokens add output cost and latency
   for no gain on a 3-question task. Rejected.
 - `@cf/meta/llama-3.1-8b-instruct-fast`: no longer in the catalog. Rejected.
@@ -137,7 +143,7 @@ loaded before a deploy) or `404 not_found` when there is no file.
 turns the raw body into plain text: drops MDX `import`/`export` lines, JSX/HTML tags, image
 syntax and fenced code (replaced by `[code example]`), keeps link text without URLs, collapses
 whitespace, and cuts at the last paragraph boundary before **24,000 characters** (about 6,000
-tokens). Title and summary are always sent. The cap keeps the worst case at ~13 neurons (R1) and
+tokens). Title and summary are always sent. The cap keeps the worst case at ~39 neurons with Llama 3.2 3B (R1) and
 the questions still relate to the post (spec edge case "Very long posts").
 
 ## R5. Prompt, parsing and validation of model output
@@ -185,8 +191,9 @@ the questions still relate to the post (spec edge case "Very long posts").
 
 ## R6. Configuration in one module
 
-**Decision**: `worker/src/questions/config.ts` exports the model id, `BUCKET_CAPACITY = 200`,
-`BUCKET_REFILL_PER_DAY = 200`, `MAX_INPUT_CHARS = 24_000` (re-exported to the build-side
+**Decision**: `worker/src/questions/config.ts` exports the model id, `BUCKET_CAPACITY = 60`,
+`BUCKET_REFILL_PER_DAY = 60`, `FRESH_RESERVE = 20`, `WORST_CASE_NEURONS = 39`,
+`FREE_NEURONS_PER_DAY = 10_000`, `MAX_INPUT_CHARS = 24_000` (re-exported to the build-side
 preparer), `MAX_OUTPUT_TOKENS = 300`, `MODEL_TIMEOUT_MS = 15_000` and the question limits
 (2, 4, 25 words, 200 characters). FR-018 is met: Don edits numbers, not logic. Both environments
 share the values; preview usage is still separate because each environment has its own database

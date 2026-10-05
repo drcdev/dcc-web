@@ -5,7 +5,7 @@ import { json } from "../http";
 import { isSameOriginRequest } from "../same-origin";
 import { getSet, storeSet } from "./cache";
 import { takeToken, refundToken } from "./bucket";
-import { BODY_MAX_BYTES, QUESTIONS_MODEL } from "./config";
+import { BODY_MAX_BYTES, FRESH_RESERVE, QUESTIONS_MODEL } from "./config";
 import { generate } from "./generate";
 import { logOutcome, type QuestionsOutcome } from "./log";
 import { validateQuestions } from "./validate";
@@ -95,7 +95,7 @@ export async function handleQuestions(request: Request, env: Env): Promise<Respo
 
     // One site-wide token per generation, taken after the cheap checks and before the model call
     // (contract step 7). Every failure from here on gives it back.
-    const take = await takeToken(env.DB, Date.now());
+    const take = await takeToken(env.DB, Date.now(), undefined, fresh ? FRESH_RESERVE : 0);
     if (!take.ok) {
       logOutcome("limited");
       return json({ ok: false, error: "limited", retryAfter: take.retryAfter }, 429, {

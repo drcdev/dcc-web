@@ -2,7 +2,7 @@
 // (specs/022 contracts/questions-api.md rows Q01 to Q07, Q09 to Q12; guarantees Q24, Q25, Q27, Q29).
 import { env } from "cloudflare:workers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { BODY_MAX_BYTES, BUCKET_CAPACITY, BUCKET_REFILL_PER_DAY, MODEL_TIMEOUT_MS, QUESTIONS_MODEL } from "../src/questions/config";
+import { BODY_MAX_BYTES, BUCKET_CAPACITY, BUCKET_REFILL_PER_DAY, FRESH_RESERVE, MODEL_TIMEOUT_MS, QUESTIONS_MODEL } from "../src/questions/config";
 import { fakeAi, fakeAssets, makeSource, ORIGIN, run } from "./helpers";
 
 const SLUG = "a-post";
@@ -396,25 +396,46 @@ describe("questions API: the site-wide bucket (Q08, Q20 to Q23, Q28)", () => {
     vi.useFakeTimers({ now: FIXED, toFake: ["Date"] });
     const N = 3;
     await setBucket(N, FIXED);
-    const { assets, hash } = await setup();
     const ai = fakeAi({ text: MODEL_TEXT });
     const statuses: number[] = [];
     for (let i = 0; i < N + 1; i++) {
-      statuses.push((await run(request({ slug: SLUG, hash, fresh: true }), { AI: ai, ASSETS: assets })).status);
+      // A different slug each time, so every call is a first generation that misses the cache.
+      const slug = `${SLUG}-${i}`;
+      const source = await makeSource({ slug, text: "The post argues that written decisions beat meetings." });
+      const assets = fakeAssets({ [`/writing/${slug}/question-source.json`]: source });
+      statuses.push((await run(request({ slug, hash: source.hash }), { AI: ai, ASSETS: assets })).status);
     }
     expect(statuses).toEqual([200, 200, 200, 429]);
     expect(ai.calls).toHaveLength(N);
   });
 
+  it("a fresh call with only the reserve left is 429 limited, calls no model and keeps the tokens", async () => {
+    vi.useFakeTimers({ now: FIXED, toFake: ["Date"] });
+    await setBucket(FRESH_RESERVE, FIXED);
+    const { assets, hash } = await setup();
+    const ai = fakeAi({ text: MODEL_TEXT });
+    const res = await run(request({ slug: SLUG, hash, fresh: true }), { AI: ai, ASSETS: assets });
+    expect(res.status).toBe(429);
+    const body = (await res.json()) as { ok: boolean; error: string; retryAfter: number };
+    expect(body).toEqual({ ok: false, error: "limited", retryAfter: Math.ceil(86_400 / BUCKET_REFILL_PER_DAY) });
+    expect(res.headers.get("Retry-After")).toBe(String(body.retryAfter));
+    expect(ai.calls).toHaveLength(0);
+    expect(await tokens()).toBe(FRESH_RESERVE);
+    // A first generation at the same level still succeeds.
+    const first = await run(request({ slug: SLUG, hash }), { AI: ai, ASSETS: assets });
+    expect(first.status).toBe(200);
+    expect(await tokens()).toBe(FRESH_RESERVE - 1);
+  });
+
   it("New questions takes a token, and a cached set is served when the bucket is empty", async () => {
     vi.useFakeTimers({ now: FIXED, toFake: ["Date"] });
-    await setBucket(5, FIXED);
+    await setBucket(FRESH_RESERVE + 5, FIXED);
     const { assets, hash } = await setup();
     const ai = fakeAi({ text: MODEL_TEXT });
     await run(request({ slug: SLUG, hash }), { AI: ai, ASSETS: assets });
-    expect(await tokens()).toBe(4);
+    expect(await tokens()).toBe(FRESH_RESERVE + 4);
     await run(request({ slug: SLUG, hash, fresh: true }), { AI: ai, ASSETS: assets });
-    expect(await tokens()).toBe(3);
+    expect(await tokens()).toBe(FRESH_RESERVE + 3);
     await setBucket(0, FIXED);
     const cached = await run(request({ slug: SLUG, hash }), { AI: ai, ASSETS: assets });
     expect(cached.status).toBe(200);

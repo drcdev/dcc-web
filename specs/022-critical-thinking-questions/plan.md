@@ -20,8 +20,8 @@ thinking questions. The build writes each post's plain text and a content hash t
 `/writing/<slug>/question-source.json`; the page carries the slug and hash. `POST /api/questions`
 (in the existing Worker, beside `/api/contact`) checks the origin, returns the cached set for
 that `(slug, hash)` from D1 when there is one (free), and otherwise reads the source file through
-the `ASSETS` binding, takes one token from a site-wide D1 token bucket (200 a day, continuous
-refill, one config module), calls Workers AI (`@cf/meta/llama-3.2-3b-instruct`) and
+the `ASSETS` binding, takes one token from a site-wide D1 token bucket (60 a day, continuous
+refill, one config module; "New questions" leaves a reserve of 20), calls Workers AI (`@cf/meta/llama-3.2-3b-instruct`) and
 validates the output (2–4 one-sentence questions, ≤ 25 words, no quoting). Failures refund the
 token. "New questions" generates a fresh set that is shown but not stored. The panel is an Astro
 component with a processed script, hidden without JavaScript, a block above the body below
@@ -53,8 +53,8 @@ local D1, fake `AI` and `ASSETS`), Playwright `e2e`, `a11y`, `visual`, `budget`
 one D1 primary-key read; post template within the unchanged budget (JS ≤ 10 KB, total ≤ 150 KB,
 LCP ≤ 2.5 s, CLS < 0.1)
 
-**Constraints**: ≤ 200 generations/day/environment by default; worst case 13 neurons per
-generation; no reader identifiers, cookies or IPs; no CSP loosening; model output never shown
+**Constraints**: ≤ 60 generations/day/environment by default; worst case 39 neurons per
+generation (Llama 3.2 3B); no reader identifiers, cookies or IPs; no CSP loosening; model output never shown
 unvalidated; prerendered post pages readable without JavaScript
 
 **Scale/Scope**: one endpoint, one component, one migration, a handful of posts today (5 files, one a draft sample); 2 D1 databases replaced
@@ -74,7 +74,7 @@ violation; nothing in Complexity Tracking.*
 | VI. Content as Files | Posts stay Markdown/MDX files. D1 holds only a cache of generated, derived question sets, not authored content (Principle V wording); deleting it loses nothing authored. |
 | VII. Private Data | The feature collects no personal data: no cookies, accounts, IPs or hashes; logs are outcome-only (R14). Only the post's own public text goes to Workers AI. Contact data rules unchanged; the contact data is not migrated (not live). The privacy policy gains a section (FR-023). |
 | VIII. Cloudflare Best Practices | One Worker; only `/api/*` runs it (`run_worker_first` unchanged). Origin-only, HTTPS-only, bucket-limited, no model call when empty (as amended). Bindings, migrations and config committed and applied by the deploy scripts; no dashboard configuration (AI Gateway avoided for that reason). D1 queries use primary keys; at most 3 writes per generation. `invocation_logs` stays off. Wrangler `--env-file /dev/null`; no `versions secret put`/`versions deploy`. |
-| IX. Cost Ceiling | **Expected monthly cost: $0.** Llama 3.2 3B instruct ($0.051 / $0.335 per M input / output tokens = 4,625 / 30,475 neurons per M): ~5.9 neurons per measured typical generation (~480 in, ~120 out), ≤ 39 worst case; two environments × 200/day × 5.9 ≈ 2,400 neurons/day typical, inside the 10,000/day free allocation. Ceiling if both buckets are exhausted every day on typical requests: still $0 (≈ $0.79/month if billed in full at $0.011 per 1,000 neurons; ≈ $5.15/month even at the all-worst-case extreme). D1 rows and Worker requests negligible (R1). Workers Free refuses AI use past the allocation rather than billing. |
+| IX. Cost Ceiling | **Expected monthly cost: $0.** Llama 3.2 3B instruct ($0.051 / $0.335 per M input / output tokens = 4,625 / 30,475 neurons per M): ~5.9 neurons per measured typical generation (~480 in, ~120 out), ≤ 39 worst case; two environments × 60/day × 5.9 ≈ 710 neurons/day typical, and (60 + 60) × 39 × 2 = 9,360 at the all-worst-case extreme, inside the 10,000/day free allocation. Ceiling if both buckets are exhausted every day on typical requests: still $0 (≈ $0.79/month if billed in full at $0.011 per 1,000 neurons; ≈ $5.15/month even at the all-worst-case extreme). D1 rows and Worker requests negligible (R1). Workers Free refuses AI use past the allocation rather than billing. |
 | X. Accessible, Fast and Private | WCAG 2.2 AA panel: heading, live region, numbered list, visible focus, both themes, forced colours (panel contract P22–P23); `a11y` covers the post template. Budget: ~2–3 KB script within the 10 KB JS limit, no CLS (shown via the pre-paint `js` class). No third-party script; the model is called only from the Worker. |
 | XI. Spec Kit Workflow | Spec Kit branch and directory, one feature. Files overlap with sibling worktrees only if they edit `PostLayout.astro`, `wrangler.jsonc`, the deploy scripts or `docs/setup.md`; the PR merges `main` before the gate and re-runs the config tests. Visual baselines are regenerated after that merge. |
 | Dev workflow: Astro decisions cite docs | research.md R2, R9, R10 name the Astro pages (endpoints, routing reference, client-side scripts, Cloudflare adapter). |
@@ -233,8 +233,11 @@ task.
   its new id and `SELECT count(*) FROM messages` returns 0; the rollback path is in
   `contracts/worker-config.md`.
 - **Shared allowance**: production and preview share one account's 10,000 neurons/day; the
-  default buckets use at most about half of it. Raising either bucket should keep
-  2 × capacity × 13 ≤ 10,000.
+  default buckets use at most 9,360 of it in the worst case. The allocation resets daily while
+  the bucket refills continuously, so one day can spend a full bucket plus a day's refill:
+  resizing must keep 2 × (capacity + refill per day) × 39 ≤ 10,000 (a config test asserts it).
+  "New questions" takes only while more than `FRESH_RESERVE` (20) tokens remain, so it cannot
+  drain the bucket that first generations need.
 - **Breakpoint `xl`** is new to the site's templates (R11); Don confirms the layout on preview.
 
 ## Complexity Tracking
