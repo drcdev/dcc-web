@@ -368,7 +368,7 @@ Nothing in this chore changes a page, so no visual baselines.
 
 ### W5 — Cut the `CLAUDE.md` alignment list and visual section to pointers
 
-- [ ] W5 done
+- [x] W5 done
 - **Files:** `CLAUDE.md`:
   - **Orchestration skills, paragraph 1:** replace "The first three were ported from Don's
     `cadence` project, whose read-only clone lives at `.reference/cadence` (gitignored, like
