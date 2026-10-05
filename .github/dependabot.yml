@@ -1,0 +1,16 @@
+# Version updates for GitHub Actions only. Security updates need no config here: they are
+# switched on in Settings and open a PR only when an advisory hits a dependency. npm stays
+# deliberate (exact pins and the release-age delay), so it is not listed.
+#
+# One group keeps this to at most one PR a month. Each bot PR waits for Don's approval through
+# the ruleset (.github/ is in CODEOWNERS).
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      actions:
+        patterns:
+          - "*"

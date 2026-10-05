@@ -265,18 +265,21 @@ lives only in the agent's sign-in store.
 `DCC_BOT_GITHUB_CREDENTIAL` (kept only in the agent's `gh` keyring; never stored in the
 repository).
 
-## 9. GitHub secret scanning {#github-secret-scanning}
+## 9. GitHub secret scanning and Dependabot {#github-secret-scanning}
 
 **What it is for**
 GitHub's own secret scanning and push protection are a first-party, always-on backstop against
-ever committing a secret, alongside the local `secretlint` gate.
+ever committing a secret, alongside the local `secretlint` gate. Dependabot security updates
+open a fix PR when an advisory hits a dependency.
 
 **Where to do it**
-Repository Settings → Code security → turn on Secret scanning and Push protection.
+Repository Settings → Code security → turn on Secret scanning, Push protection and Dependabot
+security updates (Dependabot alerts must be on first).
 
 **How it will be confirmed**
-`pnpm setup:check --item github-secret-scanning` reports complete when both
-`security_and_analysis.secret_scanning` and `…secret_scanning_push_protection` are enabled.
+`pnpm setup:check --item github-secret-scanning` reports complete when
+`security_and_analysis.secret_scanning`, `…secret_scanning_push_protection` and
+`…dependabot_security_updates` are all enabled.
 
 **Constitution principle**
 VII (Private Data: Minimal and Protected).

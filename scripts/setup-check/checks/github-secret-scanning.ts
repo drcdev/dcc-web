@@ -1,6 +1,8 @@
 // checks/github-secret-scanning.ts (setup item 9, data-model.md
 // "github-secret-scanning"): security_and_analysis.secret_scanning and
-// …secret_scanning_push_protection are both enabled for the repository.
+// …secret_scanning_push_protection and …dependabot_security_updates are all enabled for the
+// repository. GitHub only lets security updates be on while Dependabot alerts are on, so
+// "enabled" here also covers alerts.
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 
@@ -10,6 +12,7 @@ interface RepoSettings {
   security_and_analysis?: {
     secret_scanning?: { status?: string };
     secret_scanning_push_protection?: { status?: string };
+    dependabot_security_updates?: { status?: string };
   };
 }
 
@@ -23,19 +26,22 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     const scanning = settings.security_and_analysis?.secret_scanning?.status;
     const pushProtection = settings.security_and_analysis?.secret_scanning_push_protection?.status;
 
+    const dependabot = settings.security_and_analysis?.dependabot_security_updates?.status;
+
     const off: string[] = [];
     if (scanning !== "enabled") off.push("secret scanning");
     if (pushProtection !== "enabled") off.push("push protection");
+    if (dependabot !== "enabled") off.push("Dependabot security updates");
 
     if (off.length > 0) {
       return missing(
         ITEM,
-        `GitHub ${off.join(" and ")} ${off.length > 1 ? "are" : "is"} not enabled for this repository.`,
-        "Turn on Secret scanning and Push protection: Repository Settings → Code security.",
+        `GitHub ${off.join(", ").replace(/, ([^,]*)$/, " and $1")} ${off.length > 1 ? "are" : "is"} not enabled for this repository.`,
+        "Turn on Secret scanning, Push protection and Dependabot security updates: Repository Settings → Code security.",
       );
     }
 
-    return complete(ITEM, "GitHub secret scanning and push protection are both enabled.");
+    return complete(ITEM, "GitHub secret scanning, push protection and Dependabot security updates are all enabled.");
   } catch (err) {
     return fromProviderError(
       ITEM,
