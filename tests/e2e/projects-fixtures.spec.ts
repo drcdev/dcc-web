@@ -109,6 +109,24 @@ test("changing the filter twice then pressing Back leaves the index (no history 
   await expect(page).not.toHaveURL(/projects/);
 });
 
+test("going back from a story restores the index with its ?theme=", async ({ page }) => {
+  await page.goto(`${INDEX}?theme=tooling`);
+  await expect(rows(page)).toHaveCount(TOOLING);
+  await rows(page).first().locator("h2 a").click();
+  await page.goBack();
+  await expect(page).toHaveURL(/\/projects\/\?theme=tooling$/);
+  await expect(rows(page)).toHaveCount(TOOLING);
+  await expect(page.locator('button[data-theme="tooling"]')).toHaveAttribute("aria-pressed", "true");
+});
+
+test("the header Projects link always opens the unfiltered index", async ({ page }) => {
+  await page.goto(`${INDEX}?theme=tooling`);
+  await page.locator('#primary-nav-list a[href="/projects/"]').click();
+  await expect(page).toHaveURL(/\/projects\/$/);
+  await expect(rows(page)).toHaveCount(ALL);
+  await expect(page.locator("[data-filter-all]")).toHaveAttribute("aria-pressed", "true");
+});
+
 test("announces the status as a polite live region", async ({ page }) => {
   await page.goto(INDEX);
   await expect(status(page)).toHaveAttribute("aria-live", "polite");
