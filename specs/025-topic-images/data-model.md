@@ -34,7 +34,7 @@ because the map is keyed by `seriesIds` only.
 | `pill`, `border`, `banner`, `marker` | Unchanged. |
 
 Validation: `tests/unit/content/topics.test.ts` computes each dark outline token (series
-`outline`, `cardEdge`) against `dusk-BASE` and requires at least 3:1 (FR-012), and checks that
+`outline`, `cardEdge` and the kept text-only topic borders) against `dusk-BASE` and requires at least 3:1 (FR-012), and checks that
 every class is an existing palette token (FR-015).
 
 ## Card (component surfaces) — states

@@ -2,7 +2,7 @@
 
 **Input**: `specs/025-topic-images/` (spec.md, plan.md, research.md, data-model.md, contracts/series-cards.md, quickstart.md)
 **Tests**: mandatory (Constitution Principle I). Every test task names its one primary layer (`docs/testing.md`, "Where a test goes"); a second layer carries a reason. Tests are written first and seen to fail before the implementation they cover.
-**Toolchain**: follow `CLAUDE.md` "Local toolchain" (wrapper `/Users/doncoleman/.claude/jobs/808fe259/tmp/run.sh <alarm-seconds> <cmd...>`). Ask Don before the full `pnpm run verify`.
+**Toolchain**: follow `CLAUDE.md` "Local toolchain" (a plain wrapper script that puts Node 24 on `PATH` and runs `<cmd...>` under `perl alarm`; at planning time it lived at `/Users/doncoleman/.claude/jobs/808fe259/tmp/run.sh <alarm-seconds> <cmd...>`, recreate it if that job directory is gone). Ask Don before the full `pnpm run verify`.
 **Format**: `- [ ] T### [P?] [US?] description with path`. `[P]` = different files, no dependency on an unfinished task.
 **Major change** (Principle III, design system / visual identity): flagged in the PR body.
 
@@ -27,13 +27,13 @@
 
 - [ ] T006 [P] [US1] Update `tests/component/post/SeriesIntro.test.ts` (layer: component, Astro container; markup contract section 1): image is the tile's first child, outside the `p-5` text div, not inside any `<a>`, `alt=""`, `data-series-image` matches the series, `loading="eager"`, only the first (Convergence) tile has `fetchpriority="high"`, tile order Convergence then Drift, no `title`/`aria-label`, `overflow-hidden rounded-xl` on the tile, 2:1 `width`/`height`. FR-009 (no JavaScript) is covered here because the image is static HTML; no browser-level second test.
 - [ ] T007 [P] [US1] Update `tests/component/post/LeadStory.test.ts` (layer: component): lead story image is `loading="eager"` with `fetchpriority="auto"`, so `/writing/` has one high-priority image (plan, loading rules).
-- [ ] T008 [P] [US1] Add to `tests/build/blog-listing.test.ts` (layer: build, only the real build shows emitted files): every `_astro/*.webp` derived from the series images is at most 25,600 bytes, no built page references a PNG derived from `src/assets/series/`, the landing page tile images carry the 400/640/1008 `srcset` widths, and `/writing/` has exactly one `fetchpriority="high"` image (FR-007, SC-005, contract section 4).
-- [ ] T009 [P] [US1] Add geometry checks to `tests/e2e/blog-fixtures.spec.ts` (layer: e2e on the fixture site, because only a browser shows rendered size; the component test cannot): at phone and desktop widths each tile image spans the tile's inner width and its height is width/2 within 1 px, the two side-by-side tiles are equal height with images aligned at the top, no horizontal scroll at 320 px, and the topic pill row, lead story and post cards contain no `[data-series-image]` (FR-002, FR-005, US1 scenarios 1 to 3).
+- [ ] T008 [P] [US1] Add to `tests/build/blog-listing.test.ts` (layer: build, only the real build shows emitted files): every `_astro/*.webp` derived from the series images is at most 25,600 bytes, each tile's 400w candidate (the file a 390 px 1x phone downloads) is at most 8,192 bytes, no built page references a PNG derived from `src/assets/series/`, the landing page tile images carry the 400/640/1008 `srcset` widths, and `/writing/` has exactly one `fetchpriority="high"` image (FR-007, SC-005, contract section 4). Second layer for the priority count, with reason: T006 and T007 each check one component, and only the built page shows the count across the tiles and the lead story together.
+- [ ] T009 [P] [US1] Add geometry checks to `tests/e2e/blog-fixtures.spec.ts` (layer: e2e on the fixture site, because only a browser shows rendered size; the component test cannot): at phone and desktop widths each tile image spans the tile's inner width and its height is width/2 within 1 px, the two side-by-side tiles are equal height with images aligned at the top, with WCAG 1.4.12 text spacing injected at 320 px and at a 640 px (200% zoom) layout each tile grows to fit its text (no text clipped by the tile's `overflow-hidden`, none overlapped by the image), the focused "Read <series>" link's focus indicator lies wholly inside the tile, and the topic pill row, lead story and post cards contain no `[data-series-image]` (FR-002, FR-005, FR-016, US1 scenarios 1 to 3). No horizontal scroll at 320 px is already covered by the existing `REFLOW_PAGES` a11y check (plan), so it is not repeated here.
 
 ### Implementation
 
-- [ ] T010 [US1] Edit `src/components/post/SeriesIntro.astro`: tile becomes `overflow-hidden rounded-xl` with banner fill and `outline`; add `<Image>` first (2:1, `widths` 400/640/1008, `sizes` per contract, `alt=""`, eager, `fetchpriority="high"` on the first tile only, `data-series-image`) and wrap the text in an inner `p-5` div. T006, T008 (tile part) and T009 pass.
-- [ ] T011 [US1] Edit `src/components/post/LeadStory.astro`: image `fetchpriority="auto"`, keep `loading="eager"`. T007 passes.
+- [ ] T010 [US1] Edit `src/components/post/SeriesIntro.astro`: tile becomes `overflow-hidden rounded-xl` with banner fill and `outline`; add `<Image>` first (2:1, `widths` 400/640/1008, `sizes` per contract, `alt=""`, eager, `fetchpriority="high"` on the first tile only, `data-series-image`) and wrap the text in an inner `p-5` div. T006, T008 (all but the one-high-priority count, which passes after T011) and T009 pass.
+- [ ] T011 [US1] Edit `src/components/post/LeadStory.astro`: image `fetchpriority="auto"`, keep `loading="eager"`. T007 and T008's one-high-priority check pass.
 
 **Checkpoint**: `/writing/` tiles show images; US1 independently verifiable.
 
@@ -45,9 +45,9 @@
 ### Tests (write first, see fail)
 
 - [ ] T012 [P] [US2] Update `tests/component/post/SeriesBanner.test.ts` (layer: component; contract section 2): `<img>` is inside the `<header>` before the eyebrow, `width=1536 height=384`, `alt=""`, eager and `fetchpriority="high"`, present on page 2 too, text block `p-6 md:p-8`, header `mb-8 overflow-hidden rounded-xl`, `h1` still the only heading and unchanged.
-- [ ] T013 [P] [US2] Create `tests/component/post/TopicBanner.test.ts` (layer: component; none exists today): `header[data-topic-banner]` contains no `<img>` for any topic (FR-004).
-- [ ] T014 [P] [US2] Add to `tests/build/blog-listing.test.ts` (layer: build, because the crop of every `srcset` candidate is only visible in the real build output; research R2 risk): every strip `srcset` candidate on a series page has a 4:1 pixel size (400/640/1024/1536 wide), a `/writing/topics/<topic>/` page contains no series image, an empty-series page still shows the strip.
-- [ ] T015 [P] [US2] Add geometry checks to `tests/e2e/blog-fixtures.spec.ts` (layer: e2e fixture site, rendered size and position): strip width equals the banner inner width, height is width/4 within 1 px at 320, 390 and desktop widths, strip bottom edge equals the text block top (no gap), header top radii are the card radius and the strip is clipped by them, never wider than the banner, no horizontal scroll at 320 px, page 2 shows the same image (FR-003, FR-005, FR-008).
+- [ ] T013 [P] [US2] Extend the existing `tests/component/post/TopicBanner.test.ts` (layer: component): `header[data-topic-banner]` contains no `<img>` for any topic (FR-004).
+- [ ] T014 [P] [US2] Add to `tests/build/blog-listing.test.ts` (layer: build, because the crop of every `srcset` candidate is only visible in the real build output; research R2 risk): every strip `srcset` candidate on a series page has a 4:1 pixel size (400/640/1024/1536 wide), the 400w strip candidate is at most 8,192 bytes (SC-005), and an empty-series page still shows the strip (the empty state is page composition, which no component test renders). The topic page's lack of an image is T013's (component) and is not repeated here.
+- [ ] T015 [P] [US2] Add geometry checks to `tests/e2e/blog-fixtures.spec.ts` (layer: e2e fixture site, rendered size and position): strip width equals the banner inner width, height is width/4 within 1 px at 320, 390 and desktop widths, strip bottom edge equals the text block top (no gap), header top radii are the card radius and the strip is clipped by them, never wider than the banner, with WCAG 1.4.12 text spacing at 320 px and at a 640 px (200% zoom) layout the banner grows to fit its text with nothing clipped, and the focused banner links' focus indicators lie wholly inside the header (FR-003, FR-005, FR-008, FR-016). No horizontal scroll at 320 px is the existing `REFLOW_PAGES` a11y check, and "same image on page 2" is T012's (component); neither is repeated here.
 
 ### Implementation
 
@@ -64,7 +64,7 @@
 
 - [ ] T017 [P] [US3] Update `tests/component/post/PostCard.test.ts` (layer: component, class contract): image card uses `cardEdge` (`border border-dusk-200 dark:border-dusk-500`, no `dusk-700`), text-only card keeps its 2 px topic border and gains no `cardEdge`/second outline, no hover/focus/active classes added (FR-010, FR-013, FR-016).
 - [ ] T018 [US3] Update `tests/component/post/LeadStory.test.ts` (layer: component; same file as T007, so run after it): same `cardEdge` and text-only expectations for the lead story.
-- [ ] T019 [P] [US3] Add probes to `tests/e2e/theme-tokens.spec.ts` (layer: e2e fixture site, because only a browser resolves computed colours per theme): on `/writing/`, `/writing/drift/` and a topic page, in dark the tiles and banner resolve a 1 px border in the series 300 shade, image cards and lead story resolve 1 px `dusk-500`, text-only cards keep their 2 px topic colour, the topic banner has no border; in light the tile/banner border width is 0 and the card edge is `dusk-200` (FR-010, FR-011, FR-013).
+- [ ] T019 [P] [US3] Add probes to `tests/e2e/theme-tokens.spec.ts` (layer: e2e fixture site, because only a browser resolves computed colours per theme): on `/writing/`, `/writing/drift/` and a topic page, in dark the tiles and banner resolve a 1 px border in the series 300 shade, image cards and lead story resolve 1 px `dusk-500`, text-only cards keep their 2 px topic colour, the topic banner has no border, and the series images have computed `filter: none` and `opacity: 1`; in light the tile/banner border width is 0 and the card edge is `dusk-200` (FR-010, FR-011, FR-013, FR-017).
 - [ ] T020 [P] [US3] Add to `tests/e2e/blog-forced-colors.spec.ts` (layer: e2e, forced colours only emulate in a browser): in forced-colors with light and dark themes, series tile, joined banner, post card and lead story (image and text-only) each have a solid border of at least 1 px in the system text colour, and the series images stay visible (FR-014).
 
 ### Implementation
@@ -88,7 +88,7 @@
 ## Dependencies and order
 
 - Phase 1 first (T002/T003 before T004/T005; T001 before T004).
-- Phases 2 and 3 depend on Phase 1 and touch different components, so either order works; both use `outline` from T005.
+- Phases 2 and 3 depend on Phase 1 and touch different components, so either order works; both use `outline` from T005. They are not run in parallel with each other: T008/T014 share `tests/build/blog-listing.test.ts` and T009/T015 share `tests/e2e/blog-fixtures.spec.ts`.
 - Phase 4 depends on Phases 2 and 3 (T019 and T020 probe tiles and banner); T018 runs after T007 (same file).
 - Phase 5 needs all code done; T022 before T023, T023 before T024, T026 and T027 after baselines, T028 last and left open.
 - Within each phase, test tasks precede the implementation tasks.

@@ -85,7 +85,7 @@ No NEEDS CLARIFICATION remains; research.md R1 to R6 resolves every choice.
 | **I. Test-First** | PASS | Every behaviour gets a failing test first, at one primary layer (see "Test placement"). Existing tests that pin `dark:border-dusk-700` on `PostCard`/`LeadStory` are updated to the new token *before* the components change, and seen to fail. |
 | **II. Automated Release Gate** | PASS | No gate is skipped or weakened. Budget limits, a11y and visual thresholds are unchanged; baselines change only where predicted below. Branch gets its preview deployment as usual. |
 | **III. Human Review for Major Changes** | PASS (major) | Classified **major** (design system / visual identity), stated above and to be flagged in the PR body. Don's approving review is required as for every PR. |
-| **IV. First-Party Before Custom** | PASS | Images: Astro `<Image>` from `astro:assets` (build-time resize, WebP, build-time 4:1 crop via `width`+`height`, intrinsic size for CLS), images stored in `src/` per docs.astro.build/en/guides/images/#where-to-store-images. `<Picture>` considered and not needed (R2). Delivery: Cloudflare Workers static assets, the site's existing hosting; no Cloudflare Images or Image Resizing, since build-time transforms already cover it at no cost. Styling: Tailwind `dark:` and `forced-colors:` variants with existing tokens. No custom image code; the one-off sharp re-encode is a copy step, not shipped code. Fly.io is not used by this site. Astro Docs MCP was available and is cited in research.md. |
+| **IV. First-Party Before Custom** | PASS | Images: Astro `<Image>` from `astro:assets` (build-time resize, WebP, build-time 4:1 crop via `width`+`height`, intrinsic size for CLS), images stored in `src/` per docs.astro.build/en/guides/images/#where-to-store-images. `<Picture>` considered and not needed (R2). Delivery: Cloudflare Workers static assets, the site's existing hosting; no Cloudflare Images or Image Resizing, since build-time transforms already cover it at no cost. Styling: Tailwind `dark:` and `forced-colors:` variants with existing tokens. No custom image code; the one-off sharp re-encode is a copy step, not shipped code. Astro Docs MCP was available and is cited in research.md. |
 | **V. Static by Default** | PASS | All pages stay prerendered; images are plain `<img>` with no client JavaScript and show with JavaScript off. No endpoint added. |
 | **VI. Content as Files** | PASS | Images are committed files; the mapping is a typed config module beside `topics.ts`. A missing image for a series fails the unit test and the build (`seriesImage()` throws). No CMS or database. |
 | **VII. Private Data** | PASS | Not touched. The images carry no metadata (checked: no EXIF/XMP/ICC/text chunks; re-encoded anyway). |
@@ -142,12 +142,12 @@ Entities and style fields: [data-model.md](./data-model.md).
 | Dark outlines ≥ 3:1 vs page; only existing tokens (FR-012, FR-015) | Unit | `tests/unit/content/topics.test.ts` (new describe for `outline` and `cardEdge`) |
 | Tile markup: image first, outside padding, `alt=""`, not in a link, eager, priority on first (FR-002, FR-006, FR-009) | Component | `tests/component/post/SeriesIntro.test.ts` |
 | Banner markup: strip inside header before eyebrow, 4:1 `width`/`height`, `alt=""`, on page 2 too; `h1` unchanged (FR-003, FR-006) | Component | `tests/component/post/SeriesBanner.test.ts` |
-| Topic banner has no image (FR-004) | Component | new `tests/component/post/TopicBanner.test.ts` (none exists today) |
+| Topic banner has no image (FR-004) | Component | existing `tests/component/post/TopicBanner.test.ts` (extended) |
 | Card edge classes, text-only keeps its topic border; lead story image no longer high priority (FR-010, FR-013, FR-016) | Component | `PostCard.test.ts`, `LeadStory.test.ts` (update the `dusk-700` and `fetchpriority` expectations) |
 | Kept text-only topic borders ≥ 3:1 against the page (FR-012) | Unit | `tests/unit/content/topics.test.ts` (same describe as the outline check) |
-| Strip candidates are 4:1; every series WebP ≤ 25 KB; no image on a topic page (FR-003, FR-007, SC-005) | Build | `tests/build/blog-listing.test.ts` (its existing fixture build) |
-| Rendered geometry: tile 2:1 full width, strip ≈ 4:1 banner-wide and flush, no horizontal scroll at 320 px (FR-002, FR-003, FR-005) | E2E (fixture site) | `tests/e2e/blog-fixtures.spec.ts` |
-| Dark outline colours resolve; light unchanged; topic banner unchanged (FR-010, FR-011, FR-013) | E2E (fixture site) | `tests/e2e/theme-tokens.spec.ts` (new probes on `/writing/`, `/writing/drift/`, a topic page) |
+| Strip candidates are 4:1; every series WebP ≤ 25 KB and each 400w candidate ≤ 8 KB; one high-priority image on `/writing/` (second layer: only the built page combines tiles and lead story); empty series page still shows the strip (FR-003, FR-007, SC-005) | Build | `tests/build/blog-listing.test.ts` (its existing fixture build) |
+| Rendered geometry: tile 2:1 full width, strip ≈ 4:1 banner-wide and flush; cards grow under 200% zoom and text spacing with nothing clipped; focus indicators not clipped by the card (FR-002, FR-003, FR-005, FR-016) | E2E (fixture site) | `tests/e2e/blog-fixtures.spec.ts` |
+| Dark outline colours resolve; light unchanged; topic banner unchanged; images unfiltered in dark (FR-010, FR-011, FR-013, FR-017) | E2E (fixture site) | `tests/e2e/theme-tokens.spec.ts` (new probes on `/writing/`, `/writing/drift/`, a topic page) |
 | Edges visible in forced colours (FR-014) | E2E | `tests/e2e/blog-forced-colors.spec.ts` |
 | Pixels of the tiles (US1, US3) | Visual | `tests/e2e/visual.spec.ts`: new fixture subject `series-intro` on `/writing/`, locator `[data-series-intro] > div` (the grid) |
 | Budget, no CLS, LCP (FR-007, FR-008, SC-004) | Budget | existing `tests/e2e/budget.spec.ts`, unchanged |
@@ -229,7 +229,7 @@ src/
 tests/
 ├── unit/content/series-images.test.ts       # new
 ├── unit/content/topics.test.ts              # outline contrast
-├── component/post/{SeriesIntro,SeriesBanner,PostCard,LeadStory}.test.ts, TopicBanner.test.ts (new)
+├── component/post/{SeriesIntro,SeriesBanner,PostCard,LeadStory,TopicBanner}.test.ts
 ├── build/blog-listing.test.ts               # strip ratio, file caps
 └── e2e/{blog-fixtures,theme-tokens,blog-forced-colors,visual}.spec.ts
     └── visual.spec.ts-snapshots/            # 16 changed, 8 new PNGs
