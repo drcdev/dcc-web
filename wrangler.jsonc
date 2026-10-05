@@ -22,8 +22,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "dcc-web-contact",
-      "database_id": "9b51b0c4-2ddb-4563-8621-c99d28de4e16",
+      "database_name": "dcc-web",
+      "database_id": "30fa05de-e60c-41c4-8ffc-684d891f6fc9",
       "migrations_dir": "migrations"
     }
   ],
@@ -36,8 +36,8 @@
       "d1_databases": [
         {
           "binding": "DB",
-          "database_name": "dcc-web-contact-preview",
-          "database_id": "53cef28f-8a6c-4b53-8557-bbc30aa986bf",
+          "database_name": "dcc-web-preview",
+          "database_id": "ab1b7308-0b0b-4b88-87dd-74e88b8dbef1",
           "migrations_dir": "migrations"
         }
       ]
