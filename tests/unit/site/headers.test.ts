@@ -31,11 +31,29 @@ const WORKERS_DEV_RULE = "https://:worker.:subdomain.workers.dev/*";
 const ASTRO_RULE = "/_astro/*";
 const REVIEW_HOST_RULE ="https://new.doncoleman.ca/*";
 const QUESTION_SOURCE_RULE = "/writing/*/question-source.json";
+const SVG_RULE = "/_astro/*.svg";
+const SVG_CSP = "default-src 'none'; style-src 'unsafe-inline'; font-src data:; sandbox";
 const publicAstroPath = fileURLToPath(new URL("../../../public/_astro", import.meta.url));
 
 describe("public/_headers", () => {
-  it("has exactly five rules, in order: every path, the fingerprinted build files, the question source files, workers.dev previews and the review host", () => {
-    expect([...rules().keys()]).toEqual(["/*", ASTRO_RULE, QUESTION_SOURCE_RULE, WORKERS_DEV_RULE, REVIEW_HOST_RULE]);
+  it("has exactly six rules, in order: every path, the fingerprinted build files, the SVG documents, the question source files, workers.dev previews and the review host", () => {
+    expect([...rules().keys()]).toEqual(["/*", ASTRO_RULE, SVG_RULE, QUESTION_SOURCE_RULE, WORKERS_DEV_RULE, REVIEW_HOST_RULE]);
+  });
+
+  // Issue #95: an SVG opened directly is a document, and the page's meta policy does not reach
+  // it. Overlapping _headers rules join the same header with a comma, so the browser enforces
+  // both this policy and the /* policy. The inline <style> and the data: Inter faces are what
+  // the diagrams need.
+  it("sets only the sandboxed SVG Content-Security-Policy on /_astro/*.svg", () => {
+    expect([...(rules().get(SVG_RULE)?.entries() ?? [])]).toEqual([["content-security-policy", SVG_CSP]]);
+  });
+
+  it("keeps the SVG policy minimal", () => {
+    const csp = rules().get(SVG_RULE)?.get("content-security-policy") ?? "";
+    const directives = csp.split(";").map((d) => d.trim());
+    expect(directives).toContain("default-src 'none'");
+    expect(directives).toContain("sandbox");
+    expect(csp).not.toMatch(/script-src|unsafe-eval|allow-|https:|'self'/);
   });
 
   // specs/022 T023: the per-post source file the questions API reads is not for search engines.
@@ -107,7 +125,8 @@ describe("public/_headers", () => {
 
   it("keeps the header-only CSP free of script and style sources", () => {
     // A header default-src/script-src would be enforced alongside the page's
-    // meta policy and block the hashed inline scripts (research R8).
+    // meta policy and block the hashed inline scripts (research R8). The SVG rule's style-src
+    // applies only to SVG documents.
     const csp = starRule().get("content-security-policy") ?? "";
     expect(csp).not.toMatch(/default-src|script-src|style-src|unsafe-/);
   });

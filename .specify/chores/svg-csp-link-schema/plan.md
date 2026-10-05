@@ -123,7 +123,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W1: Unit tests for the SVG rule (test first)
 
-- [ ] W1 done
+- [x] W1 done
 - **Files:** `tests/unit/site/headers.test.ts`.
 - **Test:** unit over config, new-first. **Layer: unit**, the cheapest layer that can observe
   the rule text. No second layer (the issue's "one test"; the served check is acceptance 4,
