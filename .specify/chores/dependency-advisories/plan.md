@@ -264,7 +264,7 @@ lockfile, where exact pins and the release-age delay already govern upgrades.
 
 ### W3: Delete the stale release-age exclusions
 
-- [ ] W3 done
+- [x] W3 done
 - **Files:** `pnpm-workspace.yaml`.
 - **Test:** existing. `corepack pnpm install --frozen-lockfile` passes locally after the
   deletion (pnpm re-checks every lockfile entry's release age on install, unless
