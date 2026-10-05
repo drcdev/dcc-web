@@ -21,7 +21,7 @@ thinking questions. The build writes each post's plain text and a content hash t
 (in the existing Worker, beside `/api/contact`) checks the origin, returns the cached set for
 that `(slug, hash)` from D1 when there is one (free), and otherwise reads the source file through
 the `ASSETS` binding, takes one token from a site-wide D1 token bucket (200 a day, continuous
-refill, one config module), calls Workers AI (`@cf/ibm-granite/granite-4.0-h-micro`) and
+refill, one config module), calls Workers AI (`@cf/meta/llama-3.2-3b-instruct`) and
 validates the output (2–4 one-sentence questions, ≤ 25 words, no quoting). Failures refund the
 token. "New questions" generates a fresh set that is shown but not stored. The panel is an Astro
 component with a processed script, hidden without JavaScript, a block above the body below
@@ -74,7 +74,7 @@ violation; nothing in Complexity Tracking.*
 | VI. Content as Files | Posts stay Markdown/MDX files. D1 holds only a cache of generated, derived question sets, not authored content (Principle V wording); deleting it loses nothing authored. |
 | VII. Private Data | The feature collects no personal data: no cookies, accounts, IPs or hashes; logs are outcome-only (R14). Only the post's own public text goes to Workers AI. Contact data rules unchanged; the contact data is not migrated (not live). The privacy policy gains a section (FR-023). |
 | VIII. Cloudflare Best Practices | One Worker; only `/api/*` runs it (`run_worker_first` unchanged). Origin-only, HTTPS-only, bucket-limited, no model call when empty (as amended). Bindings, migrations and config committed and applied by the deploy scripts; no dashboard configuration (AI Gateway avoided for that reason). D1 queries use primary keys; at most 3 writes per generation. `invocation_logs` stays off. Wrangler `--env-file /dev/null`; no `versions secret put`/`versions deploy`. |
-| IX. Cost Ceiling | **Expected monthly cost: $0.** Granite 4.0 H Micro: ~5 neurons per typical generation, ≤ 13 worst case; two environments × 200/day × 13 = 5,200 neurons/day worst case, inside the 10,000/day free allocation. Ceiling if both buckets are exhausted every day: still $0 (and ≈ $1.72/month even if billed in full at $0.011 per 1,000 neurons). D1 rows and Worker requests negligible (R1). Workers Free refuses AI use past the allocation rather than billing. |
+| IX. Cost Ceiling | **Expected monthly cost: $0.** Llama 3.2 3B instruct ($0.051 / $0.335 per M input / output tokens = 4,625 / 30,475 neurons per M): ~5.9 neurons per measured typical generation (~480 in, ~120 out), ≤ 39 worst case; two environments × 200/day × 5.9 ≈ 2,400 neurons/day typical, inside the 10,000/day free allocation. Ceiling if both buckets are exhausted every day on typical requests: still $0 (≈ $0.79/month if billed in full at $0.011 per 1,000 neurons; ≈ $5.15/month even at the all-worst-case extreme). D1 rows and Worker requests negligible (R1). Workers Free refuses AI use past the allocation rather than billing. |
 | X. Accessible, Fast and Private | WCAG 2.2 AA panel: heading, live region, numbered list, visible focus, both themes, forced colours (panel contract P22–P23); `a11y` covers the post template. Budget: ~2–3 KB script within the 10 KB JS limit, no CLS (shown via the pre-paint `js` class). No third-party script; the model is called only from the Worker. |
 | XI. Spec Kit Workflow | Spec Kit branch and directory, one feature. Files overlap with sibling worktrees only if they edit `PostLayout.astro`, `wrangler.jsonc`, the deploy scripts or `docs/setup.md`; the PR merges `main` before the gate and re-runs the config tests. Visual baselines are regenerated after that merge. |
 | Dev workflow: Astro decisions cite docs | research.md R2, R9, R10 name the Astro pages (endpoints, routing reference, client-side scripts, Cloudflare adapter). |
@@ -218,8 +218,9 @@ task.
   `ASSETS` objects in `miniflare.bindings` (tests inject their own fakes per request anyway).
 - **Workers Builds token**: if deploying with an `ai` binding needs an extra token permission,
   the first preview deploy fails; Don adds it (quickstart §1).
-- **Question quality** from a ~3B model: judged by Don on the preview (`[PREVIEW-CHECK]`). The
-  fallback model and its lower bucket are named in research R1; switching is a config edit.
+- **Question quality** from a ~3B model: judged by Don on the preview (`[PREVIEW-CHECK]`). Live
+  sampling already chose Llama 3.2 3B over Granite (research R1); Granite is the cheaper
+  alternative, a config edit.
 - **Live database steps** are all Don's (quickstart §1, `[PREVIEW-CHECK]` tasks in Phase 7).
   During implementation `wrangler.jsonc` keeps the current database names and ids, so every
   deploy, preview and test stays green; `0002` is additive and applies to whichever database

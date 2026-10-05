@@ -286,6 +286,9 @@ describe("questions API: what reaches the model (FR-014)", () => {
     const user = messages.find((m) => m.role === "user")!.content;
     expect(system).not.toContain("UNIQUE-SOURCE-MARKER");
     expect(system.toLowerCase()).toMatch(/ignore|instructions/);
+    expect(system).toMatch(/numbered list/);
+    expect(system).toMatch(/1\..*2\..*3\./);
+    expect(system).toMatch(/at most 20 words/);
     const open = user.indexOf("<<<");
     const close = user.lastIndexOf(">>>");
     expect(open).toBeGreaterThanOrEqual(0);

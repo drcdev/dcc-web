@@ -98,7 +98,7 @@ both themes. Pass criteria:
 - **Question quality** (spec FR-004): on every published post, the cached set and one "new
   questions" set each have 2–4 questions that refer to something specific in that post, none
   summarises, answers or quotes it, and none would fit any post unchanged. If more than one post
-  fails, switch to the fallback model (research R1) and recheck.
+  fails, adjust the prompt (research R5) and recheck; Granite is only the cheaper alternative (research R1), not a quality fallback.
 - **Placement**: at 390 px a block between title card and body; at 1280 px a sidebar that stays
   beside the body while scrolling and never covers text, header, footer or a focused link.
 - **Themes**: panel text and buttons readable in light and dark.

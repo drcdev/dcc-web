@@ -78,7 +78,7 @@ updated_at) × rate)`, with `rate = BUCKET_REFILL_PER_DAY / 86,400,000` tokens p
 
 | Name | Default | Used by |
 |---|---|---|
-| `QUESTIONS_MODEL` | `"@cf/ibm-granite/granite-4.0-h-micro"` | model call; stored in `question_sets.model` |
+| `QUESTIONS_MODEL` | `"@cf/meta/llama-3.2-3b-instruct"` | model call; stored in `question_sets.model` |
 | `BUCKET_CAPACITY` | `200` | bucket |
 | `BUCKET_REFILL_PER_DAY` | `200` | bucket |
 | `MAX_INPUT_CHARS` | `24_000` | build-side preparer (imported, as `ContactForm.astro` imports contact rules) |

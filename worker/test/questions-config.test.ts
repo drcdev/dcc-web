@@ -29,7 +29,7 @@ describe("questions config", () => {
     expect(config.QUESTIONS_MIN).toBeLessThanOrEqual(config.QUESTIONS_MAX);
   });
 
-  it("names the Granite model", () => {
-    expect(config.QUESTIONS_MODEL).toBe("@cf/ibm-granite/granite-4.0-h-micro");
+  it("names the Llama 3.2 3B instruct model", () => {
+    expect(config.QUESTIONS_MODEL).toBe("@cf/meta/llama-3.2-3b-instruct");
   });
 });

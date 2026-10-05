@@ -9,35 +9,55 @@ Principle V amended in this PR (done: constitution v2.2.0). Each decision below 
 chosen, why, and what was rejected. Astro choices cite the page found through the Astro Docs MCP
 (`astro-docs`), which was available for this plan.
 
-## R1. Model: `@cf/ibm-granite/granite-4.0-h-micro`
+## R1. Model: `@cf/meta/llama-3.2-3b-instruct`
 
-**Decision**: Generate with Workers AI model `@cf/ibm-granite/granite-4.0-h-micro` through
+**Decision**: Generate with Workers AI model `@cf/meta/llama-3.2-3b-instruct` through
 `env.AI.run(model, { messages, max_tokens: 300, temperature })`. The model id lives in the one
-config module (R6), so Don can swap it without touching logic.
+config module (R6), so Don can swap it without touching logic. The plan first chose
+`@cf/ibm-granite/granite-4.0-h-micro` for cost; live sampling changed the decision (below).
+
+**Measured** (2026-10-04, local `wrangler dev` with the real `ai` binding, four real posts, three
+forced fresh generations each, 12 per prompt/model, counted by the Worker's own validator):
+
+| Model and prompt | Valid sets |
+|---|---|
+| Granite 4.0 H Micro, original one-per-line prompt | 3 of 9 |
+| Granite 4.0 H Micro, numbered-list prompt | 6 of 12 |
+| Llama 3.2 3B instruct, numbered-list prompt with "at most 20 words" | 11 of 12 |
+
+Granite failure modes: it often stops after the first numbered item (one question, below
+`QUESTIONS_MIN`); when it writes three they often exceed 25 words; once it wrote a statement
+instead of a question. The one Llama rejection was three questions all over 25 words. Llama's
+questions also read better: they probe assumptions, evidence and implications. Typical usage
+observed: about 480 prompt tokens and 60 to 120 completion tokens per request.
 
 **Rationale**:
 
-- Cheapest current text-generation model in the Workers AI catalog (checked 2026-10-04 on
-  developers.cloudflare.com/workers-ai/models/ and /platform/pricing/): input $0.017 per M tokens
-  (1,542 neurons per M), output $0.112 per M tokens (10,158 neurons per M). Not deprecated.
 - Instruction-tuned, 131,000-token context (far more than the 6,000-token input cap in R4), and
-  supports function calling, which signals good instruction following for a ~3B model.
-- 2–4 one-sentence questions is a short, well-bounded task; a small model is enough, and the
-  Worker's validator (R5) is the real guarantee, not the model.
+  it follows the numbered-list format (R5) reliably enough that the validator, not a retry, is
+  the guarantee.
+- Pricing (checked 2026-10-04 on developers.cloudflare.com/workers-ai/models/ and
+  /platform/pricing/): input $0.051 per M tokens (4,625 neurons per M), output $0.335 per M
+  tokens (30,475 neurons per M). Not deprecated.
+- 2 to 4 one-sentence questions is a short, well-bounded task; the Worker's validator (R5) is the
+  real guarantee.
 
 **Neurons and cost** (Principle IX, FR-024):
 
 | Case | Input tokens | Output tokens | Neurons |
 |---|---|---|---|
-| Typical post (~1,500 words) | ~2,400 (prompt + text) | ~120 | 2,400 × 0.001542 + 120 × 0.010158 ≈ **5** |
-| Worst case (input capped, R4) | ~6,350 | 300 (`max_tokens`) | 9.8 + 3.0 ≈ **13** |
+| Measured typical request | ~480 | ~120 | 480 x 0.004625 + 120 x 0.030475 = 2.2 + 3.7 = **5.9** |
+| Worst case (input capped, R4) | ~6,350 | 300 (`max_tokens`) | 29.4 + 9.1 = **39** |
 
 - Default bucket: 200 generations a day per environment, two environments (production and
-  preview share one account allowance): worst case 2 × 200 × 13 = **5,200 neurons/day**, about
-  half of the 10,000 neurons/day free allocation. **Expected monthly cost: $0.**
-- Ceiling if both buckets are exhausted every day: still 5,200 neurons/day, inside the free
-  allocation, so **$0**. For scale, if the same usage were billed in full at $0.011 per 1,000
-  neurons it would be 5,200 × 30 × 0.011 / 1,000 ≈ **$1.72/month**, well under the $13 ceiling.
+  preview share one account allowance). At the measured typical request: 2 x 200 x 5.9 =
+  **about 2,400 neurons/day**, a quarter of the 10,000 neurons/day free allocation. **Expected
+  monthly cost: $0.**
+- Ceiling if both buckets are exhausted every day on typical requests: still about 2,400
+  neurons/day, inside the free allocation, so **$0**. If the same usage were billed in full at
+  $0.011 per 1,000 neurons it would be 2,400 x 30 x 0.011 / 1,000 = **about $0.79/month**. Even
+  at the all-worst-case extreme (15,600 neurons/day, over the free allocation) a full bill would
+  be about $5.15/month, under the $13 ceiling.
 - The account is on Workers Free (spec 007 plan, Principle VIII), where Workers AI use past the
   daily allocation is refused rather than billed; the bucket keeps usage under it anyway.
 - D1 cost: one bucket UPDATE and at most one INSERT plus one DELETE per generation, one indexed
@@ -47,16 +67,16 @@ config module (R6), so Don can swap it without touching logic.
 documented only for a short list of older or larger models (`llama-3.1-8b-instruct`, now gone
 from the catalog; `llama-3.3-70b-instruct-fp8-fast`; `deepseek-r1-distill-qwen-32b`; and two
 `@hf` models), and even there "Workers AI can't guarantee that the model responds according to
-the requested JSON Schema". Granite's documented input has no JSON-schema mode. So the prompt
-asks for plain text, one question per line, and the Worker parses and validates (R5). This is
+the requested JSON Schema". Llama 3.2 3B's documented input has no JSON-schema mode. So the prompt
+asks for plain text, a numbered list, and the Worker parses and validates (R5). This is
 model-agnostic, so a later model swap needs no parser change.
 
 **Alternatives considered**:
 
-- `@cf/meta/llama-3.2-3b-instruct` (4,625 / 30,475 neurons per M): about 3× the neurons
-  (worst case ~39 per generation, 15,400/day for two full buckets: over the free allocation).
-  Named as the fallback if Granite's questions read poorly in the preview check; switching it
-  needs the bucket lowered to ~120/day per environment, stated in the same config module.
+- `@cf/ibm-granite/granite-4.0-h-micro` (input $0.017 per M = 1,542 neurons; output $0.112 per M
+  = 10,158 neurons): about 3x cheaper (about 2 neurons typical, 13 worst case per generation),
+  the documented cheaper alternative if cost ever matters. Not the default: only 6 of 12
+  generations were valid in live sampling (see Measured above). Switching is a `config.ts` edit.
 - `@cf/meta/llama-3.1-8b-instruct-fp8` (~13,800 input neurons per M): ~92 neurons worst case,
   over the allocation at 200/day. Rejected.
 - `@cf/zai-org/glm-4.7-flash`: reasoning model, its thinking tokens add output cost and latency
@@ -126,9 +146,11 @@ the questions still relate to the post (spec edge case "Very long posts").
 
 - **Prompt**: a system message that asks for exactly **3** questions (the middle of 2–4, so a
   model that over- or under-shoots by one still yields a valid set), each one sentence of at most
-  25 words ending in "?", that examine claims, assumptions, evidence, alternatives or
-  implications, without summarising, answering or quoting the post, output one per line with
-  nothing else. The user message carries title, summary and text between fixed delimiters. The
+  20 words (the hint leaves slack under the 25-word validator cap) ending in "?", that examine
+  claims, assumptions, evidence, alternatives or implications, without summarising, answering or
+  quoting the post, written as a numbered list (`1.`, `2.`, `3.`) with nothing else. The numbered
+  list is deliberate: in live sampling the small models stopped after one line when asked for
+  one question per line (R1). The user message carries title, summary and text between fixed delimiters. The
   text is Don's own published content, so prompt injection risk is low, but the trust boundary
   still treats it as untrusted data: quoted material, code examples or MDX comments could read
   as instructions. The system message says the delimited text is material to question and that
@@ -149,12 +171,12 @@ the questions still relate to the post (spec edge case "Very long posts").
   is used up by something other than these buckets, and a model that has been deprecated,
   renamed or removed) is treated like malformed output: refund, `503`. The log line's error
   name and message (truncated to 200 characters) let Don tell a persistent model failure from a transient one; the fix for a removed
-  model is a config change of `QUESTIONS_MODEL` (and the bucket, per R1's fallback). The 15 s
+  model is a config change of `QUESTIONS_MODEL` . The 15 s
   timeout is a hard ceiling for slow attempts; the 5 s target in SC-001 is for 95% of presses,
   which typical generation (~120 output tokens on a small model) meets well inside.
 - **Result shape**: the Worker reads the text from either `result.response` (the documented
   text-generation field) or `result.choices[0].message.content` (the OpenAI chat-completion
-  shape the deployed granite model actually returns); neither present is a thrown error.
+  shape the deployed Llama model actually returns); neither present is a thrown error.
 - **Output cap**: `max_tokens: 300` covers the requested 3 questions (at most 4 kept) of up to
   25 words, about 35 tokens each with list markers, with headroom; output past the cap is
   simply cut and the validator drops any unfinished line.

@@ -61,6 +61,14 @@ describe("question validation (data-model section 5)", () => {
     expect(valid("What is missing?", "WHAT IS MISSING?", "Why?")).toEqual(["What is missing?", "Why?"]);
   });
 
+  it("accepts the numbered lines 1. 2. 3. and strips the markers", () => {
+    expect(valid("1. What does the evidence show?", "2. Who gains from this?", "3. What would change your mind?")).toEqual([
+      "What does the evidence show?",
+      "Who gains from this?",
+      "What would change your mind?",
+    ]);
+  });
+
   it("strips list markers, quotes and emphasis", () => {
     expect(valid("1. What is missing?", "2) **Why does it matter?**", '- "Who gains?"', "* _How so?_", "• Is it true?")).toEqual([
       "What is missing?",

@@ -3,7 +3,7 @@
 // The migration's CHECK constraints mirror QUESTIONS_MIN and QUESTIONS_MAX.
 
 /** Workers AI text-generation model that writes the questions. */
-export const QUESTIONS_MODEL = "@cf/ibm-granite/granite-4.0-h-micro";
+export const QUESTIONS_MODEL = "@cf/meta/llama-3.2-3b-instruct";
 
 /** Site-wide token bucket per environment: the most generations in a burst, and the refill per day. */
 export const BUCKET_CAPACITY = 200;
