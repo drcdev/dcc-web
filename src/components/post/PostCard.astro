@@ -12,7 +12,7 @@ import { mainTopic as pickMainTopic, orderTopics } from "../../lib/content/topic
 import { formatDate, isoDate } from "../../lib/format-date.ts";
 import type { PostSummary } from "../../lib/content/post-summary.ts";
 import TopicPill from "./TopicPill.astro";
-import { draftLabel, featuredMark, topicStyle } from "./topic-styles.ts";
+import { cardEdge, draftLabel, featuredMark, topicStyle } from "./topic-styles.ts";
 
 export interface Props {
   post: PostSummary;
@@ -29,7 +29,13 @@ const flags = {
   ...(textOnly ? { "data-text-only": "" } : {}),
   ...(post.draft ? { "data-draft": "" } : {}),
 };
-const border = textOnly && mainTopic ? `border-2 ${topicStyle(mainTopic.colour).border}` : "border border-dusk-200 dark:border-dusk-700";
+// Text-only cards keep their old edges (spec 025 FR-013): the 2px topic border, or the neutral
+// edge when no topic gives a colour. Only a card with an image takes the shared `cardEdge`.
+const border = !textOnly
+  ? cardEdge
+  : mainTopic
+    ? `border-2 ${topicStyle(mainTopic.colour).border}`
+    : "border border-dusk-200 dark:border-dusk-700";
 ---
 
 <li class="flex min-w-0">

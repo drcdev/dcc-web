@@ -30,6 +30,7 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { FIXTURE_SITE } from "./templates";
 import { expectThemeClass, setTheme, type Theme } from "./color-theme.ts";
+import { findTopic, pillRowTopics, seriesIds } from "../../src/config/topics.ts";
 
 /** A token name (`dusk-200` is `--color-dusk-200`) or the literal `transparent`. */
 type Token = string;
@@ -350,3 +351,67 @@ for (const { path, ready, probes } of PAGES) {
     });
   }
 }
+
+// Series and card outlines (spec 025 US3; FR-010, FR-011, FR-013, FR-017). Only a browser
+// resolves the computed edge per theme. Tokens come from the stylesheet, not from literals.
+test.describe("series and card outlines", () => {
+  const seriesColour = (id: string) => findTopic(id)!.colour;
+
+  for (const theme of ["light", "dark"] as const) {
+    test(`/writing/ edges in ${theme}`, async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await setTheme(page, theme);
+      await page.goto(`${FIXTURE_SITE}/writing/`);
+      await expectThemeClass(page, theme);
+      const dark = theme === "dark";
+
+      await expect(page.locator("[data-series-intro-item]")).toHaveCount(2);
+      for (const id of seriesIds) {
+        const tile = page.locator(`[data-series-intro-item="${id}"]`);
+        await expect(tile, `${id} tile border width`).toHaveCSS("border-top-width", dark ? "1px" : "0px");
+        if (dark) {
+          await expect(tile, `${id} tile border colour`).toHaveCSS("border-top-color", await colourOf(page, `${seriesColour(id)}-300`));
+        }
+      }
+
+      const imageCard = page.locator("[data-post-card]:not([data-text-only])").first();
+      await expect(imageCard).toBeVisible();
+      await expect(imageCard).toHaveCSS("border-top-width", "1px");
+      await expect(imageCard).toHaveCSS("border-top-color", await colourOf(page, dark ? "dusk-500" : "dusk-200"));
+
+      const lead = page.locator("[data-lead-story]:not([data-text-only])");
+      await expect(lead).toHaveCount(1);
+      await expect(lead).toHaveCSS("border-top-width", "1px");
+      await expect(lead).toHaveCSS("border-top-color", await colourOf(page, dark ? "dusk-500" : "dusk-200"));
+
+      const textOnly = page.locator("[data-post-card][data-text-only]").first();
+      if (await textOnly.count()) {
+        await expect(textOnly).toHaveCSS("border-top-width", "2px");
+        await expect(textOnly).not.toHaveCSS("border-top-color", await colourOf(page, "dusk-500"));
+      }
+
+      await expect(page.locator("[data-series-image]").first()).toHaveCSS("filter", "none");
+      await expect(page.locator("[data-series-image]").first()).toHaveCSS("opacity", "1");
+    });
+
+    test(`series banner and topic banner edges in ${theme}`, async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await setTheme(page, theme);
+      await page.goto(`${FIXTURE_SITE}/writing/${seriesIds[0]}/`);
+      await expectThemeClass(page, theme);
+      const banner = page.locator("[data-series-banner]");
+      await expect(banner).toHaveCSS("border-top-width", theme === "dark" ? "1px" : "0px");
+      if (theme === "dark") {
+        await expect(banner).toHaveCSS("border-top-color", await colourOf(page, `${seriesColour(seriesIds[0]!)}-300`));
+      }
+      await expect(page.locator("[data-series-image]").first()).toHaveCSS("filter", "none");
+      await expect(page.locator("[data-series-image]").first()).toHaveCSS("opacity", "1");
+
+      await page.goto(`${FIXTURE_SITE}/writing/topics/${pillRowTopics[0]!.id}/`);
+      await expectThemeClass(page, theme);
+      await expect(page.locator("[data-topic-banner]")).toHaveCSS("border-top-width", "0px");
+    });
+  }
+});

@@ -278,3 +278,22 @@ None.
 Chosen direction: Direction A
 
 Notes: I prefer this format with the ability to add pictures/graphics.
+
+## Series images and card outlines (spec 025)
+
+Drift and Convergence each have a picture, kept in `src/assets/series/` and mapped by series id
+in `src/config/series-images.ts`. Other topics have none. The pictures are decorative (`alt=""`).
+
+- **`/writing/` tiles:** the picture runs edge to edge across the top of its tile at 2:1, and the
+  tile text keeps its padding below it.
+- **Series pages:** on every page of a series, a wide strip of about 4:1, cropped from the centre
+  of the picture, sits above the series banner. The strip and banner read as one joined card.
+- **Dark-mode edges:** a post card or lead story that has an image takes the shared edge in
+  `cardEdge` (`src/components/post/topic-styles.ts`): 1 px `dusk-200` in light, 1 px `dusk-500` in
+  dark, which is 3.16:1 against the dark page (the old `dusk-700` was 1.64:1). Series tiles and
+  banners get a 1 px outline in dark at shade 300 of the series colour, the same shade as the
+  series marker. In forced-colours mode every one of these edges is a 1 px `CanvasText` border.
+- **Unchanged:** text-only cards and lead stories keep their 2 px topic-coloured border. No new
+  colour, font or dependency; the existing performance budget applies as it was.
+- **Why it is a design-system change:** the card edge colour in dark mode is a site-wide
+  token-level change (Principle III), so it is recorded here and reviewed as one.

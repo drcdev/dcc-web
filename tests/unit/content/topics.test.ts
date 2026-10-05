@@ -15,7 +15,7 @@ import {
   topicIds,
   topics,
 } from "../../../src/config/topics.ts";
-import { draftLabel, featuredMark, topicStyles } from "../../../src/components/post/topic-styles.ts";
+import { cardEdge, draftLabel, featuredMark, topicStyles } from "../../../src/components/post/topic-styles.ts";
 
 const read = (path: string) => readFileSync(fileURLToPath(new URL(`../../../${path}`, import.meta.url)), "utf-8");
 const css = read("src/styles/global.css");
@@ -236,6 +236,47 @@ describe("series marker outline (FR-016c)", () => {
     expect(contrast(`${colour}-700`, "white"), "light surface").toBeGreaterThanOrEqual(3);
     expect(contrast(`${colour}-300`, darkFill), "dark fill").toBeGreaterThanOrEqual(3);
     expect(contrast(`${colour}-300`, "dusk-BASE"), "dark surface").toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe("dark-mode edges of cards and series tiles (FR-012, FR-014, FR-015)", () => {
+  const series = topics.filter((t) => "series" in t && t.series);
+  const darkToken = (classes: string) => /(?:^|\s)dark:border-([a-z]+-\d+)(?:\s|$)/.exec(classes)?.[1];
+  const edges: [string, string | undefined][] = [
+    ...series.map((t) => [`${t.id} outline`, darkToken(topicStyles[t.colour]!.outline)] as [string, string | undefined]),
+    ["card edge", darkToken(cardEdge)],
+    ...topics
+      .filter((t) => !("series" in t && t.series))
+      .map((t) => [`${t.id} text-only border`, darkToken(topicStyles[t.colour]!.border)] as [string, string | undefined]),
+    ["free-form text-only border", darkToken(topicStyles.dusk!.border)],
+  ];
+
+  it.each(edges)("%s has a dark token with at least 3:1 against the page", (_name, token) => {
+    expect(token).toBeDefined();
+    expect(contrast(token!, "dusk-BASE")).toBeGreaterThanOrEqual(3);
+  });
+
+  it("series outline is the 300 shade of the series colour", () => {
+    for (const t of series) expect(darkToken(topicStyles[t.colour]!.outline)).toBe(`${t.colour}-300`);
+  });
+
+  it("card edge keeps the light dusk-200 border and uses dusk-500 in dark", () => {
+    expect(cardEdge).toBe("border border-dusk-200 dark:border-dusk-500");
+  });
+
+  it("every outline includes the forced-colors classes", () => {
+    for (const t of series) {
+      const outline = topicStyles[t.colour]!.outline;
+      expect(outline).toContain("forced-colors:border");
+      expect(outline).toContain("forced-colors:border-[CanvasText]");
+    }
+  });
+
+  it("uses only existing palette tokens", () => {
+    const all = [cardEdge, ...series.map((t) => topicStyles[t.colour]!.outline)].join(" ");
+    for (const [, token] of all.matchAll(/border-([a-z]+-\d+)/g)) {
+      expect(() => colourOf(token!), token).not.toThrow();
+    }
   });
 });
 

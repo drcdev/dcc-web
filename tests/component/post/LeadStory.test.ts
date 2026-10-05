@@ -3,7 +3,7 @@
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, it } from "vitest";
 import LeadStory from "../../../src/components/post/LeadStory.astro";
-import { topicStyles } from "../../../src/components/post/topic-styles.ts";
+import { cardEdge, topicStyles } from "../../../src/components/post/topic-styles.ts";
 import { findTopic } from "../../../src/config/topics.ts";
 import { byName, classList } from "../html.ts";
 import { summary, withImage } from "./fixtures.ts";
@@ -36,12 +36,12 @@ describe("LeadStory", () => {
     ]);
   });
 
-  it("loads its feature image eagerly at high priority, with its alt text", async () => {
+  it("loads its feature image eagerly at automatic priority, with its alt text", async () => {
     const html = await render(withImage("one"));
     const [img] = byName(html, "img");
     expect(img!.attrs.alt).toBe("Picture for one");
     expect(img!.attrs.loading).toBe("eager");
-    expect(img!.attrs.fetchpriority).toBe("high");
+    expect(img!.attrs.fetchpriority).toBe("auto");
     expect("data-text-only" in byName(html, "article")[0]!.attrs).toBe(false);
   });
 
@@ -58,6 +58,19 @@ describe("LeadStory", () => {
     expect("data-text-only" in article.attrs).toBe(true);
     const colour = findTopic("technology-teams")!.colour;
     for (const cls of topicStyles[colour]!.border.split(/\s+/)) expect(classList(article)).toContain(cls);
+  });
+
+  it("gives an image lead story the shared cardEdge and no dusk-700 edge (spec 025 FR-010)", async () => {
+    const article = byName(await render(withImage("one")), "article")[0]!;
+    for (const cls of cardEdge.split(/\s+/)) expect(classList(article)).toContain(cls);
+    expect(classList(article)).not.toContain("dark:border-dusk-700");
+  });
+
+  it("keeps the 2px topic border on a text-only lead story and adds no second edge (spec 025 FR-013)", async () => {
+    const article = byName(await render(summary("one", { topics: ["technology-teams"] })), "article")[0]!;
+    expect(classList(article)).toContain("border-2");
+    expect(classList(article)).not.toContain("dark:border-dusk-500");
+    expect(classList(article)).not.toContain("border");
   });
 
   it("marks a featured lead story", async () => {

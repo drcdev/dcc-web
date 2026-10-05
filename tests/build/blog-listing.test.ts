@@ -5,8 +5,9 @@
 // Two posts share a date, to check the order of a tie (title, then slug). A throwaway route
 // prints getPostSummaries() so the production summaries are checked on the same build (tasks T017,
 // T020; research R3, R6). The preview and no-branch builds run in drafts.test.ts.
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
+import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildFixtureSite, type FixtureSiteResult } from "./fixture-site.ts";
 
@@ -269,5 +270,94 @@ describe("getPostSummaries in a production build", () => {
     const slugs = posts.map((p) => p.slug);
     expect(slugs).not.toContain("free-form-draft");
     expect(slugs.filter((slug) => slug.startsWith("sample-"))).toEqual([]);
+  });
+});
+
+describe("the series tile images on the landing page (FR-007, SC-005; contracts/series-cards.md sections 1 and 4)", () => {
+  const SERIES = ["convergence", "drift"];
+  const tileImages = () => {
+    const html = site.read("writing/index.html");
+    return SERIES.map((id) => {
+      const tag = new RegExp(`<img\\b[^>]*data-series-image="${id}"[^>]*>`).exec(html)?.[0] ?? "";
+      const srcset = /\ssrcset="([^"]*)"/.exec(tag)?.[1] ?? "";
+      const candidates = srcset
+        .split(",")
+        .map((entry) => entry.trim().split(/\s+/))
+        .map(([url, width]) => ({ url: url!, width: Number.parseInt(width ?? "", 10) }));
+      return { id, tag, candidates };
+    });
+  };
+  const sizeOf = (url: string) => statSync(join(site.dist, url.replace(/^\//, ""))).size;
+
+  it("gives each tile a 400, 640 and 1008 wide candidate", () => {
+    for (const { id, tag, candidates } of tileImages()) {
+      expect(tag, `${id} tile image`).not.toBe("");
+      expect(candidates.map((c) => c.width), id).toEqual([400, 640, 1008]);
+    }
+  });
+
+  it("keeps every candidate at or below 25,600 bytes and the 400w one at or below 8,192", () => {
+    for (const { id, candidates } of tileImages()) {
+      for (const { url, width } of candidates) {
+        expect(url, id).toMatch(/\.webp$/);
+        expect(sizeOf(url), `${id} ${width}w`).toBeLessThanOrEqual(25_600);
+      }
+      expect(sizeOf(candidates.find((c) => c.width === 400)!.url), `${id} 400w`).toBeLessThanOrEqual(8_192);
+    }
+  });
+
+  it("references no PNG derived from the series images on any built page", () => {
+    for (const [path, html] of site.htmlFiles()) {
+      expect(html, path).not.toMatch(/\/_astro\/(?:drift|convergence)\.[^"'\s]*\.png/);
+    }
+  });
+
+  it("has exactly one high-priority image on /writing/ (the Convergence tile)", () => {
+    const html = site.read("writing/index.html");
+    expect(html.match(/<img\b[^>]*fetchpriority="high"/g) ?? []).toHaveLength(1);
+    const [convergence, drift] = tileImages();
+    expect(convergence!.tag).toContain('fetchpriority="high"');
+    expect(drift!.tag).not.toContain('fetchpriority="high"');
+  });
+});
+
+describe("the series strip images on series pages (FR-003, FR-007, SC-005; research R2)", () => {
+  const stripCandidates = (html: string) => {
+    const tag = /<img\b[^>]*data-series-image="[^"]*"[^>]*>/.exec(html)?.[0] ?? "";
+    const srcset = /\ssrcset="([^"]*)"/.exec(tag)?.[1] ?? "";
+    return {
+      tag,
+      candidates: srcset
+        .split(",")
+        .map((entry) => entry.trim().split(/\s+/))
+        .map(([url, width]) => ({ url: url!, width: Number.parseInt(width ?? "", 10) })),
+    };
+  };
+
+  it.each(["writing/drift/index.html", "writing/drift/2/index.html", "writing/convergence/index.html"])(
+    "crops every candidate on %s to 4:1 at 400, 640, 1024 and 1536 wide",
+    async (path) => {
+      const { tag, candidates } = stripCandidates(site.read(path));
+      expect(tag, "strip image").not.toBe("");
+      expect(candidates.map((c) => c.width)).toEqual([400, 640, 1024, 1536]);
+      for (const { url, width } of candidates) {
+        const meta = await sharp(join(site.dist, url.replace(/^\//, ""))).metadata();
+        expect(meta.width, `${path} ${width}w`).toBe(width);
+        expect(meta.height, `${path} ${width}w`).toBe(width / 4);
+      }
+    },
+  );
+
+  it("keeps the 400w strip candidate at or below 8,192 bytes", () => {
+    for (const path of ["writing/drift/index.html", "writing/convergence/index.html"]) {
+      const { candidates } = stripCandidates(site.read(path));
+      const small = candidates.find((c) => c.width === 400)!;
+      expect(statSync(join(site.dist, small.url.replace(/^\//, ""))).size, path).toBeLessThanOrEqual(8_192);
+    }
+  });
+
+  it("shows the strip on the empty series page too", () => {
+    expect(site.read("writing/convergence/index.html")).toContain("There are no posts in this series yet.");
+    expect(stripCandidates(site.read("writing/convergence/index.html")).tag).not.toBe("");
   });
 });
