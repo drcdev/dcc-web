@@ -8,6 +8,13 @@ import type { ChangeInput } from "../../../scripts/ci/changed-paths.ts";
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 
 const SAFE = [
+  "CLAUDE.md",
+  ".claude/skills/deliver/SKILL.md",
+  ".claude/skills/tweak/SKILL.md",
+  ".claude/skills/squash/SKILL.md",
+  ".claude/skills/chore/SKILL.md",
+  ".specify/memory/constitution.md",
+  ".claude/skills/_shared/verify-gate.md",
   ".claude/skills/other/SKILL.md",
   ".specify/bugs/x/assessment.md",
   ".specify/extensions/git/git-config.yml",
@@ -19,13 +26,7 @@ const SAFE = [
 ];
 
 const UNSAFE = [
-  "CLAUDE.md",
   ".claude/skills/setup-walkthrough/SKILL.md",
-  ".claude/skills/deliver/SKILL.md",
-  ".claude/skills/tweak/SKILL.md",
-  ".claude/skills/squash/SKILL.md",
-  ".claude/skills/chore/SKILL.md",
-  ".specify/memory/constitution.md",
   "docs/setup.md",
   "docs/pages.md",
   "docs/design-source.md",
@@ -151,11 +152,24 @@ describe("decide()", () => {
     expect(d.full).toBe(true);
     expect(d.contentOnly).toBe(false);
   });
-  it.each(["deliver", "tweak", "squash"])("runs everything when the %s skill changes", (name) => {
-    expect(decide({ event: "pull_request", files: [`.claude/skills/${name}/SKILL.md`] }).full).toBe(true);
+  it("skips when only pipeline skills, shared wording, CLAUDE.md or the constitution change", () => {
+    const d = decide({
+      event: "pull_request",
+      files: [
+        ".claude/skills/deliver/SKILL.md",
+        ".claude/skills/tweak/SKILL.md",
+        ".claude/skills/squash/SKILL.md",
+        ".claude/skills/chore/SKILL.md",
+        ".claude/skills/_shared/open-pr.md",
+        "CLAUDE.md",
+        ".specify/memory/constitution.md",
+      ],
+    });
+    expect(d.full).toBe(false);
+    expect(d.contentOnly).toBe(false);
   });
   it("runs everything when a deny-listed file changes", () => {
-    expect(decide({ event: "pull_request", files: [".specify/memory/constitution.md"] }).full).toBe(true);
+    expect(decide({ event: "pull_request", files: [".claude/skills/setup-walkthrough/SKILL.md"] }).full).toBe(true);
   });
   it("never reports contentOnly without full", () => {
     const inputs: ChangeInput[] = [

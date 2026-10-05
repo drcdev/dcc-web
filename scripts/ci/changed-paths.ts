@@ -22,15 +22,7 @@ export const SKIP_SAFE_EXTENSIONS: readonly string[] = [
   ".ps1",
 ];
 /** Files under a skip-safe prefix that a test or check reads. */
-export const READ_BY_CHECKS: readonly string[] = [
-  ".claude/skills/chore/SKILL.md",
-  ".claude/skills/deliver/SKILL.md",
-  ".claude/skills/setup-walkthrough/SKILL.md",
-  ".claude/skills/squash/SKILL.md",
-  ".claude/skills/tweak/SKILL.md",
-  "CLAUDE.md",
-  ".specify/memory/constitution.md",
-];
+export const READ_BY_CHECKS: readonly string[] = [".claude/skills/setup-walkthrough/SKILL.md"];
 
 export function isSkipSafe(path: string): boolean {
   if (path.includes("..") || path.startsWith("/") || path.includes("\\")) return false;

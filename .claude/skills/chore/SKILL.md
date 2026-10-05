@@ -84,16 +84,8 @@ and which pipeline should pick it up. Never demote the other way: a
     tests is **coverage-preserving**: every assertion removed is mapped in
     `plan.md` to where that guarantee now lives, and the review phase checks
     the mapping.
-  - **Test placement.** Every behaviour gets one primary layer: the
-    cheapest layer that can observe it. E2E is for journeys and for
-    anything only a browser can show; build tests are for what only the
-    real build can show; accessibility and visual tests cover templates,
-    not stories. Every planned test (a test task, a reproducing test or a
-    work item's test) names its layer (unit, component, build, worker,
-    E2E, accessibility, visual or budget), and testing the same behaviour
-    at a second layer needs a written reason. The constitution's
-    Development Workflow makes this binding; "Where a test goes" in
-    `docs/testing.md` has the detail.
+  - **Test placement.** Follow the test-placement rule in the constitution's Development
+    Workflow; "Where a test goes" in `docs/testing.md` has the detail and the layer names.
   - **Release gate (Principle II).** Never mark work done on a red suite.
     `pnpm run verify` must exit zero before the pipeline is complete.
     Checks are never skipped, disabled or weakened to get a chore through —
@@ -118,26 +110,12 @@ and which pipeline should pick it up. Never demote the other way: a
   `.specify/extensions/git/git-config.yml` next to the bug events; the
   commit style is conventional, so the subagent generates the message from
   the diff per that skill. Do not commit phase artifacts yourself.
-- **Alignment rule (CLAUDE.md, Orchestration skills).** A chore that edits
-  any of `/deliver`, `/tweak`, `/squash` or `/chore` must carry the shared
-  sections (Local toolchain, the pre-PR pause, `[PREVIEW-CHECK]`, visual
-  baselines, the PR author block) into all four together; the review phase
-  checks this.
+- **Shared wording (CLAUDE.md, Orchestration skills).** Wording the four pipelines share lives
+  once in `.claude/skills/_shared/`. A chore that edits a pipeline skill changes the shared file,
+  not a copy, and the review phase checks that no skill restates it.
 - Keep your own text output to one short status line per phase transition.
-
-## Local toolchain
-
-Tell every subagent that runs `pnpm`, `astro` or `playwright`:
-
-- Node comes from nvm and `.nvmrc` pins the major. Run `node -v` first; if it
-  is not the `.nvmrc` version, run `source ~/.nvm/nvm.sh && nvm use` in the
-  same command as the toolchain call (the Bash tool does not keep shell
-  state between calls).
-- macOS has no `timeout` binary. Bound long runs with
-  `perl -e 'alarm N; exec @ARGV' <cmd>` (N in seconds).
-- Docker Desktop is normally off. It is needed only for
-  `pnpm run test:visual:update:linux`; if `docker info` fails, ask Don to
-  start it (see the visual-baselines step) rather than skipping to CI.
+- Follow the Local toolchain section of `CLAUDE.md` for every `pnpm`, `astro`, `playwright` or
+  `wrangler` call, and tell every subagent that runs one to do the same.
 
 ## Preflight
 
@@ -205,7 +183,8 @@ phase:
 > judgment calls yourself and note them in your summary, or write a
 > `[NEEDS DECISION]` item where the phase table allows one. When you
 > finish, run the `speckit-git-commit` skill with the event name given.
-> Never print secrets. Your final message must be only: a 3–6 sentence
+> Follow the Local toolchain section of `CLAUDE.md` for every `pnpm`, `astro`,
+> `playwright` or `wrangler` call. Never print secrets. Your final message must be only: a 3–6 sentence
 > summary of what you produced, plus the specific items the phase table
 > asks you to return.
 
@@ -214,7 +193,7 @@ phase:
 | 1   | explore   | — (no skill) | sonnet | **Read-only, no commit.** Locate everything the chore touches: the scripts, configs, tests, workflows and skills named or implied by the description; the tests that read them (grep `tests/` for their paths); and the current measurement when the chore has one (CI step timings via `gh run view --job <id> --log`, or a local timed run under the perl alarm). Return: the file list with one-line roles, the before-measurement with its source, the tests that guard the touched files, and any constraint you found (a drift guard, an alignment rule, a hook). Cap the final message at ~25 lines — it is pasted into the plan prompt.                                                                                                                                                                                                                                                                                                                                                                                      |
 | 2   | plan      | — (no skill) | opus   | Pass the description, the ticked decisions from the gate, and the exploration notes verbatim. Write `.specify/chores/<slug>/plan.md` with: **Goal** (one paragraph, the issue link); **Acceptance** (the measurable or mechanical criteria from triage condition 3, with the before-measurement); **Scope** (in and out, follow-ups named for the PR body); **Constitution Check** (every principle in one line each; name which Principle III criteria fire and why, or "none"); **Work items**, each with its files, its test (existing / new-first / unit over config / `no behaviour: n/a (<reason>)`), for a new or moved test, its one primary layer, the cheapest layer that can observe the behaviour ("Where a test goes" in `docs/testing.md`), with the reason for any second layer, and, for test moves or removals, the coverage mapping (removed assertion → where it now lives); **Docs citations** for any changed tool usage (Principle IV); **Risks**. Prefer the first-party option of the tool over custom scripting and say so (Principle IV). Mark a genuine fork the user must choose as `[NEEDS DECISION]` with options and a recommended one; do not use it for calls you can make. Commit with event `after_chore_plan`. Return: the work-item count, the Principle III verdict, and any `[NEEDS DECISION]` items verbatim. |
 | 3   | implement | — (no skill) | sonnet | **One subagent per work item, in plan order — see below.**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| 4   | review    | — (no skill) | opus   | **Fresh eyes, read-only on `src/`, `tests/`, `scripts/`, `.github/`, `.claude/`.** Read `plan.md`, then `git diff main...HEAD`. Check: every work item done as planned and nothing beyond it; every test named in the plan present and green per the implement summaries; every new or moved test at the layer the plan names; every coverage mapping true (the guarantee really is asserted where the plan says); the alignment rule when a pipeline skill changed; `docs/testing.md` created or updated when test layers moved; the Principle III verdict still right against the real diff; no check weakened. Write `.specify/chores/<slug>/report.md`: findings as CRITICAL / HIGH / LOW with file and line, the after-measurement (re-run the same measurement as the plan's before, under the perl alarm) and the before/after pair, and the follow-ups for the PR body. Commit with event `after_chore_review`. Return: the finding counts by severity and the before/after measurement. |
+| 4   | review    | — (no skill) | opus   | **Fresh eyes, read-only on `src/`, `tests/`, `scripts/`, `.github/`, `.claude/`.** Read `plan.md`, then `git diff main...HEAD`. Check: every work item done as planned and nothing beyond it; every test named in the plan present and green per the implement summaries; every new or moved test at the layer the plan names; every coverage mapping true (the guarantee really is asserted where the plan says); no shared block restated in a pipeline skill; `docs/testing.md` created or updated when test layers moved; the Principle III verdict still right against the real diff; no check weakened. Write `.specify/chores/<slug>/report.md`: findings as CRITICAL / HIGH / LOW with file and line, the after-measurement (re-run the same measurement as the plan's before, under the perl alarm) and the before/after pair, and the follow-ups for the PR body. Commit with event `after_chore_review`. Return: the finding counts by severity and the before/after measurement. |
 
 ### Phase 3: implement (one subagent per work item)
 
@@ -226,11 +205,8 @@ phase:
    plan names, at the layer it names, run it and see it fail (or, for an existing test that must
    keep passing, run it before and after), then make the change until it is
    green. For a test move, add the destination assertion **before**
-   removing the source one, and run both files. Run the targeted vitest
-   files or Playwright projects for the changed paths, under the perl
-   alarm. Then run `pnpm run verify:quick` under the perl alarm as the
-   inner-loop check; only the full `pnpm run verify`, which the
-   orchestrator runs before the PR, counts as the gate. Follow the
+   removing the source one, and run both files. Read
+   `.claude/skills/_shared/verify-gate.md` and follow it exactly. Follow the
    tool's documented practice the plan cites and prefer
    first-party features over custom code. If the change alters what a
    snapshotted page looks like, stop — that breaks triage — and say so. If
@@ -244,11 +220,10 @@ phase:
    to resume.
 4. If a work item's subagent reports it broke triage condition 1, take the
    promotion path above.
-5. Work the pipelines cannot verify locally (needs the preview deployment
-   or Don's eyes — for example a CI topology change whose timing can only
-   be read from the first real run) is listed in `plan.md` with the suffix
-   `[PREVIEW-CHECK]`. Subagents leave those unticked and list them in their
-   summary; collect them for the PR body and the final report.
+5. Work the pipelines cannot verify locally (for example a CI topology change whose timing can
+   only be read from the first real run) is listed in `plan.md` with the `[PREVIEW-CHECK]`
+   marker. Tell subagents to read `.claude/skills/_shared/preview-check.md` and follow it
+   exactly, and collect the items they list for the PR body and the final report.
 
 ### Phase 4 gate: review findings must be closed (max 2 rounds)
 
@@ -263,44 +238,24 @@ After the review subagent returns:
 
 ## Verify
 
-**Inner loop and gate.** `pnpm run verify:quick` runs secret lint, lint, type check, the unit
-and component tests, the worker tests and the real `astro build`. It is the inner-loop check
-for implement and fix subagents. It leaves out the build-fixture tests and every Playwright
-project, so it never counts as the gate. The full `pnpm run verify` runs the whole gate
-(secret lint, lint, type check, unit, component, build-fixture and worker tests, build, and
-every Playwright project — E2E, accessibility, sections, performance budget and visual), and
-it is the only check that counts before a PR. There is no scoped or tiered local gate: a
-`src/` change means the whole suite runs again. CI runs the same gate as parallel jobs and
-narrows it only by the changed paths, as `docs/testing.md` describes.
+**Inner loop and gate.** Read `.claude/skills/_shared/verify-gate.md` and follow it exactly.
 A chore that changes the gate itself still proves itself with the
 gate as it is **after** the change.
 
 1. Run `pnpm run verify` yourself, in the **foreground with an explicit
-   time limit** (10 minutes, via the `perl` alarm above — never background
+   time limit** (10 minutes, via the `perl` alarm (CLAUDE.md, Local toolchain) — never background
    a run and poll for it). Keep only the pass/fail summary and the failing
    test names. A run that hits the limit is red: report it, do not retry in
    a loop. A chore whose goal is the gate's own duration records the wall
    time of this run in the PR body next to the plan's before-measurement.
-2. Red → dispatch a fix subagent on the branch (fix the cause, never the
+2. Red → dispatch a fix subagent on the branch (told to read
+   `.claude/skills/_shared/verify-gate.md`; fix the cause, never the
    check), then run verify again. A failure the fix subagent cannot resolve
    stops the pipeline. Never proceed red.
-3. **Visual baselines.** The visual project snapshots only the shell (header, footer and open mobile menu), the
-   not-found page and the fixture site, never real content, so a content edit cannot fail it.
-   Its per-platform baselines change only when the shell, a template or the design system
-   changes, which is a major change under Principle III in any case.
-   A chore changes none of them by definition. The one exception is a chore about the
-   baselines themselves, a Playwright or browser upgrade, where the plan said so up front and
-   the implement phase updated the macOS baselines.
-   Regenerate the Linux baselines (what CI compares against) with
-   `pnpm run test:visual:update:linux` (needs Docker Desktop). If `docker info`
-   fails, ask Don to start it with an `AskUserQuestion` whose question text
-   carries the instruction. Commit and push the images before opening the PR,
-   so `verify` is green. Fallback only if Docker cannot be started: after the
-   PR is open, add the `visual-baselines` label, wait for the `update-baselines`
-   job, download its `visual-baselines-linux` artifact with `gh run download`,
-   review, commit and push; until that lands the `verify` check on the PR is
-   expected to be red on visual only, so say so in the PR body.
-   A visual diff nobody predicted up front is a regression to fix, not a baseline to refresh.
+3. **Visual baselines.** A chore changes none of the snapshotted surfaces by definition. The one
+   exception is a chore about the baselines themselves, a Playwright or browser upgrade, where
+   the plan said so up front and the implement phase updated the macOS baselines. Read
+   `.claude/skills/_shared/visual-baselines.md` and follow it exactly.
 
 ## Finish
 
@@ -310,51 +265,19 @@ gate as it is **after** the change.
    must contain `Closes #<n>` — or `Part of #<n>` with the phase name when
    the issue has more phases to go. Ad-hoc chore (no issue) → skip; do not
    retroactively create one.
-3. **Major-change classification (no pause).** Run `git diff --stat main`
-   and `git diff --name-only main...HEAD` and decide whether the chore is a
-   **major change** under Principle III: new/removed/replaced dependency,
-   integration or service; anything touching how contact data is
-   collected, stored, retrieved or deleted; design system, site-wide
-   layout, navigation or visual identity; possible cost increase; CI,
-   deployment or infrastructure config (`.github/`, `wrangler.jsonc`,
-   deploy scripts); the constitution itself. Chores fire these more often
-   than features do — a `package.json` dependency change or any file under
-   `.github/` is major. When in doubt, it is major.
-   - Put the verdict and the criteria that fired (or "none") in the PR body,
-     so Don knows how closely to read it and whether to check the preview.
-   - The verdict does not change how the PR merges: the `main` ruleset
-     requires Don's approving review on every PR.
-   - Auto-merge is armed by default. Leave it off only while
-     `[PREVIEW-CHECK]` items are open, and say so in the PR body.
-4. Push the branch and open the PR as `drc-agents` (sequence below). The PR
-   body covers: the goal and acceptance criteria (from the plan), the
-   before/after measurement, the work items done, the coverage mapping
-   when tests moved, the verify results, the `Closes #<n>` or
-   `Part of #<n>` line when step 2 applies, the major-change verdict and
-   criteria, whether Linux visual baselines are pending, the list of
-   `[PREVIEW-CHECK]` items for Don, the review's LOW findings, the
-   follow-ups deliberately left out, and whether auto-merge is armed.
-
-   **PR author account (required).** The `main` ruleset requires Don's
-   approving review on every PR, and GitHub does not count an author's
-   approval on their own PR, so a PR authored by `drcdev` could never be
-   approved. Open every PR as `drc-agents`:
-   1. Push the branch (as `drcdev`).
-   2. `gh auth switch --user drc-agents`. If the command is denied, fails, or
-      `drc-agents` is not in the keyring, stop and ask Don with
-      `AskUserQuestion` (instruction in the question text). Never open the PR
-      as `drcdev`.
-   3. `gh pr create ...`
-   4. `gh auth switch --user drcdev` immediately after `gh pr create`, whether
-      it succeeded or failed, so `gh` is never left on `drc-agents`.
-   5. `gh pr view <n> --json author`; confirm `author.login` is
-      `drc-agents`. If it is not `drc-agents`, stop and tell Don the PR must
-      be closed and reopened from `drc-agents`; do not work around the ruleset.
-   6. Arm auto-merge (`gh pr merge --auto --merge`) as `drcdev`, unless step 3
-      left it off for open `[PREVIEW-CHECK]` items.
-5. If Linux baselines are still owed because Docker could not be started,
-   run the CI-label fallback from Verify step 3 now, before watching the
-   gate.
+3. **Major-change classification (no pause).** Run `git diff --stat main` and
+   `git diff --name-only main...HEAD` and decide whether the chore is a major change. Chores
+   fire the criteria more often than features do: a `package.json` dependency change or any
+   file under `.github/` is major. Classify per `.claude/skills/_shared/open-pr.md`.
+4. Push the branch and open the PR. The PR body covers: the goal and acceptance criteria (from
+   the plan), the before/after measurement, the work items done, the coverage mapping when
+   tests moved, the verify results, the `Closes #<n>` or `Part of #<n>` line when step 2
+   applies, the major-change verdict and criteria, whether Linux visual baselines are pending,
+   the list of `[PREVIEW-CHECK]` items for Don, the review's LOW findings, the follow-ups
+   deliberately left out, and whether auto-merge is armed. Open the PR and arm auto-merge: read
+   `.claude/skills/_shared/open-pr.md` and follow it exactly.
+5. If Linux baselines are still owed because Docker could not be started, run the CI-label
+   fallback in `.claude/skills/_shared/visual-baselines.md` now, before watching the gate.
 6. **Watch the release gate.** Run `gh pr checks --watch` with a time limit
    (20 minutes). Red → dispatch a fix subagent on the branch, which fixes
    the cause (never the check), commits and pushes; watch again. For a
