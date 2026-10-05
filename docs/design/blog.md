@@ -15,6 +15,8 @@ preview for the commit that carried them (`9e83e04`), so it stays live until Clo
 retires that version. The pinned preview and the pictures below are the record of the
 directions, and the pictures and descriptions alone are enough to compare them.
 
+The `-dcc-web` version URLs in this document stopped resolving when production preview URLs were turned off (#89); the decisions they record stand.
+
 Each direction has the same three screens, shown in the pictures: the landing page (the front
 of the writing section), the listing (all posts, newest first, split into pages), and one
 post (the full sample post with a feature image, a table, a code sample and headings). Each

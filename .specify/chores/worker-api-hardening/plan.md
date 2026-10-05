@@ -351,7 +351,7 @@ site, `https://new.doncoleman.ca/` still does, and Don's assistant (re-pointed a
 
 ### W9: Note the dead prototype links
 
-- [ ] W9 done
+- [x] W9 done
 - **Files:** `docs/design/blog.md`, `docs/design/portfolio.md`.
 - **Test:** no behaviour: n/a (docs note only).
 - **Edit:** one sentence under each "Preview" line: the `-dcc-web` version URLs below stopped
