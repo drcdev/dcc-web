@@ -209,6 +209,15 @@ const FIXTURE_SUBJECTS = [
     locator: (page: Page) => page.locator("header[data-series-banner]"),
   },
   {
+    prefix: "series-intro",
+    title: "fixture series intro",
+    path: "/writing/",
+    locator: (page: Page) => page.locator("[data-series-intro] > div"),
+    wait: async (page: Page) => {
+      await expect(page.locator("[data-series-intro] [data-series-intro-item]")).toHaveCount(2);
+    },
+  },
+  {
     prefix: "project-row-minimal",
     title: "fixture project row, minimal",
     path: "/projects/",
