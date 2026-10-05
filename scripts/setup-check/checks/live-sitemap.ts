@@ -1,4 +1,4 @@
-// checks/live-sitemap.ts (setup item 30, 011-launch contracts/setup-items.md; FR-014, FR-010a): once
+// checks/live-sitemap.ts (setup item 29, 011-launch contracts/setup-items.md; FR-014, FR-010a): once
 // switched, the crawler (scripts/site-check/crawl.ts) walks the live sitemap with link checking off
 // and the apex as the expected origin; robots.txt must name the sitemap index and every
 // `launch.expectedPaths` entry must be listed. The crawler swallows request errors, so the adapter
@@ -9,7 +9,7 @@ import type { CheckResult, ProviderContext } from "../types.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 import { dnsSettling, gateOnSwitch, isTlsError, pendingLive } from "./live-shared.ts";
 
-const ITEM = { id: "live-sitemap", order: 30 };
+const ITEM = { id: "live-sitemap", order: 29 };
 
 function pathOf(loc: string): string | null {
   try {

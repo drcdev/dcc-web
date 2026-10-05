@@ -12,11 +12,11 @@ const moved = (status = 301, location: string | undefined = TARGET): HttpRespons
   body: "",
 });
 
-describe("checks/live-www-redirect (item 29)", () => {
+describe("checks/live-www-redirect (item 28)", () => {
   it("is waiting before the switch", async () => {
     const result = await check(liveContext({ phase: "before-switch" }));
     expect(result.status).toBe("waiting");
-    expect(result.step).toBe(`Step 29 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 28 of ${setupItems.length}`);
   });
 
   it("is pending while a resolver still returns the Ghost CNAME", async () => {

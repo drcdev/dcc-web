@@ -1,6 +1,6 @@
 ---
 name: tweak
-description: Run the short speckit pipeline for a small user-visible change — specify → clarify (one round) → plan → tasks → implement → verify → PR — with each phase in a fresh subagent. Skips the checklist, resolve, analyze and converge phases that a small change does not earn, but still produces a spec, a plan and tests. Pauses for the clarify questions and the merge decision before the PR. Use for a copy change, a spacing or colour fix, a small component adjustment — not for a feature slice and never for anything that is a major change under Constitution Principle III.
+description: Run the short speckit pipeline for a small user-visible change — specify → clarify (one round) → plan → tasks → implement → verify → PR — with each phase in a fresh subagent. Skips the checklist, resolve, analyze and converge phases that a small change does not earn, but still produces a spec, a plan and tests. Pauses only for the clarify questions. Use for a copy change, a spacing or colour fix, a small component adjustment — not for a feature slice and never for anything that is a major change under Constitution Principle III.
 argument-hint: "Change description, or a GitHub issue reference (#42, 42, or issue URL)"
 user-invocable: true
 disable-model-invocation: false
@@ -58,8 +58,8 @@ earned the full one; the phases you would skip are exactly the ones that
 catch what makes it large.
 
 Condition 1 is deliberately the constitution's own major-change list, so a
-slice that clears triage should be safe to auto-merge once the release gate
-is green. That is a prediction, not a guarantee — re-check it against the
+slice that clears triage should be safe to arm auto-merge, which still
+waits for Don's approval and a green release gate. That is a prediction, not a guarantee — re-check it against the
 real diff in Finish, because an implementation can reach further than its
 spec predicted.
 
@@ -77,7 +77,7 @@ through.
 
 - Phases run **sequentially, one subagent at a time**. Use the Agent tool
   with `run_in_background: false`.
-- **The only user pauses are clarify and the merge decision in Finish.**
+- **The only user pause is clarify.**
   Never stop to ask "shall I proceed?" between phases. Stop early only on a
   red verify gate, a broken triage condition, or a phase failure you cannot
   resolve — and report exactly where things stand.
@@ -237,43 +237,42 @@ narrows it only by the changed paths, as `docs/testing.md` describes.
    or the change plainly matches an open issue (`gh issue list`), the PR
    body must contain `Closes #<n>`. Ad-hoc change (no issue) → skip; do not
    retroactively create one.
-3. **Merge decision (user pause).** Re-check triage condition 1 against the
-   real diff: `git diff --stat main` and `git diff --name-only main...HEAD`.
-   Then ask the user with AskUserQuestion, showing which Principle III
-   criteria fired (or "none"), with options:
-   - **Not major — auto-merge when green** (recommended when none fired,
-     which is what triage predicted): enable `gh pr merge --auto --merge`
-     after opening the PR.
-   - **Major — hold for my review** (recommended, and say triage was wrong,
-     when any criterion fired): PR is labelled `major-change`; Don approves
-     after viewing the preview.
-   - **Not major — leave the PR open**: no auto-merge; Don merges by hand.
-   This pause is mandatory — never open the PR without having asked.
+3. **Major-change classification (no pause).** Re-check triage condition 1
+   against the real diff: `git diff --stat main` and
+   `git diff --name-only main...HEAD`. Decide against the Principle III
+   list; when in doubt, it is major. If a criterion fired, triage was wrong:
+   say so in the PR body.
+   - Put the verdict and the criteria that fired (or "none") in the PR body,
+     so Don knows how closely to read it and whether to check the preview.
+   - The verdict does not change how the PR merges: the `main` ruleset
+     requires Don's approving review on every PR.
+   - Auto-merge is armed by default. Leave it off only while
+     `[PREVIEW-CHECK]` items are open, and say so in the PR body.
 4. Push the branch and open the PR as `drc-agents` (sequence below). The PR
    body covers: what changed and why,
    the verify results, the `Closes #<n>` line when step 2 applies, the
    major-change verdict and criteria, whether Linux visual baselines are
    pending, the list of `[PREVIEW-CHECK]` items for Don to walk on the
-   preview deployment, and any risks the phase agents flagged. Apply the
-   label / auto-merge chosen in step 3.
+   preview deployment, any risks the phase agents flagged, and whether
+   auto-merge is armed.
 
-   **PR author account (required).** Don is the sole maintainer, so a PR
-   authored by `drcdev` can never pass the `major-change-approval` check.
-   Open every PR as `drc-agents`:
+   **PR author account (required).** The `main` ruleset requires Don's
+   approving review on every PR, and GitHub does not count an author's
+   approval on their own PR, so a PR authored by `drcdev` could never be
+   approved. Open every PR as `drc-agents`:
    1. Push the branch (as `drcdev`).
    2. `gh auth switch --user drc-agents`. If the command is denied, fails, or
       `drc-agents` is not in the keyring, stop and ask Don with
       `AskUserQuestion` (instruction in the question text). Never open the PR
       as `drcdev`.
-   3. `gh pr create ...` (pass `--label major-change` here when step 3 chose
-      major).
+   3. `gh pr create ...`
    4. `gh auth switch --user drcdev` immediately after `gh pr create`, whether
       it succeeded or failed, so `gh` is never left on `drc-agents`.
    5. `gh pr view <n> --json author`; confirm `author.login` is
       `drc-agents`. If it is not `drc-agents`, stop and tell Don the PR must
-      be closed and reopened from `drc-agents`; do not work around the gate.
-   6. Apply the auto-merge choice (`gh pr merge --auto --merge`) and any label
-      not set at create time, as `drcdev`.
+      be closed and reopened from `drc-agents`; do not work around the ruleset.
+   6. Arm auto-merge (`gh pr merge --auto --merge`) as `drcdev`, unless step 3
+      left it off for open `[PREVIEW-CHECK]` items.
 5. If Linux baselines are still owed because Docker could not be started,
    run the CI-label fallback from Verify step 3 now, before watching the
    gate.
@@ -282,6 +281,6 @@ narrows it only by the changed paths, as `docs/testing.md` describes.
    the cause (never the check), commits and pushes; watch again. Record the
    preview deployment URL from the checks or the Cloudflare PR comment.
 7. Final report to the user: what changed, test counts, PR link, preview
-   URL, the merge mode chosen, whether baselines were updated, the
+   URL, the major-change verdict and whether auto-merge is armed, whether baselines were updated, the
    `[PREVIEW-CHECK]` items awaiting them, and any risks the phase agents
    flagged.

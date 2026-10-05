@@ -1,4 +1,4 @@
-// checks/launch-content-ready.ts (setup item 26, contracts/setup-items.md; FR-003, FR-003a): the
+// checks/launch-content-ready.ts (setup item 25, contracts/setup-items.md; FR-003, FR-003a): the
 // content is ready to go live. Repository files only, read through RepoReader. Four rules: every
 // expected page exists and is published; no published page says "placeholder copy"; no published
 // project still marks its visual as a placeholder; the privacy policy states Cloudflare D1 storage
@@ -6,7 +6,7 @@
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, missing } from "./shared.ts";
 
-const ITEM = { id: "launch-content-ready", order: 26 };
+const ITEM = { id: "launch-content-ready", order: 25 };
 const NEXT_ACTION = "Replace the placeholder copy and publish the page (draft: false), then run this check again.";
 const PAGES_DIR = "src/content/pages";
 const PROJECTS_DIR = "src/content/projects";

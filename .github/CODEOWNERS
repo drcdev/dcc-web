@@ -1,15 +1,2 @@
-# Paths that are major changes by definition (constitution Principle III).
-# GitHub's required code-owner review blocks merge until @drcdev approves.
-# See specs/001-setup-walkthrough/contracts/ci-and-gates.md.
-
-/.github/                              @drcdev
-/package.json                          @drcdev
-/pnpm-lock.yaml                        @drcdev
-/.nvmrc                                @drcdev
-/wrangler.jsonc                        @drcdev
-/astro.config.mjs                      @drcdev
-/public/_headers                       @drcdev
-/scripts/ci/                           @drcdev
-/setup/                                @drcdev
-/.specify/memory/constitution.md       @drcdev
-/.github/CODEOWNERS                    @drcdev
+# Every pull request needs Don's approval (constitution Principle III).
+* @drcdev

@@ -29,7 +29,7 @@ describe("checks/github-main-protection", () => {
     expect(result.details).toContain("protection active on main");
     expect(result.details).toContain("pull request required");
     expect(result.details).toContain("required check verify");
-    expect(result.details).toContain("required check major-change-approval");
+    expect(result.details).toContain("one approving review required");
     expect(result.details).toContain("force-pushes blocked");
     expect(result.details).toContain("deletion blocked");
   });
@@ -45,9 +45,9 @@ describe("checks/github-main-protection", () => {
 
     expect(result.status).toBe("missing");
     expect(result.details).toEqual([
+      "one approving review required",
       "code-owner review required",
       "required check verify",
-      "required check major-change-approval",
       "branch must be up to date before merging",
       "force-pushes blocked",
       "no bypass actors",
@@ -64,7 +64,7 @@ describe("checks/github-main-protection", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("complete");
-    expect(result.step).toBe(`Step 14 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 13 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#github-main-protection");
   });
 
@@ -95,6 +95,23 @@ describe("checks/github-main-protection", () => {
 
     expect(result.status).toBe("missing");
     expect(result.details).toContain("protection active on main");
+  });
+
+  it("is missing with 'required check verify pinned to GitHub Actions' when verify has no app pin", async () => {
+    const full = structuredClone(loadFixture("github", "ruleset-full")) as {
+      rules: Array<{ type: string; parameters?: { required_status_checks?: Array<Record<string, unknown>> } }>;
+    };
+    const checks = full.rules.find((r) => r.type === "required_status_checks")?.parameters?.required_status_checks;
+    delete checks?.[0]?.integration_id;
+    const ctx = fakeProviderContext({
+      fs: { readJson: (() => CONFIG) as never },
+      github: { api: githubApi(RULESET_SUMMARY, full) },
+    });
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("missing");
+    expect(result.details).toEqual(["required check verify pinned to GitHub Actions"]);
   });
 
   it("is could-not-check when the gh api call fails", async () => {

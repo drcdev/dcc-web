@@ -106,7 +106,7 @@ describe("wrangler.jsonc", () => {
   });
 
   it("has two different database ids, each a real UUID (no placeholder)", () => {
-    // Don created both databases on 2026-09-29 (setup item 19); placeholders no longer pass.
+    // Don created both databases on 2026-09-29 (setup item 18); placeholders no longer pass.
     const isAllowed = (id: unknown) =>
       typeof id === "string" &&
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) &&

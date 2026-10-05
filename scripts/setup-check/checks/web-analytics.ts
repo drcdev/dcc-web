@@ -1,16 +1,16 @@
-// checks/web-analytics.ts (setup item 18, data-model.md "web-analytics"): a
+// checks/web-analytics.ts (setup item 17, data-model.md "web-analytics"): a
 // Web Analytics site covers new.doncoleman.ca with automatic setup on, and
 // the served page references the Cloudflare beacon (FR-022). The dashboard's
 // automatic setup registers the zone (ruleset.zone_name, host empty), not a
 // hostname, so a zone-level automatic site for the configured zone counts as
 // covering the review host; a JS-snippet site records the hostname instead.
 // The host checked is the zone apex once the launch phase is `switched` and the review host before
-// (011-launch contracts/setup-items.md item 18); the item no longer depends on any other item.
+// (011-launch contracts/setup-items.md item 17); the item no longer depends on any other item.
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { detectLaunchPhase } from "./launch-phase.ts";
 import { complete, couldNotCheck, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "web-analytics", order: 18 };
+const ITEM = { id: "web-analytics", order: 17 };
 const BEACON_MARKER = "static.cloudflareinsights.com/beacon";
 
 export async function check(ctx: ProviderContext): Promise<CheckResult> {

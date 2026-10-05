@@ -1,6 +1,6 @@
 ---
 name: squash
-description: Run the orchestrated bug pipeline — ingest a bug report or GitHub issue, create a bugfix branch, then explore → assess → fix → test in fresh subagents, finishing with the full verify gate and a PR. Pauses only when the assessment is ambiguous and for the merge decision before the PR. Use when the user reports a bug to fix end-to-end.
+description: Run the orchestrated bug pipeline — ingest a bug report or GitHub issue, create a bugfix branch, then explore → assess → fix → test in fresh subagents, finishing with the full verify gate and a PR. Pauses only when the assessment is ambiguous. Use when the user reports a bug to fix end-to-end.
 argument-hint: "Bug description, or a GitHub issue reference (#42, 42, or issue URL)"
 user-invocable: true
 disable-model-invocation: false
@@ -28,8 +28,7 @@ skill carries the URL trust policy.
 
 - Phases run **sequentially, one subagent at a time**. Use the Agent tool
   with `run_in_background: false`.
-- **The only user pauses are the ambiguity gate (below) and the merge
-  decision in Finish.** Never stop to ask "shall I proceed?" between
+- **The only user pause is the ambiguity gate (below).** Never stop to ask "shall I proceed?" between
   phases. Stop early only on an `invalid` verdict, an exhausted failure
   loop, or a phase failure you cannot resolve — and report exactly where
   things stand.
@@ -204,48 +203,46 @@ narrows it only by the changed paths, as `docs/testing.md` describes.
    or the bug plainly matches an open issue (`gh issue list`), the PR body
    must contain `Closes #<n>`. Ad-hoc bug (no issue) → skip; do not
    retroactively create one.
-3. **Merge decision (user pause).** Run `git diff --stat main` and
-   `git diff --name-only main...HEAD` and decide whether the fix is a
+3. **Major-change classification (no pause).** Run `git diff --stat main`
+   and `git diff --name-only main...HEAD` and decide whether the fix is a
    **major change** under Principle III: new/removed/replaced dependency,
    integration or service; anything touching how contact data is
    collected, stored, retrieved or deleted; design system, site-wide
    layout, navigation or visual identity; possible cost increase; CI,
    deployment or infrastructure config; the constitution itself. A bug fix
    rarely fires one, but a fix that reaches into the contact API, the
-   headers, or the CI workflow does. When in doubt, it is major. Then ask
-   the user with AskUserQuestion, showing the criteria that fired (or
-   "none"), with options:
-   - **Not major — auto-merge when green** (recommended when none fired):
-     enable `gh pr merge --auto --merge` after opening the PR.
-   - **Major — hold for my review** (recommended when any criterion fired):
-     PR is labelled `major-change`; Don approves after viewing the preview.
-   - **Not major — leave the PR open**: no auto-merge; Don merges by hand.
-   This pause is mandatory — never open the PR without having asked.
+   headers, or the CI workflow does. When in doubt, it is major.
+   - Put the verdict and the criteria that fired (or "none") in the PR body,
+     so Don knows how closely to read it and whether to check the preview.
+   - The verdict does not change how the PR merges: the `main` ruleset
+     requires Don's approving review on every PR.
+   - Auto-merge is armed by default. Leave it off only while
+     `[PREVIEW-CHECK]` items are open, and say so in the PR body.
 4. Push the branch and open the PR as `drc-agents` (sequence below). The PR
    body covers: symptom and root
    cause (from the assessment), the fix summary, the test added and the
    verify results, the `Closes #<n>` line when step 2 applies, the
    major-change verdict and criteria, whether Linux visual baselines are
-   pending, and any follow-ups noticed but deliberately left out. Apply the
-   label / auto-merge chosen in step 3.
+   pending, any follow-ups noticed but deliberately left out, and whether
+   auto-merge is armed.
 
-   **PR author account (required).** Don is the sole maintainer, so a PR
-   authored by `drcdev` can never pass the `major-change-approval` check.
-   Open every PR as `drc-agents`:
+   **PR author account (required).** The `main` ruleset requires Don's
+   approving review on every PR, and GitHub does not count an author's
+   approval on their own PR, so a PR authored by `drcdev` could never be
+   approved. Open every PR as `drc-agents`:
    1. Push the branch (as `drcdev`).
    2. `gh auth switch --user drc-agents`. If the command is denied, fails, or
       `drc-agents` is not in the keyring, stop and ask Don with
       `AskUserQuestion` (instruction in the question text). Never open the PR
       as `drcdev`.
-   3. `gh pr create ...` (pass `--label major-change` here when step 3 chose
-      major).
+   3. `gh pr create ...`
    4. `gh auth switch --user drcdev` immediately after `gh pr create`, whether
       it succeeded or failed, so `gh` is never left on `drc-agents`.
    5. `gh pr view <n> --json author`; confirm `author.login` is
       `drc-agents`. If it is not `drc-agents`, stop and tell Don the PR must
-      be closed and reopened from `drc-agents`; do not work around the gate.
-   6. Apply the auto-merge choice (`gh pr merge --auto --merge`) and any label
-      not set at create time, as `drcdev`.
+      be closed and reopened from `drc-agents`; do not work around the ruleset.
+   6. Arm auto-merge (`gh pr merge --auto --merge`) as `drcdev`, unless step 3
+      left it off for open `[PREVIEW-CHECK]` items.
 5. If Linux baselines are still owed because Docker could not be started,
    run the CI-label fallback from Verify step 3 now, before watching the
    gate.
@@ -254,5 +251,5 @@ narrows it only by the changed paths, as `docs/testing.md` describes.
    the cause (never the check), commits and pushes; watch again. Record the
    preview deployment URL from the checks or the Cloudflare PR comment.
 7. Final report to the user: verdict and severity, what was fixed, test
-   counts, PR link, preview URL, the merge mode chosen, and any residual
-   risks the test phase flagged.
+   counts, PR link, preview URL, the major-change verdict and whether
+   auto-merge is armed, and any residual risks the test phase flagged.

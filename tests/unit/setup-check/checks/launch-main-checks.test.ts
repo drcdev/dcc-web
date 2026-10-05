@@ -17,7 +17,7 @@ describe("checks/launch-main-checks", () => {
     const result = await check(ctx);
     expect(result.status).toBe("complete");
     expect(result.id).toBe("launch-main-checks");
-    expect(result.step).toBe(`Step 27 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 26 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#launch-main-checks");
     expect(api).toHaveBeenCalledWith(
       expect.stringContaining("repos/drcdev/dcc-web/commits/main/check-runs?check_name=verify"),

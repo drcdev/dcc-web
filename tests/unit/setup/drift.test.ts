@@ -1,14 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { setupItems } from "../../../scripts/setup-check/items.ts";
 import { secretManifest } from "../../../scripts/setup-check/secrets.ts";
-import { STATUS_CONTEXT } from "../../../scripts/ci/major-change-gate.ts";
 
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 
 function read(path: string): string {
   return readFileSync(`${repoRoot}${path}`, "utf-8");
+}
+
+function workflowFiles(): string[] {
+  return readdirSync(`${repoRoot}.github/workflows`)
+    .filter((f) => f.endsWith(".yml"))
+    .map((f) => read(`.github/workflows/${f}`));
 }
 
 function stripJsonComments(text: string): string {
@@ -38,9 +43,7 @@ describe("secret/variable names <-> manifest drift", () => {
   const manifestNames = new Set(secretManifest.map((s) => s.name));
 
   it("every secret/variable referenced in .github/workflows/*.yml exists in the manifest (GITHUB_TOKEN exempt)", () => {
-    const ci = read(".github/workflows/ci.yml");
-    const major = read(".github/workflows/major-change.yml");
-    for (const contents of [ci, major]) {
+    for (const contents of workflowFiles()) {
       const refs = [...contents.matchAll(/secrets\.([A-Z0-9_]+)/g)].map((m) => m[1]!);
       for (const name of refs) {
         if (name === "GITHUB_TOKEN") continue;
@@ -76,11 +79,10 @@ describe("secret/variable names <-> manifest drift", () => {
   });
 
   it("every github-actions manifest entry is referenced by a workflow", () => {
-    const ci = read(".github/workflows/ci.yml");
-    const major = read(".github/workflows/major-change.yml");
+    const workflows = workflowFiles();
     for (const secret of secretManifest.filter((s) => s.store === "github-actions")) {
       expect(
-        ci.includes(secret.name) || major.includes(secret.name),
+        workflows.some((w) => w.includes(secret.name)),
         `no workflow references github-actions manifest entry ${secret.name}`,
       ).toBe(true);
     }
@@ -98,8 +100,8 @@ describe("secret/variable names <-> manifest drift", () => {
   });
 });
 
-describe("ruleset contexts <-> CI job names and gate status context", () => {
-  it("setup/github-ruleset.json required_status_checks contexts match the ci.yml verify job and the gate's status context", () => {
+describe("ruleset contexts <-> CI job names", () => {
+  it("setup/github-ruleset.json required_status_checks contexts match the ci.yml verify job", () => {
     const ruleset = JSON.parse(read("setup/github-ruleset.json")) as {
       rules: Array<{ type: string; parameters?: { required_status_checks?: Array<{ context: string }> } }>;
     };
@@ -108,37 +110,8 @@ describe("ruleset contexts <-> CI job names and gate status context", () => {
     const contexts = statusCheckRule!.parameters!.required_status_checks!.map((c) => c.context);
 
     const ci = read(".github/workflows/ci.yml");
-    const major = read(".github/workflows/major-change.yml");
     expect(contexts).toContain("verify");
-    expect(contexts).toContain(STATUS_CONTEXT);
     expect(ci).toMatch(/^\s{2}verify:/m);
-    // The gate publishes a commit status; no job may share its name or the check runs collide.
-    expect(major).not.toMatch(/^\s{2}major-change-approval:/m);
-    expect(major).toMatch(/^\s{2}gate:/m);
-  });
-});
-
-describe("CODEOWNERS covers every major-path item", () => {
-  it("assigns @drcdev to every path listed in contracts/ci-and-gates.md", () => {
-    const codeowners = read(".github/CODEOWNERS");
-    const majorPaths = [
-      "/.github/",
-      "/package.json",
-      "/pnpm-lock.yaml",
-      "/.nvmrc",
-      "/wrangler.jsonc",
-      "/astro.config.mjs",
-      "/public/_headers",
-      "/scripts/ci/",
-      "/setup/",
-      "/.specify/memory/constitution.md",
-      "/.github/CODEOWNERS",
-    ];
-    for (const path of majorPaths) {
-      const line = codeowners.split("\n").find((l) => l.trim().startsWith(path));
-      expect(line, `CODEOWNERS is missing ${path}`).toBeDefined();
-      expect(line).toContain("@drcdev");
-    }
   });
 });
 

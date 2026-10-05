@@ -22,11 +22,11 @@ function site(overrides: Record<string, HttpResponseSummary | ProviderAccessErro
   return (url: string) => table[url] ?? { status: 404, headers: {}, body: "" };
 }
 
-describe("checks/live-sitemap (item 30)", () => {
+describe("checks/live-sitemap (item 29)", () => {
   it("is waiting before the switch", async () => {
     const result = await check(liveContext({ phase: "before-switch" }));
     expect(result.status).toBe("waiting");
-    expect(result.step).toBe(`Step 30 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 29 of ${setupItems.length}`);
   });
 
   it("is pending while DNS settles", async () => {

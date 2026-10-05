@@ -4,7 +4,7 @@
 // accident. Switched: complete. Before the switch: public A/AAAA/CNAME answers for the apex and
 // www must equal the Ghost target records in the baseline; any difference is `missing` with a
 // summary starting "Problem:". The apex and www are reported separately so a half-switched domain
-// is visible. Mail records are compared by item 32, not here. The Ghost generator marker is an
+// is visible. Mail records are compared by item 31, not here. The Ghost generator marker is an
 // informational detail only and never decides the status.
 import type { CheckResult, DnsAnswer, DnsBaseline, DnsBaselineRecord, DnsRecordType, ProviderContext, SetupConfig } from "../types.ts";
 import { detectLaunchPhase } from "./launch-phase.ts";
