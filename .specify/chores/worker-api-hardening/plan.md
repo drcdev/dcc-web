@@ -301,7 +301,7 @@ site, `https://new.doncoleman.ca/` still does, and Don's assistant (re-pointed a
 
 ### W7: Setup checks and setup docs
 
-- [ ] W7 done
+- [x] W7 done
 - **Files:** `tests/unit/setup-check/checks/cloudflare-worker.test.ts`,
   `tests/unit/setup-check/checks/preview-noindex.test.ts`, then
   `scripts/setup-check/checks/cloudflare-worker.ts`, `scripts/setup-check/checks/preview-noindex.ts`,

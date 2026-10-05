@@ -215,20 +215,22 @@ None.
 
 **What it is for**
 The new site is hosted as a Cloudflare Worker serving static assets; this item creates that
-Worker and turns on its preview addresses.
+Worker. Production is served only on the zone's Custom Domain, so `workers.dev` and Preview URLs stay
+off for `dcc-web`.
 
 **Where to do it**
 Cloudflare dashboard → Workers & Pages → Create → Import a repository → `drcdev/dcc-web` (this
 creates the Worker and connects Workers Builds in one step). Authorise Cloudflare's GitHub app
-for the `drcdev/dcc-web` repository only, not all repositories. Then turn on its `workers.dev`
-address and preview URLs.
+for the `drcdev/dcc-web` repository only, not all repositories. Then leave `workers.dev` and
+Preview URLs off for `dcc-web`: `wrangler.jsonc` sets both to `false` and Wrangler applies them on each
+deploy. The account's `workers.dev` subdomain must be on, because the preview Worker uses it.
 
 **How it will be confirmed**
-`pnpm setup:check --item cloudflare-worker` reports complete when Worker `dcc-web` exists with
-its `workers.dev` address and preview URLs enabled.
+`pnpm setup:check --item cloudflare-worker` reports complete when Worker `dcc-web` exists and
+the account's `workers.dev` subdomain is on (used by the preview Worker).
 
 **Constitution principle**
-II (Automated Release Gate) — every branch gets a preview deployment.
+VIII (Secure by Default) — production runs on the zone's Custom Domain, not `workers.dev`.
 
 **Secrets**
 None — no Cloudflare deploy token is stored in GitHub; Workers Builds deploys directly.
@@ -462,8 +464,8 @@ Preview addresses on `workers.dev` must never be indexed by search engines, so o
 `doncoleman.ca` appears in search results.
 
 **Where to do it**
-Nothing new to do here; `public/_headers` sends `X-Robots-Tag: noindex` for the `workers.dev`
-hosts. This item confirms it is actually being served.
+Nothing new to do here; `public/_headers` sends `X-Robots-Tag: noindex` for the preview `workers.dev`
+host (production is not on `workers.dev`). This item confirms it is actually being served.
 
 Never block crawling with `robots.txt` (a `Disallow` rule in `public/robots.txt`) as a substitute
 for this — a crawl block can hide the no-index header's problem instead of fixing it, and search
@@ -477,7 +479,7 @@ already in a search index has been removed from it.
 
 **How it will be confirmed**
 `pnpm setup:check --item preview-noindex` reports complete when the responses for `/` and
-`/projects/` from both the `dcc-web` and `dcc-web-preview` `workers.dev` hosts have an
+`/projects/` from the `dcc-web-preview` `workers.dev` host have an
 `X-Robots-Tag` header containing `noindex`. It does not depend on the launch phase; when a
 response lacks the header, the details list each host and path.
 
@@ -498,7 +500,7 @@ Cloudflare dashboard → Analytics & Logs → Web Analytics → Add a site → s
 → Enable (automatic setup). The dashboard offers the zone, not an individual hostname, and
 records the site against the zone. Automatic setup injects the beacon only into responses
 Cloudflare proxies for the zone, so it reaches `new.doncoleman.ca` (a Custom Domain) and, once
-the switch is done, `doncoleman.ca`. Branch previews live on `workers.dev`, outside the zone, and
+the switch is done, `doncoleman.ca`. Branch previews live on the preview Worker's `workers.dev` host, outside the zone, and
 never get the beacon. Injection starts up to half an hour after enabling, and only for requests
 that accept HTML (as every browser's page request does).
 
@@ -663,7 +665,8 @@ Cloudflare dashboard → Workers & Pages → `dcc-web-preview` → Settings → 
 `drcdev/dcc-web`. Build command `pnpm run build`. Production branch `main`, with deploy command
 `pnpm run deploy:preview`. Turn **on** non-production branch builds, also with deploy command
 `pnpm run deploy:preview`. Then Settings → Domains & Routes: turn on the `workers.dev` address and
-preview URLs. Finally open `dcc-web` → Settings → Build → Branch control and turn **off**
+preview URLs; `wrangler.jsonc` `env.preview` now sets both explicitly. Only `main` replaces the active
+deployment on `dcc-web-preview`; every other branch uploads an aliased version. Finally open `dcc-web` → Settings → Build → Branch control and turn **off**
 non-production branch builds. The first build of `main` on `dcc-web-preview` fails until this feature
 merges; that failure is expected.
 
@@ -711,6 +714,10 @@ Cloudflare dashboard → My Profile → API Tokens → the token Workers Builds 
 Worker's Settings → Build → API token) → Edit → add Account → **D1: Edit**. The same token may also
 need the **Workers AI** permission for the preview build to deploy the `AI` binding. Then push the
 branch (the agent does this) or choose Retry build on `dcc-web-preview`.
+
+The `dcc-web-preview` database is disposable: Don may wipe or recreate it, and nothing in it is kept.
+Branch migrations are applied to it before merge, so every migration must be additive only (the "only
+additive migrations" unit test enforces this).
 
 **How it will be confirmed**
 `pnpm setup:check --item contact-preview-deploy` reports complete when the `dcc-web-preview` database has applied

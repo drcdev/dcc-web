@@ -1,9 +1,8 @@
 // checks/cloudflare-worker.ts (setup item 7, data-model.md "cloudflare-worker"):
-// Worker `dcc-web` exists with its workers.dev address and preview URLs
-// turned on. The CloudflareReader surface exposes account-level workers.dev
-// subdomain enablement (there is no separate per-script preview-URLs read),
-// so both workers.dev and preview URLs are confirmed together through that
-// one read, alongside the script itself existing.
+// Worker `dcc-web` exists and the account's workers.dev subdomain is on (the
+// preview Worker needs it; production itself is served on the Custom Domain
+// only, with workers.dev and preview URLs off in wrangler.jsonc). The
+// CloudflareReader surface exposes account-level subdomain enablement only.
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, couldNotCheck, fromProviderError, missing } from "./shared.ts";
 
@@ -45,12 +44,12 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     if (!subdomain.enabled) {
       return missing(
         ITEM,
-        `Worker ${workerName} exists, but workers.dev and preview URLs are not enabled.`,
-        "Turn on workers.dev and preview URLs for the Worker in Settings → Domains & Routes.",
+        `Worker ${workerName} exists, but the account's workers.dev subdomain is not on.`,
+        "Turn on the account's workers.dev subdomain (Workers & Pages → Account details → workers.dev subdomain); the preview Worker needs it.",
       );
     }
 
-    return complete(ITEM, `Worker ${workerName} exists with workers.dev and preview URLs enabled.`);
+    return complete(ITEM, `Worker ${workerName} exists and the account's workers.dev subdomain is on (used by the preview Worker).`);
   } catch (err) {
     return fromProviderError(
       ITEM,
