@@ -428,7 +428,7 @@ docs last. Each item leaves `verify:quick` green, along with its targeted files:
 | L466 workspace lists worker, L470 worker package devDeps, L484 Vitest 5 and wrangler pinned | Change-detector, no guarantee: `test:worker` fails without the workspace, and versions move with Dependabot and review. |
 | config-mdx L12, `satteri` version | `verify` literal kept in L336; `build:fixtures` is run by the Playwright fixture web server. Change-detector otherwise. |
 
-### W8. Workflows and drift: invariants only
+### W8. Workflows and drift: invariants only (done)
 
 - **Files:** `tests/unit/ci/workflows.test.ts`, `tests/unit/setup/drift.test.ts`.
 - **Test:** existing, pruned, **unit layer**. The widened drift test is new-first and seen to fail
