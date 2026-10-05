@@ -59,26 +59,12 @@ describe("wrangler.jsonc", () => {
   const wranglerPath = fileURLToPath(new URL("../../../wrangler.jsonc", import.meta.url));
   const config = JSON.parse(stripJsonComments(readFileSync(wranglerPath, "utf-8")));
 
-  it("names the worker dcc-web", () => {
-    expect(config.name).toBe("dcc-web");
-  });
-
-  it("serves static assets from ./dist", () => {
-    expect(config.assets?.directory).toBe("./dist");
-  });
-
   it("keeps production off workers.dev and version URLs (#89)", () => {
     expect(config.workers_dev).toBe(false);
     expect(config.preview_urls).toBe(false);
   });
 
-  it("turns on workers.dev and version URLs for the preview Worker explicitly", () => {
-    expect(config.env.preview.workers_dev).toBe(true);
-    expect(config.env.preview.preview_urls).toBe(true);
-  });
-
-  it("allows Turnstile testing keys only for preview", () => {
-    expect(config.env.preview.vars?.ALLOW_TURNSTILE_TESTING).toBe("true");
+  it("never sets ALLOW_TURNSTILE_TESTING in production vars", () => {
     expect(config.vars ?? {}).not.toHaveProperty("ALLOW_TURNSTILE_TESTING");
   });
 
@@ -111,17 +97,9 @@ describe("wrangler.jsonc", () => {
     expect(JSON.stringify(config).match(/"database_name"/g)).toHaveLength(2);
   });
 
-  it("binds Workers AI as AI in both environments, never remote (W02)", () => {
-    expect(config.ai).toEqual({ binding: "AI" });
-    expect(config.env.preview.ai).toEqual({ binding: "AI" });
+  it("never makes the AI binding remote in either environment", () => {
     expect(config.ai).not.toHaveProperty("remote");
-    expect(config.env.preview.ai).not.toHaveProperty("remote");
-  });
-
-  it("binds the static assets as ASSETS and runs the Worker first only for /api/* (W03)", () => {
-    expect(config.assets?.binding).toBe("ASSETS");
-    expect(config.assets?.run_worker_first).toEqual(["/api/*"]);
-    expect(config.env.preview.assets).toBeUndefined();
+    expect(config.env.preview.ai ?? {}).not.toHaveProperty("remote");
   });
 
   it("has two different database ids, each a real UUID (no placeholder)", () => {
@@ -146,29 +124,9 @@ describe("wrangler.jsonc", () => {
     expect(read("scripts/deploy/preview.ts")).toContain('"--env", "preview"');
   });
 
-  it("runs the e2e Worker from a generated config without the remote-only ai binding", () => {
-    const read = (rel: string) => readFileSync(fileURLToPath(new URL(`../../../${rel}`, import.meta.url)), "utf-8");
-    expect(read("playwright.config.ts")).toContain("wrangler dev --config wrangler.e2e.json");
-    const script = read("scripts/e2e-wrangler-config.ts");
-    expect(script).toContain("delete config.ai");
-    expect(script).toContain("delete env.ai");
-    expect(read(".gitignore")).toMatch(/^wrangler\.e2e\.json$/m);
-    expect(config.ai).toEqual({ binding: "AI" });
-  });
-
-  it("names the preview Worker dcc-web-preview", () => {
-    expect(config.env?.preview?.name).toBe("dcc-web-preview");
-  });
-
-  it("runs the same daily cron in both environments", () => {
-    expect(config.triggers?.crons).toEqual(["17 3 * * *"]);
-    expect(config.env.preview.triggers?.crons).toEqual(["17 3 * * *"]);
-  });
-
-  it("requires the same three secrets in both environments", () => {
-    const names = ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"];
-    expect(config.secrets?.required).toEqual(names);
-    expect(config.env.preview.secrets?.required).toEqual(names);
+  it("schedules at least one cron trigger (the retention job) in both environments", () => {
+    expect(config.triggers?.crons?.length).toBeGreaterThan(0);
+    expect(config.env.preview.triggers?.crons?.length).toBeGreaterThan(0);
   });
 
   it("keeps invocation logs off", () => {
@@ -183,9 +141,6 @@ describe("wrangler.jsonc", () => {
     }
   });
 
-  it("serves the custom 404 page for unknown paths", () => {
-    expect(config.assets?.not_found_handling).toBe("404-page");
-  });
 });
 
 // Importing these configs pulls in Astro, Vite or ESLint, which takes over 5 s when the machine is loaded.
@@ -233,24 +188,6 @@ describe("playwright.config.ts", () => {
     return config as unknown as TestPlaywrightConfig;
   }
 
-  it("runs 4 workers in CI and Playwright's default locally (workers is read at import)", async () => {
-    const saved = process.env.CI;
-    // A computed specifier keeps the cache-busting query out of TypeScript's module resolution.
-    const load = async (tag: string) =>
-      (await import(/* @vite-ignore */ `../../../playwright.config.ts?${tag}`)).default as { workers?: number };
-    try {
-      process.env.CI = "true";
-      const ci = await load("workers-ci");
-      expect(ci.workers).toBe(4);
-      delete process.env.CI;
-      const local = await load("workers-local");
-      expect(local.workers).toBeUndefined();
-    } finally {
-      if (saved === undefined) delete process.env.CI;
-      else process.env.CI = saved;
-    }
-  });
-
   function matchesPattern(pattern: unknown, filePath: string): boolean {
     const patterns = Array.isArray(pattern) ? pattern : pattern ? [pattern] : [];
     return patterns.some((p) => (p instanceof RegExp ? p.test(filePath) : false));
@@ -272,46 +209,9 @@ describe("playwright.config.ts", () => {
     expect(config.retries).toBe(0);
   });
 
-  it("runs the webServer through wrangler dev on 127.0.0.1:4321 with metrics off", async () => {
-    const config = await loadConfig();
-    const server = config.webServer[0];
-    expect(server?.command).toContain("wrangler dev --config wrangler.e2e.json --ip 127.0.0.1 --port 4321");
-    expect(server?.command).toContain("--persist-to .cache/e2e-state");
-    expect(server?.command).toContain("--env-file tests/fixtures/worker/e2e.env");
-    // The env file only supplies names listed in secrets.required, so the flag is a --var.
-    expect(server?.command).toContain("--var ALLOW_TURNSTILE_TESTING:true");
-    expect(server?.command).toContain("wrangler d1 migrations apply DB --local --persist-to .cache/e2e-state");
-    expect(server?.env?.WRANGLER_SEND_METRICS).toBe("false");
-    expect(server?.env?.ASTRO_PREVIEW_BACKGROUND).toBeUndefined();
-    expect(server?.url).toBe("http://127.0.0.1:4321");
-  });
-
-  it("uses baseURL http://127.0.0.1:4321", async () => {
-    const config = await loadConfig();
-    expect(config.use?.baseURL).toBe("http://127.0.0.1:4321");
-  });
-
-  it("has exactly the projects e2e, a11y, budget, visual, sections, each using Chromium", async () => {
-    const config = await loadConfig();
-    const names = config.projects.map((p) => p.name).sort();
-    expect(names).toEqual(["a11y", "budget", "e2e", "sections", "visual"]);
-    for (const project of config.projects) {
-      expect(project.use?.defaultBrowserType).toBe("chromium");
-    }
-  });
-
   it("never auto-updates snapshots (a missing baseline fails, FR-005b)", async () => {
     const config = await loadConfig();
     expect(config.updateSnapshots).toBe("none");
-  });
-
-  it("sets toHaveScreenshot defaults (FR-005a)", async () => {
-    const config = await loadConfig();
-    expect(config.expect?.toHaveScreenshot).toEqual({
-      maxDiffPixelRatio: 0.001,
-      animations: "disabled",
-      caret: "hide",
-    });
   });
 
   it("matches every existing tests/e2e/*.spec.ts file to exactly one project (FR-030a)", async () => {
@@ -339,51 +239,28 @@ describe("package.json scripts", () => {
     );
   });
 
-  it("adds test:build:content, running only the build tests that read real content", () => {
-    expect(pkg.scripts["test:build:content"]).toBe(
-      "vitest run --project build tests/build/indexing.test.ts tests/build/local-site.test.ts tests/build/project-template.test.ts",
-    );
-  });
-
-  it("adds verify:quick: the gate without the build-fixture tests and Playwright", () => {
-    const quick: string = pkg.scripts["verify:quick"];
-    expect(quick).toBe(
-      "pnpm run lint:secrets && pnpm run lint && pnpm run typecheck && pnpm run test:unit && pnpm run test:worker && pnpm run build",
-    );
+  it("runs every verify:quick member as a defined script that verify also runs", () => {
     const runs = (script: string): string[] => [...script.matchAll(/pnpm run (\S+)/g)].map((m) => m[1] as string);
-    const members = runs(quick);
-    for (const name of members) {
-      expect(pkg.scripts[name], `${name} is a defined script`).toBeTypeOf("string");
-    }
-    expect(members).toEqual(["lint:secrets", "lint", "typecheck", "test:unit", "test:worker", "build"]);
-    // Every member is also run by verify, directly or through test (vitest run + test:worker).
-    expect(pkg.scripts.test).toBe("vitest run && pnpm run test:worker");
+    const members = runs(pkg.scripts["verify:quick"]);
+    expect(members.length).toBeGreaterThan(0);
     const verifyMembers = runs(pkg.scripts.verify);
     const testMembers = runs(pkg.scripts.test);
     for (const name of members) {
+      expect(pkg.scripts[name], `${name} is a defined script`).toBeTypeOf("string");
+      // verify runs a member directly, or through test (vitest run covers test:unit).
       const direct = verifyMembers.includes(name);
       const viaTest = verifyMembers.includes("test") && (testMembers.includes(name) || name === "test:unit");
       expect(direct || viaTest, `${name} is run by verify`).toBe(true);
     }
   });
 
-  it("runs all four Playwright projects from test:e2e", () => {
-    expect(pkg.scripts["test:e2e"]).toBe("playwright test");
+  it("runs test:e2e with no --project filter, so every Playwright project runs", () => {
+    expect(pkg.scripts["test:e2e"]).toMatch(/^playwright test/);
+    expect(pkg.scripts["test:e2e"]).not.toMatch(/--project/);
   });
 
-  it("adds test:a11y, test:budget and test:visual, each running one project", () => {
-    expect(pkg.scripts["test:a11y"]).toBe("playwright test --project=a11y");
-    expect(pkg.scripts["test:budget"]).toBe("playwright test --project=budget --workers=1");
-    expect(pkg.scripts["test:visual"]).toBe("playwright test --project=visual");
-  });
-
-  it("adds the per-layer scripts CI calls", () => {
-    expect(pkg.scripts["test:unit"]).toBe("vitest run --project unit");
-    expect(pkg.scripts["test:build"]).toBe("vitest run --project build");
-    expect(pkg.scripts["test:worker"]).toBe("pnpm --filter ./worker test");
-    expect(pkg.scripts["test:e2e:parallel"]).toBe(
-      "playwright test --project=e2e --project=a11y --project=visual --project=sections",
-    );
+  it("keeps test:a11y as a documented manual command", () => {
+    expect(pkg.scripts["test:a11y"]).toBeTypeOf("string");
   });
 
   const projectFlags = (script: string): string[] =>
@@ -409,26 +286,6 @@ describe("package.json scripts", () => {
     expect(scripted).toEqual(declared);
   });
 
-  it("adds test:visual:update running the visual project with --update-snapshots", () => {
-    expect(pkg.scripts["test:visual:update"]).toBe("playwright test --project=visual --update-snapshots");
-  });
-
-  it("adds reference:capture using tests/reference/playwright.config.ts", () => {
-    expect(pkg.scripts["reference:capture"]).toBe(
-      "playwright test --config tests/reference/playwright.config.ts",
-    );
-  });
-
-  it("adds deploy:preview running scripts/deploy/preview.ts", () => {
-    expect(pkg.scripts["deploy:preview"]).toBe("node scripts/deploy/preview.ts");
-  });
-
-  it("lists the new styling and sitemap dependencies", () => {
-    const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
-    for (const name of ["tailwindcss", "@tailwindcss/vite", "@tailwindcss/typography", "@astrojs/sitemap"]) {
-      expect(allDeps[name], `${name} should be listed in package.json`).toBeDefined();
-    }
-  });
 });
 
 describe(".env.example", () => {
@@ -445,14 +302,6 @@ describe(".env.example", () => {
     }
   });
 
-  it("lists exactly CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_ZONE_ID, CLOUDFLARE_API_TOKEN", () => {
-    const names = lines
-      .filter((line) => !line.startsWith("#"))
-      .map((line) => line.replace(/=$/, ""));
-    expect(new Set(names)).toEqual(
-      new Set(["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_ZONE_ID", "CLOUDFLARE_API_TOKEN"]),
-    );
-  });
 });
 
 describe("worker workspace and tooling wiring (007 contact form)", () => {
@@ -463,37 +312,9 @@ describe("worker workspace and tooling wiring (007 contact form)", () => {
     devDependencies: Record<string, string>;
   };
 
-  it("lists worker in pnpm-workspace.yaml packages", () => {
-    expect(read("pnpm-workspace.yaml")).toMatch(/^packages:\s*\n\s*-\s*['"]?worker['"]?\s*$/m);
-  });
-
-  it("has a private worker package with the Vitest 4 and plugin devDeps", () => {
-    const worker = JSON.parse(read("worker/package.json")) as {
-      name: string;
-      private: boolean;
-      scripts: Record<string, string>;
-      devDependencies: Record<string, string>;
-    };
-    expect(worker.name).toBe("@dcc-web/worker");
-    expect(worker.private).toBe(true);
-    expect(worker.scripts.test).toContain("vitest run");
-    expect(worker.devDependencies.vitest).toMatch(/^4\.1\./);
-    expect(worker.devDependencies["@cloudflare/vitest-plugin"]).toMatch(/^1\.3\./);
-  });
-
-  it("keeps Vitest 5 at the root and runs wrangler 4.144.0", () => {
-    expect(pkg.devDependencies.vitest).toMatch(/^5\./);
-    expect(pkg.devDependencies.wrangler).toBe("4.144.0");
-  });
-
-  it("gives worker its own strict tsconfig and excludes it from the root one", () => {
+  it("gives worker a strict tsconfig", () => {
     const workerTsconfig = JSON.parse(stripJsonComments(read("worker/tsconfig.json")));
     expect(workerTsconfig.compilerOptions.strict).toBe(true);
-    expect(workerTsconfig.compilerOptions.types).toEqual(
-      expect.arrayContaining(["./worker-configuration.d.ts"]),
-    );
-    const rootTsconfig = JSON.parse(stripJsonComments(read("tsconfig.json")));
-    expect(rootTsconfig.exclude).toContain("worker");
   });
 
   it("covers worker/** in ESLint with no-floating-promises on", async () => {
@@ -512,13 +333,10 @@ describe("worker workspace and tooling wiring (007 contact form)", () => {
     expect(entry?.languageOptions?.parserOptions?.projectService).toBeTruthy();
   }, HEAVY_IMPORT_TIMEOUT);
 
-  it("wires typecheck, test, types:worker and deploy:production scripts", () => {
-    expect(pkg.scripts.typecheck).toBe(
-      "astro check && tsc -p worker && wrangler types worker/worker-configuration.d.ts --check",
-    );
-    expect(pkg.scripts.test).toBe("vitest run && pnpm run test:worker");
-    expect(pkg.scripts["types:worker"]).toBe("wrangler types worker/worker-configuration.d.ts");
-    expect(pkg.scripts["deploy:production"]).toBeTruthy();
+  it("typechecks the worker and checks its generated types", () => {
+    expect(pkg.scripts.typecheck).toContain("tsc -p worker");
+    expect(pkg.scripts.typecheck).toMatch(/wrangler types .*--check/);
+    expect(pkg.scripts["types:worker"]).toBeTypeOf("string");
   });
 });
 

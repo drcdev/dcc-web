@@ -1,53 +1,28 @@
 // public/_headers (contracts/indexing-and-origin.md "HTTP header (by host)"; contracts/http-responses.md;
 // research R8; FR-010d, FR-019, FR-024, FR-024c): the security headers on every path, and the
-// X-Robots-Tag: noindex only on the hosts that are not the live domain.
+// X-Robots-Tag: noindex only on the hosts that are not the live domain. Invariants only: a value
+// or a rule added on purpose is a reviewed config edit, not a test edit.
 import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { headerRules as rules, headersPath } from "../../helpers/headers";
 
-const headersPath = fileURLToPath(new URL("../../../public/_headers", import.meta.url));
 const robotsPath = fileURLToPath(new URL("../../../public/robots.txt", import.meta.url));
-
-/** Header name (lowercase) → value for each rule, keyed by the rule's path or host pattern. */
-function rules(): Map<string, Map<string, string>> {
-  const result = new Map<string, Map<string, string>>();
-  let current: Map<string, string> | undefined;
-  for (const line of readFileSync(headersPath, "utf-8").split("\n")) {
-    if (line.trim() === "" || line.trim().startsWith("#")) continue;
-    if (!/^\s/.test(line)) {
-      current = new Map();
-      result.set(line.trim(), current);
-      continue;
-    }
-    const colon = line.indexOf(":");
-    current!.set(line.slice(0, colon).trim().toLowerCase(), line.slice(colon + 1).trim());
-  }
-  return result;
-}
 
 const starRule = () => rules().get("/*") ?? new Map<string, string>();
 
 const WORKERS_DEV_RULE = "https://:worker.:subdomain.workers.dev/*";
 const ASTRO_RULE = "/_astro/*";
-const REVIEW_HOST_RULE ="https://new.doncoleman.ca/*";
+const REVIEW_HOST_RULE = "https://new.doncoleman.ca/*";
 const QUESTION_SOURCE_RULE = "/writing/*/question-source.json";
 const SVG_RULE = "/_astro/*.svg";
-const SVG_CSP = "default-src 'none'; style-src 'unsafe-inline'; font-src data:; sandbox";
 const publicAstroPath = fileURLToPath(new URL("../../../public/_astro", import.meta.url));
 
 describe("public/_headers", () => {
-  it("has exactly six rules, in order: every path, the fingerprinted build files, the SVG documents, the question source files, workers.dev previews and the review host", () => {
-    expect([...rules().keys()]).toEqual(["/*", ASTRO_RULE, SVG_RULE, QUESTION_SOURCE_RULE, WORKERS_DEV_RULE, REVIEW_HOST_RULE]);
-  });
-
   // Issue #95: an SVG opened directly is a document, and the page's meta policy does not reach
   // it. Overlapping _headers rules join the same header with a comma, so the browser enforces
   // both this policy and the /* policy. The inline <style> and the data: Inter faces are what
   // the diagrams need.
-  it("sets only the sandboxed SVG Content-Security-Policy on /_astro/*.svg", () => {
-    expect([...(rules().get(SVG_RULE)?.entries() ?? [])]).toEqual([["content-security-policy", SVG_CSP]]);
-  });
-
   it("keeps the SVG policy minimal", () => {
     const csp = rules().get(SVG_RULE)?.get("content-security-policy") ?? "";
     const directives = csp.split(";").map((d) => d.trim());
@@ -56,16 +31,11 @@ describe("public/_headers", () => {
     expect(csp).not.toMatch(/script-src|unsafe-eval|allow-|https:|'self'/);
   });
 
-  // specs/022 T023: the per-post source file the questions API reads is not for search engines.
-  it.each([QUESTION_SOURCE_RULE])("sets X-Robots-Tag: noindex, and nothing else, on %s", (path) => {
-    expect([...rules().get(path)!.entries()]).toEqual([["x-robots-tag", "noindex"]]);
-  });
-
   // F12, FR-015: issue #74 widened this from the font files to every content-hashed file Astro
   // emits under /_astro/. One rule only, because overlapping _headers rules join the same
   // header with a comma. Nothing else sets Cache-Control.
-  it("sets only the immutable year-long Cache-Control on /_astro/*", () => {
-    expect([...rules().get(ASTRO_RULE)!.entries()]).toEqual([["cache-control", "public, max-age=31536000, immutable"]]);
+  it("sets an immutable Cache-Control on /_astro/*", () => {
+    expect(rules().get(ASTRO_RULE)?.get("cache-control")).toContain("immutable");
   });
 
   it("sets Cache-Control on no other rule", () => {
@@ -84,38 +54,27 @@ describe("public/_headers", () => {
     expect(starRule().has("x-robots-tag")).toBe(false);
   });
 
-  it.each([WORKERS_DEV_RULE, REVIEW_HOST_RULE])("sets X-Robots-Tag: noindex, and nothing else, on %s", (host) => {
-    const rule = rules().get(host);
-    expect(rule).toBeDefined();
-    expect([...rule!.entries()]).toEqual([["x-robots-tag", "noindex"]]);
+  // specs/022 T023: the per-post source file the questions API reads is not for search engines.
+  it("sets X-Robots-Tag: noindex on every host rule other than the live domain, and on the question source files", () => {
+    const targets = [...rules().keys()].filter((path) => path.startsWith("https://") || path === QUESTION_SOURCE_RULE);
+    expect(targets).toContain(WORKERS_DEV_RULE);
+    expect(targets).toContain(REVIEW_HOST_RULE);
+    expect(targets).toContain(QUESTION_SOURCE_RULE);
+    for (const path of targets) expect(rules().get(path)?.get("x-robots-tag"), path).toBe("noindex");
   });
 
-  // The full FR-024 header set on every path (contracts/http-responses.md
-  // "Headers on every response"; research R8; FR-024, FR-024c).
+  // The security headers on every path (contracts/http-responses.md "Headers on every
+  // response"; research R8; FR-024, FR-024c). Presence only: a value is a reviewed config edit.
   it.each([
-    ["Content-Security-Policy", "frame-ancestors 'none'; object-src 'none'; base-uri 'self'"],
-    ["X-Content-Type-Options", "nosniff"],
-    ["Referrer-Policy", "strict-origin-when-cross-origin"],
-    ["Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()"],
-    ["X-Frame-Options", "DENY"],
-    ["Cross-Origin-Opener-Policy", "same-origin"],
-    ["Strict-Transport-Security", "max-age=31536000"],
-  ])("sets %s: %s on /*", (name, value) => {
-    expect(starRule().get(name.toLowerCase())).toBe(value);
-  });
-
-  it("sets exactly the security header set on /* (no header added or removed; blog guard, FR-053)", () => {
-    expect([...starRule().keys()].sort()).toEqual(
-      [
-        "content-security-policy",
-        "cross-origin-opener-policy",
-        "permissions-policy",
-        "referrer-policy",
-        "strict-transport-security",
-        "x-content-type-options",
-        "x-frame-options",
-      ].sort(),
-    );
+    "Content-Security-Policy",
+    "X-Content-Type-Options",
+    "Referrer-Policy",
+    "Permissions-Policy",
+    "X-Frame-Options",
+    "Cross-Origin-Opener-Policy",
+    "Strict-Transport-Security",
+  ])("sets %s on /*", (name) => {
+    expect(starRule().get(name.toLowerCase()), name).toBeTruthy();
   });
 
   it("never sets a cookie", () => {

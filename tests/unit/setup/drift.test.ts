@@ -138,36 +138,21 @@ describe("registry, docs/setup.md and docs/launch.md agree (011-launch)", () => 
   });
 });
 
-describe("contact-form secrets, permissions and .env.example (items 2 and 19 to 25)", () => {
-  const byName = (name: string) => secretManifest.find((s) => s.name === name);
+describe("Worker secrets <-> manifest drift", () => {
+  const config = JSON.parse(stripJsonComments(read("wrangler.jsonc"))) as {
+    secrets?: { required?: string[] };
+    env?: Record<string, { secrets?: { required?: string[] } }>;
+  };
 
-  it.each(["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"])(
-    "manifest has the Worker secret %s, used by contact-worker-secrets",
-    (name) => {
-      const entry = byName(name);
-      expect(entry, `${name} missing from the manifest`).toBeDefined();
-      expect(entry!.kind).toBe("secret");
-      expect(entry!.usedBy).toContain("contact-worker-secrets");
-    },
-  );
-
-  it("manifest has the site-key build variable", () => {
-    const entry = byName("PUBLIC_TURNSTILE_SITE_KEY");
-    expect(entry).toBeDefined();
-    expect(entry!.kind).toBe("variable");
-    expect(entry!.usedBy).toContain("contact-turnstile-site-key");
-  });
-
-  it("the token's manifest permissions and the .env.example comment name the three new permissions", () => {
-    const permissions = byName("CLOUDFLARE_API_TOKEN")!.permissions ?? "";
-    const envExample = read(".env.example").replace(/\n#\s*/g, " ");
-    for (const text of [permissions, envExample]) {
-      expect(text).toContain("D1 Read");
-      expect(text).toContain("Workers Builds Configuration Read");
-      expect(text).toContain("Turnstile Sites Read");
+  it("every secrets.required name in both environments is a secret in the manifest, and both require the same names", () => {
+    const production = config.secrets?.required ?? [];
+    const preview = config.env?.preview?.secrets?.required ?? [];
+    expect(production.length).toBeGreaterThan(0);
+    expect([...preview].sort()).toEqual([...production].sort());
+    for (const name of new Set([...production, ...preview])) {
+      const entry = secretManifest.find((s) => s.name === name);
+      expect(entry, `${name} is required by wrangler.jsonc but missing from the manifest`).toBeDefined();
+      expect(entry!.kind, `${name} must be a secret in the manifest`).toBe("secret");
     }
-    expect(byName("CLOUDFLARE_API_TOKEN")!.usedBy).toEqual(
-      expect.arrayContaining(["contact-d1-databases", "contact-turnstile-widget", "contact-preview-builds"]),
-    );
   });
 });

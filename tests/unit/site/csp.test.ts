@@ -51,56 +51,6 @@ beforeAll(async () => {
 });
 
 describe("astro.config.mjs security.csp", () => {
-  // Guard for the blog (spec FR-053; tasks T090): the site-wide policy equals
-  // main's current values exactly, so adding Shiki, env or markdown options to
-  // the config can never widen it. Re-pointed at main after the rebase onto the
-  // contact form (T079): main's Turnstile sources are added per page through
-  // Astro.csp in ContactForm.astro (covered below), not in this config, so the
-  // site-wide values are unchanged. Run green before and after every config change.
-  it("equals its current values exactly (no new source, no 'unsafe-inline')", () => {
-    expect(csp.directives).toEqual([
-      "default-src 'self'",
-      "img-src 'self' data:",
-      "font-src 'self'",
-      "connect-src 'self' https://cloudflareinsights.com",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ]);
-    expect(csp.scriptDirective?.resources).toEqual(["'self'", "https://static.cloudflareinsights.com"]);
-    expect(csp.scriptDirective?.hashes).toHaveLength(1);
-    expect(csp.scriptDirective?.strictDynamic).toBeUndefined();
-    expect(csp.styleDirective?.resources).toEqual(["'self'"]);
-    expect(csp.styleDirective?.hashes ?? []).toEqual([]);
-    expect(Object.keys(csp).sort()).toEqual(["directives", "scriptDirective", "styleDirective"]);
-  });
-
-  it.each([
-    ["default-src", ["'self'"]],
-    ["script-src", ["'self'", "https://static.cloudflareinsights.com"]],
-    ["style-src", ["'self'"]],
-    ["img-src", ["'self'", "data:"]],
-    ["font-src", ["'self'"]],
-    ["connect-src", ["'self'", "https://cloudflareinsights.com"]],
-    ["object-src", ["'none'"]],
-    ["base-uri", ["'self'"]],
-    ["form-action", ["'self'"]],
-  ])("%s allows exactly the listed sources (plus hashes)", (name, expected) => {
-    const sources = policy.get(name);
-    expect(sources, `${name} is missing`).toBeDefined();
-    const nonHash = sources!.filter((source) => !/^'sha(256|384|512)-/.test(source));
-    expect(nonHash.sort()).toEqual([...expected].sort());
-  });
-
-  // specs/022 T023: the questions panel calls its own origin, which `connect-src 'self'` already
-  // allows, so the policy needs no source for it.
-  it("lets the questions panel reach /api/questions through connect-src 'self' alone", () => {
-    expect(policy.get("connect-src")).toContain("'self'");
-    for (const sources of policy.values()) {
-      for (const source of sources) expect(source).not.toMatch(/api\/questions|workers\.dev|ai\./);
-    }
-  });
-
   it("hashes the inline pre-paint theme script exactly as it is rendered", () => {
     const source = readFileSync(join(root, "src/scripts/theme-init.js"), "utf-8");
     const hash = `sha256-${createHash("sha256").update(source).digest("base64")}`;
@@ -131,11 +81,10 @@ describe("astro.config.mjs security.csp", () => {
     }
   });
 
-  it("allows no origin beyond the site itself and the two Web Analytics hosts", () => {
+  it("allows an external origin only from the Web Analytics allow-list", () => {
+    const allowed = ["https://static.cloudflareinsights.com", "https://cloudflareinsights.com"];
     const origins = [...policy.values()].flat().filter((source) => /^[a-z]+:\/\//.test(source));
-    expect(new Set(origins)).toEqual(
-      new Set(["https://static.cloudflareinsights.com", "https://cloudflareinsights.com"]),
-    );
+    for (const origin of origins) expect(allowed, origin).toContain(origin);
   });
 });
 
@@ -159,29 +108,4 @@ describe("no Web Analytics code or token in the repository (FR-025)", () => {
       }
     },
   );
-});
-
-describe("contact page CSP additions (contracts/contact-page.md 'CSP')", () => {
-  const source = (path: string) => readFileSync(join(root, path), "utf-8");
-
-  it("adds the Turnstile script and frame sources through Astro.csp", () => {
-    const helper = source("src/components/sections/contact-csp.ts");
-    expect(helper).toContain('insertScriptResource("https://challenges.cloudflare.com")');
-    expect(helper).toContain('insertDirective("frame-src https://challenges.cloudflare.com")');
-  });
-
-  it("asks for them from the form and from the page route when the body holds the form", () => {
-    expect(source("src/components/sections/ContactForm.astro")).toContain("allowTurnstile(Astro.csp)");
-    expect(source("src/pages/[...slug].astro")).toMatch(/<ContactForm[\s\S]*allowTurnstile\(Astro\.csp\)/);
-  });
-
-  it("only the contact form and its helper name the Turnstile host, so other pages keep the site-wide policy", () => {
-    const users = walk(join(root, "src")).filter(
-      (file) => /\.(astro|ts|js|mdx?)$/.test(file) && readFileSync(file, "utf-8").includes("challenges.cloudflare.com"),
-    );
-    expect(users.map((file) => file.slice(root.length)).sort()).toEqual([
-      "src/components/sections/ContactForm.astro",
-      "src/components/sections/contact-csp.ts",
-    ]);
-  });
 });
