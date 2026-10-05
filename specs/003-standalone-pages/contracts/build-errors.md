@@ -21,7 +21,7 @@ mapping".
 | 10 | Unknown section (`<Callout>`) | body check | file name, `Callout`, list of valid sections |
 | 11 | Section missing required information (`<CallToAction label="x">`) | section prop check | file name, `CallToAction`, `href` |
 | 12 | Image section with no image inside | section prop check | file name, section name, "image" |
-| 13 | Two files, same address (`about.md` + `about.mdx`; `x.mdx` + `x/index.mdx`) | address check | both file names, the address |
+| 13 | Two files, same address (`about.md` + `about.mdx`; `x.mdx` + `x/index.mdx`) | `generateId` twin check | both file names, the address |
 | 14 | Page address used by another route (`404.mdx`, `robots.txt` style conflicts) or reserved for a later feature (`writing.mdx`, `projects.mdx`, `contact.mdx`: the `futureDestinations` list) | address check | page file, route file or "reserved", the address |
 | 15 | Two navigation entries with the same position (page vs page, page vs fixed entry) | navigation merge | both sources, the position |
 | 16 | Level-1 heading in the body (`# Heading`) | body check | file name, "use ##" |

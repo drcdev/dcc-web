@@ -271,10 +271,11 @@ by no cheaper layer, because only a build can show it.
 Call-site runs, all in `build/page-validation.test.ts`:
 
 - **sync**: "rows 1 to 5: the pages schema is wired and Astro names the file";
-  "row 6: generateId runs assertImagesExist"; "row 17: generateId runs idFromPath".
-- **build**: "row 7: Astro rejects a body image that does not exist"; "row 13: the route checks
-  addresses over the file-system page list"; "rows 8 to 10 and 16: the route runs
-  validatePageBody"; "rows 11 and 12: a section check names the section and the page file".
+  "row 6: generateId runs assertImagesExist"; "row 17: generateId runs idFromPath"; "row 13:
+  generateId runs the twin check (x.mdx and x/index.mdx)".
+- **build**: "row 7: Astro rejects a body image that does not exist"; "row 14: the route checks
+  addresses over the src/pages route-file list (404.mdx against 404.astro)"; "rows 8 to 10 and
+  16: the route runs validatePageBody"; "rows 11 and 12: a section check names the section and the page file".
 
 | Row | Rule | Primary assertion | Call-site run |
 |---|---|---|---|
@@ -290,11 +291,11 @@ Call-site runs, all in `build/page-validation.test.ts`:
 | 10 | Unknown section | `unit/body.test.ts` "rejects an unknown capitalised tag, naming the file, the tag and the valid sections" | build, rows 8 to 10 and 16 |
 | 11 | Section missing a prop | `component/sections/CallToAction.test.ts` "throws naming the section and the missing or invalid prop" | build, rows 11 and 12 (names the page file) |
 | 12 | Image section without image | `component/sections/Images.test.ts` "throws naming the section when there is no image", and `unit/section-schemas.test.ts` "says an image is needed" | build, rows 11 and 12 (same `checkSection` path) |
-| 13 | Two files, one address | `unit/address.test.ts` "fails for two page files with the same address, naming both and the address" and "fails for x.mdx together with x/index.mdx" | build, row 13 (`x.mdx` with `x/index.mdx`) |
-| 14 | Address used by a route, or reserved | `unit/address.test.ts` "fails for a page against a route file in src/pages", "fails for a page against a generated route file such as robots.txt.ts", "fails for the home page against src/pages/index.astro", "fails for a page under the fixed prefix of a route with a variable part", "fails for reserved address %s", and "row 14: page addresses against the real route files (/projects/ prefix)"; the route-file list at the call site: `build/page-validation.test.ts` "row 14" (a page at `404.mdx` against `src/pages/404.astro`) | build, row 13 (the page-file list) and build, row 14 (the route-file list, same `assertUniqueAddresses` call) |
+| 13 | Two files, one address | `unit/addresses.test.ts` "fails for two page files with the same address, naming both and the address (row 13)" and "fails for x.mdx together with x/index.mdx, with the same message from either entry (row 13)" (`assertNoTwin`) | sync, row 13 (`x.mdx` with `x/index.mdx`; `generateId` runs the twin check) |
+| 14 | Address used by a route, or reserved | `unit/addresses.test.ts` "fails for a page against a route file in src/pages", "fails for a page against a generated route file such as robots.txt.ts", "fails for the home page against src/pages/index.astro", "fails for a page under the fixed prefix of a route with a variable part", "fails for reserved address %s", and "row 14: page addresses against the real route files (/projects/ prefix)"; the route-file list at the call site: `build/page-validation.test.ts` "row 14" (a page at `404.mdx` against `src/pages/404.astro`) | build, row 14 (the route-file list, `assertPageAddressesFree` in the route) |
 | 15 | Same navigation position | `unit/navigation.test.ts` "fails when two pages use the same position, naming both files and the position" and "fails when a page asks for fixed position %i, naming the page and the fixed entry" | `build/local-site.test.ts` "lists the page-sourced About entry in the header, between Projects and Contact" (the page-sourced entry reaches the real header) |
 | 16 | Level-1 heading | `unit/body.test.ts` "rejects a level-1 Markdown heading and an <h1>, saying to use ##" | build, rows 8 to 10 and 16 |
-| 17 | Bad file or folder name | `unit/address.test.ts` "rejects %s with the file name and the naming rule" | sync, row 17 |
+| 17 | Bad file or folder name | `unit/addresses.test.ts` "addressFromPath" `it.each` over bad names (the rejects table) | sync, row 17 |
 
 ### Post files: `specs/008-blog/contracts/build-errors.md`
 
@@ -302,7 +303,7 @@ Call-site runs, all in `build/post-validation.test.ts`:
 
 - **sync**: "validates drafts too: the posts schema is wired and Astro names the file (P23,
   FR-012a)"; "P4: generateId runs assertPostDates"; "P9: generateId runs
-  assertImagesExist with the post wording"; "P21 (changed): a removed controlled
+  assertImagesExist with the post wording"; "P17: generateId runs the twin check"; "P21 (changed): a removed controlled
   topic id is accepted as a free-form topic".
 - **build**: "P22: Astro rejects a body image that does not exist"; "P13: getCheckedPosts runs
   assertPostFiles"; "P20: getCheckedPosts runs validatePageBody with the post wording".
@@ -323,11 +324,11 @@ Call-site runs, all in `build/post-validation.test.ts`:
 | P10 | `updated` before `date` | `unit/post-schema.test.ts` "rejects updated earlier than date, naming updated (P10)" | schema sync |
 | P11 | Unknown setting | `unit/post-schema.test.ts` "rejects an unknown or misspelled setting, naming it (P11)" | schema sync |
 | P12 | Body image, empty alt | `unit/body.test.ts` "keeps the same rules: use ##, unknown section with the list, alt text" and "starts every message with Post file and names the file" | build, P20 |
-| P13 | `.md` file | `unit/post-address.test.ts` "rejects a .md file, naming the file and saying to rename it to .mdx (P13)" | build, P13 |
-| P14 | Sub-folder | `unit/post-address.test.ts` "rejects a post in a sub-folder, naming the file and the sub-folder (P14)" | build, P13 (same `assertPostFiles` call) |
-| P15 | Bad file name | `unit/post-address.test.ts` "rejects %s ... (P15)" (the `it.each` over bad names) | build, P13 |
-| P16 | Reserved slug | `unit/post-address.test.ts` "rejects the reserved slug %s, naming the address (P16)" | build, P13 |
-| P17 | Two files, one slug | `unit/post-address.test.ts` "rejects two files with one slug, naming both files and the address (P17)" | build, P13 |
+| P13 | `.md` file | `unit/addresses.test.ts` "rejects a .md file, naming the file and saying to rename it to .mdx (P13)" | build, P13 |
+| P14 | Sub-folder | `unit/addresses.test.ts` "rejects a post in a sub-folder, naming the file and the sub-folder (P14)" | build, P13 (same `assertPostFiles` call) |
+| P15 | Bad file name | `unit/addresses.test.ts` "rejects %s ... (P15)" (the `it.each` over bad names) | build, P13 |
+| P16 | Reserved slug | `unit/addresses.test.ts` "rejects the reserved slug %s, naming the address (P16)" | build, P13 |
+| P17 | Two files, one slug | `unit/addresses.test.ts` "fails for two post files with one slug, naming both files and the address (P17)" (`assertNoTwin`) | sync, P17 |
 | P18 | Level-1 heading | `unit/body.test.ts` "keeps the same rules: use ##, unknown section with the list, alt text" (post kind) | build, P20 |
 | P19 | Unknown section tag | same case, `Callout` and the section list | build, P20 |
 | P20 | Empty body | `unit/body.test.ts` "says the post has no content, not the page" | build, P20 |
@@ -346,10 +347,11 @@ asserts that the message does not contain it (no environment value or secret in 
 Call-site runs:
 
 - **sync**: "validates drafts too: the projects schema is wired and Astro names the file (row 03,
-  FR-073)" (production environment); "row 17: generateId runs assertImagesExist";
+  FR-073)" (production environment); "row 17: generateId runs assertImagesExist (and the clip check of row 19)";
   "row 27: generateId runs slugFromPath (and rejects a nested file the same way)"; "R01: a
-  removed setting in a draft fails at sync under production".
-- **build**: "row 26: the route runs assertUniqueProjectFiles"; "a malformed options table in a
+  removed setting in a draft fails at sync under production"; "row 26: generateId runs the twin
+  check".
+- **build**: "a malformed options table in a
   draft fails a production build" (T06) and "an MDX element in a draft fails a production
   build" (R05): `validateProjectStory` runs on every entry, drafts included.
 - **template**: `build/project-template.test.ts` "X01: _template.mdx is excluded" and "X02: a renamed copy
@@ -362,9 +364,9 @@ is checked by `unit/project-template.test.ts`, and the guide by `unit/projects-g
 | Rows (contract ids) | Rule | Primary assertion | Call-site run |
 |---|---|---|---|
 | S01 to S08 | Required settings, status, themes, pictures, unknown setting, problem length, addresses, picture name. S02 changed in `specs/015-project-retired-status/contracts/build-errors.md`: its message now lists `retired` too | `unit/project-schema.test.ts` "S01" to "S08" | schema sync (row 03 run) |
-| S09 | Missing picture file | `build/project-validation.test.ts` "row 17" (the check has no unit test of its own) | sync, row 17 |
-| S10 | Bad file name, nested file | `unit/project-address.test.ts` "rejects %s with the file name and the naming rule" | sync, row 27 |
-| S11 | Two files, one slug | `unit/project-address.test.ts` "names both files when .md and .mdx share a slug" | build, row 26 |
+| S09 | Missing picture file | `unit/images.test.ts` "names the project file, with the project wording, when a visual is missing (S09)" | sync, row 17 |
+| S10 | Bad file name, nested file | `unit/addresses.test.ts` "slugFromPath (projects)" rejects table and "rejects a nested file" | sync, row 27 |
+| S11 | Two files, one slug | `unit/addresses.test.ts` "fails for two project files with one slug, naming both files and the slug (row 26)" (`assertNoTwin`) | sync, row 26 |
 | R01 to R04 | Removed settings: `order`, `demo.embed`, a clip picture, `comparison` | `unit/project-schema.test.ts` "R01" to "R04" | sync, "R01" run |
 | R05, R06 | MDX element, import or export in the body | `unit/project-story.test.ts` "R05", "R06" | build, "an MDX element in a draft" |
 | N01 to N03 | `part` value, one picture per part, `invitation` text | `unit/project-schema.test.ts` "N01" to "N03" | schema sync |
@@ -375,9 +377,9 @@ is checked by `unit/project-template.test.ts`, and the guide by `unit/projects-g
 | RP04, RP05 | `replacedBy.project` names no project file, or the project itself | `unit/project-replacement.test.ts` "RP04", "RP05" | build, "RP04: a retired draft naming a missing project fails a production build" (RP05 shares the `checkReplacements` call) |
 
 A page file under `/projects/...` fails through the page address check:
-`unit/address.test.ts` "fails for a page file under the projects story route's prefix" and
+`unit/addresses.test.ts` "fails for a page file under the projects story route's prefix" and
 "row 14: page addresses against the real route files (/projects/ prefix)", with the call site
-proven by the page build run for row 13.
+proven by the page build run for row 14.
 
 ### Writing series: `specs/013-writing-series/contracts/build-errors.md`
 
@@ -385,7 +387,7 @@ proven by the page build run for row 13.
 |---|---|---|---|
 | P23 | Both series on one post | `unit/post-schema.test.ts` "rejects both series, naming both ids and one series (P23)" | `build/post-validation.test.ts` sync "validates drafts too" (a draft with both series) |
 | P24 | Free-form id near a controlled id | `unit/post-schema.test.ts` "rejects the near-miss %s, naming %s (P24)" | schema sync |
-| P25 | Post file named for a series | `unit/post-address.test.ts` "rejects the series slug %s, naming the address (P25)" | build, P13 |
+| P25 | Post file named for a series | `unit/addresses.test.ts` "rejects the series slug %s, naming the address (P25)" | build, P13 |
 | P26 | Free-form id breaking the id rules | `unit/post-schema.test.ts` "rejects ids that break the id rules (P26)" | schema sync |
 | P6 (changed) | Near-miss message names the intended id | `unit/post-schema.test.ts` P6 case (see the post table) | schema sync |
 | P21 (changed) | Removed topic id builds | `build/post-validation.test.ts` sync "P21 (changed)" | the same run |

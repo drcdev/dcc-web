@@ -381,7 +381,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W6: Coverage mapping and docs
 
-- [ ] W6 done
+- [x] W6 done
 - **Files:** `docs/testing.md` ("Contract-row mapping", lines ~263 to 400, and the build bullets at
   ~275 and ~304); the "Check" column of `specs/003-standalone-pages/contracts/build-errors.md`
   row 13, `specs/008-blog/contracts/build-errors.md` P17,
