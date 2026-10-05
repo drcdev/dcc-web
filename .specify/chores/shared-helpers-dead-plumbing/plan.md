@@ -205,7 +205,7 @@ files. Run every toolchain call through `/Users/doncoleman/.claude/jobs/b807dd0b
   `{"a":1}` and `null` for `[1]`, `null`, `"x"`, `1` and `not json`. Seen failing (no exports)
   before the helpers are written.
 
-### W2. Both endpoints use the shared reader; `QuestionSource` replaces `SourceFile`
+### [x] W2. Both endpoints use the shared reader; `QuestionSource` replaces `SourceFile`
 
 - **Files:** `worker/src/contact/submit.ts` (delete local `readCapped` and the inline
   `Content-Length` check, call `readCapped(request, BODY_MAX_BYTES)` and `parseJsonObject`, map
