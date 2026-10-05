@@ -10,6 +10,8 @@ The screenshots in this document are full-page captures of each page at 390 px (
 
 Every address below is pinned to commit `1f35eae43904d7134c2b7e5eb573565b7ffc0cee`, the last commit that still contained the prototypes, so the links keep working after the prototypes are removed from the site. Cloudflare keeps a limited number of versions, so these links may expire; the screenshots are the lasting record.
 
+The `-dcc-web` version URLs in this document stopped resolving when production preview URLs were turned off (#89); the decisions they record stand.
+
 - Hub (all three directions): https://81aad47f-dcc-web.drc-dev.workers.dev/design/portfolio/
 
 ## Direction A: Timeline

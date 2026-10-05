@@ -7,19 +7,28 @@ import { spawnSync } from "node:child_process";
 import { previewDeploySteps } from "../../../scripts/deploy/preview.ts";
 
 describe("previewDeploySteps", () => {
-  it("applies preview migrations first, deploys the preview env, then uploads an aliased version", () => {
+  it("on a branch, applies preview migrations then uploads an aliased version without deploying", () => {
     expect(previewDeploySteps({ WORKERS_CI_BRANCH: "002-site-foundation" })).toEqual([
       ["d1", "migrations", "apply", "DB", "--remote", "--env", "preview"],
-      ["deploy", "--env", "preview"],
       ["versions", "upload", "--env", "preview", "--preview-alias", "br-002-site-foundation"],
     ]);
   });
 
-  it("skips the aliased upload on main", () => {
+  it("on main, applies preview migrations then deploys the preview Worker", () => {
     expect(previewDeploySteps({ WORKERS_CI_BRANCH: "main" })).toEqual([
       ["d1", "migrations", "apply", "DB", "--remote", "--env", "preview"],
       ["deploy", "--env", "preview"],
     ]);
+  });
+
+  it("never deploys from a branch", () => {
+    for (const branch of ["feature-x", "002-site-foundation", "main-fix"]) {
+      const steps = previewDeploySteps({ WORKERS_CI_BRANCH: branch });
+      for (const step of steps) {
+        expect(step[0]).not.toBe("deploy");
+        expect(step.join(",")).not.toContain("versions,deploy");
+      }
+    }
   });
 
   it("names no database, only the DB binding", () => {

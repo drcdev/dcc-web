@@ -24,9 +24,11 @@ export interface VerifyInput {
   remoteIp: string | null;
   idempotencyKey: string;
   hostname: string;
+  /** True only where `ALLOW_TURNSTILE_TESTING` is "true": accept a testing-key verdict. */
+  allowTestingKey: boolean;
 }
 
-/** True only for a successful verdict for this action on this host. Throws when unavailable. */
+/** True only for a successful verdict for this action on this host (or an allowed testing-key one). Throws when unavailable. */
 export async function verifyTurnstile(input: VerifyInput): Promise<boolean> {
   const form = new URLSearchParams({
     secret: input.secret,
@@ -54,7 +56,9 @@ export async function verifyTurnstile(input: VerifyInput): Promise<boolean> {
     throw new TurnstileUnavailableError();
   }
   // Cloudflare's documented test secrets answer with a fixed hostname (example.com) and no
-  // action, and say so in the metadata. Only a real siteverify answer can carry that flag.
-  if (result.metadata?.result_with_testing_key === true) return result.success === true;
+  // action, and say so in the metadata. Such a verdict proves nothing about the visitor, so it
+  // is accepted only where the caller allows testing keys (preview and the E2E run); in
+  // production it is refused.
+  if (result.metadata?.result_with_testing_key === true) return input.allowTestingKey && result.success === true;
   return result.success === true && result.action === TURNSTILE_ACTION && result.hostname === input.hostname;
 }

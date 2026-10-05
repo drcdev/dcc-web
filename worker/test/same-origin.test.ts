@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { isSameOriginRequest } from "../src/same-origin";
+import { isSameOriginRequest, isSecureRequest } from "../src/same-origin";
+
+describe("isSecureRequest", () => {
+  it.each(["https://example.com/api/x", "http://localhost:4321/api/x", "http://127.0.0.1:4321/api/x"])("accepts %s", (url) => {
+    expect(isSecureRequest(new URL(url))).toBe(true);
+  });
+
+  it.each(["http://example.com/api/x", "http://localhost.evil.example/api/x"])("refuses %s", (url) => {
+    expect(isSecureRequest(new URL(url))).toBe(false);
+  });
+});
 
 function req(url: string, headers: Record<string, string> = {}) {
   return new Request(url, { method: "POST", headers });

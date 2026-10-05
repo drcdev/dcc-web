@@ -9,7 +9,7 @@ const ENV = { CLOUDFLARE_API_TOKEN: "cf-token-value", CLOUDFLARE_ACCOUNT_ID: "ac
 const CONFIG = { workerName: "dcc-web" };
 
 describe("checks/cloudflare-worker", () => {
-  it("is complete when the Worker exists with workers.dev and preview URLs enabled", async () => {
+  it("is complete when the Worker exists and the account workers.dev subdomain is on", async () => {
     const script = loadFixture<CloudflareWorkerScript>("cloudflare", "worker-script-dcc-web");
     const subdomain = loadFixture<CloudflareWorkersSubdomain>("cloudflare", "worker-subdomain-enabled");
     const ctx = fakeProviderContext({
@@ -24,6 +24,9 @@ describe("checks/cloudflare-worker", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("complete");
+    expect(result.summary).toBe(
+      "Worker dcc-web exists and the account's workers.dev subdomain is on (used by the preview Worker).",
+    );
     expect(result.step).toBe(`Step 7 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#cloudflare-worker");
   });
@@ -42,7 +45,7 @@ describe("checks/cloudflare-worker", () => {
     expect(result.nextAction).toMatch(/create|import/i);
   });
 
-  it("is missing when the Worker exists but workers.dev/preview URLs are disabled", async () => {
+  it("is missing when the Worker exists but the account workers.dev subdomain is off", async () => {
     const script = loadFixture<CloudflareWorkerScript>("cloudflare", "worker-script-dcc-web");
     const subdomain = loadFixture<CloudflareWorkersSubdomain>("cloudflare", "worker-subdomain-disabled");
     const ctx = fakeProviderContext({
@@ -57,7 +60,8 @@ describe("checks/cloudflare-worker", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("missing");
-    expect(result.nextAction).toMatch(/workers\.dev|preview/i);
+    expect(result.nextAction).toMatch(/account/i);
+    expect(result.nextAction).not.toMatch(/preview URLs/i);
   });
 
   it("is could-not-check when CLOUDFLARE_ACCOUNT_ID is not set", async () => {
