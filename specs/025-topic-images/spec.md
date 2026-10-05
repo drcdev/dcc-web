@@ -110,8 +110,8 @@ image directly above its banner. Open any `/writing/topics/<topic>/` page; it sh
 **Acceptance Scenarios**:
 
 1. **Given** the Drift series page, **When** it loads, **Then** the Drift image appears directly
-   above the series banner as a wide strip of about 4:1, cropped from the centre of the 2:1
-   image, as wide as the banner, flush on top of it with no gap (the strip takes the rounded
+   above the series banner as a wide strip of 4:1 (see FR-003 for the tolerance), cropped from
+   the centre of the 2:1 image, as wide as the banner, flush on top of it with no gap (the strip takes the rounded
    top corners and the banner's top corners are square), and the banner still carries the page
    heading.
 2. **Given** the Convergence series page, **When** it loads, **Then** the Convergence image
@@ -160,10 +160,12 @@ scope has a visible outline. Switch to light mode; cards look as they do today.
 
 - A series with no posts yet: its series page still shows the image above the banner, then the
   existing "no posts in this series yet" message.
-- The image fails to load: the tile and banner text stay readable and the layout does not
-  collapse or overlap; nothing important is lost because the image is decorative.
+- The image fails to load: its space stays reserved at the same shape (the layout neither
+  collapses nor shifts), the tile and banner text stay readable below it, and no broken-image
+  text is shown or announced (the empty text alternative). Nothing is lost for a reader who
+  relies on the text alone, because the image carries no information of its own.
 - Very wide screens: the series page image is never wider than the banner below it.
-- Narrow phones: the series page strip keeps its roughly 4:1 shape (the crop stays centred), so
+- Narrow phones: the series page strip keeps its 4:1 shape (the crop stays centred), so
   it gets shorter rather than taller as the screen narrows.
 - Dark-mode outline on a card that already has a coloured edge (a text-only post card bordered
   in its main topic's colour): it keeps one clear edge, not two stacked outlines.
@@ -180,58 +182,121 @@ scope has a visible outline. Switch to light mode; cards look as they do today.
   files Don supplied (see Context), stored in the repository with the site's content.
 - **FR-002**: The writing landing page's series tiles MUST each show their series' image edge to
   edge at the top of the tile (outside the tile's text padding, with the tile's rounded top
-  corners clipping it), above the series name, at full 2:1 with no crop.
+  corners clipping it), above the series name, at full 2:1 with no crop. The tile is the image
+  first, then the padded text (name, description, "Read <series>" link), in both arrangements:
+  stacked on phones and side by side from tablet width up. The tile order stays as today,
+  Convergence then Drift. When the tiles sit side by side, both tiles in the row are the same
+  height, their images line up at the top, and any spare height falls below the shorter tile's
+  text. No text is laid over the image.
 - **FR-003**: Each series page, `/writing/<series>/` and every later page of it, MUST show the
-  series' image directly above the series banner as a wide strip of about 4:1, cropped from the
-  centre of the image, as wide as the banner and never wider. The strip and banner form one
-  joined card: the strip sits flush on top of the banner with no gap and takes the banner's
-  rounded top corners, and the banner's top corners are square.
+  series' image directly above the series banner as a wide strip of 4:1 (the strip's rendered
+  height within 1 px of a quarter of its width), cropped from the centre of the image (the
+  middle half of its height is kept, the top and bottom quarters are dropped, the full width is
+  kept), as wide as the banner and never wider. The strip and banner form one joined card: the
+  strip sits flush on top of the banner with no gap and takes the card's rounded top corners,
+  the banner's top corners are square, and the banner's bottom corners stay rounded as today.
+  No text is laid over the strip. The banner's eyebrow, `h1` and description keep their order,
+  and the `h1` stays the page's only top-level heading: the strip adds no heading and nothing to
+  the reading order. The space between the joined card and the content below it (the first
+  post card, or the "no posts" message) stays as it is today.
 - **FR-004**: No other topic, page or card MUST show a series image as part of this feature;
   non-series topic pages stay as they are.
 - **FR-005**: At every screen width from a 320 px wide phone up, the tile images MUST keep their
   full 2:1 shape with no cropping, and the series page images MUST keep their centred strip of
-  about 4:1 (cropping is allowed on the series pages only). No image may be distorted or cause
-  horizontal page scrolling.
+  4:1 (cropping is allowed on the series pages only). No image may be distorted or cause
+  horizontal page scrolling (WCAG 1.4.10 reflow). At 200 percent browser zoom and with enlarged
+  text or text spacing (WCAG 1.4.4, 1.4.12), the tile and banner text MUST wrap and the card
+  grow taller to fit it: no text is clipped by the card's rounded-corner clipping, cut off or
+  overlapped by the image.
 - **FR-006**: The images are decorative: the series name sits right next to each one, so the
-  images MUST carry no text alternative that repeats it, and MUST NOT be links of their own
-  (the tile's existing "Read <series>" link stays the only link).
-- **FR-007**: The images MUST be served in sizes suited to where they appear (the source files
-  are about 1.5 MB each and MUST NOT be sent to readers as they are), so the landing page and
-  series pages stay within the site's performance budget and Core Web Vitals "good" thresholds
-  on mobile.
-- **FR-008**: The images MUST reserve their space before they load, so the page does not shift
-  when they arrive.
+  images MUST carry an empty text alternative on both the tile and the strip, MUST NOT be
+  announced by screen readers, MUST NOT be focusable and MUST NOT be links of their own (the
+  tile's existing "Read <series>" link stays the only link). No information is carried by an
+  image alone, so a reader who hides images, or whose browser blocks them, loses nothing.
+- **FR-007**: The images MUST be served in sizes suited to where they appear, so the landing
+  page and series pages stay within the site's performance budget and Core Web Vitals "good"
+  thresholds on mobile. Each placement is offered in widths that cover its largest display size
+  at up to 2x pixel density, never larger than the 1536 px source, in a modern compressed
+  format. The source files are about 1.5 MB each and MUST NOT be sent to readers: no built page
+  may reference the original PNG files or any full-size PNG copy of them, which can be checked
+  in the built output. Compression MUST NOT show visible banding, blockiness or blur at normal
+  viewing size compared with the source scaled to the same size; Don judges this on the preview
+  as part of the major-change review.
+- **FR-008**: The images MUST reserve their space before they load, at their final shape and at
+  every screen width (including the strip as it narrows), from the page's HTML alone, whether
+  the styles or the image arrive first. They MUST cause no measurable layout shift: the
+  landing page and series pages keep cumulative layout shift below 0.1 in the budget run, with
+  none of it from the images.
 - **FR-009**: The images MUST show with JavaScript turned off.
 
 **Dark-mode card outlines**
 
-- **FR-010**: In dark mode, the following cards MUST have a thin, solid outline that stands out
-  from the page background: the series tiles on `/writing/`, the series banners on the series
-  pages, the post cards (wherever they appear) and the lead story on `/writing/`. Post cards and
-  the lead story get a neutral outline in place of today's faint edge. A text-only post card
-  keeps its existing topic-colour border as its one outline and gains no second one. The topic
-  banners on `/writing/topics/<topic>/` and cards outside the writing pages are not changed.
-- **FR-011**: The outline on a series tile or series banner MUST be in a light shade of that
-  series' colour, matching the series marker's dark-mode outline colour, so a tile, its banner
-  and its marker read as one family. It is thin (thinner than or equal to the series marker's
-  outline). On a series page the one outline wraps the joined image strip and banner together,
-  with no line between them.
-- **FR-012**: Any outline added under FR-010 MUST have at least 3:1 contrast against the page
-  background in dark mode (WCAG 2.2 non-text contrast), and text on each card MUST keep at least
-  4.5:1 contrast against the card.
-- **FR-013**: Cards MUST look as they do today in light mode.
-- **FR-014**: In forced-colours mode, each outlined card MUST keep a visible edge.
+- **FR-010**: In dark mode, exactly these cards MUST have a thin, solid outline that stands out
+  from the page background:
+  - the two series tiles on `/writing/`;
+  - the series banner (joined to its image strip) on every series page;
+  - the post card, wherever that one card component is used: the writing landing, all-posts,
+    topic and series listings, the home page's "Recent writing" section and the related posts
+    on post pages (the same card, so its edge changes everywhere at once);
+  - the lead story on `/writing/`.
+
+  A post card or lead story *with a feature image* gets a 1 px neutral outline in place of
+  today's faint edge. A *text-only* card (a post with no feature image) keeps its existing 2 px
+  topic-colour border as its one outline and gains no second one. Nothing else changes:
+  the topic banners on `/writing/topics/<topic>/`, the post page's own title card, the home
+  page's other sections, project cards and project pages, and every other surface outside the
+  writing pages keep their dark-mode look (see Out of Scope).
+- **FR-011**: The outline on a series tile or series banner MUST be in the light (300) shade of
+  that series' colour, the same colour token as the series marker's dark-mode outline (Drift
+  lavender-300, Convergence sage-300), so a tile, its banner and its marker read as one family.
+  It is 1 px wide, thinner than the marker's 2 px outline. The outline is the card's own edge:
+  it runs round the card's rounded corners, and the image is clipped inside it, so the outline
+  is drawn over the image's top corners rather than hidden by them. On a series page the one
+  outline wraps the joined image strip and banner together, with no line between them.
+- **FR-012**: Every card edge visible in dark mode under FR-010, including the series outlines
+  (measured for this feature, not assumed from the marker) and the text-only cards' kept
+  topic-colour borders, MUST have at least 3:1 contrast against the page background, the site's
+  darkest neutral (dusk-BASE), not against the card's own fill (WCAG 2.2 1.4.11 non-text
+  contrast: the edge sits on the card-to-page boundary, so contrast against the card fill is
+  not required). Text on each card MUST keep at least 4.5:1 contrast against the card fill in
+  both themes: on the series tiles the name, description and "Read <series>" link; on the
+  series banner the eyebrow, `h1`, description and both links; on post cards and the lead story
+  every text pair they carry today. Fills and text colours do not change, so these pairs keep
+  today's values.
+- **FR-013**: Cards MUST look as they do today in light mode: card fill, border width and
+  colour (or no border), corner radius, padding and text styles are identical to today. The
+  only light-mode change is the added series image, with the tile's or banner's text moved down
+  below it at today's padding.
+- **FR-014**: In forced-colours mode, in both the light and dark site themes, every outlined
+  card type (series tile, joined series banner, post card and lead story with or without an
+  image) MUST keep an edge at least 1 px wide, solid, in the system text colour the forced
+  palette supplies. The series images stay shown as they are; forced-colours mode does not
+  hide or recolour them.
 - **FR-015**: The change MUST use only the site's existing palette colours; no new colour is
-  introduced.
+  introduced. The colour tokens the outlines use are lavender-300, sage-300 and dusk-500 (dark
+  mode) and dusk-200 (light mode, unchanged), all already in the palette.
+- **FR-016**: The outlines MUST NOT change on hover, focus or press: the cards have no
+  interactive state of their own, and a text-only card still shows one edge in every state.
+  The links inside the cards keep their existing hover and the site's focus indicator, which
+  stays fully visible inside the tile and banner (not clipped by the rounded-corner clipping)
+  and does not merge with the outline.
+- **FR-017**: The series images appear the same in both themes, as supplied: they are not
+  dimmed, inverted or filtered in dark mode. Their dark backgrounds sit against the light
+  series fills in light mode and next to the dark fills, inside the outline, in dark mode; as
+  decorative pictures they carry no contrast requirement of their own.
+- **FR-018**: The site's writing design notes MUST record the series images and the dark-mode
+  card outline as part of the writing design, since this is a design-system change.
 
 ### Key Entities
 
 - **Series**: one of the two topics marked as a series (Drift, Convergence). Gains one image.
   Has a name, description, colour, short address, landing tile and series page banner.
 - **Series image**: a 2:1 decorative picture belonging to exactly one series, shown in full on
-  that series' landing tile and as a centred strip of about 4:1 joined flush to the top of its series page banner.
+  that series' landing tile and as a centred 4:1 strip joined flush to the top of its series
+  page banner.
 - **Card**: a raised surface on the writing pages (series tile, series banner, post card and
-  lead story) whose dark-mode edge this feature strengthens. Topic banners are not in scope.
+  lead story; the post card also wherever it is reused, per FR-010) whose dark-mode edge this
+  feature strengthens. Topic banners are not in scope.
 
 ## Success Criteria *(mandatory)*
 
@@ -245,10 +310,16 @@ scope has a visible outline. Switch to light mode; cards look as they do today.
   text-on-card pair stays at 4.5:1 or more.
 - **SC-003**: Light-mode screenshots of the writing pages show no change to the cards apart from
   the added series images.
-- **SC-004**: The landing page and series pages still pass the site's performance budget and
-  automated accessibility checks, with no layout shift caused by the images.
-- **SC-005**: Each delivered series image weighs a small fraction of its 1.5 MB source (the plan
-  sets the exact figure within the existing page budget).
+- **SC-004**: These templates still pass the site's performance budget (total size, script,
+  long tasks, LCP and CLS on mobile) and automated WCAG 2.2 AA checks, with no layout shift
+  caused by the images: `/writing/`, `/writing/drift/`, `/writing/convergence/`, an empty
+  series page, a non-series topic page and the home page (whose "Recent writing" cards change
+  edge). A later series page (`/writing/<series>/2/`) is the same template with the same image
+  and banner, so it is covered by the component and end-to-end checks rather than a separate
+  budget or accessibility run.
+- **SC-005**: Every delivered series image file is at most 25 KB (under 2% of its 1.5 MB
+  source), and the image file a 390 px wide phone at 1x density downloads for a tile or a strip
+  is at most 8 KB.
 
 ## Assumptions
 
@@ -266,21 +337,28 @@ scope has a visible outline. Switch to light mode; cards look as they do today.
   every page.
 - "Thin outline like the series pill has" means a solid outline in the series colour's light
   shade, as on the series marker in dark mode; "thin" is read as no thicker than the marker's
-  outline, and likely thinner (the plan picks the width).
+  outline; FR-011 sets it at 1 px, thinner than the marker's 2 px.
 - The outline is a dark-mode fix only; light-mode cards already stand out against the white page.
 - The images are used as supplied; no editing beyond resizing, format conversion and the
-  centred 4:1 crop for the series pages.
+  centred 4:1 crop for the series pages. Both pictures have their focal point (the orange dot
+  where the lines meet) near the centre, so the centred crop keeps it; Don confirms the crop on
+  the preview as part of the major-change review.
 - Visual baselines for the writing landing page and series pages will change and need
-  refreshing on both platforms.
-- This change probably counts as a **major change** under Constitution Principle III, because
-  outlining cards changes the design system's look in dark mode; the plan confirms the
-  classification and the PR flags it.
+  refreshing on both platforms (macOS and Linux) together, in the same pull request; the plan
+  lists which baselines change and which must not.
+- `prefers-contrast: more` gets no separate treatment: the site has none today, and the
+  dark-mode outlines already meet 3:1 for every reader. Forced-colours mode is covered by
+  FR-014.
+- This change is a **major change** under Constitution Principle III (design system / visual
+  identity), because the series gain pictures and outlining cards changes the design system's
+  look in dark mode; the plan records the classification and the PR flags it.
 
 ## Out of Scope / Follow-up
 
 - Images for non-series topics, or a general way to give any topic an image.
 - Using the series images in social previews (Open Graph), the RSS feed or on post pages.
 - Any light-mode change to cards.
+- A `prefers-contrast: more` variant of the cards or outlines.
 - Dark-mode surface changes on pages outside `/writing/` (home page, projects, posts' own
   title card, topic banners), except that a post card keeps its new outline wherever the same
   card is reused.

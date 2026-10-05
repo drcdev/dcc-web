@@ -105,7 +105,7 @@ colours mode removes background images).
 
 | Card | Light | Dark | Forced colours |
 |---|---|---|---|
-| Series tile, series banner | no border (unchanged) | `dark:border dark:border-{colour}-300` (1px) | `forced-colors:border` (1px, system colour) |
+| Series tile, series banner | no border (unchanged) | `dark:border dark:border-{colour}-300` (1px) | `forced-colors:border forced-colors:border-[CanvasText]` (1px, system colour) |
 | Post card / lead story with an image | `border border-dusk-200` (unchanged) | `dark:border-dusk-500` (was `dusk-700`) | existing 1px border |
 | Text-only post card / lead story | `border-2` in topic colour (unchanged) | unchanged (its topic border is its one outline) | unchanged |
 | Topic banner, PostLayout title card, cards outside `/writing/` | unchanged | unchanged | unchanged |
@@ -121,7 +121,9 @@ edge becomes one exported constant, `cardEdge`, used by `PostCard` and `LeadStor
 | `dusk-700` (today) | 1.64:1 | fails 3:1, which is the reported problem |
 | `dusk-500` (chosen) | 3.16:1 | passes; quietest neutral that passes |
 | `dusk-400` | 4.78:1 | passes; brighter, kept as the fallback if Don finds `dusk-500` too faint |
-| `lavender-300`, `sage-300` | already ≥ 3:1 (asserted today by `topics.test.ts` for the marker) | same token as the series marker's dark outline |
+| `lavender-300` | 6.16:1 | same token as the Drift marker's dark outline; asserted again by the new outline test |
+| `sage-300` | 10.48:1 | same token as the Convergence marker's dark outline; asserted again by the new outline test |
+| text-only borders (`{colour}-400`, dusk `dusk-500`) | lowest lavender-400 4.06:1, dusk-500 3.16:1 | kept unchanged; now asserted ≥ 3:1 (spec FR-012) |
 
 `dusk-500` against the card fill `dusk-800` is 2.64:1, but the edge that matters for WCAG 1.4.11
 is between the card and the page, and the outline sits on that boundary. Text colours and fills
@@ -172,9 +174,10 @@ asserts the 25 KB cap per file; the budget run records the phone figure.
 **LCP**: on `/writing/` at 390 × 844 and at 1280 × 800 the series tiles now sit above the lead
 story, so the Convergence tile image is the likely LCP element; it loads eagerly at high
 priority. On the series pages the strip is at the top of every page and loads eagerly at high
-priority. `LeadStory` keeps its own `loading="eager" fetchpriority="high"` unchanged; if the
-budget run shows LCP pressure on `/writing/`, the first tuning step is to drop the lead story to
-`fetchpriority="auto"` (it is now below the fold on a phone). No CLS: `<Image>` writes
+priority. So that only one image per page is high priority, `LeadStory` drops from
+`fetchpriority="high"` to `fetchpriority="auto"` (still `loading="eager"`; it is now below the
+fold on a phone). If the budget run shows LCP above 2.0 s on these templates, the first tuning
+step is `fetchpriority="low"` on the Drift tile, then quality 60 (plan, "Budget expectations"). No CLS: `<Image>` writes
 `width`/`height`.
 
 ## R6. How the images are exercised in tests

@@ -29,7 +29,7 @@ because the map is keyed by `seriesIds` only.
 
 | Field | Change |
 |---|---|
-| `outline` (new) | `dark:border dark:border-{colour}-300 forced-colors:border` for each palette; used on series tiles and series banners only. `{colour}-300` is the token the marker's dark outline already uses. |
+| `outline` (new) | `dark:border dark:border-{colour}-300 forced-colors:border forced-colors:border-[CanvasText]` for each palette; used on series tiles and series banners only. `{colour}-300` is the token the marker's dark outline already uses. |
 | `cardEdge` (new export) | `border border-dusk-200 dark:border-dusk-500`, replacing the inline `border border-dusk-200 dark:border-dusk-700` in `PostCard` and `LeadStory`. |
 | `pill`, `border`, `banner`, `marker` | Unchanged. |
 
