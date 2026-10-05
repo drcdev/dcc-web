@@ -20,6 +20,13 @@ The filter stays in the codebase. It appears only once the index lists 11 or mor
 At 10 or fewer, the index is a plain list: no filter buttons, no status line, no "no projects
 match" message, and no filter script.
 
+## Clarifications
+
+### Session 2026-10-05
+
+- Q: Below the threshold the five-project fixture site can no longer reach the filter in a browser; is losing browser-level filter coverage acceptable? → A: No. The threshold is configurable at build time: production uses the default (more than 10), and the fixture-site build deliberately sets a lower threshold so the existing browser filter tests keep reaching the filter unchanged.
+- Q: Should draft projects count toward the threshold in builds that list them? → A: Yes. The count is the number of projects the index lists in that build; drafts count wherever they are listed.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - A short projects list without the filter (Priority: P1)
@@ -31,9 +38,8 @@ no status line, and the page loads no filter script.
 **Why this priority**: This is the change. It is what readers see today and for as long as
 there are 10 or fewer projects.
 
-**Independent Test**: Build the site with 10 or fewer published projects and check the index
-HTML for filter controls and the filter script; open it in a browser and check every row is
-listed.
+**Independent Test**: Render the index with 10 or fewer projects at the production default
+threshold and check its HTML has every row, no filter controls and no filter script.
 
 **Acceptance Scenarios**:
 
@@ -84,15 +90,21 @@ markup and its controls are present; render it with 10 and confirm they are abse
 
 ### Functional Requirements
 
-- **FR-001**: The projects index MUST show the theme filter only when it lists more than 10
-  projects. The threshold is one named value in one place.
+- **FR-001**: The projects index MUST show the theme filter only when it lists more than the
+  threshold number of projects. The threshold is one named value in one place, defaults to 10,
+  and can be overridden at build time; production code only reads the override and uses 10
+  when it is unset. The count is the number of projects the index lists in that build, drafts
+  included where they are listed.
 - **FR-002**: At 10 or fewer projects, the built index MUST contain no filter controls, status
   line or empty-filter message, and MUST load no filter script.
 - **FR-003**: At 10 or fewer projects, every project row MUST be listed and look as it does
   today, including its theme pills, and a `?theme=` value in the address MUST have no effect.
 - **FR-004**: At 11 or more projects, the theme filter MUST render and behave as it does today.
-- **FR-005**: Tests MUST cover both sides of the threshold (10 projects: no filter; 11
-  projects: filter present).
+- **FR-005**: Unit and component tests MUST cover both sides of the production default (10
+  projects: no filter; 11 projects: filter present). The fixture-site build MUST set a lower
+  threshold so its five projects show the filter, and the existing browser tests of the filter
+  (filtering, sharing, history, focus, target size, no-script behaviour and the accessibility
+  checks on the filtered and empty states) MUST keep passing against it unchanged.
 
 ### Accessibility
 
@@ -107,9 +119,12 @@ passing.
 - The change MUST NOT edit the shared test helpers or fixtures (`tests/e2e/templates.ts`,
   `tests/e2e/csp-violations.ts`, `tests/component/html.ts`, `tests/fixtures/`) or the
   Playwright or Vitest configuration, and MUST NOT add a new end-to-end spec file.
-- The fixture site holds five fixture projects, below the threshold, so no browser test can
-  see the filter after this change. The "above the threshold" side is covered without a
-  browser, at the cheapest layer that can observe it.
+- The fixture site holds five fixture projects. It deliberately runs a lower threshold, set by
+  the fixture-site build script (`scripts/build-fixture-site.ts`), so the filter stays
+  reachable in the browser. This is a known, intended difference from production; the
+  production default (more than 10) is covered by unit and component tests.
+- The below-threshold page (plain list, no filter script, `?theme=` ignored) is covered without
+  the fixture site, at the cheapest layer that can observe it.
 - Static theme pills on each row stay as they are.
 - No new copy is introduced.
 
@@ -119,9 +134,9 @@ passing.
   status line no longer appear above the list.
 - No visual baseline is predicted to change. The visual suite captures the fixture index only
   as individual project rows (minimal, every setting, draft, in progress, retired), not the
-  filter or the full page, and the rows must look the same. Those shots currently wait for the
-  filter to be ready before capturing; that wait has to change, but the pixels must not. Any
-  row baseline that does change is a regression to fix, not a baseline to refresh.
+  filter or the full page. The fixture site still shows the filter, so those shots and their
+  wait for the filter are unchanged. Any baseline that does change is a regression to fix, not
+  a baseline to refresh.
 
 ## Success Criteria *(mandatory)*
 
@@ -132,22 +147,18 @@ passing.
 - **SC-002**: A test passes for 10 projects (no filter) and for 11 projects (filter present).
 - **SC-003**: Visiting the index with any `?theme=` value at 10 or fewer projects shows every
   project row.
-- **SC-004**: All existing visual baselines pass unchanged, and the accessibility checks on the
-  fixture index report zero violations.
+- **SC-004**: All existing visual baselines pass unchanged, the existing browser filter tests
+  pass unchanged on the fixture site, and the accessibility checks on the fixture index report
+  zero violations.
 
 ## Assumptions
 
 - "Published projects" means the projects the index lists in that build. In production that is
-  the published projects; on the fixture site and in development, drafts listed there count.
+  the published projects; on the fixture site, in development and on previews, drafts listed
+  there count.
 - The filter's code and styles stay in the repository for when the threshold is passed; only
   whether the index renders it changes.
-- Existing browser tests that exercise the filter on the fixture site (five projects) can no
-  longer reach it. They are retired or rewritten to assert the plain list; the filter's own
-  behaviour stays covered by its existing unit and component tests.
+- The existing browser tests that exercise the filter on the fixture site keep running
+  against it, because the fixture site uses the lower threshold.
 - Not a major change under Principle III: no dependency, design system, layout, navigation,
   cost or infrastructure change. Principle V favours it (less client script).
-
-## Follow-up (out of scope)
-
-- If the filter's browser behaviour needs end-to-end coverage again before an eleventh real
-  project exists, that needs more fixture projects, which is a larger change (a /deliver).
