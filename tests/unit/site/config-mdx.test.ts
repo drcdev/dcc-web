@@ -9,17 +9,8 @@ describe("MDX and fixture-site configuration", () => {
     expect(pkg.dependencies["@astrojs/mdx"]).toMatch(/^\d+\.\d+\.\d+$/);
   });
 
-  it("has a build:fixtures script and leaves verify unchanged", () => {
-    expect(pkg.scripts["build:fixtures"]).toContain("scripts/build-fixture-site.ts");
-    expect(pkg.scripts.verify).toBe(
-      "pnpm run lint:secrets && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build && pnpm run test:e2e",
-    );
-  });
-
   it("pins the blog dependencies to exact versions", () => {
     expect(pkg.dependencies["@astrojs/rss"]).toMatch(/^\d+\.\d+\.\d+$/);
-    // The version @astrojs/markdown-satteri already installs.
-    expect(pkg.dependencies.satteri).toBe("0.10.5");
   });
 
   it("registers mdx() in astro.config.mjs", () => {

@@ -384,7 +384,7 @@ docs last. Each item leaves `verify:quick` green, along with its targeted files:
 | Every fingerprinted stylesheet and script on `/` and `/contact/` | Test 2 plus the unit rule (one splat for all of `/_astro/`). |
 | Home HTML not immutable | Test 1. |
 
-### W7. Config files: invariants only
+### W7. Config files: invariants only (done)
 
 - **Files:** `tests/unit/site/config-files.test.ts`, `tests/unit/site/config-mdx.test.ts` (L12 and
   the `satteri` literal in L19).
