@@ -438,7 +438,7 @@ only `ci.yml`. Coverage mapping (unchanged from the first plan):
 - **Layer:** n/a.
 - **Coverage mapping:** none.
 
-### W8 Pipeline skills and `CLAUDE.md`: no pause, auto-merge by default
+### [x] W8 Pipeline skills and `CLAUDE.md`: no pause, auto-merge by default
 
 - **Files:** `.claude/skills/{deliver,tweak,squash,chore}/SKILL.md` and `CLAUDE.md`. All four
   skills change together (alignment rule). First read `tests/unit/setup/pipeline-pr-author.test.ts`,

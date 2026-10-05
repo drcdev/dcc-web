@@ -38,13 +38,18 @@ A visual diff nobody predicted up front is a regression to fix, not a baseline t
 
 ## Merging
 
-- **Open every PR from the `drc-agents` account.** Don is the sole maintainer and GitHub does
-  not count an author's approval on their own PR, so the `major-change-approval` check rejects
-  any PR authored by `drcdev`. Both accounts are in the local `gh` keyring. Run
+- **Open every PR from the `drc-agents` account.** The `main` ruleset requires an approving
+  review on every PR, with code-owner review and CODEOWNERS `* @drcdev`. GitHub does not count
+  an author's approval on their own PR, so Don (`drcdev`) can approve only a PR he did not
+  author. Both accounts are in the local `gh` keyring. Run
   `gh auth switch --user drc-agents` immediately before `gh pr create`, and
   `gh auth switch --user drcdev` straight after (the setup check reads as Don). A PR opened
   under `drcdev` by mistake must be closed and reopened from `drc-agents`; do not work around
-  the gate.
+  the ruleset.
+- **What branch protection enforces** (ruleset `main-protection`, committed as
+  `setup/github-ruleset.json`): a PR is required, with one approving review from a code owner
+  (Don); stale approvals are dismissed on push; the `verify` check is required and the branch
+  must be up to date; no force-push or deletion, and no bypass actors.
 - The repository allows **merge commits only**; squash and rebase merges are disabled. Any
   `--squash` or `--rebase` form of `gh pr merge` fails.
 - **Enable auto-merge by default.** When the work is done and nothing is left that needs Don's
@@ -52,9 +57,10 @@ A visual diff nobody predicted up front is a regression to fix, not a baseline t
   pending baselines), run `gh pr merge --auto --merge` right after the final push. Branch
   protection still requires Don's review, so the merge waits for his approval and a green
   `verify` check, then lands on its own.
-- Leave auto-merge off only when the PR is a **major change** under Constitution Principle III,
-  or when Don must check something on the preview deployment before it can merge. Say which in
-  the PR body.
+- Leave auto-merge off only when Don must check something on the preview deployment before it
+  can merge (open `[PREVIEW-CHECK]` items). Say so in the PR body. A **major change** under
+  Constitution Principle III is flagged in the PR body instead; it merges like any other PR,
+  on Don's approval.
 - **Clean up after the merge.** Once the PR has merged, switch to `main`, pull, and delete the
   local feature branch (`git branch -d <branch>`; the remote branch is removed by GitHub's
   delete-on-merge setting, or remove it with `git push origin --delete <branch>` if it
@@ -73,7 +79,7 @@ fresh-eyes review phase before verify.
 Keep the four pipelines aligned. A change to any of these goes into all four together:
 
 - the "Local toolchain" section;
-- the pre-PR major-change / merge-mode pause (one `AskUserQuestion` before `gh pr create`);
+- the Finish step 3 major-change classification and auto-merge default (no pause);
 - the `[PREVIEW-CHECK]` task marker;
 - the visual-baselines step and the "Visual baselines" section above (a unit test checks their
   shared sentences are identical in all five);

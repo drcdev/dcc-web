@@ -1,6 +1,6 @@
 ---
 name: deliver
-description: Run the full speckit pipeline for a feature — specify → clarify → plan → checklist → tasks → analyze → implement → converge → verify → PR — with each phase in a fresh subagent so the orchestrating context stays small. Pauses only to ask the user the clarify questions and the major-change / merge decision before the PR. Use when the user describes a feature to build end-to-end.
+description: Run the full speckit pipeline for a feature — specify → clarify → plan → checklist → tasks → analyze → implement → converge → verify → PR — with each phase in a fresh subagent so the orchestrating context stays small. Pauses only to ask the user the clarify questions. Use when the user describes a feature to build end-to-end.
 argument-hint: "Feature description, or a GitHub issue reference (#42, 42, or issue URL)"
 user-invocable: true
 disable-model-invocation: false
@@ -27,8 +27,7 @@ invent scope the issue doesn't state.
 
 - Phases run **sequentially, one subagent at a time** (the pipeline is serial
   by nature). Use the Agent tool with `run_in_background: false`.
-- **The only user pauses are clarify and the major-change / merge decision
-  in Finish.** Never stop to ask "shall I proceed?" between phases. Stop
+- **The only user pause is clarify.** Never stop to ask "shall I proceed?" between phases. Stop
   early only on a red verify gate or a phase failure you cannot resolve, and
   report exactly where things stand.
 - The constitution (`.specify/memory/constitution.md`) binds every phase and
@@ -269,46 +268,45 @@ if the second implement pass still leaves gaps, stop and report them.
    checks may stay open past merge; note outstanding `[PREVIEW-CHECK]` items
    in the PR instead of holding the issue open. If the slice was ad-hoc (no
    issue), skip this step; do not retroactively create one.
-3. **Major-change classification (user pause).** Run `git diff --stat main`
+3. **Major-change classification (no pause).** Run `git diff --stat main`
    and decide, from the diff and the plan's flag, whether the slice is a
    **major change** under Principle III: new/removed/replaced dependency,
    integration or service; anything touching how contact data is collected,
    stored, retrieved or deleted; design system, site-wide layout, navigation
    or visual identity; possible cost increase; CI, deployment or
    infrastructure config; the constitution itself. When in doubt, it is
-   major. Then ask the user with AskUserQuestion, showing the criteria that
-   fired (or "none"), with options:
-   - **Major — hold for my review** (recommended when any criterion fired):
-     PR is labelled `major-change`; Don approves after viewing the preview.
-   - **Not major — auto-merge when green** (recommended when none fired):
-     enable `gh pr merge --auto --merge` after opening the PR.
-   - **Not major — leave the PR open**: no auto-merge; Don merges by hand.
-   This pause is mandatory — never open the PR without having asked.
+   major.
+   - Put the verdict and the criteria that fired (or "none") in the PR body,
+     so Don knows how closely to read it and whether to check the preview.
+   - The verdict does not change how the PR merges: the `main` ruleset
+     requires Don's approving review on every PR.
+   - Auto-merge is armed by default. Leave it off only while
+     `[PREVIEW-CHECK]` items are open, and say so in the PR body.
 4. Push the branch and open the PR as `drc-agents` (sequence below). The PR
    body covers: summary of the slice,
    the verify results, the `Closes #<n>` line when step 2 applies, the
    major-change verdict and criteria, whether Linux visual baselines are
    pending, the list of `[PREVIEW-CHECK]` items for Don to walk on the
-   preview deployment, and any risks the phase agents flagged. Apply the
-   label / auto-merge chosen in step 3.
+   preview deployment, any risks the phase agents flagged, and whether
+   auto-merge is armed.
 
-   **PR author account (required).** Don is the sole maintainer, so a PR
-   authored by `drcdev` can never pass the `major-change-approval` check.
-   Open every PR as `drc-agents`:
+   **PR author account (required).** The `main` ruleset requires Don's
+   approving review on every PR, and GitHub does not count an author's
+   approval on their own PR, so a PR authored by `drcdev` could never be
+   approved. Open every PR as `drc-agents`:
    1. Push the branch (as `drcdev`).
    2. `gh auth switch --user drc-agents`. If the command is denied, fails, or
       `drc-agents` is not in the keyring, stop and ask Don with
       `AskUserQuestion` (instruction in the question text). Never open the PR
       as `drcdev`.
-   3. `gh pr create ...` (pass `--label major-change` here when step 3 chose
-      major).
+   3. `gh pr create ...`
    4. `gh auth switch --user drcdev` immediately after `gh pr create`, whether
       it succeeded or failed, so `gh` is never left on `drc-agents`.
    5. `gh pr view <n> --json author`; confirm `author.login` is
       `drc-agents`. If it is not `drc-agents`, stop and tell Don the PR must
-      be closed and reopened from `drc-agents`; do not work around the gate.
-   6. Apply the auto-merge choice (`gh pr merge --auto --merge`) and any label
-      not set at create time, as `drcdev`.
+      be closed and reopened from `drc-agents`; do not work around the ruleset.
+   6. Arm auto-merge (`gh pr merge --auto --merge`) as `drcdev`, unless step 3
+      left it off for open `[PREVIEW-CHECK]` items.
 5. If Linux baselines are still owed because Docker could not be started,
    run the CI-label fallback from the long-running-suites rules now, before
    watching the gate.
@@ -317,6 +315,6 @@ if the second implement pass still leaves gaps, stop and report them.
    the cause (never the check), commits and pushes; watch again. Record the
    preview deployment URL from the checks or the Cloudflare PR comment.
 7. Final report to the user: what was built, test counts, PR link, preview
-   URL, the major-change verdict and merge mode, whether baselines were
+   URL, the major-change verdict and whether auto-merge is armed, whether baselines were
    updated, the `[PREVIEW-CHECK]` items awaiting them, and any risks the
    phase agents flagged.

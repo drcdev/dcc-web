@@ -1,6 +1,6 @@
 ---
 name: chore
-description: Run the orchestrated chore pipeline for work with no user-visible behaviour change — tests, CI, tooling, dependencies, docs, pipeline skills, refactors — ingest a description or GitHub issue, create a chore branch, then explore → plan → implement → review in fresh subagents, finishing with the full verify gate and a PR. Pauses only for unticked decisions in the issue or plan and for the major-change / merge decision before the PR. Use when the user asks for maintenance or infrastructure work; not for a feature (/deliver), a small visible change (/tweak) or a bug (/squash).
+description: Run the orchestrated chore pipeline for work with no user-visible behaviour change — tests, CI, tooling, dependencies, docs, pipeline skills, refactors — ingest a description or GitHub issue, create a chore branch, then explore → plan → implement → review in fresh subagents, finishing with the full verify gate and a PR. Pauses only for unticked decisions in the issue or plan. Use when the user asks for maintenance or infrastructure work; not for a feature (/deliver), a small visible change (/tweak) or a bug (/squash).
 argument-hint: "Chore description, or a GitHub issue reference (#42, 42, or issue URL)"
 user-invocable: true
 disable-model-invocation: false
@@ -53,8 +53,8 @@ naming the condition that failed.
 A chore **may be a major change** under Principle III — CI, deployment and
 infrastructure configuration, dependencies, and the constitution itself are
 all chore territory. That is not a triage failure; it is classified in the
-plan and again in Finish, and the PR is held for Don's review. Unlike
-`/tweak`, this pipeline never promises an auto-merge.
+plan and again in Finish and flagged in the PR body. Like every PR, it
+merges only on Don's approval.
 
 ### Promotion is one-way
 
@@ -70,8 +70,7 @@ and which pipeline should pick it up. Never demote the other way: a
 - Phases run **sequentially, one subagent at a time**. Use the Agent tool
   with `run_in_background: false`. Work items inside the implement phase
   run one subagent each, in plan order.
-- **The only user pauses are the decision gate (below) and the
-  major-change / merge decision in Finish.** Never stop to ask "shall I
+- **The only user pause is the decision gate (below).** Never stop to ask "shall I
   proceed?" between phases. Stop early only on a red verify gate, a broken
   triage condition, an exhausted review loop, or a phase failure you cannot
   resolve — and report exactly where things stand.
@@ -311,8 +310,8 @@ gate as it is **after** the change.
    must contain `Closes #<n>` — or `Part of #<n>` with the phase name when
    the issue has more phases to go. Ad-hoc chore (no issue) → skip; do not
    retroactively create one.
-3. **Merge decision (user pause).** Run `git diff --stat main` and
-   `git diff --name-only main...HEAD` and decide whether the chore is a
+3. **Major-change classification (no pause).** Run `git diff --stat main`
+   and `git diff --name-only main...HEAD` and decide whether the chore is a
    **major change** under Principle III: new/removed/replaced dependency,
    integration or service; anything touching how contact data is
    collected, stored, retrieved or deleted; design system, site-wide
@@ -320,16 +319,13 @@ gate as it is **after** the change.
    deployment or infrastructure config (`.github/`, `wrangler.jsonc`,
    deploy scripts); the constitution itself. Chores fire these more often
    than features do — a `package.json` dependency change or any file under
-   `.github/` is major. When in doubt, it is major. Then ask the user with
-   AskUserQuestion, showing the criteria that fired (or "none") and the
-   before/after measurement, with options:
-   - **Major — hold for my review** (recommended when any criterion fired):
-     PR is labelled `major-change`; Don approves after reading the diff and
-     the first CI run.
-   - **Not major — auto-merge when green** (recommended when none fired):
-     enable `gh pr merge --auto --merge` after opening the PR.
-   - **Not major — leave the PR open**: no auto-merge; Don merges by hand.
-   This pause is mandatory — never open the PR without having asked.
+   `.github/` is major. When in doubt, it is major.
+   - Put the verdict and the criteria that fired (or "none") in the PR body,
+     so Don knows how closely to read it and whether to check the preview.
+   - The verdict does not change how the PR merges: the `main` ruleset
+     requires Don's approving review on every PR.
+   - Auto-merge is armed by default. Leave it off only while
+     `[PREVIEW-CHECK]` items are open, and say so in the PR body.
 4. Push the branch and open the PR as `drc-agents` (sequence below). The PR
    body covers: the goal and acceptance criteria (from the plan), the
    before/after measurement, the work items done, the coverage mapping
@@ -337,26 +333,25 @@ gate as it is **after** the change.
    `Part of #<n>` line when step 2 applies, the major-change verdict and
    criteria, whether Linux visual baselines are pending, the list of
    `[PREVIEW-CHECK]` items for Don, the review's LOW findings, and the
-   follow-ups deliberately left out. Apply the label / auto-merge chosen in
-   step 3.
+   follow-ups deliberately left out, and whether auto-merge is armed.
 
-   **PR author account (required).** Don is the sole maintainer, so a PR
-   authored by `drcdev` can never pass the `major-change-approval` check.
-   Open every PR as `drc-agents`:
+   **PR author account (required).** The `main` ruleset requires Don's
+   approving review on every PR, and GitHub does not count an author's
+   approval on their own PR, so a PR authored by `drcdev` could never be
+   approved. Open every PR as `drc-agents`:
    1. Push the branch (as `drcdev`).
    2. `gh auth switch --user drc-agents`. If the command is denied, fails, or
       `drc-agents` is not in the keyring, stop and ask Don with
       `AskUserQuestion` (instruction in the question text). Never open the PR
       as `drcdev`.
-   3. `gh pr create ...` (pass `--label major-change` here when step 3 chose
-      major).
+   3. `gh pr create ...`
    4. `gh auth switch --user drcdev` immediately after `gh pr create`, whether
       it succeeded or failed, so `gh` is never left on `drc-agents`.
    5. `gh pr view <n> --json author`; confirm `author.login` is
       `drc-agents`. If it is not `drc-agents`, stop and tell Don the PR must
-      be closed and reopened from `drc-agents`; do not work around the gate.
-   6. Apply the auto-merge choice (`gh pr merge --auto --merge`) and any label
-      not set at create time, as `drcdev`.
+      be closed and reopened from `drc-agents`; do not work around the ruleset.
+   6. Arm auto-merge (`gh pr merge --auto --merge`) as `drcdev`, unless step 3
+      left it off for open `[PREVIEW-CHECK]` items.
 5. If Linux baselines are still owed because Docker could not be started,
    run the CI-label fallback from Verify step 3 now, before watching the
    gate.
@@ -369,6 +364,6 @@ gate as it is **after** the change.
    `gh run view <id> --json jobs`: the earliest job `startedAt` to the
    `verify` job's `completedAt`. Record it as the CI after-measurement.
 7. Final report to the user: the goal, the before/after measurement (local
-   and CI), work items done, test counts, PR link, the merge mode chosen,
-   the `[PREVIEW-CHECK]` items awaiting Don, and the follow-ups and
+   and CI), work items done, test counts, PR link, the major-change
+   verdict and whether auto-merge is armed, the `[PREVIEW-CHECK]` items awaiting Don, and the follow-ups and
    residual risks the review flagged.
