@@ -250,7 +250,8 @@ come from developers.cloudflare.com (fetched 2026-09-29) and from the installed 
 
 Superseded by #89 (2026-10), Turnstile test keys: the Worker accepts a verdict made with a
 Turnstile testing key only when `ALLOW_TURNSTILE_TESTING` is exactly `"true"`. That variable is set
-only in `env.preview.vars` and in `tests/fixtures/worker/e2e.env`; production has no value, so it
+only in `env.preview.vars` and by the e2e server's `wrangler dev --var ALLOW_TURNSTILE_TESTING:true`
+(the env file only supplies names listed in `secrets.required`); production has no value, so it
 rejects a testing-key verdict with `422 turnstile_failed`. The preview fallback above still
 works because preview sets the variable.
 

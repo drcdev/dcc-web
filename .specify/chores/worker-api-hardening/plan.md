@@ -42,7 +42,11 @@ chore; the before-state is the current configuration and tests at c87fb86.
    decision) `"workers_dev": false`, and no `vars` key containing `ALLOW_TURNSTILE_TESTING`.
 3. **Preview config.** `env.preview` sets `"workers_dev": true`, `"preview_urls": true` and
    `"vars": { "ALLOW_TURNSTILE_TESTING": "true" }` explicitly (no longer inherited).
-4. **E2E config.** `tests/fixtures/worker/e2e.env` has `ALLOW_TURNSTILE_TESTING=true`; the
+4. **E2E config.** *(Corrected after the first CI run: with `secrets.required` declared,
+   `wrangler dev --env-file` loads only the listed names, so the flag was dropped and every
+   contact e2e send failed. The flag now comes from `--var ALLOW_TURNSTILE_TESTING:true` on the
+   `playwright.config.ts` webServer command, and `e2e.env` does not carry it.)* Original:
+   `tests/fixtures/worker/e2e.env` has `ALLOW_TURNSTILE_TESTING=true`; the
    generated `wrangler.e2e.json` still copies the production top level, so the flag reaches e2e
    only through the env file.
 5. **Types.** `worker/worker-configuration.d.ts` is regenerated with `pnpm run types:worker` and
