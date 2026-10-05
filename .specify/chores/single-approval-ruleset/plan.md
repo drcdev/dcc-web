@@ -523,7 +523,7 @@ only `ci.yml`. Coverage mapping (unchanged from the first plan):
 - **Layer:** unit.
 - **Coverage mapping:** none removed (no test asserted the pause).
 
-### W9 Record the decision in research R9
+### [x] W9 Record the decision in research R9
 
 - **Files:** `specs/001-setup-walkthrough/research.md`, R9 only (l.179–215). Retitle it "GitHub
   branch protection, CI check names, and review on every PR". Contents:
