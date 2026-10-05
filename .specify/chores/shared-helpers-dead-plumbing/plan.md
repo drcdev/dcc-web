@@ -190,7 +190,7 @@ Order: the Worker helpers first (W1, then W2 which uses them), then JSONC, the w
 plumbing, the small items and docs last. Each item leaves `verify:quick` green with its targeted
 files. Run every toolchain call through `/Users/doncoleman/.claude/jobs/b807dd0b/tmp/run.sh`.
 
-### W1. `readCapped` and `parseJsonObject` in `worker/src/http.ts`
+### [x] W1. `readCapped` and `parseJsonObject` in `worker/src/http.ts`
 
 - **Files:** `worker/src/http.ts`; new `worker/test/http.test.ts`.
 - **Shape:** `readCapped(request: Request, maxBytes: number): Promise<string | null>`: `null` when
