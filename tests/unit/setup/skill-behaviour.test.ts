@@ -93,7 +93,7 @@ describe(".claude/skills/setup-walkthrough/SKILL.md", () => {
       lastEnd = end;
     }
 
-    const mutatingPatterns = [/gh api -X/, /wrangler deploy/, /wrangler versions upload/];
+    const mutatingPatterns = [/gh api -X/, /gh label create/, /wrangler deploy/, /wrangler versions upload/];
     for (const pattern of mutatingPatterns) {
       const occurrences = new RegExp(pattern.source, "g");
       let occurrence: RegExpExecArray | null;

@@ -56,8 +56,6 @@ describe(".github/workflows/ci.yml", () => {
       names.push(m![1]!);
     }
     expect(new Set(names).size).toBe(names.length);
-    expect(contents).not.toMatch(/name:\s*major-change-approval\b/);
-    expect(contents).not.toMatch(/^\s{2}major-change-approval:/m);
   });
 
   it("triggers on pull_request and push to main", () => {

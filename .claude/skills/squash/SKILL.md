@@ -223,7 +223,7 @@ narrows it only by the changed paths, as `docs/testing.md` describes.
    cause (from the assessment), the fix summary, the test added and the
    verify results, the `Closes #<n>` line when step 2 applies, the
    major-change verdict and criteria, whether Linux visual baselines are
-   pending, and any follow-ups noticed but deliberately left out, and whether
+   pending, any follow-ups noticed but deliberately left out, and whether
    auto-merge is armed.
 
    **PR author account (required).** The `main` ruleset requires Don's

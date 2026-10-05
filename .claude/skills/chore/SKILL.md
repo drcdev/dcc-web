@@ -332,7 +332,7 @@ gate as it is **after** the change.
    when tests moved, the verify results, the `Closes #<n>` or
    `Part of #<n>` line when step 2 applies, the major-change verdict and
    criteria, whether Linux visual baselines are pending, the list of
-   `[PREVIEW-CHECK]` items for Don, the review's LOW findings, and the
+   `[PREVIEW-CHECK]` items for Don, the review's LOW findings, the
    follow-ups deliberately left out, and whether auto-merge is armed.
 
    **PR author account (required).** The `main` ruleset requires Don's

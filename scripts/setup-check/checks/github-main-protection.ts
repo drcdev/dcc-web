@@ -1,6 +1,6 @@
 // checks/github-main-protection.ts (setup item 13, data-model.md
 // "github-main-protection"): the active ruleset on main matches
-// setup/github-ruleset.json, evaluated against the closed list of 10 rules in
+// setup/github-ruleset.json, evaluated against the closed list of 10 gaps (the verify check and its Actions pin share one) in
 // spec.md's Edge Cases ("Partially configured branch protection"); each gap
 // is named individually, never lumped into one generic message.
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
@@ -67,9 +67,9 @@ function verifyPinnedToActions(rule: RulesetRule | undefined): boolean {
   return list?.some((c) => c.context === "verify" && c.integration_id === GITHUB_ACTIONS_APP_ID) ?? false;
 }
 
-// Evaluates the closed list of 10 rules from spec.md's "Partially configured
+// Evaluates the closed list of 10 gaps from spec.md's "Partially configured
 // branch protection" edge case against the actual ruleset (or its absence,
-// when `actual` is null). Order matches the closed list in the spec.
+// when `actual` is null). Order matches the closed list in the spec (verify and its pin are one slot).
 function evaluateGaps(actual: FullRuleset | null): string[] {
   const gaps: string[] = [];
   if (actual?.enforcement !== "active" || !coversMain(actual)) gaps.push("protection active on main");

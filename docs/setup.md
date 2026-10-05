@@ -340,7 +340,7 @@ skips `build-tests` and `e2e`; the `verify` job still reports success. Pushes to
 the full gate.
 
 **How it will be confirmed**
-`pnpm setup:check --item github-ci-workflow` reports complete when both workflow files exist on
+`pnpm setup:check --item github-ci-workflow` reports complete when `ci.yml` exists on
 `main` and the latest `verify` run on `main` succeeded.
 
 **Constitution principle**

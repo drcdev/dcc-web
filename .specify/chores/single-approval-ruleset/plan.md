@@ -79,8 +79,8 @@ No visitor-facing behaviour changes.
 
 Before-state (live, read-only, 2026-10-04):
 
-- ruleset 24156251: `required_approving_review_count: 0`, `dismiss_stale_reviews_on_push: false`,
-  `require_code_owner_review: true`;
+- ruleset 24156251: `required_approving_review_count: 1` and `dismiss_stale_reviews_on_push: true`
+  already (live was changed ahead of this PR), `require_code_owner_review: true`;
 - required checks `major-change-approval` and `verify`, both `integration_id: 15368`;
 - parameters only the live ruleset has: `allowed_merge_methods`,
   `require_extra_approval_for_unattributed_changes`, `do_not_enforce_on_create`;
@@ -98,8 +98,8 @@ Before-state (live, read-only, 2026-10-04):
   - the Actions settings (SHA pinning, allowed actions, fork-PR approval);
   - the live-only ruleset parameters in the committed file.
 
-  Live `dismiss_stale_reviews_on_push` is restored in L1 only because the committed file and the
-  setup check already require it (see Live steps).
+  Live `dismiss_stale_reviews_on_push` is already on, matching the committed file and the setup
+  check (see Live steps).
 - **#97:** wider pruning of config change-detector tests. This chore deletes only tests tied to
   the gate, the label, the pause and the CODEOWNERS path list.
 - **#87 (won't-fix):** local `gh auth switch` stays, the PR author block still switches back to
@@ -613,16 +613,17 @@ Agents never run these. The PR body lists them in this order.
   which a `PUT` would drop or reset (merge methods would reopen to squash and rebase). Keep to
   the dashboard or the jq method below (R2):
   - **Dashboard:** Settings → Rules → Rulesets → `main-protection`:
-    - set "Require a pull request before merging" → Required approvals **1**;
-    - tick "Dismiss stale pull request approvals when new commits are pushed";
+    - confirm Required approvals is already **1** and "Dismiss stale pull request approvals when
+      new commits are pushed" is already ticked (both are live now; change only if not);
     - keep "Require review from Code Owners" on;
     - under "Require status checks to pass", remove `major-change-approval` and keep `verify`;
     - save.
   - **CLI**, preserving every live-only parameter:
     `gh api repos/drcdev/dcc-web/rulesets/24156251 | jq '{name, target, enforcement, conditions, bypass_actors, rules: (.rules | map(if .type == "pull_request" then .parameters.required_approving_review_count = 1 | .parameters.dismiss_stale_reviews_on_push = true elif .type == "required_status_checks" then .parameters.required_status_checks |= map(select(.context != "major-change-approval")) else . end))}' | gh api -X PUT repos/drcdev/dcc-web/rulesets/24156251 --input -`
 
-  The stale-approval tick is included because the committed file and the setup check already
-  require it. It is the one ruleset fix #85 needs; #86 keeps the rest. [PREVIEW-CHECK]
+  Live already has the count at 1 and stale approvals dismissed, so L1 only removes the
+  `major-change-approval` required check; the jq method sets the other two values idempotently.
+  Never `PUT` the file itself. [PREVIEW-CHECK]
 - [ ] L2 Run `pnpm setup:check --item github-main-protection` and confirm it is complete.
   [PREVIEW-CHECK]
 - [ ] L3 Approve this PR; auto-merge, or Don, merges it with a merge commit. After the merge,
