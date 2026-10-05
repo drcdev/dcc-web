@@ -55,7 +55,12 @@ Two more findings:
 
 ## Decisions
 
-### D1: Row 13's wording once `prerenderConflictBehavior: 'error'` is on [NEEDS DECISION]
+### D1: Row 13's wording once `prerenderConflictBehavior: 'error'` is on (decided: A)
+
+**Don's answer: A.** Turn on `'error'` and move the duplicate-file check into `generateId` as a
+per-entry "twin on disk" check, so the custom message fires first (at sync) with unchanged wording
+for rows 13, P17 and 26. The route-level duplicate loops and `assertUniqueProjectFiles` go. The
+work items are written for A. The options as they were put to him:
 
 The issue asks for two things that the spike shows conflict. One is "astro.config.mjs sets
 `prerenderConflictBehavior: 'error'`". The other is "every error message ... still fires with the
@@ -85,14 +90,9 @@ fires or not by timing.
   and it pre-empts row 13. The issue's first done item is dropped. Smallest diff, and
   `astro.config.mjs` is not touched (no code-owner path).
 
-**Recommended: A.** It is the only option that meets both of the issue's done items. It also keeps
-every message deterministic, and the duplicate check gets simpler: one per-entry twin check instead
-of three list-based loops.
-
-Work items below are written for **A**. Under **B**: W3 keeps the list-based duplicate loops where
-they are now, W5's row-13 and row-26 runs keep `build` mode and assert Astro's text for row 13, and
-a new W7 amends the three contract rows. Under **C**: drop W1, drop the twin check from W3, and keep
-the route-level duplicate loops.
+**Chosen: A** (it was also the recommendation). It is the only option that meets both of the
+issue's done items. It also keeps every message deterministic, and the duplicate check gets
+simpler: one per-entry twin check instead of three list-based loops.
 
 ### Judgment calls made in this plan (no decision needed unless Don disagrees)
 
@@ -118,7 +118,7 @@ the route-level duplicate loops.
   points over one keyed core, so `src/lib/feed.ts`, `src/lib/posts.ts`, `tests/helpers/content.ts`
   and `tests/unit/site/fixture-posts.test.ts` only change their import path. A breaking rename of
   every call site is not needed to fold the logic.
-- **J5: Update the "Check" column of the four contract rows whose call site moves (A only).** These
+- **J5: Update the "Check" column of the four contract rows whose call site moves.** These
   are 003 row 13 (still "address check"), 008 P17 ("post file check" → generateId), 009 row 26
   ("route check" → generateId) and 014 S11 ("route" → generateId). The wording columns do not
   change. This is a note on where the check runs, so a later agent is not misled. The changed-paths
@@ -128,7 +128,7 @@ the route-level duplicate loops.
 
 Mechanical criteria (the review phase checks each one):
 
-1. **Config.** `astro.config.mjs` has `prerenderConflictBehavior: "error"` (A or B).
+1. **Config.** `astro.config.mjs` has `prerenderConflictBehavior: "error"`.
    `tests/unit/site/astro-config.test.ts` has a case for it, seen failing first.
 2. **Astro's check is proven.** A build test in `tests/build/page-validation.test.ts` builds a
    `404.mdx` page with the custom route check bypassed and fails with Astro's
@@ -230,7 +230,7 @@ Mechanical criteria (the review phase checks each one):
   run H). That is not CI, deployment or infrastructure configuration, and the issue says so too.
   There is no constitution amendment. Verdict: **not major**. `astro.config.mjs` is a CODEOWNERS
   path, so Don's code-owner review is requested automatically; auto-merge can be armed once nothing
-  else needs him. Under D1 = C, the config is untouched.
+  else needs him.
 - **IV. First-Party Before Custom:** Astro's `prerenderConflictBehavior: 'error'` is used (W1). The
   custom code that stays is named with the first-party option considered and why it falls short:
   - The row-14 route claims stay. Astro's `PrerenderRouteConflict` names neither file (run A) and
@@ -328,8 +328,6 @@ Mechanical criteria (the review phase checks each one):
     `assertPageAddressesFree`. `assertPostFiles` keeps only sub-folder, `.mdx`, name and reserved,
     in today's order. `assertUniqueProjectFiles` and the projects route's `import.meta.glob` are
     deleted.
-  - Under D1 = B or C: no `assertNoTwin`. The list-based duplicate loops stay, sharing one keyed
-    `assertUniqueFiles(collection, files)`.
 - **Tests (new-first for `assertNoTwin`; moved for the rest):**
   - `addresses.test.ts` moves every case in the W6 mapping, renaming only imports and helper names.
   - New `assertNoTwin` cases, using a temporary folder as `images.test.ts` does: `about.md` +
@@ -388,7 +386,7 @@ Mechanical criteria (the review phase checks each one):
   ~275 and ~304); the "Check" column of `specs/003-standalone-pages/contracts/build-errors.md`
   row 13, `specs/008-blog/contracts/build-errors.md` P17,
   `specs/009-portfolio/contracts/build-errors.md` row 26 and
-  `specs/014-project-four-part-story/contracts/build-errors.md` S11 (J5, A only).
+  `specs/014-project-four-part-story/contracts/build-errors.md` S11 (J5).
 - **Test:** no behaviour: n/a (documentation of where each assertion lives; acceptance 7 is checked
   by reading it against the test titles).
 - **Coverage mapping** (removed assertion → where it now lives; titles may change only as shown):
