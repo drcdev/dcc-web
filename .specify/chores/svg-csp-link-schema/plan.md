@@ -193,7 +193,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W4: Section schemas reuse `linkTarget` (test first, then fix)
 
-- [ ] W4 done
+- [x] W4 done
 - **Files:** `tests/unit/content/section-schemas.test.ts`, then
   `src/components/sections/schemas.ts`.
 - **Test:** new-first. **Layer: unit (schema).** No second layer.

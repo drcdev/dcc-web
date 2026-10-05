@@ -74,6 +74,9 @@ describe("Offerings and Offering", () => {
     expect(ok("Offering", withContent({ title: "Reviews", href: "/services/#reviews" }, { text: true }))).toBe(true);
     expect(ok("Offering", withContent({}, { text: true }))).toBe(false);
     expect(ok("Offering", withContent({ title: "Reviews" }))).toBe(false);
+    // #95: a protocol-relative address is an off-site link, not an internal one.
+    expect(ok("Offering", withContent({ title: "Reviews", href: "//example.com" }, { text: true }))).toBe(false);
+    expect(ok("Offering", withContent({ title: "Reviews", href: "/\\example.com" }, { text: true }))).toBe(false);
   });
 });
 
@@ -84,6 +87,9 @@ describe("CallToAction", () => {
     expect(ok("CallToAction", withContent({ label: "x" }))).toBe(false);
     expect(ok("CallToAction", withContent({ href: "/contact/" }))).toBe(false);
     expect(ok("CallToAction", withContent({ label: "x", href: "contact" }))).toBe(false);
+    // #95: a protocol-relative address is an off-site link, not an internal one.
+    expect(ok("CallToAction", withContent({ label: "x", href: "//example.com" }))).toBe(false);
+    expect(ok("CallToAction", withContent({ label: "x", href: "/\\example.com" }))).toBe(false);
   });
 
   it("names the missing prop in the error", () => {
