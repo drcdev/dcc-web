@@ -36,16 +36,8 @@ invent scope the issue doesn't state.
     code they cover, and seen to fail first. The tasks template calls tests
     "optional" — the constitution wins; tell the tasks and implement
     subagents so.
-  - **Test placement.** Every behaviour gets one primary layer: the
-    cheapest layer that can observe it. E2E is for journeys and for
-    anything only a browser can show; build tests are for what only the
-    real build can show; accessibility and visual tests cover templates,
-    not stories. Every planned test (a test task, a reproducing test or a
-    work item's test) names its layer (unit, component, build, worker,
-    E2E, accessibility, visual or budget), and testing the same behaviour
-    at a second layer needs a written reason. The constitution's
-    Development Workflow makes this binding; "Where a test goes" in
-    `docs/testing.md` has the detail.
+  - **Test placement.** Follow the test-placement rule in the constitution's Development
+    Workflow; "Where a test goes" in `docs/testing.md` has the detail and the layer names.
   - **Release gate (Principle II).** Never mark a task done on a red suite.
     The `verify` package script — the local mirror of the CI gate (tests,
     type check, lint, build, accessibility and performance checks), run
@@ -64,20 +56,8 @@ invent scope the issue doesn't state.
   Conventional Commit messages, so the subagent generates the message from
   the diff per that skill.
 - Keep your own text output to one short status line per phase transition.
-
-## Local toolchain
-
-Tell every subagent that runs `pnpm`, `astro` or `playwright`:
-
-- Node comes from nvm and `.nvmrc` pins the major. Run `node -v` first; if it
-  is not the `.nvmrc` version, run `source ~/.nvm/nvm.sh && nvm use` in the
-  same command as the toolchain call (the Bash tool does not keep shell
-  state between calls).
-- macOS has no `timeout` binary. Bound long runs with
-  `perl -e 'alarm N; exec @ARGV' <cmd>` (N in seconds).
-- Docker Desktop is normally off. It is needed only for
-  `pnpm run test:visual:update:linux`; if `docker info` fails, ask Don to
-  start it (see the visual-baselines step) rather than skipping to CI.
+- Follow the Local toolchain section of `CLAUDE.md` for every `pnpm`, `astro`, `playwright` or
+  `wrangler` call, and tell every subagent that runs one to do the same.
 
 ## Preflight
 
@@ -108,7 +88,8 @@ phase:
 > `before_*` commit hook (the tree is already clean). You cannot ask the
 > user anything — if the skill wants to interview, answer its questions
 > yourself from the spec and the constitution and note the choices in your
-> summary. Never print secrets. Your final message must be only: 3–6
+> summary. Follow the Local toolchain section of `CLAUDE.md` for every `pnpm`, `astro`,
+> `playwright` or `wrangler` call. Never print secrets. Your final message must be only: 3–6
 > sentence summary of what you produced, the feature directory/branch, and
 > any risks or open questions.
 
@@ -119,7 +100,7 @@ phase:
 | 3   | plan      | `speckit-plan`      | opus   | The Constitution Check must address every principle. For each capability, name the Astro / Cloudflare / Fly.io first-party option and use it, or say why it falls short (Principle IV). State the expected monthly cost of anything new (Principle IX). Flag whether the slice is a **major change** under Principle III and why. If `package.json` has no `verify` script yet, the plan must add one that runs the whole local gate.                          |
 | 4   | checklist | `speckit-checklist` | sonnet | Generate the checklist(s) the spec's risk areas call for; always include accessibility (WCAG 2.2 AA) and, if the slice touches the contact form or API, privacy/security. **Generation only — do not evaluate or check off items.**                                                                                                                                                                                       |
 | 4b  | resolve   | — (no skill)        | opus   | **Resolve every checklist item — see below.**                                                                                                                                                                                                                                                                                                                                                                              |
-| 5   | tasks     | `speckit-tasks`     | sonnet | Tests are **mandatory**, not optional: every story gets the test tasks its behaviour needs, ordered before the implementation they cover. Each test task names its one primary layer, the cheapest layer that can observe the behaviour ("Where a test goes" in `docs/testing.md`), and gives the reason for any second layer in the task text. If the slice alters the shell, a template or the design system (what the visual project snapshots), include a task to update the macOS and Linux visual baselines (`pnpm run test:visual:update`, then `pnpm run test:visual:update:linux`, which needs Docker Desktop) after the implementation. Tasks a subagent cannot verify locally (needs the preview deployment or Don's eyes) get the suffix `[PREVIEW-CHECK]`.                                                                                                     |
+| 5   | tasks     | `speckit-tasks`     | sonnet | Tests are **mandatory**, not optional: every story gets the test tasks its behaviour needs, ordered before the implementation they cover. Each test task names its one primary layer, the cheapest layer that can observe the behaviour ("Where a test goes" in `docs/testing.md`), and gives the reason for any second layer in the task text. If the slice alters the shell, a template or the design system (what the visual project snapshots), include a task to update the macOS and Linux visual baselines (`pnpm run test:visual:update`, then `pnpm run test:visual:update:linux`, which needs Docker Desktop) after the implementation. Tasks a subagent cannot verify locally carry the `[PREVIEW-CHECK]` marker in tasks.md: read `.claude/skills/_shared/preview-check.md` and follow it exactly.                                                                                                     |
 | 6   | analyze   | `speckit-analyze`   | opus   | The skill is read-only and ends by offering remediation and telling you not to apply it. **Override for this pipeline: apply the concrete remediation edits yourself, re-run the consistency check on the edited artifacts, and commit.** Your summary must account for **every** finding as fixed or deferred-with-reason (CRITICAL findings, which include every constitution violation, may never be deferred).           |
 | 7   | implement | `speckit-implement` | sonnet | **Chunked per task phase — see below.**                                                                                                                                                                                                                                                                                                                                                                                   |
 | 8   | converge  | `speckit-converge`  | opus   | **One pass — see below.**                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -191,11 +172,8 @@ re-run the phase 4b grep gate before implement.
    were fully resolved in phase 4b; if the skill reports incomplete
    checklist items anyway, proceed but flag it in your summary. Work
    test-first: write the tests for a task, run them and see them fail, then
-   implement until they pass. Then run `pnpm run verify:quick` under the
-   perl alarm as the inner-loop check; only the full `pnpm run verify`,
-   which the orchestrator runs before the PR, counts as the gate. Never
-   mark a task done on a red suite. Follow
-   Astro's documented practices and prefer first-party features over custom
+   implement until they pass. Read `.claude/skills/_shared/verify-gate.md` and follow it
+   exactly. Follow Astro's documented practices and prefer first-party features over custom
    code. Stay inside the slice's scope; note anything out of scope in
    spec.md as follow-up. Commit via speckit-git-commit (event
    after_implement) when the phase's tasks are done."
@@ -204,9 +182,9 @@ re-run the phase 4b grep gate before implement.
    the next chunk.
 3. If a subagent reports a red suite it could not fix, stop the pipeline and
    report: which phase, which tasks are done, what is red.
-4. Tasks marked `[PREVIEW-CHECK]` are **not yours to complete**: instruct
-   subagents to leave them unchecked and list them in their summary. Collect
-   them for the PR body and the final report.
+4. Tasks marked `[PREVIEW-CHECK]` are **not yours to complete**: tell subagents to read
+   `.claude/skills/_shared/preview-check.md` and follow it exactly, and collect the items they
+   list for the PR body and the final report.
 5. If a phase agent's context is already large (e.g. after debugging), ask
    it for its final summary and spawn a fresh subagent for the remaining
    tasks of that phase instead of resuming it.
@@ -222,7 +200,7 @@ if the second implement pass still leaves gaps, stop and report them.
 ### Long-running suites (orchestrator and any subagent running tests)
 
 - Run `<pm> run verify` and any E2E run in the **foreground with an
-  explicit time limit** (10 minutes, via the `perl` alarm above — macOS has
+  explicit time limit** (10 minutes, via the `perl` alarm (CLAUDE.md, Local toolchain) — macOS has
   no `timeout`). Never background a run and poll for it.
 - Keep only the pass/fail summary and the failing test names — never paste
   raw output into a summary.
@@ -230,36 +208,15 @@ if the second implement pass still leaves gaps, stop and report them.
   loop.
 - E2E runs in a real browser (Playwright, per Principle I) both locally and
   in CI. There are no device tiers.
-- **Inner loop and gate.** `pnpm run verify:quick` runs secret lint, lint, type check, the unit
-  and component tests, the worker tests and the real `astro build`. It is the inner-loop check
-  for implement and fix subagents. It leaves out the build-fixture tests and every Playwright
-  project, so it never counts as the gate. The full `pnpm run verify` runs the whole gate
-  (secret lint, lint, type check, unit, component, build-fixture and worker tests, build, and
-  every Playwright project — E2E, accessibility, sections, performance budget and visual), and
-  it is the only check that counts before a PR. There is no scoped or tiered local gate: a
-  `src/` change means the whole suite runs again. CI runs the same gate as parallel jobs and
-  narrows it only by the changed paths, as `docs/testing.md` describes.
-- **Visual baselines.** The visual project snapshots only the shell (header, footer and open mobile menu), the
-  not-found page and the fixture site, never real content, so a content edit cannot fail it.
-  Its per-platform baselines change only when the shell, a template or the design system
-  changes, which is a major change under Principle III in any case.
-  If the slice altered one of those on purpose, the implement phase updated the macOS
-  baselines (`pnpm run test:visual:update`).
-  Regenerate the Linux baselines (what CI compares against) with
-  `pnpm run test:visual:update:linux` (needs Docker Desktop). If `docker info`
-  fails, ask Don to start it with an `AskUserQuestion` whose question text
-  carries the instruction. Commit and push the images before opening the PR,
-  so `verify` is green. Fallback only if Docker cannot be started: after the
-  PR is open, add the `visual-baselines` label, wait for the `update-baselines`
-  job, download its `visual-baselines-linux` artifact with `gh run download`,
-  review, commit and push; until that lands the `verify` check on the PR is
-  expected to be red on visual only, so say so in the PR body.
-  A visual diff nobody predicted up front is a regression to fix, not a baseline to refresh.
+- **Inner loop and gate.** Read `.claude/skills/_shared/verify-gate.md` and follow it exactly.
+- **Visual baselines.** If the slice altered the shell, a template or the design system on
+  purpose, the implement phase updated the macOS baselines. Read
+  `.claude/skills/_shared/visual-baselines.md` and follow it exactly.
 
 ## Finish
 
 1. Run `<pm> run verify` yourself (per the rules above). Red → dispatch a
-   fix subagent or report; never proceed red. Missing script → stop and
+   fix subagent (told to read `.claude/skills/_shared/verify-gate.md`) or report; never proceed red. Missing script → stop and
    report: the slice was required to create it.
 2. **Link the issue.** The backlog lives in GitHub Issues. If the slice
    implements an issue — because the pipeline was invoked with an issue
@@ -268,48 +225,17 @@ if the second implement pass still leaves gaps, stop and report them.
    checks may stay open past merge; note outstanding `[PREVIEW-CHECK]` items
    in the PR instead of holding the issue open. If the slice was ad-hoc (no
    issue), skip this step; do not retroactively create one.
-3. **Major-change classification (no pause).** Run `git diff --stat main`
-   and decide, from the diff and the plan's flag, whether the slice is a
-   **major change** under Principle III: new/removed/replaced dependency,
-   integration or service; anything touching how contact data is collected,
-   stored, retrieved or deleted; design system, site-wide layout, navigation
-   or visual identity; possible cost increase; CI, deployment or
-   infrastructure config; the constitution itself. When in doubt, it is
-   major.
-   - Put the verdict and the criteria that fired (or "none") in the PR body,
-     so Don knows how closely to read it and whether to check the preview.
-   - The verdict does not change how the PR merges: the `main` ruleset
-     requires Don's approving review on every PR.
-   - Auto-merge is armed by default. Leave it off only while
-     `[PREVIEW-CHECK]` items are open, and say so in the PR body.
-4. Push the branch and open the PR as `drc-agents` (sequence below). The PR
-   body covers: summary of the slice,
-   the verify results, the `Closes #<n>` line when step 2 applies, the
-   major-change verdict and criteria, whether Linux visual baselines are
-   pending, the list of `[PREVIEW-CHECK]` items for Don to walk on the
-   preview deployment, any risks the phase agents flagged, and whether
-   auto-merge is armed.
-
-   **PR author account (required).** The `main` ruleset requires Don's
-   approving review on every PR, and GitHub does not count an author's
-   approval on their own PR, so a PR authored by `drcdev` could never be
-   approved. Open every PR as `drc-agents`:
-   1. Push the branch (as `drcdev`).
-   2. `gh auth switch --user drc-agents`. If the command is denied, fails, or
-      `drc-agents` is not in the keyring, stop and ask Don with
-      `AskUserQuestion` (instruction in the question text). Never open the PR
-      as `drcdev`.
-   3. `gh pr create ...`
-   4. `gh auth switch --user drcdev` immediately after `gh pr create`, whether
-      it succeeded or failed, so `gh` is never left on `drc-agents`.
-   5. `gh pr view <n> --json author`; confirm `author.login` is
-      `drc-agents`. If it is not `drc-agents`, stop and tell Don the PR must
-      be closed and reopened from `drc-agents`; do not work around the ruleset.
-   6. Arm auto-merge (`gh pr merge --auto --merge`) as `drcdev`, unless step 3
-      left it off for open `[PREVIEW-CHECK]` items.
-5. If Linux baselines are still owed because Docker could not be started,
-   run the CI-label fallback from the long-running-suites rules now, before
-   watching the gate.
+3. **Major-change classification (no pause).** Run `git diff --stat main` and decide, from
+   the diff and the plan's flag, whether the slice is a major change. Classify per
+   `.claude/skills/_shared/open-pr.md`.
+4. Push the branch and open the PR. The PR body covers: summary of the slice, the verify
+   results, the `Closes #<n>` line when step 2 applies, the major-change verdict and criteria,
+   whether Linux visual baselines are pending, the list of `[PREVIEW-CHECK]` items for Don to
+   walk on the preview deployment, any risks the phase agents flagged, and whether auto-merge
+   is armed. Open the PR and arm auto-merge: read `.claude/skills/_shared/open-pr.md` and
+   follow it exactly.
+5. If Linux baselines are still owed because Docker could not be started, run the CI-label
+   fallback in `.claude/skills/_shared/visual-baselines.md` now, before watching the gate.
 6. **Watch the release gate.** Run `gh pr checks --watch` with a timeout
    (20 minutes). Red → dispatch a fix subagent on the branch, which fixes
    the cause (never the check), commits and pushes; watch again. Record the

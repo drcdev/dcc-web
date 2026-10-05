@@ -36,16 +36,8 @@ skill carries the URL trust policy.
   In particular:
   - **Test-first (Principle I).** The fix phase adds a test that reproduces
     the bug and fails before the fix, then passes after it.
-  - **Test placement.** Every behaviour gets one primary layer: the
-    cheapest layer that can observe it. E2E is for journeys and for
-    anything only a browser can show; build tests are for what only the
-    real build can show; accessibility and visual tests cover templates,
-    not stories. Every planned test (a test task, a reproducing test or a
-    work item's test) names its layer (unit, component, build, worker,
-    E2E, accessibility, visual or budget), and testing the same behaviour
-    at a second layer needs a written reason. The constitution's
-    Development Workflow makes this binding; "Where a test goes" in
-    `docs/testing.md` has the detail.
+  - **Test placement.** Follow the test-placement rule in the constitution's Development
+    Workflow; "Where a test goes" in `docs/testing.md` has the detail and the layer names.
   - **Release gate (Principle II).** Never mark work done on a red suite.
     `pnpm run verify` must exit zero before the pipeline is complete.
     Checks are never skipped, disabled or weakened to get a fix through.
@@ -63,20 +55,8 @@ skill carries the URL trust policy.
   is conventional, so the subagent generates the message from the diff per
   that skill. Do not commit phase artifacts yourself.
 - Keep your own text output to one short status line per phase transition.
-
-## Local toolchain
-
-Tell every subagent that runs `pnpm`, `astro` or `playwright`:
-
-- Node comes from nvm and `.nvmrc` pins the major. Run `node -v` first; if it
-  is not the `.nvmrc` version, run `source ~/.nvm/nvm.sh && nvm use` in the
-  same command as the toolchain call (the Bash tool does not keep shell
-  state between calls).
-- macOS has no `timeout` binary. Bound long runs with
-  `perl -e 'alarm N; exec @ARGV' <cmd>` (N in seconds).
-- Docker Desktop is normally off. It is needed only for
-  `pnpm run test:visual:update:linux`; if `docker info` fails, ask Don to
-  start it (see the visual-baselines step) rather than skipping to CI.
+- Follow the Local toolchain section of `CLAUDE.md` for every `pnpm`, `astro`, `playwright` or
+  `wrangler` call, and tell every subagent that runs one to do the same.
 
 ## Preflight
 
@@ -115,7 +95,8 @@ phase:
 > — resolve judgment calls yourself and note them in your summary. When the
 > phase's skill applies, invoke the Skill tool and follow it completely in
 > **automated / non-interactive mode**, then run the `speckit-git-commit`
-> skill with the event name given. Never print secrets. Your final message
+> skill with the event name given. Follow the Local toolchain section of `CLAUDE.md` for
+> every `pnpm`, `astro`, `playwright` or `wrangler` call. Never print secrets. Your final message
 > must be only: a 3–6 sentence summary of what you produced, plus the
 > specific items the phase table asks you to return.
 
@@ -123,7 +104,7 @@ phase:
 | --- | ------- | -------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | explore | — (no skill)         | sonnet | **Read-only.** Locate the code paths implicated by the report: grep error strings, symbols, component names, routes, test IDs; read the candidate files; run (don't write) any existing vitest or Playwright specs that exercise them. Return: candidate files/lines with one-line justifications, a root-cause hunch with confidence, and any reproduction evidence. Cap the final message at ~25 lines — it is pasted into the assess prompt. |
 | 2   | assess  | `speckit-bug-assess` | opus   | Pass the bug report (and source URL if any), `slug=<slug>`, and the exploration notes verbatim as leads to verify — trust the codebase over the notes where they disagree. Name the layer the reproducing test belongs at. Commit with event `after_bug_assess`. Return: verdict, severity, and any `[NEEDS CLARIFICATION]` items verbatim.                                                                                                                                                                                       |
-| 3   | fix     | `speckit-bug-fix`    | sonnet | Pass `slug=<slug>`. First add a failing test that reproduces the symptom at its one primary layer, the cheapest layer that can observe the symptom ("Where a test goes" in `docs/testing.md`), see it fail, then apply the preferred remediation minimally until it passes. Run the targeted vitest files or Playwright specs for the changed paths. Then run `pnpm run verify:quick` under the perl alarm as the inner-loop check; only the full `pnpm run verify`, which the orchestrator runs before the PR, counts as the gate. If the assessment turns out wrong, stop per the skill and say so plainly — that triggers the failure loop, not a stall. If the fix alters the shell, a template or the design system (what the visual project snapshots), update the macOS visual baselines (`pnpm run test:visual:update`) and say so; the orchestrator regenerates the Linux ones in Verify. Commit with event `after_bug_fix`. Return: status, files changed, tests added with the layer of each and the reason for any second layer, and whether any page's appearance changed. |
+| 3   | fix     | `speckit-bug-fix`    | sonnet | Pass `slug=<slug>`. First add a failing test that reproduces the symptom at its one primary layer, the cheapest layer that can observe the symptom ("Where a test goes" in `docs/testing.md`), see it fail, then apply the preferred remediation minimally until it passes. Read `.claude/skills/_shared/verify-gate.md` and follow it exactly. If the assessment turns out wrong, stop per the skill and say so plainly — that triggers the failure loop, not a stall. If the fix alters the shell, a template or the design system (what the visual project snapshots), update the macOS visual baselines (`pnpm run test:visual:update`) and say so; the orchestrator regenerates the Linux ones in Verify. Commit with event `after_bug_fix`. Return: status, files changed, tests added with the layer of each and the reason for any second layer, and whether any page's appearance changed. |
 | 4   | test    | `speckit-bug-test`   | sonnet | Pass `slug=<slug>`. Exercise the original reproduction, the new tests, and the regression suite for the changed modules. Commit with event `after_bug_test`. Return: result (verified / partial / failed) and any residual risks.                                                                                                                                                                                                                                                  |
 
 ### Verdict gate (after assess)
@@ -161,40 +142,20 @@ cannot resolve it.
 
 ## Verify
 
-**Inner loop and gate.** `pnpm run verify:quick` runs secret lint, lint, type check, the unit
-and component tests, the worker tests and the real `astro build`. It is the inner-loop check
-for implement and fix subagents. It leaves out the build-fixture tests and every Playwright
-project, so it never counts as the gate. The full `pnpm run verify` runs the whole gate
-(secret lint, lint, type check, unit, component, build-fixture and worker tests, build, and
-every Playwright project — E2E, accessibility, sections, performance budget and visual), and
-it is the only check that counts before a PR. There is no scoped or tiered local gate: a
-`src/` change means the whole suite runs again. CI runs the same gate as parallel jobs and
-narrows it only by the changed paths, as `docs/testing.md` describes.
+**Inner loop and gate.** Read `.claude/skills/_shared/verify-gate.md` and follow it exactly.
 
 1. Run `pnpm run verify` yourself, in the **foreground with an explicit
-   time limit** (10 minutes, via the `perl` alarm above — never background
+   time limit** (10 minutes, via the `perl` alarm (CLAUDE.md, Local toolchain) — never background
    a run and poll for it). Keep only the pass/fail summary and the failing
    test names. A run that hits the limit is red: report it, do not retry in
    a loop.
-2. Red → dispatch a fix subagent on the branch (fix the cause, never the
+2. Red → dispatch a fix subagent on the branch (told to read
+   `.claude/skills/_shared/verify-gate.md`; fix the cause, never the
    check), then run verify again. A failure the fix subagent cannot resolve
    enters the failure loop. Never proceed red.
-3. **Visual baselines.** The visual project snapshots only the shell (header, footer and open mobile menu), the
-   not-found page and the fixture site, never real content, so a content edit cannot fail it.
-   Its per-platform baselines change only when the shell, a template or the design system
-   changes, which is a major change under Principle III in any case.
-   A bug fix rarely changes one of those; if the fix phase reported an intended change, it
-   updated the macOS baselines.
-   Regenerate the Linux baselines (what CI compares against) with
-   `pnpm run test:visual:update:linux` (needs Docker Desktop). If `docker info`
-   fails, ask Don to start it with an `AskUserQuestion` whose question text
-   carries the instruction. Commit and push the images before opening the PR,
-   so `verify` is green. Fallback only if Docker cannot be started: after the
-   PR is open, add the `visual-baselines` label, wait for the `update-baselines`
-   job, download its `visual-baselines-linux` artifact with `gh run download`,
-   review, commit and push; until that lands the `verify` check on the PR is
-   expected to be red on visual only, so say so in the PR body.
-   A visual diff nobody predicted up front is a regression to fix, not a baseline to refresh.
+3. **Visual baselines.** A bug fix rarely changes one of the snapshotted surfaces; if the fix
+   phase reported an intended change, it updated the macOS baselines. Read
+   `.claude/skills/_shared/visual-baselines.md` and follow it exactly.
 
 ## Finish
 
@@ -203,49 +164,18 @@ narrows it only by the changed paths, as `docs/testing.md` describes.
    or the bug plainly matches an open issue (`gh issue list`), the PR body
    must contain `Closes #<n>`. Ad-hoc bug (no issue) → skip; do not
    retroactively create one.
-3. **Major-change classification (no pause).** Run `git diff --stat main`
-   and `git diff --name-only main...HEAD` and decide whether the fix is a
-   **major change** under Principle III: new/removed/replaced dependency,
-   integration or service; anything touching how contact data is
-   collected, stored, retrieved or deleted; design system, site-wide
-   layout, navigation or visual identity; possible cost increase; CI,
-   deployment or infrastructure config; the constitution itself. A bug fix
-   rarely fires one, but a fix that reaches into the contact API, the
-   headers, or the CI workflow does. When in doubt, it is major.
-   - Put the verdict and the criteria that fired (or "none") in the PR body,
-     so Don knows how closely to read it and whether to check the preview.
-   - The verdict does not change how the PR merges: the `main` ruleset
-     requires Don's approving review on every PR.
-   - Auto-merge is armed by default. Leave it off only while
-     `[PREVIEW-CHECK]` items are open, and say so in the PR body.
-4. Push the branch and open the PR as `drc-agents` (sequence below). The PR
-   body covers: symptom and root
-   cause (from the assessment), the fix summary, the test added and the
-   verify results, the `Closes #<n>` line when step 2 applies, the
-   major-change verdict and criteria, whether Linux visual baselines are
-   pending, any follow-ups noticed but deliberately left out, and whether
-   auto-merge is armed.
-
-   **PR author account (required).** The `main` ruleset requires Don's
-   approving review on every PR, and GitHub does not count an author's
-   approval on their own PR, so a PR authored by `drcdev` could never be
-   approved. Open every PR as `drc-agents`:
-   1. Push the branch (as `drcdev`).
-   2. `gh auth switch --user drc-agents`. If the command is denied, fails, or
-      `drc-agents` is not in the keyring, stop and ask Don with
-      `AskUserQuestion` (instruction in the question text). Never open the PR
-      as `drcdev`.
-   3. `gh pr create ...`
-   4. `gh auth switch --user drcdev` immediately after `gh pr create`, whether
-      it succeeded or failed, so `gh` is never left on `drc-agents`.
-   5. `gh pr view <n> --json author`; confirm `author.login` is
-      `drc-agents`. If it is not `drc-agents`, stop and tell Don the PR must
-      be closed and reopened from `drc-agents`; do not work around the ruleset.
-   6. Arm auto-merge (`gh pr merge --auto --merge`) as `drcdev`, unless step 3
-      left it off for open `[PREVIEW-CHECK]` items.
-5. If Linux baselines are still owed because Docker could not be started,
-   run the CI-label fallback from Verify step 3 now, before watching the
-   gate.
+3. **Major-change classification (no pause).** Run `git diff --stat main` and
+   `git diff --name-only main...HEAD` and decide whether the fix is a major change. A bug fix
+   rarely fires a criterion, but a fix that reaches into the contact API, the headers, or the
+   CI workflow does. Classify per `.claude/skills/_shared/open-pr.md`.
+4. Push the branch and open the PR. The PR body covers: symptom and root cause (from the
+   assessment), the fix summary, the test added and the verify results, the `Closes #<n>` line
+   when step 2 applies, the major-change verdict and criteria, whether Linux visual baselines
+   are pending, any follow-ups noticed but deliberately left out, and whether auto-merge is
+   armed. Open the PR and arm auto-merge: read `.claude/skills/_shared/open-pr.md` and follow
+   it exactly.
+5. If Linux baselines are still owed because Docker could not be started, run the CI-label
+   fallback in `.claude/skills/_shared/visual-baselines.md` now, before watching the gate.
 6. **Watch the release gate.** Run `gh pr checks --watch` with a time limit
    (20 minutes). Red → dispatch a fix subagent on the branch, which fixes
    the cause (never the check), commits and pushes; watch again. Record the

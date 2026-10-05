@@ -15,26 +15,15 @@ the constitution wins.
 - **macOS has no `timeout` binary.** Bound a long run with
   `perl -e 'alarm N; exec @ARGV' <cmd...>` instead.
 - **Docker Desktop is normally off.** It is only needed to regenerate the Linux visual
-  baselines locally (below). If `docker info` fails, ask Don to start Docker Desktop with an
+  baselines locally (see `.claude/skills/_shared/visual-baselines.md`). If `docker info` fails, ask Don to start Docker Desktop with an
   `AskUserQuestion` whose question text carries the instruction; do not fall back to CI
   without asking.
 
 ## Visual baselines
 
-The visual project snapshots only the shell (header, footer and open mobile menu), the
-not-found page and the fixture site, never real content, so a content edit cannot fail it. Its per-platform baselines change only when the shell, a template or the design system
-changes, which is a major change under Principle III in any case.
-The baselines are committed in `tests/e2e/visual.spec.ts-snapshots/`, and a change to them
-refreshes both sets:
-
-- **macOS:** `pnpm run test:visual:update`.
-- **Linux (what CI compares against):** `pnpm run test:visual:update:linux`, which needs Docker
-  Desktop and runs in the Docker image matching the installed `@playwright/test` version.
-  Fallback when Docker is unavailable: add the `visual-baselines` label to the open PR, which
-  runs `update-baselines`, download the `visual-baselines-linux` artifact with
-  `gh run download`, and commit the images.
-
-A visual diff nobody predicted up front is a regression to fix, not a baseline to refresh.
+The visual project, its per-platform baselines and how to refresh them (macOS, Linux via Docker,
+the CI label fallback) are in `.claude/skills/_shared/visual-baselines.md`. Read it before
+changing or refreshing a baseline.
 
 ## Merging
 
@@ -69,26 +58,15 @@ A visual diff nobody predicted up front is a regression to fix, not a baseline t
 ## Orchestration skills
 
 `/deliver`, `/tweak`, `/squash` and `/chore` in `.claude/skills/` are the end-to-end pipelines
-Don uses for feature, small-change, bug and maintenance work. The first three were ported from
-Don's `cadence` project, whose read-only clone lives at `.reference/cadence` (gitignored, like
-`.reference/flux` for the design theme). Diff against it when porting further changes.
+Don uses for feature, small-change, bug and maintenance work. The first three began as ports
+from Don's `cadence` project (read-only clone at `.reference/cadence`, gitignored like
+`.reference/flux` for the design theme).
 `/chore` is local to this repository: it has no spec phase (a chore changes no user-visible
 behaviour), plans into `.specify/chores/<slug>/` on a `chore/<slug>` branch, and adds a
 fresh-eyes review phase before verify.
 
-Keep the four pipelines aligned. A change to any of these goes into all four together:
-
-- the "Local toolchain" section;
-- the Finish step 3 major-change classification and auto-merge default (no pause);
-- the `[PREVIEW-CHECK]` task marker;
-- the visual-baselines step and the "Visual baselines" section above (a unit test checks their
-  shared sentences are identical in all five);
-- the "PR author account" block (a unit test checks it is identical in all four);
-- the "Inner loop and gate" paragraph and the `verify:quick` sentence in the implement or fix
-  phase (a unit test checks both are identical in all four).
-- the "Test placement" bullet in the Rules section and the layer-naming phrase where each
-  pipeline plans its tests (tasks row, fix and assess rows, or plan, implement and review
-  steps); a unit test checks the bullet is identical in all four.
+Wording the four pipelines share lives once in `.claude/skills/_shared/`. Each skill reads it at
+the point of use, and no skill restates it; the Local toolchain rules live above in this file.
 
 ## Spec Kit extensions
 
