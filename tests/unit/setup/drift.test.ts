@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { setupItems } from "../../../scripts/setup-check/items.ts";
 import { secretManifest } from "../../../scripts/setup-check/secrets.ts";
@@ -8,6 +8,12 @@ const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 
 function read(path: string): string {
   return readFileSync(`${repoRoot}${path}`, "utf-8");
+}
+
+function workflowFiles(): string[] {
+  return readdirSync(`${repoRoot}.github/workflows`)
+    .filter((f) => f.endsWith(".yml"))
+    .map((f) => read(`.github/workflows/${f}`));
 }
 
 function stripJsonComments(text: string): string {
@@ -37,9 +43,7 @@ describe("secret/variable names <-> manifest drift", () => {
   const manifestNames = new Set(secretManifest.map((s) => s.name));
 
   it("every secret/variable referenced in .github/workflows/*.yml exists in the manifest (GITHUB_TOKEN exempt)", () => {
-    const ci = read(".github/workflows/ci.yml");
-    const major = read(".github/workflows/major-change.yml");
-    for (const contents of [ci, major]) {
+    for (const contents of workflowFiles()) {
       const refs = [...contents.matchAll(/secrets\.([A-Z0-9_]+)/g)].map((m) => m[1]!);
       for (const name of refs) {
         if (name === "GITHUB_TOKEN") continue;
@@ -75,11 +79,10 @@ describe("secret/variable names <-> manifest drift", () => {
   });
 
   it("every github-actions manifest entry is referenced by a workflow", () => {
-    const ci = read(".github/workflows/ci.yml");
-    const major = read(".github/workflows/major-change.yml");
+    const workflows = workflowFiles();
     for (const secret of secretManifest.filter((s) => s.store === "github-actions")) {
       expect(
-        ci.includes(secret.name) || major.includes(secret.name),
+        workflows.some((w) => w.includes(secret.name)),
         `no workflow references github-actions manifest entry ${secret.name}`,
       ).toBe(true);
     }

@@ -15,18 +15,18 @@ function githubApi(routes: { workflows?: unknown; runs?: unknown }) {
 }
 
 describe("checks/github-ci-workflow", () => {
-  it("is missing when major-change.yml is missing from main", async () => {
+  it("is missing when ci.yml is missing from main", async () => {
     const ctx = fakeProviderContext({
       fs: { readJson: (() => CONFIG) as never },
       github: {
-        api: githubApi({ workflows: { workflows: [{ path: ".github/workflows/ci.yml", name: "CI" }] } }),
+        api: githubApi({ workflows: { workflows: [{ path: ".github/workflows/other.yml", name: "Other" }] } }),
       },
     });
 
     const result = await check(ctx);
 
     expect(result.status).toBe("missing");
-    expect(result.details).toContain(".github/workflows/major-change.yml");
+    expect(result.details).toContain(".github/workflows/ci.yml");
   });
 
   it("is missing when there is no recorded verify run on main", async () => {
@@ -70,7 +70,7 @@ describe("checks/github-ci-workflow", () => {
     expect(result.summary).toMatch(/did not succeed/i);
   });
 
-  it("is complete when both workflows exist on main and the latest verify run succeeded", async () => {
+  it("is complete when ci.yml exists on main and the latest verify run succeeded", async () => {
     const workflows = loadFixture("github", "workflows-both-present");
     const run = loadFixture("github", "workflow-run-verify-success");
     const ctx = fakeProviderContext({

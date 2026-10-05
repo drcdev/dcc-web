@@ -243,7 +243,7 @@ Every implement subagent: run the named targeted vitest files before and after, 
   - The drift.test assertion that the contexts contain `STATUS_CONTEXT` → retired by decision
     #85. Replaced by "contexts are exactly `["verify"]`".
 
-### W2 Retire the major-change workflow and gate script
+### [x] W2 Retire the major-change workflow and gate script
 
 - **Files:**
   - delete `.github/workflows/major-change.yml`, `scripts/ci/major-change-gate.ts` and

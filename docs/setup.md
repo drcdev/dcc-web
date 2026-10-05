@@ -326,9 +326,8 @@ and on `main`, not just locally. The workflow runs `changes`, `static`, `build-t
 in parallel, and a final `verify` job reports the result that branch protection requires.
 
 **Where to do it**
-Nothing new to do here; `.github/workflows/ci.yml` and `.github/workflows/major-change.yml` are
-part of this slice's pull request. This item confirms they exist on `main` and that the latest
-run succeeded, after the merge. `.github/workflows/visual-baselines.yml` is a separate workflow
+Nothing new to do here; `.github/workflows/ci.yml` is part of this slice's pull request. This
+item confirms it exists on `main` and that the latest run succeeded, after the merge. `.github/workflows/visual-baselines.yml` is a separate workflow
 that regenerates the Linux visual baselines for a human or agent to review and commit — it is not
 part of the `verify` gate and never runs on push; before it exists on `main` it can only be
 triggered by adding the `visual-baselines` label to a pull request (`workflow_dispatch` isn't

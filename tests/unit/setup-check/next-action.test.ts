@@ -302,7 +302,7 @@ const scenarios: Scenario[] = [
           fs: { readJson: fsJson({ "setup/config.json": CONFIG }) },
           github: {
             api: githubApiRoutes({
-              "/actions/workflows": { workflows: [{ path: ".github/workflows/ci.yml", name: "CI" }] },
+              "/actions/workflows": { workflows: [{ path: ".github/workflows/other.yml", name: "Other" }] },
             }),
           },
         }),
