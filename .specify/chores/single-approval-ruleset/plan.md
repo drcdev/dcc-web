@@ -1,409 +1,365 @@
-# Chore plan: single-approval-ruleset (issues #85 and #86)
+# Chore plan: single-approval-ruleset (issues #85 and #94)
 
-Branch: `chore/single-approval-ruleset`. The PR says `Closes #85` and `Closes #86`.
+Branch: `chore/single-approval-ruleset`. The PR says `Closes #85` and `Closes #94`. It does
+**not** close #86.
+
+**Re-plan, 2026-10-05.** Don's direction update on #85 (2026-10-05T04:19Z) and his two answers
+recorded on #85 ("Decisions recorded by /chore 2026-10-04") replace the first plan:
+
+- #86 is dropped entirely from this chore;
+- #94 joins it;
+- CODEOWNERS stays as one catch-all line;
+- no replacement setup items and no config-restating tests are added.
+
+W1 and W2 were implemented under the first plan (commits 077cab2 and cbfaf93). W2 stands. W1
+went beyond #85, so W3 corrects it. Remaining items are renumbered from W3.
 
 ## Goal
 
-https://github.com/drcdev/dcc-web/issues/85 and https://github.com/drcdev/dcc-web/issues/86,
-delivered together (decision 5). Today, `main` requires zero approvals, and Don's review is
-enforced only through a two-layer "major change" flow: CODEOWNERS paths with required
-code-owner review, plus a `major-change` label read by a custom gate workflow that posts the
-`major-change-approval` status. The live ruleset has also drifted from the committed one:
-`dismiss_stale_reviews_on_push` is false live and true in `setup/github-ruleset.json`. This chore
-makes the `main` ruleset require **one approving review on every PR**. It retires the whole
-major-change flow: the label, the gate workflow and script, CODEOWNERS and the code-owner rule,
-the pipelines' pre-PR pause and the "auto-merge off for a major change" rule. It also restores
-the ruleset (stale approvals dismissed). On the Actions side it sets `persist-credentials: false`
-on every checkout, and it adds a scheduled, read-only job that runs the ruleset drift check.
-Principle III is amended through the `speckit-constitution` skill: "major change" stays a
-classification that PR bodies flag, so Don knows what to read closely. Approval itself becomes
-a rule the ruleset enforces on every PR, with no label or separate gate. No visitor-facing
-behaviour changes.
+https://github.com/drcdev/dcc-web/issues/85: every PR to `main` needs one approval, enforced by
+the ruleset (`setup/github-ruleset.json`) with `require_code_owner_review` on. `.github/CODEOWNERS`
+becomes the single line `* @drcdev`, so every counting approval is Don's. The whole major-change
+flow is deleted:
+
+- the `major-change.yml` workflow, the gate script and its tests (done in W2);
+- the `github-major-label` setup item, its test and fixtures;
+- the `major-change-approval` required status in the ruleset file;
+- the pipelines' pre-PR major-change / merge-mode pause, and the matching `CLAUDE.md` Merging rules.
+
+Auto-merge becomes the default for every PR, and Don's required approval is the gate. PRs are
+still opened from `drc-agents`, because GitHub does not count an author's own approval.
+
+https://github.com/drcdev/dcc-web/issues/94 goes into the same constitution amendment and
+version bump:
+
+- Principle III amended for approval on every PR;
+- a few-line Security Baseline pointing at controls that already exist;
+- Principle VIII's endpoint rule reworded: browser endpoints check origin, bearer endpoints
+  authenticate, and every endpoint is HTTPS-only;
+- an untrusted-data note in the retrieval API contract.
+
+No visitor-facing behaviour changes.
 
 ## Acceptance
 
-Mechanical, in the repository:
+1. `setup/github-ruleset.json` differs from `main` only in two ways:
+   - `required_approving_review_count: 1`;
+   - `required_status_checks` is `[{ "context": "verify" }]`, with `major-change-approval` removed.
 
-1. `setup/github-ruleset.json` has `required_approving_review_count: 1`,
-   `require_code_owner_review: false`, `dismiss_stale_reviews_on_push: true`,
-   `require_last_push_approval: false` and `allowed_merge_methods: ["merge"]`. It requires
-   exactly one status check, `verify`, pinned to the GitHub Actions app
-   (`integration_id: 15368`), with `strict_required_status_checks_policy: true`. It carries every
-   other parameter the live ruleset has today (see W1), so a `PUT` from it loosens nothing.
-2. `scripts/setup-check/checks/github-main-protection.ts` compares the live ruleset with
-   `setup/github-ruleset.json` itself, not a hard-coded list. It names each gap: a missing or
-   weaker rule, a pull-request parameter that differs, a required check missing, or a required
-   check that is not in the file. Its unit tests prove each of these.
-3. None of these exist any more: `.github/workflows/major-change.yml`,
-   `scripts/ci/major-change-gate.ts`, `tests/unit/ci/major-change-gate.test.ts`,
-   `.github/CODEOWNERS`, the `github-codeowners` and `github-major-label` setup items and their
-   checks, tests and orphaned fixtures. `grep -rn "major-change-approval\|--label major-change\|CODEOWNERS" --exclude-dir=specs --exclude-dir=.specify --exclude-dir=node_modules --exclude-dir=.reference .`
-   finds nothing except the deliberate history lines this plan names (R9 is under `specs/`).
-4. The registry still has 32 items with orders 1 to 32. Items 12 and 13 are replaced by
-   `github-actions-settings` and `github-auto-merge` (W3).
-5. Every `actions/checkout` step in every workflow sets `persist-credentials: false`, and a unit
-   test enforces it for any future workflow.
-6. `.github/workflows/ruleset-drift.yml` exists. It runs on `schedule` and `workflow_dispatch`
-   with `permissions: contents: read` only, and runs
-   `node scripts/setup-check/cli.ts --item github-main-protection` with `GH_TOKEN` set from
-   `github.token`. Unit tests in `tests/unit/ci/workflows.test.ts` assert this.
-7. The four pipeline skills (`deliver`, `tweak`, `squash`, `chore`) have no pre-PR major-change or
-   merge-mode `AskUserQuestion` and no `--label major-change`. Auto-merge is armed by default and
-   left off only for open `[PREVIEW-CHECK]` items. The PR author account block is identical in all
-   four, keeps the drc-agents → `gh pr create` → drcdev sequence, and gives GitHub's
-   author-approval rule as its rationale. `CLAUDE.md` Merging says the same and describes what the
-   ruleset enforces.
-8. `.specify/memory/constitution.md` Principle III is amended via `speckit-constitution` (W6)
-   with a Sync Impact Report, a version bump and a new Last Amended date.
-9. `specs/001-setup-walkthrough/research.md` R9 records the new decision and the decision-3
-   rationale (W8).
-10. `pnpm run verify:quick` is green after every work item, and the full `pnpm run verify` is green
-    before the PR (orchestrator).
+   Unchanged: `require_code_owner_review: true`, `dismiss_stale_reviews_on_push: true`, strict
+   policy on, and no live-only parameters added.
+2. `scripts/setup-check/checks/github-main-protection.ts` keeps its hard-coded gap list, with
+   two changes:
+   - the `required check major-change-approval` gap is gone;
+   - a `one approving review required` gap fires when `required_approving_review_count < 1`.
 
-Live (Don, see "Live steps"): `pnpm setup:check --item github-main-protection` reports
-complete, as do `github-actions-settings` and `github-auto-merge`. The `major-change` label is
-deleted, and a manual `ruleset-drift` run is green.
+   The schema, fixtures and tests are back to `main`'s shape apart from those edits.
+3. `.github/CODEOWNERS` is exactly `* @drcdev`, with an optional comment line. The `github-codeowners`
+   check is complete when a `* @drcdev` catch-all line exists and GitHub reports no CODEOWNERS
+   errors. No per-path list remains in code or tests.
+4. The `github-major-label` item, its check, its test and the label fixtures are gone. The
+   registry has 31 items with contiguous orders 1 to 31 (W5).
+5. Nothing outside `specs/` and `.specify/chores/` mentions `major-change-approval`,
+   `--label major-change`, the gate script or `major-change.yml`. "Major change" as a
+   Principle III classification stays.
+6. The four pipeline skills have no pre-PR major-change / merge-mode `AskUserQuestion`. Auto-merge
+   is armed by default and left off only for open `[PREVIEW-CHECK]` items. The PR author block:
+   - is identical in all four skills;
+   - keeps drc-agents → `gh pr create` → drcdev;
+   - gives GitHub's own-approval rule as its reason.
 
-There is no before/after timing measurement. The before-state is the live drift recorded in
-exploration: `dismiss_stale_reviews_on_push: false`, `required_approving_review_count: 0`,
-required checks `major-change-approval` + `verify`, `allowed_actions: "all"`,
-`sha_pinning_required: false`, fork approval policy `first_time_contributors`.
+   `CLAUDE.md` Merging matches.
+7. `.specify/memory/constitution.md` is amended only via `speckit-constitution` (W6), with a Sync
+   Impact Report, a version bump and Last Amended 2026-10-05.
+8. `specs/007-contact-form/contracts/retrieval-api.md` states that message fields are untrusted
+   data for any automated consumer.
+9. `specs/001-setup-walkthrough/research.md` R9 records the new review decision.
+10. No new test restates config text. Every remaining test is green; `pnpm run verify:quick`
+    after each item, and the full `pnpm run verify` before the PR (orchestrator).
+
+Before-state (live, read-only, 2026-10-04):
+
+- ruleset 24156251: `required_approving_review_count: 0`, `dismiss_stale_reviews_on_push: false`,
+  `require_code_owner_review: true`;
+- required checks `major-change-approval` and `verify`, both `integration_id: 15368`;
+- parameters only the live ruleset has: `allowed_merge_methods`,
+  `require_extra_approval_for_unattributed_changes`, `do_not_enforce_on_create`;
+- the `major-change` label exists.
 
 ## Scope
 
-**In:** everything in the work items below.
+**In:** W3 to W9 below, plus the finished W2.
 
 **Out:**
 
-- Any change to live GitHub settings by an agent. The ruleset `PUT`, the label deletion and the
-  Actions settings are Don's steps ("Live steps").
-- Historical feature documents in `specs/001-setup-walkthrough/` other than R9 (spec, plan,
-  tasks, data-model, contracts, quickstart, checklists), and older `specs/*/plan.md` mentions of
-  major changes. They record what was decided then.
-- Renaming Principle III. Its title "Human Review for Major Changes" stays, because more than 20
-  historical plans and `docs/setup.md` cite it by name (W6).
-- A Deploy Hook, a Workers Builds trigger change or any Cloudflare credential in GitHub
-  (decision 3).
-- `require_last_push_approval` (stays false, decision 2).
-- Issue #87 ("keep drcdev out of agent sessions") was closed won't-fix by Don. Local
-  `gh auth switch` stays, the PR author block keeps switching back to `drcdev`, and no deny rules
-  or token changes are added.
+- **#86 entirely**, as follow-ups under #86:
+  - `persist-credentials: false` on checkouts;
+  - the scheduled read-only ruleset drift workflow;
+  - the Actions settings (SHA pinning, allowed actions, fork-PR approval);
+  - the live-only ruleset parameters in the committed file.
+
+  Live `dismiss_stale_reviews_on_push` is restored in L1 only because the committed file and the
+  setup check already require it (see Live steps).
+- **#97:** wider pruning of config change-detector tests. This chore deletes only tests tied to
+  the gate, the label, the pause and the CODEOWNERS path list.
+- **#87 (won't-fix):** local `gh auth switch` stays, the PR author block still switches back to
+  `drcdev`, and no deny rules or token changes are added.
+- **#88:** the shared build token stays. The baseline says nothing about least-privilege build
+  credentials.
+- Historical feature documents under `specs/` other than R9 and the retrieval contract, and
+  older plans that cite Principle III by name.
+- Renaming Principle III. The title "Human Review for Major Changes" stays.
 
 **Follow-ups for the PR body:**
 
-1. After merge, confirm that the scheduled-run failure notification reaches Don. GitHub sends it
-   to the user who last changed the cron line.
-2. Consider `required_review_thread_resolution: true` later. It is not part of this decision set.
+1. #86: `persist-credentials`, the drift workflow, Actions settings, and live-only ruleset
+   parameters in the file. Once the file carries them, a `PUT` from it becomes safe.
+2. #97: config-test pruning.
 
 ## Constitution Check
 
-- **I. Test-First:** every work item names its test. W1, W3, W4 and W5 write the test first
-  (unit). W2 and W3 remove tests with the coverage mapping below. W6 to W8 are documents, guarded
-  by the existing alignment tests plus the new W7 assertions.
-- **II. Automated Release Gate:** `verify` stays required and strict. The release gate is not
-  weakened: one approval is added to every PR. Decision 3 accepts the strict status-check policy
-  as the "deploy only after CI" mitigation, and R9 records it.
+- **I. Test-First:**
+  - W3, W4 and W5 adjust existing unit tests first.
+  - Deleted tests are mapped below.
+  - W6, W7 and W9 are documents: `no behaviour` lines, guarded by the existing alignment and
+    changed-paths tests.
+  - No test that restates config text is added (direction update point 6).
+- **II. Automated Release Gate:** `verify` stays required and strict. Nothing is weakened: one
+  approval is added to every PR.
 - **III. Human Review for Major Changes:** criteria that fire:
-  - "changes CI, deployment or infrastructure configuration" (`.github/` workflows, ruleset
-    file, setup checks);
-  - "amends this constitution" (W6).
+  - CI, deployment or infrastructure configuration (`.github/workflows/major-change.yml` removed,
+    `.github/CODEOWNERS`, `setup/github-ruleset.json`, setup checks);
+  - the constitution is amended (W6).
 
-  Verdict: **major**. Under the flow this PR retires, that means auto-merge off. Under the flow
-  it introduces, the PR has an open `[PREVIEW-CHECK]` item (live step L1 must run before the
-  merge can go through), so auto-merge stays **off** either way. Don merges after L1 and his
-  approval.
-- **IV. First-Party Before Custom:**
-  - Native ruleset approval replaces the custom gate script.
-  - The drift job reuses the existing setup check through the runner's preinstalled `gh` CLI and
-    `GITHUB_TOKEN`. That is the first-party route; no third-party Action is used.
-  - `persist-credentials` is `actions/checkout`'s own input.
-  - Custom code is limited to generalising one existing check.
-  - First-party alternative considered for drift: GitHub has no native "alert when a ruleset
-    changes" for a personal repository. The audit log needs an organisation, and ruleset history
-    has no notifications.
+  Verdict: **major**. Under the rule this PR introduces, the verdict and criteria go in the PR
+  body. Auto-merge may be armed: GitHub itself prevents the merge until Don has done L1, because
+  the live ruleset requires `major-change-approval`, which no longer exists after this branch.
+  The merge also needs his approval.
+- **IV. First-Party Before Custom:** native ruleset approval and native CODEOWNERS replace the
+  custom gate workflow and script, and no custom code is added.
 - **V. Static by Default:** unaffected.
 - **VI. Content as Files:** unaffected.
-- **VII. Private Data:** no secrets added. The drift job uses only the automatic `GITHUB_TOKEN`,
-  and `persist-credentials: false` keeps that token out of `.git/config`.
-- **VIII. Cloudflare Best Practices:** unaffected; Workers Builds keeps deploying on push to
-  `main` (decision 3).
-- **IX. Cost Ceiling:** one scheduled job a day of about 1 to 2 minutes on a public repository's
-  free Actions minutes, so $0.
+- **VII. Private Data:** no secrets are touched. The retrieval contract gains the untrusted-data
+  note (W7).
+- **VIII. Cloudflare Best Practices:** wording only (W6). No endpoint behaviour changes, because
+  the retrieval API is already bearer-only and the browser endpoints already check origin.
+- **IX. Cost Ceiling:** unaffected.
 - **X. Accessible, Fast and Private:** unaffected.
-- **XI. Spec Kit Workflow:** chore pipeline, `chore/` branch, `.specify/chores/single-approval-ruleset/`,
-  `after_chore_*` commits. The constitution is changed only through `speckit-constitution`.
+- **XI. Spec Kit Workflow:**
+  - chore pipeline on a `chore/` branch, with the plan in
+    `.specify/chores/single-approval-ruleset/`;
+  - the constitution changes only through `speckit-constitution`.
 
-## Decisions (recorded by Don, 2026-10-04; no `[NEEDS DECISION]` items)
+## Decisions
 
-1. One required approving review on every PR; the whole major-change flow is retired.
-2. `dismiss_stale_reviews_on_push: true` restored; `require_last_push_approval` stays false.
-3. `strict_required_status_checks_policy: true` is the accepted mitigation for "deploy only after
-   CI". Residual risks: drift → scheduled drift check; a PR weakening `ci.yml` → required
-   approval; a flaky test passing on the PR and failing on `main` → accepted, because rollback is
-   one command.
-4. Principle III is amended via `speckit-constitution` (text in W6).
-5. #85 and #86 ship as one PR.
-6. #87 is won't-fix: the PR author block keeps its account sequence; only its rationale changes.
+Recorded by Don on #85 and #94, 2026-10-04 and 2026-10-05. There are no `[NEEDS DECISION]` items.
 
-Calls made by this plan (no user question needed; the review phase may challenge them):
+1. Every PR needs one approval, with `require_code_owner_review` on, and CODEOWNERS is `* @drcdev`.
+2. Delete the whole major-change flow (gate, label item, status, pause, rules).
+3. Keep authoring from `drc-agents`; auto-merge by default; Don's approval is the gate.
+4. Delete only the tests tied to the gate, the label, the pause and the CODEOWNERS path list, and
+   add no config-restating tests.
+5. One `speckit-constitution` amendment covers Principle III and #94.
+6. #86 is out; #94 is in; #87 is won't-fix.
 
-- **P1. CODEOWNERS and code-owner review are removed.** The issue asks for this "if they no
-  longer serve a purpose". Their purpose was marking paths as major. Once every PR needs an
-  approval, the path list adds nothing. The one thing a catch-all `* @drcdev` owner would still
-  add is refusing `drc-agents`' approval on a PR authored by `drcdev`. Every PR is authored by
-  `drc-agents`, though, and both accounts sit in the same local keyring (#87 won't-fix), so that
-  is no real boundary. R9 records the residual.
-- **P2. The drift job reuses `setup:check --item github-main-protection`** rather than a second
-  comparison script. There is one source of truth, the setup check already reads the ruleset
-  through `gh api` (GET only), and `GET /repos/{owner}/{repo}/rulesets` and `/rulesets/{id}` are
-  readable with `GITHUB_TOKEN` on a public repository (confirmed: they are even readable
-  unauthenticated). The check is generalised to diff the committed file (W1), so "matches
-  `setup/github-ruleset.json`" becomes literally true. `bypass_actors` is omitted from the
-  response for readers without admin rights. The check treats an absent field as "not visible"
-  (no gap). Don's admin sign-in still sees it in the local setup check.
-- **P3. Setup items 12 and 13 are replaced, not deleted**, to avoid renumbering 18 items, their
-  check constants, `items.test.ts` order literals and the 32 `docs/setup.md` headings:
-  - 12 → `github-actions-settings`: confirms Don's #86 dashboard work, through the setup check
-    the walkthrough already uses.
-  - 13 → `github-auto-merge`: keeps the `allow_auto_merge` guarantee that `github-major-label`
-    held, which auto-merge-by-default still needs.
-- **P4. The committed ruleset gains the live-only parameters** so `PUT` is lossless:
-  - `allowed_merge_methods: ["merge"]`;
-  - `require_last_push_approval: false`;
-  - `required_reviewers: []`;
-  - `require_extra_approval_for_unattributed_changes: true`;
-  - `do_not_enforce_on_create: false`;
-  - the `verify` context's `integration_id: 15368`. Dropping it would let any status poster
-    satisfy `verify`.
+Calls this plan makes (the review may challenge them):
 
-  `conditions.ref_name.include` stays `refs/heads/main`; the check already accepts
-  `~DEFAULT_BRANCH` too.
-- **P5. Constitution bump: MINOR (2.2.0 → 2.3.0).** Approval is extended to every PR and the
-  major-change definition is unchanged, so this is "materially expanding" a principle rather than
-  redefining it. `speckit-constitution` may raise it to MAJOR if its own rules say so; the review
-  checks the bump is justified in the Sync Impact Report.
+- **R1. Numbering after deleting item 13: renumber items 14–32 down to 13–31.** Leaving a gap
+  would break two things:
+  - the tested invariant "orders are 1..N contiguous" (`items.test.ts`);
+  - the user-facing `Step <order> of <count>` label (mail-records would read "Step 32 of 31").
+
+  Moving an item into slot 13 would break the walkthrough's before-merge/after-merge order.
+  Shifting every later item by −1 is mechanical and keeps both invariants. It is the least
+  churn that leaves the registry correct. W5 does it alone, so the diff is easy to review.
+- **R2. L1 uses a dashboard edit, or a `PUT` built from the live ruleset, never a `PUT` of the
+  file.** The committed file does not carry the live-only parameters, notably `integration_id`
+  15368 on `verify`. A `PUT` from it would drop that pin and so loosen the ruleset. Adding the
+  parameters to the file is #86's work.
+- **R3. Constitution bump: MINOR, 2.2.0 → 2.3.0.**
+  - It adds a section (Security Baseline).
+  - It materially expands Principle III: approval for every PR, with the major-change list
+    unchanged.
+  - Principle VIII is clarified, not redefined.
+
+  `speckit-constitution` may raise it to MAJOR if its own rules require; the Sync Impact Report
+  must justify the bump.
 
 ## Work items
 
-Every implement subagent: run the named targeted vitest files before and after, then
-`pnpm run verify:quick` (toolchain note in Risks). Each item leaves the suite green.
+Every implement subagent: run the targeted vitest files before and after, then
+`pnpm run verify:quick` (toolchain note in Risks).
 
-### [x] W1 Ruleset file and a main-protection check that diffs it
+### [x] W1 Ruleset file and a main-protection check that diffs it (done in 077cab2; corrected by W3)
 
-- **Files:**
-  - `setup/github-ruleset.json` (Acceptance 1 and P4);
-  - `scripts/setup-check/schemas.ts`: `githubRulesetSchema` accepts the added
-    pull_request parameters and an optional `integration_id` per check, and still rejects
-    unknown rule types;
-  - `scripts/setup-check/checks/github-main-protection.ts`: read `setup/github-ruleset.json`
-    through `ctx.fs.readJson`. Export a pure
-    `evaluateGaps(expected: GithubRuleset, actual: FullRuleset | null): string[]` that keeps
-    today's named gaps where they still apply:
-    - protection active on main, pull request required, branch must be up to date before
-      merging, force-pushes blocked, deletion blocked, no bypass actors (only when the field is
-      present);
-    - `required check <context>` for each committed context missing live, or live with a
-      different `integration_id` when the file pins one;
-    - `unexpected required check <context>` for live contexts not in the file;
-    - for each pull_request parameter in the file whose live value differs, one gap each.
-      Friendly names: `one approving review required` (count), `stale approvals dismissed on new
-      commits`, `merge commits only`; otherwise `pull request setting <key> differs`.
+Superseded. It set `require_code_owner_review: false` and added live-only parameters with
+`integration_id`. It also rewrote the check to diff the file and added config-restating
+assertions. W3 reverts all of that to the minimal #85 change.
 
-    Fix the header comment: there is no longer a "closed list of 10 rules";
-  - fixtures `tests/fixtures/providers/github/ruleset-{full,partial,excludes-main,wrong-branch}.json`
-    re-shaped to the new rules (`ruleset-full` = the committed file as live returns it, with
-    `integration_id` and `~DEFAULT_BRANCH`);
-  - `tests/unit/setup/drift.test.ts`: the "ruleset contexts" block asserts the contexts are
-    exactly `["verify"]` (with `integration_id` 15368), and `ci.yml` still has a `verify:` job.
-    Drop the `STATUS_CONTEXT` import and the `major-change.yml` lines **in that block only**; the
-    file is deleted in W2. Add: `required_approving_review_count` is 1,
-    `dismiss_stale_reviews_on_push` is true and `require_code_owner_review` is false;
-  - `items.ts` `github-main-protection` `confirmedBy` and `purpose` text; the `docs/setup.md`
-    §14 "What it is for" and "How it will be confirmed" paragraphs (W3 finishes §14's "Where").
-- **Test:** new-first, unit.
-  - `tests/unit/setup-check/checks/github-main-protection.test.ts`: the `fs.readJson` fake
-    returns the config or the ruleset by path. Cases:
-    - no ruleset → every gap;
-    - partial → exact gap list;
-    - full → complete;
-    - live `dismiss_stale_reviews_on_push: false` → `stale approvals dismissed on new commits`;
-    - count 0 → `one approving review required`;
-    - an extra live `major-change-approval` → `unexpected required check major-change-approval`;
-    - `verify` without or with another `integration_id` → `required check verify`;
-    - absent `bypass_actors` → no bypass gap;
-    - excludes-main and wrong-branch keep their assertions.
-  - `tests/unit/setup/schemas.test.ts`: the valid fixture gains the new fields; the
-    unknown-type rejection stays.
-- **Layer:** unit (pure function over JSON; no browser or build can observe more).
-- **Coverage mapping:**
-  - "code-owner review required" gap → retired by decision #85 (P1). Replaced by the equality
-    gap that requires live `false` to match the file.
-  - "required check major-change-approval" gap → retired by decision #85. The inverse,
-    `unexpected required check`, now guards against it lingering.
-  - The drift.test assertion that the contexts contain `STATUS_CONTEXT` → retired by decision
-    #85. Replaced by "contexts are exactly `["verify"]`".
+### [x] W2 Retire the major-change workflow and gate script (done in cbfaf93)
 
-### [x] W2 Retire the major-change workflow and gate script
+Deleted `.github/workflows/major-change.yml`, `scripts/ci/major-change-gate.ts` and
+`tests/unit/ci/major-change-gate.test.ts`, plus the `workflows.test.ts` major-change block. The
+`drift.test.ts` secret loops now read every workflow file, and `github-ci-workflow` requires
+only `ci.yml`. Coverage mapping (unchanged from the first plan):
+
+- gate unit tests and the workflow block → retired by decision #85; approval is native
+  `required_approving_review_count: 1` (W3);
+- the author refusal → GitHub's native rule, handled by the PR author block;
+- the `major-change.yml` presence check → retired by decision #85.
+
+### W3 Revert W1 to the minimal ruleset change
 
 - **Files:**
-  - delete `.github/workflows/major-change.yml`, `scripts/ci/major-change-gate.ts` and
-    `tests/unit/ci/major-change-gate.test.ts`;
-  - `tests/unit/ci/workflows.test.ts`: remove the `major-change.yml` describe block (l.236–288);
-    keep the ci.yml assertions at l.59–60, which still guard against a job named
-    `major-change-approval`, or drop them as obsolete (the implementer's choice; say which);
-  - `tests/unit/setup/drift.test.ts`: the two secret loops read every
-    `.github/workflows/*.yml` through `readdirSync` instead of `ci` + `major`;
-  - `scripts/setup-check/checks/github-ci-workflow.ts`: `REQUIRED_WORKFLOW_PATHS` = `ci.yml`
-    only for now (W5 adds `ruleset-drift.yml`); fix the messages;
-  - `tests/unit/setup-check/checks/github-ci-workflow.test.ts`;
-  - fixture `workflows-both-present.json` (drop the major-change entry; W5 adds ruleset-drift);
-  - `items.ts` item 11 `where` and `confirmedBy`;
-  - `docs/setup.md` §11 text;
-  - check whether `scripts/ci/changed-paths.ts` or `tests/unit/ci/changed-paths.test.ts`
-    name the gate script or the workflow, and update them if so.
-- **Test:** existing tests must keep passing after the edits listed (unit).
-  `github-ci-workflow.test.ts` is updated test-first to expect only `ci.yml`.
+  - restore from `main` (`git checkout main -- <path>`, one path per call):
+    - `scripts/setup-check/checks/github-main-protection.ts`;
+    - `tests/unit/setup-check/checks/github-main-protection.test.ts`;
+    - `scripts/setup-check/schemas.ts`;
+    - `tests/unit/setup/schemas.test.ts`;
+    - `tests/fixtures/providers/github/ruleset-full.json`, `ruleset-partial.json`,
+      `ruleset-excludes-main.json` and `ruleset-wrong-branch.json`;
+    - `setup/github-ruleset.json`.
+
+    Then make only these edits:
+  - `setup/github-ruleset.json`: `required_approving_review_count` 0 → 1, and remove the
+    `{ "context": "major-change-approval" }` entry. Leave everything else as on `main`.
+  - `github-main-protection.ts` `evaluateGaps`:
+    - remove the `required check major-change-approval` line;
+    - add `if (!(Number(pr?.parameters?.required_approving_review_count ?? 0) >= 1)) gaps.push("one approving review required");`
+      after `pull request required`;
+    - fix the header comment's rule count (10 stays: one rule removed, one added).
+  - Fixtures:
+    - `ruleset-full.json`: drop the `major-change-approval` context and set the count to 1;
+    - other `ruleset-*.json` files: drop that context where present; leave counts as they are,
+      so `partial` shows the new gap.
+  - `schemas.test.ts` valid fixture: count 1, and `verify` as the only context.
+  - `github-main-protection.test.ts`:
+    - drop the `required check major-change-approval` expectations;
+    - expect `one approving review required` in the no-ruleset case, and in the partial case
+      wherever its fixture count is 0;
+    - `full` stays complete.
+  - `tests/unit/setup/drift.test.ts` "ruleset contexts" block:
+    - return to `main`'s single test, minus the `STATUS_CONTEXT` import and the `major` /
+      `gate:` lines: contexts contain `verify`, and `ci.yml` has a `verify:` job;
+    - remove W1's added test ("requires one approving review … needs no code owner"), because
+      it restates config.
+  - `tests/unit/setup-check/next-action.test.ts`: revert W1's `setup/github-ruleset.json` fs entry
+    (the check no longer reads the file).
+  - `scripts/setup-check/items.ts` item 14 `confirmedBy`:
+    "Active ruleset on main matches setup/github-ruleset.json: PR required with one approving
+    review, code-owner review, stale approvals dismissed, required check verify (strict), no
+    force-push, no deletion, no bypass actors".
+  - `docs/setup.md` §14:
+    - "What it is for" names one approving review and code-owner review;
+    - "How it will be confirmed" lists the same rules, with no diff claim and no
+      `integration_id`.
+- **Test:** existing tests, adjusted test-first: `github-main-protection.test.ts`,
+  `schemas.test.ts`, `drift.test.ts`, `next-action.test.ts`. Run them before (expect red on the
+  new gap) and after (green).
 - **Layer:** unit.
 - **Coverage mapping:**
-  - `major-change-gate.test.ts` (`decide`, `toCommitStatus`, `statusApiArgs`, author-is-owner
-    refusal) → retired by decision #85. Approval is now GitHub's native
-    `required_approving_review_count: 1` (asserted in drift.test and the main-protection check
-    from W1). The author refusal is GitHub's native "an author's approval does not count", which
-    the pipelines handle in the PR author block (pipeline-pr-author.test.ts).
-  - workflows.test `major-change.yml` block → retired by decision #85 (the workflow no longer
-    exists).
-  - drift.test secret-reference loops → kept, now over every workflow file (stronger).
-  - github-ci-workflow "major-change.yml exists" → retired by decision #85 (W5 adds the drift
-    workflow in its place).
+  - W1's live-vs-file diff gaps (parameter equality, unexpected required check,
+    `integration_id` pin, absent `bypass_actors`) → retired by decision #85 (direction point 8:
+    #86 scope).
+  - W1's drift.test "one approving review / no code owner" → retired by decision #85 (point 6:
+    no config-restating tests).
+  - The original "required check major-change-approval" gap → retired by decision #85.
 
-### W3 Retire the CODEOWNERS and label items; add Actions-settings and auto-merge items
+### W4 CODEOWNERS catch-all and the reduced `github-codeowners` item
 
 - **Files:**
-  - delete `.github/CODEOWNERS`, `scripts/setup-check/checks/github-codeowners.ts`,
-    `scripts/setup-check/checks/github-major-label.ts` and their tests;
-  - delete orphaned fixtures after grepping each: `codeowners-valid.json`,
-    `codeowners-errors.json`, `labels-with-major-change.json`,
-    `labels-without-major-change.json`, `pr-open-authored-by-don.json` and
-    `pr-open-authored-by-bot.json` (delete only if nothing else uses them);
-  - new `scripts/setup-check/checks/github-actions-settings.ts` (order 12). It calls GET
-    `repos/{o}/{r}/actions/permissions`, `.../actions/permissions/selected-actions` (only when
-    `allowed_actions` is `selected`) and `.../actions/permissions/fork-pr-contributor-approval`.
-    It is complete when:
-    - `allowed_actions` is `selected`;
-    - `sha_pinning_required` is true;
-    - `github_owned_allowed` is true and `verified_allowed` is false;
-    - `patterns_allowed` covers every non-GitHub-owned `uses:` owner/repo in the workflows
-      (today only `pnpm/action-setup`; the expected list is a constant, and a unit test
-      cross-checks it against the workflow files);
-    - `approval_policy` is `all_external_contributors`.
+  - `.github/CODEOWNERS`: one optional comment line, then `* @drcdev`. The comment says
+    every PR needs Don's approval (constitution Principle III) and does not cite the old
+    contract.
+  - `scripts/setup-check/checks/github-codeowners.ts`:
+    - delete `MAJOR_PATHS` and `missingMajorPaths`;
+    - missing when no non-comment line matches `/^\*\s+@drcdev(\s|$)/`, with nextAction "Add
+      the line `* @drcdev` to .github/CODEOWNERS.";
+    - keep the file-absent case and the GitHub `codeowners/errors` call;
+    - the complete message reads "CODEOWNERS makes @drcdev the owner of every path, with no
+      errors reported by GitHub.";
+    - update the header comment.
+  - `tests/unit/setup-check/checks/github-codeowners.test.ts`: the "major path not owned" case
+    becomes "catch-all line missing" (e.g. a file with only `/docs/ @drcdev`), and the complete
+    case uses `* @drcdev`.
+  - `tests/unit/setup-check/next-action.test.ts`: `VALID_CODEOWNERS` becomes `* @drcdev`.
+  - `tests/unit/ci/workflows.test.ts`: delete the `.github/CODEOWNERS` describe block.
+  - `tests/unit/setup/drift.test.ts`: delete "CODEOWNERS covers every major-path item".
+  - `scripts/setup-check/items.ts` item 12 `purpose` and `confirmedBy`: the catch-all line
+    makes every approval Don's.
+  - `docs/setup.md` §12: rewritten the same way. The principle line stays "III (Human Review
+    for Major Changes)".
+  - The fixtures `codeowners-valid.json` and `codeowners-errors.json` stay if still used.
+- **Test:** the existing `github-codeowners.test.ts`, adjusted first (unit).
+- **Layer:** unit.
+- **Coverage mapping:**
+  - Per-path ownership assertions (workflows.test block, drift.test block, the codeowners.test
+    "major path" case) → retired by decision #85 (point 2). The catch-all line is asserted by
+    the reduced check's own test ("catch-all line missing" and the complete case).
 
-    Each gap is named. `needsDon: true`, `phase: "after-merge"`, `principles: ["II", "VII"]`;
-  - new `scripts/setup-check/checks/github-auto-merge.ts` (order 13): `allow_auto_merge` is true
-    (the auto-merge half of the old label check). `needsDon: true`, `principles: ["II"]`;
-  - `scripts/setup-check/items.ts`: imports, `checksById`, items 12 and 13 replaced, and their
-    `requirements`. Reuse FR-014 or the FR the old items cited, and keep the arrays non-empty
-    for `items.test.ts`;
-  - `tests/unit/setup/docs-structure.test.ts` `ITEM_IDS`;
-  - `tests/unit/setup-check/next-action.test.ts`: replace the codeowners and major-label
-    scenarios with the two new checks;
-  - `tests/unit/ci/workflows.test.ts` and `tests/unit/setup/drift.test.ts`: remove the
-    CODEOWNERS blocks;
+### W5 Delete the `github-major-label` item and renumber 14–32 to 13–31
+
+- **Files:**
+  - delete `scripts/setup-check/checks/github-major-label.ts`,
+    `tests/unit/setup-check/checks/github-major-label.test.ts`,
+    `tests/fixtures/providers/github/labels-with-major-change.json` and
+    `labels-without-major-change.json` (grep first). Also delete `pr-open-authored-by-don.json`
+    and `pr-open-authored-by-bot.json` only if `grep -rn` shows no remaining user.
+  - `scripts/setup-check/items.ts`: remove the import, the `checksById` entry and the seed, then
+    give each later seed its order − 1.
+  - Every `const ITEM = { id, order }` in `scripts/setup-check/checks/*.ts` with order ≥ 14 →
+    order − 1. Check `contact-shared.ts` and `live-shared.ts` for order literals.
+  - `tests/unit/setup-check/next-action.test.ts`: remove the major-label scenario and its import.
+  - `tests/unit/setup/docs-structure.test.ts`: remove the id from `ITEM_IDS`, and change the
+    counts 32 → 31.
+  - `tests/unit/setup/items.test.ts`:
+    - length 31;
+    - slice indices and ranges shifted (contact 18–24, launch 25–31, post-switch 15–17);
+    - postLaunch orders `[15, 27, 28, 29, 30]`;
+    - the before/after-merge phase ranges shifted by one for orders ≥ 14;
+    - test titles that name item numbers updated to match.
+  - Every other test or helper with a literal `Step N of` or order ≥ 14
+    (`grep -rnE "order: (1[4-9]|2[0-9]|3[0-2])|Step (1[4-9]|2[0-9]|3[0-2]) of|[Ii]tems? (1[4-9]|2[0-9]|3[0-2])" scripts tests docs .claude/skills/setup-walkthrough`).
+    The first-plan exploration found about 45 files, among them `contact-helpers.ts`,
+    `live-helpers.ts`, `launch-doc.test.ts` and `skill-behaviour.test.ts`. Inspect each hit; some
+    numbers (for example in `redact.test.ts` and `config-files.test.ts`) are unrelated and stay.
   - `docs/setup.md`:
-    - §12 and §13 are rewritten for the new items, with anchors `{#github-actions-settings}` and
-      `{#github-auto-merge}`;
-    - §14 "Where to do it" now gives both commands: `POST` for a first import, and
-      `PUT repos/drcdev/dcc-web/rulesets/<id>` to update;
-    - the "Principle III" lines read "(Human Review for Major Changes)" unchanged;
-  - `.claude/skills/setup-walkthrough/SKILL.md` l.109–119:
-    - replace the `gh label create major-change` example with the "shown for Don" Actions
-      settings commands (from L4 below);
-    - add the ruleset `PUT` example next to the `POST`.
-
-    `skill-behaviour.test.ts` checks that the skill never *runs* mutating patterns; keep these
-    inside "Shown for Don to run himself" blocks, as today;
-  - add new fixtures for the two checks.
-- **Test:** new-first, unit:
-  - `tests/unit/setup-check/checks/github-actions-settings.test.ts`: complete; each gap
-    individually; selected-actions not called when `allowed_actions` is `all`; could-not-check on
-    `gh` error; the `patterns_allowed` constant equals the non-`actions/` owners in
-    `.github/workflows/*.yml`;
-  - `tests/unit/setup-check/checks/github-auto-merge.test.ts`: complete, missing,
-    could-not-check;
-  - `items.test.ts` and `docs-structure.test.ts` stay green with 32 items.
+    - delete §13;
+    - renumber headings `## 14.` to `## 32.` as `## 13.` to `## 31.`;
+    - update every prose range ("items 19 to 25" → "items 18 to 24", and so on), the intro
+      registry count, and every "item N" reference.
+  - `docs/launch.md`: the item ranges ("Items 1 to 25" → "1 to 24", "item 16" → "item 15",
+    "Items 26 to 32" → "25 to 31", "item 20" → "item 19") and the readiness table row.
+  - `.claude/skills/setup-walkthrough/SKILL.md`:
+    - remove the "Shown for Don to run himself at the `github-major-label` step" block;
+    - shift every item-number range ("Contact form order (items 19 to 25)" and others).
+  - Leave `specs/` history alone (e.g. `specs/011-launch/contracts/setup-items.md`).
+- **Test:** existing tests, adjusted to the new numbering (unit): `items.test.ts`,
+  `docs-structure.test.ts`, `drift.test.ts` (registry ↔ docs one-to-one, launch.md item ids),
+  `launch-doc.test.ts`, `skill-behaviour.test.ts` and every check test with a `Step N of`. Run
+  `tests/unit/setup` and `tests/unit/setup-check` before and after.
 - **Layer:** unit.
 - **Coverage mapping:**
-  - `github-codeowners.test.ts`, workflows.test CODEOWNERS block, drift.test "CODEOWNERS covers
-    every major path" → retired by decision #85 (P1: every PR needs an approval, so there are
-    no major paths to own).
-  - `github-major-label.test.ts`: the label assertions → retired by decision #85. The
-    `allow_auto_merge` assertions → `github-auto-merge.test.ts`.
-  - next-action scenarios → the new checks' scenarios in the same file.
+  - `github-major-label.test.ts`: the label assertions → retired by decision #85.
+  - Its `allow_auto_merge` assertions → retired by decision #85 (point 3 deletes the item; the
+    repository setting is already on, and an armed `gh pr merge --auto` fails loudly if it is
+    ever turned off).
+  - The next-action major-label scenario → retired with the item.
 
-### W4 `persist-credentials: false` on every checkout
-
-- **Files:** `.github/workflows/ci.yml` (5 checkouts) and `.github/workflows/visual-baselines.yml`
-  (1). Add `persist-credentials: false` under each checkout's `with:` (create `with:` where it is
-  missing; keep `fetch-depth: 2` and the visual-baselines `ref:`). Nothing in either workflow
-  pushes or runs authenticated `git` (the `changes` job only diffs `HEAD^1` locally; confirm by
-  grepping for `git push` and `git fetch`).
-- **Test:** new-first, unit, in `tests/unit/ci/workflows.test.ts`: a describe block over every
-  `.github/workflows/*.yml` (`readdirSync`) asserting that each `uses: actions/checkout@` step's
-  `with:` block contains `persist-credentials: false`. Write it, see it fail on `ci.yml`, then
-  edit.
-- **Layer:** unit.
-- **Coverage mapping:** none removed.
-
-### W5 Scheduled read-only ruleset drift workflow
-
-- **Files:**
-  - new `.github/workflows/ruleset-drift.yml`:
-    - `name: Ruleset drift`;
-    - `on: schedule` (one daily cron at an off-peak minute, e.g. `'17 6 * * *'`) and
-      `workflow_dispatch`;
-    - top-level `permissions: contents: read` and nothing else;
-    - `concurrency` group `ruleset-drift`;
-    - one job `drift` on `ubuntu-latest`, `timeout-minutes: 10`;
-    - steps (the same SHA-pinned actions as ci.yml): checkout (`persist-credentials: false`),
-      `pnpm/action-setup`, `setup-node` (`.nvmrc`, `cache: pnpm`),
-      `pnpm install --frozen-lockfile`, then
-      `run: node scripts/setup-check/cli.ts --item github-main-protection` with
-      `env: GH_TOKEN: ${{ github.token }}`.
-
-    The CLI exits 1 when the item is not complete, which fails the run. That failure is the
-    alert;
-  - `scripts/setup-check/checks/github-ci-workflow.ts`: `REQUIRED_WORKFLOW_PATHS` adds
-    `.github/workflows/ruleset-drift.yml`; update the fixture and test;
-  - `items.ts` item 11 text and `docs/setup.md` §11 and §14 mention the scheduled check;
-  - `specs/001-setup-walkthrough/research.md` l.176–177 says scheduled drift detection is a
-    follow-up. Leave it; W8 notes it is now done in R9.
-- **Test:** new-first, unit, in `tests/unit/ci/workflows.test.ts`, a new
-  `describe(".github/workflows/ruleset-drift.yml")`:
-  - triggers are exactly `schedule` and `workflow_dispatch` (never `push` or `pull_request`);
-  - top-level permissions are exactly `contents: read`, with no job-level escalation;
-  - every action is pinned to a 40-character SHA;
-  - it installs with `--frozen-lockfile`;
-  - it runs `scripts/setup-check/cli.ts --item github-main-protection`;
-  - `GH_TOKEN` comes from `github.token`, and no `secrets.` other than `GITHUB_TOKEN` appears;
-  - no `continue-on-error`.
-
-  The W4 persist-credentials test covers its checkout. `github-ci-workflow.test.ts` expects
-  both files.
-- **Layer:** unit (the workflow file is config; the check's logic is already unit-tested in W1;
-  the real scheduled run is L5 `[PREVIEW-CHECK]`).
-- **Coverage mapping:** none removed.
-
-### W6 Amend Principle III through `speckit-constitution`
+### W6 One constitution amendment via `speckit-constitution` (Principle III, Security Baseline, Principle VIII)
 
 - **Files:** `.specify/memory/constitution.md`, changed **only** by invoking the
-  `speckit-constitution` skill. Never hand-edit it. Pass the skill this amendment as its
-  principle input:
+  `speckit-constitution` skill with the input below. Never hand-edit it.
 
-  > Amend Principle III "Human Review for Major Changes" (keep the title). Replace its body with:
+  > Amendment for issues #85 and #94 (one amendment, one version bump).
   >
-  > "Every pull request needs Don's approving review before it merges. The `main` branch ruleset
-  > enforces this; there is no label or separate gate. Because GitHub does not count an author's
-  > approval on their own pull request, agents open pull requests from a separate machine
-  > account so Don's review can count.
+  > **1. Principle III "Human Review for Major Changes"** (keep the title). Replace its body with:
+  >
+  > "Every pull request needs Don's approving review before it merges. The `main` branch
+  > ruleset enforces this, and CODEOWNERS names Don as the owner of every path, so the approval
+  > that counts is always his. There is no label or separate gate. GitHub does not count an
+  > author's approval on their own pull request, so agents open pull requests from a separate
+  > machine account.
   >
   > A change is a **major change** if it:
   > - adds, removes or replaces a dependency, integration or external service;
@@ -413,218 +369,246 @@ Every implement subagent: run the named targeted vitest files before and after, 
   > - changes CI, deployment or infrastructure configuration;
   > - amends this constitution.
   >
-  > A major change is classified in its plan and flagged in its pull request body, with the
+  > A major change is classified in its plan and flagged in its pull request body with the
   > criteria that apply, so Don reviews it closely and looks at the preview deployment before
   > approving. When in doubt, treat the change as major. Any pull request may have auto-merge
-  > enabled; it merges only once Don has approved it and the release gate passes."
+  > enabled; it merges only after Don approves it and the release gate passes."
   >
-  > Version: MINOR, 2.2.0 → 2.3.0 (Principle III materially expanded: approval extends from
-  > major changes to every change; the major-change definition is unchanged). Last Amended
-  > 2026-10-04. Sync Impact Report: Modified principles III. Other references to "major change"
-  > (IX cost, Technology Constraints, Governance "reviewed as a major change") are unchanged and
-  > still read correctly. Source: issues #85 and #86.
+  > **2. Principle VIII.** Replace the bullet "Every API endpoint accepts requests only from the
+  > site's own origin and serves HTTPS only." (keep the Turnstile and bucket sentences that
+  > follow it) with:
+  >
+  > "Every API endpoint serves HTTPS only. An endpoint called from the site's pages accepts
+  > requests only from the site's own origin. An endpoint called by a program, such as message
+  > retrieval, authenticates every request with a bearer token instead; an origin check is not
+  > access control."
+  >
+  > **3. New section "Security Baseline"**, placed after Technology Constraints and before
+  > Development Workflow:
+  >
+  > "These controls already exist. Plans keep them in place, and pull request review checks them:
+  > - Response headers follow the site's header contract (`public/_headers`).
+  > - Dependabot alerts are on for the repository; an open alert is fixed or explained in a
+  >   reviewed pull request.
+  > - `main` is protected by the branch ruleset (`setup/github-ruleset.json`; Principle III).
+  > - Abuse is limited by Cloudflare's edge protections, the contact API's per-sender rate limit
+  >   and the questions API's site-wide token bucket (Principle VIII).
+  > - Anything a visitor submits and the site stores is untrusted data for every automated or AI
+  >   consumer. It is never followed as instructions."
+  >
+  > **Version:** MINOR, 2.2.0 → 2.3.0. A section is added, Principle III is materially expanded
+  > (approval on every pull request; the major-change list is unchanged), and Principle VIII is
+  > clarified. Last Amended 2026-10-05. Sync Impact Report:
+  > - Modified principles: III and VIII.
+  > - Added sections: Security Baseline.
+  > - Templates: no change required.
+  > - Follow-ups:
+  >   - #86 (drift detection and Actions hardening), so the baseline does not claim a drift
+  >     check;
+  >   - keep the two TODOs carried from 2.1.0.
+  >
+  > Sources: #85, #94.
 
-- **Test:** `no behaviour: n/a (governance text)`. Guards that read the file must stay green:
-  `tests/unit/ci/changed-paths.test.ts` (READ_BY_CHECKS) and any unit test that greps
-  `constitution.md` (implementer: `grep -rln constitution.md tests/`).
+- **Test:** `no behaviour: n/a (governance text, checked by review per #94)`. Tests that read
+  the file must stay green: `tests/unit/ci/changed-paths.test.ts` (READ_BY_CHECKS) and any test
+  that greps `constitution.md` (`grep -rln constitution.md tests/`).
 - **Layer:** n/a.
-- **Coverage mapping:** none removed.
+- **Coverage mapping:** none.
 
-### W7 Pipeline skills and `CLAUDE.md`
+### W7 Untrusted-data note in the retrieval API contract
+
+- **Files:** `specs/007-contact-form/contracts/retrieval-api.md`. Add a short section after
+  "Authorization", for example "### Message content is untrusted". Its text: every message field
+  (`name`, `email`, `organization`, `project`, `message`) is visitor input and untrusted data
+  for any automated consumer, including an AI assistant. A consumer treats it as text to report,
+  never as instructions. Don limits the assistant's tools while it processes messages, outside
+  this repository. Cite #94 and the constitution's Security Baseline.
+- **Test:** `no behaviour: n/a (contract wording; the API's behaviour is unchanged)`.
+- **Layer:** n/a.
+- **Coverage mapping:** none.
+
+### W8 Pipeline skills and `CLAUDE.md`: no pause, auto-merge by default
 
 - **Files:** `.claude/skills/{deliver,tweak,squash,chore}/SKILL.md` and `CLAUDE.md`. All four
-  skills change together (alignment rule). Before editing, read
-  `tests/unit/setup/pipeline-pr-author.test.ts`, `pipeline-verify-wording.test.ts`,
-  `pipeline-visual-baselines.test.ts` and `pipeline-test-placement.test.ts`.
-  - **Frontmatter `description`:** drop "and the major-change / merge decision before the PR" and
-    its variants ("and for the merge decision before the PR", "and the merge decision before the
-    PR").
+  skills change together (alignment rule). First read `tests/unit/setup/pipeline-pr-author.test.ts`,
+  `pipeline-verify-wording.test.ts`, `pipeline-visual-baselines.test.ts` and
+  `pipeline-test-placement.test.ts`. Add no new assertions; update an existing expectation only
+  where a shared block's text changes.
+  - **Frontmatter `description`:** drop the "and the major-change / merge decision before the PR"
+    clause and its variants ("and for the merge decision before the PR", "and the merge decision
+    before the PR").
   - **Rules "only user pauses" bullet:**
     - deliver: clarify only;
     - tweak: clarify only;
     - squash: the ambiguity gate only;
     - chore: the decision gate only.
-  - **Finish step 3** keeps its number, so the PR author block still ends before `\n5. ` as the
-    test expects. It becomes **"Major-change classification (no pause)."** Same wording in all
-    four skills, with skill-specific detail kept only where it exists today (chore's
-    "`package.json` or `.github/` is major"; tweak's "re-check triage condition 1; if a criterion
-    fired, triage was wrong — say so in the PR body"):
+  - **Finish step 3** keeps its number, so the PR author block still ends before `\n5. `. It
+    becomes **"Major-change classification (no pause)."**, with the same wording in all four
+    skills:
     - run `git diff --stat main` and `git diff --name-only main...HEAD`;
     - decide against the Principle III list; when in doubt, it is major;
     - put the verdict and the criteria that fired in the PR body, so Don knows how closely to
-      read it;
-    - the verdict does not change how the PR merges: the `main` ruleset requires Don's
-      approving review on every PR;
-    - auto-merge is armed by default after the PR opens, and waits for that approval and a green
-      `verify`;
-    - leave auto-merge off only when the PR has open `[PREVIEW-CHECK]` items, and say so in the
-      PR body;
-    - no `AskUserQuestion` here.
-  - **Finish step 4 PR body list:** "the label / auto-merge chosen in step 3" → "the major-change
-    verdict and criteria and whether auto-merge is armed".
-  - **PR author account block** (identical in all four). Change only:
-    - the rationale sentence becomes: "The `main` ruleset requires an approving review on every
-      PR, and GitHub does not count an author's approval on their own PR, so Don can only
-      approve a PR he did not author.";
-    - sub-step 3 → plain `gh pr create ...` (no label parenthetical);
+      read it and to check the preview;
+    - the verdict does not change how the PR merges, because the `main` ruleset requires Don's
+      approval on every PR;
+    - auto-merge is armed by default, and leaving it off is only for open `[PREVIEW-CHECK]`
+      items, said in the PR body.
+
+    Keep skill-specific detail only where it exists today:
+    - chore: "a `package.json` change or any file under `.github/` is major";
+    - tweak: "re-check triage condition 1; if a criterion fired, triage was wrong — say so in
+      the PR body".
+  - **Finish step 4 PR body list:** "the label / auto-merge chosen in step 3" → "whether
+    auto-merge is armed".
+  - **PR author account block** (identical in all four; #87 won't-fix). Change only:
+    - the reason sentence becomes: "The `main` ruleset requires Don's approving review on every
+      PR, and GitHub does not count an author's approval on their own PR, so a PR authored by
+      `drcdev` could never be approved.";
+    - sub-step 3 → plain `gh pr create ...`, without the label parenthetical;
     - sub-step 5 "do not work around the gate" → "do not work around the ruleset";
     - sub-step 6 → "Arm auto-merge (`gh pr merge --auto --merge`) as `drcdev`, unless step 3
       left it off for open `[PREVIEW-CHECK]` items."
 
-    Keep the drc-agents → create → drcdev sequence, "whether it succeeded or failed", the
-    `gh pr view <n> --json author` check and the denied/keyring/`AskUserQuestion` wording (#87
-    won't-fix).
-  - **Final report lines:** "merge mode chosen" → "whether auto-merge is armed".
-  - **chore l.53–57:** a chore may be a major change. It is classified in the plan and again in
-    Finish and flagged in the PR body. Like every PR, it merges only on Don's approval. Drop
+    Keep the drc-agents → `gh pr create` → drcdev sequence, "whether it succeeded or failed",
+    the `gh pr view <n> --json author` check and the denied / keyring / `AskUserQuestion` text.
+  - **Final report lines:** "merge mode chosen" / "major-change verdict and merge mode" → "the
+    major-change verdict and whether auto-merge is armed".
+  - **chore l.53–57:** a chore may be a major change. It is classified in the plan and in
+    Finish and flagged in the PR body, and like every PR it merges only on Don's approval. Drop
     "the PR is held for Don's review" and "never promises an auto-merge".
-  - **tweak l.35 and l.60:** keep condition 1 (a tweak is never major). Reword l.60–61: "safe to
-    arm auto-merge, which still waits for Don's approval".
-  - **deliver l.120** (plan phase flags major): unchanged.
-  - **Visual-baselines shared sentence** ("…which is a major change under Principle III in any
-    case."): unchanged in all five places.
+  - **tweak l.35 and l.60:** keep condition 1. Reword l.60–61 to "safe to arm auto-merge, which
+    still waits for Don's approval".
+  - **Unchanged:**
+    - the visual-baselines shared sentence ("…which is a major change under Principle III in
+      any case."), in all five places;
+    - deliver l.120 (the plan flags major).
   - **`CLAUDE.md` Merging:**
-    - first bullet: open every PR from `drc-agents` because the `main` ruleset requires one
-      approving review on every PR and GitHub does not count an author's own approval, so Don
-      (`drcdev`) can approve only a PR he did not author. Keep the switch sequence and the
-      "closed and reopened … do not work around the ruleset" sentence;
-    - add one bullet on what branch protection enforces (`setup/github-ruleset.json`, ruleset
-      `main-protection`):
-      - a PR is required, with one approving review; stale approvals are dismissed on push;
-      - the `verify` check is required and the branch must be up to date;
-      - merge commits only;
-      - no force-push or deletion, and no bypass actors;
-      - a daily read-only workflow (`ruleset-drift`) runs the setup check against the live
-        ruleset;
-    - "Enable auto-merge by default" bullet: unchanged in substance;
-    - "Leave auto-merge off" bullet becomes: only when Don must check something on the preview
-      before it can merge (open `[PREVIEW-CHECK]` items); a major change is flagged in the PR
-      body instead.
+    - **First bullet:** open every PR from `drc-agents`. The `main` ruleset requires an
+      approving review on every PR, with code-owner review and CODEOWNERS `* @drcdev`. GitHub
+      does not count an author's own approval, so Don (`drcdev`) can approve only a PR he did not
+      author. Keep the switch sequence. Keep "closed and reopened from `drc-agents`; do not work
+      around the ruleset".
+    - **New bullet, what branch protection enforces** (ruleset `main-protection`, committed as
+      `setup/github-ruleset.json`):
+      - a PR is required, with one approving review from a code owner (Don);
+      - stale approvals are dismissed on push;
+      - the `verify` check is required, and the branch must be up to date;
+      - no force-push or deletion, and no bypass actors.
+    - **"Enable auto-merge by default":** unchanged in substance.
+    - **"Leave auto-merge off":** only when Don must check something on the preview before it
+      can merge (open `[PREVIEW-CHECK]` items). A major change is flagged in the PR body instead.
   - **`CLAUDE.md` "Keep the four pipelines aligned" list:** replace "the pre-PR major-change /
     merge-mode pause (one `AskUserQuestion` before `gh pr create`)" with "the Finish step 3
-    major-change classification and auto-merge rule (no pause)".
-- **Test:** new-first, unit. Extend `tests/unit/setup/pipeline-pr-author.test.ts` with:
-  - for each skill, the author block mentions "does not count an author's approval" and not
-    `major-change-approval`;
-  - no skill text contains `--label major-change`;
-  - no skill's Finish step 3 contains `AskUserQuestion`.
+    major-change classification and auto-merge default (no pause)".
+- **Test:** existing alignment tests must stay green (unit):
+  - `pipeline-pr-author.test.ts`, which checks block identity and the account sequence;
+  - `pipeline-verify-wording.test.ts`, `pipeline-visual-baselines.test.ts` and
+    `pipeline-test-placement.test.ts`;
+  - `changed-paths.test.ts` READ_BY_CHECKS.
 
-  All existing alignment tests (pr-author, verify-wording, visual-baselines, test-placement,
-  changed-paths READ_BY_CHECKS) stay green.
+  Confirm with `grep -n "major-change-approval\|--label major-change\|AskUserQuestion" .claude/skills/{deliver,tweak,squash,chore}/SKILL.md`:
+  - the first two patterns must have no hits;
+  - `AskUserQuestion` may remain only outside Finish step 3.
 - **Layer:** unit.
-- **Coverage mapping:** none removed. The block-identity assertion stays, with new text.
+- **Coverage mapping:** none removed (no test asserted the pause).
 
-### W8 Record the decision in research R9
+### W9 Record the decision in research R9
 
-- **Files:** `specs/001-setup-walkthrough/research.md` R9 (l.179–215) only. Retitle it to
-  "GitHub branch protection, CI check names, and review on every PR". Rewrite it with:
-  - **Decision (protection):** the ruleset as now committed, every parameter listed; created with
-    `POST` and updated with `PUT repos/drcdev/dcc-web/rulesets/<id>`.
-  - **Decision (review):** one approving review on every PR (#85, 2026-10-04); CODEOWNERS, the
-    `major-change` label, the gate workflow and script are retired. "Major change" is now a
-    classification flagged in PR bodies (Principle III, constitution 2.3.0).
-  - **Decision (deploy only after CI), decision 3:**
-    - Workers Builds keeps deploying on push to `main`;
-    - there is no Deploy Hook, no Workers Builds trigger change and no Cloudflare credential in
-      GitHub;
-    - `strict_required_status_checks_policy: true` means a PR merges only when tested against
-      the current `main`;
-    - residual risks: drift → the daily read-only `ruleset-drift` workflow; a PR weakening
-      `ci.yml` → the required approval; a flaky test passing on the PR and failing on `main` →
-      accepted, because rollback is one command.
-  - **Rationale:** replaces the CODEOWNERS + label rationale. Approval on every PR is native and
-    needs no custom code. P1's reasoning about CODEOWNERS, and the residual it leaves:
-    `drc-agents` could approve a `drcdev`-authored PR. That is accepted because agents author
-    every PR and #87 is won't-fix.
+- **Files:** `specs/001-setup-walkthrough/research.md`, R9 only (l.179–215). Retitle it "GitHub
+  branch protection, CI check names, and review on every PR". Contents:
+  - **Decision, protection:** the ruleset as now committed (count 1, code-owner review, stale
+    approvals dismissed, `verify` strict, no force-push or deletion, no bypass). Updated in the
+    dashboard, or by a `PUT` built from the live ruleset, until #86 adds the live-only
+    parameters to the file.
+  - **Decision, review (#85, 2026-10-04):** one approval on every PR. CODEOWNERS is `* @drcdev`,
+    so the counting approval is always Don's, even on a PR opened as `drcdev` by mistake. The
+    label, the gate workflow and script, and the pre-PR pause are retired. "Major change" is now
+    a classification flagged in PR bodies (constitution 2.3.0).
+  - **Decision, deploy only after CI:** `strict_required_status_checks_policy: true` means a PR
+    merges only when tested against the current `main`. Workers Builds keeps deploying on push
+    to `main`: no Deploy Hook and no Cloudflare credential in GitHub. Residual risks:
+    - ruleset drift → follow-up #86;
+    - a PR weakening `ci.yml` → the required approval;
+    - a flaky test passing on the PR and failing on `main` → accepted, because rollback is one
+      command.
+  - **Rationale:** this replaces the CODEOWNERS-paths + label rationale. Native approval needs
+    no custom code.
   - **Alternatives:**
-    - keep CODEOWNERS with `* @drcdev` (rejected, P1);
-    - keep the label gate (rejected: custom code for what GitHub does natively);
-    - a Deploy Hook (rejected, decision 3).
-  - Keep the **Machine account** paragraph. Update its auto-merge sentence: `/deliver` and the
-    other pipelines arm auto-merge on every PR. Drop the "Bootstrap exception" or mark it
-    historical. Add one line saying the scheduled drift detection (the l.176–177 follow-up) is
-    now `ruleset-drift.yml`.
-- **Test:** `no behaviour: n/a (decision record)`. The changed-paths drift guard (no `specs/`
-  path literals in tests) is unaffected because no test is added.
+    - keep the label gate (rejected: custom code for a native feature);
+    - CODEOWNERS paths only (rejected: misses non-path majors);
+    - drop CODEOWNERS (rejected by Don: the catch-all makes every approval his).
+  - Keep the Machine account paragraph, and update its auto-merge sentence: the pipelines arm
+    auto-merge on every PR. Mark the "Bootstrap exception" as historical.
+- **Test:** `no behaviour: n/a (decision record)`.
 - **Layer:** n/a.
 - **Coverage mapping:** none.
 
 ## Docs citations (Principle IV)
 
-- Rulesets REST API (get, update with PUT, rules for a branch):
+- Rulesets REST API (get and update a repository ruleset):
   https://docs.github.com/en/rest/repos/rules
-- Available ruleset rules ("Require a pull request before merging", required approvals, dismiss
-  stale approvals, required status checks, up to date before merging):
+- Available ruleset rules (require a pull request, required approvals, dismiss stale approvals,
+  require review from Code Owners, required status checks, up to date before merging):
   https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets
-- About protected-branch reviews (an author cannot approve their own pull request):
+- About code owners (syntax, `*` catch-all, required code-owner review):
+  https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+- Approving a pull request with required reviews (an author cannot approve their own pull
+  request):
   https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/approving-a-pull-request-with-required-reviews
-- `schedule` and `workflow_dispatch` events (UTC cron; scheduled workflows in public repositories
-  are disabled after 60 days without repository activity; notifications go to the user who last
-  modified the cron syntax):
-  https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
-- `permissions` for `GITHUB_TOKEN`:
-  https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#permissions
-  and https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
-- Using the GitHub CLI in workflows (`GH_TOKEN`, preinstalled on GitHub-hosted runners):
-  https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-github-cli
-- `actions/checkout` `persist-credentials` input: https://github.com/actions/checkout#usage
-- Security hardening (pin actions to a full SHA, least-privilege tokens):
-  https://docs.github.com/en/actions/reference/security/secure-use
-- Actions permissions REST (allowed actions, `sha_pinning_required`, selected actions, fork-PR
-  contributor approval): https://docs.github.com/en/rest/actions/permissions
+- Automatically merging a pull request (`gh pr merge --auto` waits for required reviews and
+  checks):
+  https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/automatically-merging-a-pull-request
+- No GitHub Actions or `schedule` / `permissions` / `persist-credentials` usage changes in this
+  chore (those moved to #86), so no Actions docs are cited.
 
 ## Risks
 
-- **Sequencing:** the live ruleset still requires `major-change-approval`, and this branch
-  deletes the workflow that posts it. This PR (and any PR opened after it) cannot merge until
-  Don runs L1. Auto-merge stays off, and the PR body must put L1 first.
-- **Lossy PUT:** a `PUT` replaces the ruleset. P4 makes the committed file carry every live
-  parameter. The review phase diffs the file against the live JSON captured in this plan's
-  Acceptance before-state.
-- **Unknown parameter:** `require_extra_approval_for_unattributed_changes` appears live but is
-  not in older docs. If the `PUT` rejects it, Don drops the key from the file in a follow-up
-  commit (not a loosening, because it then takes GitHub's default). L1 says so.
-- **`bypass_actors` invisible to `GITHUB_TOKEN`:** the scheduled job cannot see bypass actors.
-  Only an admin (Don) can add one, and the local setup check sees the field.
-- **Scheduled-run failure notification** goes to the user who last edited the cron line. That
-  may be the merge author, so L5 confirms Don gets it. Scheduled workflows also stop after 60
-  days without repository activity; the repository is active.
-- **Actions settings lockout:** with `allowed_actions: selected`, a workflow using an action
-  outside `pnpm/action-setup@*` and GitHub-owned actions fails to start. The W3 cross-check
-  test fails first when a workflow adds a new owner.
-- **#87 won't-fix:** an agent session can still act as `drcdev` (and so approve a
-  `drc-agents` PR) through the shared local `gh` keyring. Don has accepted this. The ruleset
-  approval is a review gate, not a defence against a compromised local session.
-- **Alignment drift:** W7 touches the shared blocks of four skills. The review phase diffs the
-  four Finish sections.
-- **Toolchain note for every implement subagent** (worktree guard): `source`,
-  `perl -e … exec`, heredocs and compound git commands are blocked. Run node tools as
-  `export PATH=/Users/doncoleman/.nvm/versions/node/v24.4.1/bin:/Users/doncoleman/.claude/jobs/f674a97c/tmp/bin:$PATH; corepack pnpm ...`
-  (e.g. `... corepack pnpm exec vitest run <files>`, `... corepack pnpm run verify:quick`), and
-  bound runs with the Bash tool's `timeout` parameter instead of the perl alarm. Run git
-  commands one per call.
+- **Sequencing:** the live ruleset still requires `major-change-approval`, and W2 deleted the
+  workflow that posts it. No PR, this one included, can merge until Don does L1. The PR body
+  puts L1 first.
+- **Lossy PUT:** a `PUT` of `setup/github-ruleset.json` would drop the live-only parameters,
+  including the `verify` `integration_id` pin. L1 therefore uses the dashboard or a `PUT` built
+  from the live JSON (R2).
+- **Renumbering (W5):** about 45 files change, and a missed literal shows up as a red unit test
+  or a wrong "item N" in prose. The implementer greps after the edit for stale references to
+  "item 32" and for `order: 32`. The review spot-checks `docs/setup.md` and `docs/launch.md`
+  ranges.
+- **Code-owner review on a `drcdev`-authored PR** cannot be satisfied, because Don cannot
+  approve his own PR. That is intended: such a PR is closed and reopened from `drc-agents`.
+- **#87 won't-fix:** an agent session can still act as `drcdev` through the shared local `gh`
+  keyring, and so could approve a `drc-agents` PR. Don accepted this. The ruleset approval is a
+  review gate, not a defence against a compromised local session.
+- **Alignment drift (W8):** four skills' shared Finish text changes. The review diffs the four
+  Finish sections.
+- **Toolchain note for every implement subagent** (worktree guard):
+  - `source`, `perl -e … exec`, heredocs and compound git commands are blocked;
+  - run node tools as
+    `export PATH=/Users/doncoleman/.nvm/versions/node/v24.4.1/bin:/Users/doncoleman/.claude/jobs/f674a97c/tmp/bin:$PATH; corepack pnpm ...`,
+    for example `... corepack pnpm exec vitest run <files>` or
+    `... corepack pnpm run verify:quick`;
+  - bound runs with the Bash tool's `timeout` parameter, not the perl alarm;
+  - run git commands one per call (for example one `git checkout main -- <path>` per file in W3).
 
 ## Live steps (Don / post-merge)
 
 Agents never run these. The PR body lists them in this order.
 
-- [ ] L1 **Before merging this PR**, update the live ruleset from the branch's file. The ruleset
-  must be updated before this PR can merge, because the PR deletes the gate that posts
-  `major-change-approval`. From a checkout of `chore/single-approval-ruleset`:
-  `gh api -X PUT repos/drcdev/dcc-web/rulesets/24156251 --input setup/github-ruleset.json`.
-  If GitHub rejects `require_extra_approval_for_unattributed_changes`, tell the agent to drop
-  that key and re-run. Effect: every open PR now needs one approval, and only `verify` is
-  required. [PREVIEW-CHECK]
+- [ ] L1 **Before this PR can merge**, edit the live ruleset. GitHub blocks the merge until this
+  is done. Choose one of the two methods (R2: do **not** `PUT` `setup/github-ruleset.json`; it
+  would drop the `verify` app pin and other live-only parameters):
+  - **Dashboard:** Settings → Rules → Rulesets → `main-protection`:
+    - set "Require a pull request before merging" → Required approvals **1**;
+    - tick "Dismiss stale pull request approvals when new commits are pushed";
+    - keep "Require review from Code Owners" on;
+    - under "Require status checks to pass", remove `major-change-approval` and keep `verify`;
+    - save.
+  - **CLI**, preserving every live-only parameter:
+    `gh api repos/drcdev/dcc-web/rulesets/24156251 | jq '{name, target, enforcement, conditions, bypass_actors, rules: (.rules | map(if .type == "pull_request" then .parameters.required_approving_review_count = 1 | .parameters.dismiss_stale_reviews_on_push = true elif .type == "required_status_checks" then .parameters.required_status_checks |= map(select(.context != "major-change-approval")) else . end))}' | gh api -X PUT repos/drcdev/dcc-web/rulesets/24156251 --input -`
+
+  The stale-approval tick is included because the committed file and the setup check already
+  require it. It is the one ruleset fix #85 needs; #86 keeps the rest. [PREVIEW-CHECK]
 - [ ] L2 Run `pnpm setup:check --item github-main-protection` and confirm it is complete.
   [PREVIEW-CHECK]
-- [ ] L3 Approve this PR and merge it (merge commit). Then delete the label:
-  `gh label delete major-change --yes`. [PREVIEW-CHECK]
-- [ ] L4 Actions settings (Settings → Actions → General, or):
-  - `gh api -X PUT repos/drcdev/dcc-web/actions/permissions -F enabled=true -f allowed_actions=selected -F sha_pinning_required=true`
-  - `gh api -X PUT repos/drcdev/dcc-web/actions/permissions/selected-actions -F github_owned_allowed=true -F verified_allowed=false -f 'patterns_allowed[]=pnpm/action-setup@*'`
-  - `gh api -X PUT repos/drcdev/dcc-web/actions/permissions/fork-pr-contributor-approval -f approval_policy=all_external_contributors`
-
-  Then confirm `pnpm setup:check --item github-actions-settings` and
-  `--item github-auto-merge` are complete. [PREVIEW-CHECK]
-- [ ] L5 Trigger the drift job once: `gh workflow run ruleset-drift.yml`. Confirm the run is
-  green and that a failing run would notify Don (the cron-line author). [PREVIEW-CHECK]
+- [ ] L3 Approve this PR; auto-merge, or Don, merges it with a merge commit. After the merge,
+  pull `main` and confirm `pnpm setup:check --item github-codeowners` is complete. [PREVIEW-CHECK]
+- [ ] L4 After the merge, delete the label: `gh label delete major-change --yes`. [PREVIEW-CHECK]
