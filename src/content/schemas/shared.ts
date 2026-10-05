@@ -31,7 +31,12 @@ export const navField = z.strictObject({
   label: text.optional(),
 });
 
-/** A link target: an internal address or an https:// address. */
-export const linkTarget = z.string().regex(/^(\/|https:\/\/)/, "use an address that starts with / or https://");
+/**
+ * A link target: an internal address or an https:// address. A protocol-relative `//host` (or
+ * `/\host`, which browsers read the same way) is an off-site link, so it is not internal.
+ */
+export const linkTarget = z
+  .string()
+  .regex(/^(\/(?![/\\])|https:\/\/)/, "use an address that starts with a single / or with https://");
 
 export { text as requiredText };

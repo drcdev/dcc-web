@@ -181,7 +181,8 @@ files in `src/assets/fonts/`. The unit tests `font-files.test.ts`, `font-coverag
 spec `fonts.spec.ts` proves the faces and at most four font requests, and `headers.spec.ts`
 that the fonts and every other fingerprinted file under `/_astro/` (stylesheets and scripts)
 are served with the year-long `immutable` cache header (#74), while `headers.test.ts` checks
-the rule itself. The total-transfer budget is 150 KB. The Linux baselines come
+the rule itself and also pins the sandboxed CSP on `/_astro/*.svg` (#95), checked only at the
+unit layer. The total-transfer budget is 150 KB. The Linux baselines come
 from the Docker image, which keeps DejaVu as the system fallback, so only Inter text is
 pinned by the web font and any glyph outside the subset falls back to DejaVu there.
 

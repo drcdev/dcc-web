@@ -217,7 +217,8 @@ theme was read from a local, read-only clone at `.reference/flux` (gitignored; n
     `astro.config.mjs` from the file; `is:inline` scripts are not hashed automatically),
     `styleDirective.resources: ["'self'"]`, and `directives: ["default-src 'self'",
     "img-src 'self' data:", "font-src 'self'", "connect-src 'self' https://cloudflareinsights.com",
-    "object-src 'none'", "base-uri 'self'", "form-action 'self'", "upgrade-insecure-requests"]`.
+    "object-src 'none'", "base-uri 'self'", "form-action 'self'"]`. `upgrade-insecure-requests` is not used, because every source is
+    `'self'` and HSTS is on (#95).
   - **`public/_headers`** (extends the existing file; `/*` rule): keeps `X-Robots-Tag: noindex`,
     adds `Content-Security-Policy: frame-ancestors 'none'; object-src 'none'; base-uri 'self'`
     (directives a meta tag cannot carry, and no `default-src`/`script-src` so it cannot block the
