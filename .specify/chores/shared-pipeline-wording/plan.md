@@ -337,7 +337,7 @@ Nothing in this chore changes a page, so no visual baselines.
 
 ### W4 — Shrink `READ_BY_CHECKS` (test first) and update the tier docs
 
-- [ ] W4 done
+- [x] W4 done
 - **Files:**
   - `tests/unit/ci/changed-paths.test.ts` (first):
     - `SAFE` gains `CLAUDE.md`, the four pipeline `SKILL.md` paths,
