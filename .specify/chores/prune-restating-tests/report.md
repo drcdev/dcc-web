@@ -114,3 +114,15 @@ E2E: `headers.spec.ts` and `pages.spec.ts` pass all 54 tests. Port 4322 was free
 - **F4.** `docs-structure.test.ts`, `setup/items.test.ts` and `launch-doc.test.ts` assert documentation prose.
 - **F5.** Read page draft flags through the content helper, as #55 did for posts and projects.
 - **F6.** Fold the rest of `config-mdx.test.ts` into `config-files.test.ts`, or delete it.
+
+## Round 2
+
+Reviewed commit 1aead17.
+
+- **H1 closed.** The regex `/:\s*write(-all)?\s*$/m` was checked with node. It matches `permissions: write-all`, `contents: write` and `id-token: write`. It does not match `contents: read`, `permissions: read-all` or `write-something: read`, because the key text comes before the colon and only the value is tested. `vitest run --project unit tests/unit/ci/workflows.test.ts`: 17 of 17 pass.
+- **The visual-baselines check is sound.** It runs against that file's own `contents` (its `describe` block reads `visual-baselines.yml`). The file has no `write` value now: its only permission is the workflow-level `contents: read`. The test name says "job", but the check covers the whole file, so it also covers the workflow-level block. That is stricter, not weaker.
+- **The fix stayed in scope.** It touches only `workflows.test.ts` (regex plus one new `it`), a re-wrap of `docs/testing.md` with no wording change, and the round-1 report notes. The L3 paragraph now wraps at about 95 characters.
+- **New LOW, L5.** The regex anchors on end of line, so it misses a write value followed by a trailing comment (`contents: write # why`), a flow mapping (`permissions: { contents: write }`) or a quoted value (`contents: "write"`). None of these forms appears in the repository's workflows, and the removed per-job `contents: read` test would also have missed a flow-mapping form at workflow level. Possible hardening: `/:\s*["']?write(-all)?["']?\s*(#.*)?$/m`, plus a check for `write` inside `{ }`. Noted only.
+- No new CRITICAL or HIGH issue.
+
+**Final counts by severity:** CRITICAL 0, HIGH 0 open (H1 fixed), MEDIUM 0, LOW 5 (L1, L2, L4, L5 open; L3 fixed).
