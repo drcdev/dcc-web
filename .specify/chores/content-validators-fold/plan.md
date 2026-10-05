@@ -357,7 +357,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W5: Build call-site runs follow the moved checks
 
-- [ ] W5 done
+- [x] W5 done
 - **Files:** `tests/build/page-validation.test.ts`, `post-validation.test.ts`,
   `project-validation.test.ts` (titles, comments, modes, assertions); fixtures unchanged.
 - **Row 13 (A):** move the run into the `sync` describe, retitled "row 13: generateId runs the twin

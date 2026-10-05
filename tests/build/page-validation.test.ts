@@ -43,20 +43,23 @@ describe("page schema and loader wiring (sync)", () => {
       "About_Me.mdx",
       "lower-case letters, digits and hyphens",
     ));
+
+  // The twin check runs in generateId, so it fires at sync with the custom wording, ahead of Astro's own
+  // duplicate-slug error (prerenderConflictBehavior: 'error').
+  it("row 13: generateId runs the twin check (x.mdx and x/index.mdx)", () =>
+    expectRejected(
+      "sync",
+      [broken("13-duplicate-address-a.mdx", "x.mdx"), broken("13-duplicate-address-b.mdx", "x/index.mdx")],
+      "x.mdx",
+      "x/index.mdx",
+      "/x/",
+      "both make the address /x/. Keep one of them.",
+    ));
 });
 
 describe("page route and component wiring (build)", () => {
   it("row 7: Astro rejects a body image that does not exist", () =>
     expectRejected("build", [broken("07-missing-image-body.mdx")], "does-not-exist.png"));
-
-  it("row 13: the route checks addresses over the file-system page list (x.mdx and x/index.mdx)", () =>
-    expectRejected(
-      "build",
-      [broken("13-duplicate-address-a.mdx", "x.mdx"), broken("13-duplicate-address-b.mdx", "x/index.mdx")],
-      "x.mdx",
-      "x/index.mdx",
-      "/x/",
-    ));
 
   it("row 14: the route checks addresses over the src/pages route-file list (404.mdx against 404.astro)", () =>
     expectRejected("build", [broken("14-route-conflict.mdx", "404.mdx")], "404.mdx", "404.astro", "/404/"));
