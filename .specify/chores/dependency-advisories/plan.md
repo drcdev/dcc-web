@@ -213,7 +213,7 @@ lockfile, where exact pins and the release-age delay already govern upgrades.
 
 ### W1: Setup item 9 also requires Dependabot security updates (test first)
 
-- [ ] W1 done
+- [x] W1 done
 - **Files:** `tests/unit/setup-check/checks/github-secret-scanning.test.ts`,
   `tests/fixtures/providers/github/repo-settings-secret-scanning-on.json` and `…-off.json`,
   `scripts/setup-check/checks/github-secret-scanning.ts`, `scripts/setup-check/items.ts`
