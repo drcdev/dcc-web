@@ -176,7 +176,7 @@ Nothing in this chore changes a page, so no visual baselines.
 
 ### W1 — Delete the four alignment tests
 
-- [ ] W1 done
+- [x] W1 done
 - **Files:** delete these, one `git rm` per call:
   - `tests/unit/setup/pipeline-pr-author.test.ts`
   - `tests/unit/setup/pipeline-test-placement.test.ts`
