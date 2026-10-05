@@ -239,7 +239,10 @@ built site and the sitemap for `/services/` and `/speaking/`.
   Don to review. While it is a draft it is marked not to be indexed by search engines, like every
   draft page today.
 - **FR-015**: The visual checks that show the header menu MUST be refreshed to the six-entry menu
-  for every platform and theme they cover. No other visual check's image may change.
+  for every platform and theme they cover. These are the images that show the menu links: the
+  desktop header, the open phone menu, and the desktop full-page shots whose header shows the
+  menu row. Shots that show only the closed phone header (site name and menu button), and every
+  other visual check's image, MUST NOT change.
 - **FR-016**: The pull request MUST be flagged as a major change (navigation) under Constitution
   Principle III. Before approving, Don checks on the preview deployment: the desktop menu row, the
   open phone menu, the merged page, and the not-found page at `/services/` and `/speaking/`.

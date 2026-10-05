@@ -12,7 +12,10 @@ was available.
 - **Decision**: `git mv src/content/pages/services.mdx src/content/pages/work-with-me.mdx`, then
   move the speaking sections into it and `git rm src/content/pages/speaking.mdx`. The rename is
   its own commit with no content edits, so Git records it as a rename (100 % similarity) and
-  `git log --follow` keeps the Services history. The content merge is the next commit.
+  `git log --follow` keeps the Services history. The content merge is the next commit. Both
+  commits come after every test change is written and seen failing, and both sit inside one
+  implementation task that is done only when the suite is green again (Principle I: the rename
+  alone breaks the home link and launch config, so it is never a finished task by itself).
 - **Rationale**: The merged page keeps more of Services (note, lead, three blocks, nav position
   2) than of Speaking, so it is the file the page descends from. Doing the rename before the
   content edit stops Git's similarity heuristic from losing the link when the file grows by the

@@ -13,14 +13,17 @@ is untouched; running costs do not change ($0 a month new, below); no CI, deploy
 infrastructure file changes (`setup/config.json` is setup-check data, not CI or deploy config);
 the constitution is not amended. The PR body flags the change with this criterion so Don checks
 the preview (menu on desktop and phone, the merged page, the two 404s) before approving.
-Auto-merge may be armed after the final push; it waits for his approval and a green gate.
+Because those are `[PREVIEW-CHECK]` items, auto-merge stays off while they are open (CLAUDE.md
+"Merging"); the PR body says so.
 
 ## Summary
 
 Services and Speaking become one draft page, **Work with me**, at `/work-with-me/`, menu position
-2. `src/content/pages/services.mdx` is renamed with `git mv` to `work-with-me.mdx` in a commit of
-its own (so history follows), then the Speaking sections are moved into it in the agreed order and
-`speaking.mdx` is deleted. The photo needs no change: it is already one shared file,
+2. Once every changed test is written and seen failing, `src/content/pages/services.mdx` is
+renamed with `git mv` to `work-with-me.mdx` in a commit of its own (so history follows), then the
+Speaking sections are moved into it in the agreed order, `speaking.mdx` is deleted and the home
+link and launch config follow. The rename commit is an intermediate step inside that one
+implementation task, not a task of its own; the task is done only when the suite is green. The photo needs no change: it is already one shared file,
 `src/content/pages/images/don-coleman.jpg`, referenced by relative path from the home page and
 now from the merged page. Removing the files removes the routes; Cloudflare's existing
 `not_found_handling: "404-page"` serves the not-found page for the old addresses, and the
@@ -51,7 +54,7 @@ merged page is the two pages' sections combined with one photo, within today's b
 limited to joins Don reviews (FR-002, FR-005); no reserved menu position moves
 
 **Scale/Scope**: 1 page renamed + merged, 1 page deleted, 1 home-page link, 1 config file, 2 docs,
-~17 test files, 14 visual baseline images per platform
+~17 test files, 8 visual baseline images per platform
 
 ## Constitution Check
 
@@ -59,7 +62,7 @@ limited to joins Don reviews (FR-002, FR-005); no reserved menu position moves
 
 | Principle | Status | How this plan meets it |
 |---|---|---|
-| I. Test-First | PASS | Every behaviour below gets a test task that is written and seen failing before the content move (Test placement). The rename commit carries no content change, so the first red run is against the old files. |
+| I. Test-First | PASS | Every behaviour below gets a test task that is written and seen failing before the content move (Test placement). All test changes, for all three stories, land before any content file moves, so the red run is against today's files; the rename is the first step of the implementation, and no task is marked done on a red suite except the test tasks whose red is the point. |
 | II. Automated Release Gate | PASS | No check is skipped or weakened. Tests naming the old pages are changed to the new structure in reviewed commits as part of the feature; counts drop from seven links to six because the spec changes the menu, not to get a check through. Visual baselines are regenerated on both platforms before the PR. |
 | III. Human Review | PASS, **major change** | Navigation change (see banner). Flagged in the PR body; Don approves after the preview. |
 | IV. First-Party Before Custom | PASS | Astro content collections + `[...slug].astro`/`getStaticPaths()` for the route, `astro:assets` relative images for the photo, `@astrojs/sitemap` for the sitemap, Cloudflare static assets `not_found_handling` for removed addresses. No custom code; nothing first-party is rejected (research R9). Astro Docs MCP consulted (research R1–R4 cite pages). |
@@ -128,10 +131,11 @@ green.
 ### Visual baselines
 
 No Services or Speaking page baselines exist (the visual project snapshots only the shell, the
-not-found page and the fixture site). Expected to change, both themes, both platforms (14 images
-per platform): `header-desktop-*`, `menu-open-phone-*`, `not-found-{desktop,phone}-*`,
-`sections-{desktop,phone}-*`. `header-phone-*` (closed menu) should not change. Any other diff is
-a regression. Refresh per `.claude/skills/_shared/visual-baselines.md`: macOS
+not-found page and the fixture site). Expected to change, both themes, both platforms (8 images
+per platform, FR-015): `header-desktop-*`, `menu-open-phone-*`, `not-found-desktop-*`,
+`sections-desktop-*`. The phone shots `header-phone-*`, `not-found-phone-*` and `sections-phone-*`
+show only the closed phone header (the link list is hidden at phone width with JavaScript on), so
+they should not change. Any other diff is a regression. Refresh per `.claude/skills/_shared/visual-baselines.md`: macOS
 `pnpm run test:visual:update`, Linux `pnpm run test:visual:update:linux` in Docker (ask Don to
 start Docker Desktop), CI label only as fallback. Commit and push before opening the PR.
 
@@ -176,7 +180,7 @@ tests/unit/site/redirects.test.ts
 tests/component/{SiteHeader,HomeIntro}.test.ts
 tests/build/{indexing,local-site}.test.ts
 tests/e2e/{templates.ts,pages,shell,menu,no-js,not-found,analytics,theme-tokens}.spec.ts
-tests/e2e/visual.spec.ts-snapshots/   # 14 images per platform
+tests/e2e/visual.spec.ts-snapshots/   # 8 images per platform
 ```
 
 **Structure Decision**: existing single Astro site; no new directories.
