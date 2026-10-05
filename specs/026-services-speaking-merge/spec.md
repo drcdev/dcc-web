@@ -36,7 +36,11 @@ Other places that depend on the two pages today:
   must exist and be published before launch, and `/speaking/` as an expected address. The launch
   runbook tells Don to replace "the Services and Speaking placeholder copy" before going live.
 - The per-template checks (accessibility, performance budget, header and menu behaviour) run
-  against both pages, and some tests name both menu entries.
+  against both pages, and some tests name both menu entries or count seven menu links.
+- The editors' page guide (`docs/pages.md`) uses `/services/` in its address table and
+  examples, and a code comment in the menu code uses `/services` as an example.
+- The site's visual checks photograph the header menu (desktop row, open phone menu) and full
+  pages that include it, so those images show the Services and Speaking entries today.
 - The site's usual convention for a page that moves is a permanent (301) redirect in the site's
   redirect rules. For this feature Don has decided against it: both old pages are drafts, so the
   old addresses are removed outright with no redirect.
@@ -83,7 +87,8 @@ heading.
 4. **Given** the merged page, **When** a visitor wants to get in touch, **Then** a single call to
    action at the end takes them to the contact page.
 5. **Given** the merged page with JavaScript turned off, **When** a visitor reads it, **Then**
-   all of its content is readable.
+   all of its content is readable, every header menu entry is reachable and the call to action
+   works as a plain link.
 
 ---
 
@@ -104,7 +109,8 @@ its entry is the only one marked current.
    **Then** it lists Home, Work with me, Writing, Projects, About and Contact, in that order,
    with no Services or Speaking entry.
 2. **Given** the merged page, **When** it is open, **Then** its menu entry, and only that entry,
-   is marked as the current page.
+   is marked as the current page, in both the desktop menu row and the phone menu. The marking is
+   exposed to assistive technology as the current page, not shown by colour alone.
 
 ---
 
@@ -145,49 +151,98 @@ built site and the sitemap for `/services/` and `/speaking/`.
   live remains Don's decision through the launch runbook.
 - The merged page must not repeat the main heading or show two competing lead paragraphs; it has
   one title, one lead, and section headings below it.
+- The "Work with me" label is longer than any single label it replaces. It must fit the desktop
+  menu row on one line and the phone menu without horizontal scrolling, including at 320 px wide
+  and at 200 % text size.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
 - **FR-001**: The site MUST have one page that presents every offering from today's Services and
-  Speaking pages: the three kinds of work and the three talk topics, each with its current title
-  and description. It is published at `/work-with-me/` under the title and menu label
+  Speaking pages, each with its current title and description: the three kinds of work ("Advice
+  on technology change", "Workshops", "Plan reviews") and the three talk topics ("Systems thinking
+  for technology leaders", "Practical AI in healthcare", "Leading change without formal
+  authority"). It is published at `/work-with-me/` under the title and menu label
   "Work with me".
 - **FR-002**: The merged page MUST keep the rest of both pages' content: the no-practice-today
   note, the "How I work" and "What I do not do" blocks, the "Past talks" block, the "For event
-  organizers" block with the bio, and the photo for event programs with its caption and alt text.
-  Wording may be joined or trimmed only where the two pages repeat each other (for example two lead
-  paragraphs becoming one); every change to copy is Don's to review.
+  organizers" block with the bio, and the photo for event programs with its caption and alt text
+  unchanged from the Speaking page. Every block of both pages has a place in the FR-004 order;
+  only the two leads and the two calls to action are combined, one each. Copy may change only in
+  these places: (a) the two leads become one, which keeps the Services lead and closes with one
+  sentence saying the page covers both the work Don is considering and the talks he gives (the
+  Speaking lead's list of subjects is dropped, because the Talk topics group carries it); (b) the
+  two calls to action become one (FR-005); (c) the no-practice note may be reworded only so it
+  reads as being about the consulting work, not the talks; (d) the page's description (FR-014).
+  Every offering, the four blocks and the photo's caption and alt text stay word for word. Every
+  change to copy is Don's to review.
 - **FR-003**: The offerings MUST be presented as two titled groups on the one page: "Kinds of
-  work" (the three kinds of work), then "Talk topics" (the three talks). A stable id on the Talk
-  topics heading is optional.
+  work" (the three kinds of work), then "Talk topics" (the three talks). Each group is its own
+  list under its own section heading, so assistive technology announces them as two separate
+  groups. A stable id on the Talk topics heading is optional; if one is added it is
+  `talk-topics`, and no test or link may depend on it.
 - **FR-004**: The merged page MUST present its sections in this order: the no-practice note, one
   lead, Kinds of work, How I work, What I do not do, Talk topics, Past talks, For event organizers,
   the photo for event programs, and the call to action.
-- **FR-005**: The merged page MUST end with exactly one call to action, linking to the contact
-  page, whose wording speaks to both kinds of enquiry (a project and a speaking invitation). The
-  wording is Don's to review.
+- **FR-005**: The merged page MUST end with exactly one call to action (today's pages have one
+  each, two in all), linking to the contact page, whose wording speaks to both kinds of enquiry (a
+  project and a speaking invitation). Its link text MUST make sense out of context, naming the
+  action of getting in touch rather than "click here" or "more". The wording is Don's to review.
 - **FR-006**: The Services and Speaking pages MUST no longer exist, and the header menu MUST NOT
-  list either. The menu order MUST be Home, Work with me, Writing, Projects, About, Contact, with
-  Work with me at position 2.
+  list either. The menu order MUST be Home (1), Work with me (2), Writing (4), Projects (5),
+  About (6), Contact (7). Writing, Projects and Contact keep their reserved positions and About
+  keeps 6; position 3 is left empty and nothing moves into it. On the merged page its entry is
+  the only one marked current, exposed to assistive technology as the current page, in the
+  desktop row and the phone menu.
 - **FR-007**: `/services/` and `/speaking/` MUST NOT be redirected and MUST NOT have stub pages;
-  requests for them get the not-found page.
-- **FR-008**: The sitemap MUST list `/work-with-me/` and MUST NOT list `/services/` or
+  requests for them, with or without the trailing slash, and for any address below them get the
+  not-found page with a 404 status.
+- **FR-008**: The sitemap MUST list `/work-with-me/` exactly once, while the page is a draft as
+  well as after (the sitemap lists draft pages today), and MUST NOT list `/services/` or
   `/speaking/`.
-- **FR-009**: Internal links on the site and in the repository's docs MUST NOT point at
-  `/services/` or `/speaking/`. The home page's introduction call to action MUST lead to
-  `/work-with-me/`.
+- **FR-009**: Internal links MUST NOT point at `/services/` or `/speaking/`. "Internal links"
+  covers every link in the built site (page content, menu, components and layouts), the
+  repository's docs (including the page guide and the launch runbook), the launch check's
+  configuration, code comments that give the old addresses as examples, and tests that describe
+  the real site's pages or menu. Example addresses used as made-up inputs in component or schema
+  tests, which describe no real page, are not links and may stay. The home page's introduction
+  call to action MUST lead to `/work-with-me/`.
 - **FR-010**: The launch readiness check and its configuration MUST expect the "Work with me" page
-  and `/work-with-me/`, and MUST NOT expect a Services or Speaking page or address. The launch
-  runbook MUST describe the "Work with me" page instead of two pages.
-- **FR-011**: The merged page MUST stay a draft, showing the draft notice, until Don publishes it.
-- **FR-012**: The merged page MUST meet the site's existing page standards: WCAG 2.2 AA, the
-  performance budget, readable with JavaScript off, and the header and menu behaviour every page
-  template has. The per-template checks MUST cover the merged page and MUST no longer list a
-  Services or Speaking template.
-- **FR-013**: The page guide for editors MUST still describe the menu positions correctly once
-  position 3 is free, and its examples MUST use `/work-with-me/` where they used `/services/`.
+  in their list of pages and `/work-with-me/` in their list of addresses, and MUST NOT expect a
+  Services or Speaking page or address. The launch runbook's step to replace "the Services and
+  Speaking placeholder copy" MUST instead name the Work with me placeholder copy, as one page.
+- **FR-011**: The merged page MUST stay a draft, showing the draft notice in the same place and
+  form as every other draft page, until Don publishes it.
+- **FR-012**: The merged page MUST meet the site's existing page standards, with no exception or
+  raised limit for it:
+  - WCAG 2.2 AA, confirmed by the automated accessibility check every page template runs.
+  - Headings: one level-1 heading (the page title); the section titles Kinds of work, How I work,
+    What I do not do, Talk topics, Past talks and For event organizers as level-2 headings in page
+    order; each offering title one level below its group's heading; no level skipped.
+  - The same per-template performance budget as every page template today, and Core Web Vitals
+    "good" on mobile; the photo reserves its space so it causes no layout shift.
+  - Readable with JavaScript off, including the menu and the call to action.
+  - The header and menu behaviour every page template has, inherited unchanged: every menu entry
+    is reachable by keyboard in order with a visible focus indicator, and the phone menu opens and
+    closes from the keyboard.
+  The per-template checks MUST cover the merged page and MUST no longer list a Services or
+  Speaking template. Tests that name the Services or Speaking menu entries, or count seven menu
+  links, MUST be changed to the six-entry menu; no check is removed or loosened to make this pass.
+- **FR-013**: The page guide for editors MUST say that menu position 3 is unused and free for a
+  future page, that positions 4, 5 and 7 stay reserved for Writing, Projects and Contact, and
+  that About is at 6. Its address table and examples MUST use `work-with-me` and
+  `/work-with-me/` where they used `services` and `/services/`, with the front-matter example
+  showing the title "Work with me" at position 2.
+- **FR-014**: The merged page MUST have the title "Work with me" (page heading and browser tab)
+  and one meta description covering both the work Don is considering and his talks, wording for
+  Don to review. While it is a draft it is marked not to be indexed by search engines, like every
+  draft page today.
+- **FR-015**: The visual checks that show the header menu MUST be refreshed to the six-entry menu
+  for every platform and theme they cover. No other visual check's image may change.
+- **FR-016**: The pull request MUST be flagged as a major change (navigation) under Constitution
+  Principle III. Before approving, Don checks on the preview deployment: the desktop menu row, the
+  open phone menu, the merged page, and the not-found page at `/services/` and `/speaking/`.
 
 ### Key Entities
 
@@ -207,8 +262,8 @@ built site and the sitemap for `/services/` and `/speaking/`.
   click.
 - **SC-002**: The header menu has six entries, down from seven; one is "Work with me", and none is
   Services or Speaking.
-- **SC-003**: Requests for `/services/` and `/speaking/` return the not-found page; no redirect
-  rule mentions either address.
+- **SC-003**: Requests for `/services/` and `/speaking/` (with and without the trailing slash)
+  return the not-found page with a 404 status; no redirect rule mentions either address.
 - **SC-004**: Zero internal links in the built site point at `/services/` or `/speaking/`, and the
   sitemap lists neither.
 - **SC-005**: The launch readiness check reports no problem caused by the removed Services and
@@ -222,19 +277,24 @@ built site and the sitemap for `/services/` and `/speaking/`.
   (decided in clarification). It takes the Services page's menu position, 2.
 - Both old pages are drafts and the site is not yet live under them, so removing their addresses
   without redirects is acceptable; this departs from the site's usual 301 convention by Don's
-  decision.
+  decision. Drafts are marked not to be indexed, so search engines are not expected to hold
+  either address; anyone with a bookmark to either lands on the not-found page, which Don
+  accepts.
 - No speaking-only content is dropped. The "Past talks" placeholder stays as it is; filling it in
   is separate content work.
 - The contact page's description ("a project, a speaking engagement or a question") and the terms
   of use's mention of "consulting and speaking work" stay as they are; they describe kinds of
   enquiry, not pages.
 - The merged page uses the existing page sections; no new section type, design change or new
-  dependency is needed.
+  dependency is needed. No text gets new or changed styling, so colour contrast is unchanged from
+  today's pages and is confirmed again by the accessibility check on the merged page.
 - This is a **major change** under Constitution Principle III because it changes the site's
   navigation; the plan classifies it and the pull request flags it so Don checks the preview
-  before approving.
+  before approving (FR-016).
 - No page, post or project other than the home page links to `/services/` or `/speaking/` today
-  (confirmed by search of the content); the plan re-checks this for `/services/`.
+  (confirmed by search of the content for both addresses). Outside the content, only the page
+  guide, the launch check's configuration, the launch runbook, a code comment and the tests name
+  them.
 - Out of scope: rewriting the offering copy beyond joining the two leads and the single call to
   action, publishing the page (`draft: false`), adding past talks, and any change to the contact
   form.
