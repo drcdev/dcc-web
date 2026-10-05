@@ -68,13 +68,13 @@ describe("page route and component wiring (build)", () => {
   // raises its own error. The custom route check is bypassed here, so this proves the backstop.
   it("Astro's prerenderConflictBehavior: 'error' fails a page that clashes with a code route (custom check bypassed)", async () => {
     const route = "src/pages/[...slug].astro";
-    const needle = "assertPageAddressesFree({ pageFiles, routeFiles, reserved";
+    const needle = "assertPageAddressesFree({ pageFiles, routeFiles";
     let patched = false;
     result = await buildFixtureSite([broken("14-route-conflict.mdx", "404.mdx")], {
       mode: "build",
       overrides: {
         [route]: (text) => {
-          const next = text.replace(needle, "assertPageAddressesFree({ pageFiles, routeFiles: [], reserved");
+          const next = text.replace(needle, "assertPageAddressesFree({ pageFiles, routeFiles: []");
           patched = next !== text;
           return next;
         },

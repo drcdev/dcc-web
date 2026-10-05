@@ -273,7 +273,7 @@ files. Run every toolchain call through `/Users/doncoleman/.claude/jobs/b807dd0b
   `fixture-site.ts`), and
   `playwright test tests/e2e/diagram-fonts.spec.ts` after a build.
 
-### W5. Remove `futureDestinations` and the page `reserved` input
+### [x] W5. Remove `futureDestinations` and the page `reserved` input
 
 - **Files:** `src/config/navigation.ts` (delete `futureDestinations` and its comment; the
   `fixedPrimaryNavigation` comment becomes "Primary entries whose pages are built by code routes,

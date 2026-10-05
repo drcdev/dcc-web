@@ -1,10 +1,9 @@
 // Not-found page: HTTP status and content (contracts/shell-dom.md; FR-006,
-// FR-016; T070). Retired blog addresses, unbuilt nav destinations and any
+// FR-016; T070). Retired blog addresses and any
 // other unmatched address are served by Cloudflare's static 404 handling
 // (wrangler.jsonc assets.not_found_handling: "404-page"), which returns this
 // page's build output with a genuine HTTP 404 status, not a soft 404.
 import { test, expect } from "@playwright/test";
-import { futureDestinations } from "../../src/config/navigation.ts";
 import { pages } from "../helpers/content.ts";
 import { expectThemeClass, setTheme } from "./color-theme.ts";
 
@@ -15,7 +14,7 @@ const RETIRED_ADDRESSES = ["/drift/2025/x/", "/convergence/", "/news/", "/topic/
 // Ghost-only addresses (FR-019, FR-027a): no redirect, the site's own not-found page.
 const GHOST_ADDRESSES = ["/tag/x/", "/author/x/", "/rss/", "/ghost/", "/2024/05/an-old-ghost-post/"] as const;
 
-const NOT_FOUND_ADDRESSES = [...RETIRED_ADDRESSES, ...GHOST_ADDRESSES, ...futureDestinations, "/cookie-policy/"] as const;
+const NOT_FOUND_ADDRESSES = [...RETIRED_ADDRESSES, ...GHOST_ADDRESSES, "/cookie-policy/"] as const;
 
 // Addresses that are built and must keep returning 200 (robots.txt: T083).
 const BUILT_ADDRESSES = [...pages.map((page) => page.address), "/robots.txt"];

@@ -102,12 +102,10 @@ export interface AddressInputs {
   pageFiles: readonly string[];
   /** Route file paths below src/pages/, without the pages route `[...slug].astro`. */
   routeFiles: readonly string[];
-  /** Addresses reserved for later features (`futureDestinations`). */
-  reserved: readonly string[];
 }
 
-/** Throws when a page address is claimed by a route in src/pages/ or reserved for a later feature. */
-export function assertPageAddressesFree({ pageFiles, routeFiles, reserved }: AddressInputs): void {
+/** Throws when a page address is claimed by a route in src/pages/. */
+export function assertPageAddressesFree({ pageFiles, routeFiles }: AddressInputs): void {
   const claims = [...routeFiles].sort().map(claimFromRouteFile);
   for (const path of [...pageFiles].sort()) {
     const file = `${DIRS.page}/${path}`;
@@ -118,9 +116,6 @@ export function assertPageAddressesFree({ pageFiles, routeFiles, reserved }: Add
       if (claim.addresses.includes(address) || underPrefix) {
         throw contentError("page", [file, claim.file], `the address ${address} is already used by ${claim.file}. Rename the page file.`);
       }
-    }
-    if (reserved.includes(address)) {
-      throw contentError("page", file, `the address ${address} is reserved for a later feature. Rename the page file.`);
     }
   }
 }

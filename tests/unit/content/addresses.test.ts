@@ -5,7 +5,6 @@ import { globSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
-import { futureDestinations } from "../../../src/config/navigation.ts";
 import { PageContentError } from "../../../src/lib/content/errors.ts";
 import {
   addressFromPath,
@@ -149,15 +148,14 @@ describe("assertNoTwin", () => {
 });
 
 describe("assertPageAddressesFree", () => {
-  const check = (input: { pageFiles: string[]; routeFiles?: string[]; reserved?: string[] }) =>
-    assertPageAddressesFree({ routeFiles: [], reserved: [], ...input });
+  const check = (input: { pageFiles: string[]; routeFiles?: string[]}) =>
+    assertPageAddressesFree({ routeFiles: [], ...input });
 
   it("accepts distinct addresses", () => {
     expect(() =>
       check({
         pageFiles: ["index.mdx", "about.mdx", "legal/index.mdx", "legal/terms.mdx"],
         routeFiles: ["404.astro", "[...slug].astro"],
-        reserved: ["/writing/"],
       }),
     ).not.toThrow();
   });
@@ -197,14 +195,6 @@ describe("assertPageAddressesFree", () => {
     ).not.toThrow();
   });
 
-  it.each(["/writing/", "/projects/", "/contact/"])("fails for reserved address %s", (address) => {
-    const file = `${address.replaceAll("/", "")}.mdx`;
-    const run = () => check({ pageFiles: [file], reserved: ["/writing/", "/projects/", "/contact/"] });
-    expect(run).toThrow(`src/content/pages/${file}`);
-    expect(run).toThrow("reserved");
-    expect(run).toThrow(address);
-  });
-
   it("reports an invalid file name before checking for conflicts", () => {
     expect(() => check({ pageFiles: ["About_Me.mdx"] })).toThrow("lower-case letters, digits and hyphens");
   });
@@ -214,12 +204,20 @@ describe("assertPageAddressesFree", () => {
     const routeFiles = globSync("**/*.{astro,md,mdx,ts,js}", { cwd: "src/pages" })
       .map((path) => path.replaceAll("\\", "/"))
       .filter((path) => path !== "[...slug].astro");
-    const real = { routeFiles, reserved: futureDestinations };
+    const real = { routeFiles };
 
     const notFound = () => assertPageAddressesFree({ ...real, pageFiles: ["404.mdx"] });
     expect(notFound).toThrow("src/content/pages/404.mdx");
     expect(notFound).toThrow("src/pages/404.astro");
     expect(notFound).toThrow("/404/");
+
+    const writing = () => assertPageAddressesFree({ ...real, pageFiles: ["writing.mdx"] });
+    expect(writing).toThrow("src/content/pages/writing.mdx");
+    expect(writing).toThrow("src/pages/writing/");
+
+    const projects = () => assertPageAddressesFree({ ...real, pageFiles: ["projects.mdx"] });
+    expect(projects).toThrow("src/content/pages/projects.mdx");
+    expect(projects).toThrow("src/pages/projects/");
 
     const workshops = () => assertPageAddressesFree({ ...real, pageFiles: ["projects/workshops.mdx"] });
     expect(workshops).toThrow("src/content/pages/projects/workshops.mdx");

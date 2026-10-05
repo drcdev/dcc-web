@@ -5,7 +5,6 @@ import { describe, expect, it } from "vitest";
 import {
   fixedPrimaryNavigation,
   footerNavigation,
-  futureDestinations,
   socialNavigation,
 } from "../../../src/config/navigation.ts";
 import { isCurrent, isInSection } from "../../../src/lib/nav.ts";
@@ -56,18 +55,6 @@ describe("every navigation item", () => {
       if (item.kind === "social") expect(item.href).toMatch(/^https:\/\//);
       else expect(item.href).toMatch(/^\/(?:.*\/)?$/);
     }
-  });
-});
-
-describe("futureDestinations", () => {
-  it("lists exactly the addresses reserved for later features", () => {
-    expect([...futureDestinations]).toEqual([]);
-  });
-
-  it("does not include any address a page builds", () => {
-    expect(futureDestinations).not.toContain("/");
-    expect(futureDestinations).not.toContain("/about/");
-    expect(futureDestinations).not.toContain("/contact/");
   });
 });
 
