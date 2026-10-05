@@ -4,7 +4,7 @@ description: What this site collects, how it is stored, and how to ask what is h
 draft: true
 ---
 
-This policy replaces the former cookie policy. **Last updated:** 30 September 2026.
+This policy replaces the former cookie policy. **Last updated:** 4 October 2026.
 
 ## Who is responsible
 
@@ -29,6 +29,14 @@ The contact form collects only what you type into it: your name, your email addr
 Your IP address is used only to limit repeat sending. It is not stored as it is: only a one-way, salted fingerprint of it is kept, and that fingerprint is removed after about two days. No email or other notification is sent when you submit the form.
 
 Messages are stored in a Cloudflare D1 database in Western North America. Cloudflare places the database as close to that region as it can, and it cannot be limited to Canada. Messages are deleted automatically 12 months after they arrive, whether they have been read or not.
+
+## Questions about a post
+
+Each writing post has a button that gives you a few questions to think about before you read it. When you press it, this site asks an AI model on Cloudflare Workers AI to write the questions. Only the public text of the post itself is sent to the model. Nothing about you is sent, and this site stores no information about you for this feature: no cookies, no account and no record of who asked.
+
+The questions for each version of a post are kept in the site's Cloudflare D1 database so the next reader gets them without another request to the model. The database also holds one site-wide counter of how many sets of questions were written, which is how the site stays within its daily limit. A post's saved questions are replaced when the post changes.
+
+Cloudflare, as the host of this site, handles every request, including your IP address, in its own platform logs and security systems. Those are outside this site's control and this site does not read them. The questions feature collects no personal data.
 
 ## Spam protection
 

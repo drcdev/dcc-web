@@ -73,6 +73,48 @@ describe("checks/contact-d1-databases", () => {
     if (result.status === "missing") expect(result.details.join("\n")).toMatch(/placeholder|does not match/);
   });
 
+  describe("database names come from wrangler.jsonc", () => {
+    const names = { production: "dcc-web", preview: "dcc-web-preview" };
+    const renamed = [
+      { uuid: PROD_ID, name: "dcc-web", runningInRegion: "WNAM" },
+      { uuid: PREVIEW_ID, name: "dcc-web-preview", runningInRegion: "WNAM" },
+    ];
+    const withNames = (databases: typeof both) =>
+      contactContext(
+        { cloudflare: { listD1Databases: async () => databases } },
+        { wrangler: wranglerText({ production: PROD_ID, preview: PREVIEW_ID }, names) },
+      );
+
+    it("passes for a fixture naming dcc-web* against an account holding those", async () => {
+      const result = await check(withNames(renamed));
+      expect(result.status).toBe("complete");
+      expect(result.details).toEqual([]);
+    });
+
+    it("fails naming each configured database missing from the account", async () => {
+      const result = await check(withNames(both));
+      expect(result.status).toBe("missing");
+      const text = result.details.join("\n");
+      expect(text).toContain("`dcc-web` not found in the account");
+      expect(text).toContain("`dcc-web-preview` not found in the account");
+    });
+
+    it("notes a retired database still present as a separate note, not a failure", async () => {
+      const result = await check(withNames([...renamed, ...both]));
+      expect(result.status).toBe("complete");
+      expect(result.details.join("\n")).toContain(
+        "old database `dcc-web-contact` still present: delete it after the production deploy",
+      );
+      expect(result.details.join("\n")).toContain("old database `dcc-web-contact-preview` still present");
+    });
+
+    it("shows no note while wrangler.jsonc still names the retired database", async () => {
+      const result = await check(contactContext({ cloudflare: { listD1Databases: async () => both } }));
+      expect(result.status).toBe("complete");
+      expect(result.details.join("\n")).not.toMatch(/old database/);
+    });
+  });
+
   it("is could-not-check without the account ID", async () => {
     const result = await check(contactContext({ env: envFrom({ CLOUDFLARE_API_TOKEN: "x" }) }));
     expect(result.status).toBe("could-not-check");

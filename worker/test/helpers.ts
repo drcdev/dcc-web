@@ -40,10 +40,12 @@ export function post(body: unknown = validBody(), headers: Record<string, string
   });
 }
 
-export async function run(request: Request) {
+/** Runs the Worker on a request. `envOverrides` replaces bindings for this request only (for example `{ AI, ASSETS }`). */
+export async function run(request: Request, envOverrides: Partial<Env> = {}) {
   const ctx = createExecutionContext();
   const handler = worker as unknown as Required<ExportedHandler<Env>>;
-  const response = await handler.fetch(request as Request<unknown, IncomingRequestCfProperties>, env, ctx);
+  const bindings = { ...env, ...envOverrides } as Env;
+  const response = await handler.fetch(request as Request<unknown, IncomingRequestCfProperties>, bindings, ctx);
   await waitOnExecutionContext(ctx);
   return response;
 }
@@ -122,4 +124,73 @@ export async function seedMessage(overrides: SeedMessage = {}) {
     )
     .run();
   return id;
+}
+
+export interface FakeAiOptions {
+  /** Text the model answers with (the `response` field of a text-generation result). */
+  text?: string;
+  /** The model call rejects with this error. */
+  throws?: unknown;
+  /** The model call never settles. */
+  hangs?: boolean;
+  /** `text` (default) answers `{ response }`; `chat` answers the OpenAI chat-completion shape the deployed model returns. */
+  shape?: "text" | "chat";
+}
+
+/** A stand-in for the `AI` binding. `run` records every call, so a test can count model calls. */
+export function fakeAi({ text = "", throws, hangs, shape = "text" }: FakeAiOptions = {}) {
+  const calls: { model: string; inputs: unknown; options?: unknown }[] = [];
+  const ai = {
+    calls,
+    run: async (model: string, inputs: unknown, options?: unknown) => {
+      calls.push({ model, inputs, options });
+      if (hangs) return new Promise<never>(() => {});
+      if (throws !== undefined) throw throws;
+      if (shape === "chat") {
+        return {
+          id: "chatcmpl-test",
+          object: "chat.completion",
+          choices: [{ index: 0, message: { role: "assistant", content: text, tool_calls: [] }, finish_reason: "stop" }],
+        };
+      }
+      return { response: text };
+    },
+  };
+  return ai as typeof ai & Ai;
+}
+
+/** A stand-in for the `ASSETS` binding: serves `files` (path to body) as JSON, 404 for any other path. */
+export function fakeAssets(files: Record<string, unknown> = {}) {
+  const requested: string[] = [];
+  const assets = {
+    requested,
+    fetch: async (input: RequestInfo | URL) => {
+      const url = new URL(input instanceof Request ? input.url : String(input), "https://assets.invalid");
+      requested.push(url.pathname);
+      if (!(url.pathname in files)) return new Response("Not found", { status: 404 });
+      const body = files[url.pathname];
+      return new Response(typeof body === "string" ? body : JSON.stringify(body), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    },
+  };
+  return assets as typeof assets & Fetcher;
+}
+
+/** The body of a `question-source.json` file with a correct hash (data-model section 1). */
+export async function makeSource({
+  slug,
+  text,
+  title = "A post title",
+  summary = "A post summary.",
+}: {
+  slug: string;
+  text: string;
+  title?: string;
+  summary?: string;
+}) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify([title, summary, text])));
+  const hash = [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+  return { slug, title, summary, text, hash };
 }

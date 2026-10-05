@@ -16,6 +16,7 @@ import ScrollTable from "../../components/post/ScrollTable.astro";
 import { sectionComponents } from "../../components/sections/index";
 import { selectRelated } from "../../lib/content/post-order";
 import { getNavigation } from "../../lib/pages";
+import { prepareQuestionSource } from "../../lib/questions/source";
 import { getPostSummaries, getPosts, postFileOf } from "../../lib/posts";
 
 export async function getStaticPaths() {
@@ -32,6 +33,15 @@ Astro.locals.pageFile = postFileOf(entry);
 const { Content } = await render(entry);
 const navigation = await getNavigation();
 
+// The hash of this version of the post, which the questions panel sends back so the Worker can
+// tell a changed post (specs/022).
+const { hash: questionHash } = prepareQuestionSource({
+  slug: entry.id,
+  title: entry.data.title,
+  summary: entry.data.summary,
+  body: entry.body ?? "",
+});
+
 // The feature image, resized to the Open Graph size, is the sharing image;
 // Seo.astro falls back to the site default when the post has none.
 const share = post.featureImage
@@ -39,6 +49,6 @@ const share = post.featureImage
   : undefined;
 ---
 
-<PostLayout post={post} navigation={navigation} image={share?.src} related={related}>
+<PostLayout post={post} navigation={navigation} image={share?.src} related={related} questionHash={questionHash}>
   <Content components={{ ...sectionComponents, pre: CodeBlock, table: ScrollTable }} />
 </PostLayout>

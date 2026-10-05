@@ -8,6 +8,7 @@ import {
   EXPECTED_REGION,
   isCheckResult,
   readContactConfig,
+  RETIRED_DB_NAMES,
   requireCloudflareAccess,
   wranglerUnreadable,
   type ContactDatabaseConfig,
@@ -30,7 +31,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     for (const expected of [config.production, config.preview] satisfies ContactDatabaseConfig[]) {
       const found = databases.find((d) => d.name === expected.name);
       if (!found) {
-        details.push(`${expected.name}: does not exist in this account.`);
+        details.push(`\`${expected.name}\` not found in the account.`);
         continue;
       }
       if (expected.placeholder) {
@@ -45,15 +46,22 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       }
     }
 
+    // A retired database still in the account is a note, never a failure, and only once
+    // wrangler.jsonc names different databases (before then the "retired" names are the live ones).
+    const configured = new Set([config.production.name, config.preview.name]);
+    const notes = RETIRED_DB_NAMES.filter(
+      (name) => !configured.has(name) && databases.some((d) => d.name === name),
+    ).map((name) => `old database \`${name}\` still present: delete it after the production deploy`);
+
     if (details.length > 0) {
       return missing(
         ITEM,
-        "The contact databases are not fully set up yet.",
+        "The site databases are not fully set up yet.",
         "Follow docs/setup.md#contact-d1-databases: create each missing database with pnpm exec wrangler d1 create <name> --location wnam, then put the IDs from pnpm exec wrangler d1 list --json into wrangler.jsonc.",
-        details,
+        [...details, ...notes],
       );
     }
-    return complete(ITEM, `Both contact databases exist in ${EXPECTED_REGION} and match wrangler.jsonc.`);
+    return complete(ITEM, `Both site databases exist in ${EXPECTED_REGION} and match wrangler.jsonc.`, notes);
   } catch (err) {
     return fromProviderError(
       ITEM,

@@ -9,7 +9,7 @@ import { previewDeploySteps } from "../../../scripts/deploy/preview.ts";
 describe("previewDeploySteps", () => {
   it("applies preview migrations first, deploys the preview env, then uploads an aliased version", () => {
     expect(previewDeploySteps({ WORKERS_CI_BRANCH: "002-site-foundation" })).toEqual([
-      ["d1", "migrations", "apply", "dcc-web-contact-preview", "--remote", "--env", "preview"],
+      ["d1", "migrations", "apply", "DB", "--remote", "--env", "preview"],
       ["deploy", "--env", "preview"],
       ["versions", "upload", "--env", "preview", "--preview-alias", "br-002-site-foundation"],
     ]);
@@ -17,14 +17,14 @@ describe("previewDeploySteps", () => {
 
   it("skips the aliased upload on main", () => {
     expect(previewDeploySteps({ WORKERS_CI_BRANCH: "main" })).toEqual([
-      ["d1", "migrations", "apply", "dcc-web-contact-preview", "--remote", "--env", "preview"],
+      ["d1", "migrations", "apply", "DB", "--remote", "--env", "preview"],
       ["deploy", "--env", "preview"],
     ]);
   });
 
-  it("never names the production database", () => {
+  it("names no database, only the DB binding", () => {
     const flat = previewDeploySteps({ WORKERS_CI_BRANCH: "feature-x" }).flat();
-    expect(flat).not.toContain("dcc-web-contact");
+    expect(flat).not.toContain("dcc-web");
   });
 
   it("accepts WRANGLER_CI_OVERRIDE_NAME when it is dcc-web-preview", () => {

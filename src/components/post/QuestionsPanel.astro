@@ -1,0 +1,159 @@
+---
+// The "Think before you read" panel on a writing post (specs/022 contracts/questions-panel.md).
+// Rendered only by PostLayout. It is hidden until the pre-paint script puts the `js` class on the
+// root, so without JavaScript nothing is shown (no dead button) and with it there is no layout
+// shift. The script below is bundled and hashed into the page policy by Astro
+// (docs.astro.build/en/guides/client-side-scripts/#script-processing); it posts to this site's own
+// origin, which `connect-src 'self'` already allows. Server values reach it through data attributes.
+// State changes toggle `hidden`, classes and text only: the policy blocks style attributes.
+export interface Props {
+  /** The post's slug, equal to its address segment. */
+  slug: string;
+  /** The question source hash (src/lib/questions/source.ts) the page was built with. */
+  hash: string;
+}
+
+const { slug, hash } = Astro.props;
+
+// From xl (1280 px) the panel is the right-hand column and stays in view while the body scrolls,
+// but only on a window at least 40rem tall. The script removes this class when the panel is taller
+// than the window (it reads the class from data-sticky, so the name lives here once).
+const STICKY = "[@media(min-width:1280px)_and_(min-height:40rem)]:sticky [@media(min-width:1280px)_and_(min-height:40rem)]:top-4";
+
+// The site's focus ring, 44 px targets, and a dashed border (not colour alone) while a request runs.
+const control =
+  "inline-flex min-h-11 cursor-pointer items-center rounded-full border border-rust-600 bg-transparent px-4 py-2 text-sm font-medium text-rust-800 hover:bg-rust-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rust-600 aria-disabled:cursor-wait aria-disabled:border-dashed dark:border-rust-300 dark:text-rust-300 dark:hover:bg-rust-950 forced-colors:border-[ButtonText] forced-colors:text-[ButtonText]";
+---
+
+<aside
+  data-questions
+  data-slug={slug}
+  data-hash={hash}
+  aria-labelledby="questions-heading"
+  class:list={[
+    "hidden [.js_&]:block mx-auto mt-6 w-full max-w-3xl xl:col-start-2 xl:row-start-1 xl:mx-0 xl:mt-8 xl:max-w-none xl:self-start",
+    STICKY,
+    "rounded-xl border border-dusk-200 bg-white p-6 dark:border-dusk-700 dark:bg-dusk-800 forced-colors:border-[CanvasText]",
+  ]}
+  data-sticky={STICKY}
+>
+  <h2 id="questions-heading" class="m-0 mb-2 text-lg font-bold text-dusk-900 dark:text-white">Think before you read</h2>
+  <p class="m-0 mb-3 text-dusk-700 dark:text-mist-300">Get a few questions to keep in mind while you read this post.</p>
+  <div class="flex flex-wrap items-center gap-3">
+    <button type="button" data-questions-get class={control}>Get questions</button>
+    <button type="button" data-questions-new hidden class={control}>New questions</button>
+  </div>
+  <p role="status" aria-live="polite" data-questions-status class="m-0 mt-3 text-dusk-900 dark:text-white"></p>
+  <ol data-questions-list hidden class="mb-0 mt-3 list-decimal pl-6 text-dusk-900 [overflow-wrap:anywhere] dark:text-white"></ol>
+  <p data-questions-note hidden class="m-0 mt-3 text-sm text-dusk-700 dark:text-mist-300">
+    These questions were written by an AI model from the post text. They may be imperfect.
+  </p>
+</aside>
+
+<script>
+  const ERROR = "Questions could not be loaded. Try again.";
+  const STALE = "This post has changed since the page loaded. Reload the page to get questions.";
+  const MAX_SHOWN = 4;
+  const MIN_SHOWN = 2;
+  const MAX_CHARS = 200;
+
+  /** "Try again in about 8 minutes." for a wait in seconds (contract P15). */
+  function limitMessage(retryAfter: number): string {
+    const minutes = Math.max(1, Math.ceil(retryAfter / 60));
+    const wait =
+      minutes > 90
+        ? `${Math.ceil(retryAfter / 3600)} hour${Math.ceil(retryAfter / 3600) === 1 ? "" : "s"}`
+        : `${minutes} minute${minutes === 1 ? "" : "s"}`;
+    return `Questions are unavailable for now because today's limit has been reached. Try again in about ${wait}.`;
+  }
+
+  /** The questions a reader may see: at most 4, each a short string ending in "?" (contract P16). */
+  function usable(value: unknown): string[] | null {
+    if (!Array.isArray(value)) return null;
+    const items = value
+      .filter((item): item is string => typeof item === "string")
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0 && item.length <= MAX_CHARS && item.endsWith("?"))
+      .slice(0, MAX_SHOWN);
+    return items.length >= MIN_SHOWN ? items : null;
+  }
+
+  for (const panel of document.querySelectorAll<HTMLElement>("[data-questions]")) {
+    const { slug, hash } = panel.dataset;
+    const getButton = panel.querySelector<HTMLButtonElement>("[data-questions-get]");
+    const newButton = panel.querySelector<HTMLButtonElement>("[data-questions-new]");
+    const status = panel.querySelector<HTMLElement>("[data-questions-status]");
+    const list = panel.querySelector<HTMLElement>("[data-questions-list]");
+    const note = panel.querySelector<HTMLElement>("[data-questions-note]");
+    if (!slug || !hash || !getButton || !newButton || !status || !list || !note) continue;
+
+    let busy = false;
+    let hasQuestions = false;
+
+    // A sticky panel taller than the window could not be scrolled fully into view, so it goes back
+    // into the flow (WCAG 2.2 focus not obscured, contract P21a). Classes only: the policy blocks styles.
+    const stickyClasses = (panel.dataset.sticky ?? "").split(" ").filter(Boolean);
+    function fitSticky() {
+      if (stickyClasses.length === 0) return;
+      panel.classList.add(...stickyClasses);
+      if (panel.offsetHeight > window.innerHeight - 32) panel.classList.remove(...stickyClasses);
+    }
+    fitSticky();
+    window.addEventListener("resize", fitSticky);
+
+    async function ask(fresh: boolean, button: HTMLButtonElement) {
+      if (busy) return;
+      busy = true;
+      button.setAttribute("aria-disabled", "true");
+      status!.textContent = "Getting questions...";
+      let message = ERROR;
+      let questions: string[] | null = null;
+      try {
+        const response = await fetch("/api/questions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slug, hash, fresh }),
+        });
+        const body: { error?: string; retryAfter?: number; questions?: unknown } | null = await response
+          .json()
+          .catch(() => null);
+        if (response.ok) {
+          questions = usable(body?.questions);
+        } else if (response.status === 429 && typeof body?.retryAfter === "number") {
+          message = limitMessage(body.retryAfter);
+        } else if (response.status === 404 && body?.error === "stale") {
+          message = STALE;
+        }
+      } catch {
+        // Network failure: the retry message below.
+      }
+
+      busy = false;
+      button.removeAttribute("aria-disabled");
+      if (!questions) {
+        status!.textContent = message;
+        fitSticky();
+        return;
+      }
+
+      list!.replaceChildren(
+        ...questions.map((text) => {
+          const item = document.createElement("li");
+          item.textContent = text;
+          return item;
+        }),
+      );
+      list!.hidden = false;
+      note!.hidden = false;
+      newButton!.hidden = false;
+      getButton!.hidden = true;
+      status!.textContent = hasQuestions ? "New questions are ready." : "Questions are ready.";
+      hasQuestions = true;
+      fitSticky();
+      if (button === getButton) newButton!.focus();
+    }
+
+    getButton.addEventListener("click", () => void ask(false, getButton));
+    newButton.addEventListener("click", () => void ask(true, newButton));
+  }
+</script>

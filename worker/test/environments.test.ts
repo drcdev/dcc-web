@@ -17,8 +17,10 @@ const other = expected === "preview" ? "production" : "preview";
 
 describe(`the ${expected} environment`, () => {
   it("binds DB to its own D1 database and never the other's", () => {
-    expect(env.EXPECTED_DATABASE_NAME).toBe(expected === "preview" ? "dcc-web-contact-preview" : "dcc-web-contact");
-    expect(env.OTHER_DATABASE_NAME).toBe(other === "preview" ? "dcc-web-contact-preview" : "dcc-web-contact");
+    // Shape, not live names, so the test holds before and after the database swap commit.
+    const production = expected === "preview" ? env.OTHER_DATABASE_NAME : env.EXPECTED_DATABASE_NAME;
+    const preview = expected === "preview" ? env.EXPECTED_DATABASE_NAME : env.OTHER_DATABASE_NAME;
+    expect(preview).toBe(`${production}-preview`);
     expect(env.EXPECTED_DATABASE_NAME).not.toBe(env.OTHER_DATABASE_NAME);
   });
 
@@ -48,5 +50,13 @@ describe(`the ${expected} environment`, () => {
     const crossed = await run(api("/api/messages/new", { token: env.OTHER_READ_TOKEN }));
     expect(crossed.status).toBe(401);
     expect(await crossed.text()).not.toContain(`Sender ${expected}`);
+  });
+
+  it("keeps its own usage bucket row: draining it leaves no trace in the other environment's data (Q26)", async () => {
+    // Each Vitest project has its own local D1, so a drained bucket here is visible only here.
+    await env.DB.prepare("UPDATE usage_bucket SET tokens = 0, updated_at = 1 WHERE id = 1").run();
+    const row = await env.DB.prepare("SELECT tokens FROM usage_bucket WHERE id = 1").first<{ tokens: number }>();
+    expect(row?.tokens).toBe(0);
+    expect(env.EXPECTED_DATABASE_NAME).not.toBe(env.OTHER_DATABASE_NAME);
   });
 });

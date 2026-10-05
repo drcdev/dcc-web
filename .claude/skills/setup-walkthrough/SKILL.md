@@ -149,6 +149,12 @@ Don has already completed are skipped as usual:
 8. `contact-production-deploy` (item 25) — `phase: after-merge`, so the after-merge rule in
    step 5 of Behaviour applies: give the PR link and wait for the merge. It is reported as an
    after-merge item and does not fail the check before the merge.
+   When it comes to deleting the retired databases, show the order from `docs/setup.md` item 25:
+   only after the production deploy is green, `pnpm exec wrangler d1 migrations list dcc-web
+   --remote --env-file /dev/null` shows nothing pending and `pnpm setup:check --item
+   contact-d1-databases` passes; delete `dcc-web-contact-preview` first, then `dcc-web-contact`, and
+   before each delete run `pnpm exec wrangler d1 execute <old name> --remote --env-file /dev/null
+   --command "SELECT count(*) FROM messages"`, stopping to export the rows if it is not 0.
 
 ### Item 19: region confirmation (FR-027a, FR-027b)
 
@@ -169,20 +175,20 @@ to add the binding to the config:
 
 ```sh
 pnpm exec wrangler login
-pnpm exec wrangler d1 create dcc-web-contact --location wnam --env-file /dev/null
-pnpm exec wrangler d1 create dcc-web-contact-preview --location wnam --env-file /dev/null
+pnpm exec wrangler d1 create dcc-web --location wnam --env-file /dev/null
+pnpm exec wrangler d1 create dcc-web-preview --location wnam --env-file /dev/null
 ```
 
 If a database was created with the wrong name or location and is still empty, remove it with this
 command, shown for Don to run himself, then create it again:
 
 ```sh
-pnpm exec wrangler d1 delete dcc-web-contact --env-file /dev/null
+pnpm exec wrangler d1 delete dcc-web --env-file /dev/null
 ```
 
 After Don says Done, the skill may run one non-check command for this item:
 `pnpm exec wrangler d1 list --json`. Its output contains no secrets. Copy the two database IDs
-into `wrangler.jsonc` (`dcc-web-contact` at the top level, `dcc-web-contact-preview` under `env.preview`), then
+into `wrangler.jsonc` (`dcc-web` at the top level, `dcc-web-preview` under `env.preview`), then
 commit and push. This is the only non-check command the skill runs during the walkthrough. Then run
 `pnpm setup:check --json --item contact-d1-databases`.
 

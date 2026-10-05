@@ -1,4 +1,5 @@
 import { json } from "../http";
+import { isSameOriginRequest } from "../same-origin";
 import { hashIp } from "./ip-hash";
 import { DUPLICATE_CHECK_SQL, INSERT_MESSAGE_SQL } from "./queries";
 import { checkRateLimit } from "./rate-limit";
@@ -30,15 +31,6 @@ const fail = (
   extra: Record<string, unknown> = {},
   headers: Record<string, string> = {},
 ) => json({ ok: false, error, ...extra }, status, headers);
-
-const LOCAL_HOSTS = new Set(["127.0.0.1", "localhost"]);
-
-function isSameOriginRequest(request: Request, url: URL): boolean {
-  if (url.protocol !== "https:" && !(url.protocol === "http:" && LOCAL_HOSTS.has(url.hostname))) return false;
-  if (request.headers.get("Origin") !== url.origin) return false;
-  const site = request.headers.get("Sec-Fetch-Site");
-  return site === null || site === "same-origin";
-}
 
 /** Reads the body through a byte counter; null when it grows past the cap. */
 async function readCapped(request: Request): Promise<string | null> {

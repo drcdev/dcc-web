@@ -65,3 +65,6 @@ Thumbs.db
 
 # Read-only design reference (Flux theme), never committed
 .reference/
+
+# Generated for the E2E Worker (scripts/e2e-wrangler-config.ts)
+wrangler.e2e.json

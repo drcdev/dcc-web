@@ -92,6 +92,15 @@ describe("astro.config.mjs security.csp", () => {
     expect(nonHash.sort()).toEqual([...expected].sort());
   });
 
+  // specs/022 T023: the questions panel calls its own origin, which `connect-src 'self'` already
+  // allows, so the policy needs no source for it.
+  it("lets the questions panel reach /api/questions through connect-src 'self' alone", () => {
+    expect(policy.get("connect-src")).toContain("'self'");
+    for (const sources of policy.values()) {
+      for (const source of sources) expect(source).not.toMatch(/api\/questions|workers\.dev|ai\./);
+    }
+  });
+
   it("hashes the inline pre-paint theme script exactly as it is rendered", () => {
     const source = readFileSync(join(root, "src/scripts/theme-init.js"), "utf-8");
     const hash = `sha256-${createHash("sha256").update(source).digest("base64")}`;

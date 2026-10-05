@@ -77,21 +77,32 @@ describe("wrangler.jsonc", () => {
     expect(config.assets?.run_worker_first).toEqual(["/api/*"]);
   });
 
-  it("binds only dcc-web-contact in production and only dcc-web-contact-preview in preview, both as DB", () => {
+  // The D1 assertions check shape and internal consistency, never live ids or names, so they hold
+  // before and after the database swap commit (W01).
+  it("binds exactly one database as DB in each environment, the preview named like production plus -preview", () => {
     expect(config.d1_databases).toHaveLength(1);
-    expect(config.d1_databases[0]).toMatchObject({
-      binding: "DB",
-      database_name: "dcc-web-contact",
-      migrations_dir: "migrations",
-    });
+    expect(config.d1_databases[0]).toMatchObject({ binding: "DB", migrations_dir: "migrations" });
+    const production = config.d1_databases[0].database_name;
+    expect(typeof production).toBe("string");
+    expect(production.length).toBeGreaterThan(0);
     const preview = config.env?.preview;
     expect(preview?.d1_databases).toHaveLength(1);
-    expect(preview.d1_databases[0]).toMatchObject({
-      binding: "DB",
-      database_name: "dcc-web-contact-preview",
-      migrations_dir: "migrations",
-    });
+    expect(preview.d1_databases[0]).toMatchObject({ binding: "DB", migrations_dir: "migrations" });
+    expect(preview.d1_databases[0].database_name).toBe(`${production}-preview`);
     expect(JSON.stringify(config).match(/"database_name"/g)).toHaveLength(2);
+  });
+
+  it("binds Workers AI as AI in both environments, never remote (W02)", () => {
+    expect(config.ai).toEqual({ binding: "AI" });
+    expect(config.env.preview.ai).toEqual({ binding: "AI" });
+    expect(config.ai).not.toHaveProperty("remote");
+    expect(config.env.preview.ai).not.toHaveProperty("remote");
+  });
+
+  it("binds the static assets as ASSETS and runs the Worker first only for /api/* (W03)", () => {
+    expect(config.assets?.binding).toBe("ASSETS");
+    expect(config.assets?.run_worker_first).toEqual(["/api/*"]);
+    expect(config.env.preview.assets).toBeUndefined();
   });
 
   it("has two different database ids, each a real UUID (no placeholder)", () => {
@@ -107,17 +118,23 @@ describe("wrangler.jsonc", () => {
     expect(production).not.toBe(preview);
   });
 
-  it("binds the dcc-web-prefixed databases by their recorded ids", () => {
-    expect(config.d1_databases[0].database_id).toBe("9b51b0c4-2ddb-4563-8621-c99d28de4e16");
-    expect(config.env.preview.d1_databases[0].database_id).toBe("53cef28f-8a6c-4b53-8557-bbc30aa986bf");
-  });
-
-  it("has every `d1 migrations apply <name>` in the deploy scripts and e2e config naming the right database_name", () => {
+  it("applies migrations by the DB binding in the deploy scripts and the e2e config (W04)", () => {
     const read = (rel: string) => readFileSync(fileURLToPath(new URL(`../../../${rel}`, import.meta.url)), "utf-8");
     const applied = (text: string) => [...text.matchAll(/"apply",\s*"([^"]+)"|migrations apply ([\w-]+)/g)].map((m) => m[1] ?? m[2]);
-    expect(applied(read("scripts/deploy/production.ts"))).toEqual([config.d1_databases[0].database_name]);
-    expect(applied(read("scripts/deploy/preview.ts"))).toEqual([config.env.preview.d1_databases[0].database_name]);
-    expect(applied(read("playwright.config.ts"))).toEqual([config.d1_databases[0].database_name]);
+    expect(applied(read("scripts/deploy/production.ts"))).toEqual(["DB"]);
+    expect(applied(read("scripts/deploy/preview.ts"))).toEqual(["DB"]);
+    expect(applied(read("playwright.config.ts"))).toEqual(["DB"]);
+    expect(read("scripts/deploy/preview.ts")).toContain('"--env", "preview"');
+  });
+
+  it("runs the e2e Worker from a generated config without the remote-only ai binding", () => {
+    const read = (rel: string) => readFileSync(fileURLToPath(new URL(`../../../${rel}`, import.meta.url)), "utf-8");
+    expect(read("playwright.config.ts")).toContain("wrangler dev --config wrangler.e2e.json");
+    const script = read("scripts/e2e-wrangler-config.ts");
+    expect(script).toContain("delete config.ai");
+    expect(script).toContain("delete env.ai");
+    expect(read(".gitignore")).toMatch(/^wrangler\.e2e\.json$/m);
+    expect(config.ai).toEqual({ binding: "AI" });
   });
 
   it("names the preview Worker dcc-web-preview", () => {
@@ -239,10 +256,10 @@ describe("playwright.config.ts", () => {
   it("runs the webServer through wrangler dev on 127.0.0.1:4321 with metrics off", async () => {
     const config = await loadConfig();
     const server = config.webServer[0];
-    expect(server?.command).toContain("wrangler dev --ip 127.0.0.1 --port 4321");
+    expect(server?.command).toContain("wrangler dev --config wrangler.e2e.json --ip 127.0.0.1 --port 4321");
     expect(server?.command).toContain("--persist-to .cache/e2e-state");
     expect(server?.command).toContain("--env-file tests/fixtures/worker/e2e.env");
-    expect(server?.command).toContain("wrangler d1 migrations apply dcc-web-contact --local --persist-to .cache/e2e-state");
+    expect(server?.command).toContain("wrangler d1 migrations apply DB --local --persist-to .cache/e2e-state");
     expect(server?.env?.WRANGLER_SEND_METRICS).toBe("false");
     expect(server?.env?.ASTRO_PREVIEW_BACKGROUND).toBeUndefined();
     expect(server?.url).toBe("http://127.0.0.1:4321");

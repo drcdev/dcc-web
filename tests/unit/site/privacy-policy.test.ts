@@ -81,6 +81,27 @@ describe("privacy policy: your choices", () => {
   });
 });
 
+describe("privacy policy: reading questions (specs/022 FR-023)", () => {
+  const questions = section("Questions about a post");
+
+  it("names Workers AI and says only the post's own public text is sent", () => {
+    expect(questions).toContain("workers ai");
+    expect(questions).toMatch(/public text|own text|text of the post/);
+    expect(questions).toMatch(/nothing (about you|about the reader)|no information about you/);
+  });
+
+  it("says where the questions are stored", () => {
+    expect(questions).toContain("d1");
+  });
+
+  it("says Cloudflare's own logs see the reader's IP address and the site does not read them", () => {
+    expect(questions).toMatch(/cloudflare[^.]*(platform )?logs/);
+    expect(questions).toContain("ip address");
+    expect(questions).toMatch(/(not read|does not read|never read)/);
+    expect(questions).toMatch(/no personal data|collects no personal/);
+  });
+});
+
 describe("privacy policy: whole page", () => {
   it("has no leftover placeholders", () => {
     expect(body.toLowerCase()).not.toContain("to be confirmed");

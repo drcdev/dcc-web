@@ -343,6 +343,18 @@ button:focus-visible {
   text-align: center;
 }
 
+/* From xl a post with a questions panel puts the body in the left grid column beside the panel
+   (src/layouts/PostLayout.astro, specs/022 contracts/questions-panel.md P21). The page-centred
+   breakout above assumed the body was the centred column, so it pushed wide and full images past
+   the left edge of the window and under the panel. There they fill the body column instead. */
+@media (min-width: 1280px) {
+  [data-questions] ~ [data-post-body] :is(.kg-width-wide, .kg-width-full) {
+    width: auto;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+}
+
 /* ===== Blog: code cards and syntax colours (port of Flux kg-code-card; spec 008 R7, R8) ===== */
 /* Shiki writes no colours: src/lib/markdown/shiki-classes.ts turns each token colour
    into an hl-* class, so the page needs no inline styles (content security policy).

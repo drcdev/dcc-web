@@ -109,3 +109,13 @@ test("the writing landing lead and both series links are present and usable with
   await expect(page).toHaveURL(/\/writing\/drift\/$/);
   await expect(page.locator("main h1")).toHaveText("Drift");
 });
+
+// specs/022 P05, FR-011: without JavaScript the questions panel is not shown at all (no dead
+// button) and the post reads normally.
+test("a writing post shows no questions panel without JavaScript and reads normally", async ({ page }) => {
+  await page.goto("/writing/sample-everything/");
+  await expect(page.locator("[data-questions]")).toBeHidden();
+  await expect(page.getByRole("button", { name: "Get questions" })).toHaveCount(0);
+  await expect(page.locator("main h1")).toBeVisible();
+  await expect(page.locator("[data-post-body]")).toBeVisible();
+});

@@ -137,6 +137,26 @@ never needs a test edit.
   `test:build:content` (the content-only CI tier). `tests/unit/ci/content-tier.test.ts` checks
   this.
 
+### Critical-thinking questions (feature 022)
+
+The "Think before you read" panel and its API are covered once each, at the cheapest layer:
+
+- **Worker tests** (`worker/test/questions*.test.ts`, run by `test:worker` against a real local D1
+  and a fake `ai` binding) cover the endpoint, the cache, the site-wide token bucket, the output
+  validation and the config module. No test reaches the real model.
+- **Unit test** `tests/unit/questions/source.test.ts` covers building a post's question source.
+- **Build test** `tests/build/question-source.test.ts` runs the real `astro build` and checks the
+  `question-source.json` files, which only the real build produces.
+- **E2E** `tests/e2e/questions.spec.ts` (project `sections`) runs the panel journeys and layout on
+  the fixture site, with `/api/questions` stubbed by `tests/e2e/questions-stub.ts`; the fixture
+  site has no Worker.
+- **Accessibility:** the post templates are scanned idle in `a11y.spec.ts`. The ready, limited
+  and error states are scanned again in `blog-fixture.a11y.spec.ts`, because their markup exists
+  only after a press (the second layer's written reason).
+- **Visual:** the panel appears only in the `post-template` element shots of the fixture post.
+
+These files are not content-only: a change to any of them runs the full gate.
+
 ### Visual coverage
 
 The `visual` project snapshots the design system only: the shell (header, footer and the open
@@ -171,7 +191,8 @@ italic). They are not preloaded, so a page without code requests none. The guard
 `font-coverage.test.ts` checks both families, `font-files.test.ts` and `astro-config.test.ts`
 the files and the config, and `design-tokens.test.ts` the `--font-mono` token. `fonts.spec.ts`
 proves the mono faces and that a page without code fetches no mono file, and the visual project
-waits for the code faces. Only the `post-template` baselines show code.
+waits for the code faces. Only the `post-template` baselines show code. They also show the questions panel (feature 022),
+above the body, or beside it from 1280 px.
 
 Diagram and sharing-image fonts (feature 020): the project diagrams embed their own Inter
 subsets. The unit test `tests/unit/site/diagram-fonts.test.ts` is the gate (fonts embedded,

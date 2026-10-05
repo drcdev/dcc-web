@@ -10,13 +10,16 @@ export const CONFIG = { workerName: "dcc-web", previewWorkerName: "dcc-web-previ
 export const MIGRATIONS = ["0001_create_messages.sql"];
 
 /** wrangler.jsonc text with comments and trailing commas, like the real file. */
-export function wranglerText(ids: { production: string; preview: string } = { production: PROD_ID, preview: PREVIEW_ID }) {
+export function wranglerText(
+  ids: { production: string; preview: string } = { production: PROD_ID, preview: PREVIEW_ID },
+  names: { production: string; preview: string } = { production: "dcc-web-contact", preview: "dcc-web-contact-preview" },
+) {
   return `{
   // comment with a "quoted" word and a url https://example.com
   "name": "dcc-web",
   "triggers": { "crons": ["17 3 * * *"] },
   "d1_databases": [
-    { "binding": "DB", "database_name": "dcc-web-contact", "database_id": "${ids.production}", },
+    { "binding": "DB", "database_name": "${names.production}", "database_id": "${ids.production}", },
   ],
   "env": {
     "preview": {
@@ -24,7 +27,7 @@ export function wranglerText(ids: { production: string; preview: string } = { pr
       "triggers": { "crons": ["17 3 * * *"] },
       /* block */
       "d1_databases": [
-        { "binding": "DB", "database_name": "dcc-web-contact-preview", "database_id": "${ids.preview}" }
+        { "binding": "DB", "database_name": "${names.preview}", "database_id": "${ids.preview}" }
       ]
     }
   }

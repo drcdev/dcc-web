@@ -529,11 +529,14 @@ are done in the order shown. Two rules apply to every step:
   Cloudflare, or whose token lacks a permission, says "could not check" with the permission to add;
   it is never shown as complete.
 
-## 19. Contact databases {#contact-d1-databases}
+## 19. Site databases {#contact-d1-databases}
 
 **What it is for**
-Contact messages are stored in Cloudflare D1, with production (`dcc-web-contact`) and preview
-(`dcc-web-contact-preview`) in separate databases so a test message never lands in the real one.
+The site's Worker keeps its data in Cloudflare D1: contact messages, and the cached critical
+thinking questions and their usage bucket. Production (`dcc-web`) and preview (`dcc-web-preview`)
+are separate databases so a test message never lands in the real one. These replace the earlier
+`dcc-web-contact` and `dcc-web-contact-preview` databases, which item 25 deletes after the
+production deploy.
 
 **Where to do it**
 Read this first. Both databases will be created in Western North America (`wnam`). D1 cannot keep
@@ -546,18 +549,18 @@ needed):
 
 ```sh
 pnpm exec wrangler login
-pnpm exec wrangler d1 create dcc-web-contact --location wnam --env-file /dev/null
-pnpm exec wrangler d1 create dcc-web-contact-preview --location wnam --env-file /dev/null
+pnpm exec wrangler d1 create dcc-web --location wnam --env-file /dev/null
+pnpm exec wrangler d1 create dcc-web-preview --location wnam --env-file /dev/null
 ```
 
 Choose **no** if Wrangler offers to add the binding to the config. The database IDs are not secret;
 once you confirm, the agent runs `pnpm exec wrangler d1 list --json`, copies the two IDs into
-`wrangler.jsonc` (`dcc-web-contact` at the top level, `dcc-web-contact-preview` under `env.preview`), commits and
+`wrangler.jsonc` (`dcc-web` at the top level, `dcc-web-preview` under `env.preview`), commits and
 pushes. If a database was created with the wrong name or location and is still empty, remove it and
 create it again:
 
 ```sh
-pnpm exec wrangler d1 delete dcc-web-contact --env-file /dev/null
+pnpm exec wrangler d1 delete dcc-web --env-file /dev/null
 ```
 
 **How it will be confirmed**
@@ -700,17 +703,18 @@ VIII (Secure by Default) and X (Accessible, Fast and Private).
 ## 24. Preview migrations and clean-up schedule {#contact-preview-deploy}
 
 **What it is for**
-The preview deployment applies the database migrations to `dcc-web-contact-preview` and registers the daily
+The preview deployment applies the database migrations to the `dcc-web-preview` database and registers the daily
 clean-up schedule, so a test submission on the preview address works end to end.
 
 **Where to do it**
 Cloudflare dashboard → My Profile → API Tokens → the token Workers Builds uses (named in each
-Worker's Settings → Build → API token) → Edit → add Account → **D1: Edit**. Then push the branch
-(the agent does this) or choose Retry build on `dcc-web-preview`.
+Worker's Settings → Build → API token) → Edit → add Account → **D1: Edit**. The same token may also
+need the **Workers AI** permission for the preview build to deploy the `AI` binding. Then push the
+branch (the agent does this) or choose Retry build on `dcc-web-preview`.
 
 **How it will be confirmed**
-`pnpm setup:check --item contact-preview-deploy` reports complete when `dcc-web-contact-preview` has applied
-every file in `migrations/` and `dcc-web-preview` has the cron `17 3 * * *`. That is also how the
+`pnpm setup:check --item contact-preview-deploy` reports complete when the `dcc-web-preview` database has applied
+every file in `migrations/` and the `dcc-web-preview` Worker has the cron `17 3 * * *`. That is also how the
 Workers Builds token's D1 permission is confirmed, indirectly. It reports `pending` while a
 `dcc-web-preview` build is running.
 
@@ -732,9 +736,23 @@ Build → production deploy command → `pnpm run deploy:production`, then Retry
 build. Until this is done, production's contact form answers "service unavailable". Production
 traffic is still only the review address.
 
+Delete the retired databases only after the production deploy is green,
+`pnpm exec wrangler d1 migrations list dcc-web --remote --env-file /dev/null` shows nothing pending
+and `pnpm setup:check --item contact-d1-databases` passes. Contact data is not migrated to the new
+databases; the count below proves the old ones hold none. These are shown for Don to run himself.
+Delete `dcc-web-contact-preview` first, then `dcc-web-contact`. Before each delete, run the count and
+stop and export the rows if it is not 0:
+
+```sh
+pnpm exec wrangler d1 execute dcc-web-contact-preview --remote --env-file /dev/null --command "SELECT count(*) FROM messages"
+pnpm exec wrangler d1 delete dcc-web-contact-preview --env-file /dev/null
+pnpm exec wrangler d1 execute dcc-web-contact --remote --env-file /dev/null --command "SELECT count(*) FROM messages"
+pnpm exec wrangler d1 delete dcc-web-contact --env-file /dev/null
+```
+
 **How it will be confirmed**
 `pnpm setup:check --item contact-production-deploy` reports complete when `dcc-web`'s production
-trigger uses `pnpm run deploy:production`, `dcc-web-contact` has applied every file in `migrations/`, and
+trigger uses `pnpm run deploy:production`, the `dcc-web` database has applied every file in `migrations/`, and
 `dcc-web` has the cron `17 3 * * *`. Before the merge it is shown as an after-merge item and does not
 fail the check.
 

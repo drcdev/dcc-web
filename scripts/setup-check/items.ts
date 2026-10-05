@@ -364,10 +364,10 @@ const seeds: ItemSeed[] = [
   {
     id: "contact-d1-databases",
     order: 19,
-    title: "Contact databases",
-    purpose: "Contact messages are stored in Cloudflare D1, with production and preview kept in separate databases.",
+    title: "Site databases",
+    purpose: "The site keeps contact messages and the questions cache in Cloudflare D1, with production and preview in separate databases.",
     where:
-      "Both databases will be created in Western North America (wnam). D1 cannot keep data only in Canada, and the location cannot be changed after the databases are created. In a terminal in the repository run: pnpm exec wrangler login (if needed), pnpm exec wrangler d1 create dcc-web-contact --location wnam, then pnpm exec wrangler d1 create dcc-web-contact-preview --location wnam. Choose no if Wrangler offers to add the binding to the config. The agent then reads the two IDs with pnpm exec wrangler d1 list --json and records them in wrangler.jsonc.",
+      "Both databases will be created in Western North America (wnam). D1 cannot keep data only in Canada, and the location cannot be changed after the databases are created. In a terminal in the repository run: pnpm exec wrangler login (if needed), pnpm exec wrangler d1 create dcc-web --location wnam, then pnpm exec wrangler d1 create dcc-web-preview --location wnam. Choose no if Wrangler offers to add the binding to the config. The agent then reads the two IDs with pnpm exec wrangler d1 list --json and records them in wrangler.jsonc.",
     confirmedBy:
       "Both databases exist by name, each reports region WNAM, and their IDs equal the database_id values in wrangler.jsonc",
     needsDon: true,
@@ -447,7 +447,7 @@ const seeds: ItemSeed[] = [
     where:
       "Cloudflare dashboard -> My Profile -> API Tokens -> the token Workers Builds uses -> Edit -> add Account -> D1: Edit. Then push the branch or choose Retry build on dcc-web-preview.",
     confirmedBy:
-      "dcc-web-contact-preview has every migration in migrations/ applied and dcc-web-preview has the cron 17 3 * * *; pending while a build is running",
+      "the dcc-web-preview database has every migration in migrations/ applied and the dcc-web-preview Worker has the cron 17 3 * * *; pending while a build is running",
     needsDon: true,
     principles: ["II", "VII", "VIII"],
     requirements: ["FR-018", "FR-028"],

@@ -3,8 +3,10 @@
 import type { CheckResult, CloudflareBuildTrigger, ProviderContext, SetupConfig } from "../types.ts";
 import { couldNotCheck, type ItemLabel } from "./shared.ts";
 
-export const PRODUCTION_DB_NAME = "dcc-web-contact";
-export const PREVIEW_DB_NAME = "dcc-web-contact-preview";
+export const PRODUCTION_DB_NAME = "dcc-web";
+export const PREVIEW_DB_NAME = "dcc-web-preview";
+/** Databases the site used before the rename; item 19 notes one that is still in the account once wrangler.jsonc names others. */
+export const RETIRED_DB_NAMES = ["dcc-web-contact", "dcc-web-contact-preview"] as const;
 export const REQUIRED_WORKER_SECRETS = ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"] as const;
 export const SITE_KEY_VARIABLE = "PUBLIC_TURNSTILE_SITE_KEY";
 export const DEFAULT_CRON = "17 3 * * *";
