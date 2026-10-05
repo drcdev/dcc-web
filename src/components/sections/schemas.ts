@@ -4,10 +4,10 @@
 // `content`, so "needs text" and "needs exactly one image" are checked the same
 // way as a missing prop.
 import { z } from "astro/zod";
+import { linkTarget } from "../../content/schemas/shared.ts";
 import type { SectionName } from "./index.ts";
 
 const text = z.string().trim().min(1);
-const address = z.string().regex(/^(\/|https:\/\/)/, "use an address that starts with / or https://");
 
 const content = z.strictObject({
   /** Whether there is any text inside the section. */
@@ -46,8 +46,8 @@ export const sectionSchemas = {
   Offerings: section({ title: text.optional() }, (value, ctx) => {
     if (value.offerings < 1) ctx.addIssue({ code: "custom", path: ["content"], message: "needs at least one Offering" });
   }),
-  Offering: section({ title: text, href: address.optional() }, needsText("a short description")),
-  CallToAction: section({ label: text, href: address }),
+  Offering: section({ title: text, href: linkTarget.optional() }, needsText("a short description")),
+  CallToAction: section({ label: text, href: linkTarget }),
   Figure: section({ caption: text.optional() }, needsOneImage),
   WideImage: section({ caption: text.optional() }, needsOneImage),
   FullImage: section({ caption: text.optional() }, needsOneImage),

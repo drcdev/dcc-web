@@ -116,4 +116,17 @@ describe("pageSchema", () => {
     rejects({ ...minimal, intro: { ...full.intro, cta: { label: "Go", href: "services" } } });
     rejects({ ...minimal, intro: { ...full.intro, cta: { label: "", href: "/services/" } } });
   });
+
+  it("rejects a cta address that is protocol-relative (#95)", () => {
+    for (const href of ["//example.com/", "/\\example.com/"]) {
+      rejects({ ...minimal, intro: { ...full.intro, cta: { label: "Go", href } } });
+    }
+  });
+
+  it("accepts a cta address that is internal or https (#95)", () => {
+    for (const href of ["/", "/services/", "https://example.com/"]) {
+      const result = schema.safeParse({ ...minimal, intro: { ...full.intro, cta: { label: "Go", href } } });
+      expect(result.success, href).toBe(true);
+    }
+  });
 });
