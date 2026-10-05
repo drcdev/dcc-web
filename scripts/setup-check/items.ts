@@ -219,7 +219,7 @@ const seeds: ItemSeed[] = [
     order: 9,
     title: "GitHub secret scanning and Dependabot",
     purpose: "GitHub's own secret scanning and push protection are an always-on backstop alongside local secretlint, and Dependabot security updates open fix PRs for vulnerable dependencies.",
-    where: "Repository Settings -> Code security -> turn on Secret scanning, Push protection and Dependabot security updates (which also turns on Dependabot alerts).",
+    where: "Repository Settings -> Code security -> turn on Secret scanning, Push protection and Dependabot security updates (Dependabot alerts must be on first).",
     confirmedBy: "security_and_analysis.secret_scanning, …secret_scanning_push_protection and …dependabot_security_updates are all enabled",
     needsDon: true,
     principles: ["VII"],

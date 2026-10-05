@@ -272,7 +272,7 @@ open a fix PR when an advisory hits a dependency.
 
 **Where to do it**
 Repository Settings → Code security → turn on Secret scanning, Push protection and Dependabot
-security updates (which also turns on Dependabot alerts).
+security updates (Dependabot alerts must be on first).
 
 **How it will be confirmed**
 `pnpm setup:check --item github-secret-scanning` reports complete when
