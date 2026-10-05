@@ -216,6 +216,13 @@ describe("questions API: source and generation", () => {
     expect(await storedRows()).toHaveLength(0);
   });
 
+  it("Q09: a chat-completion shaped model result generates questions", async () => {
+    const { assets, hash } = await setup();
+    const res = await run(request({ slug: SLUG, hash }), { AI: fakeAi({ text: MODEL_TEXT, shape: "chat" }), ASSETS: assets });
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { questions: string[] }).questions).toEqual(MODEL_TEXT.split("\n"));
+  });
+
   it("Q09: a model that throws is 503 unavailable with no detail", async () => {
     const { assets, hash } = await setup();
     const res = await run(request({ slug: SLUG, hash }), {
@@ -306,6 +313,22 @@ describe("questions API: privacy (FR-019, FR-022)", () => {
       expect(line).not.toMatch(/203\.0\.113|UA-MARKER|a-post|evidence supports/);
     }
     expect(logs.join("\n")).not.toContain("evidence supports");
+  });
+
+  it("Q24: a failing model logs its error name and a message truncated to 200 characters, nothing else", async () => {
+    const { assets, hash } = await setup();
+    await run(request({ slug: SLUG, hash }, { "CF-Connecting-IP": "203.0.113.99" }), {
+      AI: fakeAi({ throws: new Error(`binding-failure ${"x".repeat(400)}`) }),
+      ASSETS: assets,
+    });
+    const lines = logs.filter((line) => line.includes('"event":"questions"'));
+    expect(lines).toHaveLength(1);
+    const parsed = JSON.parse(lines[0]) as Record<string, unknown>;
+    expect(parsed).toMatchObject({ event: "questions", outcome: "unavailable", name: "Error" });
+    expect(typeof parsed.message).toBe("string");
+    expect(parsed.message as string).toMatch(/^binding-failure x/);
+    expect((parsed.message as string).length).toBe(200);
+    expect(lines[0]).not.toMatch(/203\.0\.113|a-post|evidence supports/);
   });
 
   it("Q24: logs only the ten FR-022 outcomes, and a wrong method, type and size each log invalid", async () => {

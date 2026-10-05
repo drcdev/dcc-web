@@ -92,7 +92,9 @@ an unknown slug and for a draft slug on production.
 - Q22: a failed or malformed generation leaves `tokens` where it was (refund).
 - Q23: Q08 and Q06/Q07 never call the model.
 - Q24: no log line, response or D1 row contains an IP, a request header value or raw model
-  output; one line `{"event":"questions","outcome":…}` per request (FR-019, FR-022, SC-006).
+  output; one line `{"event":"questions","outcome":…}` per request (FR-019, FR-022, SC-006). A
+  failure's line also carries the error `name` and a `message` truncated to 200 characters (the
+  text of an internal binding or model error, never reader data).
 - Q25: the endpoint never reads `CF-Connecting-IP` or sets a cookie.
 - Q26: production and preview each use their own database and bucket (`environments.test.ts`).
 - Q27: a request body with extra text fields (for example `text`) changes nothing: generation

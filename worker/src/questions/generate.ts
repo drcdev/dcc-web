@@ -1,5 +1,8 @@
 // The model call (research R5). The post text is passed as quoted data between fixed
 // delimiters, never as instructions, and no request field ever enters the prompt (FR-014).
+// The result is read from either shape: `{ response }` (the documented text-generation field,
+// older models) or an OpenAI chat completion (`choices[0].message.content`), which is what the
+// deployed granite model returns.
 import { MAX_OUTPUT_TOKENS, MODEL_TIMEOUT_MS, QUESTIONS_MODEL } from "./config";
 
 export interface PostText {
@@ -24,6 +27,14 @@ export function buildMessages({ title, summary, text }: PostText) {
   ];
 }
 
+/** The model's text from either result shape, or undefined when neither carries a string. */
+export function extractText(result: unknown): string | undefined {
+  const r = result as { response?: unknown; choices?: { message?: { content?: unknown } }[] } | null | undefined;
+  if (typeof r?.response === "string") return r.response;
+  const content = Array.isArray(r?.choices) ? r.choices[0]?.message?.content : undefined;
+  return typeof content === "string" ? content : undefined;
+}
+
 /** Asks the model for questions. Returns its raw text, or throws (error, timeout or no binding). */
 export async function generate(ai: Ai | undefined, post: PostText, fresh: boolean): Promise<string> {
   if (!ai) throw new Error("AI binding missing");
@@ -41,9 +52,9 @@ export async function generate(ai: Ai | undefined, post: PostText, fresh: boolea
       }),
       timeout,
     ]);
-    const response = (result as { response?: unknown } | null)?.response;
-    if (typeof response !== "string") throw new Error("model returned no text");
-    return response;
+    const text = extractText(result);
+    if (text === undefined) throw new Error("model returned no text");
+    return text;
   } finally {
     clearTimeout(timer);
   }

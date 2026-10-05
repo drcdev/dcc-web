@@ -133,10 +133,12 @@ export interface FakeAiOptions {
   throws?: unknown;
   /** The model call never settles. */
   hangs?: boolean;
+  /** `text` (default) answers `{ response }`; `chat` answers the OpenAI chat-completion shape the deployed model returns. */
+  shape?: "text" | "chat";
 }
 
 /** A stand-in for the `AI` binding. `run` records every call, so a test can count model calls. */
-export function fakeAi({ text = "", throws, hangs }: FakeAiOptions = {}) {
+export function fakeAi({ text = "", throws, hangs, shape = "text" }: FakeAiOptions = {}) {
   const calls: { model: string; inputs: unknown; options?: unknown }[] = [];
   const ai = {
     calls,
@@ -144,6 +146,13 @@ export function fakeAi({ text = "", throws, hangs }: FakeAiOptions = {}) {
       calls.push({ model, inputs, options });
       if (hangs) return new Promise<never>(() => {});
       if (throws !== undefined) throw throws;
+      if (shape === "chat") {
+        return {
+          id: "chatcmpl-test",
+          object: "chat.completion",
+          choices: [{ index: 0, message: { role: "assistant", content: text, tool_calls: [] }, finish_reason: "stop" }],
+        };
+      }
       return { response: text };
     },
   };

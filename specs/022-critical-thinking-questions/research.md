@@ -148,10 +148,13 @@ the questions still relate to the post (spec edge case "Very long posts").
   from `env.AI.run` (including Workers AI's own daily-limit error when the account allocation
   is used up by something other than these buckets, and a model that has been deprecated,
   renamed or removed) is treated like malformed output: refund, `503`. The log line's error
-  class lets Don tell a persistent model failure from a transient one; the fix for a removed
+  name and message (truncated to 200 characters) let Don tell a persistent model failure from a transient one; the fix for a removed
   model is a config change of `QUESTIONS_MODEL` (and the bucket, per R1's fallback). The 15 s
   timeout is a hard ceiling for slow attempts; the 5 s target in SC-001 is for 95% of presses,
   which typical generation (~120 output tokens on a small model) meets well inside.
+- **Result shape**: the Worker reads the text from either `result.response` (the documented
+  text-generation field) or `result.choices[0].message.content` (the OpenAI chat-completion
+  shape the deployed granite model actually returns); neither present is a thrown error.
 - **Output cap**: `max_tokens: 300` covers the requested 3 questions (at most 4 kept) of up to
   25 words, about 35 tokens each with list markers, with headroom; output past the cap is
   simply cut and the validator drops any unfinished line.
