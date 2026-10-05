@@ -153,7 +153,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W2: Add the `/_astro/*.svg` rule
 
-- [ ] W2 done
+- [x] W2 done
 - **Files:** `public/_headers`.
 - **Test:** existing: W1 turns green.
 - **Edit:** insert after the `/_astro/*` block:
