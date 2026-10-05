@@ -25,7 +25,7 @@ production build); **route** = other route checks (`build` run).
 | S08 | Picture name not `^[a-z][a-z0-9-]*$` | schema | file, `visuals`, the name |
 | S09 | Missing picture file | generateId | file, the image path |
 | S10 | Bad file name / nested file | generateId | file, "lower-case letters, digits and hyphens" / "subfolder" |
-| S11 | Two files, one slug (`x.md` + `x.mdx`) | route | both files, "slug x" |
+| S11 | Two files, one slug (`x.md` + `x.mdx`) | `generateId` twin check | both files, "slug x" |
 
 ## Removed settings (FR-017, US5-3)
 

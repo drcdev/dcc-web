@@ -3,7 +3,7 @@
 // "Visual"; contracts/pages-dom.md). Images carry alt text, diagrams a visible description, and a
 // placeholder carries a visible mark. Only the first picture on a page is eager.
 import { Image } from "astro:assets";
-import { PageContentError, projectFileError } from "../../lib/content/errors.ts";
+import { PageContentError, contentError } from "../../lib/content/errors.ts";
 import "./portfolio.css";
 
 export interface Props {
@@ -17,7 +17,7 @@ const { name, eager = false } = Astro.props;
 const picture = project.data.visuals?.[name];
 if (!picture) {
   const known = Object.keys(project.data.visuals ?? {});
-  throw projectFileError(project.file, `the picture "${name}" is not in visuals (${known.length ? known.join(", ") : "none defined"}).`);
+  throw contentError("project", project.file, `the picture "${name}" is not in visuals (${known.length ? known.join(", ") : "none defined"}).`);
 }
 const describedBy = `picture-${name}-description`;
 ---

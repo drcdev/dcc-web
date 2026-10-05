@@ -3,7 +3,7 @@
 // FR-025) and for the error message format (data-model.md "PageContentError").
 import { describe, expect, it } from "vitest";
 import { futureDestinations } from "../../../src/config/navigation.ts";
-import { PageContentError, pageFileError, pageFilesError } from "../../../src/lib/content/errors.ts";
+import { PageContentError, contentError } from "../../../src/lib/content/errors.ts";
 import { mergeNavigation, type NavigationPage } from "../../../src/lib/content/navigation.ts";
 
 const page = (file: string, address: string, title: string, nav?: NavigationPage["nav"]): NavigationPage => ({
@@ -88,14 +88,14 @@ describe("the Writing entry", () => {
 
 describe("PageContentError messages", () => {
   it("starts a one-file message with `Page file <path>:`", () => {
-    const error = pageFileError("src/content/pages/a.mdx", "the title is missing");
+    const error = contentError("page", "src/content/pages/a.mdx", "the title is missing");
     expect(error).toBeInstanceOf(PageContentError);
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe("Page file src/content/pages/a.mdx: the title is missing");
   });
 
   it("starts a two-file message with `Page files <a> and <b>:`", () => {
-    const error = pageFilesError("a.mdx", "b.mdx", "they share an address");
+    const error = contentError("page", ["a.mdx", "b.mdx"], "they share an address");
     expect(error.message).toBe("Page files a.mdx and b.mdx: they share an address");
   });
 });

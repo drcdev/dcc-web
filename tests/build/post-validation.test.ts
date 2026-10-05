@@ -36,8 +36,21 @@ describe("post schema and loader wiring (sync)", () => {
   it("P4: generateId runs assertPostDates", () =>
     expectRejected("sync", [broken("p04-date-impossible.mdx")], "p04-date-impossible", "date", "2026-02-30"));
 
-  it("P9: generateId runs assertFrontmatterImagesExist with the post wording", () =>
+  it("P9: generateId runs assertImagesExist with the post wording", () =>
     expectRejected("sync", [broken("p09-image-missing.mdx")], "Post file", "p09-image-missing", "./images/missing.png"));
+
+  it("P17: generateId runs the twin check", () =>
+    expectRejected(
+      "sync",
+      [
+        { from: "valid/minimal.mdx", to: "x.mdx" },
+        { from: "valid/long-title.mdx", to: "x.md" },
+      ],
+      "Post files",
+      "x.md",
+      "x.mdx",
+      "/writing/x/",
+    ));
 
   // Changed by 013 (research R9): ids outside the controlled list are free-form topics. Rendering a
   // free-form topic page is proven by the blog-listing build, so this run only needs validation to accept it.

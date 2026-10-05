@@ -1,5 +1,5 @@
 // Wiring runs for the project rows of specs/014-project-four-part-story/contracts/build-errors.md (FR-015,
-// US3-7). The logic of each row is asserted in a unit test (project-schema, project-story, project-address;
+// US3-7). The logic of each row is asserted in a unit test (project-schema, project-story, addresses;
 // see docs/testing.md). These runs prove that Astro runs that logic on
 // real files, that the message names the file, and that it never carries an environment value. `sync`
 // covers the call sites in src/content.config.ts (the collection schema and the glob loader's generateId);
@@ -39,7 +39,7 @@ describe("project schema and loader wiring (sync)", () => {
       production,
     ));
 
-  it("row 17: generateId runs assertProjectImagesExist (and the clip check of row 19)", () =>
+  it("row 17: generateId runs assertImagesExist (and the clip check of row 19)", () =>
     expectRejected("sync", [broken("17-missing-image")], ["17-missing-image", "./images/nope.png"]));
 
   it("row 27: generateId runs slugFromPath (and rejects a nested file the same way)", () =>
@@ -47,6 +47,13 @@ describe("project schema and loader wiring (sync)", () => {
       "Bad Name.mdx",
       "lower-case letters, digits and hyphens",
     ]));
+
+  it("row 26: generateId runs the twin check", () =>
+    expectRejected(
+      "sync",
+      [broken("26-duplicate-slug", "x.mdx"), broken("26-duplicate-slug", "x.md")],
+      ["x.md", "x.mdx", "both make the slug x. Keep one of them."],
+    ));
 });
 
 describe("removed settings (sync)", () => {
@@ -56,13 +63,6 @@ describe("removed settings (sync)", () => {
 });
 
 describe("project route wiring (build)", () => {
-  it("row 26: the route runs assertUniqueProjectFiles", () =>
-    expectRejected(
-      "build",
-      [broken("26-duplicate-slug", "x.mdx"), broken("26-duplicate-slug", "x.md")],
-      ["x.md", "x.mdx", "slug x"],
-    ));
-
   // P, T and R05-R06 call site: validateProjectStory runs on every entry, drafts included, before the production
   // filter (FR-015, US3-7). The rule logic is asserted in tests/unit/content/project-story.test.ts.
   it("a malformed options table in a draft fails a production build, naming the file and the rule (T06)", () =>

@@ -4,7 +4,7 @@
 // date such as 2026-02-30 into 2 March and lets a timestamp through as a Date.
 // So `date:` and `updated:` must be written exactly YYYY-MM-DD and name a real
 // calendar day.
-import { postFileError } from "./errors.ts";
+import { contentError } from "./errors.ts";
 
 const DATE_KEYS = ["date", "updated"] as const;
 const SHAPE = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -37,7 +37,8 @@ export function assertPostDates(file: string, source: string): void {
     if (!line) continue;
     const value = (line[1] ?? "").replace(/\s+#.*$/, "").trim();
     if (!isRealDate(value)) {
-      throw postFileError(
+      throw contentError(
+        "post",
         file,
         `${key} must be a real date written YYYY-MM-DD with no quotes or time, for example ${key}: 2026-08-27. Found ${key}: ${value === "" ? "(nothing)" : value}.`,
       );

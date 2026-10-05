@@ -33,7 +33,7 @@ mapping".
 | 23 | Unknown building block (e.g. `<Timeline>`) | body check | file, `<Timeline>`, list of blocks |
 | 24 | Unknown visual name | body check | file, the name |
 | 25 | `visual="demo"` without `demo.embed: true` | body check | file, "embed" |
-| 26 | Duplicate slug (`x.md` + `x.mdx`) or nested file | route check | both files |
+| 26 | Duplicate slug (`x.md` + `x.mdx`) or nested file | `generateId` twin check (duplicate) and slug check (nested) | both files |
 | 27 | Bad file name (capitals, spaces) | `generateId` | file, "lower-case letters, digits and hyphens" |
 | 28 | Level-1 or level-2 heading in the body | body check | file, "use ### for headings" |
 | 29 | Body image without alt text | body check | file, "alt text" |

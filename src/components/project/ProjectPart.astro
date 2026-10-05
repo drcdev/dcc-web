@@ -4,7 +4,7 @@
 // <Content components>. The text sits in the post's prose classes, and a picture the project
 // assigned to this part sits in a second column that wraps below the text on a phone
 // (contracts/pages-dom.md). Build also shows the project's links after its text.
-import { PageContentError, projectFileError } from "../../lib/content/errors.ts";
+import { PageContentError, contentError } from "../../lib/content/errors.ts";
 import { partIds, type PartId } from "../../lib/content/parts.ts";
 import { proseClasses } from "../../lib/prose.ts";
 import BuildLinks from "./BuildLinks.astro";
@@ -19,7 +19,7 @@ const project = Astro.locals.project;
 if (!project) throw new PageContentError("<ProjectPart> can only be used inside a project story (no project is set)");
 const name = Astro.props.name as PartId;
 if (!partIds.includes(name)) {
-  throw projectFileError(project.file, `the part "${name}" is not one of ${partIds.join(", ")}.`);
+  throw contentError("project", project.file, `the part "${name}" is not one of ${partIds.join(", ")}.`);
 }
 const pictureOf = (part: PartId) =>
   Object.entries(project.data.visuals ?? {}).find(([, picture]) => picture.part === part)?.[0];

@@ -12,9 +12,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { seriesIds, topicHref, topics } from "../../src/config/topics.ts";
-import { addressFromPath, idFromPath } from "../../src/lib/content/address.ts";
-import { postHref, slugFromPostPath } from "../../src/lib/content/post-address.ts";
-import { slugFromPath } from "../../src/lib/content/project-address.ts";
+import { addressFromPath, idFromPath, postHref, slugFromPath, slugFromPostPath } from "../../src/lib/content/addresses.ts";
 
 // `parseFrontmatter` is an ES module without top-level await, which Node 24 can `require()`
 // (nodejs.org/api/modules.html#loading-ecmascript-modules-using-require). It is resolved

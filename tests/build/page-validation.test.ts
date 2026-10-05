@@ -27,7 +27,7 @@ describe("page schema and loader wiring (sync)", () => {
   it("rows 1 to 5: the pages schema is wired and Astro names the file", () =>
     expectRejected("sync", [broken("01-no-title.mdx")], "01-no-title", "title"));
 
-  it("row 6: generateId runs assertFrontmatterImagesExist", () =>
+  it("row 6: generateId runs assertImagesExist", () =>
     expectRejected(
       "sync",
       [broken("06-missing-image-frontmatter.mdx")],
@@ -43,23 +43,48 @@ describe("page schema and loader wiring (sync)", () => {
       "About_Me.mdx",
       "lower-case letters, digits and hyphens",
     ));
+
+  // The twin check runs in generateId, so it fires at sync with the custom wording, ahead of Astro's own
+  // duplicate-slug error (prerenderConflictBehavior: 'error').
+  it("row 13: generateId runs the twin check (x.mdx and x/index.mdx)", () =>
+    expectRejected(
+      "sync",
+      [broken("13-duplicate-address-a.mdx", "x.mdx"), broken("13-duplicate-address-b.mdx", "x/index.mdx")],
+      "x.mdx",
+      "x/index.mdx",
+      "/x/",
+      "both make the address /x/. Keep one of them.",
+    ));
 });
 
 describe("page route and component wiring (build)", () => {
   it("row 7: Astro rejects a body image that does not exist", () =>
     expectRejected("build", [broken("07-missing-image-body.mdx")], "does-not-exist.png"));
 
-  it("row 13: the route checks addresses over the file-system page list (x.mdx and x/index.mdx)", () =>
-    expectRejected(
-      "build",
-      [broken("13-duplicate-address-a.mdx", "x.mdx"), broken("13-duplicate-address-b.mdx", "x/index.mdx")],
-      "x.mdx",
-      "x/index.mdx",
-      "/x/",
-    ));
-
   it("row 14: the route checks addresses over the src/pages route-file list (404.mdx against 404.astro)", () =>
     expectRejected("build", [broken("14-route-conflict.mdx", "404.mdx")], "404.mdx", "404.astro", "/404/"));
+
+  // Second layer: the unit test sees only the configured value; only a real build shows that Astro
+  // raises its own error. The custom route check is bypassed here, so this proves the backstop.
+  it("Astro's prerenderConflictBehavior: 'error' fails a page that clashes with a code route (custom check bypassed)", async () => {
+    const route = "src/pages/[...slug].astro";
+    const needle = "assertPageAddressesFree({ pageFiles, routeFiles, reserved";
+    let patched = false;
+    result = await buildFixtureSite([broken("14-route-conflict.mdx", "404.mdx")], {
+      mode: "build",
+      overrides: {
+        [route]: (text) => {
+          const next = text.replace(needle, "assertPageAddressesFree({ pageFiles, routeFiles: [], reserved");
+          patched = next !== text;
+          return next;
+        },
+      },
+    });
+    expect(patched, "the route override should have matched").toBe(true);
+    expect(result.ok, "the build should fail").toBe(false);
+    expect(result.message).toContain("conflicts with higher priority route");
+    expect(result.message).toContain("`/404`");
+  });
 
   it("rows 8 to 10 and 16: the route runs validatePageBody", () =>
     expectRejected("build", [broken("16-level-one-heading.mdx")], "Page file", "16-level-one-heading", "use ##"));

@@ -2,7 +2,7 @@
 // (data-model.md "NavigationItem"; contracts/build-errors.md row 15; FR-008,
 // FR-025).
 import { fixedPrimaryNavigation, type NavigationItem } from "../../config/navigation.ts";
-import { pageFileError, pageFilesError } from "./errors.ts";
+import { contentError } from "./errors.ts";
 
 /** What the merge needs to know about one page. */
 export interface NavigationPage {
@@ -35,12 +35,13 @@ export function mergeNavigation(
     };
     if (taken) {
       throw taken.source?.startsWith("src/content/pages/")
-        ? pageFilesError(
-            taken.source,
-            page.file,
+        ? contentError(
+            "page",
+            [taken.source, page.file],
             `both use navigation position ${position}. Change the position in one of them.`,
           )
-        : pageFileError(
+        : contentError(
+            "page",
             page.file,
             `navigation position ${position} is already used by "${taken.label}" (${taken.source}). Choose another position.`,
           );

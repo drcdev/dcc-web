@@ -4,7 +4,7 @@
 // that summary together with its props against the schema in schemas.ts. A
 // failure is a PageContentError that names the section and the prop, and the
 // page file when the page route has recorded it in `Astro.locals.pageFile`.
-import { PageContentError, pageFileError } from "../../lib/content/errors.ts";
+import { PageContentError, contentError } from "../../lib/content/errors.ts";
 import { sectionSchemas } from "./schemas.ts";
 import type { SectionName } from "./index.ts";
 
@@ -24,7 +24,7 @@ export function summarise(html: string) {
 
 function fail(name: SectionName, message: string, file?: string): never {
   const problem = `<${name}> ${message}`;
-  throw file ? pageFileError(file, problem) : new PageContentError(`Section ${problem}`);
+  throw file ? contentError("page", file, problem) : new PageContentError(`Section ${problem}`);
 }
 
 /**

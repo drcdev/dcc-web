@@ -26,7 +26,7 @@ one broken file per run.
 | P14 | Post in a sub-folder | post file check | file name, "sub-folder" |
 | P15 | File name with characters other than lower-case letters, digits and hyphens | post file check | file name, "lower-case letters, digits and hyphens" |
 | P16 | Reserved slug (`all.mdx`, `topics.mdx`) | post file check | file name, the address, "reserved" |
-| P17 | Two files with one slug (`x.mdx` + `x.md`) | post file check | both file names, the address |
+| P17 | Two files with one slug (`x.mdx` + `x.md`) | `generateId` twin check | both file names, the address |
 | P18 | Level-1 heading in the body | body check | file name, "use ##" |
 | P19 | Unknown section tag (`<Callout>`) | body check | file name, `Callout`, the list of sections |
 | P20 | Empty body | body check | file name, "no content" |
