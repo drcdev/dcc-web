@@ -67,9 +67,28 @@ describe("wrangler.jsonc", () => {
     expect(config.assets?.directory).toBe("./dist");
   });
 
-  it("enables workers_dev and preview_urls", () => {
-    expect(config.workers_dev).toBe(true);
-    expect(config.preview_urls).toBe(true);
+  it("keeps production off workers.dev and version URLs (#89)", () => {
+    expect(config.workers_dev).toBe(false);
+    expect(config.preview_urls).toBe(false);
+  });
+
+  it("turns on workers.dev and version URLs for the preview Worker explicitly", () => {
+    expect(config.env.preview.workers_dev).toBe(true);
+    expect(config.env.preview.preview_urls).toBe(true);
+  });
+
+  it("allows Turnstile testing keys only for preview", () => {
+    expect(config.env.preview.vars?.ALLOW_TURNSTILE_TESTING).toBe("true");
+    expect(config.vars ?? {}).not.toHaveProperty("ALLOW_TURNSTILE_TESTING");
+  });
+
+  it("reaches the e2e Worker's flag only through e2e.env, never the generated config", () => {
+    const generator = readFileSync(
+      fileURLToPath(new URL("../../../scripts/e2e-wrangler-config.ts", import.meta.url)),
+      "utf-8",
+    );
+    expect(generator).not.toContain("ALLOW_TURNSTILE_TESTING");
+    expect(generator).not.toMatch(/\.vars\b/);
   });
 
   it("runs the Worker only for /api/* (Principle VIII)", () => {
@@ -524,5 +543,6 @@ describe("contact Worker files", () => {
     expect(text).toContain("TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA");
     expect(text).toMatch(/^CONTACT_READ_TOKEN=.+/m);
     expect(text).toMatch(/^IP_HASH_SALT=.+/m);
+    expect(text).toMatch(/^ALLOW_TURNSTILE_TESTING=true$/m);
   });
 });

@@ -184,7 +184,7 @@ site, `https://new.doncoleman.ca/` still does, and Don's assistant (re-pointed a
 
 ### W1: Config unit tests for production, preview and the flag (test first)
 
-- [ ] W1 done
+- [x] W1 done
 - **Files:** `tests/unit/site/config-files.test.ts`.
 - **Test:** unit over config, new-first. **Layer: unit**, the cheapest layer that can observe
   config text.
