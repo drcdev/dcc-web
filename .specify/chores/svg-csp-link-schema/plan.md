@@ -177,7 +177,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W3: `linkTarget` rejects protocol-relative addresses (test first, then fix)
 
-- [ ] W3 done
+- [x] W3 done
 - **Files:** `tests/unit/content/page-schema.test.ts`, then `src/content/schemas/shared.ts`.
 - **Test:** new-first. **Layer: unit (schema)**, the cheapest layer that can observe a schema
   rule. No second layer.
