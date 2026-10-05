@@ -7,7 +7,7 @@ function normalise(path: string): string {
 
 /**
  * Whether `href` is the page at `pathname`. Both sides are compared with a
- * trailing slash, so `/services` and `/services/` match; `/` matches only the
+ * trailing slash, so `/work-with-me` and `/work-with-me/` match; `/` matches only the
  * home page, never every address.
  */
 export function isCurrent(pathname: string, href: string): boolean {
