@@ -93,7 +93,7 @@ the list below records his final choices, not the earlier proposals.
 - **Meta description**: "The talks Don Coleman gives and the consulting work he is considering
   taking on."
 - **Order**: speaking comes first because Don takes speaking invitations now but is not
-  contracting yet: Lead, Speaking topics, Past talks, Consulting, How I work, Kinds of work, What
+  contracting yet: Lead, Speaking topics, Past talks, Consulting, Kinds of work, How I work, What
   I don't do, call to action.
 - **One lead**: a short intro that opens with speaking and says the consulting work further down
   is for later.

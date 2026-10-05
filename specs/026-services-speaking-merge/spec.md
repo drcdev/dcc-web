@@ -62,13 +62,14 @@ Other places that depend on the two pages today:
 Don reviewed the built page and rewrote parts of it. These answers supersede the earlier ones they change.
 
 - Speaking comes first, because Don takes speaking invitations now but is not contracting yet. This supersedes the earlier "consulting first" answer.
-- The sections appear in this order: Lead (a short, speaking-first intro), Speaking topics (Offerings), Past talks, Consulting (a text block holding the no-practice note and the healthcare-gaps paragraph), How I work, Kinds of work (Offerings), What I don't do, then one call to action.
+- The sections appear in this order: Lead (a short, speaking-first intro), Speaking topics (Offerings), Past talks, Consulting (a text block holding the no-practice note and the healthcare-gaps paragraph), Kinds of work (Offerings), How I work, What I don't do, then one call to action.
 - The two offerings groups are titled "Speaking topics" and "Kinds of work" ("Talk topics" is retired). The optional `talk-topics` id is dropped.
 - The "For event organizers" block (the bio) and the photo with its caption and alt text are removed from the page. Don does not want a stock bio or his current role on it; event organizers reach out through the contact page. The photo file stays because the home page uses it.
 - The meta description is "The talks Don Coleman gives and the consulting work he is considering taking on."
 - The call to action has the label "Get in touch" and the body "Tell me about your event, its audience and the date, or describe a project you're working on, and we can work out the rest."
 - Don may edit the copy beyond the four places FR-002 first allowed. The content is his edited copy, not word for word from the old pages.
 - "What I don't do" has two items; the "results I cannot measure" line was dropped.
+- "How I work" sits below "Kinds of work" (Don's follow-up, same day), so the consulting offerings come straight after the Consulting note.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -93,8 +94,8 @@ call to action appear on it, in the agreed order, under one main heading.
    "Consulting", "How I work" and "What I don't do" content, and the note, inside the Consulting
    block, that Don has no consulting practice today.
 3. **Given** the merged page, **When** a visitor reads it from top to bottom, **Then** the
-   sections appear in this order: the lead, Speaking topics, Past talks, Consulting, How I work,
-   Kinds of work, What I don't do, the call to action. The page opens with the lead.
+   sections appear in this order: the lead, Speaking topics, Past talks, Consulting, Kinds of work,
+   How I work, What I don't do, the call to action. The page opens with the lead.
 4. **Given** the merged page, **When** a visitor wants to get in touch, **Then** a single call to
    action at the end takes them to the contact page.
 5. **Given** the merged page with JavaScript turned off, **When** a visitor reads it, **Then**
@@ -188,7 +189,7 @@ built site and the sitemap for `/services/` and `/speaking/`.
   separate groups. There is no stable id on either heading.
 - **FR-004**: The merged page MUST present its sections in this order: one short lead (speaking
   first), Speaking topics (Offerings), Past talks, Consulting (a text block holding the
-  no-practice note and the healthcare-gaps paragraph), How I work, Kinds of work (Offerings), What
+  no-practice note and the healthcare-gaps paragraph), Kinds of work (Offerings), How I work, What
   I don't do, and the call to action. The page opens with the lead.
 - **FR-005**: The merged page MUST end with exactly one call to action (today's pages have one
   each, two in all), linking to the contact page, whose wording speaks to both kinds of enquiry (an
@@ -224,7 +225,7 @@ built site and the sitemap for `/services/` and `/speaking/`.
   raised limit for it:
   - WCAG 2.2 AA, confirmed by the automated accessibility check every page template runs.
   - Headings: one level-1 heading (the page title); the section titles Speaking topics, Past talks,
-    Consulting, How I work, Kinds of work and What I don't do as level-2 headings in page order; each offering title one level below its group's heading; no level skipped.
+    Consulting, Kinds of work, How I work and What I don't do as level-2 headings in page order; each offering title one level below its group's heading; no level skipped.
   - The same per-template performance budget as every page template today, and Core Web Vitals
     "good" on mobile; the page has no image, so it has no layout shift to cause.
   - Readable with JavaScript off, including the menu and the call to action.

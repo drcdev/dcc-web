@@ -56,6 +56,6 @@ Expect changes only in `header-desktop-*`, `menu-open-phone-*`, `not-found-*` an
 ## 5. Preview (Don, before approving)
 
 Open the branch preview at `/work-with-me/` in light and dark, desktop and phone; check the section order
-(lead, Speaking topics, Past talks, Consulting, How I work, Kinds of work, What I don't do), the lead,
+(lead, Speaking topics, Past talks, Consulting, Kinds of work, How I work, What I don't do), the lead,
 meta description and call to action wording; check `/services/` and `/speaking/` show
 the not-found page and the header reads Home, Work with me, Writing, Projects, About, Contact.

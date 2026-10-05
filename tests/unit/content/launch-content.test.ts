@@ -148,8 +148,8 @@ describe("Work with me page", () => {
       "Offerings",
       "TextBlock",
       "TextBlock",
-      "TextBlock",
       "Offerings",
+      "TextBlock",
       "TextBlock",
       "CallToAction",
     ]);

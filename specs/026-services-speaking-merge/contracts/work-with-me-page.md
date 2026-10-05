@@ -13,7 +13,7 @@ written against this contract.
 - Shows the draft notice (`data-draft-notice`) and the draft robots meta, as Services did.
 - Inside `main`, in document order: the lead (the page opens with it), an `h2` "Speaking topics"
   followed by its three offering titles, `h2` "Past talks", `h2` "Consulting" (holding the
-  no-practice note and the healthcare-gaps paragraph), `h2` "How I work", `h2` "Kinds of work"
+  no-practice note and the healthcare-gaps paragraph), `h2` "Kinds of work", `h2` "How I work"
   followed by its three offering titles, `h2` "What I don't do", then one call to action labelled
   "Get in touch". No `figure`, no bio, no `talk-topics` id.
 - Exactly one call-to-action link in `main` content sections pointing to `/contact/`.
