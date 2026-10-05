@@ -18,6 +18,13 @@ beside the panel, so the body is no longer centred. The narrow, centred header b
 up with neither the image above it nor the body below it. The header block should span the same
 width as the image, so its edges line up with the image's edges.
 
+## Clarifications
+
+### Session 2026-10-04
+
+- Q: Should the header block widen to the image's width at every screen width where it is narrower today (about 768 px and up), or only from 1280 px, where the body moves off centre beside the questions panel? → A: 768 px and up; the header block matches the image wherever the image is wider, one rule for every width.
+- Q: Once the header block is as wide as the image, should its text run the full width of the block, or keep today's reading width of about 48rem from the block's left edge? → A: Full width; the title, summary and post details wrap at the block's inner edge, with no 48rem measure inside the card.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Header block lines up with the feature image (Priority: P1)
@@ -39,9 +46,12 @@ left and right edges of the header block with those of the image.
 2. **Given** the same post, **When** the reader views it, **Then** the header block's content
    (section name, title, summary, featured mark, post details, and the draft notice on a draft)
    is unchanged and in the same order.
-3. **Given** a post with a feature image, **When** a reader views it at a width where the header
-   block would be narrower than the image under the current layout, **Then** the header block
-   follows the scope chosen in FR-002.
+3. **Given** a post with a feature image, **When** a reader views it at any width from 768 px up
+   (for example 768 px or 1024 px), where the header block is narrower than the image today,
+   **Then** the header block's left and right edges are in line with the image's edges.
+4. **Given** a post with a long title and summary, **When** a reader views it at 1280 px, **Then**
+   the title, summary and post details wrap at the header block's inner edge, not at a narrower
+   reading width.
 
 ---
 
@@ -59,7 +69,9 @@ left and right edges of the header block with those of the image.
 - **Long titles and summaries**: they still wrap inside the header block and never overflow it
   or cause sideways scrolling at 320 px and up.
 - **Post with no questions panel**: the header block width does not depend on whether the
-  panel shows, unless FR-002 decides otherwise.
+  panel shows; it matches the image at every width either way.
+- **Widths between 768 px and 1279 px**: the header block matches the image and so is wider
+  than the centred body below it; that is intended.
 
 ## Requirements *(mandatory)*
 
@@ -67,15 +79,15 @@ left and right edges of the header block with those of the image.
 
 - **FR-001**: On a writing post, the header block MUST be the same width as the feature image
   above it, with left and right edges aligned to the image's edges within 1 px.
-- **FR-002**: The matched width MUST apply [NEEDS CLARIFICATION: at every viewport where the
-  image is wider than the header block today (from roughly 768 px up), or only from the
-  large-screen breakpoint (1280 px) where the body moves off centre beside the questions panel?].
-- **FR-003**: The text inside the header block MUST [NEEDS CLARIFICATION: run the full width of
-  the widened block, or keep its current reading width (about 48rem) aligned to the block's
-  left edge?].
+- **FR-002**: The matched width MUST apply at every viewport width, including every width from
+  768 px up where the image is wider than the header block today; it MUST NOT depend on a
+  breakpoint or on whether the questions panel shows.
+- **FR-003**: The text inside the header block (title, summary, featured mark, post details and
+  draft notice) MUST run the full width of the widened block, wrapping at its inner (padded)
+  edge, with no narrower reading-width cap inside the card.
 - **FR-004**: The header block's content, order, colours, border, corner radius, shadow and
-  vertical spacing MUST stay as they are; only its width (and, per FR-003, its text measure)
-  changes. The post body, questions panel, feature image and caption MUST not move or resize.
+  vertical spacing MUST stay as they are; only its width (and, per FR-003, the
+  width its text wraps at) changes. The post body, questions panel, feature image and caption MUST not move or resize.
 - **FR-005**: The post page MUST continue to meet WCAG 2.2 AA (Principle X): no new contrast
   or reflow failures, no sideways scrolling at 320 px, and the header block's reading order
   and heading structure unchanged.
@@ -84,13 +96,13 @@ left and right edges of the header block with those of the image.
 
 ### Measurable Outcomes
 
-- **SC-001**: On a post with a feature image at 1280 px and 1440 px wide, the header block's left
+- **SC-001**: On a post with a feature image at 768 px, 1024 px, 1280 px and 1440 px wide, the header block's left
   and right edges sit within 1 px of the image's left and right edges.
 - **SC-002**: At 320 px and 390 px wide, the post page shows no sideways scrolling and the header
   block looks the same as it does today.
 - **SC-003**: The automated accessibility check on the post template reports no new violations.
 - **SC-004**: The only visual difference in the post template snapshots is the header block's
-  width (and, per FR-003, its text measure); every other part of the page is pixel-identical.
+  width and the width its text wraps at (FR-003); every other part of the page is pixel-identical.
 
 ## Visual Impact
 
