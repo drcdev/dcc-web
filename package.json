@@ -29,7 +29,6 @@
     "test:visual": "playwright test --project=visual",
     "test:visual:update": "playwright test --project=visual --update-snapshots",
     "test:visual:update:linux": "bash scripts/visual-baselines-linux.sh",
-    "reference:capture": "playwright test --config tests/reference/playwright.config.ts",
     "deploy:preview": "node scripts/deploy/preview.ts",
     "deploy:production": "node scripts/deploy/production.ts",
     "types:worker": "wrangler types worker/worker-configuration.d.ts",

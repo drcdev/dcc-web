@@ -240,7 +240,7 @@ docs last. Each item leaves `verify:quick` green, along with its targeted files:
 | L15 mutating commands "shown for Don" somewhere | Covered by L79 (stricter: each block is introduced that way), and L133 asserts examples exist. |
 | L49 three labelled parts in order, L58 three answers, L64 `Problem:` first, L70 rollback, L75 DNSSEC, L112 halt-rule phrasing, L120 registry length, L125 D1 region text, L159 `d1 list --json` text, L164 contact item order, L182 after-merge rule, L188 waiting step, L192 launch hand-over | Change-detector, no guarantee: skill wording and step order. The order of the items is `scripts/setup-check/items.ts`, checked by `setup/items.test.ts`. The launch hand-over ids are checked by `drift.test.ts` (launch doc ids are registry ids). Don reviews every skill edit. |
 
-### W2. Ghost reference screenshots removed
+### W2. Ghost reference screenshots removed (done)
 
 - **Files:** delete `tests/reference/` (`capture-ghost.spec.ts`, `playwright.config.ts`,
   `ghost/README.md` and 12 PNGs) and `tests/unit/site/reference-screenshots.test.ts`. Remove the

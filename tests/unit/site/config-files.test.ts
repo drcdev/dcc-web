@@ -413,12 +413,6 @@ describe("package.json scripts", () => {
     expect(pkg.scripts["test:visual:update"]).toBe("playwright test --project=visual --update-snapshots");
   });
 
-  it("adds reference:capture using tests/reference/playwright.config.ts", () => {
-    expect(pkg.scripts["reference:capture"]).toBe(
-      "playwright test --config tests/reference/playwright.config.ts",
-    );
-  });
-
   it("adds deploy:preview running scripts/deploy/preview.ts", () => {
     expect(pkg.scripts["deploy:preview"]).toBe("node scripts/deploy/preview.ts");
   });

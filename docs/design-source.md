@@ -19,6 +19,11 @@ gh repo clone drcdev/flux .reference/flux -- --depth 1
 hand into this repository's Astro components and Tailwind styles. It is never imported as a
 dependency and never copied into this project.
 
+Reference screenshots of the original Ghost site (home, a post and About at phone and desktop
+width, in both themes) and their capture script lived in `tests/reference/` until #97. The design
+they captured has been replaced. The last commit that holds them is `e3c9aeb`; see
+`git show e3c9aeb:tests/reference/ghost/README.md`.
+
 ## Mapping
 
 Each row below names a piece of Flux, what it becomes in the Astro rebuild, and which feature
