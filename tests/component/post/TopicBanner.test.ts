@@ -39,4 +39,15 @@ describe("TopicBanner", () => {
     const html = await container.renderToString(TopicBanner, { props: { topic: "cloud-cost", page: 2 } });
     expect(textOf(html, "h1")).toBe("Cloud cost, page 2");
   });
+
+  it.each(topics)("has no image in the banner of $id (FR-004)", async (topic) => {
+    const html = await container.renderToString(TopicBanner, { props: { topic: topic.id } });
+    expect(html).not.toContain("<img");
+    expect(html).not.toContain("data-series-image");
+  });
+
+  it("has no image in the banner of a free-form topic", async () => {
+    const html = await container.renderToString(TopicBanner, { props: { topic: "cloud-cost" } });
+    expect(html).not.toContain("<img");
+  });
 });

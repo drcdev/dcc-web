@@ -61,4 +61,51 @@ describe("SeriesBanner", () => {
   it("throws for an id that is not a series", async () => {
     await expect(render({ series: "agentic-ai" })).rejects.toThrow(/agentic-ai/);
   });
+
+  describe("series image strip (specs/025-topic-images contracts/series-cards.md section 2; FR-003, FR-016)", () => {
+    it.each(["drift", "convergence"])("puts the %s strip first in the header, before the eyebrow", async (id) => {
+      const html = await render({ series: id });
+      const header = tags(html).find((t) => t.attrs["data-series-banner"] === id)!;
+      expect(header.attrs.class).toContain("mb-8");
+      expect(header.attrs.class).toContain("overflow-hidden");
+      expect(header.attrs.class).toContain("rounded-xl");
+      const images = byName(html, "img");
+      expect(images).toHaveLength(1);
+      const img = images[0]!;
+      expect(img.attrs["data-series-image"]).toBe(id);
+      expect(img.attrs.alt).toBe("");
+      expect(img.attrs.width).toBe("1536");
+      expect(img.attrs.height).toBe("384");
+      expect(img.attrs.loading).toBe("eager");
+      expect(img.attrs.fetchpriority).toBe("high");
+      expect(img.attrs.class).toContain("aspect-[4/1]");
+      expect(html.indexOf("<img")).toBeLessThan(html.search(/<p[^>]*>\s*Series\s*<\/p>/));
+      expect(html.indexOf("<img")).toBeGreaterThan(html.indexOf("<header"));
+    });
+
+    it("keeps the image out of any link and the h1 as the only heading", async () => {
+      const html = await render({ series: "drift" });
+      expect(html).not.toMatch(/<a\b[^>]*>[^]*<img/);
+      expect(byName(html, "h1")).toHaveLength(1);
+      expect(byName(html, "h2")).toHaveLength(0);
+    });
+
+    it("shows the same strip on page 2", async () => {
+      const html = await render({ series: "drift", page: 2 });
+      expect(byName(html, "img")).toHaveLength(1);
+      expect(byName(html, "img")[0]!.attrs["data-series-image"]).toBe("drift");
+    });
+
+    it("pads the text block p-6 md:p-8 and not the header", async () => {
+      const html = await render({ series: "drift" });
+      const header = tags(html).find((t) => "data-series-banner" in t.attrs)!;
+      expect(header.attrs.class).not.toMatch(/\bp-6\b/);
+      expect(html).toMatch(/<div[^>]*class="[^"]*\bp-6 md:p-8\b/);
+    });
+
+    it("applies the series outline", async () => {
+      const html = await render({ series: "drift" });
+      expect(html).toContain("forced-colors:border-[CanvasText]");
+    });
+  });
 });

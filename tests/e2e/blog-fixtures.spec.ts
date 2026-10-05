@@ -285,6 +285,62 @@ test.describe("series tile images on the fixture site", () => {
   });
 });
 
+test.describe("series banner strip on the fixture site", () => {
+  const BANNER = "[data-series-banner]";
+
+  for (const width of [320, 390, 1280]) {
+    test(`the strip is joined flush on top of the banner and 4:1 at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/writing/drift/");
+      const m = await page.locator(BANNER).evaluate((el) => {
+        const header = el.getBoundingClientRect();
+        const style = getComputedStyle(el);
+        const img = el.querySelector("img")!.getBoundingClientRect();
+        const text = el.querySelector("img ~ div")!.getBoundingClientRect();
+        return {
+          inner: header.width - parseFloat(style.borderLeftWidth) - parseFloat(style.borderRightWidth),
+          img: { width: img.width, height: img.height, bottom: img.bottom },
+          textTop: text.top,
+          radii: [style.borderTopLeftRadius, style.borderTopRightRadius],
+          overflow: style.overflow,
+        };
+      });
+      expect(Math.abs(m.img.width - m.inner)).toBeLessThanOrEqual(1);
+      expect(Math.abs(m.img.height - m.img.width / 4)).toBeLessThanOrEqual(1);
+      expect(Math.abs(m.img.bottom - m.textTop)).toBeLessThanOrEqual(1);
+      expect(m.radii).toEqual(["12px", "12px"]);
+      expect(m.overflow).toBe("hidden");
+    });
+  }
+
+  for (const width of [320, 640]) {
+    test(`grows to fit its text with WCAG 1.4.12 spacing at ${width}px, focus rings inside the header`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto("/writing/drift/");
+      await addTextSpacing(page);
+      const fit = await page.locator(BANNER).evaluate((el) => {
+        const header = el.getBoundingClientRect();
+        const text = el.querySelector("img ~ div")!;
+        const last = [...text.querySelectorAll("*")].reduce((max, child) => Math.max(max, child.getBoundingClientRect().bottom), 0);
+        return { textBottom: last, headerBottom: header.bottom };
+      });
+      expect(fit.textBottom).toBeLessThanOrEqual(fit.headerBottom + 1);
+      for (const name of ["Read Convergence", "All writing"]) {
+        const link = page.locator(BANNER).getByRole("link", { name });
+        await link.focus();
+        const inside = await link.evaluate((el) => {
+          const header = el.closest("[data-series-banner]")!.getBoundingClientRect();
+          const rect = el.getBoundingClientRect();
+          const style = getComputedStyle(el);
+          const reach = parseFloat(style.outlineWidth) + Math.max(0, parseFloat(style.outlineOffset));
+          return rect.left - reach >= header.left && rect.right + reach <= header.right && rect.bottom + reach <= header.bottom && rect.top - reach >= header.top;
+        });
+        expect(inside, `${name} focus indicator`).toBe(true);
+      }
+    });
+  }
+});
+
 test.describe("home page recent writing on the fixture site", () => {
   test("lists the newest posts, the fixture lead first", async ({ page }) => {
     await page.goto("/");
