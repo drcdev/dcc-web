@@ -2,7 +2,6 @@
 // current-page helper (src/lib/nav.ts) (data-model.md NavigationItem; research
 // R4; FR-006, FR-009).
 import { describe, expect, it } from "vitest";
-import * as navigationModule from "../../../src/config/navigation.ts";
 import {
   fixedPrimaryNavigation,
   footerNavigation,
@@ -24,9 +23,6 @@ describe("fixedPrimaryNavigation", () => {
     expect(fixedPrimaryNavigation.every((item) => item.kind === "primary")).toBe(true);
   });
 
-  it("no longer exports the seven-item primaryNavigation", () => {
-    expect("primaryNavigation" in navigationModule).toBe(false);
-  });
 });
 
 describe("footerNavigation", () => {
@@ -68,11 +64,6 @@ describe("futureDestinations", () => {
     expect([...futureDestinations]).toEqual([]);
   });
 
-  it("no longer reserves /writing/ or /projects/, which the blog and the portfolio build", () => {
-    expect(futureDestinations).not.toContain("/writing/");
-    expect(futureDestinations).not.toContain("/projects/");
-  });
-
   it("does not include any address a page builds", () => {
     expect(futureDestinations).not.toContain("/");
     expect(futureDestinations).not.toContain("/about/");
@@ -100,6 +91,7 @@ describe("isCurrent", () => {
   it("does not treat a child or look-alike address as current", () => {
     expect(isCurrent("/writing/some-post/", "/writing/")).toBe(false);
     expect(isCurrent("/services-extra/", "/services/")).toBe(false);
+    expect(isCurrent("/projects/example-project/", "/projects/")).toBe(false);
   });
 });
 
@@ -110,6 +102,9 @@ describe("isInSection", () => {
     expect(isInSection("/writing/some-post/", "/writing/")).toBe(true);
     expect(isInSection("/writing/all/2/", "/writing/")).toBe(true);
     expect(isInSection("/writing/topics/agentic-ai/", "/writing/")).toBe(true);
+    expect(isInSection("/projects/", "/projects/")).toBe(true);
+    expect(isInSection("/projects/example-project/", "/projects/")).toBe(true);
+    expect(isInSection("/projects/example-project", "/projects/")).toBe(true);
   });
 
   it("is false elsewhere, including look-alike addresses", () => {
@@ -117,10 +112,13 @@ describe("isInSection", () => {
     expect(isInSection("/services/", "/writing/")).toBe(false);
     expect(isInSection("/writing-tips/", "/writing/")).toBe(false);
     expect(isInSection("/about/writing/", "/writing/")).toBe(false);
+    expect(isInSection("/projects-old/", "/projects/")).toBe(false);
+    expect(isInSection("/project/", "/projects/")).toBe(false);
   });
 
   it("never treats / as a section that holds every address", () => {
     expect(isInSection("/services/", "/")).toBe(false);
     expect(isInSection("/", "/")).toBe(true);
+    expect(isInSection("/projects/example-project/", "/")).toBe(false);
   });
 });

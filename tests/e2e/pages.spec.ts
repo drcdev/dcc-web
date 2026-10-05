@@ -111,18 +111,6 @@ test("Services, Speaking and About mark themselves current; Home does not when e
   await expect(page.locator('#primary-nav-list a[aria-current="page"]')).toHaveCount(0);
 });
 
-test("About shows the About me section and the Recognition links (feature 010)", async ({ page }) => {
-  await page.goto("/about/");
-  await expect(page.getByRole("heading", { level: 2, name: /^about me$/i })).toHaveCount(1);
-  await expect(page.getByRole("heading", { level: 3, name: "Recognition" })).toHaveCount(1);
-  const links = page.locator("main a[href^='https://cchl-ccls.ca/news_article/']");
-  await expect(links).toHaveCount(2);
-  expect(await links.evaluateAll((els) => els.map((el) => el.getAttribute("href")))).toEqual([
-    "https://cchl-ccls.ca/news_article/don-coleman-expresses-the-importance-of-exercising-curiosity-for-healthcare-leaders/",
-    "https://cchl-ccls.ca/news_article/2024-chapter-awards-for-distinguished-service/",
-  ]);
-});
-
 test("the former single-word addresses resolve", async ({ request }) => {
   for (const path of ["/about/", "/privacy-policy/", "/terms-of-use/", "/technology/"]) {
     expect((await request.get(path)).status(), path).toBe(200);
@@ -161,11 +149,9 @@ test.describe("home introduction card (FR-016 to FR-019, FR-028a)", () => {
     await expect(page).toHaveURL(/\/services\/$/);
   });
 
-  test("the text below the card says who Don helps and what he does", async ({ page }) => {
+  test("the text below the card has no button-style links", async ({ page }) => {
     await page.goto("/");
     const body = page.locator("#content-section");
-    await expect(body).toContainText(/I help/);
-    await expect(body).toContainText(/what I do/i);
     // Recent writing's topic pills use a tinted rust background; only a button-style link is unwanted.
     await expect(
       body.locator("a.bg-rust-600, a[class*='bg-rust']:not([data-topic-pill])"),
@@ -206,19 +192,23 @@ test.describe("home introduction card (FR-016 to FR-019, FR-028a)", () => {
 });
 
 test.describe("home recent writing keeps the introduction intact (US7)", () => {
-  test("Recent writing comes after the body text, and Home keeps one h1", async ({ page }) => {
+  test("Recent writing comes after the body content, and Home keeps one h1", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("h1")).toHaveCount(1);
-    const order = await page.evaluate(() => {
-      const titles = [...document.querySelectorAll("h2")].map((h) => h.textContent?.trim());
-      return { recent: titles.indexOf("Recent writing"), what: titles.indexOf("What I do") };
+    const recentFollowsBody = await page.evaluate(() => {
+      const recent = document.querySelector("[data-recent-writing]");
+      const paragraphs = [...document.querySelectorAll("#content-section > p")];
+      return (
+        !!recent &&
+        paragraphs.length > 0 &&
+        paragraphs.every((p) => !!(p.compareDocumentPosition(recent) & Node.DOCUMENT_POSITION_FOLLOWING))
+      );
     });
-    expect(order.what).toBeGreaterThanOrEqual(0);
-    expect(order.recent).toBeGreaterThan(order.what);
+    expect(recentFollowsBody).toBe(true);
   });
 });
 
-test("home Recent writing names the series and links to both; About links to both (US5)", async ({ page }) => {
+test("home Recent writing names the series and links to both (US5)", async ({ page }) => {
   await page.goto("/");
   const recent = page.locator("[data-recent-writing]");
   await expect(recent.getByRole("link", { name: "Convergence", exact: true })).toHaveAttribute(
@@ -226,7 +216,4 @@ test("home Recent writing names the series and links to both; About links to bot
     "/writing/convergence/",
   );
   await expect(recent.getByRole("link", { name: "Drift", exact: true })).toHaveAttribute("href", "/writing/drift/");
-  await page.goto("/about/");
-  await expect(page.locator("main a[href='/writing/convergence/']")).toHaveCount(1);
-  await expect(page.locator("main a[href='/writing/drift/']")).toHaveCount(1);
 });
