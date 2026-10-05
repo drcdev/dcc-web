@@ -357,7 +357,7 @@ only `ci.yml`. Coverage mapping (unchanged from the first plan):
     ever turned off).
   - The next-action major-label scenario → retired with the item.
 
-### W6 One constitution amendment via `speckit-constitution` (Principle III, Security Baseline, Principle VIII)
+### [x] W6 One constitution amendment via `speckit-constitution` (Principle III, Security Baseline, Principle VIII)
 
 - **Files:** `.specify/memory/constitution.md`, changed **only** by invoking the
   `speckit-constitution` skill with the input below. Never hand-edit it.
