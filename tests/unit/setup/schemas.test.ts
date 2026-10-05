@@ -141,21 +141,16 @@ describe("githubRulesetSchema (setup/github-ruleset.json)", () => {
         type: "pull_request",
         parameters: {
           required_approving_review_count: 1,
-          require_code_owner_review: false,
+          require_code_owner_review: true,
           dismiss_stale_reviews_on_push: true,
-          require_last_push_approval: false,
           required_review_thread_resolution: false,
-          allowed_merge_methods: ["merge"],
-          required_reviewers: [],
-          require_extra_approval_for_unattributed_changes: true,
         },
       },
       {
         type: "required_status_checks",
         parameters: {
           strict_required_status_checks_policy: true,
-          do_not_enforce_on_create: false,
-          required_status_checks: [{ context: "verify", integration_id: 15368 }],
+          required_status_checks: [{ context: "verify" }],
         },
       },
     ],

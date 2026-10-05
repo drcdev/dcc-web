@@ -75,21 +75,14 @@ const rulesetRuleSchema = z.discriminatedUnion("type", [
       required_approving_review_count: z.number().int().min(0),
       require_code_owner_review: z.boolean(),
       dismiss_stale_reviews_on_push: z.boolean(),
-      require_last_push_approval: z.boolean(),
       required_review_thread_resolution: z.boolean(),
-      allowed_merge_methods: z.array(z.enum(["merge", "squash", "rebase"])).min(1),
-      required_reviewers: z.array(z.unknown()),
-      require_extra_approval_for_unattributed_changes: z.boolean(),
     }),
   }),
   z.object({
     type: z.literal("required_status_checks"),
     parameters: z.object({
       strict_required_status_checks_policy: z.boolean(),
-      do_not_enforce_on_create: z.boolean(),
-      required_status_checks: z
-        .array(z.object({ context: z.string().min(1), integration_id: z.number().int().positive().optional() }))
-        .min(1),
+      required_status_checks: z.array(z.object({ context: z.string().min(1) })).min(1),
     }),
   }),
 ]);

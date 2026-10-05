@@ -208,7 +208,7 @@ only `ci.yml`. Coverage mapping (unchanged from the first plan):
 - the author refusal → GitHub's native rule, handled by the PR author block;
 - the `major-change.yml` presence check → retired by decision #85.
 
-### W3 Revert W1 to the minimal ruleset change
+### [x] W3 Revert W1 to the minimal ruleset change
 
 - **Files:**
   - restore from `main` (`git checkout main -- <path>`, one path per call):
