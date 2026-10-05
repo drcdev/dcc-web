@@ -3,7 +3,10 @@
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 
-/** Absolute paths of every file under `dir`, at any depth (directories are not listed). */
+/**
+ * Absolute paths of every file under `dir`, at any depth (directories are not listed).
+ * Symlinks are skipped: symlinked files are not listed and symlinked directories are not entered.
+ */
 export function filesUnder(dir: string): string[] {
   return readdirSync(dir, { recursive: true, withFileTypes: true })
     .filter((entry) => entry.isFile())

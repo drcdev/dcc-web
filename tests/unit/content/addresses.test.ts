@@ -153,7 +153,7 @@ describe("assertNoTwin", () => {
 });
 
 describe("assertPageAddressesFree", () => {
-  const check = (input: { pageFiles: string[]; routeFiles?: string[]}) =>
+  const check = (input: { pageFiles: string[]; routeFiles?: string[] }) =>
     assertPageAddressesFree({ routeFiles: [], ...input });
 
   it("accepts distinct addresses", () => {
