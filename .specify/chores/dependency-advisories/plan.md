@@ -281,7 +281,7 @@ lockfile, where exact pins and the release-age delay already govern upgrades.
 
 ### W4: `.github/dependabot.yml` (D1 = C: GitHub Actions only, monthly, grouped)
 
-- [ ] W4 done
+- [x] W4 done
 - **Files:** `tests/unit/ci/dependabot.test.ts` (new), `.github/dependabot.yml` (new).
 - **Test:** new-first. **Layer: unit** (unit over config): the file's only observable effect
   before GitHub reads it is its text, and the repo's other workflow tests read YAML as text the
