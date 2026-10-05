@@ -28,7 +28,7 @@
 ### Preview and gate
 
 - [ ] T007 [US1] [PREVIEW-CHECK] Don eyeballs the wider header block on a real post with a feature image at large widths (1280 px and wider) on the preview deployment, and on a post with a caption and one without an image.
-- [ ] T008 [US1] (orchestrator) Run the full `pnpm run verify` gate (via the background wrapper under `perl alarm`, read `VERIFY_EXIT=`); ask Don first per the check-in rule. Depends on T001 to T006.
+- [x] T008 [US1] (orchestrator) Run the full `pnpm run verify` gate (via the background wrapper under `perl alarm`, read `VERIFY_EXIT=`); ask Don first per the check-in rule. Depends on T001 to T006.
 
 ## Dependencies
 
