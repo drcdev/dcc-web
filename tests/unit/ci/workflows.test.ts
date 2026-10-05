@@ -115,7 +115,7 @@ describe(".github/workflows/ci.yml job rules", () => {
   });
 
   it("grants no job a write permission", () => {
-    expect(contents).not.toMatch(/:\s*write\s*$/m);
+    expect(contents).not.toMatch(/:\s*write(-all)?\s*$/m);
   });
 
   it("does not use paths or paths-ignore filters", () => {
@@ -128,6 +128,10 @@ describe(".github/workflows/visual-baselines.yml", () => {
 
   it("sets permissions: contents: read", () => {
     expect(contents).toMatch(/permissions:\s*\n\s*contents:\s*read/);
+  });
+
+  it("grants no job a write permission", () => {
+    expect(contents).not.toMatch(/:\s*write(-all)?\s*$/m);
   });
 
   it("pins every third-party action to a 40-character SHA", () => {

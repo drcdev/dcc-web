@@ -190,9 +190,10 @@ spec `fonts.spec.ts` proves the faces and at most four font requests, and `heade
 checks one HTML page and one font file under `/_astro/` against the rules in `public/_headers`,
 served by the real server (#74, #97). `headers.test.ts` checks the invariants of those rules
 (one immutable `/_astro/*` rule, no other `Cache-Control`, the sandboxed CSP on `/_astro/*.svg`
-(#95), checked only at the unit layer), not their exact text. The total-transfer budget is 150 KB. The Linux baselines come
-from the Docker image, which keeps DejaVu as the system fallback, so only Inter text is
-pinned by the web font and any glyph outside the subset falls back to DejaVu there.
+(#95), checked only at the unit layer), not their exact text. The total-transfer budget is
+150 KB. The Linux baselines come from the Docker image, which keeps DejaVu as the system
+fallback, so only Inter text is pinned by the web font and any glyph outside the subset
+falls back to DejaVu there.
 
 Code font (feature 019): code is drawn in self-hosted JetBrains Mono 2.304, also through the
 Fonts API, from four files in `src/assets/fonts/jetbrains-mono/` (regular, italic, bold, bold

@@ -15,12 +15,14 @@ None.
 ### HIGH
 
 - **H1. `tests/unit/ci/workflows.test.ts:117-119`, "grants no job a write permission" misses `write-all`.** The new regex `/:\s*write\s*$/m` matches `contents: write` and `id-token: write`, but not `permissions: write-all`. Checked with node: `"    permissions: write-all"` gives `false`. The removed test (old L218) required each of `changes`, `static`, `build-tests` and `verify` to declare `permissions:\n contents: read` in its header, so a job-level `write-all` failed it. "Read-only permissions" is an invariant the issue says to keep, so this is a weakening beyond what the issue allows (Principle II). Fix: also reject `write-all`. For example, `expect(contents).not.toMatch(/:\s*write(-all)?\s*$/m)`. Show the fix failing on a scratch `permissions: write-all` line, then revert the scratch edit. The same check could also go in the `visual-baselines.yml` block, which has no write check (it had none before either).
+  Fixed in round 2: regex is now `/:\s*write(-all)?\s*$/m`, shown to bite on a scratch `write-all` line (reverted); same check added to the visual-baselines.yml block.
 
 ### LOW
 
 - **L1. `public/_headers` values are no longer pinned anywhere** (`tests/unit/site/headers.test.ts:66-77` checks only that each name is present). Example: `X-Frame-Options: ALLOWALL`, `Strict-Transport-Security: max-age=0` or a header CSP without `frame-ancestors 'none'` would pass the unit test. The e2e spec would also pass, because it reads its expected values from the same file. The issue allows dropping exact values, and a deleted header is still caught by the presence test. Possible follow-up: a few cheap value invariants.
 - **L2. Turnstile script source.** The replacement for the removed csp.test.ts contact-page tests is `contact.spec.ts:56-63`. It checks that the contact policy contains the Turnstile host anywhere and that `frame-src` names it, but not `script-src` itself. The removed unit test checked `insertScriptResource` by its exact text. The guarantee still holds in practice: the contact success-path test asserts no CSP violation (`contact.spec.ts:52`). The rest of the mapping is accurate: `local-site.test.ts:297` keeps project, index and About pages on the site policy with no `frame-src`, and `[...slug].astro:44` is the route the `/contact/` e2e test exercises.
 - **L3. `docs/testing.md:193`** is 123 characters wide. The rest of the paragraph wraps at about 95. Cosmetic.
+  Fixed in round 2: re-wrapped the paragraph at about 95 characters, no wording change.
 - **L4. `config-files.test.ts:100-103`**, "never makes the AI binding remote", also passes if the binding is removed. Removing it is caught elsewhere (`wrangler types --check` and the Worker code). Noted only.
 
 ## Coverage mappings checked
