@@ -297,7 +297,7 @@ docs last. Each item leaves `verify:quick` green, along with its targeted files:
 | pages.spec Home "I help", "what I do" | Change-detector, no guarantee. |
 | pages.spec About links to both series | Change-detector, no guarantee: About copy. |
 
-### W4. Real-content guard covers pages
+### W4. Real-content guard covers pages (done)
 
 - **Files:** `tests/unit/content/no-real-content-in-tests.test.ts`.
 - **Test:** existing, widened, **unit layer**. New-first: the self-test gains a page snippet and is
