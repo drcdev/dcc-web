@@ -4,7 +4,16 @@ For Don's scheduled assistant. Same Worker, same security headers. Each environm
 `CONTACT_READ_TOKEN` and its own database, so a key only ever sees its own environment's
 messages (FR-017, FR-024).
 
-## Authorization (checked first, for every `/api/messages` and `/api/messages/*` request)
+## Scheme (checked before authorization, #89)
+
+Every `/api/messages` and `/api/messages/*` request must arrive over HTTPS. A request over plain
+`http:` is refused with `403 {"error":"https_required"}` (same security headers, no
+`WWW-Authenticate`, no detail), whatever the method, path or `Authorization` header. It is a
+refusal, not a redirect, so a client that already sent its token in clear does not carry on
+silently. The one exception is plain `http:` to `localhost` or `127.0.0.1`, for local
+development. The uniform-401 rule below applies to HTTPS requests.
+
+## Authorization (checked after the scheme, for every `/api/messages` and `/api/messages/*` request)
 
 - Header: `Authorization: Bearer <token>`.
 - Comparison: SHA-256 of the presented token and of `env.CONTACT_READ_TOKEN`, compared with

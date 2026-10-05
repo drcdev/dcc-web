@@ -250,7 +250,7 @@ site, `https://new.doncoleman.ca/` still does, and Don's assistant (re-pointed a
 
 ### W4: Retrieval contract text
 
-- [ ] W4 done
+- [x] W4 done
 - **Files:** `specs/007-contact-form/contracts/retrieval-api.md`.
 - **Test:** no behaviour: n/a (contract text; W3 holds the assertions). Add a "Scheme (checked
   before authorization, #89)" paragraph naming the `403 {"error":"https_required"}` answer and
