@@ -269,7 +269,7 @@ Nothing in this chore changes a page, so no visual baselines.
 
 ### W3 — Point the four skills at `_shared/` and CLAUDE.md
 
-- [ ] W3 done
+- [x] W3 done
 - **Files:** `.claude/skills/{deliver,tweak,squash,chore}/SKILL.md`. Apply the same edits to all
   four. The "Read … and follow it exactly" lines use the same wording in every skill.
   1. **Local toolchain (J1).**
