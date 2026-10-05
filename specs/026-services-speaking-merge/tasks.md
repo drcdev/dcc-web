@@ -42,7 +42,7 @@ the full `pnpm run verify`.
 
 **Purpose**: start from current main.
 
-- [ ] T001 Merge `origin/main` into the branch if it has moved (sibling worktrees edit the same shell tests and baselines), so the later baseline refresh starts from current main.
+- [X] T001 Merge `origin/main` into the branch if it has moved (sibling worktrees edit the same shell tests and baselines), so the later baseline refresh starts from current main.
 
 ---
 
