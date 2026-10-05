@@ -148,19 +148,23 @@ describe("Work with me page", () => {
       "Offerings",
       "TextBlock",
       "TextBlock",
+      "TextBlock",
       "Offerings",
       "TextBlock",
-      "TextBlock",
-      "Figure",
       "CallToAction",
     ]);
   });
 
-  it("opens with a plain paragraph before the Lead (the no-practice note)", () => {
+  it("opens with the Lead, with nothing before it", () => {
     const { body } = page();
-    const before = body.slice(0, body.indexOf("<Lead")).trim();
-    expect(before.length).toBeGreaterThan(0);
-    expect(before).not.toMatch(/</);
+    expect(body.trimStart().startsWith("<Lead>")).toBe(true);
+  });
+
+  it("puts the no-practice note inside the consulting half, after the talks", () => {
+    const { body } = page();
+    const consulting = body.indexOf('<TextBlock title="Consulting">');
+    expect(consulting, "a Consulting TextBlock exists").toBeGreaterThan(body.indexOf("<Offerings"));
+    expect(body.indexOf("consulting practice today")).toBeGreaterThan(consulting);
   });
 
   it("has exactly one Lead and one CallToAction", () => {
@@ -202,11 +206,4 @@ describe("Work with me page", () => {
     expect(label.toLowerCase()).not.toMatch(/^(click here|more|read more|here)$/);
   });
 
-  it("keeps the photo with alt text and a caption", () => {
-    const { body, top } = page();
-    const figure = top.find((t) => t.tag === "Figure");
-    expect(figure, "a Figure exists").toBeDefined();
-    expect(/caption="([^"]+)"/.exec(figure!.attrs)?.[1]?.trim()).toBeTruthy();
-    expect(body).toMatch(/!\[[^\]]+\]\(\.\/images\/don-coleman\.jpg\)/);
-  });
 });

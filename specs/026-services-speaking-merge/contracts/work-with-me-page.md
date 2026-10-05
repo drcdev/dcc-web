@@ -9,13 +9,13 @@ written against this contract.
 
 - HTTP 200, prerendered HTML, readable with JavaScript off.
 - One `<h1>`: "Work with me". `<title>` and `og:title` built from it as on every page.
-- `<meta name="description">` is the combined description (research R6).
+- `<meta name="description">` is "The talks Don Coleman gives and the consulting work he is considering taking on."
 - Shows the draft notice (`data-draft-notice`) and the draft robots meta, as Services did.
-- Inside `main`, in document order: the no-practice note, the lead, an `h2` "Kinds of work"
-  followed by its three offering titles, `h2` "How I work", `h2` "What I do not do", `h2` "Talk
-  topics" followed by its three offering titles, `h2` "Past talks", `h2` "For event organizers",
-  a `figure` whose `img` has the existing alt text and whose `figcaption` reads "Don Coleman, for
-  event programs", then one call to action.
+- Inside `main`, in document order: the lead (the page opens with it), an `h2` "Speaking topics"
+  followed by its three offering titles, `h2` "Past talks", `h2` "Consulting" (holding the
+  no-practice note and the healthcare-gaps paragraph), `h2` "How I work", `h2` "Kinds of work"
+  followed by its three offering titles, `h2` "What I don't do", then one call to action labelled
+  "Get in touch". No `figure`, no bio, no `talk-topics` id.
 - Exactly one call-to-action link in `main` content sections pointing to `/contact/`.
 - Passes the per-template axe check (WCAG 2.2 AA) and the performance budget.
 

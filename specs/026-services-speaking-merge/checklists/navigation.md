@@ -21,7 +21,7 @@
 - [x] CHK010 - Is the assumption that only the home page links to the old addresses validated for both `/services/` and `/speaking/`? [Assumption, Spec §Assumptions]
 - [x] CHK011 - Are links to removed pages in docs and runbook treated consistently with links in built pages? [Consistency, Spec §FR-009, §FR-010]
 - [x] CHK012 - Is the call to action's destination and wording requirement clear, including that wording is Don's to review? [Clarity, Spec §FR-005]
-- [x] CHK013 - Is the optional stable id on the Talk topics heading defined well enough that either choice is acceptable and testable? [Ambiguity, Spec §FR-003]
+- [x] CHK013 - Is the optional stable id on the Talk topics heading defined well enough that either choice is acceptable and testable? [Ambiguity, Spec §FR-003] (superseded 2026-10-05: the optional id is dropped and the group is now titled "Speaking topics")
 
 ## Launch Configuration
 

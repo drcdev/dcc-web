@@ -6,14 +6,14 @@
 
 ## Content Migration Completeness
 
-- [x] CHK018 - Is every block from both source pages mapped to a place on the merged page, with none left unassigned? [Completeness, Spec §FR-001, §FR-002]
+- [x] CHK018 - Is every block from both source pages mapped to a place on the merged page, with none left unassigned? [Completeness, Spec §FR-001, §FR-002] (superseded 2026-10-05: Don dropped the "For event organizers" block and the photo, and edited the rest)
 - [x] CHK019 - Are the six offerings identified precisely enough (titles, descriptions "as current") that none can be dropped silently? [Clarity, Spec §FR-001]
-- [x] CHK020 - Is "wording may be joined or trimmed only where the pages repeat each other" bounded with a concrete limit? [Ambiguity, Spec §FR-002]
-- [x] CHK021 - Is the section order specified identically in the acceptance scenario, FR-004 and the clarifications? [Consistency, Spec §FR-004]
+- [x] CHK020 - Is "wording may be joined or trimmed only where the pages repeat each other" bounded with a concrete limit? [Ambiguity, Spec §FR-002] (superseded 2026-10-05: FR-002 now says the content is Don's edited copy)
+- [x] CHK021 - Is the section order specified identically in the acceptance scenario, FR-004 and the clarifications? [Consistency, Spec §FR-004] (superseded 2026-10-05: the order changed; scenario 3, FR-004 and the copy review session now agree)
 - [x] CHK022 - Is the single lead's content requirement defined (which of the two leads it replaces or merges)? [Gap, Spec §FR-002]
 - [x] CHK023 - Are heading hierarchy requirements specified (one title, section headings below, no repeated main heading)? [Clarity, Spec Edge Cases]
 - [x] CHK024 - Is the requirement for exactly one call to action measurable against the old two? [Measurability, Spec §FR-005]
-- [x] CHK025 - Is the photo's availability to both home and merged pages specified, with caption and alt text preserved? [Completeness, Spec §FR-002, Edge Cases]
+- [x] CHK025 - Is the photo's availability to both home and merged pages specified, with caption and alt text preserved? [Completeness, Spec §FR-002, Edge Cases] (superseded 2026-10-05: the merged page no longer shows the photo; the file stays for the home page)
 - [x] CHK026 - Is the draft status and draft notice requirement stated for the merged page, and its non-publication as out of scope? [Consistency, Spec §FR-011]
 - [x] CHK027 - Are the contact page and terms-of-use wording that mention speaking explicitly declared unchanged? [Assumption, Spec §Assumptions]
 

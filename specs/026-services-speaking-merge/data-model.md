@@ -14,28 +14,29 @@ File `src/content/pages/work-with-me.mdx` (renamed from `services.mdx`, research
 | Field | Value | Rule |
 |---|---|---|
 | `title` | `Work with me` | Page heading, tab title and (by default) menu label. |
-| `description` | combined description (research R6) | Required by the schema; covers both kinds of work. |
+| `description` | "The talks Don Coleman gives and the consulting work he is considering taking on." | Required by the schema; covers both kinds of work. |
 | `nav.position` | `2` | Unique across pages and fixed entries; no `nav.label`. |
 | `draft` | `true` | Stays a draft (FR-011); shows the draft notice. |
 
 Body, in this order (FR-004), using only registered sections:
 
-1. No-practice note: a plain paragraph.
-2. `<Lead>`: one lead.
-3. `<Offerings title="Kinds of work">` holding three `<Offering>`s: Advice on technology change,
+1. `<Lead>`: one short, speaking-first lead. The page opens with it.
+2. `<Offerings title="Speaking topics">` holding three `<Offering>`s: Systems thinking for
+   technology leaders, Practical AI in healthcare, Leading change without formal authority.
+3. `<TextBlock title="Past talks">`.
+4. `<TextBlock title="Consulting">`: the no-practice note and the healthcare-gaps paragraph.
+5. `<TextBlock title="How I work">`.
+6. `<Offerings title="Kinds of work">` holding three `<Offering>`s: Advice on technology change,
    Workshops, Plan reviews.
-4. `<TextBlock title="How I work">`.
-5. `<TextBlock title="What I do not do">`.
-6. `<Offerings title="Talk topics">` holding three `<Offering>`s: Systems thinking for technology
-   leaders, Practical AI in healthcare, Leading change without formal authority.
-7. `<TextBlock title="Past talks">`.
-8. `<TextBlock title="For event organizers">` with the bio.
-9. `<Figure caption="Don Coleman, for event programs">` with
-   `./images/don-coleman.jpg` and its alt text.
-10. `<CallToAction href="/contact/">`: the only call to action on the page (FR-005).
+7. `<TextBlock title="What I don't do">`: two items.
+8. `<CallToAction label="Get in touch" href="/contact/">`: the only call to action on the page
+   (FR-005).
+
+There is no `<Figure>`, no bio block and no `talk-topics` id (revised 2026-10-05). The photo file
+stays for the home page.
 
 Validation: exactly one `<Lead>` and one `<CallToAction>`; exactly two `<Offerings>`, titled as
-above, with three `<Offering>`s each; no other section type.
+above, with three `<Offering>`s each; no other section type; the body starts with `<Lead>`.
 
 ## Offering group / Offering
 

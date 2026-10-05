@@ -52,10 +52,23 @@ Other places that depend on the two pages today:
 ### Session 2026-10-05
 
 - Q: Should the merged page keep the name "Services" and the address `/services/`, or get a new name and address that also covers speaking? → A: New name "Work with me" at the new address `/work-with-me/`. `/services/` and `/speaking/` are removed with no redirects and no stub pages; every internal link (home page button, menu, docs, launch check, its configuration and the runbook) points to `/work-with-me/`.
-- Q: Should the six offerings appear as two titled groups, or as one combined list? → A: Two titled groups, "Kinds of work" then "Talk topics".
-- Q: Should the old Speaking address land at the top of the merged page, or jump straight to its speaking section? → A: Neither; no redirects are needed (follows from the first answer). A stable id on the speaking heading is optional, not required.
-- Q: In what order should the sections appear on the merged page? → A: Consulting first: the no-practice note and one lead, then Kinds of work, How I work, What I do not do, then Talk topics, Past talks, For event organizers, the photo, then one call to action.
-- Q: Should the page end with one call to action covering both kinds of enquiry, or keep one at the end of each half? → A: One call to action at the end, with wording that covers both a project and a speaking invitation (wording for Don to review).
+- Q: Should the six offerings appear as two titled groups, or as one combined list? → A: Two titled groups, "Kinds of work" then "Talk topics". (Superseded 2026-10-05: the order and the second title changed; see the copy review session below.)
+- Q: Should the old Speaking address land at the top of the merged page, or jump straight to its speaking section? → A: Neither; no redirects are needed (follows from the first answer). A stable id on the speaking heading is optional, not required. (Superseded 2026-10-05: the optional id is dropped.)
+- Q: In what order should the sections appear on the merged page? → A: Consulting first: the no-practice note and one lead, then Kinds of work, How I work, What I do not do, then Talk topics, Past talks, For event organizers, the photo, then one call to action. (Superseded 2026-10-05: speaking comes first, and the bio and photo are gone; see the copy review session below.)
+- Q: Should the page end with one call to action covering both kinds of enquiry, or keep one at the end of each half? → A: One call to action at the end, with wording that covers both a project and a speaking invitation (wording for Don to review). (The one call to action stands; its wording was settled 2026-10-05, see below.)
+
+### Session 2026-10-05 (copy review)
+
+Don reviewed the built page and rewrote parts of it. These answers supersede the earlier ones they change.
+
+- Speaking comes first, because Don takes speaking invitations now but is not contracting yet. This supersedes the earlier "consulting first" answer.
+- The sections appear in this order: Lead (a short, speaking-first intro), Speaking topics (Offerings), Past talks, Consulting (a text block holding the no-practice note and the healthcare-gaps paragraph), How I work, Kinds of work (Offerings), What I don't do, then one call to action.
+- The two offerings groups are titled "Speaking topics" and "Kinds of work" ("Talk topics" is retired). The optional `talk-topics` id is dropped.
+- The "For event organizers" block (the bio) and the photo with its caption and alt text are removed from the page. Don does not want a stock bio or his current role on it; event organizers reach out through the contact page. The photo file stays because the home page uses it.
+- The meta description is "The talks Don Coleman gives and the consulting work he is considering taking on."
+- The call to action has the label "Get in touch" and the body "Tell me about your event, its audience and the date, or describe a project you're working on, and we can work out the rest."
+- Don may edit the copy beyond the four places FR-002 first allowed. The content is his edited copy, not word for word from the old pages.
+- "What I don't do" has two items; the "results I cannot measure" line was dropped.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -63,27 +76,25 @@ Other places that depend on the two pages today:
 
 A visitor who wants to work with Don, whether to hire him for advice, book a workshop, ask for a
 plan review or invite him to speak, opens the "Work with me" page from the header menu and finds
-every offering there, with how he works, what he will not do, the material event organizers need,
-and a way to get in touch.
+every offering there, with how he works, what he will not do, and a way to get in touch.
 
 **Why this priority**: This is the change Don asked for. Without it nothing else in the feature
 has a purpose.
 
-**Independent Test**: Open `/work-with-me/` and confirm every offering, block, the photo and the
-call to action from both of today's pages appear on it, in the agreed order, under one main
-heading.
+**Independent Test**: Open `/work-with-me/` and confirm every offering, the blocks Don kept and the
+call to action appear on it, in the agreed order, under one main heading.
 
 **Acceptance Scenarios**:
 
-1. **Given** the merged page, **When** a visitor reads it, **Then** they find the "Kinds of work"
-   group (advice on technology change, workshops, plan reviews) followed later by the "Talk
-   topics" group (the three talks), each offering with its title and description.
-2. **Given** the merged page, **When** a visitor reads it, **Then** they find the "How I work",
-   "What I do not do", "Past talks" and "For event organizers" content, the photo for event
-   programs with its caption and alt text, and the note that Don has no consulting practice today.
+1. **Given** the merged page, **When** a visitor reads it, **Then** they find the "Speaking
+   topics" group (the three talks) followed later by the "Kinds of work" group (advice on
+   technology change, workshops, plan reviews), each offering with its title and description.
+2. **Given** the merged page, **When** a visitor reads it, **Then** they find the "Past talks",
+   "Consulting", "How I work" and "What I don't do" content, and the note, inside the Consulting
+   block, that Don has no consulting practice today.
 3. **Given** the merged page, **When** a visitor reads it from top to bottom, **Then** the
-   sections appear in this order: the no-practice note, the lead, Kinds of work, How I work,
-   What I do not do, Talk topics, Past talks, For event organizers, the photo, the call to action.
+   sections appear in this order: the lead, Speaking topics, Past talks, Consulting, How I work,
+   Kinds of work, What I don't do, the call to action. The page opens with the lead.
 4. **Given** the merged page, **When** a visitor wants to get in touch, **Then** a single call to
    action at the end takes them to the contact page.
 5. **Given** the merged page with JavaScript turned off, **When** a visitor reads it, **Then**
@@ -143,8 +154,8 @@ built site and the sitemap for `/services/` and `/speaking/`.
 
 - A request for `/services/`, `/speaking/` (with or without the trailing slash) or any address
   below them gets the site's not-found page. There are no redirects and no stub pages.
-- The photo of Don is used both on the home page and on the event-organizer section; it stays
-  available to both.
+- The photo of Don is no longer on the merged page (2026-10-05). The file stays where it is
+  because the home page uses it.
 - The menu positions: "Work with me" takes position 2. Position 3, freed by Speaking, is not taken
   by anything else; the remaining menu order is unchanged and no reserved position moves.
 - The merged page stays a draft, with the draft notice, exactly as both pages are today. Going
@@ -165,30 +176,25 @@ built site and the sitemap for `/services/` and `/speaking/`.
   for technology leaders", "Practical AI in healthcare", "Leading change without formal
   authority"). It is published at `/work-with-me/` under the title and menu label
   "Work with me".
-- **FR-002**: The merged page MUST keep the rest of both pages' content: the no-practice-today
-  note, the "How I work" and "What I do not do" blocks, the "Past talks" block, the "For event
-  organizers" block with the bio, and the photo for event programs with its caption and alt text
-  unchanged from the Speaking page. Every block of both pages has a place in the FR-004 order;
-  only the two leads and the two calls to action are combined, one each. Copy may change only in
-  these places: (a) the two leads become one, which keeps the Services lead and closes with one
-  sentence saying the page covers both the work Don is considering and the talks he gives (the
-  Speaking lead's list of subjects is dropped, because the Talk topics group carries it); (b) the
-  two calls to action become one (FR-005); (c) the no-practice note may be reworded only so it
-  reads as being about the consulting work, not the talks; (d) the page's description (FR-014).
-  Every offering, the four blocks and the photo's caption and alt text stay word for word. Every
-  change to copy is Don's to review.
-- **FR-003**: The offerings MUST be presented as two titled groups on the one page: "Kinds of
-  work" (the three kinds of work), then "Talk topics" (the three talks). Each group is its own
-  list under its own section heading, so assistive technology announces them as two separate
-  groups. A stable id on the Talk topics heading is optional; if one is added it is
-  `talk-topics`, and no test or link may depend on it.
-- **FR-004**: The merged page MUST present its sections in this order: the no-practice note, one
-  lead, Kinds of work, How I work, What I do not do, Talk topics, Past talks, For event organizers,
-  the photo for event programs, and the call to action.
+- **FR-002**: The merged page's content is Don's edited copy. He reviewed the page on 2026-10-05
+  and rewrote it, so it is not word for word from the old pages. It MUST keep the six offerings
+  (FR-001), the no-practice-today note, the healthcare-gaps paragraph, the "How I work" block, the
+  "What I don't do" block (two items) and the "Past talks" block. The two old leads and the two
+  old calls to action are one each. The "For event organizers" block, the bio and the photo with
+  its caption and alt text are not on the page. Every change to copy is Don's to review.
+- **FR-003**: The offerings MUST be presented as two titled groups on the one page: "Speaking
+  topics" (the three talks), then, later, "Kinds of work" (the three kinds of work). Each group is
+  its own list under its own section heading, so assistive technology announces them as two
+  separate groups. There is no stable id on either heading.
+- **FR-004**: The merged page MUST present its sections in this order: one short lead (speaking
+  first), Speaking topics (Offerings), Past talks, Consulting (a text block holding the
+  no-practice note and the healthcare-gaps paragraph), How I work, Kinds of work (Offerings), What
+  I don't do, and the call to action. The page opens with the lead.
 - **FR-005**: The merged page MUST end with exactly one call to action (today's pages have one
-  each, two in all), linking to the contact page, whose wording speaks to both kinds of enquiry (a
-  project and a speaking invitation). Its link text MUST make sense out of context, naming the
-  action of getting in touch rather than "click here" or "more". The wording is Don's to review.
+  each, two in all), linking to the contact page, whose wording speaks to both kinds of enquiry (an
+  event and a project). Its label is "Get in touch", which makes sense out of context and is not
+  "click here" or "more"; its body is "Tell me about your event, its audience and the date, or
+  describe a project you're working on, and we can work out the rest."
 - **FR-006**: The Services and Speaking pages MUST no longer exist, and the header menu MUST NOT
   list either. The menu order MUST be Home (1), Work with me (2), Writing (4), Projects (5),
   About (6), Contact (7). Writing, Projects and Contact keep their reserved positions and About
@@ -217,11 +223,10 @@ built site and the sitemap for `/services/` and `/speaking/`.
 - **FR-012**: The merged page MUST meet the site's existing page standards, with no exception or
   raised limit for it:
   - WCAG 2.2 AA, confirmed by the automated accessibility check every page template runs.
-  - Headings: one level-1 heading (the page title); the section titles Kinds of work, How I work,
-    What I do not do, Talk topics, Past talks and For event organizers as level-2 headings in page
-    order; each offering title one level below its group's heading; no level skipped.
+  - Headings: one level-1 heading (the page title); the section titles Speaking topics, Past talks,
+    Consulting, How I work, Kinds of work and What I don't do as level-2 headings in page order; each offering title one level below its group's heading; no level skipped.
   - The same per-template performance budget as every page template today, and Core Web Vitals
-    "good" on mobile; the photo reserves its space so it causes no layout shift.
+    "good" on mobile; the page has no image, so it has no layout shift to cause.
   - Readable with JavaScript off, including the menu and the call to action.
   - The header and menu behaviour every page template has, inherited unchanged: every menu entry
     is reachable by keyboard in order with a visible focus indicator, and the phone menu opens and
@@ -235,8 +240,8 @@ built site and the sitemap for `/services/` and `/speaking/`.
   `/work-with-me/` where they used `services` and `/services/`, with the front-matter example
   showing the title "Work with me" at position 2.
 - **FR-014**: The merged page MUST have the title "Work with me" (page heading and browser tab)
-  and one meta description covering both the work Don is considering and his talks, wording for
-  Don to review. While it is a draft it is marked not to be indexed by search engines, like every
+  and the meta description "The talks Don Coleman gives and the consulting work he is considering
+  taking on." While it is a draft it is marked not to be indexed by search engines, like every
   draft page today.
 - **FR-015**: The visual checks that show the header menu MUST be refreshed to the six-entry menu
   for every platform and theme they cover. These are the images that show the menu links: the
@@ -250,17 +255,17 @@ built site and the sitemap for `/services/` and `/speaking/`.
 ### Key Entities
 
 - **Offering**: one thing Don offers, with a title and a short description. Today there are six:
-  three kinds of work and three talk topics.
-- **Offering group**: a titled set of offerings on the page ("Kinds of work", "Talk topics").
+  three speaking topics and three kinds of work.
+- **Offering group**: a titled set of offerings on the page ("Speaking topics", "Kinds of work").
 - **Work with me page**: the single page at `/work-with-me/` that holds both offering groups and
-  the supporting blocks (how Don works, what he does not do, past talks, event-organizer material,
-  call to action).
+  the supporting blocks (past talks, consulting, how Don works, what he does not do, call to
+  action).
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: All six offerings, in two titled groups, the four supporting blocks, the photo and
+- **SC-001**: All six offerings, in two titled groups, the supporting blocks and
   one contact call to action are on one page, and a visitor reaches it from the header menu in one
   click.
 - **SC-002**: The header menu has six entries, down from seven; one is "Work with me", and none is
@@ -283,8 +288,11 @@ built site and the sitemap for `/services/` and `/speaking/`.
   decision. Drafts are marked not to be indexed, so search engines are not expected to hold
   either address; anyone with a bookmark to either lands on the not-found page, which Don
   accepts.
-- No speaking-only content is dropped. The "Past talks" placeholder stays as it is; filling it in
-  is separate content work.
+- The "Past talks" block stays a placeholder; filling it in is separate content work. The
+  "For event organizers" block and the photo were dropped by Don's decision (2026-10-05), not
+  carried over.
+- Don's aim for the copy is plain wording without obvious AI phrasing; he edited the page himself
+  to get there.
 - The contact page's description ("a project, a speaking engagement or a question") and the terms
   of use's mention of "consulting and speaking work" stay as they are; they describe kinds of
   enquiry, not pages.
@@ -298,6 +306,5 @@ built site and the sitemap for `/services/` and `/speaking/`.
   (confirmed by search of the content for both addresses). Outside the content, only the page
   guide, the launch check's configuration, the launch runbook, a code comment and the tests name
   them.
-- Out of scope: rewriting the offering copy beyond joining the two leads and the single call to
-  action, publishing the page (`draft: false`), adding past talks, and any change to the contact
+- Out of scope: further copy rewrites beyond Don's own review, publishing the page (`draft: false`), adding past talks, and any change to the contact
   form.

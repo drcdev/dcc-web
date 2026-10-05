@@ -169,7 +169,13 @@ describe("a page that is one file", () => {
 
     const headings = [...main.matchAll(/<h([1-6])[^>]*>([\s\S]*?)<\/h\1>/g)].map((m) => ({
       level: Number(m[1]),
-      text: m[2]!.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim(),
+      text: m[2]!
+        .replace(/<[^>]+>/g, "")
+        .replace(/&#39;/g, "'")
+        .replace(/&quot;/g, '"')
+        .replace(/&amp;/g, "&")
+        .replace(/\s+/g, " ")
+        .trim(),
     }));
     expect(headings.filter((h) => h.level === 1)).toHaveLength(1);
     expect(headings.filter((h) => h.level === 2).map((h) => h.text)).toEqual(titles);
@@ -177,7 +183,9 @@ describe("a page that is one file", () => {
       expect(headings[i]!.level - headings[i - 1]!.level, `${headings[i]!.text} skips a level`).toBeLessThanOrEqual(1);
     }
     // Three offerings in each of the two groups, each an h3 after its group's h2.
-    const offeringGroups = [titles[0]!, titles[3]!].map((groupTitle) => {
+    const groupTitles = [...source!.body.matchAll(/^<Offerings\b[^>]*\btitle="([^"]*)"/gm)].map((m) => m[1]!);
+    expect(groupTitles).toHaveLength(2);
+    const offeringGroups = groupTitles.map((groupTitle) => {
       const start = headings.findIndex((h) => h.level === 2 && h.text === groupTitle);
       const rest = headings.slice(start + 1);
       const next = rest.findIndex((h) => h.level === 2);

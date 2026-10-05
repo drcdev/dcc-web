@@ -30,6 +30,9 @@ was available.
 
 ## R2. How the photo is shared
 
+Update 2026-10-05: the merged page no longer shows the photo (Don removed the figure and the bio).
+The decision below still holds for the file: it stays where it is for the home page.
+
 - **Decision**: No change. The photo is already one file,
   `src/content/pages/images/don-coleman.jpg`. The home page uses it through its `intro.photo`
   front matter and the Speaking page through a relative Markdown image; the merged page keeps the
@@ -84,29 +87,29 @@ was available.
 
 ## R6. Copy that has to change (Don reviews every line)
 
-The spec allows joining and trimming only where the two pages repeat each other. Proposed copy,
-written in the site's plain voice; the implement phase uses it and the PR lists it for review:
+Update 2026-10-05: Don reviewed and rewrote the page copy. The page file is the source of truth;
+the list below records his final choices, not the earlier proposals.
 
-- **Meta description** (one for the page, about 120 characters):
-  "The work Don Coleman is considering taking on, the talks he gives, and what event organizers
-  need to invite him."
-- **No-practice note**: keep it first, and say it is about the consulting work so it does not read
-  as covering talks:
-  "A note before you read on: I don't have a consulting practice today. The kinds of work below are
-  ones I'm considering offering, written down so I can hear whether they would be useful. If one of
-  them would help you, I'd like to know."
-- **One lead** (the two leads joined; the Speaking lead's subject list is carried by the Talk
-  topics group, so it is trimmed to one closing sentence):
-  "Most technology change in healthcare doesn't come apart on the technology. It comes apart in the
-  gaps: between the team that chose a tool and the team that has to live with it, between a plan on
-  paper and the people it depends on. I've spent my career in those gaps. This page covers the work
-  I'm considering taking on outside my day job and the talks I give, which come from the same work
-  as my writing."
-- **One call to action**: label "Get in touch", body "Describe a project you're working on, or tell
-  me about your event, its audience and the date, and we can work out the rest." Links to
+- **Meta description**: "The talks Don Coleman gives and the consulting work he is considering
+  taking on."
+- **Order**: speaking comes first because Don takes speaking invitations now but is not
+  contracting yet: Lead, Speaking topics, Past talks, Consulting, How I work, Kinds of work, What
+  I don't do, call to action.
+- **One lead**: a short intro that opens with speaking and says the consulting work further down
+  is for later.
+- **Consulting block**: holds the no-practice note (bold "A note before you read on:", saying he
+  has no consulting practice today and the kinds of work are ones he is considering) and the
+  healthcare-gaps paragraph (technology change comes apart between teams, not on the technology).
+- **One call to action**: label "Get in touch", body "Tell me about your event, its audience and
+  the date, or describe a project you're working on, and we can work out the rest." Links to
   `/contact/`.
-- Every offering, How I work, What I do not do, Past talks, For event organizers and the photo
-  caption and alt text stay word for word.
+- **Removed**: the "For event organizers" block, the bio and the photo with its caption and alt
+  text. Don does not want a stock bio or his current role on the page; event organizers use the
+  contact page. The photo file stays for the home page (R2).
+- **Groups**: "Speaking topics" and "Kinds of work"; no `talk-topics` id.
+- **What I don't do** has two items.
+- Don edited the other copy himself, aiming at plain wording without obvious AI phrasing, so the
+  offerings and blocks are no longer word for word from the old pages.
 - The home page's "See how I can help" label is unchanged; only its `href` changes.
 
 ## R7. Visual baselines

@@ -21,11 +21,11 @@ Because those are `[PREVIEW-CHECK]` items, auto-merge stays off while they are o
 Services and Speaking become one draft page, **Work with me**, at `/work-with-me/`, menu position
 2. Once every changed test is written and seen failing, `src/content/pages/services.mdx` is
 renamed with `git mv` to `work-with-me.mdx` in a commit of its own (so history follows), then the
-Speaking sections are moved into it in the agreed order, `speaking.mdx` is deleted and the home
+Speaking sections are moved into it in the agreed order (revised 2026-10-05, see the spec Clarifications), `speaking.mdx` is deleted and the home
 link and launch config follow. The rename commit is an intermediate step inside that one
-implementation task, not a task of its own; the task is done only when the suite is green. The photo needs no change: it is already one shared file,
-`src/content/pages/images/don-coleman.jpg`, referenced by relative path from the home page and
-now from the merged page. Removing the files removes the routes; Cloudflare's existing
+implementation task, not a task of its own; the task is done only when the suite is green. The photo file needs no change: it stays at
+`src/content/pages/images/don-coleman.jpg` for the home page; the merged page no longer shows it
+(2026-10-05). Removing the files removes the routes; Cloudflare's existing
 `not_found_handling: "404-page"` serves the not-found page for the old addresses, and the
 sitemap drops them on its own. Everything else is reference updates: the home intro link, the
 launch config and runbook, the pages guide, and the tests and visual baselines that name the old
@@ -48,7 +48,7 @@ real `astro build`), Playwright (`e2e`, `a11y`, `budget`, `visual`, `sections` p
 **Project Type**: static website
 
 **Performance Goals**: existing per-template budget and Core Web Vitals "good" on mobile; the
-merged page is the two pages' sections combined with one photo, within today's budget
+merged page is the two pages' sections combined, with no image, within today's budget
 
 **Constraints**: no redirects or stub pages (FR-007); page stays a draft (FR-011); copy edits
 limited to joins Don reviews (FR-002, FR-005); no reserved menu position moves
@@ -85,9 +85,9 @@ No violations, so Complexity Tracking is empty.
 
 | File | Change |
 |---|---|
-| `src/content/pages/services.mdx` → `work-with-me.mdx` | `git mv` (own commit, no edits), then: `title: Work with me`, combined `description`, `nav.position: 2`, `draft: true`; body in FR-004 order with the Speaking sections moved in, one lead, one call to action (copy in research R6). |
+| `src/content/pages/services.mdx` → `work-with-me.mdx` | `git mv` (own commit, no edits), then: `title: Work with me`, combined `description`, `nav.position: 2`, `draft: true`; body in FR-004 order (Don's edited copy, research R6), one lead, one call to action; no bio or photo. |
 | `src/content/pages/speaking.mdx` | `git rm` after its sections are in the merged file. |
-| `src/content/pages/images/don-coleman.jpg` | Unchanged; shared by `index.mdx` and `work-with-me.mdx` (research R2). |
+| `src/content/pages/images/don-coleman.jpg` | Unchanged; used by `index.mdx` only, the merged page no longer shows it (research R2). |
 | `src/content/pages/index.mdx` | `intro.cta.href: /work-with-me/`. |
 | `setup/config.json` | `launch.expectedPages` and `launch.expectedPaths`: replace the two old entries with `work-with-me` and `/work-with-me/`. |
 | `docs/launch.md` | L2: "Replace the Work with me placeholder copy …". |
@@ -112,7 +112,7 @@ green.
 | Behaviour (FR) | Layer | Test file and change |
 |---|---|---|
 | Launch page files: `work-with-me.mdx` exists, draft, position 2; no `services.mdx`/`speaking.mdx`; uses only registered sections (FR-001, FR-006, FR-011) | Unit | `tests/unit/content/launch-content.test.ts`: LAUNCH list and the "sections in …" block become one entry for `work-with-me.mdx`; add "no `services.mdx` or `speaking.mdx`". |
-| Section order, two titled groups with three offerings each, one lead, one call to action to `/contact/`, photo kept (FR-002–FR-005) | Unit | Same file, new `describe("Work with me page")`: reads the MDX body and asserts the tag/title sequence. Cheapest layer that sees the order; copy wording is not asserted (Don reviews it). |
+| Section order, two titled groups with three offerings each, one lead, one call to action to `/contact/`, page opens with the lead, no-practice note inside the Consulting block (FR-002–FR-005) | Unit | Same file, new `describe("Work with me page")`: reads the MDX body and asserts the tag/title sequence. Cheapest layer that sees the order; copy wording is not asserted (Don reviews it). |
 | Navigation built from the page files: six entries in order, label "Work with me" (FR-006) | Unit | `tests/unit/content/navigation.test.ts`: fixture pages and expected list. |
 | Only Work with me marked current on `/work-with-me/` (US2) | Component | `tests/component/SiteHeader.test.ts`: PRIMARY list and the current-page case. |
 | Home intro call to action goes to `/work-with-me/` (FR-009) | Component | `tests/component/HomeIntro.test.ts`: the fixture `cta.href` mirrors `index.mdx`, so it and its assertions move to `/work-with-me/`. The E2E click in `pages.spec.ts` stays as the journey check (it is the existing one; only its target changes). |
@@ -187,9 +187,9 @@ tests/e2e/visual.spec.ts-snapshots/   # 8 images per platform
 
 ## Risks and open points
 
-- **Copy needs Don's eye**: the meta description, the no-practice note (reworded so it reads as
-  covering the consulting work, not the talks), the joined lead and the single call to action
-  (label "Get in touch") are proposals in research R6. The PR lists them for review.
+- **Copy is Don's**: he reviewed and rewrote the page on 2026-10-05 (research R6). The PR lists
+  the meta description, lead, Consulting block and call to action (label "Get in touch") for
+  his final read.
 - **Sibling worktrees** editing the shell or `templates.ts` will conflict on the same baselines
   and lists; merge `origin/main` before regenerating baselines.
 - **Docker vs CI drift**: the shell images contain only plain Inter text, which matched CI first
