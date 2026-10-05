@@ -195,6 +195,96 @@ test.describe("series lead on the fixture site", () => {
   });
 });
 
+// Series tile images on /writing/ (specs/025-topic-images contracts/series-cards.md section 1;
+// FR-002, FR-005, FR-016). Only a browser shows rendered size, alignment and text fit.
+const addTextSpacing = (page: Page) =>
+  // The page's CSP blocks an inline <style>, so the WCAG 1.4.12 overrides go in as a constructed stylesheet.
+  page.evaluate(() => {
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(`* { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; }
+      p { margin-bottom: 2em !important; }`);
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+  });
+
+test.describe("series tile images on the fixture site", () => {
+  const TILES = "[data-series-intro-item]";
+  const SIZES = [
+    { name: "phone 390", width: 390, height: 844 },
+    { name: "tablet 800", width: 800, height: 900 },
+    { name: "desktop 1280", width: 1280, height: 900 },
+  ];
+
+  for (const size of SIZES) {
+    test(`each tile image spans the tile and is 2:1 at ${size.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: size.width, height: size.height });
+      await page.goto(LANDING);
+      const tiles = page.locator(TILES);
+      await expect(tiles).toHaveCount(2);
+      const boxes = await tiles.evaluateAll((els) =>
+        els.map((el) => {
+          const tile = el.getBoundingClientRect();
+          const image = el.querySelector("img")!.getBoundingClientRect();
+          const style = getComputedStyle(el);
+          const inner = tile.width - parseFloat(style.borderLeftWidth) - parseFloat(style.borderRightWidth);
+          return { tile: { top: tile.top, height: tile.height }, image: { top: image.top, width: image.width, height: image.height }, inner };
+        }),
+      );
+      for (const box of boxes) {
+        expect(Math.abs(box.image.width - box.inner)).toBeLessThanOrEqual(1);
+        expect(Math.abs(box.image.height - box.image.width / 2)).toBeLessThanOrEqual(1);
+      }
+      if (size.width >= 768) {
+        // Side by side: equal tile height, images aligned at the top.
+        expect(Math.abs(boxes[0]!.tile.top - boxes[1]!.tile.top)).toBeLessThanOrEqual(1);
+        expect(Math.abs(boxes[0]!.tile.height - boxes[1]!.tile.height)).toBeLessThanOrEqual(1);
+        expect(Math.abs(boxes[0]!.image.top - boxes[1]!.image.top)).toBeLessThanOrEqual(1);
+      }
+    });
+  }
+
+  for (const width of [320, 640]) {
+    test(`grows to fit its text with WCAG 1.4.12 spacing at ${width}px, focus ring inside the tile`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto(LANDING);
+      await addTextSpacing(page);
+      const fits = await page.locator(TILES).evaluateAll((els) =>
+        els.map((el) => {
+          const tile = el.getBoundingClientRect();
+          const image = el.querySelector("img")!.getBoundingClientRect();
+          const text = el.querySelector("div")!.getBoundingClientRect();
+          const last = [...el.querySelectorAll("div *")].reduce((max, child) => Math.max(max, child.getBoundingClientRect().bottom), 0);
+          return { textTop: text.top, imageBottom: image.bottom, textBottom: last, tileBottom: tile.bottom };
+        }),
+      );
+      for (const fit of fits) {
+        expect(fit.textTop).toBeGreaterThanOrEqual(fit.imageBottom - 1);
+        expect(fit.textBottom).toBeLessThanOrEqual(fit.tileBottom + 1);
+      }
+      for (const name of ["Read Convergence", "Read Drift"]) {
+        const link = page.getByRole("link", { name });
+        await link.focus();
+        const inside = await link.evaluate((el) => {
+          const tile = el.closest("[data-series-intro-item]")!.getBoundingClientRect();
+          const rect = el.getBoundingClientRect();
+          const style = getComputedStyle(el);
+          const reach = parseFloat(style.outlineWidth) + Math.max(0, parseFloat(style.outlineOffset));
+          return rect.left - reach >= tile.left && rect.right + reach <= tile.right && rect.bottom + reach <= tile.bottom && rect.top - reach >= tile.top;
+        });
+        expect(inside, `${name} focus indicator`).toBe(true);
+      }
+    });
+  }
+
+  test("only the series tiles carry a series image", async ({ page }) => {
+    await page.goto(LANDING);
+    await expect(page.locator("[data-series-image]")).toHaveCount(2);
+    await expect(page.locator(`${TILES} [data-series-image]`)).toHaveCount(2);
+    for (const outside of ["[data-topic-pill]", "[data-lead-story]", "[data-post-card]"]) {
+      await expect(page.locator(`${outside} [data-series-image]`), outside).toHaveCount(0);
+    }
+  });
+});
+
 test.describe("home page recent writing on the fixture site", () => {
   test("lists the newest posts, the fixture lead first", async ({ page }) => {
     await page.goto("/");

@@ -3,7 +3,9 @@
 // FR-016a, FR-016b): a section labelled by its own `h2`, one sentence naming Drift & Convergence,
 // then each series (Convergence first) with its description and a link to its short address.
 // It renders even when a series has no posts. It adds no script.
+import { Image } from "astro:assets";
 import { blog } from "../../config/blog.ts";
+import { seriesImage } from "../../config/series-images.ts";
 import { findTopic, topicHref } from "../../config/topics.ts";
 import { topicStyle } from "./topic-styles.ts";
 
@@ -23,15 +25,32 @@ const linkClass = "inline-block px-1 py-1 font-medium underline underline-offset
   <p class="m-0 max-w-prose text-lg text-dusk-700 dark:text-mist-300">{blog.seriesIntro}</p>
   <div class="mt-4 grid gap-4 md:grid-cols-2">
     {
-      series.map((topic) => (
-        <div data-series-intro-item={topic.id} class:list={["rounded-xl p-5", topicStyle(topic.colour).banner]}>
-          <h3 class="m-0 text-xl font-bold">{topic.name}</h3>
-          <p class="mb-2 mt-2">{topic.description}</p>
-          <p class="m-0">
-            <a href={topicHref(topic.id)} class={linkClass}>
-              Read {topic.name}
-            </a>
-          </p>
+      series.map((topic, index) => (
+        <div
+          data-series-intro-item={topic.id}
+          class:list={["overflow-hidden rounded-xl", topicStyle(topic.colour).banner, topicStyle(topic.colour).outline]}
+        >
+          <Image
+            src={seriesImage(topic.id)}
+            alt=""
+            width={1008}
+            height={504}
+            widths={[400, 640, 1008]}
+            sizes="(min-width: 1056px) 504px, (min-width: 768px) calc(50vw - 1.5rem), calc(100vw - 2rem)"
+            loading="eager"
+            fetchpriority={index === 0 ? "high" : "auto"}
+            data-series-image={topic.id}
+            class="block aspect-[2/1] h-auto w-full"
+          />
+          <div class="p-5">
+            <h3 class="m-0 text-xl font-bold">{topic.name}</h3>
+            <p class="mb-2 mt-2">{topic.description}</p>
+            <p class="m-0">
+              <a href={topicHref(topic.id)} class={linkClass}>
+                Read {topic.name}
+              </a>
+            </p>
+          </div>
         </div>
       ))
     }

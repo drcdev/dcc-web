@@ -36,12 +36,12 @@ describe("LeadStory", () => {
     ]);
   });
 
-  it("loads its feature image eagerly at high priority, with its alt text", async () => {
+  it("loads its feature image eagerly at automatic priority, with its alt text", async () => {
     const html = await render(withImage("one"));
     const [img] = byName(html, "img");
     expect(img!.attrs.alt).toBe("Picture for one");
     expect(img!.attrs.loading).toBe("eager");
-    expect(img!.attrs.fetchpriority).toBe("high");
+    expect(img!.attrs.fetchpriority).toBe("auto");
     expect("data-text-only" in byName(html, "article")[0]!.attrs).toBe(false);
   });
 
