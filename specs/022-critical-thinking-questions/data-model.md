@@ -79,8 +79,11 @@ updated_at) × rate)`, with `rate = BUCKET_REFILL_PER_DAY / 86,400,000` tokens p
 | Name | Default | Used by |
 |---|---|---|
 | `QUESTIONS_MODEL` | `"@cf/meta/llama-3.2-3b-instruct"` | model call; stored in `question_sets.model` |
-| `BUCKET_CAPACITY` | `200` | bucket |
-| `BUCKET_REFILL_PER_DAY` | `200` | bucket |
+| `BUCKET_CAPACITY` | `60` | bucket |
+| `BUCKET_REFILL_PER_DAY` | `60` | bucket |
+| `FRESH_RESERVE` | `20` | bucket take for `fresh` (leaves this many tokens for first generations) |
+| `WORST_CASE_NEURONS` | `39` | sizing-rule test: 2 x (capacity + refill) x this <= `FREE_NEURONS_PER_DAY` |
+| `FREE_NEURONS_PER_DAY` | `10_000` | sizing-rule test |
 | `MAX_INPUT_CHARS` | `24_000` | build-side preparer (imported, as `ContactForm.astro` imports contact rules) |
 | `MAX_OUTPUT_TOKENS` | `300` | model call |
 | `MODEL_TIMEOUT_MS` | `15_000` | model call |

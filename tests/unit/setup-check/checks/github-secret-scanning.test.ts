@@ -10,11 +10,12 @@ interface RepoSettingsFixture {
   security_and_analysis: {
     secret_scanning: { status: string };
     secret_scanning_push_protection: { status: string };
+    dependabot_security_updates: { status: string };
   };
 }
 
 describe("checks/github-secret-scanning", () => {
-  it("is complete when both secret scanning and push protection are enabled", async () => {
+  it("is complete when secret scanning, push protection and Dependabot security updates are enabled", async () => {
     const settings = loadFixture<RepoSettingsFixture>("github", "repo-settings-secret-scanning-on");
     const ctx = fakeProviderContext({
       fs: { readJson: (() => CONFIG) as never },
@@ -50,6 +51,7 @@ describe("checks/github-secret-scanning", () => {
           security_and_analysis: {
             secret_scanning: { status: "enabled" },
             secret_scanning_push_protection: { status: "disabled" },
+            dependabot_security_updates: { status: "enabled" },
           },
         })) as never,
       },
@@ -59,6 +61,46 @@ describe("checks/github-secret-scanning", () => {
 
     expect(result.status).toBe("missing");
     expect(result.summary).toMatch(/push protection/i);
+  });
+
+  it("is missing when only Dependabot security updates are disabled", async () => {
+    const ctx = fakeProviderContext({
+      fs: { readJson: (() => CONFIG) as never },
+      github: {
+        api: (async () => ({
+          security_and_analysis: {
+            secret_scanning: { status: "enabled" },
+            secret_scanning_push_protection: { status: "enabled" },
+            dependabot_security_updates: { status: "disabled" },
+          },
+        })) as never,
+      },
+    });
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("missing");
+    expect(result.summary).toMatch(/dependabot/i);
+    expect(result.nextAction).toMatch(/code security/i);
+  });
+
+  it("is missing when dependabot_security_updates is absent", async () => {
+    const ctx = fakeProviderContext({
+      fs: { readJson: (() => CONFIG) as never },
+      github: {
+        api: (async () => ({
+          security_and_analysis: {
+            secret_scanning: { status: "enabled" },
+            secret_scanning_push_protection: { status: "enabled" },
+          },
+        })) as never,
+      },
+    });
+
+    const result = await check(ctx);
+
+    expect(result.status).toBe("missing");
+    expect(result.summary).toMatch(/dependabot/i);
   });
 
   it("is could-not-check when the gh api call fails", async () => {

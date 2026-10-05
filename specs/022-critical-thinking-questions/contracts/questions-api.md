@@ -38,7 +38,9 @@ Unknown fields are ignored. The body is read through a byte counter capped at 1,
    asset read).
 6. Read `/writing/<slug>/question-source.json` through `env.ASSETS`. Not 200 → Q06. File `hash`
    differs from the request → Q07.
-7. Take a token (data-model §3). Empty → Q08 (no model call).
+7. Take a token (data-model §3). Empty → Q08 (no model call). When `fresh` is true the take
+   succeeds only while more than `FRESH_RESERVE` tokens remain, else Q08; a first generation
+   may spend the reserve.
 8. Call `env.AI.run(QUESTIONS_MODEL, …)` with the 15 s timeout; parse and validate.
    Error (including a deprecated or removed model, or the account's Workers AI allocation being
    used up elsewhere), timeout or fewer than 2 valid → refund the token → Q09.
@@ -72,7 +74,7 @@ HSTS) and no CORS headers. Error bodies name no provider, model, prompt or inter
 | Q05 | 400 | `{ "ok": false, "error": "invalid" }` | | not an object, bad `slug`, `hash` or `fresh` |
 | Q06 | 404 | `{ "ok": false, "error": "not_found" }` | | no such post in this build (unknown slug, or a draft on production) |
 | Q07 | 404 | `{ "ok": false, "error": "stale" }` | | the post changed since the page loaded |
-| Q08 | 429 | `{ "ok": false, "error": "limited", "retryAfter": <seconds> }` | `Retry-After: <seconds>` | bucket empty |
+| Q08 | 429 | `{ "ok": false, "error": "limited", "retryAfter": <seconds> }` | `Retry-After: <seconds>` | bucket empty, or `fresh` with no more than `FRESH_RESERVE` tokens left |
 | Q09 | 503 | `{ "ok": false, "error": "unavailable" }` | | model error, timeout, malformed output, D1 or asset failure |
 | Q10 | 200 | `{ "ok": true, "source": "cached", "questions": [..] }` | | cached set for this version |
 | Q11 | 200 | `{ "ok": true, "source": "generated", "questions": [..] }` | | first set for this version, now cached |
@@ -80,12 +82,13 @@ HSTS) and no CORS headers. Error bodies name no provider, model, prompt or inter
 
 `questions` always holds 2–4 plain strings that passed data-model §5, sent as JSON
 (`application/json`, `nosniff`); the panel inserts them as text, never HTML. `retryAfter` is
-the time until at least one token is available, `ceil((1 − available) / ratePerSecond)` in
+the time until at least one token is available, `ceil((1 + reserve − available) / ratePerSecond)` (`reserve` is `FRESH_RESERVE` for `fresh`, else 0) in
 whole seconds (`ratePerSecond = BUCKET_REFILL_PER_DAY / 86,400`), at least 1, and equal to the `Retry-After` header. Q06 is byte-for-byte the same for
 an unknown slug and for a draft slug on production.
 
 ## Guarantees (tested)
 
+- Q21a: a `fresh` call with exactly `FRESH_RESERVE` tokens left is Q08, makes no model call and leaves the tokens unchanged, while a first generation at the same level succeeds.
 - Q20: a cached press never changes `usage_bucket` (SC-003).
 - Q21: generations never exceed the bucket: with capacity N and no time passing, the (N+1)th
   generation is Q08 and the model fake was called exactly N times.

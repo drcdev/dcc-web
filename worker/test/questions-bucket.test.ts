@@ -64,6 +64,32 @@ describe("takeToken", () => {
     expect(results.filter((r) => r.ok)).toHaveLength(1);
   });
 
+  it("with a reserve, takes only while the refilled bucket holds one more than the reserve", async () => {
+    await setBucket(3, NOW);
+    expect((await takeToken(env.DB, NOW, LIMITS, 2)).ok).toBe(true);
+    expect(await tokens()).toBe(2);
+    expect(await takeToken(env.DB, NOW, LIMITS, 2)).toEqual({ ok: false, retryAfter: 1 });
+    expect(await tokens()).toBe(2);
+  });
+
+  it("with a reserve, retryAfter is the time to reach reserve + 1", async () => {
+    const slow = { capacity: 10, perDay: 10 }; // one token per 8640 s
+    await setBucket(1, NOW);
+    expect(await takeToken(env.DB, NOW, slow, 2)).toEqual({ ok: false, retryAfter: 17_280 });
+  });
+
+  it("without a reserve still spends down to zero", async () => {
+    await setBucket(1, NOW);
+    expect((await takeToken(env.DB, NOW, LIMITS)).ok).toBe(true);
+    expect(await tokens()).toBeCloseTo(0);
+  });
+
+  it("reads a stored value above capacity as capacity", async () => {
+    await setBucket(LIMITS.capacity + 100, NOW);
+    expect((await takeToken(env.DB, NOW, LIMITS)).ok).toBe(true);
+    expect(await tokens()).toBe(LIMITS.capacity - 1);
+  });
+
   it.each([
     ["zero capacity", { capacity: 0, perDay: 100 }],
     ["negative capacity", { capacity: -1, perDay: 100 }],

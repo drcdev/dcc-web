@@ -67,8 +67,8 @@ The previous questions (if any) stay visible in the limited, stale and error sta
 - P15: on 429 the message uses `retryAfter` (seconds): `n = max(1, ceil(retryAfter / 60))`
   minutes; if that is over 90, `n = ceil(retryAfter / 3600)` hours. "1 minute" and "1 hour"
   are singular. The time shown is never earlier than `retryAfter` and at most one unit later.
-  (At the default 200 a day one token refills every 432 s, so the hours form is reached only
-  with a much smaller configured rate.)
+  (At the default 60 a day one token refills every 1,440 s; a refused "New questions" can wait
+  for up to about 8.4 hours, so the hours form is reachable.)
 - P16: a client-side guard shows at most 4 items and treats fewer than 2 as an error, so a
   wrong server answer cannot break SC-002. The guard checks only a subset of the server
   validator's rules (each item a non-empty string of at most 200 characters ending in "?"), so
