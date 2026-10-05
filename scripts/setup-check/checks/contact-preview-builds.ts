@@ -1,4 +1,4 @@
-// checks/contact-preview-builds.ts (setup item 22, contracts/setup-items.md): Worker
+// checks/contact-preview-builds.ts (setup item 21, contracts/setup-items.md): Worker
 // dcc-web-preview exists and its Workers Builds triggers, for both the production branch and
 // non-production branches, deploy with `pnpm run deploy:preview`; dcc-web itself no longer
 // builds non-production branches. Only the documented trigger fields are read.
@@ -12,7 +12,7 @@ import {
 } from "./contact-shared.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "contact-preview-builds", order: 22 };
+const ITEM = { id: "contact-preview-builds", order: 21 };
 const SUMMARY = "Could not read the preview Worker builds.";
 
 export async function check(ctx: ProviderContext): Promise<CheckResult> {

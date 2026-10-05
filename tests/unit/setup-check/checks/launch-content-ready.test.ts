@@ -44,7 +44,7 @@ describe("checks/launch-content-ready", () => {
     const result = await check(ctxFor({}));
     expect(result.status).toBe("complete");
     expect(result.id).toBe("launch-content-ready");
-    expect(result.step).toBe(`Step 26 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 25 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#launch-content-ready");
   });
 

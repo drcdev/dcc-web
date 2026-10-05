@@ -1,4 +1,4 @@
-// Shared helpers for the post-launch items 28 to 32 (011-launch contracts/setup-items.md):
+// Shared helpers for the post-launch items 27 to 31 (011-launch contracts/setup-items.md):
 // the launch-phase gate, the 24-hour sentence every pending result ends with (FR-017), the
 // "DNS is still settling" reading (research R7) and the TLS-error test.
 import { ProviderAccessError } from "../types.ts";

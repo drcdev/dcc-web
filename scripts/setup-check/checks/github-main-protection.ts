@@ -1,12 +1,12 @@
-// checks/github-main-protection.ts (setup item 14, data-model.md
+// checks/github-main-protection.ts (setup item 13, data-model.md
 // "github-main-protection"): the active ruleset on main matches
-// setup/github-ruleset.json, evaluated against the closed list of 10 rules in
+// setup/github-ruleset.json, evaluated against the closed list of 10 gaps (the verify check and its Actions pin share one) in
 // spec.md's Edge Cases ("Partially configured branch protection"); each gap
 // is named individually, never lumped into one generic message.
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "github-main-protection", order: 14 };
+const ITEM = { id: "github-main-protection", order: 13 };
 const RULESET_NAME = "main-protection";
 
 interface RulesetSummary {
@@ -57,9 +57,19 @@ function requiredContexts(rule: RulesetRule | undefined): string[] {
   return list?.map((c) => c.context) ?? [];
 }
 
-// Evaluates the closed list of 10 rules from spec.md's "Partially configured
+// GitHub Actions' app id: without the pin, any app could post a passing `verify` status.
+const GITHUB_ACTIONS_APP_ID = 15368;
+
+function verifyPinnedToActions(rule: RulesetRule | undefined): boolean {
+  const list = rule?.parameters?.required_status_checks as
+    | Array<{ context: string; integration_id?: number }>
+    | undefined;
+  return list?.some((c) => c.context === "verify" && c.integration_id === GITHUB_ACTIONS_APP_ID) ?? false;
+}
+
+// Evaluates the closed list of 10 gaps from spec.md's "Partially configured
 // branch protection" edge case against the actual ruleset (or its absence,
-// when `actual` is null). Order matches the closed list in the spec.
+// when `actual` is null). Order matches the closed list in the spec (verify and its pin are one slot).
 function evaluateGaps(actual: FullRuleset | null): string[] {
   const gaps: string[] = [];
   if (actual?.enforcement !== "active" || !coversMain(actual)) gaps.push("protection active on main");
@@ -67,13 +77,17 @@ function evaluateGaps(actual: FullRuleset | null): string[] {
   const rules = actual?.rules ?? [];
   const pr = rules.find((r) => r.type === "pull_request");
   if (!pr) gaps.push("pull request required");
+  if (!(Number(pr?.parameters?.required_approving_review_count ?? 0) >= 1)) gaps.push("one approving review required");
   if (pr?.parameters?.require_code_owner_review !== true) gaps.push("code-owner review required");
   if (pr?.parameters?.dismiss_stale_reviews_on_push !== true) gaps.push("stale approvals dismissed on new commits");
 
   const statusChecks = rules.find((r) => r.type === "required_status_checks");
   const contexts = requiredContexts(statusChecks);
-  if (!contexts.includes("verify")) gaps.push("required check verify");
-  if (!contexts.includes("major-change-approval")) gaps.push("required check major-change-approval");
+  if (!contexts.includes("verify")) {
+    gaps.push("required check verify");
+  } else if (!verifyPinnedToActions(statusChecks)) {
+    gaps.push("required check verify pinned to GitHub Actions");
+  }
   if (statusChecks?.parameters?.strict_required_status_checks_policy !== true) {
     gaps.push("branch must be up to date before merging");
   }

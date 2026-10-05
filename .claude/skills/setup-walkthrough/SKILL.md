@@ -54,14 +54,14 @@ confirmation logic (FR-010): every "is this step done?" question is answered by 
 6. End with the full report (`pnpm setup:check`) and its summary line ("`N` of `T` complete",
    where `T` is the registry length: the number of items `setup:check` reports, never a fixed number).
 
-## Launch hand-over (item 26 onwards)
+## Launch hand-over (item 25 onwards)
 
-Items 1 to 25 are the account setup. At item 26 (`launch-content-ready`) the walkthrough hands over
+Items 1 to 24 are the account setup. At item 25 (`launch-content-ready`) the walkthrough hands over
 to `docs/launch.md`, the launch walkthrough, which is the single place that covers readiness, the
-domain switch, the rollback and the after-launch checks. Items 26 to 32 stay in the registry and
+domain switch, the rollback and the after-launch checks. Items 25 to 31 stay in the registry and
 `pnpm setup:check`, but the skill does not re-explain them one by one:
 
-1. When every item before 26 is `complete` (item 16 may be `waiting`), say that the account setup is
+1. When every item before 25 is `complete` (item 15 may be `waiting`), say that the account setup is
    done and that the next part is `docs/launch.md`, starting at Part A.
 2. Follow `docs/launch.md` step by step (L1, L2, ...). Show each step's **What to do**, **Where** and
    **How to confirm**, then stop at every **Pause:** line with the standard `AskUserQuestion`
@@ -112,12 +112,6 @@ Shown for Don to run himself at the `github-main-protection` step:
 gh api -X POST repos/drcdev/dcc-web/rulesets --input setup/github-ruleset.json
 ```
 
-Shown for Don to run himself at the `github-major-label` step:
-
-```sh
-gh label create major-change
-```
-
 Workers Builds deploys automatically once this slice's pull request has merged to main, so the
 skill never shows or runs a deploy command as part of the normal walkthrough. If Don ever needs
 to trigger a manual deploy himself (for example, to recover from a stuck Workers Builds run),
@@ -127,36 +121,36 @@ shown for Don to run himself:
 pnpm exec wrangler deploy
 ```
 
-## Contact form order (items 19 to 25)
+## Contact form order (items 18 to 24)
 
 The contact-form items follow the registry's `dependsOn`, which gives this safe order. Steps that
 Don has already completed are skipped as usual:
 
-1. `contact-d1-databases` (item 19) — the two D1 databases.
+1. `contact-d1-databases` (item 18) — the two D1 databases.
 2. `local-credentials` (item 2) — if the check says the token lacks D1 Read, Workers Builds
    Configuration Read or Turnstile Sites Read, send Don back to add them to his read-only token
-   before continuing. Also remind him that the Workers Builds token needs D1 Edit (item 24).
-3. `contact-turnstile-widget` (item 20) — the Turnstile widget.
-4. `contact-worker-secrets` (item 21) — the three secrets on both Workers.
-5. `contact-preview-builds` (item 22) — the `dcc-web-preview` Workers Builds connection. It comes
+   before continuing. Also remind him that the Workers Builds token needs D1 Edit (item 23).
+3. `contact-turnstile-widget` (item 19) — the Turnstile widget.
+4. `contact-worker-secrets` (item 20) — the three secrets on both Workers.
+5. `contact-preview-builds` (item 21) — the `dcc-web-preview` Workers Builds connection. It comes
    before the build variable because the variable is set in that connection's build settings
-   (item 23 depends on item 22).
-6. `contact-turnstile-site-key` (item 23) — the `PUBLIC_TURNSTILE_SITE_KEY` build variable on both
+   (item 22 depends on item 21).
+6. `contact-turnstile-site-key` (item 22) — the `PUBLIC_TURNSTILE_SITE_KEY` build variable on both
    Workers.
-7. `contact-preview-deploy` (item 24) — the D1 Edit token permission, then the migrations and
-   the clean-up schedule. After Don confirms item 19, apply the item 19 rule below to record the
+7. `contact-preview-deploy` (item 23) — the D1 Edit token permission, then the migrations and
+   the clean-up schedule. After Don confirms item 18, apply the item 18 rule below to record the
    database IDs; do it before this step.
-8. `contact-production-deploy` (item 25) — `phase: after-merge`, so the after-merge rule in
+8. `contact-production-deploy` (item 24) — `phase: after-merge`, so the after-merge rule in
    step 5 of Behaviour applies: give the PR link and wait for the merge. It is reported as an
    after-merge item and does not fail the check before the merge.
-   When it comes to deleting the retired databases, show the order from `docs/setup.md` item 25:
+   When it comes to deleting the retired databases, show the order from `docs/setup.md` item 24:
    only after the production deploy is green, `pnpm exec wrangler d1 migrations list dcc-web
    --remote --env-file /dev/null` shows nothing pending and `pnpm setup:check --item
    contact-d1-databases` passes; delete `dcc-web-contact-preview` first, then `dcc-web-contact`, and
    before each delete run `pnpm exec wrangler d1 execute <old name> --remote --env-file /dev/null
    --command "SELECT count(*) FROM messages"`, stopping to export the rows if it is not 0.
 
-### Item 19: region confirmation (FR-027a, FR-027b)
+### Item 18: region confirmation (FR-027a, FR-027b)
 
 The `AskUserQuestion` for `contact-d1-databases` carries this text inside the question itself
 (Don cannot see prose written before the tool call), together with the three standard answers:
@@ -192,7 +186,7 @@ into `wrangler.jsonc` (`dcc-web` at the top level, `dcc-web-preview` under `env.
 commit and push. This is the only non-check command the skill runs during the walkthrough. Then run
 `pnpm setup:check --json --item contact-d1-databases`.
 
-### Item 21: secrets by name only
+### Item 20: secrets by name only
 
 Don never pastes a secret into the chat. The check confirms these by name only and the skill
 never asks for a value. Shown for Don to run himself at the `contact-worker-secrets` step, typing or

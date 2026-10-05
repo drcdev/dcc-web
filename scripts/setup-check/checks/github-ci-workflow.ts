@@ -1,12 +1,12 @@
 // checks/github-ci-workflow.ts (setup item 11, data-model.md
-// "github-ci-workflow"): .github/workflows/ci.yml and major-change.yml exist
+// "github-ci-workflow"): .github/workflows/ci.yml exists
 // on main, and the latest verify (ci.yml) run on main succeeded (FR-015,
 // FR-016).
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 
 const ITEM = { id: "github-ci-workflow", order: 11 };
-const REQUIRED_WORKFLOW_PATHS = [".github/workflows/ci.yml", ".github/workflows/major-change.yml"];
+const REQUIRED_WORKFLOW_PATHS = [".github/workflows/ci.yml"];
 
 interface WorkflowSummary {
   path: string;
@@ -42,7 +42,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       return missing(
         ITEM,
         `${missingPaths.join(" and ")} ${missingPaths.length > 1 ? "are" : "is"} missing from main.`,
-        "Confirm this slice's pull request, which adds these workflow files, has merged to main.",
+        "Confirm the pull request that adds this workflow file has merged to main.",
         missingPaths,
       );
     }
@@ -74,7 +74,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       );
     }
 
-    return complete(ITEM, "ci.yml and major-change.yml exist on main, and the latest verify run on main succeeded.");
+    return complete(ITEM, "ci.yml exists on main, and the latest verify run on main succeeded.");
   } catch (err) {
     return fromProviderError(
       ITEM,
