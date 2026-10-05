@@ -82,7 +82,9 @@ const rulesetRuleSchema = z.discriminatedUnion("type", [
     type: z.literal("required_status_checks"),
     parameters: z.object({
       strict_required_status_checks_policy: z.boolean(),
-      required_status_checks: z.array(z.object({ context: z.string().min(1) })).min(1),
+      required_status_checks: z
+        .array(z.object({ context: z.string().min(1), integration_id: z.number().int().positive().optional() }))
+        .min(1),
     }),
   }),
 ]);

@@ -297,6 +297,17 @@ only `ci.yml`. Coverage mapping (unchanged from the first plan):
     "major path" case) → retired by decision #85 (point 2). The catch-all line is asserted by
     the reduced check's own test ("catch-all line missing" and the complete case).
 
+### [x] W4b Pin the verify check to GitHub Actions (security review)
+
+- **Why:** the committed file listed `{ "context": "verify" }` without the app pin, so any app
+  could post a passing `verify` status. The live ruleset pins it to `integration_id` 15368.
+- **Files:** `setup/github-ruleset.json` carries `"integration_id": 15368` on `verify`;
+  `scripts/setup-check/schemas.ts` allows the optional field; `github-main-protection.ts` treats
+  `verify` as satisfied only with that id (gap: "required check verify pinned to GitHub
+  Actions"); `ruleset-{full,excludes-main,wrong-branch}.json` fixtures carry the pin.
+- **Test:** one new case in `github-main-protection.test.ts`, written first and seen failing
+  (unit).
+
 ### W5 Delete the `github-major-label` item and renumber 14–32 to 13–31
 
 - **Files:**
@@ -594,8 +605,13 @@ only `ci.yml`. Coverage mapping (unchanged from the first plan):
 Agents never run these. The PR body lists them in this order.
 
 - [ ] L1 **Before this PR can merge**, edit the live ruleset. GitHub blocks the merge until this
-  is done. Choose one of the two methods (R2: do **not** `PUT` `setup/github-ruleset.json`; it
-  would drop the `verify` app pin and other live-only parameters):
+  is done. Choose one of the two methods. The committed file now carries the `verify` pin (W4b),
+  but a `PUT` of `setup/github-ruleset.json` is still **not** safe: a read-only compare with the
+  live ruleset shows live-only parameters the file lacks (`allowed_merge_methods: ["merge"]`,
+  `require_extra_approval_for_unattributed_changes`, `required_reviewers`,
+  `require_last_push_approval`, `do_not_enforce_on_create`, and live's `~DEFAULT_BRANCH` include),
+  which a `PUT` would drop or reset (merge methods would reopen to squash and rebase). Keep to
+  the dashboard or the jq method below (R2):
   - **Dashboard:** Settings → Rules → Rulesets → `main-protection`:
     - set "Require a pull request before merging" → Required approvals **1**;
     - tick "Dismiss stale pull request approvals when new commits are pushed";

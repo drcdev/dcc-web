@@ -57,6 +57,16 @@ function requiredContexts(rule: RulesetRule | undefined): string[] {
   return list?.map((c) => c.context) ?? [];
 }
 
+// GitHub Actions' app id: without the pin, any app could post a passing `verify` status.
+const GITHUB_ACTIONS_APP_ID = 15368;
+
+function verifyPinnedToActions(rule: RulesetRule | undefined): boolean {
+  const list = rule?.parameters?.required_status_checks as
+    | Array<{ context: string; integration_id?: number }>
+    | undefined;
+  return list?.some((c) => c.context === "verify" && c.integration_id === GITHUB_ACTIONS_APP_ID) ?? false;
+}
+
 // Evaluates the closed list of 10 rules from spec.md's "Partially configured
 // branch protection" edge case against the actual ruleset (or its absence,
 // when `actual` is null). Order matches the closed list in the spec.
@@ -73,7 +83,11 @@ function evaluateGaps(actual: FullRuleset | null): string[] {
 
   const statusChecks = rules.find((r) => r.type === "required_status_checks");
   const contexts = requiredContexts(statusChecks);
-  if (!contexts.includes("verify")) gaps.push("required check verify");
+  if (!contexts.includes("verify")) {
+    gaps.push("required check verify");
+  } else if (!verifyPinnedToActions(statusChecks)) {
+    gaps.push("required check verify pinned to GitHub Actions");
+  }
   if (statusChecks?.parameters?.strict_required_status_checks_policy !== true) {
     gaps.push("branch must be up to date before merging");
   }
