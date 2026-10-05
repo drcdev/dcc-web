@@ -221,7 +221,7 @@ docs last. Each item leaves `verify:quick` green, along with its targeted files:
 `corepack pnpm exec vitest run --project unit <files>` for unit tests, and
 `corepack pnpm exec playwright test <files> --project=e2e` after `corepack pnpm run build` for e2e.
 
-### W1. Skill behaviour: safety assertions only
+### W1. Skill behaviour: safety assertions only (done)
 
 - **Files:** `tests/unit/setup/skill-behaviour.test.ts`.
 - **Test:** existing, pruned, **unit layer** (it reads one file). The file keeps reading
