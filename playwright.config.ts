@@ -1,5 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// Specs that run on the fixture site (port 4322, the `sections` project) and never in `e2e`.
+const FIXTURE_SITE_SPECS = [
+  /sections\.spec\.ts$/,
+  /blog-pagination\.spec\.ts$/,
+  /blog-fixtures\.spec\.ts$/,
+  /projects-fixtures\.spec\.ts$/,
+  /questions\.spec\.ts$/,
+];
+
 // E2E always runs against the production build served by Cloudflare's own
 // local runtime (`wrangler dev`), never `astro dev`/`astro preview`, so
 // `public/_headers` and `wrangler.jsonc`'s `not_found_handling` are applied
@@ -67,13 +76,7 @@ export default defineConfig({
     },
     {
       name: "sections",
-      testMatch: [
-        /sections\.spec\.ts$/,
-        /blog-pagination\.spec\.ts$/,
-        /blog-fixtures\.spec\.ts$/,
-        /projects-fixtures\.spec\.ts$/,
-        /questions\.spec\.ts$/,
-      ],
+      testMatch: FIXTURE_SITE_SPECS,
       use: { ...devices["Desktop Chrome"], baseURL: "http://localhost:4322" },
     },
     {
@@ -82,11 +85,7 @@ export default defineConfig({
         /a11y\.spec\.ts$/,
         /budget\.spec\.ts$/,
         /visual\.spec\.ts$/,
-        /sections\.spec\.ts$/,
-        /blog-pagination\.spec\.ts$/,
-        /blog-fixtures\.spec\.ts$/,
-        /projects-fixtures\.spec\.ts$/,
-        /questions\.spec\.ts$/,
+        ...FIXTURE_SITE_SPECS,
       ],
       use: { ...devices["Desktop Chrome"] },
     },

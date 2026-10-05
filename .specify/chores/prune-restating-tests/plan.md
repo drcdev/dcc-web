@@ -458,7 +458,7 @@ docs last. Each item leaves `verify:quick` green, along with its targeted files:
 | drift L144 three Worker secrets, L154 site-key variable | The new `secrets.required` drift test (stronger: derived from `wrangler.jsonc`, both environments). |
 | drift L161 token permission wording in the manifest and `.env.example` | Change-detector, no guarantee: wording. The setup check confirms the token's real permissions. |
 
-### W9. Shared Playwright patterns, navigation tests merged, tombstones
+### W9. Shared Playwright patterns, navigation tests merged, tombstones (done)
 
 - **Files:** `playwright.config.ts`, `tests/unit/site/config-mdx.test.ts` (L31),
   `tests/unit/site/nav.test.ts` (deleted), `tests/unit/site/navigation.test.ts`.
