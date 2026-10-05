@@ -103,17 +103,7 @@ const COMPLETE_BASELINE = {
 };
 
 const VALID_CODEOWNERS = `
-/.github/                              @drcdev
-/package.json                          @drcdev
-/pnpm-lock.yaml                        @drcdev
-/.nvmrc                                @drcdev
-/wrangler.jsonc                        @drcdev
-/astro.config.mjs                      @drcdev
-/public/_headers                       @drcdev
-/scripts/ci/                           @drcdev
-/setup/                                @drcdev
-/.specify/memory/constitution.md       @drcdev
-/.github/CODEOWNERS                    @drcdev
+* @drcdev
 `;
 
 const CF_ENV = {

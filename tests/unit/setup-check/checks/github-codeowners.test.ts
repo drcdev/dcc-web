@@ -7,17 +7,8 @@ import { fakeProviderContext, loadFixture } from "./test-helpers.ts";
 const CONFIG = { owner: "drcdev", repo: "dcc-web" };
 
 const VALID_CODEOWNERS = `
-/.github/                              @drcdev
-/package.json                          @drcdev
-/pnpm-lock.yaml                        @drcdev
-/.nvmrc                                @drcdev
-/wrangler.jsonc                        @drcdev
-/astro.config.mjs                      @drcdev
-/public/_headers                       @drcdev
-/scripts/ci/                           @drcdev
-/setup/                                @drcdev
-/.specify/memory/constitution.md       @drcdev
-/.github/CODEOWNERS                    @drcdev
+# Every PR needs Don.
+* @drcdev
 `;
 
 function fs(codeowners: string | null) {
@@ -36,14 +27,13 @@ describe("checks/github-codeowners", () => {
     expect(result.status).toBe("missing");
   });
 
-  it("is missing when a major path is not owned by @drcdev", async () => {
-    const incomplete = VALID_CODEOWNERS.replace("/setup/                                @drcdev\n", "");
-    const ctx = fakeProviderContext({ fs: fs(incomplete) });
+  it("is missing when the catch-all line is missing", async () => {
+    const ctx = fakeProviderContext({ fs: fs("/docs/ @drcdev\n") });
 
     const result = await check(ctx);
 
     expect(result.status).toBe("missing");
-    expect(result.details).toContain("/setup/");
+    expect(result.nextAction).toContain("* @drcdev");
   });
 
   it("is missing when GitHub reports CODEOWNERS errors", async () => {
@@ -59,7 +49,7 @@ describe("checks/github-codeowners", () => {
     expect(result.summary).toMatch(/error/i);
   });
 
-  it("is complete when every major path is owned by @drcdev and GitHub reports no errors", async () => {
+  it("is complete when the catch-all line names @drcdev and GitHub reports no errors", async () => {
     const errors = loadFixture("github", "codeowners-valid");
     const ctx = fakeProviderContext({
       fs: fs(VALID_CODEOWNERS),

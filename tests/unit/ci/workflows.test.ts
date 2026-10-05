@@ -332,30 +332,3 @@ describe(".github/workflows/ci.yml preview crawl (011-launch FR-001a, FR-002a)",
     expect(step).not.toMatch(/CLOUDFLARE|CF_/);
   });
 });
-
-describe(".github/CODEOWNERS", () => {
-  const contents = read(".github/CODEOWNERS");
-  const majorPaths = [
-    "/.github/",
-    "/package.json",
-    "/pnpm-lock.yaml",
-    "/.nvmrc",
-    "/wrangler.jsonc",
-    "/astro.config.mjs",
-    "/public/_headers",
-    "/scripts/ci/",
-    "/setup/",
-    "/.specify/memory/constitution.md",
-    "/.github/CODEOWNERS",
-  ];
-
-  it("assigns @drcdev to every major path", () => {
-    for (const path of majorPaths) {
-      const line = contents
-        .split("\n")
-        .find((l) => l.trim().startsWith(path));
-      expect(line, `missing CODEOWNERS line for ${path}`).toBeDefined();
-      expect(line).toContain("@drcdev");
-    }
-  });
-});

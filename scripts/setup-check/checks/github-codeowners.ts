@@ -1,37 +1,18 @@
 // checks/github-codeowners.ts (setup item 12, data-model.md
-// "github-codeowners"): .github/CODEOWNERS on main names @drcdev for every
-// major path, and GitHub reports no CODEOWNERS errors for it (FR-014). The
-// major-path list mirrors tests/unit/setup/drift.test.ts "CODEOWNERS covers
-// every major-path item" (constitution Principle III / contracts/ci-and-gates.md).
+// "github-codeowners"): .github/CODEOWNERS on main has the catch-all line
+// `* @drcdev`, so every approval that counts is Don's (constitution Principle
+// III), and GitHub reports no CODEOWNERS errors for it (FR-014).
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 
 const ITEM = { id: "github-codeowners", order: 12 };
 
-const MAJOR_PATHS = [
-  "/.github/",
-  "/package.json",
-  "/pnpm-lock.yaml",
-  "/.nvmrc",
-  "/wrangler.jsonc",
-  "/astro.config.mjs",
-  "/public/_headers",
-  "/scripts/ci/",
-  "/setup/",
-  "/.specify/memory/constitution.md",
-  "/.github/CODEOWNERS",
-];
-
 interface CodeownersErrorsResponse {
   errors: Array<{ line?: number; message?: string }>;
 }
 
-function missingMajorPaths(codeowners: string): string[] {
-  const lines = codeowners.split("\n");
-  return MAJOR_PATHS.filter((path) => {
-    const line = lines.find((l) => l.trim().startsWith(path));
-    return !line || !line.includes("@drcdev");
-  });
+function hasCatchAll(codeowners: string): boolean {
+  return codeowners.split("\n").some((l) => /^\*\s+@drcdev(\s|$)/.test(l.trim()));
 }
 
 export async function check(ctx: ProviderContext): Promise<CheckResult> {
@@ -44,13 +25,11 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     );
   }
 
-  const gaps = missingMajorPaths(codeowners);
-  if (gaps.length > 0) {
+  if (!hasCatchAll(codeowners)) {
     return missing(
       ITEM,
-      "CODEOWNERS does not name @drcdev for every major path.",
-      "Add @drcdev as the owner for each major path in .github/CODEOWNERS.",
-      gaps,
+      "CODEOWNERS does not name @drcdev as the owner of every path.",
+      "Add the line `* @drcdev` to .github/CODEOWNERS.",
     );
   }
 
@@ -68,7 +47,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
         result.errors.map((e) => `line ${e.line ?? "?"}: ${e.message ?? "unknown error"}`),
       );
     }
-    return complete(ITEM, "CODEOWNERS names @drcdev for every major path, with no errors reported by GitHub.");
+    return complete(ITEM, "CODEOWNERS makes @drcdev the owner of every path, with no errors reported by GitHub.");
   } catch (err) {
     return fromProviderError(
       ITEM,

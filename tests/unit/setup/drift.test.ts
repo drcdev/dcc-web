@@ -115,30 +115,6 @@ describe("ruleset contexts <-> CI job names", () => {
   });
 });
 
-describe("CODEOWNERS covers every major-path item", () => {
-  it("assigns @drcdev to every path listed in contracts/ci-and-gates.md", () => {
-    const codeowners = read(".github/CODEOWNERS");
-    const majorPaths = [
-      "/.github/",
-      "/package.json",
-      "/pnpm-lock.yaml",
-      "/.nvmrc",
-      "/wrangler.jsonc",
-      "/astro.config.mjs",
-      "/public/_headers",
-      "/scripts/ci/",
-      "/setup/",
-      "/.specify/memory/constitution.md",
-      "/.github/CODEOWNERS",
-    ];
-    for (const path of majorPaths) {
-      const line = codeowners.split("\n").find((l) => l.trim().startsWith(path));
-      expect(line, `CODEOWNERS is missing ${path}`).toBeDefined();
-      expect(line).toContain("@drcdev");
-    }
-  });
-});
-
 describe("registry, docs/setup.md and docs/launch.md agree (011-launch)", () => {
   const launch = read("docs/launch.md");
 

@@ -265,7 +265,7 @@ only `ci.yml`. Coverage mapping (unchanged from the first plan):
     no config-restating tests).
   - The original "required check major-change-approval" gap → retired by decision #85.
 
-### W4 CODEOWNERS catch-all and the reduced `github-codeowners` item
+### [x] W4 CODEOWNERS catch-all and the reduced `github-codeowners` item
 
 - **Files:**
   - `.github/CODEOWNERS`: one optional comment line, then `* @drcdev`. The comment says

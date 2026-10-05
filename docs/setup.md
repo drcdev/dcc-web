@@ -352,8 +352,8 @@ None — the workflows use only the automatic per-run `GITHUB_TOKEN`.
 ## 12. GitHub CODEOWNERS {#github-codeowners}
 
 **What it is for**
-Confirms GitHub recognises `.github/CODEOWNERS` correctly, so the paths that are major by
-definition require Don's review before they can merge.
+Confirms GitHub recognises `.github/CODEOWNERS` correctly, so the one required approval on every
+pull request is always Don's.
 
 **Where to do it**
 Nothing new to do here; `.github/CODEOWNERS` is part of this slice's pull request. This item
@@ -361,7 +361,7 @@ confirms it on `main` after the merge.
 
 **How it will be confirmed**
 `pnpm setup:check --item github-codeowners` reports complete when the CODEOWNERS file on `main`
-names `@drcdev` for every major path and GitHub reports no errors in it.
+has the catch-all line `* @drcdev` and GitHub reports no errors in it.
 
 **Constitution principle**
 III (Human Review for Major Changes).
