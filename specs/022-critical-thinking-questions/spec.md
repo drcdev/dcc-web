@@ -14,7 +14,7 @@
 
 - Q: Which hosted model provider should the question endpoint use? → A: Cloudflare Workers AI, through an `ai` binding in the existing Worker; no external service, account or API key.
 - Q: Fresh questions on every press, or one set per post reused for every reader? → A: Hybrid. The first press shows the post's cached set (keyed by a hash of the post content, stored in D1); an optional "new questions" action generates a fresh set. Only generations (the first for a post version, and each "new questions" press) draw from the limit; serving a cached set does not.
-- Q: At which levels do the token-bucket limits apply? → A: Site-wide only. One bucket for the whole site (per environment) that refills to a daily allowance, default about 200 generations a day, set in one config file. No per-reader bucket and no reader identifiers.
+- Q: At which levels do the token-bucket limits apply? → A: Site-wide only. One bucket for the whole site (per environment) that refills to a daily allowance, default about 60 generations a day, with "New questions" unable to use the last 20 tokens, set in one config file. No per-reader bucket and no reader identifiers.
 - Q: Where is the bucket state stored? → A: In the existing D1 database, renamed: new databases `dcc-web` (production) and `dcc-web-preview` (preview) replace `dcc-web-contact` and `dcc-web-contact-preview`, which are deleted. Existing contact data need not be kept (the contact feature is not live).
 - Q: Should pressing the button also require a Turnstile check? → A: No. The origin check plus the site-wide limit only.
 - Q: How is Constitution Principle V (only server-side code is the contact API) handled? → A: Amended in this PR via the speckit-constitution skill during the plan phase, generalising it to a small set of named first-party `/api/` endpoints, each with its data and limits.
@@ -266,7 +266,7 @@ cached still shows them.
 **Generation limits**
 
 - **FR-017**: Generation MUST be rate-limited by one site-wide token bucket per environment,
-  stored in D1, with a capacity of 200 tokens and continuous refill at 200 tokens a day
+  stored in D1, with a capacity of 60 tokens and continuous refill at 60 tokens a day, sized so both environments' worst day fits the free allocation. "New questions" takes a token only while more than a reserve of 20 remain
   (`available = min(capacity, tokens + elapsed × rate)`, no daily reset). A new environment or
   a newly created database starts with a full bucket. Each take is one atomic database
   statement, so simultaneous presses can never take more tokens than the bucket holds. There is

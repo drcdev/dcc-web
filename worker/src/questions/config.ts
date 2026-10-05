@@ -5,9 +5,21 @@
 /** Workers AI text-generation model that writes the questions. */
 export const QUESTIONS_MODEL = "@cf/meta/llama-3.2-3b-instruct";
 
-/** Site-wide token bucket per environment: the most generations in a burst, and the refill per day. */
-export const BUCKET_CAPACITY = 200;
-export const BUCKET_REFILL_PER_DAY = 200;
+/**
+ * Site-wide token bucket per environment: the most generations in a burst, and the refill per day.
+ * Sizing rule: the free allocation resets daily but the bucket refills continuously, so in one day an
+ * environment can spend a full bucket plus a day's refill. Production and preview share the account's
+ * allocation, so 2 x (BUCKET_CAPACITY + BUCKET_REFILL_PER_DAY) x WORST_CASE_NEURONS must stay at or
+ * below FREE_NEURONS_PER_DAY (a config test asserts it).
+ */
+export const BUCKET_CAPACITY = 60;
+export const BUCKET_REFILL_PER_DAY = 60;
+/** Neurons one generation costs at most with Llama 3.2 3B (24,000 input characters, 300 output tokens). */
+export const WORST_CASE_NEURONS = 39;
+/** Workers AI neurons the free plan allows each day, across the account. */
+export const FREE_NEURONS_PER_DAY = 10_000;
+/** Tokens a "New questions" (fresh) call leaves in the bucket, so it cannot drain it for first generations. */
+export const FRESH_RESERVE = 20;
 
 /** Longest post text sent to the model, in characters. */
 export const MAX_INPUT_CHARS = 24_000;
