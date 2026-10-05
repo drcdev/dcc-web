@@ -258,7 +258,7 @@ site, `https://new.doncoleman.ca/` still does, and Don's assistant (re-pointed a
 
 ### W5: Turnstile testing keys gated by `ALLOW_TURNSTILE_TESTING` (tests first, then code)
 
-- [ ] W5 done
+- [x] W5 done
 - **Files:** `worker/test/contact.test.ts`, then `worker/src/contact/turnstile.ts`,
   `worker/src/contact/submit.ts`.
 - **Test:** new-first. **Layer: worker** (the contact handler through `run()` with a mocked

@@ -210,13 +210,32 @@ describe("POST /api/contact: Turnstile", () => {
     expect(await rows()).toHaveLength(0);
   });
 
-  it("accepts Cloudflare's documented testing-key answer (no action, hostname example.com) and nothing else lacking them", async () => {
+  it("accepts Cloudflare's documented testing-key answer only when ALLOW_TURNSTILE_TESTING is \"true\"", async () => {
     // The always-pass test secret used by the E2E run answers like this (research R6).
+    const allow = { ALLOW_TURNSTILE_TESTING: "true" } as const;
     mockSiteverify({ success: true, hostname: "example.com", metadata: { result_with_testing_key: true } });
-    expect((await run(post(validBody(), {}, "http://127.0.0.1:4321/api/contact"))).status).toBe(200);
+    expect((await run(post(validBody(), {}, "http://127.0.0.1:4321/api/contact"), allow)).status).toBe(200);
     vi.restoreAllMocks();
     mockSiteverify({ success: false, metadata: { result_with_testing_key: true } });
-    expect((await run(post())).status).toBe(422);
+    expect((await run(post(), allow)).status).toBe(422);
+  });
+
+  it("422 for a testing-key success when the flag is unset (production config), storing nothing", async () => {
+    mockSiteverify({ success: true, hostname: "example.com", metadata: { result_with_testing_key: true } });
+    const response = await run(post(validBody(), {}, "http://127.0.0.1:4321/api/contact"));
+    expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({ ok: false, error: "turnstile_failed" });
+    expect(await rows()).toHaveLength(0);
+  });
+
+  it("422 for a testing-key success unless the flag is exactly \"true\"", async () => {
+    for (const value of ["false", "1"]) {
+      mockSiteverify({ success: true, hostname: "example.com", metadata: { result_with_testing_key: true } });
+      const response = await run(post(), { ALLOW_TURNSTILE_TESTING: value } as unknown as Partial<Env>);
+      expect(response.status).toBe(422);
+      vi.restoreAllMocks();
+    }
+    expect(await rows()).toHaveLength(0);
   });
 
   it("422 when the token is missing, without calling siteverify", async () => {
