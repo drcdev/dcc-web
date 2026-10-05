@@ -309,7 +309,7 @@ files. Run every toolchain call through `/Users/doncoleman/.claude/jobs/b807dd0b
   `exactOptionalPropertyTypes`; if typecheck disagrees, the implementer says so and keeps the alias by adjusting the call
   site, not the interface. ReadingProgress: `no behaviour: n/a (comment)`.
 
-### W7. Docs
+### [x] W7. Docs
 
 - **Files:** `docs/testing.md` row 14 ("Address used by a route" only; drop "or reserved" and the
   "fails for reserved address %s" test name; name the widened row 14 real-route test).
