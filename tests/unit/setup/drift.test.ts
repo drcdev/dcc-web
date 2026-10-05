@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { stripJsonc } from "../../../scripts/lib/jsonc.ts";
 import { setupItems } from "../../../scripts/setup-check/items.ts";
 import { secretManifest } from "../../../scripts/setup-check/secrets.ts";
 
@@ -14,10 +15,6 @@ function workflowFiles(): string[] {
   return readdirSync(`${repoRoot}.github/workflows`)
     .filter((f) => f.endsWith(".yml"))
     .map((f) => read(`.github/workflows/${f}`));
-}
-
-function stripJsonComments(text: string): string {
-  return text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
 }
 
 const docsContents = read("docs/setup.md");
@@ -53,7 +50,7 @@ describe("secret/variable names <-> manifest drift", () => {
   });
 
   it("every name in wrangler.jsonc's vars (if any) exists in the manifest", () => {
-    const config = JSON.parse(stripJsonComments(read("wrangler.jsonc"))) as { vars?: Record<string, unknown> };
+    const config = JSON.parse(stripJsonc(read("wrangler.jsonc"))) as { vars?: Record<string, unknown> };
     for (const name of Object.keys(config.vars ?? {})) {
       expect(manifestNames.has(name), `wrangler.jsonc references unknown var ${name}`).toBe(true);
     }
@@ -139,7 +136,7 @@ describe("registry, docs/setup.md and docs/launch.md agree (011-launch)", () => 
 });
 
 describe("Worker secrets <-> manifest drift", () => {
-  const config = JSON.parse(stripJsonComments(read("wrangler.jsonc"))) as {
+  const config = JSON.parse(stripJsonc(read("wrangler.jsonc"))) as {
     secrets?: { required?: string[] };
     env?: Record<string, { secrets?: { required?: string[] } }>;
   };

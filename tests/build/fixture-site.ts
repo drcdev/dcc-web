@@ -11,10 +11,11 @@
 // The programmatic API is experimental; only tests use it.
 import { execFile } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import { filesUnder } from "../helpers/files.ts";
 
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
 const fixturesRoot = resolve(repoRoot, "tests/fixtures/pages");
@@ -114,15 +115,6 @@ async function runAstro(root: string, mode: "build" | "sync", env: Record<string
       return `Astro exited without a readable error.\n${stdout}\n${stderr}`.trim();
     }
   }
-}
-
-function walk(dir: string, into: string[] = []): string[] {
-  for (const name of readdirSync(dir)) {
-    const path = join(dir, name);
-    if (statSync(path).isDirectory()) walk(path, into);
-    else into.push(path);
-  }
-  return into;
 }
 
 /** Copies fixture files from `fromRoot` into `into`, applying each file's `to` name and `replace` edit. */
@@ -225,7 +217,7 @@ export async function buildFixtureSite(
     htmlFiles: () => {
       const map = new Map<string, string>();
       if (!existsSync(dist)) return map;
-      for (const path of walk(dist)) {
+      for (const path of filesUnder(dist)) {
         if (path.endsWith(".html")) map.set(path.slice(dist.length + 1), readFileSync(path, "utf-8"));
       }
       return map;

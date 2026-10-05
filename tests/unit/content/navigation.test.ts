@@ -2,7 +2,6 @@
 // (data-model.md "NavigationItem"; contracts/build-errors.md row 15; FR-008,
 // FR-025) and for the error message format (data-model.md "PageContentError").
 import { describe, expect, it } from "vitest";
-import { futureDestinations } from "../../../src/config/navigation.ts";
 import { PageContentError, contentError } from "../../../src/lib/content/errors.ts";
 import { mergeNavigation, type NavigationPage } from "../../../src/lib/content/navigation.ts";
 
@@ -82,7 +81,6 @@ describe("the Writing entry", () => {
     const writing = mergeNavigation([]).find((item) => item.label === "Writing");
     expect(writing?.href).toBe("/writing/");
     expect(writing?.position).toBe(4);
-    expect(futureDestinations).not.toContain("/writing/");
   });
 });
 

@@ -1,6 +1,7 @@
 // Shared helpers for the contact-form setup items 18 to 24 (specs/007-contact-form/contracts/setup-items.md).
 // Everything here is read-only and names-only: no helper returns a secret or variable value.
 import type { CheckResult, CloudflareBuildTrigger, ProviderContext, SetupConfig } from "../types.ts";
+import { stripJsonc } from "../../lib/jsonc.ts";
 import { couldNotCheck, type ItemLabel } from "./shared.ts";
 
 export const PRODUCTION_DB_NAME = "dcc-web";
@@ -13,31 +14,6 @@ export const DEFAULT_CRON = "17 3 * * *";
 export const PREVIEW_DEPLOY_COMMAND = "pnpm run deploy:preview";
 export const PRODUCTION_DEPLOY_COMMAND = "pnpm run deploy:production";
 export const EXPECTED_REGION = "WNAM";
-
-/** Removes // and block comments and trailing commas from JSONC, leaving string contents alone. */
-export function stripJsonc(text: string): string {
-  let out = "";
-  let i = 0;
-  while (i < text.length) {
-    const ch = text[i]!;
-    const next = text[i + 1];
-    if (ch === '"') {
-      let j = i + 1;
-      while (j < text.length && text[j] !== '"') j += text[j] === "\\" ? 2 : 1;
-      out += text.slice(i, j + 1);
-      i = j + 1;
-    } else if (ch === "/" && next === "/") {
-      while (i < text.length && text[i] !== "\n") i++;
-    } else if (ch === "/" && next === "*") {
-      const end = text.indexOf("*/", i + 2);
-      i = end === -1 ? text.length : end + 2;
-    } else {
-      out += ch;
-      i++;
-    }
-  }
-  return out.replace(/,(\s*[}\]])/g, "$1");
-}
 
 interface WranglerDatabase {
   database_name?: string;
