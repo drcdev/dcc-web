@@ -1,0 +1,29 @@
+---
+// The projects index list: wrapped in the theme filter when there are more projects than the
+// threshold, a plain list otherwise. The plain list ships no filter markup and no filter script,
+// because the filter's script is only emitted where ProjectFilter is rendered.
+import type { Theme } from "../../lib/content/themes.ts";
+import { showsThemeFilter } from "../../lib/content/themes.ts";
+import { PROJECT_FILTER_THRESHOLD } from "../../config/projects.ts";
+import ProjectFilter from "./ProjectFilter.astro";
+
+export interface Props {
+  themes: readonly Theme[];
+  total: number;
+  threshold?: number;
+}
+
+const { themes, total, threshold = PROJECT_FILTER_THRESHOLD } = Astro.props;
+---
+
+{
+  showsThemeFilter(total, threshold) ? (
+    <ProjectFilter themes={themes} total={total}>
+      <slot />
+    </ProjectFilter>
+  ) : (
+    <ul data-project-list class="not-prose">
+      <slot />
+    </ul>
+  )
+}

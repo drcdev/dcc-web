@@ -1,7 +1,21 @@
 // The pure rules behind the theme filter island (contracts/filter-island.md
 // "Behaviour"; FR-014). The island only wires these to the page.
 import { describe, expect, it } from "vitest";
-import { filterStatus, parseThemeParam, themeSearch, type Theme } from "../../../src/lib/content/themes.ts";
+import { PROJECT_FILTER_THRESHOLD } from "../../../src/config/projects.ts";
+import { filterStatus, parseThemeParam, showsThemeFilter, themeSearch, type Theme } from "../../../src/lib/content/themes.ts";
+
+describe("showsThemeFilter", () => {
+  it("shows the filter only above the threshold", () => {
+    expect(showsThemeFilter(10, 10)).toBe(false);
+    expect(showsThemeFilter(11, 10)).toBe(true);
+    expect(showsThemeFilter(0, 10)).toBe(false);
+    expect(showsThemeFilter(5, 0)).toBe(true);
+  });
+
+  it("uses a repository threshold of 10", () => {
+    expect(PROJECT_FILTER_THRESHOLD).toBe(10);
+  });
+});
 
 const known: Theme[] = [
   { key: "ai-integration", label: "AI integration" },

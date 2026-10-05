@@ -115,6 +115,20 @@ describe("the local site", () => {
   });
 });
 
+describe("the projects index below the filter threshold", () => {
+  it("lists every project as a plain list with no filter markup or filter script", () => {
+    const html = l1.read("projects/index.html");
+    // The three fixture projects plus the real ones. This build lists them all, so it must stay
+    // within the threshold of 10; an eleventh real project turns the filter on and this test off.
+    expect(count(html, /data-project="/g)).toBeGreaterThanOrEqual(3);
+    expect(html).not.toContain("<project-filter");
+    expect(html).not.toContain("data-filter-");
+    expect(html).not.toContain("No projects match");
+    const scripts = (page: string) => count(l1.read(page), /<script\b/g);
+    expect(scripts("projects/index.html")).toBe(scripts("about/index.html"));
+  });
+});
+
 describe("a page that is one file", () => {
   it("publishes /workshops/ with its metadata, a sitemap entry and unchanged navigation", () => {
     const html = l1.read("workshops/index.html");

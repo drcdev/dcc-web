@@ -8,7 +8,7 @@
 // too: a post with no feature image and a post with a very long title, the cases the removed
 // sample posts used to cover, and a post that shows every part of the post template, the lead
 // story and the subject of the post-template snapshot (FIXTURE_POSTS). Written to .cache/fixture-site/dist.
-import { cpSync, existsSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { deflateSync, crc32 } from "node:zlib";
@@ -115,6 +115,18 @@ export function generateFixturePosts(count = MINIMUM_POSTS): GeneratedPost[] {
   });
 }
 
+/** The projects filter threshold in the fixture site: any non-empty index shows the filter. */
+export const FIXTURE_FILTER_THRESHOLD = 0;
+
+/** Replaces the repository's filter threshold in the config text; throws unless it is found exactly once. */
+export function lowerFilterThreshold(text: string): string {
+  const pattern = /PROJECT_FILTER_THRESHOLD = 10;/g;
+  if ((text.match(pattern) ?? []).length !== 1) {
+    throw new Error("PROJECT_FILTER_THRESHOLD = 10; must appear exactly once in src/config/projects.ts");
+  }
+  return text.replace(pattern, `PROJECT_FILTER_THRESHOLD = ${FIXTURE_FILTER_THRESHOLD};`);
+}
+
 /** Lays out the fixture site's source tree in `siteRoot` (everything but the Astro build). */
 export function prepareFixtureSite(siteRoot: string): void {
   const repoRoot = fileURLToPath(new URL("../", import.meta.url));
@@ -132,6 +144,9 @@ export function prepareFixtureSite(siteRoot: string): void {
   for (const entry of ["src", "public", "setup", "astro.config.mjs", "tsconfig.json", "package.json"]) {
     cpSync(resolve(repoRoot, entry), resolve(siteRoot, entry), copyOptions);
   }
+  // The fixture index keeps the filter, whatever the repository's threshold is.
+  const thresholdFile = resolve(siteRoot, "src/config/projects.ts");
+  writeFileSync(thresholdFile, lowerFilterThreshold(readFileSync(thresholdFile, "utf8")));
   // The site holds fixture posts and projects only: drop the real ones the src copy brought in,
   // and the fixture writes below fill the emptied folders.
   for (const collection of ["posts", "projects"]) {

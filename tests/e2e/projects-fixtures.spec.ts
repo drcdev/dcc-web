@@ -26,6 +26,20 @@ test("lists every project, with the controls ready", async ({ page }) => {
   await expect(page.locator("[data-filter-all]")).toHaveAttribute("aria-pressed", "true");
 });
 
+test.describe("without JavaScript", () => {
+  test.use({ javaScriptEnabled: false });
+
+  test("the filter element lists every project and hides its controls, status and empty message", async ({ page }) => {
+    await page.goto(INDEX);
+    await expect(page.locator("project-filter")).toHaveCount(1);
+    await expect(page.locator("[data-project]")).toHaveCount(ALL);
+    for (const row of await page.locator("[data-project]").all()) await expect(row).toBeVisible();
+    await expect(page.locator("[data-filter-controls]")).toBeHidden();
+    await expect(page.locator("[data-filter-status]")).toBeHidden();
+    await expect(page.locator("[data-filter-empty]")).toBeHidden();
+  });
+});
+
 test("theme variants collapse to one button", async ({ page }) => {
   await page.goto(INDEX);
   // Tooling is on two fixtures and AI integration on one: one button each.
