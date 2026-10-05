@@ -11,11 +11,12 @@
 // project-validation.test.ts. The draft project uses its own image, so its
 // absence from dist/ proves draft-only assets are dropped. The local or test build (no
 // environment) runs in local-site.test.ts.
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { topicHref, topics } from "../../src/config/topics.ts";
 import { buildFixtureSite, type FixtureFile, type FixtureSiteResult } from "./fixture-site.ts";
+import { filesUnder } from "../helpers/files.ts";
 
 const draftWithAssets: FixtureFile = {
   from: "draft.mdx",
@@ -70,14 +71,6 @@ const written = (build: FixtureSiteResult, path: string) => (existsSync(join(bui
 const summaries = (build: FixtureSiteResult) => JSON.parse(build.read("summaries.json")) as Summary[];
 const items = (xml: string) => [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((m) => m[1]!);
 
-function filesUnder(dir: string, into: string[] = []): string[] {
-  for (const name of readdirSync(dir)) {
-    const path = join(dir, name);
-    if (statSync(path).isDirectory()) filesUnder(path, into);
-    else into.push(path);
-  }
-  return into;
-}
 const builtNames = (build: FixtureSiteResult) => filesUnder(build.dist).map((path) => path.slice(build.dist.length));
 
 describe("a production build (Workers Builds, main)", () => {

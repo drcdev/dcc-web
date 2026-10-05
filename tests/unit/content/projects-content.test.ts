@@ -1,12 +1,13 @@
 // US5 and FR-022, FR-023, FR-082: every real project is in the four-part shape, a draft with its review comment or published without it, and no site code names one. Unit layer: it reads the files and the schema, and builds nothing.
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { z } from "astro/zod";
 import { projectSchema } from "../../../src/content/schemas/project.ts";
 import { validateProjectStory } from "../../../src/lib/content/project-story.ts";
 import { projects } from "../../helpers/content.ts";
+import { filesUnder } from "../../helpers/files.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 // The demo setting itself stays (an address on drc.dev and a title); only its embed switch was removed.
@@ -63,15 +64,8 @@ describe.each(projects.map((entry) => [entry.slug, entry] as const))("the %s pro
   });
 });
 
-function files(dir: string): string[] {
-  return readdirSync(dir).flatMap((name) => {
-    const path = join(dir, name);
-    return statSync(path).isDirectory() ? files(path) : [path];
-  });
-}
-
 describe("no site code names a project (FR-082)", () => {
-  const targets = ["components", "layouts", "pages", "lib", "styles"].flatMap((d) => files(resolve(root, "src", d)));
+  const targets = ["components", "layouts", "pages", "lib", "styles"].flatMap((d) => filesUnder(resolve(root, "src", d)));
   targets.push(resolve(root, "astro.config.mjs"));
   const sources = targets.map((path) => ({ path: path.slice(root.length), text: readFileSync(path, "utf-8") }));
 

@@ -9,10 +9,11 @@
 // it, not the whole run.
 import { describe, expect, it } from "vitest";
 import { createRequire } from "node:module";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { codePointsOf } from "../../../src/lib/fonts/charset.ts";
+import { filesUnder } from "../../helpers/files.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const fontsDir = join(root, "src/assets/fonts");
@@ -39,13 +40,6 @@ const diagramFontsPath = join(root, "scripts/fonts/diagram-fonts.ts");
 const embedScriptPath = join(root, "scripts/fonts/embed-diagram-fonts.ts");
 const loadDiagramFonts = () => import(/* @vite-ignore */ diagramFontsPath) as Promise<DiagramFonts>;
 const loadEmbedScript = () => import(/* @vite-ignore */ embedScriptPath) as Promise<EmbedScript>;
-
-function filesUnder(dir: string): string[] {
-  return readdirSync(dir).flatMap((name) => {
-    const path = join(dir, name);
-    return statSync(path).isDirectory() ? filesUnder(path) : [path];
-  });
-}
 
 /** Every .svg under src/content/ that draws text, found by globbing, never by name. */
 const diagramFiles = filesUnder(join(root, "src/content"))

@@ -13,6 +13,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { filesUnder } from "../helpers/files.ts";
 import { buildFixtureSite, type FixtureSiteOptions, type FixtureSiteResult } from "./fixture-site.ts";
 
 // L1: the default environment, with every page, post and project the describes below need.
@@ -467,11 +468,6 @@ describe("a local or test build (no environment)", () => {
 
 describe("self-hosted fonts in the build", () => {
   // Layer build: only the real `astro build` shows the hashed output (F09; FR-004, FR-015).
-  const listFiles = (dir: string): string[] =>
-    readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
-      entry.isDirectory() ? listFiles(join(dir, entry.name)) : [join(dir, entry.name)],
-    );
-
   it("emits exactly eight hashed woff2 files, identical to the sources, and no other font file (M09)", () => {
     const fontsDir = join(l1.dist, "_astro", "fonts");
     const emitted = readdirSync(fontsDir).sort();
@@ -485,7 +481,7 @@ describe("self-hosted fonts in the build", () => {
     const outputs = emitted.map((n) => readFileSync(join(fontsDir, n)));
     expect(sources).toHaveLength(8);
     for (const source of sources) expect(outputs.some((o) => o.equals(source))).toBe(true);
-    const stray = listFiles(l1.dist).filter((f) => /\.(woff2?|ttf|otf|eot)$/i.test(f) && !f.startsWith(fontsDir));
+    const stray = filesUnder(l1.dist).filter((f) => /\.(woff2?|ttf|otf|eot)$/i.test(f) && !f.startsWith(fontsDir));
     expect(stray).toEqual([]);
   });
 });

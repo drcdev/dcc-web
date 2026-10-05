@@ -243,7 +243,7 @@ files. Run every toolchain call through `/Users/doncoleman/.claude/jobs/b807dd0b
   `config-files.test.ts` stay green (the shared reader is strictly more capable: string-aware and
   trailing commas). Acceptance 5's hash check shows the E2E config output is unchanged.
 
-### W4. One walker helper in `tests/helpers/files.ts`
+### [x] W4. One walker helper in `tests/helpers/files.ts`
 
 - **Files:** new `tests/helpers/files.ts` (`filesUnder(dir): string[]`, absolute file paths from
   `readdirSync(dir, { recursive: true, withFileTypes: true })`; imports neither Vitest nor

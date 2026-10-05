@@ -5,9 +5,10 @@
 // research R10: Cloudflare injects the beacon at its edge).
 import { beforeAll, describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { filesUnder } from "../../helpers/files.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 
@@ -88,15 +89,8 @@ describe("astro.config.mjs security.csp", () => {
   });
 });
 
-function walk(dir: string): string[] {
-  return readdirSync(dir).flatMap((name) => {
-    const path = join(dir, name);
-    return statSync(path).isDirectory() ? walk(path) : [path];
-  });
-}
-
 describe("no Web Analytics code or token in the repository (FR-025)", () => {
-  const files = ["src", "public"].flatMap((dir) => walk(join(root, dir)));
+  const files = ["src", "public"].flatMap((dir) => filesUnder(join(root, dir)));
 
   it.each(["beacon.min.js", "data-cf-beacon", "cloudflareinsights.com/cdn-cgi"])(
     "no file under src/ or public/ contains %s",

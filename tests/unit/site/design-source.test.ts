@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { join } from "node:path";
+import { filesUnder } from "../../helpers/files.ts";
 
 const docPath = fileURLToPath(
   new URL("../../../docs/design-source.md", import.meta.url),
@@ -14,19 +14,7 @@ function readDoc(): string {
 }
 
 function listFilesRecursive(dir: string): string[] {
-  if (!existsSync(dir)) return [];
-  const entries = readdirSync(dir);
-  const files: string[] = [];
-  for (const entry of entries) {
-    const full = join(dir, entry);
-    const stat = statSync(full);
-    if (stat.isDirectory()) {
-      files.push(...listFilesRecursive(full));
-    } else {
-      files.push(full);
-    }
-  }
-  return files;
+  return existsSync(dir) ? filesUnder(dir) : [];
 }
 
 describe("docs/design-source.md", () => {

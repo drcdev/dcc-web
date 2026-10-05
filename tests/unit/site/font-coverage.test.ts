@@ -4,11 +4,12 @@
 // is caught as well as a wrong range. No browser; real content under src/content is not read.
 import { describe, expect, it } from "vitest";
 import { createRequire } from "node:module";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { codePointsOf } from "../../../src/lib/fonts/charset.ts";
 import { FIXTURE_PAGES, FIXTURE_POSTS, generateFixturePosts } from "../../../scripts/build-fixture-site.ts";
+import { filesUnder } from "../../helpers/files.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const fontsDir = join(root, "src/assets/fonts");
@@ -61,13 +62,6 @@ function uncovered(text: string, label: string, covered: Covered[]): string[] {
     }
   }
   return [...found];
-}
-
-function filesUnder(dir: string): string[] {
-  return readdirSync(dir).flatMap((name) => {
-    const path = join(dir, name);
-    return statSync(path).isDirectory() ? filesUnder(path) : [path];
-  });
 }
 
 const TEXT_FILE = /\.(astro|ts|tsx|js|mjs|mdx?|css|json|svg)$/;

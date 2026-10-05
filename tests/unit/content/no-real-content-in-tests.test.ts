@@ -1,11 +1,12 @@
 // Guard: tests read real posts and projects through tests/helpers/content.ts and never name them,
 // so publishing or rewriting a story never needs a test edit. Unit layer: it reads files and
 // builds nothing. The needles come from the content, so the guard needs no upkeep.
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { pages, projects, realPosts } from "../../helpers/content.ts";
+import { filesUnder } from "../../helpers/files.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const thisFile = fileURLToPath(import.meta.url);
@@ -46,11 +47,7 @@ export function findNeedles(text: string, needles: readonly string[]): string[] 
 }
 
 function sourceFiles(dir: string): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap((item) => {
-    const path = join(dir, item.name);
-    if (item.isDirectory()) return sourceFiles(path);
-    return /\.(ts|tsx|mts|js|mjs)$/.test(item.name) ? [path] : [];
-  });
+  return filesUnder(dir).filter((path) => /\.(ts|tsx|mts|js|mjs)$/.test(path));
 }
 
 describe("no real content named in tests", () => {

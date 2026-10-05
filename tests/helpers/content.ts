@@ -8,10 +8,11 @@
 // Astro's runtime. This reuses Astro's own front matter parser and the site's path rules, so the
 // tests and the site cannot disagree on a slug or an address.
 import { createRequire } from "node:module";
-import { readFileSync, readdirSync } from "node:fs";
-import { join, relative } from "node:path";
+import { readFileSync } from "node:fs";
+import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { seriesIds, topicHref, topics } from "../../src/config/topics.ts";
+import { filesUnder } from "./files.ts";
 import { addressFromPath, idFromPath, postHref, slugFromPath, slugFromPostPath } from "../../src/lib/content/addresses.ts";
 
 // `parseFrontmatter` is an ES module without top-level await, which Node 24 can `require()`
@@ -43,15 +44,27 @@ export interface Entry<D = Record<string, unknown>> {
   file: string;
 }
 
-/** The `.mdx` files below `dir` as paths relative to it: no `_*` file (the template) and no `images/` folder. */
-function contentFiles(dir: string, prefix = ""): string[] {
-  return readdirSync(join(dir, prefix), { withFileTypes: true })
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .flatMap((item) => {
-      const path = prefix ? `${prefix}/${item.name}` : item.name;
-      if (item.isDirectory()) return item.name === "images" || item.name === "broken" ? [] : contentFiles(dir, path);
-      return /\.mdx?$/.test(item.name) && !item.name.startsWith("_") ? [path] : [];
-    });
+/** Compares two relative paths one segment at a time, so a folder sorts beside its name, not by "/". */
+function bySegments(a: string, b: string): number {
+  const left = a.split("/");
+  const right = b.split("/");
+  for (let i = 0; i < Math.min(left.length, right.length); i++) {
+    const order = left[i].localeCompare(right[i]);
+    if (order !== 0) return order;
+  }
+  return left.length - right.length;
+}
+
+/** The `.mdx` files below `dir` as paths relative to it: no `_*` file (the template) and no `images/` or `broken/` folder. */
+function contentFiles(dir: string): string[] {
+  return filesUnder(dir)
+    .map((file) => relative(dir, file).split(sep).join("/"))
+    .filter((path) => {
+      const segments = path.split("/");
+      const name = segments.pop()!;
+      return /\.mdx?$/.test(name) && !name.startsWith("_") && !segments.some((s) => s === "images" || s === "broken");
+    })
+    .sort(bySegments);
 }
 
 /** Reads one collection. `dir` defaults to src/content/<collection>; pass a fixture folder to read fixtures. */

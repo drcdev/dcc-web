@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, sep } from "node:path";
+import { readFileSync } from "node:fs";
+import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { decide, isContentOnly, isSkipSafe, toOutput } from "../../../scripts/ci/changed-paths.ts";
 import type { ChangeInput } from "../../../scripts/ci/changed-paths.ts";
+import { filesUnder } from "../../helpers/files.ts";
 
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 
@@ -195,14 +196,12 @@ describe("toOutput()", () => {
   });
 });
 
-function walk(dir: string, out: string[] = [], anyExt = false): string[] {
-  for (const name of readdirSync(dir)) {
-    if (name === "node_modules" || name === "dist" || name === ".astro") continue;
-    const full = join(dir, name);
-    if (statSync(full).isDirectory()) walk(full, out, anyExt);
-    else if (anyExt || /\.(ts|mjs|js|astro|json|md|mdx)$/.test(name)) out.push(full);
-  }
-  return out;
+function walk(dir: string, anyExt = false): string[] {
+  return filesUnder(dir).filter((full) => {
+    const segments = relative(dir, full).split(sep);
+    if (segments.some((s) => s === "node_modules" || s === "dist" || s === ".astro")) return false;
+    return anyExt || /\.(ts|mjs|js|astro|json|md|mdx)$/.test(segments.at(-1)!);
+  });
 }
 
 const PLACEHOLDER = /\$\{[^}]*\}|%[sd]/g;
@@ -220,7 +219,7 @@ function expandPlaceholders(literal: string, text: string): string[] {
   const fixedDir = literal.slice(0, first).replace(/[^/]*$/, "");
   let candidates: string[] = [];
   try {
-    candidates = walk(join(repoRoot, fixedDir), [], true).map((f) =>
+    candidates = walk(join(repoRoot, fixedDir), true).map((f) =>
       f.slice(repoRoot.length).split(sep).join("/"),
     );
   } catch {
