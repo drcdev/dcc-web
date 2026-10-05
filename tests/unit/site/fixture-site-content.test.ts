@@ -9,6 +9,7 @@ import {
   FIXTURE_PAGES,
   FIXTURE_POSTS,
   generateFixturePosts,
+  lowerFilterThreshold,
   prepareFixtureSite,
 } from "../../../scripts/build-fixture-site.ts";
 
@@ -40,6 +41,28 @@ describe("the fixture site's content", () => {
     const names = mdxNames(resolve(siteRoot, "src/content/pages"));
     expect(names).toContain("index.mdx");
     for (const page of FIXTURE_PAGES) expect(names).toContain(page);
+  });
+});
+
+describe("the fixture site's filter threshold", () => {
+  const configPath = "src/config/projects.ts";
+  const root = resolve(tempRoot, "fixture-site-threshold");
+  beforeAll(() => {
+    mkdirSync(tempRoot, { recursive: true });
+    prepareFixtureSite(root);
+  });
+  afterAll(() => rmSync(root, { recursive: true, force: true }));
+
+  it("is 0 in the copy and stays 10 in the repository", () => {
+    expect(readFileSync(resolve(root, configPath), "utf8")).toMatch(/PROJECT_FILTER_THRESHOLD = 0;/);
+    expect(readFileSync(resolve(repoRoot, configPath), "utf8")).toMatch(/PROJECT_FILTER_THRESHOLD = 10;/);
+  });
+
+  it("fails loudly when the constant is not found exactly once", () => {
+    expect(() => lowerFilterThreshold("export const OTHER = 1;")).toThrow();
+    const twice = "PROJECT_FILTER_THRESHOLD = 10;\nPROJECT_FILTER_THRESHOLD = 10;";
+    expect(() => lowerFilterThreshold(twice)).toThrow();
+    expect(lowerFilterThreshold("export const PROJECT_FILTER_THRESHOLD = 10;")).toContain("PROJECT_FILTER_THRESHOLD = 0;");
   });
 });
 

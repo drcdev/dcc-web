@@ -4,7 +4,7 @@
 // (contracts/pages-dom.md, contracts/filter-island.md; FR-004 to FR-014).
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import EmptyProjects from "../../components/project/EmptyProjects.astro";
-import ProjectFilter from "../../components/project/ProjectFilter.astro";
+import ProjectList from "../../components/project/ProjectList.astro";
 import ProjectRow from "../../components/project/ProjectRow.astro";
 import TitleTransition from "../../components/project/TitleTransition.astro";
 import { themesOf } from "../../lib/content/themes";
@@ -35,7 +35,7 @@ if (projects.length > 0) Astro.csp?.insertStyleHash(transitionHash(projects.map(
       projects.length === 0 ? (
         <EmptyProjects />
       ) : (
-        <ProjectFilter themes={themes} total={projects.length}>
+        <ProjectList themes={themes} total={projects.length}>
           {projects.map(({ id, data }, index) => (
             <ProjectRow
               slug={id}
@@ -48,7 +48,7 @@ if (projects.length > 0) Astro.csp?.insertStyleHash(transitionHash(projects.map(
               eager={index === 0}
             />
           ))}
-        </ProjectFilter>
+        </ProjectList>
       )
     }
   </div>

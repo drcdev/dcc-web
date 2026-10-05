@@ -276,24 +276,13 @@ test.describe("the projects index", () => {
     expect(visualNarrow!.y).toBeGreaterThanOrEqual(textNarrow!.y + textNarrow!.height - 1);
   });
 
-  test("going back from a story restores the index with its ?theme=", async ({ page }) => {
-    const key = themeKey((pickedStory.data.themes as string[])[0]);
-    const matching = projects.filter((project) => (project.data.themes as string[]).map(themeKey).includes(key));
-    await page.goto(`${INDEX}?theme=${key}`);
-    // The other rows stay in the list, hidden.
-    const shown = page.locator("[data-project]:not([hidden])");
-    await expect(shown).toHaveCount(matching.length);
-    await expect(shown.first()).toBeVisible();
-    await shown.first().locator("h2 a").click();
-    await page.goBack();
-    await expect(page).toHaveURL(new RegExp(`/projects/\\?theme=${key}$`));
-    await expect(page.locator(`button[data-theme="${key}"]`)).toHaveAttribute("aria-pressed", "true");
-  });
-
-  test("the header Projects link always opens the unfiltered index", async ({ page }) => {
+  test("a ?theme= on the index changes nothing while the filter is hidden", async ({ page }) => {
+    // The real content lists too few projects to earn the filter, so a shared ?theme= link still
+    // shows every project and no controls. The filter itself runs on the fixture site
+    // (projects-fixtures.spec.ts).
     await page.goto(`${INDEX}?theme=${themeKey((pickedStory.data.themes as string[])[0])}`);
-    await page.locator('#primary-nav-list a[href="/projects/"]').click();
-    await expect(page).toHaveURL(/\/projects\/$/);
-    await expect(page.locator("[data-filter-all]")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("[data-project]:not([hidden])")).toHaveCount(projects.length);
+    await expect(page.locator("project-filter[data-ready]")).toHaveCount(0);
+    await expect(page.locator("[data-filter-all]")).toHaveCount(0);
   });
 });

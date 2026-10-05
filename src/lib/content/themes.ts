@@ -23,6 +23,11 @@ export function themesOf(entries: ReadonlyArray<{ themes: readonly string[] }>):
   return [...byKey.values()].sort((a, b) => a.label.localeCompare(b.label));
 }
 
+/** True when the index lists more projects than the threshold, so the filter is worth showing. */
+export function showsThemeFilter(count: number, threshold: number): boolean {
+  return count > threshold;
+}
+
 /** Reads `?theme=`. An unknown value sets `unknown` so the page can show the no-match message. */
 export function parseThemeParam(
   search: string,
