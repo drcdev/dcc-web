@@ -63,14 +63,20 @@ describe("checks/contact-d1-databases", () => {
     expect(result.status).toBe("complete");
   });
 
-  it("parses the committed wrangler.jsonc and reads its placeholder IDs as missing", async () => {
+  it("parses the committed wrangler.jsonc and reads its database names", async () => {
     const text = readFileSync(fileURLToPath(new URL("../../../../wrangler.jsonc", import.meta.url)), "utf-8");
+    const current = [
+      { uuid: PROD_ID, name: "dcc-web", runningInRegion: "WNAM" },
+      { uuid: PREVIEW_ID, name: "dcc-web-preview", runningInRegion: "WNAM" },
+    ];
     const result = await check(
-      contactContext({ cloudflare: { listD1Databases: async () => both } }, { wrangler: text }),
+      contactContext({ cloudflare: { listD1Databases: async () => current } }, { wrangler: text }),
     );
-    // Until item 19 is done the committed file holds placeholder IDs; once Don finishes it, the IDs match.
-    expect(["missing", "complete"]).toContain(result.status);
-    if (result.status === "missing") expect(result.details.join("\n")).toMatch(/placeholder|does not match/);
+    // The fixture IDs differ from the real ones, so the names resolve but the IDs do not match.
+    const details = result.details.join("\n");
+    expect(result.status).toBe("missing");
+    expect(details).toMatch(/does not match wrangler\.jsonc/);
+    expect(details).not.toMatch(/not found in the account|old database/);
   });
 
   describe("database names come from wrangler.jsonc", () => {
