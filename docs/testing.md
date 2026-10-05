@@ -112,6 +112,12 @@ names its layer and gives the reason for any second layer.
 The test title or a comment carries the contract row id (`row 7`, `P13`), so a search for the
 id finds the test.
 
+### Invariants, not mirrors
+
+A test checks behaviour or a rule that must hold (no `'unsafe-inline'`, read-only permissions,
+every spec in exactly one project). It does not restate wording, page copy or a literal
+configuration value, because Don reviews every pull request (#97).
+
 ### Real content in tests
 
 Tests never name a real post or project. They read `src/content/**` through
@@ -132,7 +138,9 @@ never needs a test edit.
 - `tests/unit/content/no-real-content-in-tests.test.ts` enforces this. It builds its needles from
   the content (every real post and project address, entry file name and quoted title) and fails
   when a file under `tests/e2e/`, `tests/build/` or `tests/unit/content/` contains one. It needs
-  no upkeep when the content changes.
+  no upkeep when the content changes. It also builds needles from the pages (each external link
+  in a page body and each heading of two or more words, quoted). Page addresses, file names and
+  titles are routes and labels, so they are not needles.
 - A build test that imports the helper reads real content, so it belongs in
   `test:build:content` (the content-only CI tier). `tests/unit/ci/content-tier.test.ts` checks
   this.
@@ -179,10 +187,10 @@ Fonts (feature 018): the site self-hosts Inter through Astro's Fonts API from fo
 files in `src/assets/fonts/`. The unit tests `font-files.test.ts`, `font-coverage.test.ts` and
 `astro-config.test.ts` check the files, the charset coverage guard and the config; the E2E
 spec `fonts.spec.ts` proves the faces and at most four font requests, and `headers.spec.ts`
-that the fonts and every other fingerprinted file under `/_astro/` (stylesheets and scripts)
-are served with the year-long `immutable` cache header (#74), while `headers.test.ts` checks
-the rule itself and also pins the sandboxed CSP on `/_astro/*.svg` (#95), checked only at the
-unit layer. The total-transfer budget is 150 KB. The Linux baselines come
+checks one HTML page and one font file under `/_astro/` against the rules in `public/_headers`,
+served by the real server (#74, #97). `headers.test.ts` checks the invariants of those rules
+(one immutable `/_astro/*` rule, no other `Cache-Control`, the sandboxed CSP on `/_astro/*.svg`
+(#95), checked only at the unit layer), not their exact text. The total-transfer budget is 150 KB. The Linux baselines come
 from the Docker image, which keeps DejaVu as the system fallback, so only Inter text is
 pinned by the web font and any glyph outside the subset falls back to DejaVu there.
 
@@ -206,8 +214,8 @@ and commit `public/og-default.png`. After editing a diagram label, run `pnpm run
 
 | Removed subject (4 images per platform) | Where its coverage lives now |
 |---|---|
-| `home` | Header, footer and menu: the kept shell snapshots, taken on `/`. Layout breakage: the geometry test. Contrast in both themes: `a11y` (axe on every template, both widths and themes). Introduction card and copy: `pages.spec.ts` and the build tests. Home intro card pixels: review-only by decision (#40 phase 2): it is site copy, not a template. |
-| `about` | Shell snapshots; geometry test; `a11y`; About sections and Recognition links: `pages.spec.ts`. |
+| `home` | Header, footer and menu: the kept shell snapshots, taken on `/`. Layout breakage: the geometry test. Contrast in both themes: `a11y` (axe on every template, both widths and themes). Introduction card: `pages.spec.ts` and the build tests. Copy: review only (#97). Home intro card pixels: review-only by decision (#40 phase 2): it is site copy, not a template. |
+| `about` | Shell snapshots; geometry test; `a11y`; Copy: review only (#97). |
 | `contact` | Shell snapshots; geometry test; `a11y`; the form and its states: `contact.spec.ts`. The contact form's pixels: the `contact-form` snapshot of the fixture page `/contact-form/` (#40 phase 2). |
 | `writing-landing` | Shell snapshots; geometry test; `a11y`; listing behaviour: `blog.spec.ts` and the `sections` project's `blog-fixtures.spec.ts` and `blog-pagination.spec.ts`. Listing card pixels: `listing-cards`, the three fixture cards on `/writing/topics/fixture-cards/`. Lead-story pixels: `lead-story` on the fixture `/writing/`, whose lead is the fixture post `every-part` (dated 2099 so it is the lead). Card image widths and quality: component tests in `PostCard.test.ts`, E2E in the `sections` project's `blog-fixtures.spec.ts`. |
 | `writing-all` | As `writing-landing`, including the card snapshot. Pagination: `blog-pagination.spec.ts`. |

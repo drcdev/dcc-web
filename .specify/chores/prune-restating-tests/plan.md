@@ -489,7 +489,7 @@ docs last. Each item leaves `verify:quick` green, along with its targeted files:
 | L71 tombstone | L67 `futureDestinations` equals `[]`, which already excludes both. |
 | config-mdx L31 sections testMatch text | `config-files.test.ts` L317 (every spec in exactly one project, read from the loaded config); a fixture spec put in `e2e` would also fail against port 4321. Port 4322 and `build:fixtures` are the fixture web server, which every fixture spec needs to pass. |
 
-### W10. docs/testing.md and the after-measurement
+### W10. docs/testing.md and the after-measurement (done)
 
 - **Files:** `docs/testing.md`, and the plan's item notes.
 - **Test:** `no behaviour: n/a (documentation)`.
@@ -512,6 +512,14 @@ docs last. Each item leaves `verify:quick` green, along with its targeted files:
     and title).
 - **After-measurement:** the implementer records Acceptance 1, 2, 3, 6 and 7 after the change
   in the summary.
+- **After-measurement (recorded in W10):** (1) `tests/reference/` gone, no `reference:capture`,
+  the grep matches only `docs/design-source.md`. (2) `tests/unit` has 122 test files. (3) Every
+  `grep -c` reads 0, and `blog-pagination` appears once in `playwright.config.ts`. (6) `--list`
+  totals: all projects 1525 tests in 31 files (before 1540); `e2e` 652 in 21 files (before 667);
+  `headers.spec.ts` 2 (before 16); `pages.spec.ts` 52 (before 53). (7) Unit tests after, per file:
+  workflows 16, launch-content 17, guard 78, config-files 29, config-mdx 6, csp 6, headers 17,
+  navigation 15 (now holds the merged nav tests), drift 12, skill-behaviour 5; nav and
+  reference-screenshots are deleted. The 10 surviving files run 201 tests, all passing.
 
 ## Docs citations (Principle IV)
 
