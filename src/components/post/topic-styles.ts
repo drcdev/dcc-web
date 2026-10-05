@@ -18,6 +18,8 @@ export interface TopicStyle {
   banner: string;
   /** Series marker link: semibold, 2px outline in shade 700 (light) or 300 (dark), fill and text. */
   marker: string;
+  /** Edge of a series tile or banner: 1px shade 300 in dark mode, 1px system colour in forced colours; none in light. */
+  outline: string;
 }
 
 // The transparent border is invisible normally and shows in forced-colours mode, where the
@@ -37,36 +39,42 @@ export const topicStyles: Partial<Record<Palette, TopicStyle>> = {
     border: "border-rust-500 dark:border-rust-400",
     banner: "bg-rust-100 text-rust-950 dark:bg-rust-900 dark:text-rust-50",
     marker: `${markerBase} border-rust-700 dark:border-rust-300 bg-rust-100 text-rust-900 dark:bg-rust-900 dark:text-rust-100`,
+    outline: "dark:border dark:border-rust-300 forced-colors:border forced-colors:border-[CanvasText]",
   },
   sage: {
     pill: `${pillBase} bg-sage-100 text-sage-900 dark:bg-sage-900 dark:text-sage-100`,
     border: "border-sage-600 dark:border-sage-400",
     banner: "bg-sage-100 text-sage-950 dark:bg-sage-900 dark:text-sage-50",
     marker: `${markerBase} border-sage-700 dark:border-sage-300 bg-sage-100 text-sage-900 dark:bg-sage-900 dark:text-sage-100`,
+    outline: "dark:border dark:border-sage-300 forced-colors:border forced-colors:border-[CanvasText]",
   },
   lavender: {
     pill: `${pillBase} bg-lavender-100 text-lavender-900 dark:bg-lavender-900 dark:text-lavender-100`,
     border: "border-lavender-500 dark:border-lavender-400",
     banner: "bg-lavender-100 text-lavender-950 dark:bg-lavender-900 dark:text-lavender-50",
     marker: `${markerBase} border-lavender-700 dark:border-lavender-300 bg-lavender-100 text-lavender-900 dark:bg-lavender-900 dark:text-lavender-100`,
+    outline: "dark:border dark:border-lavender-300 forced-colors:border forced-colors:border-[CanvasText]",
   },
   mist: {
     pill: `${pillBase} bg-mist-200 text-mist-900 dark:bg-mist-900 dark:text-mist-100`,
     border: "border-mist-600 dark:border-mist-400",
     banner: "bg-mist-200 text-mist-950 dark:bg-mist-900 dark:text-mist-50",
     marker: `${markerBase} border-mist-700 dark:border-mist-300 bg-mist-200 text-mist-900 dark:bg-mist-900 dark:text-mist-100`,
+    outline: "dark:border dark:border-mist-300 forced-colors:border forced-colors:border-[CanvasText]",
   },
   mauve: {
     pill: `${pillBase} bg-mauve-100 text-mauve-900 dark:bg-mauve-900 dark:text-mauve-100`,
     border: "border-mauve-500 dark:border-mauve-400",
     banner: "bg-mauve-100 text-mauve-950 dark:bg-mauve-900 dark:text-mauve-50",
     marker: `${markerBase} border-mauve-700 dark:border-mauve-300 bg-mauve-100 text-mauve-900 dark:bg-mauve-900 dark:text-mauve-100`,
+    outline: "dark:border dark:border-mauve-300 forced-colors:border forced-colors:border-[CanvasText]",
   },
   sand: {
     pill: `${pillBase} bg-sand-100 text-sand-900 dark:bg-sand-900 dark:text-sand-100`,
     border: "border-sand-600 dark:border-sand-400",
     banner: "bg-sand-100 text-sand-950 dark:bg-sand-900 dark:text-sand-50",
     marker: `${markerBase} border-sand-700 dark:border-sand-300 bg-sand-100 text-sand-900 dark:bg-sand-900 dark:text-sand-100`,
+    outline: "dark:border dark:border-sand-300 forced-colors:border forced-colors:border-[CanvasText]",
   },
   // Free-form topics: a neutral pill and a plain banner (FR-010a).
   dusk: {
@@ -74,8 +82,17 @@ export const topicStyles: Partial<Record<Palette, TopicStyle>> = {
     border: "border-dusk-300 dark:border-dusk-500",
     banner: "bg-dusk-100 text-dusk-950 dark:bg-dusk-800 dark:text-dusk-50",
     marker: `${markerBase} border-dusk-700 dark:border-dusk-300 bg-dusk-100 text-dusk-900 dark:bg-dusk-800 dark:text-dusk-100`,
+    outline: "dark:border dark:border-dusk-300 forced-colors:border forced-colors:border-[CanvasText]",
   },
 };
+
+/**
+ * The edge of a card or lead story that has an image: 1px dusk-200 in light, 1px dusk-500 in dark
+ * (3.16:1 against the page, dusk-BASE; the old dusk-700 was 1.64:1). Series outlines use shade 300
+ * of the series colour, as the series marker does (at least 3:1, proven in topics.test.ts). Cards with no image keep
+ * their 2px topic-coloured border (`border`).
+ */
+export const cardEdge = "border border-dusk-200 dark:border-dusk-500";
 
 /** The "Featured" mark on a card or a post. */
 export const featuredMark =

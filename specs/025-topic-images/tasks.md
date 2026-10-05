@@ -10,11 +10,11 @@
 
 **Purpose**: the image files, the series-to-image map and the shared style tokens every story uses. Blocks Phases 2 to 4.
 
-- [ ] T001 Copy `/Users/doncoleman/Downloads/drift.png` and `/Users/doncoleman/Downloads/convergence.png` into `src/assets/series/drift.png` and `src/assets/series/convergence.png` by re-encoding through sharp (lossless PNG, 1536 x 768, no metadata); confirm sharp metadata shows no EXIF, ICC or XMP (research R1, quickstart step 1).
-- [ ] T002 [P] Write unit test `tests/unit/content/series-images.test.ts` (layer: unit; derives its list from `seriesIds`, no real names): the map has exactly one entry per series id and no other key, each image is 2:1, `seriesImage()` throws for a non-series id (FR-001, FR-004). Run it and see it fail (module missing).
-- [ ] T003 [P] Extend `tests/unit/content/topics.test.ts` (layer: unit, pure colour maths): new describe computes every dark edge token (series `outline` 300 shades, `cardEdge` `dusk-500`, and the kept text-only topic borders) against `dusk-BASE` and requires at least 3:1; asserts every class uses an existing palette token and `outline` includes the `forced-colors:` classes (FR-012, FR-014, FR-015). See it fail.
-- [ ] T004 Create `src/config/series-images.ts`: import both PNGs, export `seriesImages` keyed by `seriesIds` and `seriesImage(id)` that throws for a non-series id; leave `src/config/topics.ts` unchanged (data-model.md). T002 passes.
-- [ ] T005 Add `outline` (per palette) and the `cardEdge` export to `src/components/post/topic-styles.ts`, and update its header comment with the measured contrast figures (data-model.md). T003 passes.
+- [X] T001 Copy `/Users/doncoleman/Downloads/drift.png` and `/Users/doncoleman/Downloads/convergence.png` into `src/assets/series/drift.png` and `src/assets/series/convergence.png` by re-encoding through sharp (lossless PNG, 1536 x 768, no metadata); confirm sharp metadata shows no EXIF, ICC or XMP (research R1, quickstart step 1).
+- [X] T002 [P] Write unit test `tests/unit/content/series-images.test.ts` (layer: unit; derives its list from `seriesIds`, no real names): the map has exactly one entry per series id and no other key, each image is 2:1, `seriesImage()` throws for a non-series id (FR-001, FR-004). Run it and see it fail (module missing).
+- [X] T003 [P] Extend `tests/unit/content/topics.test.ts` (layer: unit, pure colour maths): new describe computes every dark edge token (series `outline` 300 shades, `cardEdge` `dusk-500`, and the kept text-only topic borders) against `dusk-BASE` and requires at least 3:1; asserts every class uses an existing palette token and `outline` includes the `forced-colors:` classes (FR-012, FR-014, FR-015). See it fail.
+- [X] T004 Create `src/config/series-images.ts`: import both PNGs, export `seriesImages` keyed by `seriesIds` and `seriesImage(id)` that throws for a non-series id; leave `src/config/topics.ts` unchanged (data-model.md). T002 passes.
+- [X] T005 Add `outline` (per palette) and the `cardEdge` export to `src/components/post/topic-styles.ts`, and update its header comment with the measured contrast figures (data-model.md). T003 passes.
 
 **Checkpoint**: unit tests green; images and tokens exist.
 
