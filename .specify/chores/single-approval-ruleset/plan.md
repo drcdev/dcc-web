@@ -188,7 +188,7 @@ Calls made by this plan (no user question needed; the review phase may challenge
 Every implement subagent: run the named targeted vitest files before and after, then
 `pnpm run verify:quick` (toolchain note in Risks). Each item leaves the suite green.
 
-### W1 Ruleset file and a main-protection check that diffs it
+### [x] W1 Ruleset file and a main-protection check that diffs it
 
 - **Files:**
   - `setup/github-ruleset.json` (Acceptance 1 and P4);

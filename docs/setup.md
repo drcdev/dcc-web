@@ -395,7 +395,8 @@ None.
 
 **What it is for**
 This is what actually stops an unreviewed or failing change from reaching `main`: required pull
-requests, required passing checks, required code-owner review, and no bypass.
+requests, one approving review on every pull request, a required passing `verify` check, and no
+bypass.
 
 **Where to do it**
 Import `setup/github-ruleset.json` as a repository ruleset on `main`:
@@ -403,9 +404,11 @@ Import `setup/github-ruleset.json` as a repository ruleset on `main`:
 
 **How it will be confirmed**
 `pnpm setup:check --item github-main-protection` reports complete when the active ruleset on
-`main` matches `setup/github-ruleset.json` — pull request required, code-owner review required,
-required checks `verify` and `major-change-approval` (strict; the latter is a commit status posted by the `Major change` workflow's `gate` job, not a job name), no force-push, no deletion, no
-bypass actors — with each missing or weaker rule named individually if it does not.
+`main` matches `setup/github-ruleset.json` — pull request required with one approving review and
+stale approvals dismissed on new commits, merge commits only, required check `verify` (strict,
+pinned to the GitHub Actions app), no force-push, no deletion, no bypass actors — with each
+missing or differing rule named individually if it does not. The check diffs the live ruleset
+against the committed file, so editing the file changes what it requires.
 
 **Constitution principle**
 II (Automated Release Gate) and III (Human Review for Major Changes).

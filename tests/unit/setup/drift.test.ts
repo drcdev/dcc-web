@@ -3,7 +3,6 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { setupItems } from "../../../scripts/setup-check/items.ts";
 import { secretManifest } from "../../../scripts/setup-check/secrets.ts";
-import { STATUS_CONTEXT } from "../../../scripts/ci/major-change-gate.ts";
 
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 
@@ -98,23 +97,28 @@ describe("secret/variable names <-> manifest drift", () => {
   });
 });
 
-describe("ruleset contexts <-> CI job names and gate status context", () => {
-  it("setup/github-ruleset.json required_status_checks contexts match the ci.yml verify job and the gate's status context", () => {
+describe("ruleset contexts <-> CI job names", () => {
+  it("setup/github-ruleset.json requires exactly the ci.yml verify job, pinned to the GitHub Actions app", () => {
     const ruleset = JSON.parse(read("setup/github-ruleset.json")) as {
       rules: Array<{ type: string; parameters?: { required_status_checks?: Array<{ context: string }> } }>;
     };
     const statusCheckRule = ruleset.rules.find((r) => r.type === "required_status_checks");
     expect(statusCheckRule, "github-ruleset.json must have a required_status_checks rule").toBeDefined();
-    const contexts = statusCheckRule!.parameters!.required_status_checks!.map((c) => c.context);
+    const checks = statusCheckRule!.parameters!.required_status_checks!;
 
     const ci = read(".github/workflows/ci.yml");
-    const major = read(".github/workflows/major-change.yml");
-    expect(contexts).toContain("verify");
-    expect(contexts).toContain(STATUS_CONTEXT);
+    expect(checks).toEqual([{ context: "verify", integration_id: 15368 }]);
     expect(ci).toMatch(/^\s{2}verify:/m);
-    // The gate publishes a commit status; no job may share its name or the check runs collide.
-    expect(major).not.toMatch(/^\s{2}major-change-approval:/m);
-    expect(major).toMatch(/^\s{2}gate:/m);
+  });
+
+  it("setup/github-ruleset.json requires one approving review, dismisses stale approvals and needs no code owner", () => {
+    const ruleset = JSON.parse(read("setup/github-ruleset.json")) as {
+      rules: Array<{ type: string; parameters?: Record<string, unknown> }>;
+    };
+    const pr = ruleset.rules.find((r) => r.type === "pull_request");
+    expect(pr?.parameters?.required_approving_review_count).toBe(1);
+    expect(pr?.parameters?.dismiss_stale_reviews_on_push).toBe(true);
+    expect(pr?.parameters?.require_code_owner_review).toBe(false);
   });
 });
 

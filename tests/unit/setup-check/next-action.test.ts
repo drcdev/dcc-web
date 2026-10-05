@@ -373,7 +373,12 @@ const scenarios: Scenario[] = [
     missing: () =>
       checkGithubMainProtection(
         fakeProviderContext({
-          fs: { readJson: fsJson({ "setup/config.json": CONFIG }) },
+          fs: {
+            readJson: fsJson({
+              "setup/config.json": CONFIG,
+              "setup/github-ruleset.json": loadFixture("github", "ruleset-full"),
+            }),
+          },
           github: { api: async () => loadFixture("github", "ruleset-none") },
         }),
       ),

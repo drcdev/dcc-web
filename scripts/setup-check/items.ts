@@ -293,7 +293,7 @@ const seeds: ItemSeed[] = [
     purpose: "What actually stops an unreviewed or failing change from reaching main.",
     where: "Import setup/github-ruleset.json as a repository ruleset on main.",
     confirmedBy:
-      "Active ruleset on main matches setup/github-ruleset.json: PR required, code-owner review, required checks verify + major-change-approval (strict; a commit status posted by the Major change workflow's gate job), no force-push, no deletion, no bypass actors",
+      "Active ruleset on main matches setup/github-ruleset.json: PR required with one approving review and stale approvals dismissed, merge commits only, required check verify (strict, from the GitHub Actions app), no force-push, no deletion, no bypass actors",
     needsDon: true,
     principles: ["II", "III"],
     requirements: ["FR-013", "FR-014"],
