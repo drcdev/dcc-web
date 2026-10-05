@@ -8,7 +8,7 @@
 // (data-model.md "SetupConfig") must match the repository's content and this build's sitemap.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { execFile } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,6 +17,7 @@ import { configSchema } from "../../scripts/setup-check/schemas.ts";
 import { isProductionBuild } from "../../src/lib/build-mode.ts";
 import { resolveSiteOrigin } from "../../src/lib/site-origin.ts";
 import { inBuild, pages, posts, projects, isSample, sitemapPaths } from "../helpers/content.ts";
+import { filesUnder } from "../helpers/files.ts";
 
 const run = promisify(execFile);
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -34,13 +35,6 @@ function isSiteHost(host: string): boolean {
     host === setupConfig.reviewHost ||
     host.endsWith(".workers.dev")
   );
-}
-
-function walk(dir: string): string[] {
-  return readdirSync(dir).flatMap((name) => {
-    const path = join(dir, name);
-    return statSync(path).isDirectory() ? walk(path) : [path];
-  });
 }
 
 const environments = [
@@ -68,7 +62,7 @@ describe.each(environments)("astro build with the $label environment", ({ env })
       env: childEnv,
       maxBuffer: 64 * 1024 * 1024,
     });
-    files = walk(outDir);
+    files = filesUnder(outDir);
   }, BUILD_TIMEOUT);
 
   afterAll(() => {

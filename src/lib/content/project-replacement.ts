@@ -2,6 +2,7 @@
 // optional link (data-model.md "Validation rules (collection)", "Derived: ResolvedReplacement").
 // Astro's reference() only reports a missing target when the entry is read, and then without
 // naming the file, so RP04 and RP05 are checked here over every entry, drafts included.
+import { projectHref } from "./addresses.ts";
 import { contentError } from "./errors.ts";
 
 // The schema allows exactly one of the two forms (RP02), so its inferred type has every key optional.
@@ -55,7 +56,7 @@ export function resolveReplacement(
     const id = replacedBy.project.id;
     const target = all.find((candidate) => candidate.id === id);
     const name = target?.data.title ?? id;
-    return publishedIds.has(id) ? { name, href: `/projects/${id}/` } : { name };
+    return publishedIds.has(id) ? { name, href: projectHref(id) } : { name };
   }
   if (!replacedBy.name) return undefined;
   return replacedBy.href ? { name: replacedBy.name, href: replacedBy.href } : { name: replacedBy.name };

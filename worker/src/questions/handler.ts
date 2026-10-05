@@ -1,7 +1,8 @@
 // POST /api/questions (specs/022 contracts/questions-api.md). Generates questions only for a
 // post the build published, reading its text from the build's own source file, never from the
 // caller (FR-014). Answers carry no provider, model or prompt detail (FR-015).
-import { json } from "../http";
+import type { QuestionSource } from "../../../src/lib/questions/source.ts";
+import { json, parseJsonObject, readCapped } from "../http";
 import { isSameOriginRequest } from "../same-origin";
 import { getSet, storeSet } from "./cache";
 import { takeToken, refundToken } from "./bucket";
@@ -22,39 +23,7 @@ const success = (source: "cached" | "generated" | "fresh", questions: string[]) 
   return json({ ok: true, source, questions });
 };
 
-/** Reads the body through a byte counter; null when it grows past the cap. */
-async function readCapped(request: Request): Promise<string | null> {
-  if (!request.body) return "";
-  const reader = request.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    total += value.byteLength;
-    if (total > BODY_MAX_BYTES) {
-      await reader.cancel();
-      return null;
-    }
-    chunks.push(value);
-  }
-  const bytes = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    bytes.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return new TextDecoder().decode(bytes);
-}
-
-interface SourceFile {
-  title: string;
-  summary: string;
-  text: string;
-  hash: string;
-}
-
-const isSource = (value: unknown): value is SourceFile => {
+const isSource = (value: unknown): value is Pick<QuestionSource, "title" | "summary" | "text" | "hash"> => {
   if (typeof value !== "object" || value === null) return false;
   const record = value as Record<string, unknown>;
   return ["title", "summary", "text", "hash"].every((key) => typeof record[key] === "string");
@@ -66,16 +35,11 @@ export async function handleQuestions(request: Request, env: Env): Promise<Respo
   const contentType = (request.headers.get("Content-Type") ?? "").split(";")[0]!.trim().toLowerCase();
   if (contentType !== "application/json") return fail(415, "unsupported_media_type", "invalid");
 
-  const raw = await readCapped(request);
+  const raw = await readCapped(request, BODY_MAX_BYTES);
   if (raw === null) return fail(413, "too_large", "invalid");
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    return fail(400, "invalid", "invalid");
-  }
-  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return fail(400, "invalid", "invalid");
-  const { slug, hash, fresh = false } = parsed as Record<string, unknown>;
+  const parsed = parseJsonObject(raw);
+  if (parsed === null) return fail(400, "invalid", "invalid");
+  const { slug, hash, fresh = false } = parsed;
   if (typeof slug !== "string" || slug.length < 1 || slug.length > 200 || !SLUG.test(slug)) return fail(400, "invalid", "invalid");
   if (typeof hash !== "string" || !HASH.test(hash)) return fail(400, "invalid", "invalid");
   if (typeof fresh !== "boolean") return fail(400, "invalid", "invalid");

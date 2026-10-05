@@ -6,6 +6,7 @@
 // title shares; <TitleTransition> on the index page writes the rules.
 import { Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
+import { projectHref } from "../../lib/content/addresses.ts";
 import { themeKey } from "../../lib/content/themes.ts";
 import type { ProjectStatus } from "../../lib/content/project-status";
 import StatusPill from "./StatusPill.astro";
@@ -32,7 +33,7 @@ const keys = [...new Set(themes.map(themeKey))].join("|");
 <li data-project={slug} data-themes={keys}>
   <div data-project-text>
     <h2 data-project-title data-title-slug={slug}>
-      <a href={`/projects/${slug}/`}>{title}</a>
+      <a href={projectHref(slug)}>{title}</a>
     </h2>
     <p data-project-problem>{problem}</p>
     {draft && <p data-draft-mark>Draft</p>}

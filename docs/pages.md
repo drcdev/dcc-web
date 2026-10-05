@@ -45,11 +45,12 @@ draft: true
 
 Do not write a `# Heading` in the body; the title is the page's only main heading. Use `##`.
 
-## Menu positions and reserved addresses
+## Menu positions and taken addresses
 
 Positions 4, 5 and 7 belong to Writing, Projects and Contact. Pick another number; a clash
-stops the build. The addresses `/writing/`, `/projects/` and `/contact/` are reserved for those
-features, and so is any address another part of the site already uses (such as `/404/`).
+stops the build. The addresses `/writing/` and `/projects/` belong to the Writing and Projects
+pages, `/contact/` is `contact.mdx`, and any address another part of the site already uses
+(such as `/404/`) is taken too; a page file at one of them stops the build.
 
 ## Sections
 

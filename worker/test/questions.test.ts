@@ -96,6 +96,28 @@ describe("questions API: request checks", () => {
     expect(await res.json()).toEqual({ ok: false, error: "too_large" });
   });
 
+  it("Q04: a declared length over the cap is 413 before the body is read", async () => {
+    let pulled = false;
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled = true;
+        controller.enqueue(new TextEncoder().encode("{}"));
+        controller.close();
+      },
+    }, { highWaterMark: 0 });
+    const req = new Request(URL_, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Content-Length": "2048", Origin: ORIGIN, "Sec-Fetch-Site": "same-origin" },
+      body,
+      duplex: "half",
+    } as RequestInit);
+    const res = await run(req, { AI: fakeAi(), ASSETS: fakeAssets() });
+    expect(res.status).toBe(413);
+    expect(await res.json()).toEqual({ ok: false, error: "too_large" });
+    expect(pulled).toBe(false);
+    expect(logs.some((line) => line.includes('"outcome":"invalid"'))).toBe(true);
+  });
+
   it.each([
     ["not an object", "[1]"],
     ["not JSON text", "{nope"],

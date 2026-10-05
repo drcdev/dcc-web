@@ -2,9 +2,10 @@
 // test needs to name a real post or project. Unit layer: it reads files and builds nothing. Each
 // assertion compares the helper with the files themselves, never with today's slugs.
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { filesUnder } from "../../helpers/files.ts";
 import { seriesIds, topicHref, topics } from "../../../src/config/topics.ts";
 import {
   inBuild,
@@ -22,12 +23,14 @@ import {
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 
 /** Every `.mdx` file path (below the collection folder) that is content: not `_*`, not under `images/`. */
-function filesIn(dir: string, prefix = ""): string[] {
-  return readdirSync(join(dir, prefix), { withFileTypes: true }).flatMap((item) => {
-    const path = prefix ? `${prefix}/${item.name}` : item.name;
-    if (item.isDirectory()) return item.name === "images" ? [] : filesIn(dir, path);
-    return item.name.endsWith(".mdx") && !item.name.startsWith("_") ? [path] : [];
-  });
+function filesIn(dir: string): string[] {
+  return filesUnder(dir)
+    .map((file) => relative(dir, file).split(sep).join("/"))
+    .filter((path) => {
+      const segments = path.split("/");
+      const name = segments.pop()!;
+      return name.endsWith(".mdx") && !name.startsWith("_") && !segments.includes("images");
+    });
 }
 
 const collections = { pages, posts, projects } as const;

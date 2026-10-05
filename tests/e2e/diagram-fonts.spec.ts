@@ -4,19 +4,13 @@
 // file rules (D01 to D08) are in tests/unit/site/diagram-fonts.test.ts. Each diagram is opened
 // directly from disk, the way an image document is rendered, so the page's own fonts cannot help.
 // Diagram files are found by globbing src/content/, never by name.
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { test, expect } from "@playwright/test";
+import { filesUnder } from "../helpers/files.ts";
 
 const root = resolve(import.meta.dirname, "../..");
-
-function filesUnder(dir: string): string[] {
-  return readdirSync(dir).flatMap((name) => {
-    const path = join(dir, name);
-    return statSync(path).isDirectory() ? filesUnder(path) : [path];
-  });
-}
 
 const diagrams = filesUnder(join(root, "src/content"))
   .filter((path) => path.endsWith(".svg") && readFileSync(path, "utf-8").includes("<text"))

@@ -1,63 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-
-function stripJsonComments(text: string): string {
-  // Strip // line comments and /* */ block comments outside of strings.
-  let result = "";
-  let inString = false;
-  let inLineComment = false;
-  let inBlockComment = false;
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    const next = text[i + 1];
-    if (inLineComment) {
-      if (char === "\n") {
-        inLineComment = false;
-        result += char;
-      }
-      continue;
-    }
-    if (inBlockComment) {
-      if (char === "*" && next === "/") {
-        inBlockComment = false;
-        i++;
-      }
-      continue;
-    }
-    if (inString) {
-      result += char;
-      if (char === "\\") {
-        result += next;
-        i++;
-      } else if (char === '"') {
-        inString = false;
-      }
-      continue;
-    }
-    if (char === '"') {
-      inString = true;
-      result += char;
-      continue;
-    }
-    if (char === "/" && next === "/") {
-      inLineComment = true;
-      i++;
-      continue;
-    }
-    if (char === "/" && next === "*") {
-      inBlockComment = true;
-      i++;
-      continue;
-    }
-    result += char;
-  }
-  return result;
-}
+import { stripJsonc } from "../../../scripts/lib/jsonc.ts";
 
 describe("wrangler.jsonc", () => {
   const wranglerPath = fileURLToPath(new URL("../../../wrangler.jsonc", import.meta.url));
-  const config = JSON.parse(stripJsonComments(readFileSync(wranglerPath, "utf-8")));
+  const config = JSON.parse(stripJsonc(readFileSync(wranglerPath, "utf-8")));
 
   it("keeps production off workers.dev and version URLs (#89)", () => {
     expect(config.workers_dev).toBe(false);
@@ -313,7 +261,7 @@ describe("worker workspace and tooling wiring (007 contact form)", () => {
   };
 
   it("gives worker a strict tsconfig", () => {
-    const workerTsconfig = JSON.parse(stripJsonComments(read("worker/tsconfig.json")));
+    const workerTsconfig = JSON.parse(stripJsonc(read("worker/tsconfig.json")));
     expect(workerTsconfig.compilerOptions.strict).toBe(true);
   });
 

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { filesUnder } from "../../helpers/files.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf-8"));
@@ -11,9 +12,7 @@ const positional = words.slice(words.indexOf("build") + 1).filter((a) => !a.star
 const listed = positional.filter((a) => a.startsWith("tests/build/"));
 
 function walk(dir: string): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
-    e.isDirectory() ? (e.name === "images" ? [] : walk(join(dir, e.name))) : [join(dir, e.name)],
-  );
+  return filesUnder(dir).filter((file) => !relative(dir, file).split(sep).slice(0, -1).includes("images"));
 }
 
 function contentSlugs(): string[] {

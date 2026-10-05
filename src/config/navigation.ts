@@ -18,7 +18,7 @@ export interface NavigationItem {
 export const navigationSource = "src/config/navigation.ts";
 
 /**
- * Primary entries that stay fixed until their features arrive. Pages add the
+ * Primary entries whose pages are built by code routes, not page files. Pages add the
  * rest through `nav` in their settings; `mergeNavigation()`
  * (src/lib/content/navigation.ts) puts them in order (FR-025).
  */
@@ -38,11 +38,3 @@ export const socialNavigation: readonly NavigationItem[] = [
   { label: "GitHub", href: "https://github.com/drcdev", kind: "social" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/drcdev", kind: "social" },
 ];
-
-/**
- * Internal addresses reserved for later features. No page file may use them, and
- * link checks accept a not-found response only for these, so a typo in any other
- * link still fails. Remove an entry when the feature that builds that page lands;
- * the blog and the portfolio have landed, so the list is empty.
- */
-export const futureDestinations: readonly string[] = [];

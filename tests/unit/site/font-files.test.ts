@@ -30,6 +30,7 @@ import {
   pyftsubsetArgs as monoPyftsubsetArgs,
 } from "../../../scripts/fonts/subset-jetbrains-mono.ts";
 import { createHash } from "node:crypto";
+import { filesUnder } from "../../helpers/files.ts";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const fontsDir = `${root}src/assets/fonts/`;
@@ -178,13 +179,9 @@ describe("committed font files", () => {
   });
 
   it("keeps fonts out of public/", () => {
-    const walk = (dir: string): string[] =>
-      readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
-        e.isDirectory() ? walk(`${dir}/${e.name}`) : [`${dir}/${e.name}`],
-      );
     const publicDir = `${root}public`;
     expect(existsSync(publicDir)).toBe(true);
-    expect(walk(publicDir).filter((f) => /\.(woff2?|ttf|otf|eot)$/i.test(f))).toEqual([]);
+    expect(filesUnder(publicDir).filter((f) => /\.(woff2?|ttf|otf|eot)$/i.test(f))).toEqual([]);
   });
 });
 

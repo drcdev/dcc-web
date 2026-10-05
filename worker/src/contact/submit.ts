@@ -1,4 +1,4 @@
-import { json } from "../http";
+import { json, parseJsonObject, readCapped } from "../http";
 import { isSameOriginRequest } from "../same-origin";
 import { hashIp } from "./ip-hash";
 import { DUPLICATE_CHECK_SQL, INSERT_MESSAGE_SQL } from "./queries";
@@ -32,31 +32,6 @@ const fail = (
   headers: Record<string, string> = {},
 ) => json({ ok: false, error, ...extra }, status, headers);
 
-/** Reads the body through a byte counter; null when it grows past the cap. */
-async function readCapped(request: Request): Promise<string | null> {
-  if (!request.body) return "";
-  const reader = request.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    total += value.byteLength;
-    if (total > BODY_MAX_BYTES) {
-      await reader.cancel();
-      return null;
-    }
-    chunks.push(value);
-  }
-  const bytes = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    bytes.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return new TextDecoder().decode(bytes);
-}
-
 export async function handleSubmit(request: Request, env: Env): Promise<Response> {
   if (request.method !== "POST") {
     return json({ ok: false, error: "method_not_allowed" }, 405, { Allow: "POST" });
@@ -71,28 +46,17 @@ export async function handleSubmit(request: Request, env: Env): Promise<Response
   const contentType = (request.headers.get("Content-Type") ?? "").split(";")[0].trim().toLowerCase();
   if (contentType !== "application/json") return fail(415, "unsupported_media_type");
 
-  const declared = Number(request.headers.get("Content-Length"));
-  if (Number.isFinite(declared) && declared > BODY_MAX_BYTES) {
-    log("too_large");
-    return fail(413, "too_large");
-  }
-  const raw = await readCapped(request);
+  const raw = await readCapped(request, BODY_MAX_BYTES);
   if (raw === null) {
     log("too_large");
     return fail(413, "too_large");
   }
 
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    parsed = null;
-  }
-  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+  const body = parseJsonObject(raw);
+  if (body === null) {
     log("invalid");
     return fail(400, "invalid_json");
   }
-  const body = parsed as Record<string, unknown>;
 
   // 1. Honeypot: pretend success, touch nothing (FR-011).
   if (typeof body.website === "string" && body.website !== "") {

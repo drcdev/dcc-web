@@ -5,13 +5,12 @@
 // .env files are loaded) and from scripts/deploy/preview.ts, so the site's
 // `site` value and the preview upload's alias always agree.
 
+import type { BuildEnv } from "./build-mode.ts";
+
 /** Used whenever the served address cannot be determined (spec Assumptions). */
 export const FALLBACK_ORIGIN = "https://doncoleman.ca";
 
-export interface SiteOriginEnv {
-  WORKERS_CI?: string;
-  WORKERS_CI_BRANCH?: string;
-}
+export type SiteOriginEnv = BuildEnv;
 
 export interface SiteOriginConfig {
   /** No longer read: a main build is served from the live domain (FR-010a). Kept for the review-address setup items. */

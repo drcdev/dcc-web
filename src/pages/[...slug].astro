@@ -10,7 +10,6 @@ import { getImage } from "astro:assets";
 import type { ImageMetadata } from "astro";
 import type { ComponentProps } from "astro/types";
 import PageLayout from "../layouts/PageLayout.astro";
-import { futureDestinations } from "../config/navigation";
 import { sectionComponents } from "../components/sections/index";
 import { allowTurnstile } from "../components/sections/contact-csp";
 import { assertPageAddressesFree } from "../lib/content/addresses";
@@ -26,7 +25,7 @@ export async function getStaticPaths() {
   const routeFiles = Object.keys(import.meta.glob("./**/*.{astro,md,mdx,ts,js}"))
     .map((path) => path.slice(2))
     .filter((path) => path !== "[...slug].astro");
-  assertPageAddressesFree({ pageFiles, routeFiles, reserved: futureDestinations });
+  assertPageAddressesFree({ pageFiles, routeFiles });
 
   const entries = await getCollection("pages");
   for (const entry of entries) validatePageBody(fileOf(entry), entry.body ?? "");

@@ -3,7 +3,6 @@
 // "Focus"), and the footer part (FR-008, FR-010a, SC-005; contracts/shell-dom.md
 // "Footer").
 import { test, expect, type Locator, type Page } from "@playwright/test";
-import { futureDestinations } from "../../src/config/navigation.ts";
 import { MENU_BUTTON, NAV_LIST, NOT_FOUND_PENDING, PRIMARY, TEMPLATES } from "./templates.ts";
 
 const PHONE = { width: 390, height: 844 };
@@ -176,34 +175,6 @@ test.describe("activation", () => {
     await expect(button).toHaveAttribute("aria-expanded", "true");
     await page.keyboard.press("Space");
     await expect(button).toHaveAttribute("aria-expanded", "false");
-  });
-
-  // A header link whose page is still to come (src/config/navigation.ts `futureDestinations`)
-  // is an ordinary link to the not-found page. The blog and the portfolio have both landed, so
-  // the list is empty for now and these skip; they run again when a feature reserves an address.
-  const NO_FUTURE = "no header link is a future destination at the moment";
-
-  test("a future destination is an ordinary link that serves the not-found status", async ({ page }) => {
-    test.skip(futureDestinations.length === 0, NO_FUTURE);
-    await page.goto("/");
-    for (const href of futureDestinations) {
-      const [response] = await Promise.all([
-        page.waitForResponse((r) => new URL(r.url()).pathname === href),
-        page.locator(`${NAV_LIST} a[href="${href}"]`).click(),
-      ]);
-      expect(response.status(), href).toBe(404);
-      await page.goto("/");
-    }
-  });
-
-  test("a future destination loads the not-found page", async ({ page }) => {
-    test.skip(futureDestinations.length === 0, NO_FUTURE);
-    test.fixme(!TEMPLATES[1].built, NOT_FOUND_PENDING);
-    for (const href of futureDestinations) {
-      await page.goto("/");
-      await page.locator(`${NAV_LIST} a[href="${href}"]`).click();
-      await expect(page.getByRole("heading", { level: 1, name: "Page not found" }), href).toBeVisible();
-    }
   });
 });
 

@@ -1,11 +1,12 @@
 // The question source files and the panel in a real build (specs/022 tasks T022; data-model
 // section 1; contracts/questions-panel.md P01, P02, P06). Two builds, both with a published and a
 // draft post: production (Workers Builds, main) and preview (another branch).
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { MAX_INPUT_CHARS } from "../../worker/src/questions/config.ts";
 import { buildFixtureSite, type FixtureSiteResult } from "./fixture-site.ts";
+import { filesUnder } from "../helpers/files.ts";
 
 const builds: Record<"production" | "preview", FixtureSiteResult> = {} as never;
 
@@ -29,15 +30,6 @@ interface Source {
 const source = (build: FixtureSiteResult, slug: string) =>
   JSON.parse(build.read(`writing/${slug}/question-source.json`)) as Source;
 const has = (build: FixtureSiteResult, path: string) => existsSync(join(build.dist, path));
-
-function walk(dir: string, into: string[] = []): string[] {
-  for (const name of readdirSync(dir)) {
-    const path = join(dir, name);
-    if (statSync(path).isDirectory()) walk(path, into);
-    else into.push(path);
-  }
-  return into;
-}
 
 describe("question-source.json", () => {
   it("is written for a published post with the fields of data-model section 1", () => {
@@ -66,7 +58,7 @@ describe("question-source.json", () => {
 
   it("is not in the sitemap output", () => {
     for (const build of Object.values(builds)) {
-      for (const path of walk(build.dist).filter((file) => /sitemap.*\.xml$/.test(file))) {
+      for (const path of filesUnder(build.dist).filter((file) => /sitemap.*\.xml$/.test(file))) {
         expect(readFileSync(path, "utf-8")).not.toContain("question-source");
       }
     }
