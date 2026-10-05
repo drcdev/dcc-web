@@ -265,7 +265,7 @@ docs last. Each item leaves `verify:quick` green, along with its targeted files:
 | `reference-screenshots.test.ts` (12 PNGs exist, valid, widths) | Change-detector, no guarantee: it checked a frozen reference, not the site. |
 | `config-files.test.ts` "adds reference:capture" | Deleted with the script. |
 
-### W3. Launch pages: structure only; page copy out of the e2e pages spec
+### W3. Launch pages: structure only; page copy out of the e2e pages spec (done)
 
 - **Files:** `tests/unit/content/launch-content.test.ts`, `tests/e2e/pages.spec.ts`.
 - **Test:** existing, pruned, **unit layer** for the page files (it reads files and builds
