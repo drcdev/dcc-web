@@ -254,12 +254,29 @@ for (const template of blogTemplates) {
           await page.setViewportSize({ width: 390, height: 844 });
           await page.goto(template.path);
           await noSidewaysScroll(page);
-          const missingAlt = await page.evaluate(() =>
-            Array.from(document.querySelectorAll("main img"))
-              .filter((img) => !(img.getAttribute("alt") ?? "").trim())
-              .map((img) => img.getAttribute("src")),
-          );
+          // Content images need a real text alternative. Series images are decorative (spec 025
+          // FR-006): an empty alt that is present, nothing that would announce them, not
+          // focusable and not a link of their own.
+          const { missingAlt, announcedDecorative } = await page.evaluate(() => {
+            const images = Array.from(document.querySelectorAll("main img"));
+            return {
+              missingAlt: images
+                .filter((img) => !img.hasAttribute("data-series-image"))
+                .filter((img) => !(img.getAttribute("alt") ?? "").trim())
+                .map((img) => img.getAttribute("src")),
+              announcedDecorative: images
+                .filter((img) => img.hasAttribute("data-series-image"))
+                .filter(
+                  (img) =>
+                    img.getAttribute("alt") !== "" ||
+                    ["aria-label", "aria-labelledby", "title", "role", "tabindex"].some((a) => img.hasAttribute(a)) ||
+                    img.closest("a, button") !== null,
+                )
+                .map((img) => img.getAttribute("src")),
+            };
+          });
           expect(missingAlt).toEqual([]);
+          expect(announcedDecorative).toEqual([]);
           await expect(page.locator("h1")).toBeVisible();
           await page.setViewportSize({ width: 1280, height: 800 });
           await noSidewaysScroll(page);

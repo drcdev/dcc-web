@@ -278,7 +278,9 @@ test.describe("landing page", () => {
     const lead = LANDING_SELECTION.lead!;
     if (hasImage(lead.href)) {
       const img = page.locator("[data-lead-story] img");
-      await expect(img).toHaveAttribute("fetchpriority", "high");
+      // Eager but not high priority: the Convergence series tile is the page's one
+      // high-priority image (spec 025).
+      await expect(img).toHaveAttribute("fetchpriority", "auto");
       await expect(img).toHaveAttribute("loading", "eager");
     } else {
       await expect(page.locator("[data-lead-story][data-text-only]")).toHaveCount(1);
