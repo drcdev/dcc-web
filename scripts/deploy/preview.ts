@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // scripts/deploy/preview.ts — `pnpm run deploy:preview`, the deploy command of the
 // `dcc-web-preview` Workers Builds project (docs/setup.md item 10). Applies D1 migrations to
-// the preview database, deploys the preview Worker, and on non-main branches uploads a Worker
-// Version aliased with the same function astro.config.mjs uses to compute the build's `site`,
-// so a preview build is reachable at the address its own metadata points to
+// the preview database on every build (additive only), then only `main` deploys the preview
+// Worker (changing its active deployment); other branches upload a Worker Version aliased with
+// the same function astro.config.mjs uses to compute the build's `site`, never deploying, so a
+// preview build is reachable at the address its own metadata points to
 // (specs/007-contact-form/contracts/worker-config.md, specs/002-site-foundation/contracts/site-origin.md).
 import { previewAlias } from "../../src/lib/site-origin.ts";
 import { assertWorkerName, runSteps } from "./run.ts";
@@ -28,11 +29,10 @@ export function previewDeploySteps(env: DeployPreviewEnv): string[][] {
       "WORKERS_CI_BRANCH is not set. deploy:preview only runs as Cloudflare Workers Builds' deploy command.",
     );
   }
-  const steps = [
-    ["d1", "migrations", "apply", "DB", "--remote", "--env", "preview"],
-    ["deploy", "--env", "preview"],
-  ];
-  if (branch !== "main") {
+  const steps = [["d1", "migrations", "apply", "DB", "--remote", "--env", "preview"]];
+  if (branch === "main") {
+    steps.push(["deploy", "--env", "preview"]);
+  } else {
     const alias = previewAlias(branch);
     if (!alias) {
       throw new Error("Could not derive a preview alias from the current branch name.");

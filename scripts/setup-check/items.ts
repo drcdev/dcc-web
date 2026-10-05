@@ -188,10 +188,10 @@ const seeds: ItemSeed[] = [
     title: "Cloudflare Worker",
     purpose: "The new site is hosted as a Cloudflare Worker serving static assets.",
     where:
-      "Cloudflare dashboard -> Workers & Pages -> Create -> Import a repository -> drcdev/dcc-web, then turn on workers.dev and preview URLs.",
-    confirmedBy: "Worker dcc-web exists; workers.dev and preview URLs enabled",
+      "Cloudflare dashboard -> Workers & Pages -> Create -> Import a repository -> drcdev/dcc-web. Leave workers.dev and Preview URLs off for dcc-web; wrangler.jsonc sets both to false and production is served only on the Custom Domain. The account workers.dev subdomain must be on (the preview Worker uses it).",
+    confirmedBy: "Worker dcc-web exists and the account workers.dev subdomain is on (used by the preview Worker)",
     needsDon: true,
-    principles: ["II"],
+    principles: ["VIII"],
     requirements: ["FR-017"],
     secrets: [],
     dependsOn: [],
@@ -321,9 +321,9 @@ const seeds: ItemSeed[] = [
     order: 16,
     title: "Preview no-index",
     purpose: "Preview addresses on workers.dev must never be indexed by search engines.",
-    where: "Nothing new to do here; public/_headers sends X-Robots-Tag: noindex for the workers.dev hosts.",
+    where: "Nothing new to do here; public/_headers sends X-Robots-Tag: noindex for the preview workers.dev host (production is not on workers.dev).",
     confirmedBy:
-      "Responses for / and /projects/ from both the dcc-web and dcc-web-preview workers.dev hosts have an X-Robots-Tag header containing noindex",
+      "Responses for / and /projects/ from the dcc-web-preview workers.dev host have an X-Robots-Tag header containing noindex",
     needsDon: false,
     principles: ["X"],
     requirements: ["FR-012"],
@@ -398,7 +398,7 @@ const seeds: ItemSeed[] = [
     title: "Preview Worker builds",
     purpose: "Branch previews are built and deployed by their own Worker, dcc-web-preview, so they use the preview database and secrets.",
     where:
-      "Cloudflare dashboard -> Workers & Pages -> dcc-web-preview -> Settings -> Build -> Connect drcdev/dcc-web; build command pnpm run build; deploy command pnpm run deploy:preview for production and non-production branches; then turn on the workers.dev address and preview URLs. On dcc-web turn non-production branch builds off.",
+      "Cloudflare dashboard -> Workers & Pages -> dcc-web-preview -> Settings -> Build -> Connect drcdev/dcc-web; build command pnpm run build; deploy command pnpm run deploy:preview for production and non-production branches; then turn on the workers.dev address and preview URLs (wrangler.jsonc env.preview now sets both explicitly). Only main replaces the active deployment; branches upload an aliased version. On dcc-web turn non-production branch builds off.",
     confirmedBy:
       "dcc-web-preview exists and its Workers Builds triggers use pnpm run deploy:preview; dcc-web has no non-production trigger",
     needsDon: true,
@@ -429,7 +429,7 @@ const seeds: ItemSeed[] = [
     title: "Preview migrations and clean-up schedule",
     purpose: "The preview deployment applies the database migrations and registers the daily clean-up schedule.",
     where:
-      "Cloudflare dashboard -> My Profile -> API Tokens -> the token Workers Builds uses -> Edit -> add Account -> D1: Edit. Then push the branch or choose Retry build on dcc-web-preview.",
+      "Cloudflare dashboard -> My Profile -> API Tokens -> the token Workers Builds uses -> Edit -> add Account -> D1: Edit. Then push the branch or choose Retry build on dcc-web-preview. The dcc-web-preview database is disposable (Don may wipe or recreate it; nothing in it is kept), and branch migrations are applied to it before merge, so every migration must be additive only.",
     confirmedBy:
       "the dcc-web-preview database has every migration in migrations/ applied and the dcc-web-preview Worker has the cron 17 3 * * *; pending while a build is running",
     needsDon: true,

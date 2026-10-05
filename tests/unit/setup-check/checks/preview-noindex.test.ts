@@ -10,7 +10,7 @@ const CONFIG = {
   previewWorkerName: "dcc-web-preview",
   workersSubdomain: "drc-dev",
 };
-const HOSTS = ["dcc-web.drc-dev.workers.dev", "dcc-web-preview.drc-dev.workers.dev"];
+const HOSTS = ["dcc-web-preview.drc-dev.workers.dev"];
 
 type Get = (url: string) => Promise<{ status: number; headers: Record<string, string>; body: string }>;
 
@@ -26,7 +26,7 @@ const noindex = { status: 200, headers: { "x-robots-tag": "noindex" }, body: "" 
 const indexable = { status: 200, headers: {}, body: "" };
 
 describe("checks/preview-noindex (T047)", () => {
-  it("is complete when both workers.dev hosts send noindex on / and /projects/, with no credentials needed", async () => {
+  it("is complete when the preview workers.dev host sends noindex on / and /projects/, with no credentials needed", async () => {
     const seen: string[] = [];
     const result = await check(
       ctxWith(async (url) => {
@@ -38,18 +38,19 @@ describe("checks/preview-noindex (T047)", () => {
     expect(result.status).toBe("complete");
     expect(result.step).toBe(`Step 16 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#preview-noindex");
+    expect(seen.some((u) => u.includes("//dcc-web.drc-dev"))).toBe(false);
     expect([...seen].sort()).toEqual(HOSTS.flatMap((h) => [`https://${h}/`, `https://${h}/projects/`]).sort());
   });
 
   it("is missing and lists each failing host and path", async () => {
     const result = await check(
       ctxWith(async (url) =>
-        url === "https://dcc-web-preview.drc-dev.workers.dev/projects/" || url === "https://dcc-web.drc-dev.workers.dev/" ? indexable : noindex,
+        url === "https://dcc-web-preview.drc-dev.workers.dev/projects/" ? indexable : noindex,
       ),
     );
 
     expect(result.status).toBe("missing");
-    expect(result.details).toEqual(["dcc-web.drc-dev.workers.dev/", "dcc-web-preview.drc-dev.workers.dev/projects/"]);
+    expect(result.details).toEqual(["dcc-web-preview.drc-dev.workers.dev/projects/"]);
     expect(result.nextAction).toBe(
       "Confirm public/_headers has the https://:worker.:subdomain.workers.dev/* noindex rule and redeploy.",
     );

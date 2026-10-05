@@ -142,6 +142,12 @@ the developers.cloudflare.com pages read while planning.
   noindex signal. (b) A Worker that adds the header by host. It would need `run_worker_first`
   on every path, which Principle VIII rules out.
 
+Superseded by #89 (2026-10): `workers.dev` was kept on for the production Worker as an SEO
+concern only. #89 takes production off `workers.dev` and off version URLs for security: the
+zone's controls (Always Use HTTPS, the planned `api-per-ip` rate-limit rule) never see those
+hosts, and old versions stayed reachable. The host-scoped noindex rule for `workers.dev` now
+covers the preview Worker only.
+
 ## R7. Telling "pending" from "problem" after the switch (FR-017, edge cases)
 
 - **Decision**: A post-launch item is **pending** in either of these cases:
