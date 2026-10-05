@@ -6,7 +6,7 @@
 // config's own directory, and is gitignored.
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { stripJsonc } from "./setup-check/checks/contact-shared.ts";
+import { stripJsonc } from "./lib/jsonc.ts";
 
 const root = new URL("../", import.meta.url);
 const config = JSON.parse(

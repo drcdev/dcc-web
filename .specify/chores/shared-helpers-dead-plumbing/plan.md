@@ -229,7 +229,7 @@ files. Run every toolchain call through `/Users/doncoleman/.claude/jobs/b807dd0b
   `Content-Length` equals its body length). The order of checks is unchanged: method, origin and
   content type come first, as in contact.
 
-### W3. `stripJsonc` in `scripts/lib/jsonc.ts`
+### [x] W3. `stripJsonc` in `scripts/lib/jsonc.ts`
 
 - **Files:** new `scripts/lib/jsonc.ts` (the string-aware `stripJsonc` moved verbatim from
   `contact-shared.ts`, erasable TypeScript only, since `node scripts/e2e-wrangler-config.ts`
