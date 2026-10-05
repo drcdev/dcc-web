@@ -244,7 +244,7 @@ lockfile, where exact pins and the release-age delay already govern upgrades.
 
 ### W2: Clear GHSA-ch52-4w7c-c8xp with pnpm's audit fix
 
-- [ ] W2 done
+- [x] W2 done
 - **Files:** `pnpm-lock.yaml` (and `pnpm-workspace.yaml` only on the J1 fallback).
 - **Test:** existing tool check. `corepack pnpm audit` exit 1 (red, recorded above) → exit 0.
   No unit test: a test pinning one advisory's version would guard one CVE, not a behaviour, and
