@@ -23,7 +23,7 @@
 ### Visual baselines
 
 - [x] T005 [US1] Update the macOS visual baselines with `pnpm run test:visual:update` (nvm + shim wrapper, see CLAUDE.md). Inspect the diff: only `post-template-desktop-{light,dark}-darwin.png` in `tests/e2e/visual.spec.ts-snapshots/` should change, and only the card width and text wrapping. Any other changed image is a regression to fix, not a baseline to refresh.
-- [ ] T006 [US1] (orchestrator) Update the Linux visual baselines with `pnpm run test:visual:update:linux` (needs Docker Desktop; ask Don to start it if `docker info` fails). Same expectation: only `post-template-desktop-*-linux.png` change. Fall back to the `visual-baselines` PR label and artifact if the Docker result differs from CI.
+- [x] T006 [US1] (orchestrator) Update the Linux visual baselines with `pnpm run test:visual:update:linux` (needs Docker Desktop; ask Don to start it if `docker info` fails). Same expectation: only `post-template-desktop-*-linux.png` change. Fall back to the `visual-baselines` PR label and artifact if the Docker result differs from CI.
 
 ### Preview and gate
 
