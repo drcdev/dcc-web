@@ -51,7 +51,7 @@ the full `pnpm run verify`.
 **Purpose**: the per-template lists every browser spec reads. Changing them first makes the
 template-driven a11y, budget, geometry, menu and no-JS specs go red against the old content.
 
-- [ ] T002 Edit `tests/e2e/templates.ts`: replace the `services` and `speaking` TEMPLATES entries with one `work-with-me` entry at `/work-with-me/`, and change PRIMARY to the six links in order (Home, Work with me, Writing, Projects, About, Contact). Layer: shared helper for the E2E and a11y specs, no test of its own. Its effect is observed through the template-driven specs, red in T018.
+- [X] T002 Edit `tests/e2e/templates.ts`: replace the `services` and `speaking` TEMPLATES entries with one `work-with-me` entry at `/work-with-me/`, and change PRIMARY to the six links in order (Home, Work with me, Writing, Projects, About, Contact). Layer: shared helper for the E2E and a11y specs, no test of its own. Its effect is observed through the template-driven specs, red in T018.
 
 **Checkpoint**: lists point at the new structure.
 
