@@ -293,7 +293,7 @@ files. Run every toolchain call through `/Users/doncoleman/.claude/jobs/b807dd0b
 | `tests/e2e/not-found.spec.ts` `...futureDestinations` in `NOT_FOUND_ADDRESSES` | Spread of an empty list; the addresses checked are unchanged. The header comment's "unbuilt nav destinations" is dropped. |
 | `tests/build/page-validation.test.ts` needle `assertPageAddressesFree({ pageFiles, routeFiles, reserved` | Needle becomes `assertPageAddressesFree({ pageFiles, routeFiles` and the replacement `assertPageAddressesFree({ pageFiles, routeFiles: []`; the `patched` assertion still proves the override matched. |
 
-### W6. Small items
+### [x] W6. Small items
 
 - **Files:** `src/lib/content/addresses.ts` (add `projectHref(id: string): string` beside
   `postHref`); `src/lib/projects.ts` (delete `addressOfProject`); `ProjectRow.astro`,

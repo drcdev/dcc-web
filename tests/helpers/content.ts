@@ -13,7 +13,7 @@ import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { seriesIds, topicHref, topics } from "../../src/config/topics.ts";
 import { filesUnder } from "./files.ts";
-import { addressFromPath, idFromPath, postHref, slugFromPath, slugFromPostPath } from "../../src/lib/content/addresses.ts";
+import { addressFromPath, idFromPath, postHref, projectHref, slugFromPath, slugFromPostPath } from "../../src/lib/content/addresses.ts";
 
 // `parseFrontmatter` is an ES module without top-level await, which Node 24 can `require()`
 // (nodejs.org/api/modules.html#loading-ecmascript-modules-using-require). It is resolved
@@ -76,7 +76,7 @@ export function readEntries(collection: Collection, dir = `src/content/${collect
     const slug =
       collection === "posts" ? slugFromPostPath(path) : collection === "projects" ? slugFromPath(path) : idFromPath(path);
     const address =
-      collection === "posts" ? postHref(slug) : collection === "projects" ? `/projects/${slug}/` : addressFromPath(path);
+      collection === "posts" ? postHref(slug) : collection === "projects" ? projectHref(slug) : addressFromPath(path);
     return {
       collection,
       slug,

@@ -13,6 +13,7 @@ import {
   assertPostFiles,
   idFromPath,
   postHref,
+  projectHref,
   slugFromPath,
   slugFromPostPath,
 } from "../../../src/lib/content/addresses.ts";
@@ -62,6 +63,10 @@ describe("slugFromPostPath and postHref", () => {
 
   it("builds the address /writing/{slug}/", () => {
     expect(postHref("my-first-post")).toBe("/writing/my-first-post/");
+  });
+
+  it("builds the project address /projects/{slug}/", () => {
+    expect(projectHref("x")).toBe("/projects/x/");
   });
 });
 

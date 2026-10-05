@@ -44,6 +44,11 @@ export function postHref(slug: string): string {
   return `/writing/${slug}/`;
 }
 
+/** The address of a project's story: `/projects/{slug}/`. */
+export function projectHref(slug: string): string {
+  return `/projects/${slug}/`;
+}
+
 /** The slug of a project file, given its path below src/content/projects/. */
 export function slugFromPath(path: string): string {
   const file = `${DIRS.project}/${path}`;
