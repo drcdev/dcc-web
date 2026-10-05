@@ -355,7 +355,7 @@ docs last. Each item leaves `verify:quick` green, along with its targeted files:
 | headers L67 exact Cache-Control | Rewritten to immutable; W6 checks the served header. |
 | headers L95 seven exact values, L107 exact header set | Rewritten to presence of the seven headers. Values are a reviewed config edit; W6 checks that the served values equal the rule. |
 
-### W6. E2E headers: one HTML page and one `/_astro/` asset
+### W6. E2E headers: one HTML page and one `/_astro/` asset (done)
 
 - **Files:** `tests/e2e/headers.spec.ts`.
 - **Test:** existing, cut to 2 tests, **e2e layer**: only the real server shows that `wrangler dev`
