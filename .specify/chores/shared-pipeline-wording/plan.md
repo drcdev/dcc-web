@@ -211,7 +211,7 @@ Nothing in this chore changes a page, so no visual baselines.
 
 ### W2 — Create the shared files in `.claude/skills/_shared/`
 
-- [ ] W2 done
+- [x] W2 done
 - **Files** (new). Each one opens with a heading, then one line saying it is included by
   `/deliver`, `/tweak`, `/squash` and `/chore` and must be followed exactly by the orchestrator
   and by every subagent told to read it, as cadence's `e2e-watch-rules.md` does. Text moves
