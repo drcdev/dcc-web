@@ -4,7 +4,7 @@
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, it } from "vitest";
 import PostCard from "../../../src/components/post/PostCard.astro";
-import { topicStyles } from "../../../src/components/post/topic-styles.ts";
+import { cardEdge, topicStyles } from "../../../src/components/post/topic-styles.ts";
 import { topics } from "../../../src/config/topics.ts";
 import { byName, classList, textOf } from "../html.ts";
 import sample from "../../fixtures/pages/images/sample.png";
@@ -101,6 +101,28 @@ describe("PostCard image and text-only variants (FR-011)", () => {
     const html = await render(withImage("pic", { topics: ["compliant-data"] }));
     const article = byName(html, "article")[0]!;
     for (const cls of topicStyles.rust!.border.split(/\s+/)) expect(classList(article)).not.toContain(cls);
+  });
+});
+
+describe("PostCard dark-mode edge (spec 025 FR-010, FR-013, FR-016)", () => {
+  it("gives an image card the shared cardEdge and no dusk-700 edge", async () => {
+    const article = byName(await render(withImage("pic")), "article")[0]!;
+    for (const cls of cardEdge.split(/\s+/)) expect(classList(article)).toContain(cls);
+    expect(classList(article)).toContain("dark:border-dusk-500");
+    expect(classList(article)).not.toContain("dark:border-dusk-700");
+  });
+
+  it("keeps the 2px topic border on a text-only card and adds no second edge", async () => {
+    const article = byName(await render(summary("plain", { topics: ["compliant-data"] })), "article")[0]!;
+    const classes = classList(article);
+    expect(classes).toContain("border-2");
+    expect(classes).not.toContain("dark:border-dusk-500");
+    expect(classes).not.toContain("border");
+  });
+
+  it("adds no hover, focus or active classes to the card", async () => {
+    const article = byName(await render(withImage("pic")), "article")[0]!;
+    expect(classList(article).filter((c) => /^(hover|focus|active|group-hover)/.test(c))).toEqual([]);
   });
 });
 

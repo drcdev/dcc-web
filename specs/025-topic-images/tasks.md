@@ -62,14 +62,14 @@
 
 ### Tests (write first, see fail)
 
-- [ ] T017 [P] [US3] Update `tests/component/post/PostCard.test.ts` (layer: component, class contract): image card uses `cardEdge` (`border border-dusk-200 dark:border-dusk-500`, no `dusk-700`), text-only card keeps its 2 px topic border and gains no `cardEdge`/second outline, no hover/focus/active classes added (FR-010, FR-013, FR-016).
-- [ ] T018 [US3] Update `tests/component/post/LeadStory.test.ts` (layer: component; same file as T007, so run after it): same `cardEdge` and text-only expectations for the lead story.
-- [ ] T019 [P] [US3] Add probes to `tests/e2e/theme-tokens.spec.ts` (layer: e2e fixture site, because only a browser resolves computed colours per theme): on `/writing/`, `/writing/drift/` and a topic page, in dark the tiles and banner resolve a 1 px border in the series 300 shade, image cards and lead story resolve 1 px `dusk-500`, text-only cards keep their 2 px topic colour, the topic banner has no border, and the series images have computed `filter: none` and `opacity: 1`; in light the tile/banner border width is 0 and the card edge is `dusk-200` (FR-010, FR-011, FR-013, FR-017).
-- [ ] T020 [P] [US3] Add to `tests/e2e/blog-forced-colors.spec.ts` (layer: e2e, forced colours only emulate in a browser): in forced-colors with light and dark themes, series tile, joined banner, post card and lead story (image and text-only) each have a solid border of at least 1 px in the system text colour, and the series images stay visible (FR-014).
+- [X] T017 [P] [US3] Update `tests/component/post/PostCard.test.ts` (layer: component, class contract): image card uses `cardEdge` (`border border-dusk-200 dark:border-dusk-500`, no `dusk-700`), text-only card keeps its 2 px topic border and gains no `cardEdge`/second outline, no hover/focus/active classes added (FR-010, FR-013, FR-016).
+- [X] T018 [US3] Update `tests/component/post/LeadStory.test.ts` (layer: component; same file as T007, so run after it): same `cardEdge` and text-only expectations for the lead story.
+- [X] T019 [P] [US3] Add probes to `tests/e2e/theme-tokens.spec.ts` (layer: e2e fixture site, because only a browser resolves computed colours per theme): on `/writing/`, `/writing/drift/` and a topic page, in dark the tiles and banner resolve a 1 px border in the series 300 shade, image cards and lead story resolve 1 px `dusk-500`, text-only cards keep their 2 px topic colour, the topic banner has no border, and the series images have computed `filter: none` and `opacity: 1`; in light the tile/banner border width is 0 and the card edge is `dusk-200` (FR-010, FR-011, FR-013, FR-017).
+- [X] T020 [P] [US3] Add to `tests/e2e/blog-forced-colors.spec.ts` (layer: e2e, forced colours only emulate in a browser): in forced-colors with light and dark themes, series tile, joined banner, post card and lead story (image and text-only) each have a solid border of at least 1 px in the system text colour, and the series images stay visible (FR-014).
 
 ### Implementation
 
-- [ ] T021 [US3] Edit `src/components/post/PostCard.astro` and `src/components/post/LeadStory.astro`: non-text-only branch uses `cardEdge`; text-only branch unchanged. T017 to T020 pass (series `outline` already applied in T010 and T016).
+- [X] T021 [US3] Edit `src/components/post/PostCard.astro` and `src/components/post/LeadStory.astro`: non-text-only branch uses `cardEdge`; text-only branch unchanged. T017 to T020 pass (series `outline` already applied in T010 and T016).
 
 **Checkpoint**: all behaviour tests green.
 

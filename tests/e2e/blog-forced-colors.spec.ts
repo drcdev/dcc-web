@@ -49,3 +49,34 @@ test("an ordinary topic pill keeps a 1px border", async ({ page }) => {
   await expect(pill).toHaveCSS("border-top-width", "1px");
   await expect(pill).not.toHaveCSS("border-top-style", "none");
 });
+
+// Cards and tiles keep a solid border of at least 1px in forced colours, in both themes
+// (spec 025 FR-014). Author colours are replaced, so the border width and the system text
+// colour are what must survive.
+for (const scheme of ["light", "dark"] as const) {
+  test.describe(`card outlines, ${scheme} theme`, () => {
+    test.use({ colorScheme: scheme });
+
+    const expectEdge = async (page: Page, locator: ReturnType<Page["locator"]>) => {
+      await expect(locator).toBeVisible();
+      await expect(locator).not.toHaveCSS("border-top-style", "none");
+      const width = await locator.evaluate((el) => parseFloat(getComputedStyle(el).borderTopWidth));
+      expect(width).toBeGreaterThanOrEqual(1);
+      await expect(locator).toHaveCSS("border-top-color", await systemColor(page, "CanvasText"));
+    };
+
+    test("series tile, post card and lead story", async ({ page }) => {
+      await page.goto("/writing/");
+      await expectEdge(page, page.locator("[data-series-intro-item]").first());
+      await expectEdge(page, page.locator("[data-post-card]").first());
+      await expectEdge(page, page.locator("[data-lead-story]").first());
+      await expect(page.locator("[data-series-image]").first()).toBeVisible();
+    });
+
+    test("joined series banner", async ({ page }) => {
+      await page.goto("/writing/drift/");
+      await expectEdge(page, page.locator("[data-series-banner]"));
+      await expect(page.locator("[data-series-image]").first()).toBeVisible();
+    });
+  });
+}
