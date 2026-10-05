@@ -185,3 +185,7 @@ missing page, or two entries for one page, is a visible defect.
 
 - Every test task names one primary layer; second layers with reasons: T006 (build, for rendered heading levels), T011 (E2E, open-menu label fit beside the page-level reflow checks) and T016 (E2E, existing journey beside T015).
 - Task count: 40. Setup 1, Foundational 1, tests 15 plus the red run (US1 4, US2 6, US3 5), implementation 10 (US1 6, US2 1, US3 3), Polish 12 (4 are PREVIEW-CHECK).
+
+## Phase 6: Convergence
+
+- [ ] T041 [US2] Unit layer, `tests/unit/content/navigation.test.ts`: finish T007, which is ticked but not applied (the file still has the `services.mdx` and `speaking.mdx` fixture pages at positions 2 and 3, a "seven launch items" test title and an expected list with Services and Speaking). Replace the two fixture pages with one `page("work-with-me.mdx", "/work-with-me/", "Work with me", { position: 2 })`; the expected list becomes the six entries in order (Home, Work with me, Writing, Projects, About, Contact) with label "Work with me" from the page title; the "sorts by position" expectation becomes `[1, 2, 4, 5, 6, 7]` (position 3 unused); drop the "seven" wording. Run `pnpm run test:unit` green per T007, FR-006, FR-009 (partial)
