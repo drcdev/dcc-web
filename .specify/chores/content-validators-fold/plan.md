@@ -284,7 +284,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W2: One error constructor, `contentError(kind, files, problem)`
 
-- [ ] W2 done
+- [x] W2 done
 - **Files:** `src/lib/content/errors.ts`; callers `src/lib/content/{navigation,post-dates,body,
   project-story,project-replacement}.ts`, `src/components/sections/validate.ts`,
   `src/components/project/{ProjectPart,PartPicture}.astro`; tests

@@ -4,7 +4,7 @@
 // fully bold cell is told from a partly bold one, and code, escaped pipes and comments cannot fool it.
 // Every failure names the file. Returns the checked Options table for the page to render.
 import { mdxToMdast } from "satteri";
-import { projectFileError } from "./errors.ts";
+import { contentError } from "./errors.ts";
 import type { Fit, OptionsComparison } from "./options-comparison.ts";
 import { partHeadings, partIds, type PartId } from "./parts.ts";
 
@@ -43,7 +43,7 @@ function walk(node: Node, visit: (node: Node) => void): void {
 }
 
 export function validateProjectStory(file: string, body: string): OptionsComparison {
-  const fail = (problem: string) => projectFileError(file, problem);
+  const fail = (problem: string) => contentError("project", file, problem);
 
   let root: Node;
   try {

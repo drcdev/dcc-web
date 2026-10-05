@@ -2,7 +2,7 @@
 // optional link (data-model.md "Validation rules (collection)", "Derived: ResolvedReplacement").
 // Astro's reference() only reports a missing target when the entry is read, and then without
 // naming the file, so RP04 and RP05 are checked here over every entry, drafts included.
-import { projectFileError } from "./errors.ts";
+import { contentError } from "./errors.ts";
 
 // The schema allows exactly one of the two forms (RP02), so its inferred type has every key optional.
 type Replacement = { project?: { id: string }; name?: string; href?: string };
@@ -27,13 +27,15 @@ export function checkReplacements(entries: readonly Replaceable[]): void {
     if (!replacedBy?.project) continue;
     const target = replacedBy.project.id;
     if (target === entry.id) {
-      throw projectFileError(
+      throw contentError(
+        "project",
         fileOf(entry.id),
         "replacedBy names this project itself. Name the project that replaced it, or remove replacedBy.",
       );
     }
     if (!ids.has(target)) {
-      throw projectFileError(
+      throw contentError(
+        "project",
         fileOf(entry.id),
         `replacedBy names the project "${target}", but there is no project file ${fileOf(target)}. Use the file name of a project on the site, or name: (with an optional href) for anything off the site.`,
       );
