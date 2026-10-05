@@ -36,7 +36,7 @@ for (const template of TEMPLATES) {
         await expect(list).toBeVisible();
         await expect(list).toHaveCSS("flex-wrap", "wrap");
         const links = list.locator("a");
-        await expect(links).toHaveCount(7);
+        await expect(links).toHaveCount(6);
         for (let i = 0; i < PRIMARY.length; i += 1) await expect(links.nth(i)).toBeVisible();
         const { scrollWidth, clientWidth } = await page.evaluate(() => ({
           scrollWidth: document.documentElement.scrollWidth,
@@ -57,8 +57,8 @@ for (const template of TEMPLATES) {
           await page.keyboard.press("Tab");
           hrefs.push(await page.evaluate(() => document.activeElement?.getAttribute("href") ?? ""));
         }
-        // Skip link, site name, then the seven links (no menu button without script).
-        expect(hrefs.slice(0, 9)).toEqual(["#main", "/", ...PRIMARY.map(([, href]) => href)]);
+        // Skip link, site name, then the six links (no menu button without script).
+        expect(hrefs.slice(0, 8)).toEqual(["#main", "/", ...PRIMARY.map(([, href]) => href)]);
       });
 
       test("activates a navigation link with Enter", async ({ page }) => {

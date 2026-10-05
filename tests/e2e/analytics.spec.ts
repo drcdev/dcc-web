@@ -106,7 +106,7 @@ test("with the beacon blocked, pages, navigation and the theme switch still work
 });
 
 test("browsing several pages sets no cookie (SC-009, FR-025)", async ({ page, context }) => {
-  for (const path of ["/", "/services/", "/nope/", "/robots.txt", "/sitemap-index.xml", "/"]) {
+  for (const path of ["/", "/work-with-me/", "/nope/", "/robots.txt", "/sitemap-index.xml", "/"]) {
     await page.goto(path);
   }
   await page.locator(SWITCH).click();

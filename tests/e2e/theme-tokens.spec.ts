@@ -115,7 +115,7 @@ const PAGES: Page_[] = [
     probes: [
       {
         name: "home intro CTA button",
-        selector: 'main section a[href="/services/"]',
+        selector: 'main section a[href="/work-with-me/"]',
         first: true,
         props: { "background-color": ["rust-600", "rust-300"], color: ["white", "dusk-900"] },
       },

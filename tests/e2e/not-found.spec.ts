@@ -14,7 +14,18 @@ const RETIRED_ADDRESSES = ["/drift/2025/x/", "/convergence/", "/news/", "/topic/
 // Ghost-only addresses (FR-019, FR-027a): no redirect, the site's own not-found page.
 const GHOST_ADDRESSES = ["/tag/x/", "/author/x/", "/rss/", "/ghost/", "/2024/05/an-old-ghost-post/"] as const;
 
-const NOT_FOUND_ADDRESSES = [...RETIRED_ADDRESSES, ...GHOST_ADDRESSES, "/cookie-policy/"] as const;
+// The Services and Speaking pages merged into Work with me and are removed with no redirect
+// (FR-007, SC-003), with and without the trailing slash and one address below each.
+const REMOVED_PAGES = [
+  "/services/",
+  "/services",
+  "/services/x/",
+  "/speaking/",
+  "/speaking",
+  "/speaking/x/",
+] as const;
+
+const NOT_FOUND_ADDRESSES = [...RETIRED_ADDRESSES, ...GHOST_ADDRESSES, ...REMOVED_PAGES, "/cookie-policy/"] as const;
 
 // Addresses that are built and must keep returning 200 (robots.txt: T083).
 const BUILT_ADDRESSES = [...pages.map((page) => page.address), "/robots.txt"];
@@ -51,6 +62,16 @@ test.describe("not-found content", () => {
     await expectThemeClass(page, "light");
     await expect(page.getByRole("heading", { level: 1, name: "Page not found" })).toBeVisible();
   });
+});
+
+test.describe("removed Services and Speaking addresses (FR-007, SC-003)", () => {
+  for (const path of REMOVED_PAGES) {
+    test(`${path} is a 404 with no redirect`, async ({ request }) => {
+      const response = await request.get(path, { maxRedirects: 0 });
+      expect(response.status()).toBe(404);
+      expect(response.headers()["location"]).toBeUndefined();
+    });
+  }
 });
 
 test.describe("old Ghost addresses (FR-019, FR-027a)", () => {

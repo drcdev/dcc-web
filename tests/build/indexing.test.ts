@@ -152,6 +152,17 @@ describe.each(environments)("astro build with the $label environment", ({ env })
     expect([...entries].sort()).toEqual(expected.map((path) => `${expectedOrigin}${path}`).sort());
   });
 
+  // The merged page is listed once, drafts included, and the two removed pages are not (FR-008).
+  it("lists /work-with-me/ exactly once and neither /services/ nor /speaking/", () => {
+    const entries = [...readFileSync(join(outDir, "sitemap-0.xml"), "utf-8").matchAll(/<loc>([^<]+)<\/loc>/g)].map(
+      (m) => m[1]!,
+    );
+    expect(entries.filter((loc) => loc === `${expectedOrigin}/work-with-me/`)).toHaveLength(1);
+    for (const removed of ["/services/", "/speaking/"]) {
+      expect(entries, removed).not.toContain(`${expectedOrigin}${removed}`);
+    }
+  });
+
   const drafts = [...posts, ...projects].filter((entry) => entry.draft);
   const pageFile = (address: string) => join(outDir, address, "index.html");
   const listingOf = (entry: (typeof drafts)[number]) =>
