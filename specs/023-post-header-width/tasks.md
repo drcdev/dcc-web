@@ -12,17 +12,17 @@
 
 ### Tests (before implementation)
 
-- [ ] T001 [US1] Layer: E2E (only a browser can show layout geometry; no second layer, a component class-list assertion would duplicate it). Add `test.describe("title card width")` to `tests/e2e/blog-fixtures.spec.ts` using the existing `LEAD` (`/writing/every-part/`) and `TEXT_ONLY` constants. For each width in 768, 1024, 1280 and 1440 on `LEAD`, assert `[data-title-card]` left and right edges are within 1 px of `[data-post-hero] img`. At 1280 on `TEXT_ONLY`, assert the card's edges are within 1 px of `#main > article`.
-- [ ] T002 [US1] Run the new block (project `sections`) and confirm it fails today at 1024 px and up on `LEAD` and in the `TEXT_ONLY` case, and passes at 768 px. Record the failure before T003.
+- [x] T001 [US1] Layer: E2E (only a browser can show layout geometry; no second layer, a component class-list assertion would duplicate it). Add `test.describe("title card width")` to `tests/e2e/blog-fixtures.spec.ts` using the existing `LEAD` (`/writing/every-part/`) and `TEXT_ONLY` constants. For each width in 768, 1024, 1280 and 1440 on `LEAD`, assert `[data-title-card]` left and right edges are within 1 px of `[data-post-hero] img`. At 1280 on `TEXT_ONLY`, assert the card's edges are within 1 px of `#main > article`.
+- [x] T002 [US1] Run the new block (project `sections`) and confirm it fails today at 1024 px and up on `LEAD` and in the `TEXT_ONLY` case, and passes at 768 px. Record the failure before T003.
 
 ### Implementation
 
-- [ ] T003 [US1] In `src/layouts/PostLayout.astro`, remove `mx-auto max-w-3xl` from the title card's static class string (keep the `class:list` offsets, the caption's own `max-w-3xl` in `src/components/post/PostHero.astro`, and all inner markup unchanged). Depends on T002.
-- [ ] T004 [US1] Re-run the T001 tests and confirm they pass; run the existing a11y spec and the post component tests (`tests/component/post/PostLayout.test.ts`) to confirm no regression.
+- [x] T003 [US1] In `src/layouts/PostLayout.astro`, remove `mx-auto max-w-3xl` from the title card's static class string (keep the `class:list` offsets, the caption's own `max-w-3xl` in `src/components/post/PostHero.astro`, and all inner markup unchanged). Depends on T002.
+- [x] T004 [US1] Re-run the T001 tests and confirm they pass; run the existing a11y spec and the post component tests (`tests/component/post/PostLayout.test.ts`) to confirm no regression.
 
 ### Visual baselines
 
-- [ ] T005 [US1] Update the macOS visual baselines with `pnpm run test:visual:update` (nvm + shim wrapper, see CLAUDE.md). Inspect the diff: only `post-template-desktop-{light,dark}-darwin.png` in `tests/e2e/visual.spec.ts-snapshots/` should change, and only the card width and text wrapping. Any other changed image is a regression to fix, not a baseline to refresh.
+- [x] T005 [US1] Update the macOS visual baselines with `pnpm run test:visual:update` (nvm + shim wrapper, see CLAUDE.md). Inspect the diff: only `post-template-desktop-{light,dark}-darwin.png` in `tests/e2e/visual.spec.ts-snapshots/` should change, and only the card width and text wrapping. Any other changed image is a regression to fix, not a baseline to refresh.
 - [ ] T006 [US1] (orchestrator) Update the Linux visual baselines with `pnpm run test:visual:update:linux` (needs Docker Desktop; ask Don to start it if `docker info` fails). Same expectation: only `post-template-desktop-*-linux.png` change. Fall back to the `visual-baselines` PR label and artifact if the Docker result differs from CI.
 
 ### Preview and gate

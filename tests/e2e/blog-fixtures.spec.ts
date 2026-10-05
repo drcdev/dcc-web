@@ -234,3 +234,31 @@ test.describe("card images at phone width", () => {
     });
   }
 });
+
+test.describe("title card width", () => {
+  const edges = (page: Page, selector: string) =>
+    page.locator(selector).first().evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { left: r.left, right: r.right };
+    });
+
+  for (const width of [768, 1024, 1280, 1440]) {
+    test(`matches the feature image at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(LEAD);
+      const card = await edges(page, "[data-title-card]");
+      const hero = await edges(page, "[data-post-hero] img");
+      expect(Math.abs(card.left - hero.left)).toBeLessThanOrEqual(1);
+      expect(Math.abs(card.right - hero.right)).toBeLessThanOrEqual(1);
+    });
+  }
+
+  test("fills the article when there is no feature image", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(TEXT_ONLY);
+    const card = await edges(page, "[data-title-card]");
+    const article = await edges(page, "#main > article");
+    expect(Math.abs(card.left - article.left)).toBeLessThanOrEqual(1);
+    expect(Math.abs(card.right - article.right)).toBeLessThanOrEqual(1);
+  });
+});
