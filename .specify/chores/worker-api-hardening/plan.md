@@ -334,7 +334,7 @@ site, `https://new.doncoleman.ca/` still does, and Don's assistant (re-pointed a
 
 ### W8: Annotate the recorded decisions
 
-- [ ] W8 done
+- [x] W8 done
 - **Files:** `specs/011-launch/research.md` (R6), `specs/007-contact-form/research.md` (R6),
   `specs/007-contact-form/contracts/worker-config.md` (l.16-17 and "Deploy scripts").
 - **Test:** no behaviour: n/a (history notes; the config and code tests in W1, W5 and W6 hold the

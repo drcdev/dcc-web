@@ -33,6 +33,12 @@
 }
 ```
 
+Superseded by #89 (2026-10), the `workers_dev` and `preview_urls` lines above: production sets
+both to `false`, and `env.preview` sets both to `true` explicitly instead of inheriting them.
+`env.preview` also gains `"vars": { "ALLOW_TURNSTILE_TESTING": "true" }`; production has no
+`vars`. The reason recorded in `docs/setup.md` for production previews (Principle II previews on
+`dcc-web`) ended when spec 007 moved previews to `dcc-web-preview`.
+
 Rules enforced by `tests/unit/site/config-files.test.ts` (extended):
 
 - `run_worker_first` is exactly `["/api/*"]`. Nothing else runs Worker code (Principle VIII).
