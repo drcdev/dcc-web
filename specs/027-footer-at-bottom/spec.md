@@ -16,6 +16,17 @@ than the browser window (the not-found page, a short page on a tall screen), the
 part way down the window and the page background shows below it. The footer should instead sit
 at the bottom of the window on a short page, and straight after the content on a long one.
 
+## Clarifications
+
+### Session 2026-10-06
+
+- Q: Is this a major change under Principle III ("site-wide layout")? → A: Not major: a
+  placement fix inside the existing shell, with no change to the design system, navigation or
+  visual identity. It stays in /tweak and auto-merge is armed (same ruling as PR #84).
+- Q: Should Don check the phone address-bar behaviour on the preview before merge? → A: No.
+  The automated checks at 390 x 844 and 1280 x 800 are enough; no preview check, and
+  auto-merge is armed.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Footer sits at the bottom of a short page (Priority: P1)
@@ -51,7 +62,8 @@ post and check the footer still comes straight after the content.
 - **Content exactly as tall as the window**: the footer sits at the bottom with no scroll.
 - **Phone screens whose visible height changes** (the browser's address bar showing or hiding):
   a short page must not gain a scroll from the footer placement; a small shift as the bar
-  moves is acceptable.
+  moves is acceptable. This is verified by the automated fixed-size checks only (SC-001); no
+  manual preview check on a real phone is required.
 - **Mobile menu open**: opening the menu on a short page behaves as today; the footer
   placement does not cover or move the open menu.
 - **Wide-image pages** (posts with wide or full-width images, which widen the page container):
@@ -111,8 +123,8 @@ refreshing in this change; any other diff is a regression to fix, not a baseline
 - The fix belongs in the site shell, so it applies to every page that uses it, including the
   not-found page; no page opts out.
 - The spare space on a short page shows the page background, as today.
-- Classification: this changes the site shell's layout on short pages but not the design
-  system, navigation or visual identity. It is borderline under Principle III ("site-wide
-  layout"); the plan classifies it, and if in doubt flags it as a major change in the pull
-  request body (no extra gate, only Don's usual approval).
+- Classification: not a major change under Principle III (Don's ruling, as for PR #84). It
+  moves the footer within the existing site shell on short pages and changes no design
+  system, navigation or visual identity. The pull request arms auto-merge and has no
+  `[PREVIEW-CHECK]` items.
 - Out of scope: any change to the footer's content or styling, or to the header.
