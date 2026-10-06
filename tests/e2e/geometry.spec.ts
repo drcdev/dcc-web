@@ -86,6 +86,30 @@ for (const template of TEMPLATES) {
       expect(footer, "footer has a box").not.toBeNull();
       expect(header!.y + header!.height, "header overlaps main").toBeLessThanOrEqual(main!.y + 1);
       expect(footer!.y, "footer has to sit below main").toBeGreaterThanOrEqual(main!.y + main!.height - 1);
+
+      // Footer placement (specs/027-footer-at-bottom): nothing sits below the footer, and the page
+      // is exactly as tall as the window or its content, whichever is larger. On a short page the
+      // footer therefore meets the window bottom with no scroll; on a long page it follows the
+      // content and adds no height.
+      const placement = await page.evaluate(() => {
+        const footerEl = document.querySelector("body > footer")!.getBoundingClientRect();
+        const headerEl = document.querySelector("body > header")!.getBoundingClientRect();
+        const mainEl = document.querySelector("#main")!;
+        const mainRect = mainEl.getBoundingClientRect();
+        const ms = getComputedStyle(mainEl);
+        const mainMargins = parseFloat(ms.marginTop) + parseFloat(ms.marginBottom);
+        return {
+          footerBottom: footerEl.bottom + window.scrollY,
+          scrollHeight: document.documentElement.scrollHeight,
+          innerHeight: window.innerHeight,
+          contentHeight: headerEl.height + mainRect.height + mainMargins + footerEl.height,
+        };
+      });
+      expect(Math.abs(placement.footerBottom - placement.scrollHeight), "content below the footer").toBeLessThanOrEqual(1);
+      expect(
+        Math.abs(placement.scrollHeight - Math.max(placement.innerHeight, placement.contentHeight)),
+        "page height is neither the window nor its content",
+      ).toBeLessThanOrEqual(1);
     });
   }
 }
