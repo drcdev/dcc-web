@@ -37,7 +37,7 @@ bottom, no scroll); open a writing post (footer straight after the content, same
 
 Last task, after everything above.
 
-- [ ] T008 Release gate, last: run `pnpm run verify` (ask Don first per the repository's check-in rule; run it via the wrapper in the background under `perl alarm`, with `ASTRO_PREVIEW_BACKGROUND=1`, and read the `VERIFY_EXIT=` line). All checks must pass with none skipped or loosened. No `[PREVIEW-CHECK]` items (spec Clarifications).
+- [x] T008 Release gate, last: run `pnpm run verify` (ask Don first per the repository's check-in rule; run it via the wrapper in the background under `perl alarm`, with `ASTRO_PREVIEW_BACKGROUND=1`, and read the `VERIFY_EXIT=` line). All checks must pass with none skipped or loosened. No `[PREVIEW-CHECK]` items (spec Clarifications).
 
 ## Dependencies
 
