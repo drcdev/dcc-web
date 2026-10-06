@@ -30,8 +30,8 @@ bottom, no scroll); open a writing post (footer straight after the content, same
 ### Visual baselines
 
 - [X] T005 [US1] Refresh the macOS baselines: `pnpm run test:visual:update`, following `.claude/skills/_shared/visual-baselines.md` (run via the nvm+shim wrapper in the background, and not while Docker is building `dist`).
-- [ ] T006 [US1] Refresh the Linux baselines: `pnpm run test:visual:update:linux`. This needs Docker Desktop; if `docker info` fails, the orchestrator asks Don to start it (do not fall back to CI without asking). If the Linux result later differs from CI, use the `visual-baselines` label fallback in the shared doc.
-- [ ] T007 [US1] Check the changed snapshots with `git status` under `tests/e2e/visual.spec.ts-snapshots/`: only the eight `not-found-*` files (phone and desktop, dark and light, darwin and linux) may change, plus the sections-fixture full-page shots only if that page is shorter than the window at that size. Any other changed file is a regression: fix the layout (for example a collapsed margin that the flex item now contains), do not refresh it. Compare `-previous.png` against the new image to confirm the only difference is the footer position.
+- [x] T006 [US1] Refresh the Linux baselines: `pnpm run test:visual:update:linux`. This needs Docker Desktop; if `docker info` fails, the orchestrator asks Don to start it (do not fall back to CI without asking). If the Linux result later differs from CI, use the `visual-baselines` label fallback in the shared doc.
+- [x] T007 [US1] Check the changed snapshots with `git status` under `tests/e2e/visual.spec.ts-snapshots/`: only the eight `not-found-*` files (phone and desktop, dark and light, darwin and linux) may change, plus the sections-fixture full-page shots only if that page is shorter than the window at that size. Any other changed file is a regression: fix the layout (for example a collapsed margin that the flex item now contains), do not refresh it. Compare `-previous.png` against the new image to confirm the only difference is the footer position.
 
 ## Release gate
 
