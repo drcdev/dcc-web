@@ -56,7 +56,7 @@ describe("docs/pages.md", () => {
     expect(guide()).toMatch(/50 to 160 characters/);
     expect(guide()).toMatch(/not enforced/i);
   });
-  it.each(["Lead", "TextBlock", "Offerings", "Offering", "CallToAction", "Figure", "WideImage", "FullImage"])(
+  it.each(["Lead", "TextBlock", "Offerings", "Offering", "CallToAction", "Figure", "WideImage", "FullImage", "SideImage"])(
     "has an example of %s",
     (name) => {
       expect(guide()).toContain(`<${name}`);

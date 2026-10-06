@@ -14,7 +14,7 @@ const withContent = (props: object, content: Partial<{ text: boolean; images: nu
 const ok = (name: keyof typeof sectionSchemas, value: unknown) => sectionSchemas[name].safeParse(value).success;
 
 describe("section registry", () => {
-  it("lists the ten sections", () => {
+  it("lists the eleven sections", () => {
     expect([...sectionNames].sort()).toEqual(
       [
         "CallToAction",
@@ -25,6 +25,7 @@ describe("section registry", () => {
         "Offering",
         "Offerings",
         "RecentWriting",
+        "SideImage",
         "TextBlock",
         "WideImage",
       ].sort(),
@@ -114,6 +115,16 @@ describe.each(["Figure", "WideImage", "FullImage"] as const)("%s", (name) => {
   it("rejects an empty caption and unknown props", () => {
     expect(ok(name, withContent({ caption: "" }, { images: 1 }))).toBe(false);
     expect(ok(name, withContent({ captoin: "x" }, { images: 1 }))).toBe(false);
+  });
+});
+
+describe("SideImage", () => {
+  it("needs exactly one image and some text, and takes no props", () => {
+    expect(ok("SideImage", withContent({}, { images: 1, text: true }))).toBe(true);
+    expect(ok("SideImage", withContent({}, { images: 1 }))).toBe(false);
+    expect(ok("SideImage", withContent({}, { text: true }))).toBe(false);
+    expect(ok("SideImage", withContent({}, { images: 2, text: true }))).toBe(false);
+    expect(ok("SideImage", withContent({ caption: "x" }, { images: 1, text: true }))).toBe(false);
   });
 });
 
