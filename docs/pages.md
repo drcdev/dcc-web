@@ -12,8 +12,7 @@ The file name is the address.
 |---|---|
 | `src/content/pages/about.mdx` | `/about/` |
 | `src/content/pages/index.mdx` | `/` (the home page) |
-| `src/content/pages/services/pricing.mdx` | `/services/pricing/` |
-| `src/content/pages/services/index.mdx` | `/services/` |
+| `src/content/pages/work-with-me.mdx` | `/work-with-me/` |
 
 Use lower-case letters, digits and hyphens only. Use `.mdx` when you want the sections below;
 plain `.md` works for text only. Put images next to the page in `src/content/pages/images/`.
@@ -22,11 +21,10 @@ plain `.md` works for text only. Put images next to the page in `src/content/pag
 
 ```yaml
 ---
-title: Services
-description: The kinds of work Don Coleman takes on and how he works.
+title: Work with me
+description: The work Don Coleman is considering taking on and the talks he gives.
 nav:
   position: 2
-  label: Services
 draft: true
 ---
 ```
@@ -47,7 +45,7 @@ Do not write a `# Heading` in the body; the title is the page's only main headin
 
 ## Menu positions and taken addresses
 
-Positions 4, 5 and 7 belong to Writing, Projects and Contact. Pick another number; a clash
+Positions 4, 5 and 7 belong to Writing, Projects and Contact, and About is at 6. Work with me is at 2, so 3 is free. Pick another number; a clash
 stops the build. The addresses `/writing/` and `/projects/` belong to the Writing and Projects
 pages, `/contact/` is `contact.mdx`, and any address another part of the site already uses
 (such as `/404/`) is taken too; a page file at one of them stops the build.
@@ -80,7 +78,7 @@ Short engagements, written advice, and no lock-in.
 
 ```mdx
 <Offerings title="What I offer">
-  <Offering title="Architecture reviews" href="/services/#reviews">
+  <Offering title="Architecture reviews" href="/work-with-me/#reviews">
 
   An outside view of a system before a big decision.
 

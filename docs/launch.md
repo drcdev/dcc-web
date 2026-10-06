@@ -50,7 +50,7 @@ again. Do not go on to L2 until the list is clean.
 ### L2. Replace the placeholder copy and publish the pages {#l2}
 
 **What to do**
-Replace the Services and Speaking placeholder copy and the Focus Pocus placeholders, set
+Replace the Work with me placeholder copy and the Focus Pocus placeholders, set
 `draft: false` on those pages, and make sure the privacy policy says contact messages are stored in
 Cloudflare D1 and names no retired service. Do this through a normal small pull request to `main`.
 

@@ -1,4 +1,4 @@
-// The seven launch page files (data-model.md "Launch content"; FR-020 to
+// The launch page files (data-model.md "Launch content"; FR-020 to
 // FR-024). Reads the files directly, so a missing page, a wrong nav position or
 // draft flag, or a data-handling claim fails here before any build. It checks
 // structure and data handling, not page copy: Don reviews every copy edit.
@@ -23,8 +23,7 @@ function load(name: string) {
 // [file, nav position (undefined: not in the navigation), draft].
 const LAUNCH = [
   ["index.mdx", 1, true],
-  ["services.mdx", 2, true],
-  ["speaking.mdx", 3, true],
+  ["work-with-me.mdx", 2, true],
   ["about.mdx", 6, false],
   ["privacy-policy.mdx", undefined, true],
   ["terms-of-use.mdx", undefined, true],
@@ -57,6 +56,12 @@ describe("launch page files", () => {
 
   it("home is labelled Home in the navigation", () => {
     expect(load("index.mdx").front).toMatch(/label: "?Home"?/);
+  });
+
+  it("the Services and Speaking pages are gone (FR-006, FR-007)", () => {
+    for (const name of ["services.mdx", "speaking.mdx"]) {
+      expect(existsSync(`${dir}${name}`), `${name} is removed`).toBe(false);
+    }
   });
 
   it("there is no cookie policy page", () => {
@@ -103,24 +108,102 @@ describe("Technology", () => {
   });
 });
 
-describe("sections in Services and Speaking (US4)", () => {
-  const registered = new Set([
-    "Lead",
-    "TextBlock",
-    "Offerings",
-    "Offering",
-    "CallToAction",
-    "Figure",
-    "WideImage",
-    "FullImage",
-  ]);
-  const used = (body: string) => [...body.matchAll(/<([A-Z][A-Za-z0-9]*)/g)].map((m) => m[1]!);
+const registered = new Set([
+  "Lead",
+  "TextBlock",
+  "Offerings",
+  "Offering",
+  "CallToAction",
+  "Figure",
+  "WideImage",
+  "FullImage",
+]);
+const used = (body: string) => [...body.matchAll(/<([A-Z][A-Za-z0-9]*)/g)].map((m) => m[1]!);
 
-  for (const name of ["services.mdx", "speaking.mdx"]) {
-    it(`${name} uses at least one section and only registered ones`, () => {
-      const tags = used(load(name).body);
-      expect(tags.length).toBeGreaterThan(0);
-      for (const tag of tags) expect(registered.has(tag), `${tag} is registered`).toBe(true);
-    });
-  }
+describe("sections in the Work with me page (US4)", () => {
+  it("uses at least one section and only registered ones", () => {
+    const tags = used(load("work-with-me.mdx").body);
+    expect(tags.length).toBeGreaterThan(0);
+    for (const tag of tags) expect(registered.has(tag), `${tag} is registered`).toBe(true);
+  });
+});
+
+// Structure only (FR-002 to FR-005, data-model "Validation"); the wording is Don's to review.
+describe("Work with me page", () => {
+  // Loaded inside each test, so a missing file fails these tests and not the whole file.
+  const page = () => {
+    const { body, front } = load("work-with-me.mdx");
+    // Top-level section tags in document order (Offering is nested inside Offerings).
+    const top = [...body.matchAll(/^<(Lead|Offerings|TextBlock|Figure|CallToAction)\b([^>]*)>/gm)].map((m) => ({
+      tag: m[1]!,
+      attrs: m[2]!,
+    }));
+    return { body, front, top };
+  };
+
+  it("lists the sections in the FR-004 order", () => {
+    const { top } = page();
+    expect(top.map((t) => t.tag)).toEqual([
+      "Lead",
+      "Offerings",
+      "TextBlock",
+      "TextBlock",
+      "Offerings",
+      "TextBlock",
+      "TextBlock",
+      "CallToAction",
+    ]);
+  });
+
+  it("opens with the Lead, with nothing before it", () => {
+    const { body } = page();
+    expect(body.trimStart().startsWith("<Lead>")).toBe(true);
+  });
+
+  it("puts the no-practice note inside the consulting half, after the talks", () => {
+    const { body } = page();
+    const consulting = body.indexOf('<TextBlock title="Consulting">');
+    expect(consulting, "a Consulting TextBlock exists").toBeGreaterThan(body.indexOf("<Offerings"));
+    expect(body.indexOf("consulting practice today")).toBeGreaterThan(consulting);
+  });
+
+  it("has exactly one Lead and one CallToAction", () => {
+    const { body } = page();
+    expect(used(body).filter((t) => t === "Lead")).toHaveLength(1);
+    expect(used(body).filter((t) => t === "CallToAction")).toHaveLength(1);
+  });
+
+  it("has two Offerings groups of three Offering each", () => {
+    const { body } = page();
+    const groups = body.split(/<Offerings\b/).slice(1);
+    expect(groups).toHaveLength(2);
+    for (const group of groups) {
+      const inside = group.slice(0, group.indexOf("</Offerings>"));
+      expect(inside.match(/<Offering\b/g) ?? []).toHaveLength(3);
+    }
+  });
+
+  it("links the call to action to /contact/", () => {
+    const { top } = page();
+    const cta = top.find((t) => t.tag === "CallToAction");
+    expect(cta, "a CallToAction exists").toBeDefined();
+    expect(/href="([^"]*)"/.exec(cta!.attrs)?.[1]).toBe("/contact/");
+  });
+
+  it("is titled Work with me and has a non-empty meta description", () => {
+    const { front } = page();
+    expect(front).toMatch(/^title: "?Work with me"?$/m);
+    const description = /^description: (.+)$/m.exec(front)?.[1]?.replace(/^"|"$/g, "").trim();
+    expect(description, "description is present").toBeTruthy();
+  });
+
+  it("gives the call to action a specific, non-generic label", () => {
+    const { top } = page();
+    const cta = top.find((t) => t.tag === "CallToAction");
+    expect(cta, "a CallToAction exists").toBeDefined();
+    const label = /label="([^"]*)"/.exec(cta!.attrs)?.[1]?.trim() ?? "";
+    expect(label.length).toBeGreaterThan(0);
+    expect(label.toLowerCase()).not.toMatch(/^(click here|more|read more|here)$/);
+  });
+
 });

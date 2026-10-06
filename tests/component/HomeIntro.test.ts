@@ -13,7 +13,7 @@ const intro = {
   name: "Don Coleman",
   tagline: "Technology where healthcare meets emerging tech",
   bio: "A short bio about Don.",
-  cta: { label: "Work with Don", href: "/services/" },
+  cta: { label: "Work with Don", href: "/work-with-me/" },
 };
 
 let html = "";
@@ -85,8 +85,8 @@ describe("HomeIntro links", () => {
     expect(html).toMatch(/sr-only[^>]*>\s*LinkedIn\s*</);
   });
 
-  it("links the call to action to /services/ and says nothing about Subscribe", () => {
-    const cta = byName(html, "a").filter((a) => a.attrs.href === "/services/");
+  it("links the call to action to /work-with-me/ and says nothing about Subscribe", () => {
+    const cta = byName(html, "a").filter((a) => a.attrs.href === "/work-with-me/");
     expect(cta).toHaveLength(1);
     expect(html).toContain("Work with Don");
     expect(html.toLowerCase()).not.toContain("subscribe");
@@ -107,7 +107,7 @@ describe("HomeIntro links", () => {
     expect(hrefs).toEqual([
       "a:https://github.com/drcdev",
       "a:https://www.linkedin.com/in/drcdev",
-      "a:/services/",
+      "a:/work-with-me/",
     ]);
   });
 
@@ -126,7 +126,7 @@ describe("HomeIntro source order", () => {
       html.indexOf(intro.bio),
       html.indexOf("https://github.com"),
       html.indexOf("https://www.linkedin.com"),
-      html.indexOf('href="/services/"'),
+      html.indexOf('href="/work-with-me/"'),
     ];
     expect(at.every((n) => n >= 0)).toBe(true);
     expect([...at].sort((a, b) => a - b)).toEqual(at);

@@ -15,8 +15,7 @@ export const FIXTURE_SITE = "http://localhost:4322";
 export const TEMPLATES = [
   { name: "home", path: "/", built: true },
   { name: "not-found", path: "/nope/", built: true },
-  { name: "services", path: "/services/", built: true },
-  { name: "speaking", path: "/speaking/", built: true },
+  { name: "work-with-me", path: "/work-with-me/", built: true },
   { name: "about", path: "/about/", built: true },
   { name: "privacy-policy", path: "/privacy-policy/", built: true },
   { name: "terms-of-use", path: "/terms-of-use/", built: true },
@@ -40,8 +39,7 @@ export const NOT_FOUND_PENDING = "not-found page is built in Phase 7 (T071); T07
 
 export const PRIMARY = [
   ["Home", "/"],
-  ["Services", "/services/"],
-  ["Speaking", "/speaking/"],
+  ["Work with me", "/work-with-me/"],
   ["Writing", "/writing/"],
   ["Projects", "/projects/"],
   ["About", "/about/"],

@@ -86,6 +86,13 @@ describe("public/_redirects", () => {
     }
   });
 
+  // The merged Work with me page removes /services/ and /speaking/ with no redirect (FR-007, SC-003).
+  it("has no rule for the removed Services and Speaking addresses", () => {
+    for (const rule of rules()) {
+      expect(rule.from, rule.from).not.toMatch(/^\/(services|speaking)/);
+    }
+  });
+
   it("has no loop: no target is itself redirected", () => {
     for (const rule of rules()) {
       const target = rule.to.replace(":splat", "");

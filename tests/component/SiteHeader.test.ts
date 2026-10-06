@@ -9,8 +9,7 @@ import { byName, classList, tags, type Tag } from "./html.ts";
 
 const PRIMARY = [
   ["Home", "/"],
-  ["Services", "/services/"],
-  ["Speaking", "/speaking/"],
+  ["Work with me", "/work-with-me/"],
   ["Writing", "/writing/"],
   ["Projects", "/projects/"],
   ["About", "/about/"],
@@ -50,12 +49,12 @@ function navList(html: string) {
 }
 
 let home = "";
-let services = "";
+let workWithMe = "";
 
 beforeAll(async () => {
   container = await AstroContainer.create();
   home = await render("/");
-  services = await render("/services/");
+  workWithMe = await render("/work-with-me/");
 });
 
 describe("SiteHeader landmarks", () => {
@@ -84,7 +83,7 @@ describe("SiteHeader primary navigation", () => {
     expect(home.indexOf("</nav>")).toBeGreaterThan(lists[0]!.index);
   });
 
-  it("lists the seven primary links in order", () => {
+  it("lists the six primary links in order", () => {
     const { links } = navList(home);
     expect(links.map((a) => [innerText(home, a), a.attrs.href])).toEqual(PRIMARY.map((p) => [...p]));
   });
@@ -106,10 +105,10 @@ describe("SiteHeader current page", () => {
     expect(current.map((a) => a.attrs.href)).toEqual(["/"]);
   });
 
-  it('marks only Services with aria-current="page" on /services/', () => {
-    const { links } = navList(services);
+  it('marks only Work with me with aria-current="page" on /work-with-me/', () => {
+    const { links } = navList(workWithMe);
     const current = links.filter((a) => a.attrs["aria-current"] === "page");
-    expect(current.map((a) => a.attrs.href)).toEqual(["/services/"]);
+    expect(current.map((a) => a.attrs.href)).toEqual(["/work-with-me/"]);
   });
 
   it("gives the current link an underline that other links do not have (not colour alone)", () => {
@@ -146,7 +145,7 @@ describe("SiteHeader current section (FR-004)", () => {
   it("marks only one link, and leaves Writing unmarked elsewhere", async () => {
     const html = await render("/writing/some-post/");
     expect(navList(html).links.filter((a) => a.attrs["aria-current"] !== undefined)).toHaveLength(1);
-    expect((await writing("/services/")).attrs["aria-current"]).toBeUndefined();
+    expect((await writing("/work-with-me/")).attrs["aria-current"]).toBeUndefined();
     expect((await writing("/writing-tips/")).attrs["aria-current"]).toBeUndefined();
   });
 });

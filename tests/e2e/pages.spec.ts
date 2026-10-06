@@ -1,4 +1,4 @@
-// The seven launch pages as served from the production build
+// The launch pages as served from the production build
 // (contracts/page-dom.md; FR-013, FR-014, FR-015, FR-020, FR-025, FR-027,
 // FR-030; SC-001).
 import { test, expect } from "@playwright/test";
@@ -94,10 +94,9 @@ for (const [path, title, draft] of PAGES) {
   });
 }
 
-test("Services, Speaking and About mark themselves current; Home does not when elsewhere", async ({ page }) => {
+test("Work with me and About mark themselves current; Home does not when elsewhere", async ({ page }) => {
   for (const [path, label] of [
-    ["/services/", "Services"],
-    ["/speaking/", "Speaking"],
+    ["/work-with-me/", "Work with me"],
     ["/about/", "About"],
   ] as const) {
     await page.goto(path);
@@ -143,10 +142,10 @@ test.describe("home introduction card (FR-016 to FR-019, FR-028a)", () => {
     await expect(page.getByText(/subscribe/i)).toHaveCount(0);
   });
 
-  test("the call to action navigates to /services/", async ({ page }) => {
+  test("the call to action navigates to /work-with-me/", async ({ page }) => {
     await page.goto("/");
-    await page.locator("main section").first().locator('a[href="/services/"]').click();
-    await expect(page).toHaveURL(/\/services\/$/);
+    await page.locator("main section").first().locator('a[href="/work-with-me/"]').click();
+    await expect(page).toHaveURL(/\/work-with-me\/$/);
   });
 
   test("the text below the card has no button-style links", async ({ page }) => {

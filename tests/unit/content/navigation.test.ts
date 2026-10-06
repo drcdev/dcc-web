@@ -14,19 +14,17 @@ const page = (file: string, address: string, title: string, nav?: NavigationPage
 
 const launchPages = [
   page("index.mdx", "/", "Don Coleman", { position: 1, label: "Home" }),
-  page("services.mdx", "/services/", "Services", { position: 2 }),
-  page("speaking.mdx", "/speaking/", "Speaking", { position: 3 }),
+  page("work-with-me.mdx", "/work-with-me/", "Work with me", { position: 2 }),
   page("about.mdx", "/about/", "About", { position: 6 }),
   page("privacy-policy.mdx", "/privacy-policy/", "Privacy policy"),
 ];
 
 describe("mergeNavigation", () => {
-  it("returns the seven launch items in order with the foundation's hrefs", () => {
+  it("returns the six launch items in order with the foundation's hrefs", () => {
     const items = mergeNavigation(launchPages);
     expect(items.map(({ label, href }) => [label, href])).toEqual([
       ["Home", "/"],
-      ["Services", "/services/"],
-      ["Speaking", "/speaking/"],
+      ["Work with me", "/work-with-me/"],
       ["Writing", "/writing/"],
       ["Projects", "/projects/"],
       ["About", "/about/"],
@@ -48,7 +46,7 @@ describe("mergeNavigation", () => {
 
   it("sorts by position whatever the order of the pages", () => {
     const items = mergeNavigation([...launchPages].reverse());
-    expect(items.map((item) => item.position)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(items.map((item) => item.position)).toEqual([1, 2, 4, 5, 6, 7]);
   });
 
   it("fails when two pages use the same position, naming both files and the position", () => {

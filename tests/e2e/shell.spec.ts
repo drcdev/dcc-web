@@ -44,7 +44,7 @@ test.describe("header on every template", () => {
   let reference: Awaited<ReturnType<typeof headerSnapshot>> | undefined;
 
   for (const template of TEMPLATES) {
-    test(`${template.name}: shows the site name and the seven links in order`, async ({ page }) => {
+    test(`${template.name}: shows the site name and the six links in order`, async ({ page }) => {
       test.fixme(!template.built, NOT_FOUND_PENDING);
       await page.goto(template.path);
       const snapshot = await headerSnapshot(page);
@@ -110,7 +110,7 @@ for (const [widthName, viewport, withButton] of [
       ? [HEADER_ORDER[0]!, HEADER_ORDER[1]!, "button:Menu", ...HEADER_ORDER.slice(2)]
       : HEADER_ORDER;
 
-    test("Tab walks skip link, site name, menu button (phone only) and the seven links with a visible focus ring", async ({
+    test("Tab walks skip link, site name, menu button (phone only) and the six links with a visible focus ring", async ({
       page,
     }) => {
       await page.goto("/");
@@ -315,10 +315,10 @@ test.describe("footer on every template", () => {
     }
     expect(seen.at(-1)).toBe("https://www.linkedin.com/in/drcdev");
     // Each stop is visited once on the way down (the header and footer each link "/" twice or once).
-    // The home card's call to action repeats the Services link, so "outside:/services/" may repeat too.
+    // The home card's call to action repeats the Work with me link, so "outside:/work-with-me/" may repeat too.
     // The Recent writing section (spec 008) repeats the Writing link and shares topic links between cards.
     const distinct = seen.filter(
-      (s) => s !== "/" && s !== "outside:/" && s !== "outside:/services/" && !s.startsWith("outside:/writing/"),
+      (s) => s !== "/" && s !== "outside:/" && s !== "outside:/work-with-me/" && !s.startsWith("outside:/writing/"),
     );
     expect(new Set(distinct).size).toBe(distinct.length);
   });
