@@ -119,6 +119,19 @@ full page width. `caption` is optional. The image needs alt text.
 </FullImage>
 ```
 
+`SideImage`: a short passage of text with one small image beside it, as a tile on the left with the
+text centred beside it. It takes no settings and needs both the image (with alt text) and some text.
+
+```mdx
+<SideImage>
+
+![A conference badge](./images/badge.png)
+
+Speaker at the 2025 health leadership conference.
+
+</SideImage>
+```
+
 ## Build errors you may see
 
 The build stops at the first problem and names the file. Messages start with `Page file` or

@@ -51,6 +51,10 @@ export const sectionSchemas = {
   Figure: section({ caption: text.optional() }, needsOneImage),
   WideImage: section({ caption: text.optional() }, needsOneImage),
   FullImage: section({ caption: text.optional() }, needsOneImage),
+  SideImage: section({}, (value, ctx) => {
+    needsOneImage(value, ctx);
+    needsText("text beside the image")(value, ctx);
+  }),
   ContactForm: section({}),
   RecentWriting: section({}),
 } satisfies Record<SectionName, z.ZodType>;

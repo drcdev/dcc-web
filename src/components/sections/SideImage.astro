@@ -1,0 +1,20 @@
+---
+// <SideImage>: a short passage of text with one small Markdown image, optimised
+// by Astro, as a tile at the start of the line with the text centred vertically
+// beside it. The tile is 6rem wide on phones and 8rem from the sm breakpoint.
+import { checkSection } from "./validate.ts";
+
+const html = (await Astro.slots.render("default")) ?? "";
+checkSection("SideImage", Astro.props, html, Astro.locals);
+const image = (html.match(/<img\b[^>]*>/i) ?? [""])[0];
+// The image's own paragraph goes with it, so only the text is left beside the tile.
+const text = html.replace(/<p>\s*<img\b[^>]*>\s*<\/p>|<img\b[^>]*>/i, "");
+---
+
+<div
+  class="my-6 flex items-center gap-4 [&>img]:my-0 [&>img]:h-auto [&>img]:w-24 [&>img]:shrink-0 [&>img]:rounded sm:[&>img]:w-32"
+  data-side-image
+>
+  <Fragment set:html={image} />
+  <div class="min-w-0 flex-1 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"><Fragment set:html={text} /></div>
+</div>
