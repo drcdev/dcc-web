@@ -110,9 +110,6 @@ describe("Technology", () => {
 
 const registered = new Set([
   "Lead",
-  "TextBlock",
-  "Offerings",
-  "Offering",
   "CallToAction",
   "Figure",
   "WideImage",
@@ -133,54 +130,60 @@ describe("Work with me page", () => {
   // Loaded inside each test, so a missing file fails these tests and not the whole file.
   const page = () => {
     const { body, front } = load("work-with-me.mdx");
-    // Top-level section tags in document order (Offering is nested inside Offerings).
-    const top = [...body.matchAll(/^<(Lead|Offerings|TextBlock|Figure|CallToAction)\b([^>]*)>/gm)].map((m) => ({
+    const top = [...body.matchAll(/^<(Lead|Figure|CallToAction)\b([^>]*)>/gm)].map((m) => ({
       tag: m[1]!,
       attrs: m[2]!,
     }));
-    return { body, front, top };
+    // Headings in document order (the page has no code blocks).
+    const headings = [...body.matchAll(/^(#{1,6}) (.+)$/gm)].map((m) => ({ level: m[1]!.length, text: m[2]!.trim(), at: m.index! }));
+    return { body, front, top, headings };
   };
 
-  it("lists the sections in the FR-004 order", () => {
-    const { top } = page();
-    expect(top.map((t) => t.tag)).toEqual([
-      "Lead",
-      "Offerings",
-      "TextBlock",
-      "TextBlock",
-      "Offerings",
-      "TextBlock",
-      "TextBlock",
-      "CallToAction",
-    ]);
+  it("is plain Markdown apart from Lead and CallToAction", () => {
+    const { body } = page();
+    expect([...new Set(used(body))].sort()).toEqual(["CallToAction", "Lead"]);
   });
 
-  it("opens with the Lead, with nothing before it", () => {
-    const { body } = page();
+  // The titles are Don's copy, so the tests read the order and nesting from the file's own headings.
+  it("has six ## sections, with three ### under the first and under the fourth (FR-005)", () => {
+    const { headings } = page();
+    expect(headings.filter((h) => h.level === 1)).toHaveLength(0);
+    const groups: number[] = [];
+    for (const h of headings) {
+      if (h.level === 2) groups.push(0);
+      else if (h.level === 3) groups[groups.length - 1] = (groups[groups.length - 1] ?? 0) + 1;
+      else throw new Error(`unexpected h${h.level}: ${h.text}`);
+    }
+    expect(groups).toEqual([3, 0, 0, 3, 0, 0]);
+  });
+
+  it("opens with the Lead, with nothing before it, and ends with the CallToAction", () => {
+    const { body, top } = page();
     expect(body.trimStart().startsWith("<Lead>")).toBe(true);
+    expect(top.map((t) => t.tag)).toEqual(["Lead", "CallToAction"]);
+    expect(body.trimEnd().endsWith("</CallToAction>")).toBe(true);
   });
 
-  it("puts the no-practice note inside the consulting half, after the talks", () => {
-    const { body } = page();
-    const consulting = body.indexOf('<TextBlock title="Consulting">');
-    expect(consulting, "a Consulting TextBlock exists").toBeGreaterThan(body.indexOf("<Offerings"));
-    expect(body.indexOf("consulting practice today")).toBeGreaterThan(consulting);
+  it("puts the no-practice note under the third ## section", () => {
+    const { body, headings } = page();
+    const third = headings.filter((h) => h.level === 2)[2];
+    const fourth = headings.filter((h) => h.level === 2)[3];
+    const note = body.indexOf("consulting practice today");
+    expect(note).toBeGreaterThan(third!.at);
+    expect(note).toBeLessThan(fourth!.at);
+  });
+
+  it("keeps the last ## section as a Markdown list", () => {
+    const { body, headings } = page();
+    const last = headings.filter((h) => h.level === 2).at(-1)!;
+    const after = body.slice(last.at);
+    expect(after.slice(0, after.indexOf("<CallToAction")).match(/^- /gm) ?? []).toHaveLength(2);
   });
 
   it("has exactly one Lead and one CallToAction", () => {
     const { body } = page();
     expect(used(body).filter((t) => t === "Lead")).toHaveLength(1);
     expect(used(body).filter((t) => t === "CallToAction")).toHaveLength(1);
-  });
-
-  it("has two Offerings groups of three Offering each", () => {
-    const { body } = page();
-    const groups = body.split(/<Offerings\b/).slice(1);
-    expect(groups).toHaveLength(2);
-    for (const group of groups) {
-      const inside = group.slice(0, group.indexOf("</Offerings>"));
-      expect(inside.match(/<Offering\b/g) ?? []).toHaveLength(3);
-    }
   });
 
   it("links the call to action to /contact/", () => {

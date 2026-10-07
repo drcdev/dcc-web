@@ -1,6 +1,6 @@
 // Prop and content checks shared by the section components (contracts/
 // sections.md; contracts/build-errors.md rows 11 and 12). A section renders its
-// slot to HTML, summarises what is inside (text, images, offerings) and checks
+// slot to HTML, summarises what is inside (text, images) and checks
 // that summary together with its props against the schema in schemas.ts. A
 // failure is a PageContentError that names the section and the prop, and the
 // page file when the page route has recorded it in `Astro.locals.pageFile`.
@@ -18,7 +18,6 @@ export function summarise(html: string) {
   return {
     text: text !== "",
     images: (html.match(/<img\b/gi) ?? []).length,
-    offerings: (html.match(/<li\b[^>]*\bdata-offering\b/gi) ?? []).length,
   };
 }
 

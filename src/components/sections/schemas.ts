@@ -14,8 +14,6 @@ const content = z.strictObject({
   text: z.boolean(),
   /** How many Markdown images are inside. */
   images: z.number().int().min(0),
-  /** How many `Offering` sections are inside. */
-  offerings: z.number().int().min(0),
 });
 type Content = z.infer<typeof content>;
 
@@ -42,11 +40,6 @@ const needsOneImage = (value: Content, ctx: z.RefinementCtx) => {
 
 export const sectionSchemas = {
   Lead: section({}, needsText("text")),
-  TextBlock: section({ title: text }, needsText("text")),
-  Offerings: section({ title: text.optional() }, (value, ctx) => {
-    if (value.offerings < 1) ctx.addIssue({ code: "custom", path: ["content"], message: "needs at least one Offering" });
-  }),
-  Offering: section({ title: text, href: linkTarget.optional() }, needsText("a short description")),
   CallToAction: section({ label: text, href: linkTarget }),
   Figure: section({ caption: text.optional() }, needsOneImage),
   WideImage: section({ caption: text.optional() }, needsOneImage),

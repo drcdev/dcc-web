@@ -6,18 +6,12 @@ import ContactForm from "./ContactForm.astro";
 import Figure from "./Figure.astro";
 import FullImage from "./FullImage.astro";
 import Lead from "./Lead.astro";
-import Offering from "./Offering.astro";
-import Offerings from "./Offerings.astro";
 import RecentWriting from "./RecentWriting.astro";
 import SideImage from "./SideImage.astro";
-import TextBlock from "./TextBlock.astro";
 import WideImage from "./WideImage.astro";
 
 export const sectionNames = [
   "Lead",
-  "TextBlock",
-  "Offerings",
-  "Offering",
   "CallToAction",
   "Figure",
   "WideImage",
@@ -36,9 +30,6 @@ export type SectionName = (typeof sectionNames)[number];
  */
 export const sectionComponents = {
   Lead,
-  TextBlock,
-  Offerings,
-  Offering,
   CallToAction,
   Figure,
   WideImage,

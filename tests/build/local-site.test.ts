@@ -13,7 +13,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { pages } from "../helpers/content.ts";
 import { filesUnder } from "../helpers/files.ts";
 import { buildFixtureSite, type FixtureSiteOptions, type FixtureSiteResult } from "./fixture-site.ts";
 
@@ -157,43 +156,30 @@ describe("a page that is one file", () => {
     expect(robotsMeta(html)).toBe(robotsMeta(workWithMe));
   });
 
-  // Rendered heading levels (FR-012): only the built HTML shows them, a component test sees one
-  // section at a time. The titles come from the MDX, so the copy can change without a test edit.
-  it("builds /work-with-me/ with one h1, h2 sections in order, h3 offerings and no skipped level", () => {
+  // Rendered headings (FR-005, FR-006): only the built HTML shows the page title's h1 next to the
+  // body headings and the ids Astro gives them. The source order and counts are pinned in
+  // tests/unit/content/launch-content.test.ts.
+  it("builds /work-with-me/ with one h1, no skipped level and a unique id on every body heading", () => {
     const html = l1.read("work-with-me/index.html");
     const main = html.slice(html.indexOf("<main"), html.indexOf("</main>"));
-    const source = pages.find((entry) => entry.slug === "work-with-me");
-    expect(source, "the Work with me page file exists").toBeDefined();
-    const titles = [...source!.body.matchAll(/^<(?:TextBlock|Offerings)\b[^>]*\btitle="([^"]*)"/gm)].map((m) => m[1]!);
-    expect(titles).toHaveLength(6);
 
-    const headings = [...main.matchAll(/<h([1-6])[^>]*>([\s\S]*?)<\/h\1>/g)].map((m) => ({
+    const headings = [...main.matchAll(/<h([1-6])([^>]*)>([\s\S]*?)<\/h\1>/g)].map((m) => ({
       level: Number(m[1]),
-      text: m[2]!
-        .replace(/<[^>]+>/g, "")
-        .replace(/&#39;/g, "'")
-        .replace(/&quot;/g, '"')
-        .replace(/&amp;/g, "&")
-        .replace(/\s+/g, " ")
-        .trim(),
+      id: /\bid="([^"]*)"/.exec(m[2]!)?.[1] ?? "",
+      text: m[3]!.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim(),
     }));
     expect(headings.filter((h) => h.level === 1)).toHaveLength(1);
-    expect(headings.filter((h) => h.level === 2).map((h) => h.text)).toEqual(titles);
     for (let i = 1; i < headings.length; i += 1) {
       expect(headings[i]!.level - headings[i - 1]!.level, `${headings[i]!.text} skips a level`).toBeLessThanOrEqual(1);
     }
-    // Three offerings in each of the two groups, each an h3 after its group's h2.
-    const groupTitles = [...source!.body.matchAll(/^<Offerings\b[^>]*\btitle="([^"]*)"/gm)].map((m) => m[1]!);
-    expect(groupTitles).toHaveLength(2);
-    const offeringGroups = groupTitles.map((groupTitle) => {
-      const start = headings.findIndex((h) => h.level === 2 && h.text === groupTitle);
-      const rest = headings.slice(start + 1);
-      const next = rest.findIndex((h) => h.level === 2);
-      return (next === -1 ? rest : rest.slice(0, next)).filter((h) => h.level === 3);
-    });
-    expect(offeringGroups.map((group) => group.length)).toEqual([3, 3]);
-    // Two separate lists, one per group.
-    expect(count(main, /<ul\b/g)).toBeGreaterThanOrEqual(2);
+
+    const body = headings.filter((h) => h.level >= 2 && h.level <= 6);
+    expect(body).toHaveLength(12);
+    for (const h of body) expect(h.id, `${h.text} has an id`).not.toBe("");
+    expect(new Set(body.map((h) => h.id)).size).toBe(body.length);
+    expect(body.find((h) => h.text === "Consulting")?.id).toBe("consulting");
+
+    expect(main).not.toMatch(/data-offering|data-text-block/);
   });
 
   it("changes only its own HTML file when one word in it changes", () => {
