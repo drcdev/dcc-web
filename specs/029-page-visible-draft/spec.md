@@ -31,10 +31,12 @@ draft rules and are not part of this feature.
 ### Session 2026-10-07
 
 - Q: Is a page marked not visible built on preview deployments, or left out of every build? → A: Built on previews. Previews and local dev build a not-visible page with the draft notice and noindex; only the production build leaves it out.
-- Q: Where do the header settings for the Writing and Projects landing pages live once the fixed header list is gone? → A: Each gets a page file in the pages collection holding its navigation settings (and optionally intro copy); the code routes read it, so every menu entry comes from a page file.
+- Q: Where do the header settings for the Writing and Projects landing pages live once the fixed header list is gone? → A: Each gets a page file in the pages collection holding its navigation settings (intro copy later ruled out, see below); the code routes read it, so every menu entry comes from a page file.
 - Q: Should footer membership stay as a list in code, or become a page setting? → A: A page setting. The navigation settings gain a `location` of "header" or "footer", which replaces both the fixed header list and the footer list in code. A page with no location is in no menu (this supersedes "header is the default" in the original description).
 - Q: How does a visible page say it belongs in no menu? → A: By giving no location. A page in a menu must give a position; a location without a position fails the build.
 - Q: Can the Writing and Projects landing pages be marked not visible or draft? → A: No. They take navigation settings only and are always visible and published; hiding a whole section is out of scope (follow-up).
+- Q: What should the Writing and Projects landing page files control, beyond their header entry? → A: Menu settings only. The file holds a title and navigation settings; a body or any other setting fails the build. The landing pages' headings and descriptions stay in code.
+- Q: Should marking the home page not visible fail every build, or only the production build? → A: Every build. Previews, local dev and production all refuse a home page marked not visible.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -99,8 +101,8 @@ compare notice, noindex, sitemap and navigation for each.
 Don controls the header and footer by editing pages, not lists in code. Each page's navigation
 settings say which menu it is in (`location`: header or footer), its position in that menu and,
 optionally, its label. The fixed header list and the footer list in code are gone. The Writing
-and Projects landing pages each get a page file that holds their navigation settings, which
-their code routes read.
+and Projects landing pages each get a page file that holds their title and navigation settings
+only, which their code routes read for the header entry.
 
 **Why this priority**: Removes a second place to keep in step, but the site works without it.
 
@@ -156,8 +158,8 @@ the header or footer.
 
 - A page with a menu location is marked not visible: on production its menu link is left out
   rather than pointing at a missing page.
-- The home page is marked not visible: the build fails with a clear error, because the site
-  cannot go live without a home page.
+- The home page is marked not visible: every build (preview, local dev and production) fails
+  with a clear error, because the site cannot go live without a home page.
 - The Contact page is marked not visible: the contact page and its header link are left out;
   links to it from other pages are the author's responsibility (out of scope here).
 - A page sets visibility or draft to something other than true or false, or a location other
@@ -165,6 +167,8 @@ the header or footer.
 - The Writing or Projects landing page file sets `visible: false` or `draft: true`: the build
   fails with a clear error, because these pages are always visible and published.
 - The Writing or Projects landing page file is missing: the build fails with a clear error.
+- The Writing or Projects landing page file has a body, or any setting other than its title and
+  navigation settings: the build fails with a clear error naming the file.
 - A not-visible page's images: they are not shipped on the production build, as with draft
   projects today.
 - The not-found page uses the same header and footer as every other page.
@@ -192,13 +196,14 @@ the header or footer.
 - **FR-007**: A page with a location MUST give a position, and a page with a position MUST give
   a location; otherwise the build MUST fail with an error naming the file.
 - **FR-008**: The Writing and Projects landing pages MUST each have a page file in the pages
-  collection holding their navigation settings (and optionally intro copy), read by their code
-  routes. They accept navigation settings only, are always visible and published, and setting
-  `visible: false` or `draft: true` on them MUST fail the build.
+  collection holding only a title and navigation settings, read by their code routes for the
+  header entry. A body or any other setting (including `visible`, `draft` and a description)
+  MUST fail the build. They are always visible and published, and their headings and
+  descriptions stay in code.
 - **FR-009**: Two pages in the same menu with one position MUST fail the build with an error
   naming both files.
 - **FR-010**: Invalid settings (non-boolean flags, an unknown location, a not-visible home
-  page, a missing landing page file) MUST fail the build with a plain-language error naming the
+  page on any build, a missing landing page file) MUST fail the build with a plain-language error naming the
   file.
 - **FR-011**: With today's content (all pages visible, current draft flags, menu settings
   moved into the page files), the production header, footer, sitemap and draft notices MUST be
@@ -211,8 +216,8 @@ the header or footer.
 - **Page**: one standalone page file. Settings: title, `visible` (default true), `draft`
   (default false), and optional navigation settings: `location` ("header" or "footer"),
   position, label.
-- **Landing page file**: the page file for Writing or Projects. Holds navigation settings (and
-  optional intro copy) only; its address is built by a code route.
+- **Landing page file**: the page file for Writing or Projects. Holds a title and navigation
+  settings only, with no body; its address, heading and description are built by a code route.
 - **Header / footer navigation**: derived, never hand-listed: the visible pages whose location
   is that menu, ordered by position.
 
