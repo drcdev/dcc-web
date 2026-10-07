@@ -108,8 +108,8 @@ describe("privacy policy: whole page", () => {
     expect(body.toLowerCase()).not.toContain("when the contact form is available");
   });
 
-  it("stays a draft and shows a Last updated date", () => {
-    expect(front).toMatch(/^draft: true$/m);
+  it("is published and shows a Last updated date", () => {
+    expect(front).not.toMatch(/^draft: true$/m);
     expect(body).toMatch(/\*\*Last updated:\*\* \d{1,2} \w+ \d{4}/);
   });
 });

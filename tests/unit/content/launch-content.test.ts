@@ -20,24 +20,26 @@ function load(name: string) {
   return { front: match![1]!, body: match![2]!, all: source, text: source.toLowerCase() };
 }
 
-// [file, nav location and position (undefined: not in a menu), draft].
+// [file, nav location and position (undefined: not in a menu), draft, visible].
 const LAUNCH = [
-  ["index.mdx", ["header", 1], true],
-  ["work-with-me.mdx", ["header", 2], true],
-  ["about.mdx", ["header", 6], false],
-  ["contact.mdx", ["header", 7], false],
-  ["privacy-policy.mdx", ["footer", 1], true],
-  ["terms-of-use.mdx", ["footer", 2], true],
-  ["technology.mdx", ["footer", 3], true],
+  ["index.mdx", ["header", 1], false, true],
+  ["work-with-me.mdx", ["header", 2], true, false],
+  ["about.mdx", ["header", 6], false, true],
+  ["contact.mdx", ["header", 7], false, true],
+  ["privacy-policy.mdx", ["footer", 1], false, true],
+  ["terms-of-use.mdx", ["footer", 2], false, true],
+  ["technology.mdx", ["footer", 3], false, true],
 ] as const;
 
 describe("launch page files", () => {
-  for (const [name, nav, draft] of LAUNCH) {
-    it(`${name} is ${draft ? "a draft" : "live"} with the expected nav location and position`, () => {
+  for (const [name, nav, draft, visible] of LAUNCH) {
+    it(`${name} is ${visible ? "visible" : "not visible"}, ${draft ? "a draft" : "published"}, with the expected nav location and position`, () => {
       const { front } = load(name);
-      // A live page may leave `draft` out (the default is false).
+      // A published, visible page may leave `draft` and `visible` out (defaults false and true).
       if (draft) expect(front).toMatch(/^draft: true$/m);
       else expect(front).not.toMatch(/^draft: true$/m);
+      if (visible) expect(front).not.toMatch(/^visible: false$/m);
+      else expect(front).toMatch(/^visible: false$/m);
       if (nav === undefined) {
         expect(front).not.toMatch(/^nav:/m);
       } else {

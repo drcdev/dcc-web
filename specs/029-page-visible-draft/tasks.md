@@ -150,7 +150,7 @@ After this phase the old code lists still work (nothing reads `location` yet), s
 - [X] T045 Run the quickstart scenarios in `specs/029-page-visible-draft/quickstart.md` (not-visible page on production vs preview build, menu move between header and footer) with local builds.
 - [X] T046 Merge `origin/main` into the branch (shared hot spots: `src/config/navigation.ts`, `SiteFooter.astro`, `BaseLayout.astro`, page files), resolve keeping both sides, and re-run the unit suite.
 - [ ] T047 [PREVIEW-CHECK] On the branch preview deployment, confirm with Don's eyes that the header and footer look identical to production (six header links, three footer links, same order) and that the Contact page and landing pages still open. A subagent cannot verify the deployed preview. (Today's content has no not-visible page, so the preview behaviour of one is covered by T016 and T033, not by this check.)
-- [ ] T048 Final gate: ask Don before starting (parallel gates crash his machine), then run `pnpm run verify` (needs `ASTRO_PREVIEW_BACKGROUND=1`, run in the background under `perl alarm`, read `VERIFY_EXIT=`); fix any failure at its cause and never loosen a check.
+- [x] T048 Final gate (local run lost one unit test to a 5 s timeout at load 66; Don chose CI verify as the gate, green on PR #121): ask Don before starting (parallel gates crash his machine), then run `pnpm run verify` (needs `ASTRO_PREVIEW_BACKGROUND=1`, run in the background under `perl alarm`, read `VERIFY_EXIT=`); fix any failure at its cause and never loosen a check.
 
 ---
 
