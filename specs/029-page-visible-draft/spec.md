@@ -126,7 +126,7 @@ no menu.
    appears in neither the header nor the footer, whatever its location.
 4. **Given** the Writing and Projects landing pages, **When** the site is built, **Then** each
    takes its header entry (location, position, label) from its own page file in the pages
-   collection; its address is still built by its code route, and its lists of posts and
+   folder (`src/content/pages/`); its address is still built by its code route, and its lists of posts and
    projects are unchanged.
 5. **Given** two pages in the same menu with the same position, **When** the site is built,
    **Then** the build fails with an error naming both files. The same position in different

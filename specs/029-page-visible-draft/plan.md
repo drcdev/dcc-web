@@ -55,9 +55,9 @@ choice.
 | I. Test-First | Pass | Tasks write the failing tests first at the cheapest layer: schema and menu builder (unit), footer prop (component), production vs preview visibility, sitemap and image pruning (build, the only layer that sees `astro build` output), and the existing e2e shell spec as the unchanged-navigation guard. See "Tests" below. |
 | II. Automated Release Gate | Pass | No check is removed or weakened. Tests that assert the deleted code lists are rewritten against the file-driven menus with the same expectations (same six header links, same three footer links). |
 | III. Human Review for Major Changes | **Major change** | Criterion "changes ... navigation": the header and footer are rebuilt from page files and the code lists are deleted. Flag it in the PR body. No other criterion applies: no dependency, integration or service added or removed; no contact data touched; no cost increase; no CI, deployment or infrastructure configuration change (`astro.config.mjs` only widens an existing sitemap filter's address set; `src/content.config.ts` adds a collection); no constitution amendment. Visible navigation output is unchanged, but the mechanism is navigation, so treat as major (when in doubt, major). |
-| IV. First-Party Before Custom | Pass | Astro Docs MCP consulted (research.md). Validation: content collection Zod schemas (strict objects, defaults). Production exclusion: `getCollection()` filter pattern from the content collections guide, using the existing `build-mode.ts` signal via `astro:env`. Sitemap: `@astrojs/sitemap` `filter`. Image pruning: existing `astro:build:done` integration hook. Landing files: a second first-party glob loader with a strict schema over the same folder (R8 explains why one collection cannot hold both shapes with clear errors). Custom code only where no first-party option exists: menu ordering/clash errors (Astro has no navigation API outside Starlight), home-visible and empty-body checks in `generateId` (a schema cannot see the id or the body). Cloudflare: no runtime change; Fly.io: not used. |
+| IV. First-Party Before Custom | Pass | Astro Docs MCP consulted (research.md). Validation: content collection Zod schemas (strict objects, defaults). Production exclusion: `getCollection()` filter pattern from the content collections guide, using the existing `build-mode.ts` signal via `astro:env`. Sitemap: `@astrojs/sitemap` `filter`. Image pruning: existing `astro:build:done` integration hook. Landing files: a second first-party glob loader with a strict schema over the same folder (R8 explains why one collection cannot hold both shapes with clear errors). Custom code only where no first-party option exists: menu ordering/clash errors (Astro has no navigation API outside Starlight), home-visible and empty-body checks in `generateId` (a schema cannot see the id or the body). Cloudflare: no runtime change. |
 | V. Static by Default | Pass | Everything is decided at build time; no endpoint, no SSR, no client JS. Not-visible pages are simply not prerendered on production. |
-| VI. Content as Files | Pass | Visibility and menus move *into* the page files; invalid settings fail the build naming the file (contract rows V1 to V10). |
+| VI. Content as Files | Pass | Visibility and menus move *into* the page files; invalid settings fail the build naming the file (contract rows V1 to V12). |
 | VII. Private Data | Pass (n/a) | No personal data touched. The Contact page's visibility is a setting like any other; the contact API is unchanged. |
 | VIII. Cloudflare Best Practices | Pass | No Worker, D1, Turnstile or Workers AI change. A not-visible page's address falls through to the existing `not_found_handling: "404-page"`. |
 | IX. Cost Ceiling | Pass | Expected new monthly cost: **$0**. No new service, binding or build minutes of note (two tiny extra files). |
@@ -73,7 +73,7 @@ No violations; Complexity Tracking is empty.
 Phase 1 kept every verdict. The one design point a reviewer may question, a second `landing`
 collection over the pages folder (research R8), uses only first-party loaders and schemas and
 was chosen *for* Principle VI's clear-error rule; it is called out in the PR body as an
-interpretation of FR-008's "in the pages collection".
+reading of FR-008's "page file in the pages folder" (the clarification's "pages collection").
 
 ## Design
 
@@ -100,7 +100,8 @@ Details: [research.md](./research.md), [data-model.md](./data-model.md),
    `navigationSource`; add `landingPages`; keep `socialNavigation`, `NavigationItem`, add
    `SiteNavigation`.
 6. **Route** (`src/pages/[...slug].astro`): build paths from `getPages()`; drop landing files from
-   the `import.meta.glob` list before `assertPageAddressesFree`; pass
+   the `import.meta.glob` list before `assertPageAddressesFree` (with step 2, in the same change
+   that adds the landing files, or the build refuses `writing.mdx`); pass
    `draft={data.draft || !data.visible}`.
 7. **Layouts/components**: `BaseLayout` takes `navigation: SiteNavigation`, passes `header` to
    `SiteHeader` and `footer` to `SiteFooter` (new `navigation` prop; renders no `<ul>` when the
@@ -109,10 +110,13 @@ Details: [research.md](./research.md), [data-model.md](./data-model.md),
    otherwise unchanged (spec FR-003a, FR-006a).
 8. **Sitemap** (`src/lib/content/draft-pages.ts` → `unlistedPageAddresses()`, `astro.config.mjs`):
    include `visible: false` files; skip landing files.
-9. **Content**: add `nav.location` to the seven menu pages, add `nav` to `contact.mdx`, add
-   `writing.mdx` and `projects.mdx` (data-model.md table). No draft flag changes.
+9. **Content**: add `nav.location: header` to the three pages already in the header and add
+   `writing.mdx` and `projects.mdx` with the schema (Phase 2); add `nav` to `contact.mdx` and the
+   three footer pages only once `buildMenus` reads `location` (Phase 5), since under the old
+   merge their positions clash with Home, Work with me and the fixed Contact entry
+   (data-model.md table). No draft flag changes.
 10. **Docs**: `docs/pages.md` (settings table, menu section, "taken addresses"), `docs/testing.md`
-    contract-row mapping for V1 to V10.
+    contract-row mapping for V1 to V12.
 
 ## Tests (layer per behaviour; existing tests that change)
 
@@ -128,7 +132,8 @@ New or changed, test-first:
 | `unlistedPageAddresses` includes draft and not-visible, skips landing files | unit | `tests/unit/content/page-flags.test.ts` |
 | Footer renders the links it is given, then social links; renders no `<ul>` for an empty list | component | `tests/component/SiteFooter.test.ts` (passes a `navigation` prop) |
 | BaseLayout hands header and footer items through | component | `tests/component/BaseLayout.test.ts`, `NotFound.test.ts`, `PageLayout*.test.ts`, `post/*` (prop shape only) |
-| Production: not-visible page absent, unlinked, unlisted, image pruned; preview: built with notice and noindex, linked, unlisted (US1, US2-4) | build | `tests/build/drafts.test.ts` + new fixture `tests/fixtures/pages/hidden-page.mdx` (`visible: false`, `nav: footer 9`, own image) |
+| Production: not-visible page absent, unlinked, unlisted, image pruned; preview: built with notice and noindex, unlisted (US1, US2-4); its preview menu link is in the navigation build test | build | `tests/build/drafts.test.ts` + new fixture `tests/fixtures/pages/hidden-page.mdx` (`visible: false`, `nav: footer 9`, own image) |
+| Every built page's header and footer equal the menus from the page files (production); not-visible fixture linked on preview; visible page with no `nav` in no menu (US3-7, US4) | build | `tests/build/navigation.test.ts` (new) |
 | Wiring of V5, V7, V8, V9 into a real sync | build (sync) | `tests/build/page-validation.test.ts` + broken fixtures; `fixture-site.ts` gains `remove` option for V9 |
 | Launch files carry the expected location/position and pass the schema; landing files exist | unit | `tests/unit/content/launch-content.test.ts` (table gains location; adds contact, writing, projects) |
 
@@ -143,6 +148,9 @@ Existing tests that change because their subject changes:
   updates its `inBuild(pages)` and sitemap expectations to the new rule.
 - `tests/build/indexing.test.ts`: `isDraftPage` also treats not-visible pages as noindex (it
   derives from the helper, so today's content gives the same result).
+- `tests/build/local-site.test.ts`: the contract-row-15 wiring test names the fixed Projects
+  and Contact entries; rewrite it against V6 and file-driven entries, or delete it as covered by
+  the new `tests/build/navigation.test.ts`.
 - `tests/unit/site/sitemap.test.ts`: unchanged (it avoids page addresses by design); the build
   test covers the widened filter.
 - `tests/unit/content/no-real-content-in-tests.test.ts`: reads `pages`; check it still sees the
@@ -199,8 +207,8 @@ and test folders. No new top-level directory.
 
 ## Risks and open questions
 
-- **Landing files as a second collection** (R8): meets FR-008's behaviour exactly, but reads
-  "in the pages collection" as "in the pages folder". If Don wants one literal collection, the
+- **Landing files as a second collection** (R8): meets FR-008's behaviour exactly; FR-008 and
+  User Story 3 say "pages folder", while the clarification answer says "pages collection". If Don wants one literal collection, the
   fallback is a union schema with a custom error formatter; flag in the PR body.
 - **Hidden-page links in bodies**: a visible page that links to a not-visible one points at a
   404 on production; out of scope per spec (follow-up).
