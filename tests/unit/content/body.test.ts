@@ -104,5 +104,40 @@ describe("validatePageBody for a post file (P12, P18 to P20)", () => {
     expect(() => validatePageBody(FILE, "")).toThrow(`Page file ${FILE}: the page has no content. Add text below the settings.`);
     expect(() => validatePageBody(FILE, "", "page")).toThrow(`Page file ${FILE}: the page has no content.`);
   });
+
+  describe("removed sections", () => {
+    const eight = ["Lead", "CallToAction", "Figure", "WideImage", "FullImage", "SideImage", "ContactForm", "RecentWriting"];
+    const removed = ['<TextBlock title="x">\n\nText\n\n</TextBlock>', "<Offerings>\n\nText\n\n</Offerings>", '<Offering title="x">\n\nText\n\n</Offering>'];
+
+    it.each(removed)("rejects %j in a page, naming the file, the tag and the eight sections in order", (body) => {
+      const run = () => check(body);
+      expect(run).toThrow("is not a section");
+      expect(run).toThrow(FILE);
+      expect(run).toThrow(/Offerings?|TextBlock/);
+      expect(run).toThrow(eight.join(", "));
+    });
+
+    it.each(removed)("rejects %j in a post", (body) => {
+      const run = () => validatePageBody("src/content/posts/example.mdx", body, "post");
+      expect(run).toThrow("Post file");
+      expect(run).toThrow("is not a section");
+    });
+
+    it("rejects self-closing, nested and mis-cased forms", () => {
+      expect(() => check("Text\n\n<TextBlock />")).toThrow("TextBlock");
+      expect(() => check("<Lead>\n\n<Offering title=\"x\">\n\nText\n\n</Offering>\n\n</Lead>")).toThrow("Offering");
+      expect(() => check("Text\n\n<Textblock>\n\nx\n\n</Textblock>")).toThrow("Textblock");
+    });
+
+    it("ignores the removed tags inside fenced and inline code", () => {
+      const body = "Use `<TextBlock>` never.\n\n```mdx\n<Offerings>\n</Offerings>\n```\n\n~~~\n<Offering />\n~~~";
+      expect(() => check(body)).not.toThrow();
+    });
+
+    it("reports the first unknown tag in the file", () => {
+      expect(() => check("<Offerings>x</Offerings>\n\n<TextBlock>y</TextBlock>")).toThrow("Offerings");
+      expect(() => check("<Offerings>x</Offerings>\n\n<TextBlock>y</TextBlock>")).not.toThrow("TextBlock");
+    });
+  });
 });
 

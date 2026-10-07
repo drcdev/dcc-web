@@ -53,8 +53,6 @@ test.describe("without JavaScript", () => {
     await page.goto(PATH);
     for (const text of [
       "This page uses every section once",
-      "How I work",
-      "What I offer",
       "Architecture reviews",
       "Get in touch",
       "A figure with a caption",
@@ -87,12 +85,12 @@ test("the full-width image equals the viewport content width", async ({ page }) 
   }
 });
 
-test("the CTA and offering links have the focus indicator and 24px targets", async ({ page }) => {
+test("the CTA has the focus indicator and a 24px target", async ({ page }) => {
   await page.goto(PATH);
-  const links = page.locator("main").locator("a", { hasText: /Get in touch|Architecture reviews/ });
-  await expect(links).toHaveCount(2);
-  for (let i = 0; i < 2; i++) {
-    const link = links.nth(i);
+  const links = page.locator("main").locator("a", { hasText: "Get in touch" });
+  await expect(links).toHaveCount(1);
+  {
+    const link = links.first();
     await link.focus();
     const style = await link.evaluate((el) => {
       const s = getComputedStyle(el);
@@ -105,6 +103,19 @@ test("the CTA and offering links have the focus indicator and 24px targets", asy
     expect(style.w).toBeGreaterThanOrEqual(24);
     expect(style.h).toBeGreaterThanOrEqual(24);
   }
+});
+
+test("an inline link keeps the focus indicator (its target is exempt from 24px)", async ({ page }) => {
+  await page.goto(PATH);
+  const link = page.locator("main a", { hasText: "Architecture reviews" });
+  await link.focus();
+  const style = await link.evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { style: s.outlineStyle, width: parseFloat(s.outlineWidth), offset: parseFloat(s.outlineOffset) };
+  });
+  expect(style.style).toBe("solid");
+  expect(style.width).toBeGreaterThanOrEqual(2);
+  expect(style.offset).toBe(2);
 });
 
 test("links in the content are underlined", async ({ page }) => {

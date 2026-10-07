@@ -1,20 +1,20 @@
 // Unit tests for the section prop schemas (data-model.md "Section";
 // contracts/sections.md; contracts/build-errors.md rows 11 and 12).
 // Each schema validates the section's props together with a summary of what is
-// inside it: `content: { text, images, offerings }`.
+// inside it: `content: { text, images }`.
 import { describe, expect, it } from "vitest";
 import { sectionNames } from "../../../src/components/sections/index.ts";
 import { sectionSchemas } from "../../../src/components/sections/schemas.ts";
 
-const withContent = (props: object, content: Partial<{ text: boolean; images: number; offerings: number }> = {}) => ({
+const withContent = (props: object, content: Partial<{ text: boolean; images: number }> = {}) => ({
   ...props,
-  content: { text: false, images: 0, offerings: 0, ...content },
+  content: { text: false, images: 0, ...content },
 });
 
 const ok = (name: keyof typeof sectionSchemas, value: unknown) => sectionSchemas[name].safeParse(value).success;
 
 describe("section registry", () => {
-  it("lists the eleven sections", () => {
+  it("lists the eight sections", () => {
     expect([...sectionNames].sort()).toEqual(
       [
         "CallToAction",
@@ -22,11 +22,8 @@ describe("section registry", () => {
         "Figure",
         "FullImage",
         "Lead",
-        "Offering",
-        "Offerings",
         "RecentWriting",
         "SideImage",
-        "TextBlock",
         "WideImage",
       ].sort(),
     );
@@ -47,37 +44,10 @@ describe("Lead", () => {
   });
 });
 
-describe("TextBlock", () => {
-  it("needs a title and text", () => {
-    expect(ok("TextBlock", withContent({ title: "How I work" }, { text: true }))).toBe(true);
-    expect(ok("TextBlock", withContent({}, { text: true }))).toBe(false);
-    expect(ok("TextBlock", withContent({ title: "" }, { text: true }))).toBe(false);
-    expect(ok("TextBlock", withContent({ title: "How I work" }))).toBe(false);
-  });
-});
-
 describe("RecentWriting", () => {
   it("takes no props and needs no content inside it", () => {
     expect(ok("RecentWriting", withContent({}))).toBe(true);
     expect(ok("RecentWriting", withContent({ title: "x" }))).toBe(false);
-  });
-});
-
-describe("Offerings and Offering", () => {
-  it("Offerings needs at least one Offering and takes an optional title", () => {
-    expect(ok("Offerings", withContent({}, { offerings: 1 }))).toBe(true);
-    expect(ok("Offerings", withContent({ title: "What I offer" }, { offerings: 2 }))).toBe(true);
-    expect(ok("Offerings", withContent({}))).toBe(false);
-    expect(ok("Offerings", withContent({ title: "" }, { offerings: 1 }))).toBe(false);
-  });
-  it("Offering needs a title and a description, and takes an optional href", () => {
-    expect(ok("Offering", withContent({ title: "Reviews" }, { text: true }))).toBe(true);
-    expect(ok("Offering", withContent({ title: "Reviews", href: "/services/#reviews" }, { text: true }))).toBe(true);
-    expect(ok("Offering", withContent({}, { text: true }))).toBe(false);
-    expect(ok("Offering", withContent({ title: "Reviews" }))).toBe(false);
-    // #95: a protocol-relative address is an off-site link, not an internal one.
-    expect(ok("Offering", withContent({ title: "Reviews", href: "//example.com" }, { text: true }))).toBe(false);
-    expect(ok("Offering", withContent({ title: "Reviews", href: "/\\example.com" }, { text: true }))).toBe(false);
   });
 });
 
