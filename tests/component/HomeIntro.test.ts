@@ -22,7 +22,7 @@ let footer = "";
 beforeAll(async () => {
   const container = await AstroContainer.create();
   html = await container.renderToString(HomeIntro, { props: { intro } });
-  footer = await container.renderToString(SiteFooter, { request: new Request("https://example.test/") });
+  footer = await container.renderToString(SiteFooter, { props: { navigation: [] }, request: new Request("https://example.test/") });
 });
 
 /** Plain text of the card in source order, tags stripped. */

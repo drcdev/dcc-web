@@ -18,12 +18,12 @@ import ViewsNote from "../components/post/ViewsNote.astro";
 import { featuredMark } from "../components/post/topic-styles.ts";
 import { blog } from "../config/blog.ts";
 import { proseClasses } from "../lib/prose.ts";
-import type { NavigationItem } from "../config/navigation";
+import type { SiteNavigation } from "../config/navigation";
 import type { PostSummary } from "../lib/content/post-summary.ts";
 
 export interface Props {
   post: PostSummary;
-  navigation: NavigationItem[];
+  navigation: SiteNavigation;
   /** The sharing image path (the feature image resized for Open Graph); the site default when omitted. */
   image?: string;
   /** Up to 3 related posts, chosen by the route with selectRelated(); none leaves the section out. */

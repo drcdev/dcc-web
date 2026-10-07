@@ -14,7 +14,7 @@ async function render(props: Record<string, unknown>, body = "<p>Body text.</p><
     props: {
       title: "Workshops",
       description: "About workshops.",
-      navigation: [{ label: "Services", href: "/services/", kind: "primary" }],
+      navigation: { header: [{ label: "Services", href: "/services/", kind: "primary" }], footer: [] },
       ...props,
     },
     request: new Request("https://example.test/workshops/"),
@@ -100,7 +100,7 @@ describe("PageLayout draft notice", () => {
 
 describe("PageLayout navigation", () => {
   it("passes navigation to the header", async () => {
-    const html = await render({ navigation: [{ label: "Only", href: "/only/", kind: "primary" }] });
+    const html = await render({ navigation: { header: [{ label: "Only", href: "/only/", kind: "primary" }], footer: [] } });
     const list = /<ul[^>]+id="primary-nav-list"[\s\S]*?<\/ul>/.exec(html)?.[0] ?? "";
     expect(list).toContain("Only");
     expect(list).not.toContain("Services");

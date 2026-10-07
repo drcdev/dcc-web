@@ -135,6 +135,30 @@ export function sitemapPaths({ production }: { production: boolean }): string[] 
   ];
 }
 
+export interface MenuLink {
+  label: string;
+  href: string;
+}
+
+/**
+ * The header and footer links a build shows, computed from the page files (the pages in the build
+ * plus the landing files), each menu ordered by `nav.position`. `extra` adds entries the test copies
+ * into the site, such as a fixture page. A page without `nav` is in no menu.
+ */
+export function menusOf(
+  { production }: { production: boolean },
+  extra: readonly Entry[] = [],
+): { header: MenuLink[]; footer: MenuLink[] } {
+  const entries = [...inBuild([...pages, ...extra], { production }), ...landingPages];
+  const menu = (location: "header" | "footer"): MenuLink[] =>
+    entries
+      .map((entry) => ({ entry, nav: entry.data.nav as { location: string; position: number; label?: string } | undefined }))
+      .filter(({ nav }) => nav?.location === location)
+      .sort((a, b) => a.nav!.position - b.nav!.position)
+      .map(({ entry, nav }) => ({ label: nav!.label ?? entry.title, href: entry.address }));
+  return { header: menu("header"), footer: menu("footer") };
+}
+
 /** A post in the shape src/lib/content/post-order.ts takes. */
 export function postSummary(entry: Entry) {
   const data = entry.data as { date: Date; updated?: Date; topics?: string[]; featured?: boolean };

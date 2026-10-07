@@ -192,9 +192,10 @@ describe("a page that is one file", () => {
     expect(changed).toEqual(["workshops/index.html"]);
   });
 
-  // The wiring for contract row 15 (two pages with the same navigation position): the header holds
-  // the About entry, which comes only from src/content/pages/about.mdx's `nav` setting, between the
-  // fixed Projects and Contact entries.
+  // The wiring for V6 (file-driven entries, one position each per menu): the header holds the
+  // About entry, which comes only from src/content/pages/about.mdx's `nav` setting, between the
+  // Projects and Contact entries that come from their own files. The full menus are compared with
+  // the page files in navigation.test.ts.
   it("lists the page-sourced About entry in the header, between Projects and Contact", () => {
     const nav = navList(l1.read("workshops/index.html"));
     const labels = [...nav.matchAll(/<a\b[^>]*>\s*([^<]*?)\s*<\/a>/g)].map((m) => m[1]);

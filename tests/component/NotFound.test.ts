@@ -4,7 +4,17 @@
 // metadata that omits canonical/og:url, matching Seo's `canonical={false}`
 // contract (tests/component/Seo.test.ts).
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+
+// The page reads its menus from the content collections, which a component test does not sync.
+// A fixed pair of menus is enough: this test is about the shell the page renders.
+vi.mock("../../src/lib/pages", () => ({
+  getNavigation: async () => ({
+    header: [{ label: "Home", href: "/", kind: "primary" }],
+    footer: [{ label: "Privacy policy", href: "/privacy-policy/", kind: "footer" }],
+  }),
+}));
+
 import NotFound from "../../src/pages/404.astro";
 import { byName, meta, textOf } from "./html.ts";
 

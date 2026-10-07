@@ -1,6 +1,6 @@
-// The site's navigation, in one typed module (data-model.md NavigationItem;
-// research R4; FR-006, FR-008). Final addresses are used now; until the
-// features that build them exist they serve the not-found page.
+// The shape of the site's navigation and the social links (data-model.md NavigationItem and
+// SiteNavigation; FR-005, FR-006). The header and footer entries are not listed here: they come from
+// the `nav` setting of each page file (src/lib/content/navigation.ts).
 
 export interface NavigationItem {
   /** Plain-language link text (or accessible name, for icon links). */
@@ -8,31 +8,24 @@ export interface NavigationItem {
   /** Internal addresses start and end with `/`; external ones use `https://`. */
   href: string;
   kind: "primary" | "footer" | "social";
-  /** Primary items only: the place in the header list, from 1. Unique across pages and fixed entries. */
+  /** Page-sourced items only: the place in the menu, from 1. Unique within a menu. */
   position?: number;
-  /** Primary items only: where the entry is defined, for error messages. */
+  /** Page-sourced items only: the page file that defines the entry, for error messages. */
   source?: string;
 }
 
-/** The navigation config file, named in error messages about fixed entries. */
-export const navigationSource = "src/config/navigation.ts";
-
 /**
- * Primary entries whose pages are built by code routes, not page files. Pages add the
- * rest through `nav` in their settings; `mergeNavigation()`
- * (src/lib/content/navigation.ts) puts them in order (FR-025).
+ * The addresses of the pages that code routes build (the blog and project listings). Their menu
+ * entries are settings in landing files in src/content/pages/ (`writing.mdx`, `projects.mdx`);
+ * getNavigation() fails the build when one is missing (FR-005, FR-010).
  */
-export const fixedPrimaryNavigation: readonly NavigationItem[] = [
-  { label: "Writing", href: "/writing/", kind: "primary", position: 4, source: navigationSource },
-  { label: "Projects", href: "/projects/", kind: "primary", position: 5, source: navigationSource },
-  { label: "Contact", href: "/contact/", kind: "primary", position: 7, source: navigationSource },
-];
+export const landingPages: readonly string[] = ["/writing/", "/projects/"];
 
-export const footerNavigation: readonly NavigationItem[] = [
-  { label: "Privacy policy", href: "/privacy-policy/", kind: "footer" },
-  { label: "Terms of use", href: "/terms-of-use/", kind: "footer" },
-  { label: "Technology", href: "/technology/", kind: "footer" },
-];
+/** The two menus, each in position order, built from the page files by buildMenus(). */
+export interface SiteNavigation {
+  header: NavigationItem[];
+  footer: NavigationItem[];
+}
 
 export const socialNavigation: readonly NavigationItem[] = [
   { label: "GitHub", href: "https://github.com/drcdev", kind: "social" },

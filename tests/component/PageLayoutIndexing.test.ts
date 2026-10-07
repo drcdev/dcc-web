@@ -16,7 +16,7 @@ async function renderMain(draft: boolean) {
   const container = await AstroContainer.create({ astroConfig: { site: "https://example.test" } });
   return container.renderToString(PageLayout, {
     partial: false,
-    props: { title: "Workshops", description: "About workshops.", navigation: [], draft },
+    props: { title: "Workshops", description: "About workshops.", navigation: { header: [], footer: [] }, draft },
     request: new Request("https://example.test/workshops/"),
     slots: { default: "<p>Body text.</p>" },
   });

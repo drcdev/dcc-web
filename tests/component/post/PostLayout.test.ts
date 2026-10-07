@@ -16,7 +16,7 @@ beforeAll(async () => {
 const render = (post: ReturnType<typeof summary>, extra: Record<string, unknown> = {}) =>
   container.renderToString(PostLayout, {
     partial: false,
-    props: { post, navigation: [{ label: "Writing", href: "/writing/", kind: "primary" }], ...extra },
+    props: { post, navigation: { header: [{ label: "Writing", href: "/writing/", kind: "primary" }], footer: [] }, ...extra },
     request: new Request(`https://example.test${post.href}`),
     slots: { default: "<p>Body text.</p><h2>Section</h2>" },
   });

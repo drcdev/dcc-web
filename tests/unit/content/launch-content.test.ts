@@ -20,22 +20,24 @@ function load(name: string) {
   return { front: match![1]!, body: match![2]!, all: source, text: source.toLowerCase() };
 }
 
-// [file, nav location and position (undefined: not in a menu), draft]. Contact and the three
-// footer pages join this table in Phase 5, once the menus are built from the page files.
+// [file, nav location and position (undefined: not in a menu), draft].
 const LAUNCH = [
   ["index.mdx", ["header", 1], true],
   ["work-with-me.mdx", ["header", 2], true],
   ["about.mdx", ["header", 6], false],
-  ["privacy-policy.mdx", undefined, true],
-  ["terms-of-use.mdx", undefined, true],
-  ["technology.mdx", undefined, true],
+  ["contact.mdx", ["header", 7], false],
+  ["privacy-policy.mdx", ["footer", 1], true],
+  ["terms-of-use.mdx", ["footer", 2], true],
+  ["technology.mdx", ["footer", 3], true],
 ] as const;
 
 describe("launch page files", () => {
   for (const [name, nav, draft] of LAUNCH) {
     it(`${name} is ${draft ? "a draft" : "live"} with the expected nav location and position`, () => {
       const { front } = load(name);
-      expect(front).toMatch(new RegExp(`^draft: ${draft}$`, "m"));
+      // A live page may leave `draft` out (the default is false).
+      if (draft) expect(front).toMatch(/^draft: true$/m);
+      else expect(front).not.toMatch(/^draft: true$/m);
       if (nav === undefined) {
         expect(front).not.toMatch(/^nav:/m);
       } else {

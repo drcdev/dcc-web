@@ -1,9 +1,9 @@
-// Unit tests for merging page navigation entries with the fixed ones
-// (data-model.md "NavigationItem"; contracts/build-errors.md row 15; FR-008,
-// FR-025) and for the error message format (data-model.md "PageContentError").
+// Unit tests for building the header and footer menus from the page files
+// (data-model.md "SiteNavigation"; contracts/page-settings.md V6, V11; FR-005, FR-008,
+// FR-009) and for the error message format (data-model.md "PageContentError").
 import { describe, expect, it } from "vitest";
 import { PageContentError, contentError } from "../../../src/lib/content/errors.ts";
-import { mergeNavigation, type NavigationPage } from "../../../src/lib/content/navigation.ts";
+import { buildMenus, type NavigationPage } from "../../../src/lib/content/navigation.ts";
 
 const page = (file: string, address: string, title: string, nav?: NavigationPage["nav"]): NavigationPage => ({
   file: `src/content/pages/${file}`,
@@ -13,16 +13,22 @@ const page = (file: string, address: string, title: string, nav?: NavigationPage
 });
 
 const launchPages = [
-  page("index.mdx", "/", "Don Coleman", { position: 1, label: "Home" }),
-  page("work-with-me.mdx", "/work-with-me/", "Work with me", { position: 2 }),
-  page("about.mdx", "/about/", "About", { position: 6 }),
-  page("privacy-policy.mdx", "/privacy-policy/", "Privacy policy"),
+  page("index.mdx", "/", "Don Coleman", { location: "header", position: 1, label: "Home" }),
+  page("work-with-me.mdx", "/work-with-me/", "Work with me", { location: "header", position: 2 }),
+  page("writing.mdx", "/writing/", "Writing", { location: "header", position: 4 }),
+  page("projects.mdx", "/projects/", "Projects", { location: "header", position: 5 }),
+  page("about.mdx", "/about/", "About", { location: "header", position: 6 }),
+  page("contact.mdx", "/contact/", "Contact", { location: "header", position: 7 }),
+  page("privacy-policy.mdx", "/privacy-policy/", "Privacy policy", { location: "footer", position: 1 }),
+  page("terms-of-use.mdx", "/terms-of-use/", "Terms of use", { location: "footer", position: 2 }),
+  page("technology.mdx", "/technology/", "Technology", { location: "footer", position: 3 }),
+  page("privacy/example-app.mdx", "/privacy/example-app/", "Example app privacy"),
 ];
 
-describe("mergeNavigation", () => {
-  it("returns the six launch items in order with the foundation's hrefs", () => {
-    const items = mergeNavigation(launchPages);
-    expect(items.map(({ label, href }) => [label, href])).toEqual([
+describe("buildMenus", () => {
+  it("splits the entries by location and orders each menu by position", () => {
+    const { header, footer } = buildMenus([...launchPages].reverse());
+    expect(header.map(({ label, href }) => [label, href])).toEqual([
       ["Home", "/"],
       ["Work with me", "/work-with-me/"],
       ["Writing", "/writing/"],
@@ -30,55 +36,87 @@ describe("mergeNavigation", () => {
       ["About", "/about/"],
       ["Contact", "/contact/"],
     ]);
-    expect(items.every((item) => item.kind === "primary")).toBe(true);
+    expect(footer.map(({ label, href }) => [label, href])).toEqual([
+      ["Privacy policy", "/privacy-policy/"],
+      ["Terms of use", "/terms-of-use/"],
+      ["Technology", "/technology/"],
+    ]);
+    expect(header.every((item) => item.kind === "primary")).toBe(true);
+    expect(footer.every((item) => item.kind === "footer")).toBe(true);
   });
 
-  it("defaults the label to the page title", () => {
-    const items = mergeNavigation([page("workshops.mdx", "/workshops/", "Workshops", { position: 8 })]);
-    expect(items.map((item) => item.label)).toEqual(["Writing", "Projects", "Contact", "Workshops"]);
-    expect(items.at(-1)?.href).toBe("/workshops/");
+  it("defaults the label to the page title and keeps an explicit label", () => {
+    const { header } = buildMenus(launchPages);
+    expect(header.find((item) => item.href === "/")?.label).toBe("Home");
+    expect(header.find((item) => item.href === "/about/")?.label).toBe("About");
   });
 
   it("leaves out pages without nav", () => {
-    const items = mergeNavigation([page("terms.mdx", "/terms/", "Terms")]);
-    expect(items.map((item) => item.label)).toEqual(["Writing", "Projects", "Contact"]);
+    const { header, footer } = buildMenus(launchPages);
+    expect([...header, ...footer].some((item) => item.href === "/privacy/example-app/")).toBe(false);
   });
 
-  it("sorts by position whatever the order of the pages", () => {
-    const items = mergeNavigation([...launchPages].reverse());
-    expect(items.map((item) => item.position)).toEqual([1, 2, 4, 5, 6, 7]);
+  it("records the page file as the source of each item", () => {
+    const { header } = buildMenus(launchPages);
+    expect(header[0]?.source).toBe("src/content/pages/index.mdx");
   });
 
-  it("fails when two pages use the same position, naming both files and the position", () => {
+  it("returns an empty array for a menu with no entries", () => {
+    expect(buildMenus([])).toEqual({ header: [], footer: [] });
+    const onlyHeader = buildMenus([page("a.mdx", "/a/", "A", { location: "header", position: 1 })]);
+    expect(onlyHeader.footer).toEqual([]);
+  });
+
+  it("allows the same position in the header and the footer", () => {
+    const { header, footer } = buildMenus([
+      page("a.mdx", "/a/", "A", { location: "header", position: 1 }),
+      page("b.mdx", "/b/", "B", { location: "footer", position: 1 }),
+    ]);
+    expect(header).toHaveLength(1);
+    expect(footer).toHaveLength(1);
+  });
+
+  it("fails when two pages use one position in a menu, naming both files in path order, the menu and the position", () => {
     const run = () =>
-      mergeNavigation([
-        page("a.mdx", "/a/", "A", { position: 2 }),
-        page("b.mdx", "/b/", "B", { position: 2 }),
+      buildMenus([
+        page("b.mdx", "/b/", "B", { location: "header", position: 2 }),
+        page("a.mdx", "/a/", "A", { location: "header", position: 2 }),
       ]);
     expect(run).toThrow(PageContentError);
-    expect(run).toThrow("src/content/pages/a.mdx");
-    expect(run).toThrow("src/content/pages/b.mdx");
-    expect(run).toThrow("2");
+    expect(run).toThrow(
+      "Page files src/content/pages/a.mdx and src/content/pages/b.mdx: both use header position 2. Change the position in one of them.",
+    );
   });
 
-  it.each([
-    [4, "Writing"],
-    [5, "Projects"],
-    [7, "Contact"],
-  ])("fails when a page asks for fixed position %i, naming the page and the fixed entry", (position, label) => {
-    const run = () => mergeNavigation([page("a.mdx", "/a/", "A", { position })]);
-    expect(run).toThrow("src/content/pages/a.mdx");
-    expect(run).toThrow(label);
-    expect(run).toThrow("src/config/navigation.ts");
-    expect(run).toThrow(String(position));
+  it("reports the first pair of a three-way clash", () => {
+    const run = () =>
+      buildMenus([
+        page("c.mdx", "/c/", "C", { location: "footer", position: 3 }),
+        page("a.mdx", "/a/", "A", { location: "footer", position: 3 }),
+        page("b.mdx", "/b/", "B", { location: "footer", position: 3 }),
+      ]);
+    expect(run).toThrow("src/content/pages/a.mdx and src/content/pages/b.mdx: both use footer position 3");
   });
-});
 
-describe("the Writing entry", () => {
-  it("is still a fixed primary entry at /writing/ now that the blog builds that address", () => {
-    const writing = mergeNavigation([]).find((item) => item.label === "Writing");
-    expect(writing?.href).toBe("/writing/");
-    expect(writing?.position).toBe(4);
+  it("fails when two entries in one menu show the same link text, ignoring case and spaces (V11)", () => {
+    const run = () =>
+      buildMenus([
+        page("a.mdx", "/a/", "Notes", { location: "header", position: 1 }),
+        page("b.mdx", "/b/", "Other", { location: "header", position: 2, label: "  notes " }),
+      ]);
+    expect(run).toThrow(PageContentError);
+    expect(run).toThrow(
+      'Page files src/content/pages/a.mdx and src/content/pages/b.mdx: both show "Notes" in the header. Give one of them a different label.',
+    );
+  });
+
+  it("allows the same link text in the header and the footer", () => {
+    expect(() =>
+      buildMenus([
+        page("a.mdx", "/a/", "Notes", { location: "header", position: 1 }),
+        page("b.mdx", "/b/", "Notes", { location: "footer", position: 1 }),
+      ]),
+    ).not.toThrow();
   });
 });
 
