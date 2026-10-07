@@ -199,3 +199,12 @@ function pickSeriesPost(): Entry {
   return post;
 }
 export const seriesPost: Entry = pickSeriesPost();
+
+/** The home page's intro call-to-action link address, from `src/content/pages/index.mdx`. */
+function pickHomeCtaHref(): string {
+  const home = pages.find((page) => page.slug === "index");
+  const href = (home?.data.intro as { cta?: { href?: string } } | undefined)?.cta?.href;
+  if (!href) throw new Error("tests/helpers/content.ts: the home page has no intro.cta.href.");
+  return href;
+}
+export const homeCtaHref: string = pickHomeCtaHref();

@@ -31,6 +31,7 @@ import { test, expect, type Locator, type Page } from "@playwright/test";
 import { FIXTURE_SITE } from "./templates";
 import { expectThemeClass, setTheme, type Theme } from "./color-theme.ts";
 import { findTopic, pillRowTopics, seriesIds } from "../../src/config/topics.ts";
+import { homeCtaHref } from "../helpers/content";
 
 /** A token name (`dusk-200` is `--color-dusk-200`) or the literal `transparent`. */
 type Token = string;
@@ -115,7 +116,7 @@ const PAGES: Page_[] = [
     probes: [
       {
         name: "home intro CTA button",
-        selector: 'main section a[href="/work-with-me/"]',
+        selector: `main section a[href="${homeCtaHref}"]`,
         first: true,
         props: { "background-color": ["rust-600", "rust-300"], color: ["white", "dusk-900"] },
       },

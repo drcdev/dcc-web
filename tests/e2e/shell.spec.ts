@@ -4,6 +4,7 @@
 // "Footer").
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import { MENU_BUTTON, NAV_LIST, NOT_FOUND_PENDING, PRIMARY, TEMPLATES } from "./templates.ts";
+import { homeCtaHref } from "../helpers/content";
 
 const PHONE = { width: 390, height: 844 };
 const DESKTOP = { width: 1280, height: 800 };
@@ -315,10 +316,11 @@ test.describe("footer on every template", () => {
     }
     expect(seen.at(-1)).toBe("https://www.linkedin.com/in/drcdev");
     // Each stop is visited once on the way down (the header and footer each link "/" twice or once).
-    // The home card's call to action repeats the Work with me link, so "outside:/work-with-me/" may repeat too.
+    // The home card's call to action repeats a header link (its address comes from the home page file),
+    // so that stop may repeat too.
     // The Recent writing section (spec 008) repeats the Writing link and shares topic links between cards.
     const distinct = seen.filter(
-      (s) => s !== "/" && s !== "outside:/" && s !== "outside:/work-with-me/" && !s.startsWith("outside:/writing/"),
+      (s) => s !== "/" && s !== "outside:/" && s !== `outside:${homeCtaHref}` && !s.startsWith("outside:/writing/"),
     );
     expect(new Set(distinct).size).toBe(distinct.length);
   });
