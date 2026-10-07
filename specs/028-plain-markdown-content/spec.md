@@ -8,6 +8,13 @@
 
 **Input**: User description: "Write standard content as plain Markdown; keep components for custom elements only (GitHub issue #117). Page, post and project files use plain Markdown for everything Markdown can express: headings, paragraphs, lists, tables, quotes, links and emphasis. The site's typography styles handle how these look, so authors write `##` and `###` headings directly and pick the heading levels themselves. Components are only for things Markdown has no syntax for: the lead paragraph, calls to action, captioned, wide, full-width and side images, the contact form and the recent writing list. The text block and offerings sections are removed, because they only wrapped headings and paragraphs. The Work with me page is rewritten in plain Markdown, so its headings can be linked to like every other heading on the site. The page authoring guide is updated to describe this rule, and the build rejects the removed components."
 
+## Clarifications
+
+### Session 2026-10-07
+
+- Q: When the build fails because someone used `<TextBlock>`, `<Offerings>` or `<Offering>`, should the error also say what to write instead? → A: No. Keep the existing "not a section" error, which names the file and the tag and lists the remaining sections; no hint for each removed tag.
+- Q: Should Don check the rewritten Work with me page on the preview before merge? → A: No. It merges as usual: auto-merge on, no [PREVIEW-CHECK] item.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Link to any heading on the Work with me page (Priority: P1)
@@ -115,7 +122,8 @@ message that names the file and the tag.
   `Offering`) MUST be removed from the set of sections available to page and post files.
 - **FR-002**: The build MUST fail when a page or post file uses `TextBlock`, `Offerings` or
   `Offering` outside code, with a message that names the file and the tag and lists the
-  sections that remain. Project files keep failing the build on any section tag, as today.
+  sections that remain. The existing "not a section" error is reused unchanged; it gives no
+  hint for each removed tag. Project files keep failing the build on any section tag, as today.
 - **FR-003**: The remaining sections MUST be exactly: the lead paragraph, the call to action,
   the captioned image, the wide image, the full-width image, the side image, the contact form
   and the recent writing list. Their behaviour and appearance MUST NOT change. Elements the site
@@ -171,7 +179,8 @@ message that names the file and the tag.
   page is still a draft, and no new styles are added. Whether this counts as a major change
   under Principle III (design system or layout) is decided in the plan; the working assumption
   is that it does not, because the site's design system and layout are unchanged and only one
-  draft page's content changes.
+  draft page's content changes. The new look of the page needs no preview check before merge: the PR merges as usual,
+  with auto-merge on and no [PREVIEW-CHECK] item.
 - "Build rejects the removed components" reuses the existing check that fails the build on any
   tag that is not a known section; no separate list of banned names is required.
 - Tests, fixtures and earlier feature specs that describe the removed sections are updated or
