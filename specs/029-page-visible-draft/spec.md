@@ -26,19 +26,30 @@ draft rules and are not part of this feature.
 - The footer links (Privacy policy, Terms of use, Technology) are a separate fixed list in
   code. A page in the footer list could also ask for a header position; nothing stops both.
 
+## Clarifications
+
+### Session 2026-10-07
+
+- Q: Is a page marked not visible built on preview deployments, or left out of every build? → A: Built on previews. Previews and local dev build a not-visible page with the draft notice and noindex; only the production build leaves it out.
+- Q: Where do the header settings for the Writing and Projects landing pages live once the fixed header list is gone? → A: Each gets a page file in the pages collection holding its navigation settings (and optionally intro copy); the code routes read it, so every menu entry comes from a page file.
+- Q: Should footer membership stay as a list in code, or become a page setting? → A: A page setting. The navigation settings gain a `location` of "header" or "footer", which replaces both the fixed header list and the footer list in code. A page with no location is in no menu (this supersedes "header is the default" in the original description).
+- Q: How does a visible page say it belongs in no menu? → A: By giving no location. A page in a menu must give a position; a location without a position fails the build.
+- Q: Can the Writing and Projects landing pages be marked not visible or draft? → A: No. They take navigation settings only and are always visible and published; hiding a whole section is out of scope (follow-up).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Keep a page off the live site (Priority: P1)
 
 Don marks a page as not visible while he works on it. The live site does not have the page at
-all: no address, no header or footer link, no sitemap entry. When he marks it visible again,
-it appears on the next production deploy.
+all: no address, no header or footer link, no sitemap entry. He can still review it on a
+preview deployment. When he marks it visible again, it appears on the next production deploy.
 
 **Why this priority**: Today a draft page is always public, only labelled. This is the one
 capability the site has no way to express, and it blocks writing pages ahead of launch.
 
 **Independent Test**: Mark one page not visible, run a production build, and confirm the
-address is not served, no navigation links to it, and the sitemap does not list it.
+address is not served, no navigation links to it, and the sitemap does not list it; run a
+preview build and confirm the page is built with the draft notice and noindex.
 
 **Acceptance Scenarios**:
 
@@ -49,19 +60,18 @@ address is not served, no navigation links to it, and the sitemap does not list 
    is built and behaves according to its draft flag (User Story 2).
 3. **Given** a page with no visibility setting, **When** the site is built, **Then** it is
    treated as visible.
-4. **Given** a page marked not visible, **When** a preview (non-production) build runs,
-   **Then** [NEEDS CLARIFICATION: is a not-visible page built on preview deployments (so Don
-   can review it there, as draft posts and projects are), or left out of every build?
-   Suggested default: built on previews with the draft notice and noindex, left out of
-   production only.]
+4. **Given** a page marked not visible, **When** a preview deployment or local dev build runs,
+   **Then** the page is built with the draft notice and a noindex instruction, is absent from
+   the sitemap, and appears in its menu (if it gives a location) so Don can review it, as draft
+   projects are today.
 
 ---
 
 ### User Story 2 - Publish a visible page as a draft (Priority: P1)
 
-Don marks a visible page as a draft. It is on the live site and in the navigation, so people
-can reach it, but it carries a visible draft notice, asks search engines not to index it, and
-is not in the sitemap. When he clears the draft flag, the page becomes fully published: no
+Don marks a visible page as a draft. It is on the live site and in its menu, so people can
+reach it, but it carries a visible draft notice, asks search engines not to index it, and is
+not in the sitemap. When he clears the draft flag, the page becomes fully published: no
 notice, indexable, listed in the sitemap.
 
 **Why this priority**: This is today's draft behaviour; it must keep working unchanged under
@@ -74,7 +84,7 @@ compare notice, noindex, sitemap and navigation for each.
 
 1. **Given** a visible page marked draft, **When** the site is built, **Then** the page shows
    the draft notice, carries a noindex instruction, is absent from the sitemap, and still
-   appears in the header or footer navigation where it belongs.
+   appears in the header or footer if it gives a location.
 2. **Given** a visible page not marked draft, **When** the site is built, **Then** the page
    has no draft notice, no noindex instruction, and is listed in the sitemap.
 3. **Given** a page with no draft setting, **When** the site is built, **Then** it is treated
@@ -84,39 +94,43 @@ compare notice, noindex, sitemap and navigation for each.
 
 ---
 
-### User Story 3 - Header navigation comes only from the pages themselves (Priority: P2)
+### User Story 3 - Menus come only from the page files (Priority: P2)
 
-Don controls the header by editing pages, not a separate list in code. Every visible page
-appears in the header by default, in the order given by its navigation position, unless it is
-one of the footer pages. The fixed list of header entries in code is gone.
+Don controls the header and footer by editing pages, not lists in code. Each page's navigation
+settings say which menu it is in (`location`: header or footer), its position in that menu and,
+optionally, its label. The fixed header list and the footer list in code are gone. The Writing
+and Projects landing pages each get a page file that holds their navigation settings, which
+their code routes read.
 
 **Why this priority**: Removes a second place to keep in step, but the site works without it.
 
-**Independent Test**: Add a new visible page with a navigation position and confirm it appears
-in the header at that position with no other edit; move a page into the footer list and
-confirm it leaves the header.
+**Independent Test**: Add a new visible page with location "header" and a position and confirm
+it appears in the header at that position with no other edit; change its location to "footer"
+and confirm it moves to the footer at its position; remove its location and confirm it is in
+no menu.
 
 **Acceptance Scenarios**:
 
-1. **Given** a visible page that is not in the footer list, **When** the site is built,
-   **Then** the page appears in the header at its navigation position, with its navigation
-   label or, when it has none, its title.
-2. **Given** a page that is in the footer list, **When** the site is built, **Then** it appears
-   in the footer and not in the header, even if it declares a navigation position.
+1. **Given** a visible page with location "header" and a position, **When** the site is built,
+   **Then** it appears in the header at that position, with its navigation label or, when it
+   has none, its title.
+2. **Given** a visible page with location "footer" and a position, **When** the site is built,
+   **Then** it appears in the footer at that position and not in the header.
 3. **Given** a page marked not visible, **When** the production site is built, **Then** it
-   appears in neither the header nor the footer.
-4. **Given** the Writing and Projects landing pages, **When** the site is built, **Then** they
-   appear in the header in their current places, with their visibility, draft state and
-   position declared in the same way as any page file. [NEEDS CLARIFICATION: Writing and
-   Projects are built by code routes, not page files. Where do their header settings live once
-   the fixed list is gone? Suggested default: each gets the same visible/draft/navigation
-   settings declared alongside its route in the content files, so the header is still built
-   from files only; their own lists of posts and projects are unchanged.]
-5. **Given** two header pages with the same navigation position, **When** the site is built,
-   **Then** the build fails with an error naming both files.
-6. **Given** the header after this change, **When** the production site is built from today's
-   content, **Then** the header shows the same entries in the same order as before (Home,
-   Work with me, Writing, Projects, About, Contact, subject to each page's visibility).
+   appears in neither the header nor the footer, whatever its location.
+4. **Given** the Writing and Projects landing pages, **When** the site is built, **Then** each
+   takes its header entry (location, position, label) from its own page file in the pages
+   collection; its address is still built by its code route, and its lists of posts and
+   projects are unchanged.
+5. **Given** two pages in the same menu with the same position, **When** the site is built,
+   **Then** the build fails with an error naming both files. The same position in different
+   menus is allowed.
+6. **Given** a page with a location but no position, or a position but no location, **When**
+   the site is built, **Then** the build fails with an error naming the file.
+7. **Given** today's content with its menu settings moved into the page files, **When** the
+   production site is built, **Then** the header shows Home, Work with me, Writing, Projects,
+   About, Contact and the footer shows Privacy policy, Terms of use, Technology, in the same
+   order as before.
 
 ---
 
@@ -125,36 +139,32 @@ confirm it leaves the header.
 Some visible pages, such as the Tempo app privacy page, are reached by direct link and belong
 in neither the header nor the footer.
 
-**Why this priority**: Only one page needs it today, but making "header by default" literal
-would put that page in the header.
+**Why this priority**: Only one page needs it today.
 
 **Independent Test**: Build and confirm the Tempo privacy page is served but not linked from
 the header or footer.
 
 **Acceptance Scenarios**:
 
-1. **Given** the Tempo app privacy page, **When** the site is built, **Then** it is served and
-   listed in the sitemap but appears in neither the header nor the footer.
-   [NEEDS CLARIFICATION: how does a page say it belongs in no menu? Suggested default: a page
-   with no navigation position and not in the footer list is in no menu; "header by default"
-   then means any visible page that gives a position is in the header unless it is a footer
-   page. Alternative: an explicit opt-out setting, with pages lacking a position failing the
-   build.]
+1. **Given** a visible page with no navigation location, such as the Tempo app privacy page,
+   **When** the site is built, **Then** it is served and listed in the sitemap (unless it is a
+   draft) but appears in neither the header nor the footer.
 
 ---
 
 ### Edge Cases
 
-- A footer-list entry names a page that is marked not visible: on production the footer link
-  is left out rather than pointing at a missing page.
-- A footer-list entry names an address that has no page file: the build fails with a clear
-  error naming the entry.
+- A page with a menu location is marked not visible: on production its menu link is left out
+  rather than pointing at a missing page.
 - The home page is marked not visible: the build fails with a clear error, because the site
   cannot go live without a home page.
 - The Contact page is marked not visible: the contact page and its header link are left out;
   links to it from other pages are the author's responsibility (out of scope here).
-- A page sets visibility or draft to something other than true or false: the build fails with
-  a clear error naming the file.
+- A page sets visibility or draft to something other than true or false, or a location other
+  than "header" or "footer": the build fails with a clear error naming the file.
+- The Writing or Projects landing page file sets `visible: false` or `draft: true`: the build
+  fails with a clear error, because these pages are always visible and published.
+- The Writing or Projects landing page file is missing: the build fails with a clear error.
 - A not-visible page's images: they are not shipped on the production build, as with draft
   projects today.
 - The not-found page uses the same header and footer as every other page.
@@ -167,38 +177,44 @@ the header or footer.
   `draft`. `visible` defaults to true; `draft` defaults to false.
 - **FR-002**: A page marked not visible MUST be left out of the production site entirely: no
   built address, no header or footer link, no sitemap entry, and none of its own images
-  shipped.
+  shipped. On preview deployments and local dev it MUST be built with the draft notice and a
+  noindex instruction, left out of the sitemap, and shown in its menu.
 - **FR-003**: A visible page marked draft MUST be built with a visible draft notice and a
-  noindex instruction, MUST be left out of the sitemap, and MUST still appear in the header or
-  footer where it belongs.
+  noindex instruction, MUST be left out of the sitemap, and MUST still appear in its menu.
 - **FR-004**: A visible page not marked draft MUST be fully published: no draft notice, no
   noindex instruction, listed in the sitemap.
-- **FR-005**: The fixed list of header entries in code MUST be removed. The header MUST be
-  built only from the page settings (visibility, footer membership and navigation position).
-- **FR-006**: A visible page MUST appear in the header at its navigation position unless it is
-  in the footer list. A page in the footer list MUST NOT appear in the header.
-- **FR-007**: The footer list MUST remain the one place that says which pages are footer
-  links, in the order it gives. Its entries for not-visible pages MUST be left out of the
-  production footer.
-- **FR-008**: The Writing and Projects landing pages MUST take part in the header on the same
-  terms as page files (see User Story 3, scenario 4).
-- **FR-009**: Two header pages with one navigation position MUST fail the build with an error
+- **FR-005**: The fixed list of header entries and the footer list in code MUST both be
+  removed. The header and footer MUST be built only from page files' settings (visibility and
+  navigation location, position and label).
+- **FR-006**: A page's navigation settings MUST accept a `location` of "header" or "footer". A
+  page with location "header" appears only in the header and one with "footer" only in the
+  footer, each menu ordered by position. A page with no location MUST appear in no menu.
+- **FR-007**: A page with a location MUST give a position, and a page with a position MUST give
+  a location; otherwise the build MUST fail with an error naming the file.
+- **FR-008**: The Writing and Projects landing pages MUST each have a page file in the pages
+  collection holding their navigation settings (and optionally intro copy), read by their code
+  routes. They accept navigation settings only, are always visible and published, and setting
+  `visible: false` or `draft: true` on them MUST fail the build.
+- **FR-009**: Two pages in the same menu with one position MUST fail the build with an error
   naming both files.
-- **FR-010**: Invalid settings (non-boolean flags, a not-visible home page, a footer entry with
-  no page) MUST fail the build with a plain-language error naming the file.
-- **FR-011**: With today's content (all pages visible, current draft flags), the production
-  header, footer, sitemap and draft notices MUST be the same as before the change.
+- **FR-010**: Invalid settings (non-boolean flags, an unknown location, a not-visible home
+  page, a missing landing page file) MUST fail the build with a plain-language error naming the
+  file.
+- **FR-011**: With today's content (all pages visible, current draft flags, menu settings
+  moved into the page files), the production header, footer, sitemap and draft notices MUST be
+  the same as before the change.
 - **FR-012**: Posts and project stories keep their existing draft behaviour; this feature does
   not change them.
 
 ### Key Entities
 
-- **Page**: one standalone page file. Settings: title, optional navigation position and label,
-  `visible` (default true), `draft` (default false).
-- **Footer list**: the ordered list of pages linked from the footer. Membership removes a page
-  from the header.
-- **Header navigation**: derived, never hand-listed: every visible page with a position that is
-  not in the footer list, plus the Writing and Projects landing pages, ordered by position.
+- **Page**: one standalone page file. Settings: title, `visible` (default true), `draft`
+  (default false), and optional navigation settings: `location` ("header" or "footer"),
+  position, label.
+- **Landing page file**: the page file for Writing or Projects. Holds navigation settings (and
+  optional intro copy) only; its address is built by a code route.
+- **Header / footer navigation**: derived, never hand-listed: the visible pages whose location
+  is that menu, ordered by position.
 
 ## Success Criteria *(mandatory)*
 
@@ -206,25 +222,26 @@ the header or footer.
 
 - **SC-001**: Don can take a page off the live site, or put it back, by changing one setting in
   that page's file, with no other edit.
-- **SC-002**: Don can add a page to the header, or move it between header and footer, by
-  editing at most two places (the page file and, for the footer, the footer list).
+- **SC-002**: Don can add a page to a menu, move it between header and footer, or take it out of
+  every menu by editing only that page's file.
 - **SC-003**: On a production build, 0 not-visible pages are reachable, linked or listed in the
   sitemap.
 - **SC-004**: On a production build, 100% of visible draft pages show the notice, carry noindex,
-  are absent from the sitemap and are present in the navigation.
+  are absent from the sitemap and are present in their menu.
 - **SC-005**: Building today's content produces the same header, footer and sitemap as before.
 
 ## Assumptions
 
-- "Live site" means the production build. Preview builds follow FR-002 only as decided in
-  User Story 1, scenario 4.
-- Missing settings take the defaults in FR-001, so existing page files need no edit to keep
-  working.
-- The footer list stays in code as a list of pages; only the header's fixed list is removed.
-- The social links in the footer are unchanged.
+- "Live site" means the production build. Preview deployments and local dev build not-visible
+  pages with the draft notice and noindex (FR-002), as they do draft projects today.
+- Missing `visible` and `draft` settings take the defaults in FR-001. Pages in a menu today
+  (Home, Work with me, About, Contact, Privacy policy, Terms of use, Technology) get a location
+  and position in their files as part of this change; Writing and Projects get new page files.
+- The social links in the footer are unchanged and stay in code.
 - The navigation label rule (label if given, else title) and the position-clash error are kept
-  from today.
-- Changing how the header is built is a navigation change, so it is a major change under
-  Constitution Principle III and is flagged in the pull request.
-- Out of scope: visibility for individual posts and project stories, and checking links inside
-  page bodies that point at not-visible pages.
+  from today, with positions now unique within each menu.
+- Changing how the header and footer are built is a navigation change, so it is a major change
+  under Constitution Principle III and is flagged in the pull request.
+- Out of scope: visibility for individual posts and project stories; hiding a whole section
+  (the Writing or Projects landing page together with its posts or projects), noted as a
+  follow-up; and checking links inside page bodies that point at not-visible pages.
