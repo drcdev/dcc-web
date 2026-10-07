@@ -228,7 +228,10 @@ describe("assertPageAddressesFree", () => {
     expect(workshops).toThrow("src/content/pages/projects/workshops.mdx");
     expect(workshops).toThrow("src/pages/projects/[slug].astro");
 
-    const pageFiles = globSync("**/*.{md,mdx}", { cwd: "src/content/pages" }).map((path) => path.replaceAll("\\", "/"));
+    // The landing files are menu settings, not pages: the pages route leaves them out (029).
+    const pageFiles = globSync("**/*.{md,mdx}", { cwd: "src/content/pages" })
+      .map((path) => path.replaceAll("\\", "/"))
+      .filter((path) => !/^(writing|projects)\.mdx?$/.test(path));
     expect(pageFiles.length).toBeGreaterThan(0);
     expect(() => assertPageAddressesFree({ ...real, pageFiles })).not.toThrow();
   });

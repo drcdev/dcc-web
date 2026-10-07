@@ -18,10 +18,11 @@ import { addressOf, fileOf, getNavigation } from "../lib/pages";
 
 export async function getStaticPaths() {
   // File lists come from the file system, not the collection. Two files with one address are
-  // caught earlier, in generateId (src/content.config.ts).
+  // caught earlier, in generateId (src/content.config.ts). The landing files are menu settings,
+  // not pages, so they are left out of the address check.
   const pageFiles = Object.keys(import.meta.glob("/src/content/pages/**/*.{md,mdx}", { query: "?url" })).map(
     (path) => path.slice("/src/content/pages/".length),
-  );
+  ).filter((path) => !/^(writing|projects)\.mdx?$/.test(path));
   const routeFiles = Object.keys(import.meta.glob("./**/*.{astro,md,mdx,ts,js}"))
     .map((path) => path.slice(2))
     .filter((path) => path !== "[...slug].astro");
