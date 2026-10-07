@@ -11,6 +11,7 @@ import { satteri } from "@astrojs/markdown-satteri";
 
 import { pruneDraftAssets } from "./src/lib/prune-unreferenced-assets.ts";
 import { INTER_UNICODE_RANGE, MONO_FALLBACK_STACK, SYSTEM_FONT_STACK } from "./src/lib/fonts/charset.ts";
+import { draftPageAddresses } from "./src/lib/content/draft-pages.ts";
 import { resolveSiteOrigin } from "./src/lib/site-origin.ts";
 import { readingTimePlugin } from "./src/lib/markdown/reading-time.ts";
 import { projectPartsPlugin } from "./src/lib/markdown/project-parts.ts";
@@ -25,6 +26,11 @@ import { shikiTheme } from "./src/lib/markdown/shiki-theme.ts";
 const setupConfigPath = fileURLToPath(new URL("./setup/config.json", import.meta.url));
 const setupConfig = JSON.parse(readFileSync(setupConfigPath, "utf-8"));
 const site = resolveSiteOrigin(process.env, setupConfig);
+
+// Draft pages are built (notice and noindex) but left out of the sitemap, so the site does not
+// point search engines at pages it asks them to skip. The filter gets only a URL, so the draft
+// addresses are read here (docs.astro.build/en/guides/integrations-guide/sitemap/#filter).
+const draftPages = draftPageAddresses(fileURLToPath(new URL("./src/content/pages/", import.meta.url)));
 
 // The pre-paint theme script is rendered with is:inline (src/layouts/BaseLayout.astro),
 // which Astro's CSP does not hash automatically, so its hash is computed here from
@@ -162,7 +168,7 @@ export default defineConfig({
       filter: (page) => {
         const { pathname } = new URL(page);
         // The per-post question source files are data for the questions API, not pages (specs/022).
-        return !pathname.startsWith("/404") && !pathname.endsWith("/question-source.json");
+        return !pathname.startsWith("/404") && !pathname.endsWith("/question-source.json") && !draftPages.has(pathname);
       },
     }),
     mdx(),

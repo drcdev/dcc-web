@@ -89,11 +89,12 @@ describe("the sample post", () => {
 });
 
 describe("sitemapPaths", () => {
-  it("lists the pages, the listings, every topic page and each visible post and project", () => {
+  it("lists the published pages, the listings, every topic page and each visible post and project", () => {
     for (const production of [true, false]) {
       const paths = sitemapPaths({ production });
       expect(new Set(paths).size).toBe(paths.length);
-      for (const page of pages) expect(paths).toContain(page.address);
+      // A draft page is built with noindex and left out of the sitemap (issue #119).
+      for (const page of pages) expect(paths.includes(page.address), page.address).toBe(!page.draft);
       for (const listing of ["/writing/", "/writing/all/", "/projects/"]) expect(paths).toContain(listing);
       for (const topic of topics) expect(paths).toContain(topicHref(topic.id));
       for (const entry of [...inBuild(posts, { production }), ...inBuild(projects, { production })]) {

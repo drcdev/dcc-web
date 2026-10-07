@@ -3,7 +3,8 @@
 // list and check the entries it writes. `@astrojs/sitemap` already drops the
 // exact `/404` status page; the configured `filter` must also drop anything
 // else under `/404` (for example `404.html` or a nested path), and every entry
-// must use the configured `site`.
+// must use the configured `site`. The paths are not the home page or another page that may be a
+// draft: the filter also drops draft pages (issue #119), and the build test covers that.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -58,23 +59,23 @@ describe("astro.config.mjs sitemap", () => {
   });
 
   it("excludes every page whose pathname starts with /404", async () => {
-    const { site, entries } = await buildSitemap({}, ["", "about/", "404/", "404.html", "404/nested/"]);
-    expect(entries).toEqual([`${site}/`, `${site}/about/`]);
+    const { site, entries } = await buildSitemap({}, ["contact/", "about/", "404/", "404.html", "404/nested/"]);
+    expect(entries).toEqual([`${site}/about/`, `${site}/contact/`]);
     for (const entry of entries) expect(new URL(entry!).pathname.startsWith("/404")).toBe(false);
   });
 
   it("excludes the per-post question source files (specs/022 T023)", async () => {
-    const { site, entries } = await buildSitemap({}, ["", "writing/a-post/", "writing/a-post/question-source.json"]);
-    expect(entries).toEqual([`${site}/`, `${site}/writing/a-post/`]);
+    const { site, entries } = await buildSitemap({}, ["contact/", "writing/a-post/", "writing/a-post/question-source.json"]);
+    expect(entries).toEqual([`${site}/contact/`, `${site}/writing/a-post/`]);
   });
 
   it.each([
     ["local build", {}, "https://doncoleman.ca"],
     ["main branch build", { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" }, "https://doncoleman.ca"],
   ])("uses the configured site for every entry (%s)", async (_label, env, origin) => {
-    const { site, entries, index } = await buildSitemap(env, ["", "404/"]);
+    const { site, entries, index } = await buildSitemap(env, ["contact/", "404/"]);
     expect(site).toBe(origin);
-    expect(entries).toEqual([`${origin}/`]);
+    expect(entries).toEqual([`${origin}/contact/`]);
     expect(index).toContain(`<loc>${origin}/sitemap-0.xml</loc>`);
   });
 });

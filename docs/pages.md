@@ -38,7 +38,7 @@ draft: true
 | `nav` | no | Puts the page in the header menu. Leave it out to keep the page out of the menu. |
 | `nav.position` | with `nav` | Menu order, a whole number from 1. |
 | `nav.label` | no | Menu text. Defaults to `title`. |
-| `draft` | no | `true` shows a "draft" notice on the page. It does not hide the page from search or the sitemap. |
+| `draft` | no | `true` keeps the page published with a "draft" notice, but asks search engines not to index it and leaves it out of the sitemap. |
 | `intro` | no | Home page only: the introduction card (`photo`, `name`, `tagline`, `bio`, `cta`). |
 
 Do not write a `# Heading` in the body; the title is the page's only main heading. Use `##`.
