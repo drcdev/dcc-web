@@ -17,7 +17,7 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Confirm the toolchain and a clean baseline: run `node -v` against `.nvmrc`, then `pnpm exec vitest run tests/unit/content tests/unit/site/docs-content-structure.test.ts` and note it is green before any edit. Check `lsof -i :4321 -i :4322` for sibling worktree servers (plan Risks).
+- [X] T001 Confirm the toolchain and a clean baseline: run `node -v` against `.nvmrc`, then `pnpm exec vitest run tests/unit/content tests/unit/site/docs-content-structure.test.ts` and note it is green before any edit. Check `lsof -i :4321 -i :4322` for sibling worktree servers (plan Risks).
 
 ---
 
