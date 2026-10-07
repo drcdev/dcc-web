@@ -82,7 +82,8 @@ Details: [research.md](./research.md), [data-model.md](./data-model.md),
 
 1. **Schema** (`src/content/schemas/shared.ts`, `page.ts`): `navField` becomes
    `{ location: enum(header, footer), position, label? }`; page schema adds
-   `visible: z.boolean().default(true)`. New `landingSchema` = strict `{ title, nav: navField }`.
+   `visible: z.boolean().default(true)`. New `landingSchema` = strict `{ title, nav }` where `nav`
+   is `navField` with `location: z.literal("header")` (V12).
 2. **Collections** (`src/content.config.ts`): `pages` glob adds the negations
    `!writing.{md,mdx}`, `!projects.{md,mdx}`; its `generateId` adds `assertHomeVisible`. New
    `landing` collection: glob `{writing,projects}.{md,mdx}` over `./src/content/pages`,
@@ -93,7 +94,8 @@ Details: [research.md](./research.md), [data-model.md](./data-model.md),
    `buildMenus([...pages, ...landing])` as `{ header, footer }` and throws when a `landingPages`
    id has no entry.
 4. **Menus** (`src/lib/content/navigation.ts`): `mergeNavigation` → `buildMenus`; per-menu
-   position clash naming both files; no fixed entries.
+   position clash naming both files in path order, the menu and the position (V6); per-menu
+   duplicate link text clash (V11); no fixed entries.
 5. **Config** (`src/config/navigation.ts`): delete `fixedPrimaryNavigation`, `footerNavigation`,
    `navigationSource`; add `landingPages`; keep `socialNavigation`, `NavigationItem`, add
    `SiteNavigation`.
@@ -101,8 +103,10 @@ Details: [research.md](./research.md), [data-model.md](./data-model.md),
    the `import.meta.glob` list before `assertPageAddressesFree`; pass
    `draft={data.draft || !data.visible}`.
 7. **Layouts/components**: `BaseLayout` takes `navigation: SiteNavigation`, passes `header` to
-   `SiteHeader` and `footer` to `SiteFooter` (new `navigation` prop). `PageLayout`, `PostLayout`,
-   `ProjectLayout`, `SeriesPage` change only the prop type.
+   `SiteHeader` and `footer` to `SiteFooter` (new `navigation` prop; renders no `<ul>` when the
+   footer list is empty). `PageLayout`, `PostLayout`, `ProjectLayout`, `SeriesPage` change only
+   the prop type. Header and footer markup, `aria-current` marking and the draft notice are
+   otherwise unchanged (spec FR-003a, FR-006a).
 8. **Sitemap** (`src/lib/content/draft-pages.ts` → `unlistedPageAddresses()`, `astro.config.mjs`):
    include `visible: false` files; skip landing files.
 9. **Content**: add `nav.location` to the seven menu pages, add `nav` to `contact.mdx`, add
@@ -119,9 +123,10 @@ New or changed, test-first:
 | `visible`/`draft` defaults and type errors; `nav.location` enum; `nav` needs both location and position (V1 to V4) | unit | `tests/unit/content/page-schema.test.ts` |
 | Landing schema strictness (V7, V10) | unit | `tests/unit/content/page-schema.test.ts` |
 | `assertHomeVisible`, `assertLandingBody` (V5, V8) | unit | `tests/unit/content/page-flags.test.ts` (new) |
-| `buildMenus`: split by location, order, label default, per-menu clash naming both files, same position across menus allowed (V6) | unit | `tests/unit/content/navigation.test.ts` (rewritten: fixed-entry cases deleted) |
+| `buildMenus`: split by location, order, label default, per-menu clash naming both files in path order with menu and position, three-way clash reports the first pair, same position across menus allowed (V6), duplicate link text in one menu (V11) | unit | `tests/unit/content/navigation.test.ts` (rewritten: fixed-entry cases deleted) |
+| Landing `nav.location` must be header (V12); empty `nav`, `null`/quoted/number flags, empty label rejected | unit | `tests/unit/content/page-schema.test.ts` |
 | `unlistedPageAddresses` includes draft and not-visible, skips landing files | unit | `tests/unit/content/page-flags.test.ts` |
-| Footer renders the links it is given, then social links | component | `tests/component/SiteFooter.test.ts` (passes a `navigation` prop) |
+| Footer renders the links it is given, then social links; renders no `<ul>` for an empty list | component | `tests/component/SiteFooter.test.ts` (passes a `navigation` prop) |
 | BaseLayout hands header and footer items through | component | `tests/component/BaseLayout.test.ts`, `NotFound.test.ts`, `PageLayout*.test.ts`, `post/*` (prop shape only) |
 | Production: not-visible page absent, unlinked, unlisted, image pruned; preview: built with notice and noindex, linked, unlisted (US1, US2-4) | build | `tests/build/drafts.test.ts` + new fixture `tests/fixtures/pages/hidden-page.mdx` (`visible: false`, `nav: footer 9`, own image) |
 | Wiring of V5, V7, V8, V9 into a real sync | build (sync) | `tests/build/page-validation.test.ts` + broken fixtures; `fixture-site.ts` gains `remove` option for V9 |

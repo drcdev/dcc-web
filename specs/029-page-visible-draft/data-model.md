@@ -14,11 +14,12 @@ Existing fields are unchanged except `nav`. New or changed fields:
 | `nav` | object, optional | absent | Absent → the page is in no menu (FR-006). Strict object. |
 | `nav.location` | `"header"` \| `"footer"` | required inside `nav` | Other value → schema error naming `location` (FR-010). Missing → schema error naming `location` (FR-007). |
 | `nav.position` | integer ≥ 1 | required inside `nav` | Missing → schema error naming `position` (FR-007). |
-| `nav.label` | non-empty text | the page `title` | Unchanged. |
+| `nav.label` | non-empty text | the page `title` | Unchanged (empty or whitespace-only fails). Link text must be unique within its menu (V11). |
 
 Extra rule, checked in the loader's `generateId` (the schema cannot see the id):
 
 - The page with id `index` (the home page) must not have `visible: false`, on any build (FR-010).
+  It may have `draft: true`.
 
 ### Derived per build
 
@@ -27,7 +28,7 @@ false only on the Workers Builds build of `main`.
 
 | `visible` | `draft` | Production build | Preview / local / CI build |
 |---|---|---|---|
-| true | false | built, indexable, in sitemap, in its menu | built, in sitemap, in its menu (noindex comes from the build, as today) |
+| true | false | built, indexable, in sitemap, in its menu | built, in sitemap, in its menu; noindex meta because every page of a non-production build has it (`isIndexableBuild()`, unchanged) |
 | true | true | built, draft notice, noindex, not in sitemap, in its menu | same |
 | false | any | **not built**, in no menu, not in sitemap, own images pruned | built, draft notice, noindex, not in sitemap, in its menu |
 
@@ -41,7 +42,7 @@ false only on the Workers Builds build of `main`.
 | Field | Type | Rule |
 |---|---|---|
 | `title` | non-empty text | Required. Used as the menu label when `nav.label` is absent. |
-| `nav` | the same `nav` object as Page | Required (a landing file exists only to give its menu entry). |
+| `nav` | the same `nav` object as Page, with `location` fixed to `"header"` | Required (a landing file exists only to give its menu entry). `location: footer` fails naming `location` (V12). |
 
 - Strict schema: any other key, including `visible`, `draft` and `description`, fails the build
   naming the key (FR-008).
@@ -66,8 +67,14 @@ routes build. It names routes, not menu settings.
 `{ header: NavigationItem[]; footer: NavigationItem[] }` — each the pages (and landing files) in
 this build whose `nav.location` names that menu, ordered by `nav.position`.
 
-- Two entries in one menu with one position → `Page files <a> and <b>: both use header position N.`
-  (FR-009). The same position in the header and the footer is allowed.
+- Two entries in one menu with one position → `Page files <a> and <b>: both use header position N.
+  Change the position in one of them.` (FR-009; files in path order; with three or more, the
+  first pair). The same position in the header and the footer is allowed.
+- Two entries in one menu with the same link text (case and surrounding spaces ignored) →
+  `Page files <a> and <b>: both show "<text>" in the header. Give one of them a different label.`
+  (FR-009a, V11).
+- A menu with no entries is an empty array; `SiteFooter` then renders no link list. The header
+  is never empty, because both landing files are always in it.
 - `socialNavigation` stays a constant in code and is rendered by `SiteFooter` as today.
 
 ## Content after the change (FR-011, SC-005)
