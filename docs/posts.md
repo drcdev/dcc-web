@@ -120,9 +120,9 @@ screens. `FullImage` runs the full page width. `caption` is optional on all thre
 </FullImage>
 ```
 
-A plain `![description](./images/name.png)` also works and sits in the text column. The other
-sections of `docs/pages.md` (`Lead`, `TextBlock`, `Offerings`, `CallToAction`) are also
-available.
+A plain `![description](./images/name.png)` also works and sits in the text column. Two other
+components from `docs/pages.md` work in posts: `Lead` and `CallToAction`. That guide also
+states the Markdown rule.
 
 ## Tables
 

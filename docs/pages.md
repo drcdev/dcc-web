@@ -14,7 +14,7 @@ The file name is the address.
 | `src/content/pages/index.mdx` | `/` (the home page) |
 | `src/content/pages/work-with-me.mdx` | `/work-with-me/` |
 
-Use lower-case letters, digits and hyphens only. Use `.mdx` when you want the sections below;
+Use lower-case letters, digits and hyphens only. Use `.mdx` when you want the components below;
 plain `.md` works for text only. Put images next to the page in `src/content/pages/images/`.
 
 ## The top of the file
@@ -50,12 +50,50 @@ stops the build. The addresses `/writing/` and `/projects/` belong to the Writin
 pages, `/contact/` is `contact.mdx`, and any address another part of the site already uses
 (such as `/404/`) is taken too; a page file at one of them stops the build.
 
-## Sections
+## Writing the page
+
+Write the body as plain Markdown: headings, paragraphs, lists, tables, quotes, links and
+emphasis. Components are only for what Markdown cannot do: an intro paragraph, a button link,
+an image with a caption, the contact form and the recent writing list.
+
+A titled passage is a `##` heading and the text under it. A group of items is a `##` heading
+with a `###` heading for each item. Never put a `###` directly under the page title.
+
+```mdx
+## How I work
+
+Short engagements, written advice, and no lock-in.
+
+## Kinds of work
+
+### [Architecture reviews](/contact/)
+
+An outside view of a system before a big decision.
+
+### Advice on technology change
+
+A second opinion on a plan before it is committed.
+```
+
+Put headings in the body, not inside a component.
+
+### Linking to a heading
+
+Every heading from `##` to `######` gets an address. It is the heading text in lower case, with
+spaces changed to hyphens and most punctuation dropped. A second heading with the same text
+gets `-1` and a third gets `-2`. "Kinds of work" becomes `kinds-of-work`, so this link jumps to
+it:
+
+```mdx
+See [the kinds of work](/work-with-me/#kinds-of-work) I am considering.
+```
+
+## Components
 
 Available in `.mdx` files with no import. Leave a blank line after an opening tag and before a
-closing tag.
+closing tag. There are eight, listed here in full.
 
-`Lead`: an intro paragraph.
+`Lead` takes no props. It is an intro paragraph.
 
 ```mdx
 <Lead>
@@ -63,30 +101,7 @@ I help public-sector teams make technology decisions they can live with.
 </Lead>
 ```
 
-`TextBlock`: a titled block of Markdown. `title` is required.
-
-```mdx
-<TextBlock title="How I work">
-
-Short engagements, written advice, and no lock-in.
-
-</TextBlock>
-```
-
-`Offerings` and `Offering`: a list of things offered. `Offerings` may have a `title`; each
-`Offering` needs a `title` and a description, and may have an `href`.
-
-```mdx
-<Offerings title="What I offer">
-  <Offering title="Architecture reviews" href="/work-with-me/#reviews">
-
-  An outside view of a system before a big decision.
-
-  </Offering>
-</Offerings>
-```
-
-`CallToAction`: a button link. `label` and `href` are required; the message is optional.
+`CallToAction` is a button link. `label` and `href` are required; the message is optional.
 
 ```mdx
 <CallToAction label="Get in touch" href="/contact/">
@@ -96,8 +111,8 @@ Have a question about a project?
 </CallToAction>
 ```
 
-`Figure`, `WideImage`, `FullImage`: one image each, in the text column, a little wider, and the
-full page width. `caption` is optional. The image needs alt text.
+`Figure`, `WideImage` and `FullImage` hold one image each: in the text column, a little wider,
+and the full page width. `caption` is optional. The image needs alt text.
 
 ```mdx
 <Figure caption="Speaking at a 2025 conference">
@@ -119,8 +134,9 @@ full page width. `caption` is optional. The image needs alt text.
 </FullImage>
 ```
 
-`SideImage`: a short passage of text with one small image beside it, as a tile on the left with the
-text centred beside it. It takes no settings and needs both the image (with alt text) and some text.
+`SideImage` is a short passage of text with one small image beside it, as a tile on the left
+with the text centred beside it. It takes no props and needs both the image (with alt text) and
+some text.
 
 ```mdx
 <SideImage>
@@ -130,6 +146,18 @@ text centred beside it. It takes no settings and needs both the image (with alt 
 Speaker at the 2025 health leadership conference.
 
 </SideImage>
+```
+
+`ContactForm` is the contact form. It takes no props and no content.
+
+```mdx
+<ContactForm />
+```
+
+`RecentWriting` lists the newest posts. It takes no props and no content.
+
+```mdx
+<RecentWriting />
 ```
 
 ## Build errors you may see
@@ -142,9 +170,9 @@ The build stops at the first problem and names the file. Messages start with `Pa
 - An image with no `alt`, an empty `alt`, or a file that does not exist: add the text or fix
   the path.
 - A page with no content.
-- An unknown section (for example `<Callout>`); the message lists the valid ones.
-- A section missing something it needs, such as `CallToAction` without `href`, or an image
-  section with no image.
+- An unknown component (for example `<Callout>`); the message lists the valid ones.
+- A component missing something it needs, such as `CallToAction` without `href`, or an image
+  component with no image.
 - A `# Heading` in the body: use `##`.
 - Two files with the same address (`about.md` and `about.mdx`), or an address that another
   route or a later feature reserves.
