@@ -5,7 +5,7 @@
 // (`visible: false`, footer 9) beside the real pages.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildFixtureSite, type FixtureSiteResult } from "./fixture-site.ts";
-import { menusOf, readEntries, type MenuLink } from "../helpers/content.ts";
+import { inBuild, menusOf, pages, readEntries, sitemapPaths, type MenuLink } from "../helpers/content.ts";
 
 const hidden = readEntries("pages", "tests/fixtures/pages").filter((entry) => entry.file.endsWith("/hidden-page.mdx"));
 
@@ -74,5 +74,39 @@ describe("preview menus", () => {
       expect(found.footer, path).toEqual(expected.footer);
       expect(found.header, path).toEqual(expected.header);
     }
+  });
+});
+
+// US4 scenario 1: a visible page with no `nav` is served and listed, and is in no menu.
+describe("pages that belong in no menu", () => {
+  const unlisted = pages.filter((page) => page.visible && !page.data.nav);
+  let real: FixtureSiteResult;
+
+  beforeAll(async () => {
+    real = await buildFixtureSite([], { env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" } });
+  }, 900_000);
+
+  afterAll(() => real?.cleanup());
+
+  it("builds", () => expect(real.message).toBe(""));
+
+  it("exist in the content (so the checks below are not empty)", () => expect(unlisted.length).toBeGreaterThan(0));
+
+  it("have an HTML file and no link in either menu", () => {
+    const files = real.htmlFiles();
+    const home = shellMenus(real.read("index.html"))!;
+    const menuHrefs = [...home.header, ...home.footer].map((link) => link.href);
+    for (const page of inBuild(unlisted, { production: true })) {
+      const path = `${page.address.replace(/^\//, "")}index.html`;
+      expect(files.has(path), `${page.address} is built`).toBe(true);
+      expect(menuHrefs, `${page.address} is in a menu`).not.toContain(page.address);
+    }
+  });
+
+  it("are in the sitemap unless draft", () => {
+    const expected = sitemapPaths({ production: true });
+    for (const page of unlisted) expect(expected.includes(page.address), page.address).toBe(!page.draft);
+    const sitemap = real.read("sitemap-0.xml");
+    for (const page of unlisted) expect(sitemap.includes(`${page.address}</loc>`), page.address).toBe(!page.draft);
   });
 });

@@ -134,11 +134,11 @@ After this phase the old code lists still work (nothing reads `location` yet), s
 
 ### Tests first
 
-- [ ] T040 [US4] Build test (layer: build) in `tests/build/navigation.test.ts`: every real visible page without `nav` (the Tempo privacy page today, found through `tests/helpers/content.ts`, never named) has an HTML file, is in the sitemap unless draft, and appears in neither menu (US4 scenario 1).
+- [X] T040 [US4] Build test (layer: build) in `tests/build/navigation.test.ts`: every real visible page without `nav` (the Tempo privacy page today, found through `tests/helpers/content.ts`, never named) has an HTML file, is in the sitemap unless draft, and appears in neither menu (US4 scenario 1).
 
 ### Implementation
 
-- [ ] T041 [US4] No new code expected; run T040 and fix any gap in `src/lib/content/navigation.ts` if it fails.
+- [X] T041 [US4] No new code expected; run T040 and fix any gap in `src/lib/content/navigation.ts` if it fails.
 
 ---
 
