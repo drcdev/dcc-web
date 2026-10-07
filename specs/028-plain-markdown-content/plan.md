@@ -129,7 +129,7 @@ tests/
 ├── unit/site/docs-content-structure.test.ts  # eight examples, no removed tags
 ├── component/sections/TextBlock.test.ts      # delete
 ├── component/sections/Offerings.test.ts      # delete
-├── build/local-site.test.ts                  # Work with me headings + ids from the real build
+├── build/local-site.test.ts                  # Work with me: h1 + no skipped level, heading ids (build-only facts)
 ├── fixtures/pages/sections.mdx               # drop TextBlock/Offerings, add an inline Markdown link
 ├── e2e/sections.spec.ts                      # no-JS text list; CTA target size; inline link focus + underline
 └── e2e/visual.spec.ts-snapshots/sections-*   # refresh 8 PNGs
@@ -139,13 +139,17 @@ tests/
 
 ## Ordering notes for tasks
 
-1. Tests first (unit → build → docs → e2e), seen failing.
-2. Registry, schemas, validator; delete the three components and their component tests.
-3. Rewrite `work-with-me.mdx` (wording copied verbatim; headings `##`/`###`).
-4. Fixture page and e2e spec; refresh `sections-*` baselines (macOS, then Linux via Docker or the
-   CI label).
-5. Guides.
-6. Full verify gate (ask Don first); PR with auto-merge, not major.
+1. One atomic phase, because every build (real site and fixture site) reads `work-with-me.mdx`
+   and `sections.mdx`, which both use the removed sections:
+   a. tests first (unit body and schemas, unit launch-content, build local-site, e2e sections),
+      seen failing;
+   b. registry, schemas, validator; delete the three components and their component tests;
+   c. rewrite `work-with-me.mdx` (wording copied verbatim; headings `##`/`###`) and edit the
+      fixture page;
+   d. refresh `sections-*` baselines (macOS, then Linux via Docker or the CI label).
+   The phase is committed only once all of this is green, so no commit carries a red build.
+2. Guides (docs tests first, then `docs/pages.md` and `docs/posts.md`).
+3. Full verify gate (ask Don first); PR with auto-merge, not major.
 
 ## Risks
 
