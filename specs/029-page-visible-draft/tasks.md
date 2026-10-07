@@ -144,8 +144,8 @@ After this phase the old code lists still work (nothing reads `location` yet), s
 
 ## Phase 7: Polish and cross-cutting
 
-- [ ] T042 [P] Docs: update `docs/pages.md` (settings table with `visible`, `location`, the menu section, landing files, "taken addresses") and `docs/testing.md` (contract-row mapping for V1 to V12 to their tests). Plain language, no hype.
-- [ ] T043 [P] Check the accessibility checklist `specs/029-page-visible-draft/checklists/accessibility.md` against the result and tick items the tests cover; run `pnpm run test:a11y` for the page templates, the Writing and Projects routes and the not-found page (layer: a11y, templates not stories).
+- [X] T042 [P] Docs: update `docs/pages.md` (settings table with `visible`, `location`, the menu section, landing files, "taken addresses") and `docs/testing.md` (contract-row mapping for V1 to V12 to their tests). Plain language, no hype.
+- [X] T043 [P] Check the accessibility checklist `specs/029-page-visible-draft/checklists/accessibility.md` against the result and tick items the tests cover; run `pnpm run test:a11y` for the page templates, the Writing and Projects routes and the not-found page (layer: a11y, templates not stories).
 - [ ] T044 Run `pnpm run test:visual` (macOS) and confirm no snapshot changes. No baseline update is planned (FR-011); a diff is a defect to fix, not a baseline to refresh.
 - [ ] T045 Run the quickstart scenarios in `specs/029-page-visible-draft/quickstart.md` (not-visible page on production vs preview build, menu move between header and footer) with local builds.
 - [ ] T046 Merge `origin/main` into the branch (shared hot spots: `src/config/navigation.ts`, `SiteFooter.astro`, `BaseLayout.astro`, page files), resolve keeping both sides, and re-run the unit suite.

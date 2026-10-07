@@ -307,6 +307,31 @@ Call-site runs, all in `build/page-validation.test.ts`:
 | 16 | Level-1 heading | `unit/body.test.ts` "rejects a level-1 Markdown heading and an <h1>, saying to use ##" | build, rows 8 to 10 and 16 |
 | 17 | Bad file or folder name | `unit/addresses.test.ts` "addressFromPath" `it.each` over bad names (the rejects table) | sync, row 17 |
 
+### Page settings and menus: `specs/029-page-visible-draft/contracts/page-settings.md`
+
+Rows V1 to V12 replace row 15 above. Paths are relative to `tests/`; "Unit" is
+`tests/unit/content/`.
+
+| Row | Rule | Primary assertion | Call-site run |
+|---|---|---|---|
+| V1 | `visible` or `draft` not a boolean | `unit/content/page-schema.test.ts` "V1" | `build/page-validation.test.ts` "V1" |
+| V2 | `nav.location` not header or footer | `unit/content/page-schema.test.ts` "V2" | sync, via V1 run |
+| V3 | `nav` without `location`, or empty | `unit/content/page-schema.test.ts` "V3" | sync, via V1 run |
+| V4 | `nav` without `position` | `unit/content/page-schema.test.ts` "V4" | sync, via V1 run |
+| V5 | Home page not visible | `unit/content/page-flags.test.ts` (`assertHomeVisible`) | `build/page-validation.test.ts` "V5" |
+| V6 | Position clash in one menu | `unit/content/navigation.test.ts` (position clash) | `build/page-validation.test.ts` "V6"; `build/navigation.test.ts` |
+| V7 | Landing file with extra keys | `unit/content/page-schema.test.ts` "V7" | `build/page-validation.test.ts` "V7" |
+| V8 | Landing file with a body | `unit/content/page-flags.test.ts` (`assertLandingBody`) | `build/page-validation.test.ts` "V8" |
+| V9 | Landing file missing | build only | `build/page-validation.test.ts` "V9" |
+| V10 | Landing file without `nav` | `unit/content/page-schema.test.ts` "V10" | `build/page-validation.test.ts` "V10" |
+| V11 | Link text clash in one menu | `unit/content/navigation.test.ts` "V11" | `build/page-validation.test.ts` "V11" |
+| V12 | Landing file in the footer | `unit/content/page-schema.test.ts` "V12" | `build/page-validation.test.ts` "V12" |
+
+Behaviour, not errors: not-visible pages (production omits, preview keeps) are in
+`build/drafts.test.ts`; the menus of every built page against the page files, and pages with no
+`nav`, are in `build/navigation.test.ts`; the footer with no page entries is
+`component/SiteFooter.test.ts`.
+
 ### Post files: `specs/008-blog/contracts/build-errors.md`
 
 Call-site runs, all in `build/post-validation.test.ts`:
