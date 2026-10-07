@@ -80,7 +80,7 @@ No shared prerequisite beyond Phase 1. The registry change (T007) and the page a
 
 - [x] T019 Run quickstart steps 1 to 3 once more end to end, including the manual rejection check (add `<TextBlock title="x">` to a scratch page, confirm the build fails naming the file and tag, revert). Not parallel: it rebuilds `dist`.
 - [x] T020 Release gate: ask Don before running, then merge `origin/main`, check `lsof -i :4321` is clear, and run the full `pnpm run verify` (with `ASTRO_PREVIEW_BACKGROUND=1`, under `perl -e 'alarm N; exec @ARGV'`, via the wrapper in the background; read the `VERIFY_EXIT=` line). Everything must be green; never loosen a check. Rerun once if the failure is load-bound or a runner-capacity cancel (CLAUDE.md and memory notes).
-- [ ] T021 Open the PR from `drc-agents` (`gh auth switch --user drc-agents`, then back to `drcdev`), body saying in one line that the slice is classified not major and why (plan "Major-change classification"), with no `[PREVIEW-CHECK]` item (Don chose "merge as usual"). After the final push, `gh pr merge --auto --merge`; the merge waits for Don's approval and green `verify`. After it merges, switch to `main`, pull and delete the local branch.
+- [x] T021 Open the PR from `drc-agents` (`gh auth switch --user drc-agents`, then back to `drcdev`), body saying in one line that the slice is classified not major and why (plan "Major-change classification"), with no `[PREVIEW-CHECK]` item (Don chose "merge as usual"). After the final push, `gh pr merge --auto --merge`; the merge waits for Don's approval and green `verify`. After it merges, switch to `main`, pull and delete the local branch.
 
 ---
 
