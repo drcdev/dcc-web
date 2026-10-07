@@ -314,3 +314,8 @@ message that names the file and the tag.
   and adds no new focusable element; a site-wide scroll margin is a separate follow-up.
 - Reviewing whether any other component could also be replaced by plain Markdown. The issue
   names the set to keep.
+- Adding `CLAUDE.md` to the unit-test guard that no guide names a removed section (FR-009). The
+  guard covers `docs/` and `.claude/skills/` only, because a unit test that reads `CLAUDE.md`
+  trips the changed-paths drift guard (`READ_BY_CHECKS`). `CLAUDE.md` names no removed section
+  today and was checked by the T018 grep; covering it in the guard needs a change to that CI
+  check, which is out of scope here.
