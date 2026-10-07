@@ -49,6 +49,7 @@ On the built page, inside `<main>`:
 
 - `docs/pages.md` states the rule once (plain Markdown for everything Markdown can express;
   components only for the eight in C1), has an example of each of the eight, shows a titled
-  passage as `## Title` + text and a list of items as `###` headings, and contains no
-  `<TextBlock`, `<Offerings` or `<Offering`.
+  passage as `## Title` + text and a list of items as `###` headings, says how heading
+  addresses are formed (including `-1` for repeats) and that links go in the heading or text,
+  and contains no `<TextBlock`, `<Offerings` or `<Offering` (spec FR-008).
 - `docs/posts.md`'s list of page sections usable in posts no longer names the removed three.

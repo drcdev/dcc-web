@@ -119,7 +119,7 @@ src/
 └── lib/content/body.ts       # unchanged (reads sectionNames)
 
 docs/
-├── pages.md                  # rule stated once; eight components incl. ContactForm, RecentWriting; ##/### examples
+├── pages.md                  # rule stated once; eight components (FR-003 order, props) incl. ContactForm, RecentWriting; ##/### examples; heading addresses; links in items; headings outside components (FR-008)
 └── posts.md                  # list of page sections usable in posts: Lead, CallToAction
 
 tests/
@@ -155,6 +155,9 @@ tests/
   `visual-baselines` label if CI disagrees.
 - `What I don't do` slugs to `what-i-dont-do`; tests should read ids from the built HTML rather
   than hard-code them, apart from the `consulting` spot check.
+- Heading targets can open just under the sticky header on ordinary pages (only project pages
+  set `scroll-margin-top`). This feature matches that existing behaviour (spec FR-011); a
+  site-wide scroll margin is a follow-up, not a task here.
 
 ## Complexity Tracking
 
