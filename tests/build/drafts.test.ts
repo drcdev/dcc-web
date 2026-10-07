@@ -48,7 +48,7 @@ const builds: Record<string, FixtureSiteResult> = {};
 beforeAll(async () => {
   // One after the other: parallel builds starve each other when the whole build suite runs at once.
   // Workers Builds sets WORKERS_CI; the harness supplies the Turnstile test key the build then requires.
-  builds.production = await buildFixtureSite([], {
+  builds.production = await buildFixtureSite(["draft-page.mdx", "workshops.mdx"], {
     posts: ["valid/draft.mdx"],
     projects,
     overrides,
@@ -218,6 +218,18 @@ describe("a production build (Workers Builds, main)", () => {
     const xml = build().read("writing/rss.xml");
     expect(items(xml)).toHaveLength(0);
     expect(xml).toMatch(/<channel>[\s\S]*<\/channel><\/rss>$/);
+  });
+});
+
+describe("draft pages in the sitemap", () => {
+  // Issue #119: a draft page is built with its notice and noindex, so the sitemap must not point to it.
+  it("builds a draft page with its notice and noindex but leaves it out of the sitemap", () => {
+    const html = builds.production!.read("draft-page/index.html");
+    expect(html).toMatch(/data-draft-notice[^>]*>\s*<strong>Draft\.<\/strong>/);
+    expect(robots(html)).toMatch(/^<meta name="robots" content="noindex"\s*\/?>$/);
+    const sitemap = builds.production!.read("sitemap-0.xml");
+    expect(sitemap).not.toContain("/draft-page/");
+    expect(sitemap).toContain("/workshops/</loc>");
   });
 });
 

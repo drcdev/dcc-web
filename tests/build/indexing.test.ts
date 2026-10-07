@@ -152,12 +152,14 @@ describe.each(environments)("astro build with the $label environment", ({ env })
     expect([...entries].sort()).toEqual(expected.map((path) => `${expectedOrigin}${path}`).sort());
   });
 
-  // The merged page is listed once, drafts included, and the two removed pages are not (FR-008).
-  it("lists /work-with-me/ exactly once and neither /services/ nor /speaking/", () => {
+  // The merged page is listed once while it is published and not at all while it is a draft, and
+  // the two removed pages are never listed (FR-008, issue #119).
+  it("lists /work-with-me/ at most once, only when published, and neither /services/ nor /speaking/", () => {
     const entries = [...readFileSync(join(outDir, "sitemap-0.xml"), "utf-8").matchAll(/<loc>([^<]+)<\/loc>/g)].map(
       (m) => m[1]!,
     );
-    expect(entries.filter((loc) => loc === `${expectedOrigin}/work-with-me/`)).toHaveLength(1);
+    const published = !pages.find((page) => page.address === "/work-with-me/")?.draft;
+    expect(entries.filter((loc) => loc === `${expectedOrigin}/work-with-me/`)).toHaveLength(published ? 1 : 0);
     for (const removed of ["/services/", "/speaking/"]) {
       expect(entries, removed).not.toContain(`${expectedOrigin}${removed}`);
     }
@@ -199,13 +201,15 @@ describe.each(environments)("astro build with the $label environment", ({ env })
   });
 
   // The launch paths are checked against the main-branch build: the production environment with the
-  // repository's real content.
+  // repository's real content. A draft page is built but not listed, and setup item 26 already
+  // requires the launch pages to be published, so only published launch paths are checked here.
   it.runIf(env.WORKERS_CI_BRANCH === "main")("lists every launch.expectedPaths entry in the production sitemap", () => {
     const index = readFileSync(join(outDir, "sitemap-index.xml"), "utf-8");
     expect(index).toContain("https://doncoleman.ca/");
     const sitemap = readFileSync(join(outDir, "sitemap-0.xml"), "utf-8");
     const locs = new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]));
-    for (const path of launchConfig.launch!.expectedPaths) {
+    const draftAddresses = new Set(pages.filter((page) => page.draft).map((page) => page.address));
+    for (const path of launchConfig.launch!.expectedPaths.filter((address) => !draftAddresses.has(address))) {
       expect(locs.has(`https://doncoleman.ca${path}`), `the sitemap has no entry for ${path}`).toBe(true);
     }
   });

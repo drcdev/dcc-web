@@ -107,10 +107,10 @@ export function inBuild(entries: readonly Entry[], { production }: { production:
   return entries.filter((entry) => entry.collection === "pages" || !production || !entry.draft);
 }
 
-/** The addresses in the sitemap of a build. */
+/** The addresses in the sitemap of a build. A draft page is built but never listed (issue #119). */
 export function sitemapPaths({ production }: { production: boolean }): string[] {
   return [
-    ...pages.map((page) => page.address),
+    ...pages.filter((page) => !page.draft).map((page) => page.address),
     "/writing/",
     "/writing/all/",
     "/projects/",
