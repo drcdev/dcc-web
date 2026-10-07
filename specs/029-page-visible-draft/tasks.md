@@ -84,13 +84,13 @@ After this phase the old code lists still work (nothing reads `location` yet), s
 
 ### Tests first
 
-- [ ] T024 [P] [US2] Build test (layer: build) in `tests/build/drafts.test.ts` using `draft-page.mdx`: the visible draft page has the notice, noindex, no sitemap entry and keeps its menu link on production and preview; a visible non-draft page has no notice and, on production, no noindex and a sitemap entry (FR-003, FR-004, SC-004).
-- [ ] T025 [P] [US2] Build test (layer: build) in `tests/build/drafts.test.ts` using a `visible: false, draft: true` fixture: production leaves it out; preview treats it exactly as a not-visible, non-draft page (US2 scenario 4, FR-001).
-- [ ] T026 [US2] Run T024 and T025; T024 should already pass (guard), T025 is expected to pass after Phase 3. If either fails, fix the cause in `src/pages/[...slug].astro`.
+- [X] T024 [P] [US2] Build test (layer: build) in `tests/build/drafts.test.ts` using `draft-page.mdx`: the visible draft page has the notice, noindex, no sitemap entry and keeps its menu link on production and preview; a visible non-draft page has no notice and, on production, no noindex and a sitemap entry (FR-003, FR-004, SC-004).
+- [X] T025 [P] [US2] Build test (layer: build) in `tests/build/drafts.test.ts` using a `visible: false, draft: true` fixture: production leaves it out; preview treats it exactly as a not-visible, non-draft page (US2 scenario 4, FR-001).
+- [X] T026 [US2] Run T024 and T025; T024 should already pass (guard), T025 is expected to pass after Phase 3. If either fails, fix the cause in `src/pages/[...slug].astro`.
 
 ### Implementation
 
-- [ ] T027 [US2] No new code expected: confirm the notice, noindex and sitemap filter paths use `draft || !visible` (T013, T021) and record the result in the commit message. Fix any gap found in the file the failing test points at.
+- [X] T027 [US2] No new code expected: confirm the notice, noindex and sitemap filter paths use `draft || !visible` (T013, T021) and record the result in the commit message. Fix any gap found in the file the failing test points at.
 
 **Checkpoint**: draft and visibility behave independently (visibility wins).
 
