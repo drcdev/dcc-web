@@ -146,9 +146,9 @@ After this phase the old code lists still work (nothing reads `location` yet), s
 
 - [X] T042 [P] Docs: update `docs/pages.md` (settings table with `visible`, `location`, the menu section, landing files, "taken addresses") and `docs/testing.md` (contract-row mapping for V1 to V12 to their tests). Plain language, no hype.
 - [X] T043 [P] Check the accessibility checklist `specs/029-page-visible-draft/checklists/accessibility.md` against the result and tick items the tests cover; run `pnpm run test:a11y` for the page templates, the Writing and Projects routes and the not-found page (layer: a11y, templates not stories).
-- [ ] T044 Run `pnpm run test:visual` (macOS) and confirm no snapshot changes. No baseline update is planned (FR-011); a diff is a defect to fix, not a baseline to refresh.
-- [ ] T045 Run the quickstart scenarios in `specs/029-page-visible-draft/quickstart.md` (not-visible page on production vs preview build, menu move between header and footer) with local builds.
-- [ ] T046 Merge `origin/main` into the branch (shared hot spots: `src/config/navigation.ts`, `SiteFooter.astro`, `BaseLayout.astro`, page files), resolve keeping both sides, and re-run the unit suite.
+- [X] T044 Run `pnpm run test:visual` (macOS) and confirm no snapshot changes. No baseline update is planned (FR-011); a diff is a defect to fix, not a baseline to refresh.
+- [X] T045 Run the quickstart scenarios in `specs/029-page-visible-draft/quickstart.md` (not-visible page on production vs preview build, menu move between header and footer) with local builds.
+- [X] T046 Merge `origin/main` into the branch (shared hot spots: `src/config/navigation.ts`, `SiteFooter.astro`, `BaseLayout.astro`, page files), resolve keeping both sides, and re-run the unit suite.
 - [ ] T047 [PREVIEW-CHECK] On the branch preview deployment, confirm with Don's eyes that the header and footer look identical to production (six header links, three footer links, same order) and that the Contact page and landing pages still open. A subagent cannot verify the deployed preview. (Today's content has no not-visible page, so the preview behaviour of one is covered by T016 and T033, not by this check.)
 - [ ] T048 Final gate: ask Don before starting (parallel gates crash his machine), then run `pnpm run verify` (needs `ASTRO_PREVIEW_BACKGROUND=1`, run in the background under `perl alarm`, read `VERIFY_EXIT=`); fix any failure at its cause and never loosen a check.
 
