@@ -59,18 +59,18 @@ After this phase the old code lists still work (nothing reads `location` yet), s
 
 ### Tests first
 
-- [ ] T015 [P] [US1] Build test (layer: build, because only `astro build` output shows missing routes, sitemap entries and pruned images) in `tests/build/drafts.test.ts`: with the new fixture `tests/fixtures/pages/hidden-page.mdx` (`visible: false`, `nav: footer 9`, its own image under `tests/fixtures/pages/images/`), a production-mode build has no HTML file for its address, no built page links to it, the sitemap omits it and its image file is absent; an image also used by a built page stays (FR-002, SC-003).
-- [ ] T016 [P] [US1] Build test (layer: build, same file, preview-mode build of the same fixture) in `tests/build/drafts.test.ts`: the page is built with the same draft notice as a draft page and `<meta name="robots" content="noindex">`, and is absent from the sitemap (FR-002, US1 scenario 4). Its footer link on preview is asserted in T033, once menus come from the page files.
-- [ ] T017 [P] [US1] Build test (layer: build, a schema error is only observable through a real sync) in `tests/build/page-validation.test.ts` with broken fixtures under `tests/fixtures/pages/broken/`: non-boolean `visible` names file and setting (V1); not-visible home page fails on production and preview (V5). Second layer after the unit tests T003/T004 for wiring only: a schema or `generateId` helper that is never called passes its unit test.
-- [ ] T018 [P] [US1] Build test (layer: build) in `tests/build/indexing.test.ts` (where `isDraftPage` lives): `isDraftPage` treats a not-visible page as noindex, and the sitemap address list equals the helper's `sitemapPaths()` (FR-012).
-- [ ] T019 [US1] Confirm T015 to T018 fail (page still served on production).
+- [X] T015 [P] [US1] Build test (layer: build, because only `astro build` output shows missing routes, sitemap entries and pruned images) in `tests/build/drafts.test.ts`: with the new fixture `tests/fixtures/pages/hidden-page.mdx` (`visible: false`, `nav: footer 9`, its own image under `tests/fixtures/pages/images/`), a production-mode build has no HTML file for its address, no built page links to it, the sitemap omits it and its image file is absent; an image also used by a built page stays (FR-002, SC-003).
+- [X] T016 [P] [US1] Build test (layer: build, same file, preview-mode build of the same fixture) in `tests/build/drafts.test.ts`: the page is built with the same draft notice as a draft page and `<meta name="robots" content="noindex">`, and is absent from the sitemap (FR-002, US1 scenario 4). Its footer link on preview is asserted in T033, once menus come from the page files.
+- [X] T017 [P] [US1] Build test (layer: build, a schema error is only observable through a real sync) in `tests/build/page-validation.test.ts` with broken fixtures under `tests/fixtures/pages/broken/`: non-boolean `visible` names file and setting (V1); not-visible home page fails on production and preview (V5). Second layer after the unit tests T003/T004 for wiring only: a schema or `generateId` helper that is never called passes its unit test.
+- [X] T018 [P] [US1] Build test (layer: build) in `tests/build/indexing.test.ts` (where `isDraftPage` lives): `isDraftPage` treats a not-visible page as noindex, and the sitemap address list equals the helper's `sitemapPaths()` (FR-012).
+- [X] T019 [US1] Confirm T015 to T018 fail (page still served on production).
 
 ### Implementation
 
-- [ ] T020 [US1] Reader: in `src/lib/pages.ts` make `getPages()` return `getCollection("pages", e => e.data.visible || includeDrafts({ WORKERS_CI, WORKERS_CI_BRANCH }))` using the existing `build-mode.ts` signal (FR-014; its fail-safe is already covered by `tests/unit/site/build-mode.test.ts` and `tests/unit/content/build-mode.test.ts`, which stay unchanged). Make the existing `getNavigation()` read its pages through `getPages()` so a not-visible page gets no menu link on production (T015).
-- [ ] T021 [US1] Route: in `src/pages/[...slug].astro` build paths from `getPages()` and pass `draft={data.draft || !data.visible}`.
-- [ ] T022 [US1] Pruning: confirm the existing `astro:build:done` asset-pruning hook removes a not-visible page's own images on production; extend it only if T015 shows an orphan (name the file in the commit).
-- [ ] T023 [US1] Run T015 to T018 and the unit suite until green.
+- [X] T020 [US1] Reader: in `src/lib/pages.ts` make `getPages()` return `getCollection("pages", e => e.data.visible || includeDrafts({ WORKERS_CI, WORKERS_CI_BRANCH }))` using the existing `build-mode.ts` signal (FR-014; its fail-safe is already covered by `tests/unit/site/build-mode.test.ts` and `tests/unit/content/build-mode.test.ts`, which stay unchanged). Make the existing `getNavigation()` read its pages through `getPages()` so a not-visible page gets no menu link on production (T015).
+- [X] T021 [US1] Route: in `src/pages/[...slug].astro` build paths from `getPages()` and pass `draft={data.draft || !data.visible}`.
+- [X] T022 [US1] Pruning: confirm the existing `astro:build:done` asset-pruning hook removes a not-visible page's own images on production; extend it only if T015 shows an orphan (name the file in the commit).
+- [X] T023 [US1] Run T015 to T018 and the unit suite until green.
 
 **Checkpoint**: a page can be taken off the live site with one setting (SC-001).
 

@@ -48,13 +48,13 @@ const builds: Record<string, FixtureSiteResult> = {};
 beforeAll(async () => {
   // One after the other: parallel builds starve each other when the whole build suite runs at once.
   // Workers Builds sets WORKERS_CI; the harness supplies the Turnstile test key the build then requires.
-  builds.production = await buildFixtureSite(["draft-page.mdx", "workshops.mdx"], {
+  builds.production = await buildFixtureSite(["draft-page.mdx", "workshops.mdx", "hidden-page.mdx", "visible-page.mdx"], {
     posts: ["valid/draft.mdx"],
     projects,
     overrides,
     env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" },
   });
-  builds.preview = await buildFixtureSite([], {
+  builds.preview = await buildFixtureSite(["hidden-page.mdx", "visible-page.mdx"], {
     posts: ["valid/published.mdx", "valid/draft.mdx"],
     projects,
     overrides,
@@ -230,6 +230,31 @@ describe("draft pages in the sitemap", () => {
     const sitemap = builds.production!.read("sitemap-0.xml");
     expect(sitemap).not.toContain("/draft-page/");
     expect(sitemap).toContain("/workshops/</loc>");
+  });
+});
+
+describe("a page with visible: false", () => {
+  // 029 FR-002, SC-003 (V1): a production build has no trace of the page; a preview build labels it like a draft.
+  it("is absent from a production build: no HTML, no link, no sitemap entry, no own image (SC-003)", () => {
+    const build = builds.production!;
+    expect(build.message).toBe("");
+    expect(existsSync(join(build.dist, "hidden-page/index.html"))).toBe(false);
+    for (const [path, html] of build.htmlFiles()) expect(html, path).not.toContain('href="/hidden-page/"');
+    expect(build.read("sitemap-0.xml")).not.toContain("/hidden-page/");
+    expect(builtNames(build).some((name) => name.includes("hidden-only"))).toBe(false);
+  });
+
+  it("keeps an image that a built page also uses", () => {
+    expect(builtNames(builds.production!).some((name) => name.includes("shared-image"))).toBe(true);
+    expect(builds.production!.read("visible-page/index.html")).toContain("shared-image");
+  });
+
+  it("is built on a preview with the draft notice and noindex, and stays out of the sitemap", () => {
+    const build = builds.preview!;
+    const html = build.read("hidden-page/index.html");
+    expect(html).toMatch(/data-draft-notice[^>]*>\s*<strong>Draft\.<\/strong>/);
+    expect(robots(html)).toMatch(/^<meta name="robots" content="noindex"\s*\/?>$/);
+    expect(build.read("sitemap-0.xml")).not.toContain("/hidden-page/");
   });
 });
 

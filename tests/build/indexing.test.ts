@@ -78,12 +78,12 @@ describe.each(environments)("astro build with the $label environment", ({ env })
     }
   });
 
-  // A draft standalone page is noindex in every build, so the main build's "no robots meta" rule
+  // A draft or not-visible standalone page is noindex in every build, so the main build's "no robots meta" rule
   // covers the published pages only.
   const isDraftPage = (file: string): boolean => {
     const address = `/${relative(outDir, file).replace(/(^|\/)index\.html$/, "")}`;
     const normalised = address === "/" ? "/" : `${address}/`;
-    return pages.some((page) => page.draft && page.address === normalised);
+    return pages.some((page) => (page.draft || !page.visible) && page.address === normalised);
   };
 
   it("sets the robots meta tag by build: none on published pages in main, noindex everywhere else", () => {
