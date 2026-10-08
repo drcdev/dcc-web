@@ -58,7 +58,7 @@ outputs, `full` and `content_only`. A push to `main` and a missing or empty diff
 | Tier | What counts | What runs | What is skipped |
 |---|---|---|---|
 | Skip-safe | Every changed file is on the skip-safe allowlist: `.md`, `.yml`, `.yaml`, `.json`, `.sh`, `.py` and `.ps1` files under `.claude/`, `.specify/` and `specs/`, except the files a test or check reads (`setup-walkthrough`'s `SKILL.md`). Edits to the pipeline skills, `_shared/`, `CLAUDE.md` and the constitution run the skip-safe tier. `full=false`. | secretlint only (`static`) and `verify` | `build-tests` and `e2e`, and the lint, type-check and unit steps of `static` |
-| Content-only | Every changed file is either skip-safe or an `.mdx` file or an image or video file under `src/content/pages`, `src/content/posts` or `src/content/projects`. `.md` files, schemas, `src/content.config.ts` and `public/` are not content-only. `full=true`, `content_only=true`. | The whole gate, except that `build-tests` runs `pnpm run test:build:content` (`indexing.test.ts`, `local-site.test.ts` and `project-template.test.ts`, the build files that read real content by name) | The other build files (listed below) |
+| Content-only | Every changed file is either skip-safe or an `.mdx` file or an image or video file under `src/content/pages`, `src/content/posts` or `src/content/projects`. `.md` files, schemas, `src/content.config.ts` and `public/` are not content-only. `full=true`, `content_only=true`. | The whole gate, except that `build-tests` runs `pnpm run test:build:content` (`indexing.test.ts`, `local-site.test.ts`, `navigation.test.ts` and `project-template.test.ts`, the build files that read real content by name) | The other build files (listed below) |
 | Full | Everything else, every push to `main`, an empty diff, and any failure to compute the diff. `full=true`, `content_only=false`. | Every job and the whole `test:build` project | Nothing |
 
 The rule fails closed: a path that is not positively recognised runs the full gate, and an
@@ -303,9 +303,34 @@ Call-site runs, all in `build/page-validation.test.ts`:
 | 12 | Image section without image | `component/sections/Images.test.ts` "throws naming the section when there is no image", and `unit/section-schemas.test.ts` "says an image is needed" | build, rows 11 and 12 (same `checkSection` path) |
 | 13 | Two files, one address | `unit/addresses.test.ts` "fails for two page files with the same address, naming both and the address (row 13)" and "fails for x.mdx together with x/index.mdx, with the same message from either entry (row 13)" (`assertNoTwin`) | sync, row 13 (`x.mdx` with `x/index.mdx`; `generateId` runs the twin check) |
 | 14 | Address used by a route | `unit/addresses.test.ts` "fails for a page against a route file in src/pages", "fails for a page against a generated route file such as robots.txt.ts", "fails for the home page against src/pages/index.astro", "fails for a page under the fixed prefix of a route with a variable part", and "row 14: page addresses against the real route files (/projects/ prefix)" (which also covers pages at `writing.mdx` and `projects.mdx` against the Writing and Projects route files); the route-file list at the call site: `build/page-validation.test.ts` "row 14" (a page at `404.mdx` against `src/pages/404.astro`) | build, row 14 (the route-file list, `assertPageAddressesFree` in the route) |
-| 15 | Same navigation position | `unit/navigation.test.ts` "fails when two pages use the same position, naming both files and the position" and "fails when a page asks for fixed position %i, naming the page and the fixed entry" | `build/local-site.test.ts` "lists the page-sourced About entry in the header, between Projects and Contact" (the page-sourced entry reaches the real header) |
+| 15 (V6, V11) | Same navigation position or link text in one menu | `unit/navigation.test.ts` "fails when two pages use one position in a menu, naming both files in path order, the menu and the position" and "fails when two entries in one menu show the same link text" | `build/page-validation.test.ts` "V6" and "V11", and `build/navigation.test.ts` (the menus of every built page equal the menus from the page files) |
 | 16 | Level-1 heading | `unit/body.test.ts` "rejects a level-1 Markdown heading and an <h1>, saying to use ##" | build, rows 8 to 10 and 16 |
 | 17 | Bad file or folder name | `unit/addresses.test.ts` "addressFromPath" `it.each` over bad names (the rejects table) | sync, row 17 |
+
+### Page settings and menus: `specs/029-page-visible-draft/contracts/page-settings.md`
+
+Rows V1 to V12 replace row 15 above. Paths are relative to `tests/`; "Unit" is
+`tests/unit/content/`.
+
+| Row | Rule | Primary assertion | Call-site run |
+|---|---|---|---|
+| V1 | `visible` or `draft` not a boolean | `unit/content/page-schema.test.ts` "V1" | `build/page-validation.test.ts` "V1" |
+| V2 | `nav.location` not header or footer | `unit/content/page-schema.test.ts` "V2" | sync, via V1 run |
+| V3 | `nav` without `location`, or empty | `unit/content/page-schema.test.ts` "V3" | sync, via V1 run |
+| V4 | `nav` without `position` | `unit/content/page-schema.test.ts` "V4" | sync, via V1 run |
+| V5 | Home page not visible | `unit/content/page-flags.test.ts` (`assertHomeVisible`) | `build/page-validation.test.ts` "V5" |
+| V6 | Position clash in one menu | `unit/content/navigation.test.ts` (position clash) | `build/page-validation.test.ts` "V6"; `build/navigation.test.ts` |
+| V7 | Landing file with extra keys | `unit/content/page-schema.test.ts` "V7" | `build/page-validation.test.ts` "V7" |
+| V8 | Landing file with a body | `unit/content/page-flags.test.ts` (`assertLandingBody`) | `build/page-validation.test.ts` "V8" |
+| V9 | Landing file missing | build only | `build/page-validation.test.ts` "V9" |
+| V10 | Landing file without `nav` | `unit/content/page-schema.test.ts` "V10" | `build/page-validation.test.ts` "V10" |
+| V11 | Link text clash in one menu | `unit/content/navigation.test.ts` "V11" | `build/page-validation.test.ts` "V11" |
+| V12 | Landing file in the footer | `unit/content/page-schema.test.ts` "V12" | `build/page-validation.test.ts` "V12" |
+
+Behaviour, not errors: not-visible pages (production omits, preview keeps) are in
+`build/drafts.test.ts`; the menus of every built page against the page files, and pages with no
+`nav`, are in `build/navigation.test.ts`; the footer with no page entries is
+`component/SiteFooter.test.ts`.
 
 ### Post files: `specs/008-blog/contracts/build-errors.md`
 

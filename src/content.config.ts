@@ -13,14 +13,16 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertNoTwin, idFromPath, slugFromPath, slugFromPostPath } from "./lib/content/addresses.ts";
 import { assertImagesExist } from "./lib/content/images.ts";
+import { assertHomeVisible, assertLandingBody, bodyAfterFrontMatter } from "./lib/content/page-flags.ts";
 import { assertPostDates } from "./lib/content/post-dates.ts";
-import { pageSchema } from "./content/schemas/page.ts";
+import { landingSchema, pageSchema } from "./content/schemas/page.ts";
 import { postSchema } from "./content/schemas/post.ts";
 import { projectSchema } from "./content/schemas/project.ts";
 
 const pages = defineCollection({
   loader: glob({
-    pattern: "**/*.{md,mdx}",
+    // The two landing files are their own collection, so no page route reads them (029).
+    pattern: ["**/*.{md,mdx}", "!writing.{md,mdx}", "!projects.{md,mdx}"],
     base: "./src/content/pages",
     // Runs for every file before its content is bundled: the id check names
     // bad file names, the twin check names two files with one address, and the image
@@ -29,10 +31,27 @@ const pages = defineCollection({
       const id = idFromPath(entry);
       assertNoTwin("page", fileURLToPath(base), entry);
       assertImagesExist("page", fileURLToPath(base), entry, data);
+      assertHomeVisible(id, entry, data);
       return id;
     },
   }),
   schema: ({ image }) => pageSchema({ image }),
+});
+
+// `landing`: the Writing and Projects menu entries. The files hold settings only; the pages are
+// built by code routes (specs/029-page-visible-draft/contracts/page-settings.md).
+const landing = defineCollection({
+  loader: glob({
+    pattern: "{writing,projects}.{md,mdx}",
+    base: "./src/content/pages",
+    generateId: ({ entry, base }) => {
+      const dir = fileURLToPath(base);
+      assertNoTwin("page", dir, entry);
+      assertLandingBody(entry, bodyAfterFrontMatter(readFileSync(resolve(dir, entry), "utf-8")));
+      return idFromPath(entry);
+    },
+  }),
+  schema: landingSchema,
 });
 
 const posts = defineCollection({
@@ -70,4 +89,4 @@ const projects = defineCollection({
   schema: ({ image }) => projectSchema({ image }),
 });
 
-export const collections = { pages, posts, projects };
+export const collections = { pages, landing, posts, projects };

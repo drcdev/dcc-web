@@ -21,6 +21,8 @@ function contentSlugs(): string[] {
     const base = join(root, "src/content", collection);
     for (const file of walk(base)) {
       if (!file.endsWith(".mdx")) continue;
+      // The Writing and Projects landing files are menu settings, not entries (029).
+      if (collection === "pages" && /\/(writing|projects)\.mdx$/.test(file)) continue;
       const slug = file
         .slice(base.length + 1)
         .replace(/\.mdx$/, "")

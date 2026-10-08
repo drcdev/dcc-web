@@ -35,6 +35,8 @@ export interface Entry<D = Record<string, unknown>> {
   address: string;
   /** `draft: true` in the front matter (the schema default is false). */
   draft: boolean;
+  /** `visible` in the front matter (the schema default is true). False: not in the production build. */
+  visible: boolean;
   title: string;
   /** The parsed front matter; a date is a Date. */
   data: D;
@@ -82,6 +84,7 @@ export function readEntries(collection: Collection, dir = `src/content/${collect
       slug,
       address,
       draft: frontmatter.draft === true,
+      visible: frontmatter.visible !== false,
       title: String(frontmatter.title ?? ""),
       data: frontmatter,
       body: content,
@@ -90,7 +93,13 @@ export function readEntries(collection: Collection, dir = `src/content/${collect
   });
 }
 
-export const pages: Entry[] = readEntries("pages");
+/** The two landing files in src/content/pages/ (the Writing and Projects menu entries). They are not pages: no route reads them. */
+export const landingFileNames = ["writing.mdx", "projects.mdx"] as const;
+const isLanding = (entry: Entry): boolean => landingFileNames.some((name) => entry.file === `src/content/pages/${name}`);
+const allPageFiles: Entry[] = readEntries("pages");
+
+export const pages: Entry[] = allPageFiles.filter((entry) => !isLanding(entry));
+export const landingPages: Entry[] = allPageFiles.filter(isLanding);
 export const posts: Entry[] = readEntries("posts");
 export const projects: Entry[] = readEntries("projects");
 
@@ -100,17 +109,23 @@ export const isSample = (post: Entry): boolean => post.slug.startsWith("sample-"
 export const realPosts: Entry[] = posts.filter((post) => !isSample(post));
 
 /**
- * The entries a build contains. Only a production build leaves drafts out, and only posts and
- * projects: a draft page is built with a notice and noindex.
+ * The entries a build contains. A production build leaves out draft posts and projects, and
+ * pages with `visible: false`; a draft page is built with a notice and noindex. A non-production
+ * build contains every entry.
  */
 export function inBuild(entries: readonly Entry[], { production }: { production: boolean }): Entry[] {
-  return entries.filter((entry) => entry.collection === "pages" || !production || !entry.draft);
+  return entries.filter((entry) => {
+    if (!production) return true;
+    return entry.collection === "pages" ? entry.visible : !entry.draft;
+  });
 }
 
-/** The addresses in the sitemap of a build. A draft page is built but never listed (issue #119). */
+/** The addresses in the sitemap of a build. A draft or not-visible page is never listed (issue #119, 029). */
 export function sitemapPaths({ production }: { production: boolean }): string[] {
   return [
-    ...pages.filter((page) => !page.draft).map((page) => page.address),
+    ...inBuild(pages, { production })
+      .filter((page) => page.visible && !page.draft)
+      .map((page) => page.address),
     "/writing/",
     "/writing/all/",
     "/projects/",
@@ -118,6 +133,30 @@ export function sitemapPaths({ production }: { production: boolean }): string[] 
     ...inBuild(posts, { production }).map((post) => post.address),
     ...inBuild(projects, { production }).map((project) => project.address),
   ];
+}
+
+export interface MenuLink {
+  label: string;
+  href: string;
+}
+
+/**
+ * The header and footer links a build shows, computed from the page files (the pages in the build
+ * plus the landing files), each menu ordered by `nav.position`. `extra` adds entries the test copies
+ * into the site, such as a fixture page. A page without `nav` is in no menu.
+ */
+export function menusOf(
+  { production }: { production: boolean },
+  extra: readonly Entry[] = [],
+): { header: MenuLink[]; footer: MenuLink[] } {
+  const entries = [...inBuild([...pages, ...extra], { production }), ...landingPages];
+  const menu = (location: "header" | "footer"): MenuLink[] =>
+    entries
+      .map((entry) => ({ entry, nav: entry.data.nav as { location: string; position: number; label?: string } | undefined }))
+      .filter(({ nav }) => nav?.location === location)
+      .sort((a, b) => a.nav!.position - b.nav!.position)
+      .map(({ entry, nav }) => ({ label: nav!.label ?? entry.title, href: entry.address }));
+  return { header: menu("header"), footer: menu("footer") };
 }
 
 /** A post in the shape src/lib/content/post-order.ts takes. */
@@ -160,3 +199,12 @@ function pickSeriesPost(): Entry {
   return post;
 }
 export const seriesPost: Entry = pickSeriesPost();
+
+/** The home page's intro call-to-action link address, from `src/content/pages/index.mdx`. */
+function pickHomeCtaHref(): string {
+  const home = pages.find((page) => page.slug === "index");
+  const href = (home?.data.intro as { cta?: { href?: string } } | undefined)?.cta?.href;
+  if (!href) throw new Error("tests/helpers/content.ts: the home page has no intro.cta.href.");
+  return href;
+}
+export const homeCtaHref: string = pickHomeCtaHref();

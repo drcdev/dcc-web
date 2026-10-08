@@ -2,7 +2,7 @@
 // (contracts/page-dom.md; FR-013, FR-014, FR-015, FR-020, FR-025, FR-027,
 // FR-030; SC-001).
 import { test, expect } from "@playwright/test";
-import { pages, projects } from "../helpers/content";
+import { homeCtaHref, pages, projects } from "../helpers/content";
 import { TEMPLATES } from "./templates.ts";
 
 // [address, h1, draft], from each page's front matter. The h1 is the page title on every page.
@@ -142,10 +142,10 @@ test.describe("home introduction card (FR-016 to FR-019, FR-028a)", () => {
     await expect(page.getByText(/subscribe/i)).toHaveCount(0);
   });
 
-  test("the call to action navigates to /work-with-me/", async ({ page }) => {
+  test("the call to action navigates to the address in the home page file", async ({ page }) => {
     await page.goto("/");
-    await page.locator("main section").first().locator('a[href="/work-with-me/"]').click();
-    await expect(page).toHaveURL(/\/work-with-me\/$/);
+    await page.locator("main section").first().locator(`a[href="${homeCtaHref}"]`).click();
+    await expect(page).toHaveURL((url) => url.pathname === homeCtaHref);
   });
 
   test("the text below the card has no button-style links", async ({ page }) => {

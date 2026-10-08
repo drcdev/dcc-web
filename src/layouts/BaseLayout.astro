@@ -18,11 +18,11 @@ import Seo, { type Props as SeoProps } from "../components/Seo.astro";
 import SkipLink from "../components/SkipLink.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
-import type { NavigationItem } from "../config/navigation";
+import type { SiteNavigation } from "../config/navigation";
 
 export type Props = SeoProps & {
-  /** Header items, from getNavigation() (src/lib/pages.ts). */
-  navigation: NavigationItem[];
+  /** Header and footer links, from getNavigation() (src/lib/pages.ts). */
+  navigation: SiteNavigation;
 };
 
 const { navigation, ...seo } = Astro.props;
@@ -41,12 +41,12 @@ const { navigation, ...seo } = Astro.props;
   </head>
   <body class="bg-white dark:bg-dusk-BASE antialiased flex min-h-dvh flex-col">
     <SkipLink />
-    <SiteHeader navigation={navigation} />
+    <SiteHeader navigation={navigation.header} />
     <div class="page-container grow">
       <main id="main" tabindex="-1" class="container mx-auto p-4 mt-4">
         <slot />
       </main>
     </div>
-    <SiteFooter />
+    <SiteFooter navigation={navigation.footer} />
   </body>
 </html>

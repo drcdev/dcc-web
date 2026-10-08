@@ -11,7 +11,7 @@ import { satteri } from "@astrojs/markdown-satteri";
 
 import { pruneDraftAssets } from "./src/lib/prune-unreferenced-assets.ts";
 import { INTER_UNICODE_RANGE, MONO_FALLBACK_STACK, SYSTEM_FONT_STACK } from "./src/lib/fonts/charset.ts";
-import { draftPageAddresses } from "./src/lib/content/draft-pages.ts";
+import { unlistedPageAddresses } from "./src/lib/content/draft-pages.ts";
 import { resolveSiteOrigin } from "./src/lib/site-origin.ts";
 import { readingTimePlugin } from "./src/lib/markdown/reading-time.ts";
 import { projectPartsPlugin } from "./src/lib/markdown/project-parts.ts";
@@ -30,7 +30,7 @@ const site = resolveSiteOrigin(process.env, setupConfig);
 // Draft pages are built (notice and noindex) but left out of the sitemap, so the site does not
 // point search engines at pages it asks them to skip. The filter gets only a URL, so the draft
 // addresses are read here (docs.astro.build/en/guides/integrations-guide/sitemap/#filter).
-const draftPages = draftPageAddresses(fileURLToPath(new URL("./src/content/pages/", import.meta.url)));
+const draftPages = unlistedPageAddresses(fileURLToPath(new URL("./src/content/pages/", import.meta.url)));
 
 // The pre-paint theme script is rendered with is:inline (src/layouts/BaseLayout.astro),
 // which Astro's CSP does not hash automatically, so its hash is computed here from

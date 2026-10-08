@@ -24,7 +24,9 @@ plain `.md` works for text only. Put images next to the page in `src/content/pag
 title: Work with me
 description: The work Don Coleman is considering taking on and the talks he gives.
 nav:
+  location: header
   position: 2
+visible: true
 draft: true
 ---
 ```
@@ -35,20 +37,37 @@ draft: true
 | `description` | yes | The summary shown in search results and link previews. About 50 to 160 characters reads best; this is not enforced. |
 | `image` | no | Sharing image: `src` (a file path) and `alt` (required). Without it the site default is used. |
 | `featureImage` | no | A picture at the top of the page: `src`, `alt` (required) and optional `caption`. |
-| `nav` | no | Puts the page in the header menu. Leave it out to keep the page out of the menu. |
-| `nav.position` | with `nav` | Menu order, a whole number from 1. |
+| `visible` | no | Default `true`. `false` takes the page off the live site: no page, no menu link, no sitemap entry, and its own images are left out. Previews still build it, with the draft notice, so you can review it. The home page cannot be `false`. |
+| `draft` | no | Default `false`. `true` keeps a visible page published with a "draft" notice, but asks search engines not to index it and leaves it out of the sitemap. If `visible` is `false`, visibility wins. |
+| `nav` | no | Puts the page in a menu. Leave it out to keep the page out of both menus; it is still served. |
+| `nav.location` | with `nav` | `header` or `footer`. |
+| `nav.position` | with `nav` | Order within that menu, a whole number from 1. |
 | `nav.label` | no | Menu text. Defaults to `title`. |
-| `draft` | no | `true` keeps the page published with a "draft" notice, but asks search engines not to index it and leaves it out of the sitemap. |
 | `intro` | no | Home page only: the introduction card (`photo`, `name`, `tagline`, `bio`, `cta`). |
 
 Do not write a `# Heading` in the body; the title is the page's only main heading. Use `##`.
 
-## Menu positions and taken addresses
+## Menus
 
-Positions 4, 5 and 7 belong to Writing, Projects and Contact, and About is at 6. Work with me is at 2, so 3 is free. Pick another number; a clash
-stops the build. The addresses `/writing/` and `/projects/` belong to the Writing and Projects
-pages, `/contact/` is `contact.mdx`, and any address another part of the site already uses
-(such as `/404/`) is taken too; a page file at one of them stops the build.
+The header and footer menus are built only from the page files. There is no list in code. To
+add a page to a menu, give it `nav` with a `location` and a `position`; to move it, change those
+two settings. Each menu is ordered by `position`, and the same position may be used once in the
+header and once in the footer. A position clash within one menu stops the build, as does two
+entries in one menu with the same link text (case and spaces ignored). If no page is in the
+footer, the footer shows no page links and keeps the rest.
+
+### Landing files
+
+`src/content/pages/writing.mdx` and `src/content/pages/projects.mdx` put Writing and Projects in
+the header. They hold only `title` and `nav` (with `location: header`), no body and no other
+setting. The page itself is built by code; the file supplies the menu entry. Both files must
+exist, or the build stops.
+
+### Taken addresses
+
+The addresses `/writing/` and `/projects/` belong to those landing files, and any address
+another part of the site already uses (such as `/404/`) is taken; a page file at one of them
+stops the build.
 
 ## Writing the page
 
@@ -176,5 +195,8 @@ The build stops at the first problem and names the file. Messages start with `Pa
 - A `# Heading` in the body: use `##`.
 - Two files with the same address (`about.md` and `about.mdx`), or an address that another
   route or a later feature reserves.
-- Two menu entries with the same `position`.
+- Two entries in one menu with the same `position` or the same link text.
+- `visible` or `draft` written as anything but `true` or `false`; `nav` without both `location`
+  and `position`; the home page with `visible: false`.
+- A landing file with a body, an extra setting, no `nav`, or `location: footer`; a missing landing file.
 - A file or folder name with anything other than lower-case letters, digits and hyphens.

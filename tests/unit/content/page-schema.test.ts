@@ -3,7 +3,7 @@
 // for it here so the schema can be tested without the content layer.
 import { describe, expect, it } from "vitest";
 import { z } from "astro/zod";
-import { pageSchema } from "../../../src/content/schemas/page.ts";
+import { landingSchema, pageSchema } from "../../../src/content/schemas/page.ts";
 
 const schema = pageSchema({ image: () => z.string() });
 
@@ -13,7 +13,8 @@ const full = {
   ...minimal,
   image: { src: "./images/share.jpg", alt: "Don Coleman speaking" },
   featureImage: { src: "./images/stage.jpg", alt: "A conference stage", caption: "From 2025" },
-  nav: { position: 3, label: "Talks" },
+  nav: { location: "header", position: 3, label: "Talks" },
+  visible: true,
   draft: true,
   intro: {
     photo: { src: "./images/don.jpg", alt: "Don Coleman" },
@@ -57,16 +58,17 @@ describe("pageSchema", () => {
   });
 
   it("rejects a nav position that is not a whole number of 1 or more", () => {
-    rejects({ ...minimal, nav: { position: "second" } });
-    rejects({ ...minimal, nav: { position: 0 } });
-    rejects({ ...minimal, nav: { position: 1.5 } });
-    rejects({ ...minimal, nav: {} });
-    rejects({ ...minimal, nav: { position: 2, label: "" } });
+    const header = { location: "header" };
+    rejects({ ...minimal, nav: { ...header, position: "second" } });
+    rejects({ ...minimal, nav: { ...header, position: 0 } });
+    rejects({ ...minimal, nav: { ...header, position: 1.5 } });
+    rejects({ ...minimal, nav: { ...header, position: 2, label: "" } });
+    rejects({ ...minimal, nav: { ...header, position: 2, label: "   " } });
   });
 
   it("rejects unknown keys at every level", () => {
     rejects({ ...minimal, titel: "Oops" });
-    rejects({ ...minimal, nav: { position: 2, lable: "x" } });
+    rejects({ ...minimal, nav: { location: "header", position: 2, lable: "x" } });
     rejects({ ...minimal, image: { ...full.image, extra: 1 } });
     rejects({ ...minimal, featureImage: { ...full.featureImage, extra: 1 } });
     rejects({ ...full, intro: { ...full.intro, extra: 1 } });
@@ -94,7 +96,37 @@ describe("pageSchema", () => {
   });
 
   it("row 3: a wrong type for nav.position names position", () => {
-    expect(issueText({ ...minimal, nav: { position: "second" } })).toContain("position");
+    expect(issueText({ ...minimal, nav: { location: "header", position: "second" } })).toContain("position");
+  });
+
+  it("V1: visible defaults to true and draft to false", () => {
+    const result = schema.safeParse(minimal);
+    expect(result.data?.visible).toBe(true);
+    expect(result.data?.draft).toBe(false);
+  });
+
+  it.each(["visible", "draft"] as const)("V1: %s rejects quoted, numeric, null and empty values", (key) => {
+    for (const value of ["no", "true", 1, 0, null, ""]) {
+      expect(issueText({ ...minimal, [key]: value }), String(value)).toContain(key);
+    }
+  });
+
+  it("V2: nav.location accepts only header or footer", () => {
+    for (const location of ["header", "footer"]) {
+      expect(schema.safeParse({ ...minimal, nav: { location, position: 1 } }).success, location).toBe(true);
+    }
+    for (const location of ["sidebar", "Header", "", 1]) {
+      expect(issueText({ ...minimal, nav: { location, position: 1 } }), String(location)).toContain("location");
+    }
+  });
+
+  it("V3: a position with no location fails, and an empty nav fails", () => {
+    expect(issueText({ ...minimal, nav: { position: 2 } })).toContain("location");
+    expect(issueText({ ...minimal, nav: {} })).toContain("location");
+  });
+
+  it("V4: a location with no position fails", () => {
+    expect(issueText({ ...minimal, nav: { location: "footer" } })).toContain("position");
   });
 
   it("row 4: a misspelled key is named in the issue text", () => {
@@ -128,5 +160,32 @@ describe("pageSchema", () => {
       const result = schema.safeParse({ ...minimal, intro: { ...full.intro, cta: { label: "Go", href } } });
       expect(result.success, href).toBe(true);
     }
+  });
+});
+
+describe("landingSchema (029)", () => {
+  const landing = { title: "Section", nav: { location: "header", position: 4 } };
+  const landingIssues = (value: unknown) => {
+    const result = landingSchema.safeParse(value);
+    expect(result.success, "the landing schema should reject the value").toBe(false);
+    return (result.error?.issues ?? []).map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("\n");
+  };
+
+  it("accepts a title and a header nav", () => {
+    expect(landingSchema.safeParse(landing).success).toBe(true);
+  });
+
+  it("V7: rejects an extra key, visible, draft and description", () => {
+    for (const key of ["extra", "visible", "draft", "description"]) {
+      expect(landingIssues({ ...landing, [key]: "x" }), key).toContain(key);
+    }
+  });
+
+  it("V10: requires nav", () => {
+    expect(landingIssues({ title: "Section" })).toContain("nav");
+  });
+
+  it("V12: rejects a footer location", () => {
+    expect(landingIssues({ ...landing, nav: { location: "footer", position: 4 } })).toContain("location");
   });
 });

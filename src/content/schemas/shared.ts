@@ -25,8 +25,9 @@ export const seoFields = {
   description: text,
 };
 
-/** `nav`: present means the page is listed in the header navigation (FR-008). */
+/** `nav`: present means the page is listed in one menu, in position order (FR-008, 029). */
 export const navField = z.strictObject({
+  location: z.enum(["header", "footer"]),
   position: z.number().int().min(1),
   label: text.optional(),
 });

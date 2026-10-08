@@ -44,6 +44,35 @@ describe("page schema and loader wiring (sync)", () => {
       "lower-case letters, digits and hyphens",
     ));
 
+  // 029 V1: `visible` must be a boolean; the schema error names the file and the setting.
+  it("V1: a quoted visible setting is rejected, naming the file and the setting", () =>
+    expectRejected("sync", [broken("18-visible-not-boolean.mdx")], "18-visible-not-boolean", "visible"));
+
+  // 029 V5: the home page cannot be taken off the site, in any build mode.
+  it("V5: a not-visible home page fails on production and on preview", async () => {
+    for (const env of [{ WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" }, { WORKERS_CI: "1", WORKERS_CI_BRANCH: "some-branch" }]) {
+      result = await buildFixtureSite([broken("19-hidden-home.mdx", "index.mdx")], { mode: "sync", env });
+      expect(result.ok, `the sync should fail (${env.WORKERS_CI_BRANCH})`).toBe(false);
+      expect(result.message).toContain("index.mdx");
+      expect(result.message).toContain("visible");
+      result.cleanup();
+    }
+  });
+
+  // 029 V7, V8, V10, V12: the strict landing schema and the empty-body check are wired into the
+  // `landing` collection. Each fixture replaces writing.mdx.
+  it("V8: a landing file with a body is rejected, naming the file", () =>
+    expectRejected("sync", [broken("22-landing-with-body.mdx", "writing.mdx")], "writing.mdx", "no body"));
+
+  it("V7: a landing file with visible, draft or description is rejected, naming the file", () =>
+    expectRejected("sync", [broken("23-landing-extra-settings.mdx", "writing.mdx")], "writing.mdx", "visible"));
+
+  it("V10: a landing file without nav is rejected, naming the file and nav", () =>
+    expectRejected("sync", [broken("24-landing-no-nav.mdx", "writing.mdx")], "writing.mdx", "nav"));
+
+  it("V12: a landing file in the footer is rejected, naming the file and location", () =>
+    expectRejected("sync", [broken("25-landing-footer.mdx", "writing.mdx")], "writing.mdx", "location"));
+
   // The twin check runs in generateId, so it fires at sync with the custom wording, ahead of Astro's own
   // duplicate-slug error (prerenderConflictBehavior: 'error').
   it("row 13: generateId runs the twin check (x.mdx and x/index.mdx)", () =>
@@ -58,6 +87,30 @@ describe("page schema and loader wiring (sync)", () => {
 });
 
 describe("page route and component wiring (build)", () => {
+  // 029 V6, V11 and V9 come from getNavigation(), which only a build calls.
+  it("V6: two pages at one header position fail the build, naming both files, the menu and the position", () =>
+    expectRejected(
+      "build",
+      [broken("20-header-position-taken.mdx")],
+      "20-header-position-taken.mdx",
+      "both use header position 2",
+    ));
+
+  it("V11: two header entries with the same link text fail the build, naming both files and the text", () =>
+    expectRejected(
+      "build",
+      [broken("21-link-text-taken.mdx")],
+      "21-link-text-taken.mdx",
+      "in the header",
+    ));
+
+  it("V9: a removed landing file fails the build, naming the missing file", async () => {
+    result = await buildFixtureSite([], { mode: "build", removePages: ["projects.mdx"] });
+    expect(result.ok, "the build should fail").toBe(false);
+    expect(result.message).toContain("src/content/pages/projects.mdx");
+    expect(result.message).toContain("missing");
+  });
+
   it("row 7: Astro rejects a body image that does not exist", () =>
     expectRejected("build", [broken("07-missing-image-body.mdx")], "does-not-exist.png"));
 

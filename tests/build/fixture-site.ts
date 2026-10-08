@@ -66,6 +66,8 @@ export interface FixtureSiteOptions {
    * unreferenced. Default false.
    */
   withoutRealProjects?: boolean;
+  /** Page files to delete from the copied site, relative to src/content/pages/ (for example a landing file). */
+  removePages?: readonly string[];
   /** Extra files to write into the site, keyed by path relative to the site root (for example an oversized clip). */
   write?: Readonly<Record<string, string | Uint8Array>>;
 }
@@ -174,6 +176,7 @@ export async function buildFixtureSite(
   mkdirSync(pagesDir, { recursive: true });
   const images = resolve(fixturesRoot, "images");
   if (existsSync(images)) cpSync(images, resolve(pagesDir, "images"), { recursive: true });
+  for (const name of options.removePages ?? []) rmSync(resolve(pagesDir, name), { force: true });
   copyFixtures(files, fixturesRoot, pagesDir);
 
   if (options.posts) {

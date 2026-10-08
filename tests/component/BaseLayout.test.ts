@@ -21,10 +21,16 @@ beforeAll(async () => {
     partial: false,
     props: {
       title: "Test page",
-      navigation: [
-        { label: "Alpha", href: "/alpha/", kind: "primary" },
-        { label: "Beta", href: "/beta/", kind: "primary" },
-      ],
+      navigation: {
+        header: [
+          { label: "Alpha", href: "/alpha/", kind: "primary" },
+          { label: "Beta", href: "/beta/", kind: "primary" },
+        ],
+        footer: [
+          { label: "Gamma", href: "/gamma/", kind: "footer" },
+          { label: "Delta", href: "/delta/", kind: "footer" },
+        ],
+      },
     },
     request: new Request("https://example.test/test-page/"),
     slots: { default: "<h1>Test page</h1><h2>Section</h2><p>Body text.</p>" },
@@ -145,15 +151,18 @@ describe("BaseLayout head", () => {
 });
 
 describe("BaseLayout navigation prop (FR-025)", () => {
-  it("passes navigation to the header and leaves footer and social links unchanged", () => {
+  it("passes the header list to the header and the footer list to the footer, then the social links", () => {
     const list = /<ul[^>]+id="primary-nav-list"[\s\S]*?<\/ul>/.exec(html)?.[0] ?? "";
     expect(list).toContain('href="/alpha/"');
     expect(list).toContain('href="/beta/"');
     expect(list).not.toContain("Services");
     const footer = /<footer[\s\S]*<\/footer>/.exec(html)?.[0] ?? "";
-    for (const href of ["/privacy-policy/", "/terms-of-use/", "/technology/", "https://github.com/drcdev", "https://www.linkedin.com/in/drcdev"]) {
+    for (const href of ["/gamma/", "/delta/", "https://github.com/drcdev", "https://www.linkedin.com/in/drcdev"]) {
       expect(footer).toContain(`href="${href}"`);
     }
+    expect(footer.indexOf('href="/gamma/"')).toBeLessThan(footer.indexOf('href="/delta/"'));
+    expect(footer).not.toContain('href="/alpha/"');
+    expect(list).not.toContain("/gamma/");
   });
 });
 
@@ -173,7 +182,7 @@ describe("BaseLayout head slot (blog feed link; research R3)", () => {
     const container = await AstroContainer.create({ astroConfig: { site: "https://example.test" } });
     return container.renderToString(BaseLayout, {
       partial: false,
-      props: { title: "Test page", navigation: [{ label: "Alpha", href: "/alpha/", kind: "primary" }] },
+      props: { title: "Test page", navigation: { header: [{ label: "Alpha", href: "/alpha/", kind: "primary" }], footer: [] } },
       request: new Request("https://example.test/test-page/"),
       slots: { default: "<h1>Test page</h1>", ...slots },
     });

@@ -6,11 +6,25 @@ import { beforeAll, describe, expect, it } from "vitest";
 import SiteFooter from "../../src/components/SiteFooter.astro";
 import { byName, focusable, tags, textOf, type Tag } from "./html.ts";
 
+const NAVIGATION = [
+  { label: "Privacy policy", href: "/privacy-policy/", kind: "footer" },
+  { label: "Terms of use", href: "/terms-of-use/", kind: "footer" },
+  { label: "Technology", href: "/technology/", kind: "footer" },
+] as const;
+
 let html = "";
+let emptyHtml = "";
 
 beforeAll(async () => {
   const container = await AstroContainer.create();
-  html = await container.renderToString(SiteFooter, { request: new Request("https://example.test/") });
+  html = await container.renderToString(SiteFooter, {
+    props: { navigation: [...NAVIGATION] },
+    request: new Request("https://example.test/"),
+  });
+  emptyHtml = await container.renderToString(SiteFooter, {
+    props: { navigation: [] },
+    request: new Request("https://example.test/"),
+  });
 });
 
 /** Text of the element that starts at `tag`, up to its matching close tag (non-nested use only). */
@@ -104,5 +118,23 @@ describe("SiteFooter leaves out Ghost-only and unused pieces", () => {
     for (const t of tags(html)) {
       expect(Object.keys(t.attrs).filter((a) => a.startsWith("on"))).toEqual([]);
     }
+  });
+});
+
+// FR-006a, SC-006: an empty footer menu leaves out the page-link list and nothing else.
+describe("SiteFooter with no page links", () => {
+  it("renders no list of page links", () => {
+    expect(byName(emptyHtml, "ul")).toHaveLength(0);
+    expect(emptyHtml).not.toContain("/privacy-policy/");
+  });
+
+  it("keeps the site name, copyright, theme switch and social links", () => {
+    expect(byName(emptyHtml, "footer")).toHaveLength(1);
+    expect(textOf(emptyHtml, "footer")).toContain(`© ${new Date().getFullYear()} Don Coleman. All rights reserved.`);
+    expect(byName(emptyHtml, "a")[0]!.attrs.href).toBe("/");
+    expect(byName(emptyHtml, "button")).toHaveLength(1);
+    const hrefs = byName(emptyHtml, "a").map((a) => a.attrs.href);
+    expect(hrefs).toContain("https://github.com/drcdev");
+    expect(hrefs).toContain("https://www.linkedin.com/in/drcdev");
   });
 });

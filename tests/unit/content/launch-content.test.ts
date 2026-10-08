@@ -6,8 +6,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { z } from "astro/zod";
-import { pageSchema } from "../../../src/content/schemas/page.ts";
-import { pages } from "../../helpers/content";
+import { landingSchema, pageSchema } from "../../../src/content/schemas/page.ts";
+import { landingPages, pages } from "../../helpers/content";
 
 const dir = fileURLToPath(new URL("../../../src/content/pages/", import.meta.url));
 
@@ -20,29 +20,55 @@ function load(name: string) {
   return { front: match![1]!, body: match![2]!, all: source, text: source.toLowerCase() };
 }
 
-// [file, nav position (undefined: not in the navigation), draft].
+// [file, nav location and position (undefined: not in a menu), draft, visible].
 const LAUNCH = [
-  ["index.mdx", 1, true],
-  ["work-with-me.mdx", 2, true],
-  ["about.mdx", 6, false],
-  ["privacy-policy.mdx", undefined, true],
-  ["terms-of-use.mdx", undefined, true],
-  ["technology.mdx", undefined, true],
+  ["index.mdx", ["header", 1], false, true],
+  ["work-with-me.mdx", ["header", 2], true, false],
+  ["about.mdx", ["header", 6], false, true],
+  ["contact.mdx", ["header", 7], false, true],
+  ["privacy-policy.mdx", ["footer", 1], false, true],
+  ["terms-of-use.mdx", ["footer", 2], false, true],
+  ["technology.mdx", ["footer", 3], false, true],
 ] as const;
 
 describe("launch page files", () => {
-  for (const [name, position, draft] of LAUNCH) {
-    it(`${name} is ${draft ? "a draft" : "live"} with the expected nav position`, () => {
+  for (const [name, nav, draft, visible] of LAUNCH) {
+    it(`${name} is ${visible ? "visible" : "not visible"}, ${draft ? "a draft" : "published"}, with the expected nav location and position`, () => {
       const { front } = load(name);
-      expect(front).toMatch(new RegExp(`^draft: ${draft}$`, "m"));
-      if (position === undefined) {
+      // A published, visible page may leave `draft` and `visible` out (defaults false and true).
+      if (draft) expect(front).toMatch(/^draft: true$/m);
+      else expect(front).not.toMatch(/^draft: true$/m);
+      if (visible) expect(front).not.toMatch(/^visible: false$/m);
+      else expect(front).toMatch(/^visible: false$/m);
+      if (nav === undefined) {
         expect(front).not.toMatch(/^nav:/m);
       } else {
         expect(front).toMatch(/^nav:/m);
-        expect(front).toMatch(new RegExp(`position: ${position}\\b`));
+        expect(front).toMatch(new RegExp(`location: ${nav[0]}\\b`));
+        expect(front).toMatch(new RegExp(`position: ${nav[1]}\\b`));
       }
     });
   }
+
+  // The writing and projects landing files hold the two listing links in the header (US3).
+  for (const [name, position] of [["writing.mdx", 4], ["projects.mdx", 5]] as const) {
+    it(`${name} is a landing file in the header at position ${position}`, () => {
+      load(name);
+      const entry = landingPages.find((page) => page.file.endsWith(`/${name}`));
+      expect(entry, `${name} is read as a landing page`).toBeDefined();
+      const result = landingSchema.safeParse(entry!.data);
+      expect(result.success, result.success ? "" : JSON.stringify(result.error.issues)).toBe(true);
+      expect(entry!.data.nav).toMatchObject({ location: "header", position });
+      expect(entry!.body.trim()).toBe("");
+      expect(pages.some((page) => page.file === entry!.file), "pages excludes landing files").toBe(false);
+    });
+  }
+
+  it("a page under privacy/ is in no menu (US4)", () => {
+    const apps = pages.filter((page) => page.file.includes("/pages/privacy/"));
+    expect(apps.length).toBeGreaterThan(0);
+    for (const page of apps) expect(page.data.nav, page.file).toBeUndefined();
+  });
 
   it("every launch page's front matter passes the page schema", () => {
     const schema = pageSchema({ image: () => z.string() });

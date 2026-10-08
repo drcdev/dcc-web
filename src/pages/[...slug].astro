@@ -5,7 +5,7 @@
 // The body is rendered with render() from astro:content, and the section
 // components are handed to <Content /> so MDX needs no imports
 // (docs.astro.build/en/guides/integrations-guide/mdx/#passing-components-to-mdx-content).
-import { getCollection, render } from "astro:content";
+import { render } from "astro:content";
 import { getImage } from "astro:assets";
 import type { ImageMetadata } from "astro";
 import type { ComponentProps } from "astro/types";
@@ -14,20 +14,21 @@ import { sectionComponents } from "../components/sections/index";
 import { allowTurnstile } from "../components/sections/contact-csp";
 import { assertPageAddressesFree } from "../lib/content/addresses";
 import { validatePageBody } from "../lib/content/body";
-import { addressOf, fileOf, getNavigation } from "../lib/pages";
+import { addressOf, fileOf, getNavigation, getPages } from "../lib/pages";
 
 export async function getStaticPaths() {
   // File lists come from the file system, not the collection. Two files with one address are
-  // caught earlier, in generateId (src/content.config.ts).
+  // caught earlier, in generateId (src/content.config.ts). The landing files are menu settings,
+  // not pages, so they are left out of the address check.
   const pageFiles = Object.keys(import.meta.glob("/src/content/pages/**/*.{md,mdx}", { query: "?url" })).map(
     (path) => path.slice("/src/content/pages/".length),
-  );
+  ).filter((path) => !/^(writing|projects)\.mdx?$/.test(path));
   const routeFiles = Object.keys(import.meta.glob("./**/*.{astro,md,mdx,ts,js}"))
     .map((path) => path.slice(2))
     .filter((path) => path !== "[...slug].astro");
   assertPageAddressesFree({ pageFiles, routeFiles });
 
-  const entries = await getCollection("pages");
+  const entries = await getPages();
   for (const entry of entries) validatePageBody(fileOf(entry), entry.body ?? "");
   return entries.map((entry) => ({
     params: { slug: entry.id === "index" ? undefined : entry.id },
@@ -62,7 +63,7 @@ const share = imageSrc ? await getImage({ src: imageSrc, width: 1200, format: "p
   imageAlt={data.image?.alt}
   featureImage={featureImage}
   intro={data.intro as ComponentProps<typeof PageLayout>["intro"]}
-  draft={data.draft}
+  draft={data.draft || !data.visible}
   home={addressOf(entry) === "/"}
 >
   <Content components={sectionComponents} />

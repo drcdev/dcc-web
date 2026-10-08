@@ -4,10 +4,17 @@
 // research R4, R15; FR-008, FR-008a, FR-010a). Flux's Subscribe/Account link
 // and Facebook/X icons are left out (FR-004). The year is the build year.
 import { site } from "../config/site";
-import { footerNavigation, socialNavigation } from "../config/navigation";
+import { socialNavigation, type NavigationItem } from "../config/navigation";
 import ThemeToggle from "./ThemeToggle.astro";
 import GitHubIcon from "../icons/github.svg";
 import LinkedInIcon from "../icons/linkedin.svg";
+
+// The page links come from the `navigation` prop: the footer menu built from the page files
+// (src/lib/content/navigation.ts). With none, the list is left out (FR-006a).
+export interface Props {
+  navigation: NavigationItem[];
+}
+const { navigation } = Astro.props;
 
 const year = new Date().getFullYear();
 const icons = { GitHub: GitHubIcon, LinkedIn: LinkedInIcon } as const;
@@ -19,19 +26,19 @@ const icons = { GitHub: GitHubIcon, LinkedIn: LinkedInIcon } as const;
       <a href="/" class="mb-4 flex items-center justify-center sm:mb-0">
         <span class="self-center text-xl font-semibold whitespace-nowrap text-dusk-900 dark:text-white">{site.name}</span>
       </a>
-      <ul
-        class="mb-6 flex flex-wrap items-center justify-center text-sm font-medium text-dusk-500 sm:mb-0 dark:text-dusk-400"
-      >
-        {
-          footerNavigation.map((item) => (
-            <li class="px-2">
-              <a href={item.href} class="hover:underline">
-                {item.label}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
+      {
+        navigation.length > 0 && (
+          <ul class="mb-6 flex flex-wrap items-center justify-center text-sm font-medium text-dusk-500 sm:mb-0 dark:text-dusk-400">
+            {navigation.map((item) => (
+              <li class="px-2">
+                <a href={item.href} class="hover:underline">
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
     </div>
     <hr class="mx-auto my-2 border-dusk-200 lg:my-4 dark:border-dusk-700" />
 

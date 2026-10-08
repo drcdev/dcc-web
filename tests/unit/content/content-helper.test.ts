@@ -10,6 +10,7 @@ import { seriesIds, topicHref, topics } from "../../../src/config/topics.ts";
 import {
   inBuild,
   isSample,
+  landingPages,
   pages,
   pickedStory,
   posts,
@@ -40,7 +41,9 @@ describe.each(Object.entries(collections))("the %s entries", (name, entries) => 
   const files = filesIn(dir).map((file) => `src/content/${name}/${file}`);
 
   it("holds every content file exactly once", () => {
-    expect(entries.map((entry) => entry.file).sort()).toEqual([...files].sort());
+    // The landing files sit in the pages folder but are read as `landingPages`, not as pages.
+    const read = name === "pages" ? [...entries, ...landingPages] : entries;
+    expect(read.map((entry) => entry.file).sort()).toEqual([...files].sort());
     expect(new Set(entries.map((entry) => entry.address)).size).toBe(entries.length);
   });
 
@@ -49,6 +52,10 @@ describe.each(Object.entries(collections))("the %s entries", (name, entries) => 
       const source = readFileSync(join(root, entry.file), "utf-8");
       const line = /^draft:\s*(true|false)\s*$/m.exec(source)?.[1];
       expect(entry.draft, entry.file).toBe(line === "true");
+      if (entry.collection === "pages") {
+        const visible = /^visible:\s*(true|false)\s*$/m.exec(source)?.[1];
+        expect(entry.visible, entry.file).toBe(visible !== "false");
+      }
       expect(entry.title, entry.file).toBeTruthy();
       expect(entry.body.length, entry.file).toBeGreaterThan(0);
     }
@@ -71,13 +78,27 @@ describe("addresses", () => {
 });
 
 describe("build modes", () => {
-  it("leaves out exactly the draft posts and projects of a production build, and keeps every page", () => {
+  it("leaves out exactly the draft posts and projects of a production build", () => {
     for (const entries of [posts, projects]) {
       expect(inBuild(entries, { production: true })).toEqual(entries.filter((entry) => !entry.draft));
       expect(inBuild(entries, { production: false })).toEqual(entries);
     }
-    expect(inBuild(pages, { production: true })).toEqual(pages);
+  });
+
+  it("leaves out the not-visible pages of a production build and keeps every page otherwise", () => {
+    expect(inBuild(pages, { production: true })).toEqual(pages.filter((page) => page.visible));
     expect(inBuild(pages, { production: false })).toEqual(pages);
+    // Neutral stand-ins: a draft page stays in a production build, a not-visible one does not.
+    const stand = (visible: boolean, draft: boolean) => ({ ...pages[0]!, visible, draft });
+    const shown = stand(true, true);
+    const hidden = stand(false, false);
+    expect(inBuild([shown, hidden], { production: true })).toEqual([shown]);
+    expect(inBuild([shown, hidden], { production: false })).toEqual([shown, hidden]);
+  });
+
+  it("reads the landing files apart from the pages", () => {
+    expect(landingPages.length).toBeGreaterThan(0);
+    for (const landing of landingPages) expect(pages).not.toContain(landing);
   });
 });
 
@@ -94,7 +115,8 @@ describe("sitemapPaths", () => {
       const paths = sitemapPaths({ production });
       expect(new Set(paths).size).toBe(paths.length);
       // A draft page is built with noindex and left out of the sitemap (issue #119).
-      for (const page of pages) expect(paths.includes(page.address), page.address).toBe(!page.draft);
+      // A page with visible: false is also left out (029; it is not built on production).
+      for (const page of pages) expect(paths.includes(page.address), page.address).toBe(!page.draft && (page.visible || !production));
       for (const listing of ["/writing/", "/writing/all/", "/projects/"]) expect(paths).toContain(listing);
       for (const topic of topics) expect(paths).toContain(topicHref(topic.id));
       for (const entry of [...inBuild(posts, { production }), ...inBuild(projects, { production })]) {

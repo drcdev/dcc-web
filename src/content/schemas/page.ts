@@ -10,6 +10,7 @@ export function pageSchema({ image }: { image: ImageValidator }) {
     image: imageWithAlt(image).optional(),
     featureImage: captionedImage(image).optional(),
     nav: navField.optional(),
+    visible: z.boolean().default(true),
     draft: z.boolean().default(false),
     intro: z
       .strictObject({
@@ -22,5 +23,14 @@ export function pageSchema({ image }: { image: ImageValidator }) {
       .optional(),
   });
 }
+
+/**
+ * A landing file (`writing.mdx`, `projects.mdx`): only the title and a header menu entry. The
+ * address, heading and lists come from the code route (contracts/page-settings.md).
+ */
+export const landingSchema = z.strictObject({
+  title: requiredText,
+  nav: navField.extend({ location: z.literal("header") }),
+});
 
 export type PageData = z.infer<ReturnType<typeof pageSchema>>;

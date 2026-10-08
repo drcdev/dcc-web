@@ -8,12 +8,12 @@ import BaseLayout from "./BaseLayout.astro";
 import DraftNotice from "../components/page/DraftNotice.astro";
 import HomeIntro from "../components/page/HomeIntro.astro";
 import FeatureImage from "../components/page/FeatureImage.astro";
-import type { NavigationItem } from "../config/navigation";
+import type { SiteNavigation } from "../config/navigation";
 
 export interface Props {
   title: string;
   description: string;
-  navigation: NavigationItem[];
+  navigation: SiteNavigation;
   /** Sharing image path and its alt text; the site default when omitted. */
   image?: string;
   imageAlt?: string;
