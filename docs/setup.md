@@ -765,12 +765,12 @@ works today (messages stored in Cloudflare D1, none of the retired services).
 
 **Where to do it**
 In the repository: replace any placeholder text in `src/content/pages/` and `src/content/projects/`,
-remove `draft: true` from each page listed in `setup/config.json` under `launch.expectedPages`, and
-make `src/content/pages/privacy-policy.mdx` state that contact messages are stored in Cloudflare D1.
+remove `draft: true` from each page listed in `setup/config.json` under `launch.expectedPages` (a page
+kept hidden with `visible: false` is accepted as it is), and make `src/content/pages/privacy-policy.mdx` state that contact messages are stored in Cloudflare D1.
 
 **How it will be confirmed**
 `pnpm setup:check --item launch-content-ready` reports complete when every expected page exists and is
-not a draft, no published page says "placeholder copy", no published project visual is marked
+published or deliberately hidden with `visible: false`, no published page says "placeholder copy", no published project visual is marked
 `placeholder: true`, and the privacy policy states Cloudflare D1 storage and names none of Ghost,
 Supabase, Mailgun or Fly.io. Spam protection accepting the bare domain is confirmed by item 19
 (`contact-turnstile-widget`).

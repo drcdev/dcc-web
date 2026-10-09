@@ -9,7 +9,7 @@
   "ghostMarker": "Ghost",
   "workersSubdomain": "drc-dev",
   "launch": {
-    "expectedPages": ["index", "about", "work-with-me", "technology", "contact", "privacy-policy", "terms-of-use"],
-    "expectedPaths": ["/", "/about/", "/work-with-me/", "/technology/", "/writing/", "/projects/", "/contact/", "/privacy-policy/", "/terms-of-use/"]
+    "expectedPages": ["index", "about", "technology", "contact", "privacy-policy", "terms-of-use"],
+    "expectedPaths": ["/", "/about/", "/technology/", "/writing/", "/projects/", "/contact/", "/privacy-policy/", "/terms-of-use/"]
   }
 }

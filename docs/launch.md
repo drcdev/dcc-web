@@ -50,9 +50,12 @@ again. Do not go on to L2 until the list is clean.
 ### L2. Replace the placeholder copy and publish the pages {#l2}
 
 **What to do**
-Replace the Work with me placeholder copy and the Focus Pocus placeholders, set
-`draft: false` on those pages, and make sure the privacy policy says contact messages are stored in
-Cloudflare D1 and names no retired service. Do this through a normal small pull request to `main`.
+Publish each page in `launch.expectedPages` in `setup/config.json` (`draft: false`) with no
+placeholder copy. A listed page kept hidden with `visible: false` is accepted as it is. Work with me
+is hidden until issue #122 and is not in the list. No published project visual may still be marked as a placeholder, and the
+privacy policy must say contact messages are stored in Cloudflare D1 and name no retired service.
+If the check already reports complete, no pull request is needed. Otherwise do this through a normal
+small pull request to `main`.
 
 **Pause:** the agent stops here and waits for Don's answer: `Done — check it`, `Skip for now` or `Stop here`.
 
@@ -60,7 +63,7 @@ Cloudflare D1 and names no retired service. Do this through a normal small pull 
 Content files under `src/content/pages/` and `src/content/projects/`, then the pull request on GitHub.
 
 **How to confirm**
-After the pull request has merged and `main` is pulled, `pnpm setup:check --item launch-content-ready`
+With `main` pulled (after any pull request has merged), `pnpm setup:check --item launch-content-ready`
 reports complete.
 
 **If it does not confirm**
