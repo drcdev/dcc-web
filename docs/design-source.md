@@ -124,8 +124,8 @@ The following Flux/Ghost features are intentionally left behind and are not port
 
 These are the URL patterns live today on doncoleman.ca. The new build keeps a page's URL where
 that page still exists; blog post and category URLs change shape because the Drift/Convergence/
-News categories are not carried over (see above). There are no redirects — Don updates his own
-external links himself where a URL changes.
+News categories are not carried over (see above). The old Ghost addresses that map to a built page redirect permanently (see
+`public/_redirects`); any other old address returns the not-found page.
 
 - Posts: `/drift/{year}/{slug}/`, `/convergence/{year}/{slug}/`, `/news/{year}/{slug}/`
 - Category pages: `/drift/`, `/convergence/`, `/news/`

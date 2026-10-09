@@ -5,6 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { pages, realPosts } from "../../helpers/content";
 
 const redirectsPath = fileURLToPath(new URL("../../../public/_redirects", import.meta.url));
 
@@ -40,6 +41,11 @@ function resolve(path: string): { status: number; location: string } | undefined
   return undefined;
 }
 
+/** A rule for an old Ghost address: not a series topic address and not an app privacy address. */
+const isGhost = (rule: Rule): boolean => !rule.from.startsWith("/writing/topics/") && !rule.from.startsWith("/projects/");
+const withSlash = (path: string): string => (path.endsWith("/") ? path : `${path}/`);
+const withoutSlash = (path: string): string => path.replace(/\/$/, "");
+
 describe("public/_redirects", () => {
   it.each(["drift", "convergence"])("sends the old %s topic addresses to the short series address with 301", (id) => {
     const expected: Array<[string, string]> = [
@@ -61,8 +67,63 @@ describe("public/_redirects", () => {
     }
   });
 
+  // Spec 030: the old Ghost pages and topic pages land on the built page that replaced them.
+  it.each([
+    ["/drift/", "/writing/drift/"],
+    ["/convergence/", "/writing/convergence/"],
+    ["/news/", "/writing/"],
+    ["/contact-thank-you/", "/contact/"],
+    ["/cookie-policy/", "/privacy-policy/"],
+  ])("sends the old Ghost address %s to %s with 301, with and without the slash", (from, to) => {
+    for (const request of [withSlash(from), withoutSlash(from)]) {
+      expect(resolve(request), request).toEqual({ status: 301, location: to });
+    }
+  });
+
+  it("sends each old Ghost post address to its post under /writing/ and the post is a published real post", () => {
+    const postRules = rules().filter((r) => /^\/(drift|convergence|news)\/\d{4}\/[^/]+\/?$/.test(r.from));
+    expect(postRules.length).toBeGreaterThan(0);
+    const published = new Set(realPosts.filter((p) => !p.draft).map((p) => p.address));
+    for (const rule of postRules) {
+      expect(rule.status).toBe(301);
+      expect(rule.to, rule.from).toMatch(/^\/writing\/[a-z0-9-]+\/$/);
+      expect(published.has(rule.to), `${rule.from} -> ${rule.to}`).toBe(true);
+      const slug = rule.from.replace(/\/$/, "").split("/").pop();
+      expect(rule.to).toBe(`/writing/${slug}/`);
+    }
+  });
+
+  it("lists every Ghost source in both slash forms with the same built target", () => {
+    const ghost = rules().filter(isGhost);
+    expect(ghost.length).toBeGreaterThan(0);
+    const built = new Set<string>([
+      ...pages.map((p) => p.address),
+      ...realPosts.filter((p) => !p.draft).map((p) => p.address),
+      "/writing/",
+      "/writing/drift/",
+      "/writing/convergence/",
+    ]);
+    for (const rule of ghost) {
+      expect(resolve(withSlash(rule.from)), rule.from).toEqual({ status: 301, location: rule.to });
+      expect(resolve(withoutSlash(rule.from)), rule.from).toEqual({ status: 301, location: rule.to });
+      expect(rule.to, rule.from).toMatch(/\/$/);
+      expect(rule.from).not.toContain("*");
+      expect(built.has(rule.to), `${rule.from} -> ${rule.to}`).toBe(true);
+    }
+  });
+
   it("does not touch any other address", () => {
     for (const path of [
+      "/tag/x/",
+      "/author/x/",
+      "/rss/",
+      "/ghost/",
+      "/drift/2025/x/",
+      "/news/2024/x/",
+      "/topic/x/",
+      "/privacy-policy/",
+      "/contact/",
+      "/writing/",
       "/writing/topics/agentic-ai/",
       "/writing/topics/drifting/",
       "/writing/drift/",
@@ -76,13 +137,15 @@ describe("public/_redirects", () => {
     }
   });
 
-  it("has only 301 rules with an absolute-path source and a short-address target", () => {
+  it("has only 301 rules with an absolute-path source and a built-address target", () => {
     const all = rules();
     expect(all.length).toBeGreaterThan(0);
     for (const rule of all) {
       expect(rule.status).toBe(301);
-      expect(rule.from).toMatch(/^\/(writing\/topics\/|projects\/[a-z0-9-]+\/privacy\/?$)/);
-      expect(rule.to).toMatch(/^\/(writing\/(drift|convergence)|privacy\/[a-z0-9-]+)\//);
+      expect(rule.from).toMatch(
+        /^\/(writing\/topics\/|projects\/[a-z0-9-]+\/privacy\/?$|(drift|convergence|news)(\/|$)|contact-thank-you|cookie-policy)/,
+      );
+      expect(rule.to).toMatch(/^\/(writing\/|privacy\/[a-z0-9-]+\/|contact\/|privacy-policy\/)/);
     }
   });
 

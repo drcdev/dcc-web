@@ -8,8 +8,9 @@ import { pages } from "../helpers/content.ts";
 import { expectThemeClass, setTheme } from "./color-theme.ts";
 
 // Retired Ghost blog addresses that this rebuild does not carry over
-// (docs/design-source.md "Current live URLs" / "What doesn't carry over").
-const RETIRED_ADDRESSES = ["/drift/2025/x/", "/convergence/", "/news/", "/topic/x/"] as const;
+// (docs/design-source.md "Current live URLs" / "What doesn't carry over"). The mapped Ghost
+// addresses now redirect (spec 030, public/_redirects) and are tested in pages.spec.ts.
+const RETIRED_ADDRESSES = ["/drift/2025/x/", "/topic/x/"] as const;
 
 // Ghost-only addresses (FR-019, FR-027a): no redirect, the site's own not-found page.
 const GHOST_ADDRESSES = ["/tag/x/", "/author/x/", "/rss/", "/ghost/", "/2024/05/an-old-ghost-post/"] as const;
@@ -25,7 +26,7 @@ const REMOVED_PAGES = [
   "/speaking/x/",
 ] as const;
 
-const NOT_FOUND_ADDRESSES = [...RETIRED_ADDRESSES, ...GHOST_ADDRESSES, ...REMOVED_PAGES, "/cookie-policy/"] as const;
+const NOT_FOUND_ADDRESSES = [...RETIRED_ADDRESSES, ...GHOST_ADDRESSES, ...REMOVED_PAGES] as const;
 
 // Addresses that are built and must keep returning 200 (robots.txt: T083).
 const BUILT_ADDRESSES = [...pages.map((page) => page.address), "/robots.txt"];
