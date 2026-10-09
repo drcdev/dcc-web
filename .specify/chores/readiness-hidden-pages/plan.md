@@ -126,7 +126,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W1: Hidden-page cases for the check (test first)
 
-- [ ] W1 done
+- [x] W1 done
 - **Files:** `tests/unit/setup-check/checks/launch-content-ready.test.ts`.
 - **Test:** new-first. **Layer: unit**, the cheapest layer that can observe the rule. The check is
   a pure function of the files that the fake `RepoReader` serves. Use inline fixture slugs
