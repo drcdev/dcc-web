@@ -186,7 +186,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W4: Update the item 25 wording in `items.ts` and `docs/setup.md`
 
-- [ ] W4 done
+- [x] W4 done
 - **Files:** `scripts/setup-check/items.ts` (item 25 `where` and `confirmedBy`),
   `docs/setup.md` (section `## 25. Launch content ready {#launch-content-ready}`, "Where to do
   it" and "How it will be confirmed").
