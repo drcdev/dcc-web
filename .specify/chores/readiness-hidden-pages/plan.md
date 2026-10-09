@@ -164,7 +164,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W3: Drop Work with me from the launch config
 
-- [ ] W3 done
+- [x] W3 done
 - **Files:** `setup/config.json`.
 - **Test:** existing: `tests/build/indexing.test.ts` ("names a file in src/content/pages/ for
   every expected page id"; "lists every launch.expectedPaths entry in the production sitemap",
