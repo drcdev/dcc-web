@@ -77,6 +77,44 @@ describe("checks/launch-content-ready", () => {
     expect(result.status).toBe("complete");
   });
 
+  it("accepts an expected page that is hidden and still a draft", async () => {
+    const result = await check(
+      ctxFor({ pages: { about: "---\ntitle: About\nvisible: false\ndraft: true\n---\nHi\n" } }),
+    );
+    expect(result.status).toBe("complete");
+  });
+
+  it("accepts an expected page that is hidden and not a draft", async () => {
+    const result = await check(
+      ctxFor({ pages: { about: "---\ntitle: About\nvisible: false\ndraft: false\n---\nHi\n" } }),
+    );
+    expect(result.status).toBe("complete");
+  });
+
+  it("is missing for a visible draft expected page", async () => {
+    const result = await check(
+      ctxFor({ pages: { about: "---\ntitle: About\nvisible: true\ndraft: true\n---\nHi\n" } }),
+    );
+    expect(result.status).toBe("missing");
+    expect(result.details).toEqual(["about: page is still a draft"]);
+  });
+
+  it("ignores placeholder copy in a hidden page", async () => {
+    const result = await check(ctxFor({ pages: { extra: "---\ntitle: X\nvisible: false\n---\nplaceholder copy\n" } }));
+    expect(result.status).toBe("complete");
+  });
+
+  it("still reports a missing expected page file when another expected page is hidden", async () => {
+    const result = await check(
+      ctxFor(
+        { pages: { about: "---\ntitle: About\nvisible: false\ndraft: true\n---\nHi\n" } },
+        { launch: { expectedPages: ["about", "privacy-policy", "services"], expectedPaths: [] } },
+      ),
+    );
+    expect(result.status).toBe("missing");
+    expect(result.details).toEqual(["services: page file src/content/pages/services.mdx is missing"]);
+  });
+
   it("is missing for a project with placeholder: true", async () => {
     const result = await check(
       ctxFor({

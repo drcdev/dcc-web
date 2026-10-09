@@ -1,8 +1,8 @@
 // checks/launch-content-ready.ts (setup item 25, contracts/setup-items.md; FR-003, FR-003a): the
 // content is ready to go live. Repository files only, read through RepoReader. Four rules: every
-// expected page exists and is published; no published page says "placeholder copy"; no published
-// project still marks its visual as a placeholder; the privacy policy states Cloudflare D1 storage
-// and names none of the retired services.
+// expected page exists and is published or deliberately hidden (visible: false); no published page
+// says "placeholder copy"; no published project still marks its visual as a placeholder; the
+// privacy policy states Cloudflare D1 storage and names none of the retired services.
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, missing } from "./shared.ts";
 
@@ -19,6 +19,10 @@ function frontmatter(text: string): string {
 
 function isDraft(text: string): boolean {
   return /^draft:\s*true\s*$/m.test(frontmatter(text));
+}
+
+function isHidden(text: string): boolean {
+  return /^visible:\s*false\s*$/m.test(frontmatter(text));
 }
 
 function mdxIds(files: string[]): string[] {
@@ -47,14 +51,14 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     const text = ctx.fs.readText(path);
     if (text === null) {
       problems.push(`${id}: page file ${path} is missing`);
-    } else if (isDraft(text)) {
+    } else if (!isHidden(text) && isDraft(text)) {
       problems.push(`${id}: page is still a draft`);
     }
   }
 
   for (const id of mdxIds(ctx.fs.listFiles(PAGES_DIR))) {
     const text = ctx.fs.readText(`${PAGES_DIR}/${id}.mdx`);
-    if (text === null || isDraft(text)) continue;
+    if (text === null || isDraft(text) || isHidden(text)) continue;
     if (/placeholder copy/i.test(text)) problems.push(`${id}: still says "placeholder copy"`);
   }
 
@@ -76,7 +80,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
   }
 
   if (problems.length === 0) {
-    return complete(ITEM, "Every expected page is published, with no placeholder copy and an up-to-date privacy policy.");
+    return complete(ITEM, "Every expected page is published or deliberately hidden, with no placeholder copy and an up-to-date privacy policy.");
   }
   return missing(ITEM, `${problems.length} launch content problem(s).`, NEXT_ACTION, problems);
 }

@@ -462,9 +462,9 @@ const seeds: ItemSeed[] = [
     title: "Launch content ready",
     purpose: "Every page the launch needs is published with real copy, and the privacy policy matches how the site works today.",
     where:
-      "In the repository: replace placeholder text in src/content/pages/ and src/content/projects/, remove draft: true from each expected page, and make the privacy policy state that contact messages are stored in Cloudflare D1.",
+      "In the repository: replace placeholder text in src/content/pages/ and src/content/projects/, remove draft: true from each expected page (a page kept hidden with visible: false is accepted as it is), and make the privacy policy state that contact messages are stored in Cloudflare D1.",
     confirmedBy:
-      "Every page in setup/config.json launch.expectedPages exists and is not a draft, no published page says \"placeholder copy\", no published project visual is marked placeholder, and the privacy policy states Cloudflare D1 storage and names none of Ghost, Supabase, Mailgun or Fly.io",
+      "Every page in setup/config.json launch.expectedPages exists and is published or deliberately hidden with visible: false, no published page says \"placeholder copy\", no published project visual is marked placeholder, and the privacy policy states Cloudflare D1 storage and names none of Ghost, Supabase, Mailgun or Fly.io",
     needsDon: true,
     principles: ["VII"],
     requirements: ["FR-003", "FR-003a"],

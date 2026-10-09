@@ -35,7 +35,7 @@ Tick each box as it is done. This file retires with the final clean-up (stage 6)
 
 Both pull requests must merge to `main` before Part A of the walkthrough starts.
 
-- [ ] **1a. `/chore` — readiness check accepts hidden pages.** `launch-content-ready` treats a page
+- [x] **1a. `/chore` — readiness check accepts hidden pages.** `launch-content-ready` treats a page
   with `visible: false` as deliberately hidden rather than unfinished, and `launch.expectedPages` in
   `setup/config.json` drops `work-with-me`. The L2 step in `launch.md` is brought up to date: it
   still names the Services and Speaking pages (merged into Work with me in 026) and the Focus Pocus
