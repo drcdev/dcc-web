@@ -51,8 +51,8 @@ again. Do not go on to L2 until the list is clean.
 
 **What to do**
 Publish each page in `launch.expectedPages` in `setup/config.json` (`draft: false`) with no
-placeholder copy. A page kept hidden with `visible: false` (Work with me, until issue #122) is
-accepted as it is. No published project visual may still be marked as a placeholder, and the
+placeholder copy. A listed page kept hidden with `visible: false` is accepted as it is. Work with me
+is hidden until issue #122 and is not in the list. No published project visual may still be marked as a placeholder, and the
 privacy policy must say contact messages are stored in Cloudflare D1 and name no retired service.
 If the check already reports complete, no pull request is needed. Otherwise do this through a normal
 small pull request to `main`.
@@ -63,7 +63,7 @@ small pull request to `main`.
 Content files under `src/content/pages/` and `src/content/projects/`, then the pull request on GitHub.
 
 **How to confirm**
-After the pull request has merged and `main` is pulled, `pnpm setup:check --item launch-content-ready`
+With `main` pulled (after any pull request has merged), `pnpm setup:check --item launch-content-ready`
 reports complete.
 
 **If it does not confirm**
