@@ -148,7 +148,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W2: Accept hidden pages in the check
 
-- [ ] W2 done
+- [x] W2 done
 - **Files:** `scripts/setup-check/checks/launch-content-ready.ts`.
 - **Test:** existing: W1 turns green, and every existing case in the file passes unchanged.
 - **Shape:**
