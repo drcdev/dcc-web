@@ -201,7 +201,7 @@ Mechanical criteria (the review phase checks each one):
 
 ### W5: Bring L2 in `docs/launch.md` up to date, and tick 1a
 
-- [ ] W5 done
+- [x] W5 done
 - **Files:** `docs/launch.md` (section `### L2. … {#l2}`), `docs/cutover-plan.md` (line 38 only).
 - **Test:** existing: `tests/unit/setup/launch-doc.test.ts` (L2 present among the step ids; L2
   contains `pnpm setup:check --item launch-content-ready`). Otherwise no behaviour: n/a
