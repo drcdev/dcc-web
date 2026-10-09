@@ -175,8 +175,10 @@ describe("docs/design-source.md", () => {
     expect(doc).toContain(pattern);
   });
 
-  it("Current live URLs: states there are no redirects", () => {
-    expect(doc.toLowerCase()).toContain("no redirects");
+  it("Current live URLs: states the old Ghost addresses redirect", () => {
+    expect(doc.toLowerCase()).not.toContain("no redirects");
+    expect(doc).toContain("redirect permanently");
+    expect(doc).toContain("public/_redirects");
   });
 
   it("Accessibility adjustments: section has content (may be 'None')", () => {

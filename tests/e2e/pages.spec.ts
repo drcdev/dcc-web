@@ -2,13 +2,34 @@
 // (contracts/page-dom.md; FR-013, FR-014, FR-015, FR-020, FR-025, FR-027,
 // FR-030; SC-001).
 import { test, expect } from "@playwright/test";
+import { readFileSync } from "node:fs";
 import { homeCtaHref, pages, projects } from "../helpers/content";
 import { TEMPLATES } from "./templates.ts";
 
 // [address, h1, draft], from each page's front matter. The h1 is the page title on every page.
 const PAGES = pages.map((entry) => [entry.address, entry.title, entry.draft] as const);
 
-const NOT_BUILT = ["/cookie-policy/"] as const;
+// Old Ghost addresses (spec 030). E2E because only the real Cloudflare runtime shows the 301
+// answering before html_handling and not_found_handling. The rules are read from the file, so
+// no post names live here.
+const GHOST_RULES = readFileSync("public/_redirects", "utf-8")
+  .split("\n")
+  .map((line) => line.trim().split(/\s+/))
+  .filter(([from]) => from?.startsWith("/") && !from.startsWith("/writing/topics/") && !from.startsWith("/projects/"));
+
+test.describe("redirects from the old Ghost addresses", () => {
+  test("the file holds Ghost rules", () => {
+    expect(GHOST_RULES.length).toBeGreaterThan(0);
+  });
+  for (const [from, to] of GHOST_RULES) {
+    test(`${from} answers 301 to ${to}, which answers 200`, async ({ request }) => {
+      const response = await request.get(from!, { maxRedirects: 0 });
+      expect(response.status()).toBe(301);
+      expect(new URL(response.headers().location!, "http://127.0.0.1:4321").pathname).toBe(to);
+      expect((await request.get(to!)).status()).toBe(200);
+    });
+  }
+});
 
 // An app store listing points at the first drc.dev's per-project privacy address,
 // which public/_redirects sends to the app privacy page with a real 301.
@@ -115,12 +136,6 @@ test("the former single-word addresses resolve", async ({ request }) => {
     expect((await request.get(path)).status(), path).toBe(200);
   }
 });
-
-for (const path of NOT_BUILT) {
-  test(`${path} returns 404`, async ({ request }) => {
-    expect((await request.get(path)).status()).toBe(404);
-  });
-}
 
 test("the projects index and every story answer 200", async ({ request }) => {
   for (const path of ["/projects/", ...projects.map((entry) => entry.address)]) {

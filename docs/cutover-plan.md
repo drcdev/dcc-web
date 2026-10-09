@@ -41,7 +41,7 @@ Both pull requests must merge to `main` before Part A of the walkthrough starts.
   still names the Services and Speaking pages (merged into Work with me in 026) and the Focus Pocus
   placeholders (Focus Pocus is retired and has none). Done when `pnpm setup:check` reports
   `launch-content-ready` complete on `main`.
-- [ ] **1b. `/tweak` — redirect old Ghost addresses.** Add 301s in `public/_redirects`:
+- [x] **1b. `/tweak` — redirect old Ghost addresses.** Add 301s in `public/_redirects`:
 
   | Ghost address | New address |
   |---|---|

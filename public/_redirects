@@ -1,3 +1,22 @@
+# Old Ghost addresses (spec 030): each mapped address answers 301 with and without the trailing slash. No splat, so unmapped Ghost addresses stay 404.
+/convergence/2025/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change /writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/ 301
+/convergence/2025/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/ /writing/the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change/ 301
+/news/2025/starting-something-new /writing/starting-something-new/ 301
+/news/2025/starting-something-new/ /writing/starting-something-new/ 301
+/drift/2025/self-contained-development-for-ghost-themes /writing/self-contained-development-for-ghost-themes/ 301
+/drift/2025/self-contained-development-for-ghost-themes/ /writing/self-contained-development-for-ghost-themes/ 301
+/drift/2025/building-focus-pocus-what-i-learned-about-ai-coding-and-integration /writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/ 301
+/drift/2025/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/ /writing/building-focus-pocus-what-i-learned-about-ai-coding-and-integration/ 301
+/drift /writing/drift/ 301
+/drift/ /writing/drift/ 301
+/convergence /writing/convergence/ 301
+/convergence/ /writing/convergence/ 301
+/news /writing/ 301
+/news/ /writing/ 301
+/contact-thank-you /contact/ 301
+/contact-thank-you/ /contact/ 301
+/cookie-policy /privacy-policy/ 301
+/cookie-policy/ /privacy-policy/ 301
 /writing/topics/drift /writing/drift/ 301
 /writing/topics/drift/* /writing/drift/:splat 301
 /writing/topics/convergence /writing/convergence/ 301
