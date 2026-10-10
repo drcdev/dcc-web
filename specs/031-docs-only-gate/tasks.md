@@ -18,7 +18,7 @@ description: "Task list for the docs-only verify gate"
 
 ## Phase 1: Setup
 
-- [ ] T001 Confirm a green baseline: run `pnpm exec vitest run --project unit tests/unit/ci/` and read `specs/031-docs-only-gate/contracts/ci-tiers.md` and `data-model.md` for the exact `if:` strings and tier rules used below. No file changes.
+- [X] T001 Confirm a green baseline: run `pnpm exec vitest run --project unit tests/unit/ci/` and read `specs/031-docs-only-gate/contracts/ci-tiers.md` and `data-model.md` for the exact `if:` strings and tier rules used below. No file changes.
 
 ---
 
@@ -26,12 +26,12 @@ description: "Task list for the docs-only verify gate"
 
 **Purpose**: replace the two booleans with one `tier` value everywhere, so both stories build on the same shape. Behaviour of the existing skip-safe, content-only and full tiers is unchanged (FR-011).
 
-- [ ] T002 Test, layer unit: in `tests/unit/ci/changed-paths.test.ts`, re-express every existing `decide` case with `{ tier, reason }` (`skip-safe`, `content-only`, `full`) and `toOutput` as `tier=<value>\n`; seen failing against the current `{ full, contentOnly }` shape.
-- [ ] T003 [P] Test, layer unit: in `tests/unit/ci/verify-needs.test.ts`, change the helper to build `needs` from a `tier`, re-express the existing failure, cancelled and missing-job cases, and add: unknown, empty, missing and old-style (`full` output only) tier fails naming `tier`; `changes` failed, cancelled or skipped fails on any tier; `static` failed fails on `skip-safe` (FR-008, FR-010, FR-015).
-- [ ] T004 [P] Test, layer unit: in `tests/unit/ci/workflows.test.ts`, assert the `changes` job outputs exactly `tier` and no reference to `outputs.full` or `outputs.content_only` remains in `.github/workflows/ci.yml`.
-- [ ] T005 Implement in `scripts/ci/changed-paths.ts`: `Tier` type, `ChangeDecision = { tier, reason }`, `decide` returning the existing three tiers with a logged reason, `toOutput` writing `tier=<value>\n`; keep the log of tier, reason and one changed file per line plain text (FR-012). Makes T002 pass.
-- [ ] T006 [P] Implement in `scripts/ci/verify-needs.ts`: read `needs.changes.outputs.tier`, accept only the four known tiers, allow `build-tests` and `e2e` to be skipped only on `skip-safe` or `docs`, fail closed otherwise (research R3). Makes T003 pass.
-- [ ] T007 Implement in `.github/workflows/ci.yml`: `changes` outputs `tier`; switch every `if:` in `static`, `build-tests` and `e2e` to the `tier` strings in `contracts/ci-tiers.md` (unset or unknown tier runs the heavier side). Makes T004 pass.
+- [X] T002 Test, layer unit: in `tests/unit/ci/changed-paths.test.ts`, re-express every existing `decide` case with `{ tier, reason }` (`skip-safe`, `content-only`, `full`) and `toOutput` as `tier=<value>\n`; seen failing against the current `{ full, contentOnly }` shape.
+- [X] T003 [P] Test, layer unit: in `tests/unit/ci/verify-needs.test.ts`, change the helper to build `needs` from a `tier`, re-express the existing failure, cancelled and missing-job cases, and add: unknown, empty, missing and old-style (`full` output only) tier fails naming `tier`; `changes` failed, cancelled or skipped fails on any tier; `static` failed fails on `skip-safe` (FR-008, FR-010, FR-015).
+- [X] T004 [P] Test, layer unit: in `tests/unit/ci/workflows.test.ts`, assert the `changes` job outputs exactly `tier` and no reference to `outputs.full` or `outputs.content_only` remains in `.github/workflows/ci.yml`.
+- [X] T005 Implement in `scripts/ci/changed-paths.ts`: `Tier` type, `ChangeDecision = { tier, reason }`, `decide` returning the existing three tiers with a logged reason, `toOutput` writing `tier=<value>\n`; keep the log of tier, reason and one changed file per line plain text (FR-012). Makes T002 pass.
+- [X] T006 [P] Implement in `scripts/ci/verify-needs.ts`: read `needs.changes.outputs.tier`, accept only the four known tiers, allow `build-tests` and `e2e` to be skipped only on `skip-safe` or `docs`, fail closed otherwise (research R3). Makes T003 pass.
+- [X] T007 Implement in `.github/workflows/ci.yml`: `changes` outputs `tier`; switch every `if:` in `static`, `build-tests` and `e2e` to the `tier` strings in `contracts/ci-tiers.md` (unset or unknown tier runs the heavier side). Makes T004 pass.
 
 **Checkpoint**: `pnpm exec vitest run --project unit tests/unit/ci/` is green with no behaviour change.
 

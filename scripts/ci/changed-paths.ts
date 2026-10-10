@@ -49,49 +49,45 @@ export interface ChangeInput {
   files: string[] | null;
 }
 
+export type Tier = "skip-safe" | "docs" | "content-only" | "full";
+
 export interface ChangeDecision {
-  /** true means run the full verify gate */
-  full: boolean;
-  /** true means run only the build tests that read real content (implies full) */
-  contentOnly: boolean;
+  tier: Tier;
   reason: string;
 }
 
 export function decide(input: ChangeInput): ChangeDecision {
   if (input.event !== "pull_request") {
-    return { full: true, contentOnly: false, reason: `event "${input.event}" always runs the full gate` };
+    return { tier: "full", reason: `event "${input.event}" always runs the full gate` };
   }
   if (input.files === null) {
-    return { full: true, contentOnly: false, reason: "could not compute the changed files, running the full gate" };
+    return { tier: "full", reason: "could not compute the changed files, running the full gate" };
   }
   const files = input.files.map((f) => f.trim()).filter((f) => f.length > 0);
   if (files.length === 0) {
-    return { full: true, contentOnly: false, reason: "empty diff, running the full gate" };
+    return { tier: "full", reason: "empty diff, running the full gate" };
   }
   if (files.every((f) => isSkipSafe(f))) {
     return {
-      full: false,
-      contentOnly: false,
+      tier: "skip-safe",
       reason: `all ${files.length} changed file(s) are skip-safe, running secretlint only`,
     };
   }
   const other = files.find((f) => !isSkipSafe(f) && !isContentOnly(f));
   if (other === undefined) {
     return {
-      full: true,
-      contentOnly: true,
+      tier: "content-only",
       reason: `content-only change (${files.length} file(s)), running the build tests that read real content only`,
     };
   }
   return {
-    full: true,
-    contentOnly: false,
+    tier: "full",
     reason: `${other} is neither skip-safe nor content-only, running the full gate`,
   };
 }
 
 export function toOutput(decision: ChangeDecision): string {
-  return `full=${decision.full ? "true" : "false"}\ncontent_only=${decision.contentOnly ? "true" : "false"}\n`;
+  return `tier=${decision.tier}\n`;
 }
 
 function main(): void {
@@ -109,7 +105,7 @@ function main(): void {
     }
   }
   const decision = decide({ event, files });
-  console.log(`full=${decision.full} content_only=${decision.contentOnly}: ${decision.reason}`);
+  console.log(`tier=${decision.tier}: ${decision.reason}`);
   if (files) console.log(`Changed files:\n${files.filter(Boolean).join("\n")}`);
   const outputFile = process.env.GITHUB_OUTPUT;
   if (outputFile) appendFileSync(outputFile, toOutput(decision));
@@ -121,7 +117,7 @@ if (isMainModule) {
     main();
   } catch (error) {
     // Never fail the job over a detection problem: an unset output runs every check, and the
-    // verify aggregate fails closed on the missing full output.
+    // verify aggregate fails closed on the missing tier output.
     console.error(error instanceof Error ? error.message : String(error));
   }
 }

@@ -106,19 +106,16 @@ describe("isContentOnly()", () => {
 describe("decide()", () => {
   it("skips when every changed file is skip-safe on a pull_request", () => {
     const d = decide({ event: "pull_request", files: [".specify/feature.json", ".claude/skills/other/SKILL.md"] });
-    expect(d.full).toBe(false);
-    expect(d.contentOnly).toBe(false);
+    expect(d.tier).toBe("skip-safe");
   });
   it("runs everything and names the first unsafe file", () => {
     const d = decide({ event: "pull_request", files: [".specify/feature.json", "src/pages/index.astro"] });
-    expect(d.full).toBe(true);
-    expect(d.contentOnly).toBe(false);
+    expect(d.tier).toBe("full");
     expect(d.reason).toContain("src/pages/index.astro");
   });
   it("picks the content-only tier for a single content file", () => {
     const d = decide({ event: "pull_request", files: ["src/content/posts/starting-something-new.mdx"] });
-    expect(d.full).toBe(true);
-    expect(d.contentOnly).toBe(true);
+    expect(d.tier).toBe("content-only");
   });
   it("picks the content-only tier for content plus skip-safe files", () => {
     const d = decide({
@@ -130,28 +127,23 @@ describe("decide()", () => {
         ".specify/chores/x/plan.md",
       ],
     });
-    expect(d.full).toBe(true);
-    expect(d.contentOnly).toBe(true);
+    expect(d.tier).toBe("content-only");
   });
   it("runs the full tier when content changes with a schema", () => {
     const d = decide({
       event: "pull_request",
       files: ["src/content/posts/starting-something-new.mdx", "src/content/schemas/post.ts"],
     });
-    expect(d.full).toBe(true);
-    expect(d.contentOnly).toBe(false);
+    expect(d.tier).toBe("full");
     expect(d.reason).toContain("src/content/schemas/post.ts");
   });
   it.each([[[]], [["", "  "]], [null]] as const)("fails closed for %j", (files) => {
     const d = decide({ event: "pull_request", files: files as string[] | null });
-    expect(d.full).toBe(true);
-    expect(d.contentOnly).toBe(false);
+    expect(d.tier).toBe("full");
   });
   it.each(["push", "workflow_dispatch", "pull_request_target"])("always runs everything for %s", (event) => {
-    expect(decide({ event, files: [".specify/feature.json"] }).full).toBe(true);
-    const d = decide({ event, files: ["src/content/posts/starting-something-new.mdx"] });
-    expect(d.full).toBe(true);
-    expect(d.contentOnly).toBe(false);
+    expect(decide({ event, files: [".specify/feature.json"] }).tier).toBe("full");
+    expect(decide({ event, files: ["src/content/posts/starting-something-new.mdx"] }).tier).toBe("full");
   });
   it("skips when only pipeline skills, shared wording, CLAUDE.md or the constitution change", () => {
     const d = decide({
@@ -166,13 +158,12 @@ describe("decide()", () => {
         ".specify/memory/constitution.md",
       ],
     });
-    expect(d.full).toBe(false);
-    expect(d.contentOnly).toBe(false);
+    expect(d.tier).toBe("skip-safe");
   });
   it("runs everything when a deny-listed file changes", () => {
-    expect(decide({ event: "pull_request", files: [".claude/skills/setup-walkthrough/SKILL.md"] }).full).toBe(true);
+    expect(decide({ event: "pull_request", files: [".claude/skills/setup-walkthrough/SKILL.md"] }).tier).toBe("full");
   });
-  it("never reports contentOnly without full", () => {
+  it("always returns one of the known tiers with a reason", () => {
     const inputs: ChangeInput[] = [
       { event: "pull_request", files: ["CLAUDE.md"] },
       { event: "pull_request", files: ["src/content/pages/about.mdx"] },
@@ -183,16 +174,15 @@ describe("decide()", () => {
     ];
     for (const input of inputs) {
       const d = decide(input);
-      expect(!d.contentOnly || d.full).toBe(true);
+      expect(["skip-safe", "docs", "content-only", "full"]).toContain(d.tier);
+      expect(d.reason.length).toBeGreaterThan(0);
     }
   });
 });
 
 describe("toOutput()", () => {
-  it("renders the GITHUB_OUTPUT lines", () => {
-    expect(toOutput({ full: true, contentOnly: false, reason: "" })).toBe("full=true\ncontent_only=false\n");
-    expect(toOutput({ full: false, contentOnly: false, reason: "" })).toBe("full=false\ncontent_only=false\n");
-    expect(toOutput({ full: true, contentOnly: true, reason: "" })).toBe("full=true\ncontent_only=true\n");
+  it.each(["skip-safe", "content-only", "full"] as const)("renders tier=%s for GITHUB_OUTPUT", (tier) => {
+    expect(toOutput({ tier, reason: "" })).toBe(`tier=${tier}\n`);
   });
 });
 

@@ -85,16 +85,23 @@ describe(".github/workflows/ci.yml", () => {
 
 describe(".github/workflows/ci.yml job rules", () => {
   const contents = read(".github/workflows/ci.yml");
-  it("runs exactly one build-test step in build-tests, chosen by content_only and failing closed to test:build", () => {
+  it("exposes exactly one changes output, tier, and no leftover boolean outputs", () => {
+    const changes = job(contents, "changes");
+    const outputs = changes.slice(changes.indexOf("    outputs:"), changes.indexOf("    steps:"));
+    expect([...outputs.matchAll(/^\s{6}([a-z_]+):/gm)].map((m) => m[1])).toEqual(["tier"]);
+    expect(contents).not.toContain("outputs.full");
+    expect(contents).not.toContain("outputs.content_only");
+  });
+
+  it("runs exactly one build-test step in build-tests, chosen by tier, failing closed to test:build", () => {
     const buildTests = job(contents, "build-tests");
-    expect(stepBlock(buildTests, "run: pnpm run test:build\n")).toContain("if: needs.changes.outputs.content_only != 'true'");
+    expect(stepBlock(buildTests, "run: pnpm run test:build\n")).toContain("if: needs.changes.outputs.tier != 'content-only'");
     expect(stepBlock(buildTests, "run: pnpm run test:build:content")).toContain(
-      "if: needs.changes.outputs.content_only == 'true'",
+      "if: needs.changes.outputs.tier == 'content-only'",
     );
     expect(runCount(contents, "pnpm run test:build:content")).toBe(1);
-    expect(count(contents, "needs.changes.outputs.content_only")).toBe(2);
-    expect(job(contents, "static")).not.toContain("content_only");
-    expect(job(contents, "e2e")).not.toContain("content_only");
+    expect(job(contents, "static")).not.toContain("content-only");
+    expect(job(contents, "e2e")).not.toContain("content-only");
   });
 
   it("runs secretlint in static on every path, after install", () => {
