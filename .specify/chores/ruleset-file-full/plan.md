@@ -157,7 +157,7 @@ After:
   values on import, and the W1 test is the guard against losing them. Adding the fields to the
   schema would duplicate the guard in a second place for no extra protection.
 
-### [ ] W2 Recorded "complete" fixture carries the live shape
+### [x] W2 Recorded "complete" fixture carries the live shape
 
 - **Files:** `tests/fixtures/providers/github/ruleset-full.json`: same edits as W1 (include
   `~DEFAULT_BRANCH`, the four `pull_request` keys, `do_not_enforce_on_create`), keeping its `id`.
