@@ -1,7 +1,7 @@
 /**
  * Decides whether the aggregate `verify` job passes, from the `needs` context of the jobs
  * it depends on. GitHub reports a skipped required job as success, so a skip is accepted
- * only where the skip-safe path expects it. Anything unexpected fails (fail closed).
+ * only on the skip-safe and docs tiers, where it is expected. Anything unexpected fails (fail closed).
  */
 
 export interface NeedResult {

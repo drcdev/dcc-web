@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
 
 /**
- * Decides which tier of the verify gate a pull request runs. There are four:
+ * Decides which tier of the verify gate a pull request or a push to `main` runs. There are four:
  * skip-safe only (secretlint only), docs (secretlint and the unit tests, for
  * Markdown files under `docs/`), content-only (the full gate, but the build
  * tests that read real content by name instead of the whole build project) and

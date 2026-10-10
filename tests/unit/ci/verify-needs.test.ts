@@ -72,7 +72,7 @@ describe("decide()", () => {
   });
 
   it.each(["failure", "cancelled", "skipped"])("fails on any tier when changes is %s", (result) => {
-    for (const tier of ["skip-safe", "content-only", "full"]) {
+    for (const tier of ["skip-safe", "docs", "content-only", "full"]) {
       expect(decide(needs(tier, { changes: result })).pass, `${tier} ${result}`).toBe(false);
     }
   });

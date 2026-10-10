@@ -57,7 +57,7 @@ output, `tier`. A pull request is diffed against its first parent; a push is dif
 
 | Tier | What counts | What runs | What is skipped |
 |---|---|---|---|
-| Skip-safe | Every changed file is on the skip-safe allowlist: `.md`, `.yml`, `.yaml`, `.json`, `.sh`, `.py` and `.ps1` files under `.claude/`, `.specify/` and `specs/`, except the files a test or check reads (`setup-walkthrough`'s `SKILL.md`). Edits to the pipeline skills, `_shared/`, `CLAUDE.md` and the constitution run the skip-safe tier. `tier=skip-safe`. | secretlint only (`static`) and `verify` | `build-tests` and `e2e`, and the lint, type-check and unit steps of `static` |
+| Skip-safe | Every changed file is on the skip-safe allowlist: `.md`, `.yml`, `.yaml`, `.json`, `.sh`, `.py` and `.ps1` files under `.claude/`, `.specify/` and `specs/`, except the files a test or check reads (`setup-walkthrough`'s `SKILL.md`). Edits to the pipeline skills, `_shared/`, `CLAUDE.md` and the constitution run the skip-safe tier. `tier=skip-safe`. | secretlint only (`static`) and `verify` | `build-tests` and `e2e`, and the lint, type-check, unit and worker test steps of `static` |
 | Docs | Every changed file is skip-safe or a `.md` file under `docs/` (lower-case `.md` only; images, `.mdx` and other files under `docs/` are not documentation), with at least one such `docs/` file. `tier=docs`. | secretlint and the unit and component tests (`static`) and `verify` | lint, type check and worker tests, `build-tests` and `e2e` |
 | Content-only | Every changed file is skip-safe, documentation or an `.mdx` file or an image or video file under `src/content/pages`, `src/content/posts` or `src/content/projects`. `.md` files, schemas, `src/content.config.ts` and `public/` are not content-only. `tier=content-only`. | The whole gate, except that `build-tests` runs `pnpm run test:build:content` (`indexing.test.ts`, `local-site.test.ts`, `navigation.test.ts` and `project-template.test.ts`, the build files that read real content by name) | The other build files (listed below) |
 | Full | Everything else, an empty diff, and any failure to compute the diff. `tier=full`. | Every job and the whole `test:build` project | Nothing |
@@ -65,7 +65,7 @@ output, `tier`. A pull request is diffed against its first parent; a push is dif
 Runs on `main` are never cancelled: each push gets its own concurrency group (by commit SHA), while a newer pull request run still cancels the older one for the same ref. Accepted risk: runs on `main` can queue for a runner behind other runs.
 
 The rule fails closed: a path that is not positively recognised runs the full gate, and an
-unset `tier` runs the full gate.
+unset `tier` runs every job and `verify` fails.
 
 Accepted risk: nothing notices if a future check outside the unit tests starts reading files under
 `docs/`. A docs change would skip that check. Whoever adds such a check must move `docs/` out of the

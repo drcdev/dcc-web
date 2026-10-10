@@ -341,7 +341,9 @@ The same baselines can be regenerated locally with `pnpm run test:visual:update:
 runs the job's steps in the matching Playwright Docker image and needs Docker Desktop running.
 A pull request that changes only skip-safe paths (agent instructions and Spec Kit documents that
 no check reads, listed in `scripts/ci/changed-paths.ts`) runs secretlint in the `static` job and
-skips `build-tests` and `e2e`; the `verify` job still reports success. Pushes to `main` are sorted by
+skips `build-tests` and `e2e`; the `verify` job still reports success. A pull request that changes
+only `.md` files under `docs/` (plus skip-safe files) runs the docs tier: secretlint and the unit and
+component tests, skipping lint, type-check, worker tests, `build-tests` and `e2e`; `verify` still reports. Pushes to `main` are sorted by
 the same rules, from the commit before the push to the pushed commit, and runs on `main` are never cancelled.
 
 **How it will be confirmed**
