@@ -1,5 +1,5 @@
 // Read-only HTTP provider: global fetch, GET/HEAD only, for HTTPS, header and
-// Ghost-marker probes (FR-004, FR-020, FR-038).
+// content probes (FR-004, FR-020, FR-038).
 import {
   ProviderAccessError,
   type HttpGetOptions,

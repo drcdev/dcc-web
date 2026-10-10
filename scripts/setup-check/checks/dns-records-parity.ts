@@ -6,7 +6,7 @@
 // is reported as an informational detail only, never a mismatch. Stays
 // `missing` while the baseline has no records, so parity can never pass vacuously.
 // Cloudflare-only records not in the baseline are reported in `details` for
-// Don to add or delete, without blocking completion.
+// Don to add or delete; on the apex and www they do not block completion.
 // A Cloudflare record matched by no baseline entry is informational on the apex and www, where the
 // Worker Custom Domain adds its own records; on any other name it is a difference (FR-010).
 import type { CheckResult, CloudflareDnsRecord, DnsBaseline, DnsBaselineRecord, ProviderContext, SetupConfig } from "../types.ts";

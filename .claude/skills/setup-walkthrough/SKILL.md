@@ -96,7 +96,7 @@ pnpm exec wrangler deploy
 `docs/setup.md#contact-bindings`: Databases, Turnstile widget, Worker secrets, Site key, Production
 deploy. If the check says the token lacks D1 Read, Workers Builds Configuration Read or Turnstile
 Sites Read, send Don back to `local-credentials` (item 2) to add them to his read-only token. The
-Production deploy part is `phase: after-merge`, so the after-merge rule in step 4 of Behaviour
+whole `contact-bindings` item is `phase: after-merge`, so the after-merge rule in step 4 of Behaviour
 applies: give the PR link and wait for the merge.
 
 ### Databases part: region confirmation (FR-027a, FR-027b)

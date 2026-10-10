@@ -65,7 +65,7 @@ description: "Task list for launching the new doncoleman.ca"
 - [X] T021 [US1] Implement `waitForPreview` and `previewOrigin` in `scripts/site-check/preview.ts` (poll every 20 seconds for up to 20 minutes; crawl with `expectNoindex: true`; `::error` annotations and a `$GITHUB_STEP_SUMMARY` table) so T016 passes.
 - [X] T022 [US1] Add the preview-crawl step and `checks: read` permission to the `verify` job in `.github/workflows/ci.yml` as written in contracts/site-check.md so T017 passes. This is a CI change under Principle III.
 - [X] T023 [US1] Build, then run the E2E spec so T018 passes, and confirm that adding a link to `/does-not-exist/` fails it naming the target and the linking page (quickstart scenario 1). Revert the link. The spec runs inside the existing `test:e2e`, so `verify` needs no new script.
-- [x] T024 [US1] [PREVIEW-CHECK] After the first push, confirm in the PR's `verify` run that the crawl step waited for `Workers Builds: dcc-web-preview`, passed with the `Preview site check passed` summary, and proved `--expect-noindex` on the real `workers.dev` host (local `wrangler dev` cannot exercise the host-scoped `_headers` rule). (closed out, #101: the preview crawl step has gated every PR since #23 merged)
+- [x] T024 [US1] [PREVIEW-CHECK] After the first push, confirm in the PR's `verify` run that the crawl step waited for `Workers Builds: dcc-web-preview`, passed with the `Preview site check passed` summary, and proved `--expect-noindex` on the real `workers.dev` host (local `wrangler dev` cannot exercise the host-scoped `_headers` rule). (closed out, #101: confirmed by CI run 37998017533 on 2026-10-09, which crawled the preview: 26 pages, 35 links)
 
 **Checkpoint**: a broken link blocks the merge (US1 scenarios 1 and 2).
 
@@ -170,7 +170,7 @@ description: "Task list for launching the new doncoleman.ca"
 - [X] T085 Confirm no new dependency in `package.json` or the lockfile, no secret or `.env` content in any committed file, and no `specs/` path literal in tests (drift guard).
 - [X] T086 Prepare the PR body (opened from `drc-agents`): major change under Principle III, label applied, auto-merge off; the post-merge switch runs separately from `docs/launch.md` (Phases 11 and 12); the open `[PREVIEW-CHECK]` items; expected monthly cost $0 with running costs going down.
 - [x] T087 [PREVIEW-CHECK] Don checks the preview deployment (robots, canonical, 404 page, crawl step green) and approves the PR. (closed out 2026-10-09, #101: PR #23 merged; the launch then passed the live checks, and setup:check was 31 of 31 before stage 6)
-- [x] T088 [PREVIEW-CHECK] Confirm the first preview run shows `X-Robots-Tag: noindex` on the `workers.dev` host through the crawl step, proving the `_headers` host match that local `wrangler dev` cannot exercise. (closed out, #101: the preview crawl step has gated every PR since #23 merged)
+- [x] T088 [PREVIEW-CHECK] Confirm the first preview run shows `X-Robots-Tag: noindex` on the `workers.dev` host through the crawl step, proving the `_headers` host match that local `wrangler dev` cannot exercise. (closed out, #101: confirmed by CI run 37998017533 on 2026-10-09, which crawled the preview: 26 pages, 35 links)
 
 ## Phase 11: Post-merge switch (run with Don from docs/launch.md)
 

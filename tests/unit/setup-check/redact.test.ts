@@ -24,7 +24,7 @@ describe("waiting report output (T008)", () => {
   const waiting: CheckResult = {
     id: "web-analytics",
     status: "waiting",
-    summary: `Waiting for the switch: doncoleman.ca is not on the new site yet. ${SECRETS[0]}`,
+    summary: `Waiting for an outside event. ${SECRETS[0]}`,
     details: [`account ${SECRETS[1]}`],
     nextAction: `Nothing to do yet. ${SECRETS[2]}`,
     step: "Step 15 of 16",
@@ -34,7 +34,7 @@ describe("waiting report output (T008)", () => {
   const item: SetupItem = {
     id: "web-analytics",
     order: 15,
-    title: "Bare domain serves the new site",
+    title: "Example item",
     purpose: "p",
     where: "w",
     confirmedBy: "c",

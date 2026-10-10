@@ -49,7 +49,7 @@ function toWebAnalyticsSites(
   }));
 }
 
-async function reviewAddressCompleteContext(overrides: Parameters<typeof fakeProviderContext>[0] = {}) {
+async function siteCompleteContext(overrides: Parameters<typeof fakeProviderContext>[0] = {}) {
   const zoneRaw = loadFixture<Parameters<typeof toCloudflareZone>[0]>("cloudflare", "zone-active-free-plan");
   return fakeProviderContext({
     env: overrides.env ?? envFrom(ENV),
@@ -85,7 +85,7 @@ describe("checks/web-analytics", () => {
       urls.push(url);
       return loadFixture("http", "analytics-beacon-referenced") as never;
     };
-    const ctx = await reviewAddressCompleteContext({
+    const ctx = await siteCompleteContext({
       http: { get },
       cloudflare: {
         listWebAnalyticsSites: async () => [
@@ -101,7 +101,7 @@ describe("checks/web-analytics", () => {
   });
 
   it("is missing when no Web Analytics site exists for doncoleman.ca", async () => {
-    const ctx = await reviewAddressCompleteContext({
+    const ctx = await siteCompleteContext({
       cloudflare: { listWebAnalyticsSites: async () => loadFixture("cloudflare", "web-analytics-site-absent") },
     });
 
@@ -112,7 +112,7 @@ describe("checks/web-analytics", () => {
   });
 
   it("is missing when the only site belongs to another zone", async () => {
-    const ctx = await reviewAddressCompleteContext({
+    const ctx = await siteCompleteContext({
       cloudflare: {
         listWebAnalyticsSites: async () => [{ siteTag: "other", host: null, autoInstall: true, zoneName: "example.com" }],
       },
@@ -125,7 +125,7 @@ describe("checks/web-analytics", () => {
   });
 
   it("is missing when the zone-level site has automatic setup off", async () => {
-    const ctx = await reviewAddressCompleteContext({
+    const ctx = await siteCompleteContext({
       cloudflare: {
         listWebAnalyticsSites: async () => [{ siteTag: "zone456", host: null, autoInstall: false, zoneName: "doncoleman.ca" }],
       },
@@ -138,7 +138,7 @@ describe("checks/web-analytics", () => {
   });
 
   it("is complete when a zone-level automatic-setup site covers the apex", async () => {
-    const ctx = await reviewAddressCompleteContext({
+    const ctx = await siteCompleteContext({
       cloudflare: {
         listWebAnalyticsSites: async () =>
           toWebAnalyticsSites(loadFixture("cloudflare", "web-analytics-site-zone-automatic")),
@@ -151,7 +151,7 @@ describe("checks/web-analytics", () => {
   });
 
   it("is missing when the served page does not reference the Cloudflare beacon", async () => {
-    const ctx = await reviewAddressCompleteContext({
+    const ctx = await siteCompleteContext({
       http: { get: async () => ({ status: 200, headers: {}, body: "<!doctype html><html><head></head><body></body></html>" }) },
     });
 
@@ -162,7 +162,7 @@ describe("checks/web-analytics", () => {
   });
 
   it("is complete when Web Analytics is on and the beacon is referenced", async () => {
-    const ctx = await reviewAddressCompleteContext();
+    const ctx = await siteCompleteContext();
 
     const result = await check(ctx);
 
@@ -172,7 +172,7 @@ describe("checks/web-analytics", () => {
   });
 
   it("is could-not-check when the Cloudflare provider fails", async () => {
-    const ctx = await reviewAddressCompleteContext({
+    const ctx = await siteCompleteContext({
       cloudflare: {
         listWebAnalyticsSites: async () => {
           throw new ProviderAccessError("Cloudflare token lacks Account Settings Read access (403)");

@@ -33,7 +33,7 @@ export interface CheckReportCounts {
   missing: number;
   pending: number;
   couldNotCheck: number;
-  /** Post-launch items that cannot be checked until the switch (011-launch research R3). */
+  /** Items waiting on an outside event; no check currently produces this status. */
   waiting: number;
   total: number;
 }
@@ -166,7 +166,7 @@ export type ProviderAccessErrorKind = "tls" | "timeout" | "network";
 
 export class ProviderAccessError extends Error {
   readonly reason: string;
-  /** Set by the HTTP reader so a post-launch check can tell a certificate not yet issued (`tls`) from other failures. */
+  /** Set by the HTTP reader so a check can tell a certificate not yet issued (`tls`) from other failures. */
   readonly kind?: ProviderAccessErrorKind;
 
   constructor(reason: string, kind?: ProviderAccessErrorKind) {

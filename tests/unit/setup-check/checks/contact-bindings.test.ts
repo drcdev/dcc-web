@@ -310,6 +310,7 @@ describe("checks/contact-bindings", () => {
       const result = await run({ listD1AppliedMigrations: async () => [] });
       expect(result.status).toBe("missing");
       expect(result.details.join("\n")).toMatch(/Production deploy: .*0001_create_messages\.sql/);
+      expect(result.nextAction).toMatch(/Retry/);
     });
 
     it("is missing when the cron is not registered on dcc-web", async () => {

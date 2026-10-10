@@ -11,9 +11,7 @@ step number and anchor match the registry in `scripts/setup-check/items.ts`; ite
 "Contact form" part. The edge protections Don set up in the Cloudflare dashboard are recorded
 in the Edge protections part at the end; they are not setup items.
 
-A few terms used below: a **nameserver** is the server that answers "where is doncoleman.ca's
-DNS?" — moving it to Cloudflare is what puts Cloudflare in charge of the domain's DNS records. A
-**ruleset** is GitHub's mechanism for protecting a branch (blocking force-pushes, requiring
+A term used below: a **ruleset** is GitHub's mechanism for protecting a branch (blocking force-pushes, requiring
 checks, requiring review) — `setup/github-ruleset.json` is the one this repository imports.
 
 ## 1. Local tools {#local-tools}
@@ -122,7 +120,7 @@ None — DNS records are public data, not secrets.
 
 **What it is for**
 The domain's mail keeps working: every mail record recorded in `setup/dns-baseline.json` still answers
-unchanged. Every mail record in the baseline must match.
+unchanged.
 
 **Where to do it**
 Cloudflare dashboard → the zone → DNS. Restore any MX, TXT or DKIM CNAME record the details list, exactly as
@@ -401,9 +399,8 @@ that accept HTML (as every browser's page request does).
 
 **How it will be confirmed**
 `pnpm setup:check --item web-analytics` reports complete when a Web Analytics site with
-automatic setup on exists for the host being checked or for the `doncoleman.ca` zone, and the
-served page references the Cloudflare beacon. The host checked is `doncoleman.ca`. The item does not depend on any other
-item.
+automatic setup on exists for the `doncoleman.ca` zone, and the served page references the
+Cloudflare beacon. The item does not depend on any other item.
 
 **Constitution principle**
 X (Accessible, Fast and Private) — Cloudflare Web Analytics is the constitution's named
