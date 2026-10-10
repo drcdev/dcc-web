@@ -201,7 +201,6 @@ the "Why" paragraph are shown as you wrote them.
 
 - `draft: true` in the settings hides the whole project from the live site while you write it.
   Keep it until you are ready to publish, then change it to `false`.
-  Remove the line when you do.
 
 ## Build errors you may see
 

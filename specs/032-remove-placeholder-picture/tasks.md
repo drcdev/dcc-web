@@ -104,4 +104,4 @@ MVP is US1 (schema rejects the setting). Then US2 (mark and styles gone), then U
 
 ## Phase 7: Convergence
 
-- [ ] T020 Delete the orphaned line "Remove the line when you do." under the `draft: true` bullet in the "Drafts" section of `docs/projects.md` (left over from the removed placeholder bullet; it now reads as advice about the draft setting) per FR-006 (partial)
+- [X] T020 Delete the orphaned line "Remove the line when you do." under the `draft: true` bullet in the "Drafts" section of `docs/projects.md` (left over from the removed placeholder bullet; it now reads as advice about the draft setting) per FR-006 (partial)
