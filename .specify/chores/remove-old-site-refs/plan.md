@@ -165,7 +165,7 @@ Coverage mapping for removed assertions:
 `docs-content-structure.test.ts` and `changed-paths.test.ts` keep passing unchanged (the doc
 path and the Content structure section stay).
 
-### W2 Other docs
+### [x] W2 Other docs
 
 Files: `docs/setup.md:561`, `docs/design/blog.md:271`.
 

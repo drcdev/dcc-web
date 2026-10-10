@@ -268,7 +268,6 @@ None.
 - Syntax highlighting is deferred to the blog build, because Astro's built-in highlighter is
   incompatible with the site's content security policy; the prototype shows code as plain
   text.
-- Addresses from the current site are not redirected.
 - Feeds and search are out of scope.
 - The prototypes use invented sample posts, images drawn as simple graphics, and only colours
   and fonts already on the site.
