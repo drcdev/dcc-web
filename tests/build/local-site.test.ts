@@ -369,8 +369,9 @@ describe("a story with a picture on every part", () => {
     expect(html).toContain("/contact/?project=every-part");
   });
 
-  it("renders the placeholder mark and a sub-heading inside its part, and leaves the Build table a plain table", () => {
-    expect(html).toContain("data-placeholder");
+  it("renders no placeholder mark, a sub-heading inside its part, and leaves the Build table a plain table", () => {
+    expect(html).not.toContain("data-placeholder");
+    expect(html).not.toContain("data-visual-mark");
     expect(html).toContain("A sub-heading");
     expect(count(html, /<table[\s>]/g)).toBe(2);
   });

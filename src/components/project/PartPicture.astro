@@ -1,7 +1,7 @@
 ---
 // A picture from the project's `visuals`, shown beside the part it names (data-model.md
-// "Visual"; contracts/pages-dom.md). Images carry alt text, diagrams a visible description, and a
-// placeholder carries a visible mark. Only the first picture on a page is eager.
+// "Visual"; contracts/pages-dom.md). Images carry alt text and diagrams a visible description.
+// Only the first picture on a page is eager.
 import { Image } from "astro:assets";
 import { PageContentError, contentError } from "../../lib/content/errors.ts";
 import "./portfolio.css";
@@ -23,7 +23,6 @@ const describedBy = `picture-${name}-description`;
 ---
 
 <figure data-part-picture data-visual={picture.kind} data-visual-name={name}>
-  {picture.placeholder && <p data-placeholder data-visual-mark class="text-sm font-semibold"><strong>Placeholder</strong></p>}
   <Image
     src={picture.src as ImageMetadata}
     alt={picture.alt}

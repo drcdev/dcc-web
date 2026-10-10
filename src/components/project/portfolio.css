@@ -95,9 +95,6 @@ summary,
 [data-part-picture] figcaption {
   @apply mt-2 text-sm text-dusk-800 dark:text-mist-200;
 }
-[data-visual-mark] {
-  @apply m-0 mb-2 text-dusk-900 dark:text-mist-100;
-}
 
 /* ------------------------------------------------------------ Options table */
 
@@ -222,7 +219,6 @@ summary,
   [data-part-picture],
   [data-invitation-block],
   [data-invitation],
-  [data-placeholder],
   [data-draft-mark],
   [data-status],
   [data-options-table],
