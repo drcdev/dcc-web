@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { collectFiles, decide, isContentOnly, isDocs, isSkipSafe, toOutput } from "../../../scripts/ci/changed-paths.ts";
@@ -10,13 +10,13 @@ const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 
 const SAFE = [
   "CLAUDE.md",
-  ".claude/skills/deliver/SKILL.md",
-  ".claude/skills/tweak/SKILL.md",
-  ".claude/skills/squash/SKILL.md",
-  ".claude/skills/chore/SKILL.md",
+  "VOICE.md",
   ".specify/memory/constitution.md",
-  ".claude/skills/_shared/verify-gate.md",
-  ".claude/skills/other/SKILL.md",
+  ".specify/extensions/.registry",
+  ".specify/notes.txt",
+  ".claude/settings.json",
+  ".claude/agents/x.md",
+  ".specify/templates/x.toml",
   ".specify/bugs/x/assessment.md",
   ".specify/extensions/git/git-config.yml",
   ".specify/scripts/bash/common.sh",
@@ -28,6 +28,16 @@ const SAFE = [
 
 const UNSAFE = [
   ".claude/skills/setup-walkthrough/SKILL.md",
+  ".claude/skills/deliver/SKILL.md",
+  ".claude/skills/_shared/open-pr.md",
+  ".claude/skills/x/notes.txt",
+  ".claude/skills/x/run.ts",
+  ".specify/x.mjs",
+  ".specify/x.astro",
+  ".github/CODEOWNERS",
+  ".github/dependabot.yml",
+  "setup/github-ruleset.json",
+  "nested/VOICE.md",
   "docs/setup.md",
   "docs/pages.md",
   "docs/design-source.md",
@@ -45,7 +55,6 @@ const UNSAFE = [
   ".claude/x.js",
   "specs/foo/helper.mjs",
   "specs/foo/page.astro",
-  ".specify/extensions/.registry",
   "claude.md",
   ".claude",
   "nested/CLAUDE.md",
@@ -103,7 +112,20 @@ describe("isContentOnly()", () => {
   });
 });
 
-const DOCS_TRUE = ["docs/testing.md", "docs/design/blog.md", "docs/--help.md"];
+const DOCS_TRUE = [
+  "docs/testing.md",
+  "docs/design/blog.md",
+  "docs/--help.md",
+  ".claude/skills/deliver/SKILL.md",
+  ".claude/skills/tweak/SKILL.md",
+  ".claude/skills/squash/SKILL.md",
+  ".claude/skills/chore/SKILL.md",
+  ".claude/skills/_shared/open-pr.md",
+  ".claude/skills/_shared/verify-gate.md",
+  ".claude/skills/other/SKILL.md",
+  ".claude/skills/setup-walkthrough/SKILL.md",
+  ".claude/skills/x/notes.txt",
+];
 const DOCS_FALSE = [
   "docs/x.png",
   "docs/x.mdx",
@@ -117,6 +139,11 @@ const DOCS_FALSE = [
   "/docs/a.md",
   "docs\\a.md",
   '"docs/\\303\\251.md"',
+  ".claude/skills/x/run.ts",
+  ".claude/skills/x/run.js",
+  ".claude/agents/x.md",
+  ".claude/skills",
+  ".claude/skills/../../src/a.md",
 ];
 
 describe("isDocs()", () => {
@@ -170,7 +197,7 @@ describe("decide() docs tier", () => {
 
 describe("decide()", () => {
   it("skips when every changed file is skip-safe on a pull_request", () => {
-    const d = decide({ event: "pull_request", files: [".specify/feature.json", ".claude/skills/other/SKILL.md"] });
+    const d = decide({ event: "pull_request", files: [".specify/feature.json", ".claude/settings.json"] });
     expect(d.tier).toBe("skip-safe");
   });
   it("runs everything and names the first unsafe file", () => {
@@ -210,7 +237,7 @@ describe("decide()", () => {
     expect(decide({ event, files: [".specify/feature.json"] }).tier).toBe("full");
     expect(decide({ event, files: ["src/content/posts/starting-something-new.mdx"] }).tier).toBe("full");
   });
-  it("skips when only pipeline skills, shared wording, CLAUDE.md or the constitution change", () => {
+  it("runs the docs tier when only pipeline skills, shared wording, CLAUDE.md or the constitution change", () => {
     const d = decide({
       event: "pull_request",
       files: [
@@ -223,10 +250,35 @@ describe("decide()", () => {
         ".specify/memory/constitution.md",
       ],
     });
+    expect(d.tier).toBe("docs");
+  });
+  it("skips when only CLAUDE.md, VOICE.md, the constitution and Spec Kit files change", () => {
+    const d = decide({
+      event: "pull_request",
+      files: [
+        "CLAUDE.md",
+        "VOICE.md",
+        ".specify/memory/constitution.md",
+        ".specify/extensions/.registry",
+        ".claude/settings.json",
+      ],
+    });
     expect(d.tier).toBe("skip-safe");
   });
-  it("runs everything when a deny-listed file changes", () => {
-    expect(decide({ event: "pull_request", files: [".claude/skills/setup-walkthrough/SKILL.md"] }).tier).toBe("full");
+  it("runs the docs tier when the setup-walkthrough skill changes", () => {
+    expect(decide({ event: "pull_request", files: [".claude/skills/setup-walkthrough/SKILL.md"] }).tier).toBe("docs");
+  });
+  it.each([
+    ".claude/hooks/check.ts",
+    ".claude/skills/x/run.ts",
+    ".specify/x.astro",
+    ".github/CODEOWNERS",
+    ".github/dependabot.yml",
+    "setup/github-ruleset.json",
+    "nested/CLAUDE.md",
+    "nested/VOICE.md",
+  ])("runs the full tier for %s alone", (file) => {
+    expect(decide({ event: "pull_request", files: [file] }).tier).toBe("full");
   });
   it("always returns one of the known tiers with a reason", () => {
     const inputs: ChangeInput[] = [
@@ -270,7 +322,14 @@ const PLACEHOLDER = /\$\{[^}]*\}|%[sd]/g;
  */
 function expandPlaceholders(literal: string, text: string): string[] {
   const first = literal.search(PLACEHOLDER);
-  if (first === -1) return [literal];
+  if (first === -1) {
+    // A literal naming a directory stands for every file under it.
+    const dir = join(repoRoot, literal);
+    if (existsSync(dir) && statSync(dir).isDirectory()) {
+      return walk(dir, true).map((f) => f.slice(repoRoot.length).split(sep).join("/"));
+    }
+    return [literal];
+  }
   const fixedDir = literal.slice(0, first).replace(/[^/]*$/, "");
   let candidates: string[] = [];
   try {
@@ -300,7 +359,7 @@ describe("drift guard", () => {
         join(repoRoot, f),
       ),
     ].filter((f) => !f.endsWith("changed-paths.test.ts") && !f.endsWith("changed-paths.ts"));
-    const pattern = /["'`](?:\.\.\/)*\/?((?:\.claude|\.specify|specs)\/[^"'`\s]+|CLAUDE\.md)/g;
+    const pattern = /["'`](?:\.\.\/)*\/?((?:\.claude|\.specify|specs)\/[^"'`\s]+|CLAUDE\.md|VOICE\.md)/g;
     const offenders: string[] = [];
     for (const file of files) {
       const text = readFileSync(file, "utf-8");
@@ -314,7 +373,7 @@ describe("drift guard", () => {
         for (const path of expanded) if (isSkipSafe(path)) offenders.push(`${file}: ${path}`);
       }
     }
-    expect(offenders, "add these paths to READ_BY_CHECKS").toEqual([]);
+    expect(offenders, "a check reads these skip-safe paths; make them docs tier (a unit test reads them) or full").toEqual([]);
   });
 });
 
@@ -393,6 +452,39 @@ describe("collectFiles()", () => {
     const { git, calls } = fake();
     expect(collectFiles({ event: "workflow_dispatch", before: BEFORE }, git)).toBeNull();
     expect(calls).toEqual([]);
+  });
+
+  it("diffs the merge base of a local base ref to HEAD and never fetches", () => {
+    const { git, calls } = fake(() => "docs/a.md\n");
+    expect(collectFiles({ event: "local", base: "origin/main" }, git)).toEqual(["docs/a.md", ""]);
+    expect(calls).toEqual([["diff", "--name-only", "--no-renames", "origin/main...HEAD"]]);
+  });
+
+  it.each([
+    ["missing", undefined],
+    ["empty", ""],
+    ["leading dash", "--output=x"],
+    ["range", "a..b"],
+    ["whitespace", "origin/main HEAD"],
+    ["backslash", "origin\\main"],
+  ])("returns null without calling git for a %s local base", (_name, base) => {
+    const { git, calls } = fake();
+    expect(collectFiles({ event: "local", base }, git)).toBeNull();
+    expect(calls).toEqual([]);
+  });
+
+  it("returns null when the local diff throws", () => {
+    const { git } = fake(() => {
+      throw new Error("unknown revision");
+    });
+    expect(collectFiles({ event: "local", base: "origin/main" }, git)).toBeNull();
+  });
+
+  it("lets decide() sort a local branch like a pull request", () => {
+    expect(decide({ event: "local", files: ["docs/testing.md"] }).tier).toBe("docs");
+    expect(decide({ event: "local", files: ["CLAUDE.md"] }).tier).toBe("skip-safe");
+    expect(decide({ event: "local", files: ["src/pages/index.astro"] }).tier).toBe("full");
+    expect(decide({ event: "local", files: null }).tier).toBe("full");
   });
 
   it("lets decide() sort a docs-only push and fail closed on unknown files", () => {

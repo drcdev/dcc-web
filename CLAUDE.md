@@ -42,15 +42,11 @@ changing or refreshing a baseline.
   breakage that only shows when two PRs are combined (#147).
 - The repository allows **merge commits only**; squash and rebase merges are disabled. Any
   `--squash` or `--rebase` form of `gh pr merge` fails.
-- **Enable auto-merge by default.** When the work is done and nothing is left that needs Don's
-  input beyond approving the PR (no open `[PREVIEW-CHECK]` items, no unresolved questions, no
-  pending baselines), run `gh pr merge --auto --merge` right after the final push. Branch
-  protection still requires Don's review, so the merge waits for his approval and a green
-  `verify` check, then lands on its own.
-- Leave auto-merge off only when Don must check something on the preview deployment before it
-  can merge (open `[PREVIEW-CHECK]` items). Say so in the PR body. A **major change** under
-  Constitution Principle III is flagged in the PR body instead; it merges like any other PR,
-  on Don's approval.
+- **Arm auto-merge on every PR.** Run `gh pr merge --auto --merge` right after the final push
+  (`.claude/skills/_shared/open-pr.md`). Branch protection holds the merge until Don approves
+  and `verify` is green, then it lands on its own.
+- Open `[PREVIEW-CHECK]` items are listed in the PR body under their own heading. Don checks
+  them on the preview before approving, so they do not hold back auto-merge.
 - **Clean up after the merge.** Once the PR has merged, switch to `main`, pull, and delete the
   local feature branch (`git branch -d <branch>`; the remote branch is removed by GitHub's
   delete-on-merge setting, or remove it with `git push origin --delete <branch>` if it

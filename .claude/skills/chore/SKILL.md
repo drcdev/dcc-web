@@ -50,11 +50,8 @@ is correct only when **all** of these hold:
 Any one false → **stop and tell the user which pipeline to run instead**,
 naming the condition that failed.
 
-A chore **may be a major change** under Principle III — CI, deployment and
-infrastructure configuration, dependencies, and the constitution itself are
-all chore territory. That is not a triage failure; it is classified in the
-plan and again in Finish and flagged in the PR body. Like every PR, it
-merges only on Don's approval.
+Every chore opens and merges like any other PR (see
+`.claude/skills/_shared/open-pr.md`).
 
 ### Promotion is one-way
 
@@ -191,9 +188,9 @@ phase:
 | #   | Phase     | Skill        | Model  | Extra instructions for the subagent                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | --- | --------- | ------------ | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | explore   | — (no skill) | sonnet | **Read-only, no commit.** Locate everything the chore touches: the scripts, configs, tests, workflows and skills named or implied by the description; the tests that read them (grep `tests/` for their paths); and the current measurement when the chore has one (CI step timings via `gh run view --job <id> --log`, or a local timed run under the perl alarm). Return: the file list with one-line roles, the before-measurement with its source, the tests that guard the touched files, and any constraint you found (a drift guard, an alignment rule, a hook). Cap the final message at ~25 lines — it is pasted into the plan prompt.                                                                                                                                                                                                                                                                                                                                                                                      |
-| 2   | plan      | — (no skill) | opus   | Pass the description, the ticked decisions from the gate, and the exploration notes verbatim. Write `.specify/chores/<slug>/plan.md` with: **Goal** (one paragraph, the issue link); **Acceptance** (the measurable or mechanical criteria from triage condition 3, with the before-measurement); **Scope** (in and out, follow-ups named for the PR body); **Constitution Check** (every principle in one line each; name which Principle III criteria fire and why, or "none"); **Work items**, each with its files, its test (existing / new-first / unit over config / `no behaviour: n/a (<reason>)`), for a new or moved test, its one primary layer, the cheapest layer that can observe the behaviour ("Where a test goes" in `docs/testing.md`), with the reason for any second layer, and, for test moves or removals, the coverage mapping (removed assertion → where it now lives); **Docs citations** for any changed tool usage (Principle IV); **Risks**. Prefer the first-party option of the tool over custom scripting and say so (Principle IV). Mark a genuine fork the user must choose as `[NEEDS DECISION]` with options and a recommended one; do not use it for calls you can make. Commit with event `after_chore_plan`. Return: the work-item count, the Principle III verdict, and any `[NEEDS DECISION]` items verbatim. |
+| 2   | plan      | — (no skill) | opus   | Pass the description, the ticked decisions from the gate, and the exploration notes verbatim. Write `.specify/chores/<slug>/plan.md` with: **Goal** (one paragraph, the issue link); **Acceptance** (the measurable or mechanical criteria from triage condition 3, with the before-measurement); **Scope** (in and out, follow-ups named for the PR body); **Constitution Check** (every principle in one line each); **Work items**, each with its files, its test (existing / new-first / unit over config / `no behaviour: n/a (<reason>)`), for a new or moved test, its one primary layer, the cheapest layer that can observe the behaviour ("Where a test goes" in `docs/testing.md`), with the reason for any second layer, and, for test moves or removals, the coverage mapping (removed assertion → where it now lives); **Docs citations** for any changed tool usage (Principle IV); **Risks**. Prefer the first-party option of the tool over custom scripting and say so (Principle IV). Mark a genuine fork the user must choose as `[NEEDS DECISION]` with options and a recommended one; do not use it for calls you can make. Commit with event `after_chore_plan`. Return: the work-item count and any `[NEEDS DECISION]` items verbatim. |
 | 3   | implement | — (no skill) | sonnet | **One subagent per work item, in plan order — see below.**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| 4   | review    | — (no skill) | opus   | **Fresh eyes, read-only on `src/`, `tests/`, `scripts/`, `.github/`, `.claude/`.** Read `plan.md`, then `git diff main...HEAD`. Check: every work item done as planned and nothing beyond it; every test named in the plan present and green per the implement summaries; every new or moved test at the layer the plan names; every coverage mapping true (the guarantee really is asserted where the plan says); no shared block restated in a pipeline skill; `docs/testing.md` created or updated when test layers moved; the Principle III verdict still right against the real diff; no check weakened. Write `.specify/chores/<slug>/report.md`: findings as CRITICAL / HIGH / LOW with file and line, the after-measurement (re-run the same measurement as the plan's before, under the perl alarm) and the before/after pair, and the follow-ups for the PR body. Commit with event `after_chore_review`. Return: the finding counts by severity and the before/after measurement. |
+| 4   | review    | — (no skill) | opus   | **Fresh eyes, read-only on `src/`, `tests/`, `scripts/`, `.github/`, `.claude/`.** Read `plan.md`, then `git diff main...HEAD`. Check: every work item done as planned and nothing beyond it; every test named in the plan present and green per the implement summaries; every new or moved test at the layer the plan names; every coverage mapping true (the guarantee really is asserted where the plan says); no shared block restated in a pipeline skill; `docs/testing.md` created or updated when test layers moved; no check weakened. Write `.specify/chores/<slug>/report.md`: findings as CRITICAL / HIGH / LOW with file and line, the after-measurement (re-run the same measurement as the plan's before, under the perl alarm) and the before/after pair, and the follow-ups for the PR body. Commit with event `after_chore_review`. Return: the finding counts by severity and the before/after measurement. |
 
 ### Phase 3: implement (one subagent per work item)
 
@@ -242,7 +239,8 @@ After the review subagent returns:
 A chore that changes the gate itself still proves itself with the
 gate as it is **after** the change.
 
-1. Run `pnpm run verify` yourself, in the **foreground with an explicit
+1. Run the gate yourself, following the local tier in
+   `.claude/skills/_shared/verify-gate.md`. When the tier calls for the full gate (content-only or full), run `pnpm run verify` in the **foreground with an explicit
    time limit** (10 minutes, via the `perl` alarm (CLAUDE.md, Local toolchain) — never background
    a run and poll for it). Keep only the pass/fail summary and the failing
    test names. A run that hits the limit is red: report it, do not retry in
@@ -265,18 +263,13 @@ gate as it is **after** the change.
    must contain `Closes #<n>` — or `Part of #<n>` with the phase name when
    the issue has more phases to go. Ad-hoc chore (no issue) → skip; do not
    retroactively create one.
-3. **Major-change classification (no pause).** Run `git diff --stat main` and
-   `git diff --name-only main...HEAD` and decide whether the chore is a major change. Chores
-   fire the criteria more often than features do: a `package.json` dependency change or any
-   file under `.github/` is major. Classify per `.claude/skills/_shared/open-pr.md`.
-4. Push the branch and open the PR. The PR body covers: the goal and acceptance criteria (from
+3. Push the branch and open the PR. The PR body covers: the goal and acceptance criteria (from
    the plan), the before/after measurement, the work items done, the coverage mapping when
    tests moved, the verify results, the `Closes #<n>` or `Part of #<n>` line when step 2
-   applies, the major-change verdict and criteria, whether Linux visual baselines are pending,
-   the list of `[PREVIEW-CHECK]` items for Don, the review's LOW findings, the follow-ups
-   deliberately left out, and whether auto-merge is armed. Open the PR and arm auto-merge: read
+   applies, whether Linux visual baselines are pending, the list of `[PREVIEW-CHECK]` items
+   for Don, the review's LOW findings, and the follow-ups deliberately left out. Open the PR and arm auto-merge: read
    `.claude/skills/_shared/open-pr.md` and follow it exactly.
-5. **Watch the release gate.** Run `gh pr checks --watch` with a time limit
+4. **Watch the release gate.** Run `gh pr checks --watch` with a time limit
    (20 minutes). Red → dispatch a fix subagent on the branch, which fixes
    the cause (never the check), commits and pushes; watch again. For a
    chore whose acceptance is a CI measurement, read the wall time of
@@ -284,7 +277,6 @@ gate as it is **after** the change.
    lasts seconds, so its own duration is not the measurement). Take it from
    `gh run view <id> --json jobs`: the earliest job `startedAt` to the
    `verify` job's `completedAt`. Record it as the CI after-measurement.
-6. Final report to the user: the goal, the before/after measurement (local
-   and CI), work items done, test counts, PR link, the major-change
-   verdict and whether auto-merge is armed, the `[PREVIEW-CHECK]` items awaiting Don, and the follow-ups and
+5. Final report to the user: the goal, the before/after measurement (local
+   and CI), work items done, test counts, PR link, the `[PREVIEW-CHECK]` items awaiting Don, and the follow-ups and
    residual risks the review flagged.

@@ -1,6 +1,6 @@
 ---
 name: tweak
-description: Run the short speckit pipeline for a small user-visible change — specify → clarify (one round) → plan → tasks → implement → verify → PR — with each phase in a fresh subagent. Skips the checklist, resolve, analyze and converge phases that a small change does not earn, but still produces a spec, a plan and tests. Pauses only for the clarify questions. Use for a copy change, a spacing or colour fix, a small component adjustment — not for a feature slice and never for anything that is a major change under Constitution Principle III.
+description: Run the short speckit pipeline for a small user-visible change — specify → clarify (one round) → plan → tasks → implement → verify → PR — with each phase in a fresh subagent. Skips the checklist, resolve, analyze and converge phases that a small change does not earn, but still produces a spec, a plan and tests. Pauses only for the clarify questions. Use for a copy change, a spacing or colour fix, a small component adjustment — not for a feature slice and never for a dependency, CI, deployment, design-system or constitution change.
 argument-hint: "Change description, or a GitHub issue reference (#42, 42, or issue URL)"
 user-invocable: true
 disable-model-invocation: false
@@ -32,7 +32,7 @@ Finish).
 Run this **before** the preflight, against the change as described. `/tweak`
 is correct only when **all** of these hold:
 
-1. **Not a major change under Principle III.** The change does not add,
+1. **No platform change.** The change does not add,
    remove or replace a dependency, integration or external service; does
    not touch how contact data is collected, stored, retrieved or deleted;
    does not change the design system, site-wide layout, navigation or
@@ -57,11 +57,9 @@ the condition that failed. Do not run a reduced pipeline on a change that
 earned the full one; the phases you would skip are exactly the ones that
 catch what makes it large.
 
-Condition 1 is deliberately the constitution's own major-change list, so a
-slice that clears triage should be safe to arm auto-merge, which still
-waits for Don's approval and a green release gate. That is a prediction, not a guarantee — re-check it against the
-real diff in Finish, because an implementation can reach further than its
-spec predicted.
+Condition 1 keeps `/tweak` to changes the short pipeline can cover; re-check it
+against the real diff in Finish, because an implementation can reach further than
+its spec predicted.
 
 ### Promotion is one-way
 
@@ -143,7 +141,7 @@ phase:
 | --- | --------- | ------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | specify   | `speckit-specify`   | opus   | Pass the change description as args. The `before_specify` hook (`speckit-git-feature`) must run and create the branch. Keep it to five or fewer functional requirements — if it will not fit, say so rather than padding. However small the change: state the accessibility expectation (WCAG 2.2 AA, Principle X) and whether any rendered page changes appearance (that decides the visual-baseline step in Finish). Copy is plain language, no hype. Return the created branch and spec dir. |
 | 2   | clarify   | `speckit-clarify`   | opus   | **One round only, two steps — see below.**                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 3   | plan      | `speckit-plan`      | opus   | The Constitution Check is not optional here; address every principle, briefly. Every Astro choice cites its docs page via the Astro Docs MCP (Principle IV). Confirm in the plan that no Principle III criterion fires — if one does, say so plainly so the orchestrator can promote to `/deliver`. If the plan rules out a plausible alternative (say, a CSS-only fix vs. a component change), record the decision and the rejected option in plan.md. Skip `research.md`, `data-model.md` and `contracts/` unless the change genuinely needs them. |
+| 3   | plan      | `speckit-plan`      | opus   | The Constitution Check is not optional here; address every principle, briefly. Every Astro choice cites its docs page via the Astro Docs MCP (Principle IV). Confirm in the plan that triage condition 1 still holds — if it does not, say so plainly so the orchestrator can promote to `/deliver`. If the plan rules out a plausible alternative (say, a CSS-only fix vs. a component change), record the decision and the rejected option in plan.md. Skip `research.md`, `data-model.md` and `contracts/` unless the change genuinely needs them. |
 | 4   | tasks     | `speckit-tasks`     | sonnet | Tests are **mandatory**, not optional, and ordered before the implementation they cover: usually a unit or component test for the changed code, and an E2E case only where the change is something only a browser can show. Each test task names its one primary layer, the cheapest layer that can observe the behaviour ("Where a test goes" in `docs/testing.md`), and gives the reason for any second layer in the task text. If the change alters the shell, a template or the design system (what the visual project snapshots), include a task to update the macOS and Linux visual baselines (`pnpm run test:visual:update`, then `pnpm run test:visual:update:linux`, which needs Docker Desktop) after the implementation. Tasks a subagent cannot verify locally carry the `[PREVIEW-CHECK]` marker in tasks.md: read `.claude/skills/_shared/preview-check.md` and follow it exactly. |
 | 5   | implement | `speckit-implement` | sonnet | Execute the whole task list unless it has more than one `## Phase` heading, in which case take one phase per subagent as `/deliver` does. Work test-first: write the tests, run them and see them fail, then implement until they pass. Read `.claude/skills/_shared/verify-gate.md` and follow it exactly. Never mark a task done on a red suite. Follow the Astro docs and prefer first-party features over custom code. For `[PREVIEW-CHECK]` tasks, read `.claude/skills/_shared/preview-check.md` and follow it exactly. Commit via `speckit-git-commit` (event `after_implement`). |
 
@@ -179,7 +177,8 @@ checklists by design; note it in the final report and continue.
 
 **Inner loop and gate.** Read `.claude/skills/_shared/verify-gate.md` and follow it exactly.
 
-1. Run `pnpm run verify` yourself, in the **foreground with an explicit
+1. Run the gate yourself, following the local tier in
+   `.claude/skills/_shared/verify-gate.md`. When the tier calls for the full gate (content-only or full), run `pnpm run verify` in the **foreground with an explicit
    time limit** (10 minutes, via the `perl` alarm (CLAUDE.md, Local toolchain) — never background
    a run and poll for it). Keep only the pass/fail summary and the failing
    test names. A run that hits the limit is red: report it, do not retry in
@@ -198,13 +197,11 @@ checklists by design; note it in the final report and continue.
    or the change plainly matches an open issue (`gh issue list`), the PR
    body must contain `Closes #<n>`. Ad-hoc change (no issue) → skip; do not
    retroactively create one.
-3. **Major-change classification (no pause).** Re-check triage condition 1
-   against the real diff: `git diff --stat main` and
-   `git diff --name-only main...HEAD`. Classify per
-   `.claude/skills/_shared/open-pr.md`. If a criterion fired, triage was wrong:
-   say so in the PR body.
+3. Re-check triage condition 1 against the real diff (`git diff --stat main`
+   and `git diff --name-only main...HEAD`). If it fails, triage was wrong: say
+   so in the PR body.
 4. Push the branch and open the PR. The PR body covers: what changed and why, the verify
-   results, the `Closes #<n>` line when step 2 applies, the major-change verdict and criteria,
+   results, the `Closes #<n>` line when step 2 applies,
    whether Linux visual baselines are pending, the list of `[PREVIEW-CHECK]` items for Don to
    walk on the preview deployment, any risks the phase agents flagged, and whether auto-merge
    is armed. Open the PR and arm auto-merge: read `.claude/skills/_shared/open-pr.md` and
@@ -214,6 +211,6 @@ checklists by design; note it in the final report and continue.
    the cause (never the check), commits and pushes; watch again. Record the
    preview deployment URL from the checks or the Cloudflare PR comment.
 6. Final report to the user: what changed, test counts, PR link, preview
-   URL, the major-change verdict and whether auto-merge is armed, whether baselines were updated, the
+   URL, whether auto-merge is armed, whether baselines were updated, the
    `[PREVIEW-CHECK]` items awaiting them, and any risks the phase agents
    flagged.

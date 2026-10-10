@@ -295,4 +295,4 @@ in `src/config/series-images.ts`. Other topics have none. The pictures are decor
 - **Unchanged:** text-only cards and lead stories keep their 2 px topic-coloured border. No new
   colour, font or dependency; the existing performance budget applies as it was.
 - **Why it is a design-system change:** the card edge colour in dark mode is a site-wide
-  token-level change (Principle III), so it is recorded here and reviewed as one.
+  token-level change, so it is recorded here.

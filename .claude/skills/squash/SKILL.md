@@ -144,7 +144,8 @@ cannot resolve it.
 
 **Inner loop and gate.** Read `.claude/skills/_shared/verify-gate.md` and follow it exactly.
 
-1. Run `pnpm run verify` yourself, in the **foreground with an explicit
+1. Run the gate yourself, following the local tier in
+   `.claude/skills/_shared/verify-gate.md`. When the tier calls for the full gate (content-only or full), run `pnpm run verify` in the **foreground with an explicit
    time limit** (10 minutes, via the `perl` alarm (CLAUDE.md, Local toolchain) — never background
    a run and poll for it). Keep only the pass/fail summary and the failing
    test names. A run that hits the limit is red: report it, do not retry in
@@ -164,20 +165,14 @@ cannot resolve it.
    or the bug plainly matches an open issue (`gh issue list`), the PR body
    must contain `Closes #<n>`. Ad-hoc bug (no issue) → skip; do not
    retroactively create one.
-3. **Major-change classification (no pause).** Run `git diff --stat main` and
-   `git diff --name-only main...HEAD` and decide whether the fix is a major change. A bug fix
-   rarely fires a criterion, but a fix that reaches into the contact API, the headers, or the
-   CI workflow does. Classify per `.claude/skills/_shared/open-pr.md`.
-4. Push the branch and open the PR. The PR body covers: symptom and root cause (from the
+3. Push the branch and open the PR. The PR body covers: symptom and root cause (from the
    assessment), the fix summary, the test added and the verify results, the `Closes #<n>` line
-   when step 2 applies, the major-change verdict and criteria, whether Linux visual baselines
-   are pending, any follow-ups noticed but deliberately left out, and whether auto-merge is
-   armed. Open the PR and arm auto-merge: read `.claude/skills/_shared/open-pr.md` and follow
+   when step 2 applies, whether Linux visual baselines are pending, and any follow-ups noticed
+   but deliberately left out. Open the PR and arm auto-merge: read `.claude/skills/_shared/open-pr.md` and follow
    it exactly.
-5. **Watch the release gate.** Run `gh pr checks --watch` with a time limit
+4. **Watch the release gate.** Run `gh pr checks --watch` with a time limit
    (20 minutes). Red → dispatch a fix subagent on the branch, which fixes
    the cause (never the check), commits and pushes; watch again. Record the
    preview deployment URL from the checks or the Cloudflare PR comment.
-6. Final report to the user: verdict and severity, what was fixed, test
-   counts, PR link, preview URL, the major-change verdict and whether
-   auto-merge is armed, and any residual risks the test phase flagged.
+5. Final report to the user: verdict and severity, what was fixed, test
+   counts, PR link, preview URL, and any residual risks the test phase flagged.
