@@ -189,3 +189,24 @@ describe(".github/workflows/ci.yml preview crawl (011-launch FR-001a, FR-002a)",
     expect(step).not.toMatch(/CLOUDFLARE|CF_/);
   });
 });
+
+describe(".github/workflows/ci.yml push sorting and concurrency (031 FR-014, FR-018)", () => {
+  const contents = read(".github/workflows/ci.yml");
+
+  it("passes github.event.before only through env as BEFORE_SHA", () => {
+    const step = stepBlock(job(contents, "changes"), "node scripts/ci/changed-paths.ts");
+    expect(step).toContain("BEFORE_SHA: ${{ github.event.before }}");
+    for (const line of contents.split("\n")) {
+      if (line.trim().startsWith("run:")) expect(line).not.toContain("github.event.before");
+    }
+    expect(contents.match(/github\.event\.before/g)).toHaveLength(1);
+  });
+
+  it("groups pushes by sha and cancels only pull request runs", () => {
+    expect(contents).toContain(
+      "group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}",
+    );
+    expect(contents).toContain("cancel-in-progress: ${{ github.event_name == 'pull_request' }}");
+    expect(contents).not.toMatch(/cancel-in-progress: true/);
+  });
+});

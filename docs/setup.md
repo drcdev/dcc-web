@@ -341,8 +341,8 @@ The same baselines can be regenerated locally with `pnpm run test:visual:update:
 runs the job's steps in the matching Playwright Docker image and needs Docker Desktop running.
 A pull request that changes only skip-safe paths (agent instructions and Spec Kit documents that
 no check reads, listed in `scripts/ci/changed-paths.ts`) runs secretlint in the `static` job and
-skips `build-tests` and `e2e`; the `verify` job still reports success. Pushes to `main` always run
-the full gate.
+skips `build-tests` and `e2e`; the `verify` job still reports success. Pushes to `main` are sorted by
+the same rules, from the commit before the push to the pushed commit, and runs on `main` are never cancelled.
 
 **How it will be confirmed**
 `pnpm setup:check --item github-ci-workflow` reports complete when `ci.yml` exists on

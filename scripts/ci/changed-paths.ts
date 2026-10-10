@@ -64,7 +64,7 @@ export interface ChangeDecision {
 }
 
 export function decide(input: ChangeInput): ChangeDecision {
-  if (input.event !== "pull_request") {
+  if (input.event !== "pull_request" && input.event !== "push") {
     return { tier: "full", reason: `event "${input.event}" always runs the full gate` };
   }
   if (input.files === null) {
@@ -104,20 +104,45 @@ export function toOutput(decision: ChangeDecision): string {
   return `tier=${decision.tier}\n`;
 }
 
+export type GitRunner = (args: string[]) => string;
+
+const FULL_SHA = /^[0-9a-f]{40}$/;
+const ZERO_SHA = /^0{40}$/;
+
+/**
+ * The files a run changed, or null when they cannot be determined (which `decide` maps to the
+ * full gate). A pull request diffs the merge commit against its first parent. A push diffs the
+ * `before` commit against HEAD; `before` must be 40 lowercase hex characters and not all zeros,
+ * and is fetched by id first. Paths are only read from git output, never passed back to git.
+ */
+export function collectFiles(
+  input: { event: string; before?: string | undefined },
+  git: GitRunner,
+): string[] | null {
+  try {
+    if (input.event === "pull_request") {
+      return git(["diff", "--name-only", "--no-renames", "HEAD^1", "HEAD"]).split("\n");
+    }
+    if (input.event === "push") {
+      const before = input.before;
+      if (before === undefined || !FULL_SHA.test(before) || ZERO_SHA.test(before)) {
+        console.error("push has no usable before commit, running the full gate");
+        return null;
+      }
+      git(["fetch", "--no-tags", "--depth=1", "origin", before]);
+      return git(["diff", "--name-only", "--no-renames", before, "HEAD"]).split("\n");
+    }
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+  }
+  return null;
+}
+
 function main(): void {
   const event = process.env.GITHUB_EVENT_NAME ?? "";
-  let files: string[] | null = null;
-  if (event === "pull_request") {
-    try {
-      const out = execFileSync("git", ["diff", "--name-only", "--no-renames", "HEAD^1", "HEAD"], {
-        encoding: "utf-8",
-      });
-      files = out.split("\n");
-    } catch (error) {
-      console.error(error instanceof Error ? error.message : String(error));
-      files = null;
-    }
-  }
+  const files = collectFiles({ event, before: process.env.BEFORE_SHA }, (args) =>
+    execFileSync("git", args, { encoding: "utf-8" }),
+  );
   const decision = decide({ event, files });
   console.log(`tier=${decision.tier}: ${decision.reason}`);
   if (files) console.log(`Changed files:\n${files.filter(Boolean).join("\n")}`);

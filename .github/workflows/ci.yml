@@ -9,8 +9,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   changes:
@@ -33,6 +33,8 @@ jobs:
 
       - name: Decide which checks this change can affect
         id: changes
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
         run: node scripts/ci/changed-paths.ts
 
   static:

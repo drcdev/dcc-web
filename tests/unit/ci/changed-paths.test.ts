@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { decide, isContentOnly, isDocs, isSkipSafe, toOutput } from "../../../scripts/ci/changed-paths.ts";
+import { collectFiles, decide, isContentOnly, isDocs, isSkipSafe, toOutput } from "../../../scripts/ci/changed-paths.ts";
 import type { ChangeInput } from "../../../scripts/ci/changed-paths.ts";
 import { filesUnder } from "../../helpers/files.ts";
 
@@ -206,7 +206,7 @@ describe("decide()", () => {
     const d = decide({ event: "pull_request", files: files as string[] | null });
     expect(d.tier).toBe("full");
   });
-  it.each(["push", "workflow_dispatch", "pull_request_target"])("always runs everything for %s", (event) => {
+  it.each(["workflow_dispatch", "pull_request_target"])("always runs everything for %s", (event) => {
     expect(decide({ event, files: [".specify/feature.json"] }).tier).toBe("full");
     expect(decide({ event, files: ["src/content/posts/starting-something-new.mdx"] }).tier).toBe("full");
   });
@@ -315,5 +315,74 @@ describe("drift guard", () => {
       }
     }
     expect(offenders, "add these paths to READ_BY_CHECKS").toEqual([]);
+  });
+});
+
+describe("collectFiles()", () => {
+  const BEFORE = "a".repeat(40);
+  function fake(impl: (args: string[]) => string = () => "") {
+    const calls: string[][] = [];
+    const git = (args: string[]): string => {
+      calls.push(args);
+      return impl(args);
+    };
+    return { git, calls };
+  }
+
+  it("diffs HEAD^1 to HEAD for a pull request", () => {
+    const { git, calls } = fake(() => "a.md\nb.md\n");
+    expect(collectFiles({ event: "pull_request" }, git)).toEqual(["a.md", "b.md", ""]);
+    expect(calls).toEqual([["diff", "--name-only", "--no-renames", "HEAD^1", "HEAD"]]);
+  });
+
+  it.each([
+    ["missing", undefined],
+    ["empty", ""],
+    ["short", "abc123"],
+    ["non-hex", "g".repeat(40)],
+    ["uppercase", "A".repeat(40)],
+    ["all zeros", "0".repeat(40)],
+    ["too long", "a".repeat(41)],
+  ])("returns null without calling git for a %s before on a push", (_name, before) => {
+    const { git, calls } = fake();
+    expect(collectFiles({ event: "push", before }, git)).toBeNull();
+    expect(calls).toEqual([]);
+  });
+
+  it("returns null when the fetch throws", () => {
+    const { git } = fake((args) => {
+      if (args[0] === "fetch") throw new Error("no such commit");
+      return "x";
+    });
+    expect(collectFiles({ event: "push", before: BEFORE }, git)).toBeNull();
+  });
+
+  it("returns null when the diff throws", () => {
+    const { git } = fake((args) => {
+      if (args[0] === "diff") throw new Error("bad object");
+      return "";
+    });
+    expect(collectFiles({ event: "push", before: BEFORE }, git)).toBeNull();
+  });
+
+  it("fetches the validated id, then diffs it to HEAD with renames split", () => {
+    const { git, calls } = fake((args) => (args[0] === "diff" ? "docs/a.md\ndocs/b.md\n" : ""));
+    const files = collectFiles({ event: "push", before: BEFORE }, git);
+    expect(files).toEqual(["docs/a.md", "docs/b.md", ""]);
+    expect(calls).toEqual([
+      ["fetch", "--no-tags", "--depth=1", "origin", BEFORE],
+      ["diff", "--name-only", "--no-renames", BEFORE, "HEAD"],
+    ]);
+  });
+
+  it("returns null for any other event", () => {
+    const { git, calls } = fake();
+    expect(collectFiles({ event: "workflow_dispatch", before: BEFORE }, git)).toBeNull();
+    expect(calls).toEqual([]);
+  });
+
+  it("lets decide() sort a docs-only push and fail closed on unknown files", () => {
+    expect(decide({ event: "push", files: ["docs/testing.md"] }).tier).toBe("docs");
+    expect(decide({ event: "push", files: null }).tier).toBe("full");
   });
 });
