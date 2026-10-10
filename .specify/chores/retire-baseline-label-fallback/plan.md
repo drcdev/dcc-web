@@ -121,7 +121,7 @@ documented path where the issue asks for Docker to be the only one.
 
 - **Test:** no behaviour: n/a (agent guidance; no test reads this file since PR #109).
 
-### W2 — CLAUDE.md: drop the fallback mentions
+### [x] W2 — CLAUDE.md: drop the fallback mentions
 
 - **Files:** `CLAUDE.md` (Local toolchain "Docker Desktop is normally off" bullet, lines 17–20;
   "Visual baselines" section, lines 24–26).
