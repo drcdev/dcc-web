@@ -4,12 +4,12 @@ import { ProviderAccessError } from "../../../scripts/setup-check/types.ts";
 import type { CheckResult, SetupItem } from "../../../scripts/setup-check/types.ts";
 import { expectRedacted } from "./checks/test-helpers.ts";
 
-// FR-026: no launch output contains a token, account id, zone id, environment value or message content.
+// FR-026: no setup-check output contains a token, account id, zone id, environment value or message content.
 const SECRETS = ["cf-token-0123456789abcdefghij", "acct0123456789abcdef0123456789ab", "zone0123456789abcdef0123456789ab"];
 
 describe("expectRedacted helper (T008)", () => {
   it("passes for a result or error without the secrets", () => {
-    expectRedacted({ summary: "Waiting for the switch: nothing here" }, SECRETS);
+    expectRedacted({ summary: "Waiting: nothing here" }, SECRETS);
     expectRedacted(new ProviderAccessError("CLOUDFLARE_API_TOKEN is not set in .env."), SECRETS);
   });
 

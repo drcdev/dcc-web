@@ -107,9 +107,9 @@ describe("SiteFooter theme switch", () => {
   });
 });
 
-describe("SiteFooter leaves out Ghost-only and unused pieces", () => {
-  it("has no Subscribe, Account, portal, Facebook or X links", () => {
-    expect(html).not.toMatch(/#\/portal|facebook\.com|twitter\.com|x\.com/i);
+describe("SiteFooter leaves out unused pieces", () => {
+  it("has no Subscribe, Account, Facebook or X links", () => {
+    expect(html).not.toMatch(/facebook\.com|twitter\.com|x\.com/i);
     const text = html.replace(/<[^>]+>/g, " ");
     expect(text).not.toMatch(/\bSubscribe\b|\bAccount\b|\bFacebook\b|\bTwitter\b/i);
   });

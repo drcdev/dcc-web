@@ -20,7 +20,7 @@ function load(name: string) {
 }
 
 // [file, nav location and position (undefined: not in a menu), draft, visible].
-const LAUNCH = [
+const SITE_PAGES = [
   ["index.mdx", ["header", 1], false, true],
   ["work-with-me.mdx", ["header", 2], true, false],
   ["about.mdx", ["header", 6], false, true],
@@ -31,7 +31,7 @@ const LAUNCH = [
 ] as const;
 
 describe("site page files", () => {
-  for (const [name, nav, draft, visible] of LAUNCH) {
+  for (const [name, nav, draft, visible] of SITE_PAGES) {
     it(`${name} is ${visible ? "visible" : "not visible"}, ${draft ? "a draft" : "published"}, with the expected nav location and position`, () => {
       const { front } = load(name);
       // A published, visible page may leave `draft` and `visible` out (defaults false and true).
@@ -71,7 +71,7 @@ describe("site page files", () => {
 
   it("every page's front matter passes the page schema", () => {
     const schema = pageSchema({ image: () => z.string() });
-    for (const [name] of LAUNCH) {
+    for (const [name] of SITE_PAGES) {
       const entry = pages.find((page) => page.file.endsWith(`/${name}`));
       expect(entry, `${name} is read by the content helper`).toBeDefined();
       const result = schema.safeParse(entry!.data);

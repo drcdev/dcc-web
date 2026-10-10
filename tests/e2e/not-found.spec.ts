@@ -7,9 +7,8 @@ import { test, expect } from "@playwright/test";
 import { pages } from "../helpers/content.ts";
 import { expectThemeClass, setTheme } from "./color-theme.ts";
 
-// Retired Ghost blog addresses that this rebuild does not carry over
-// (docs/design-source.md "Current live URLs" / "What doesn't carry over"). The mapped Ghost
-// addresses now redirect (spec 030, public/_redirects) and are tested in pages.spec.ts.
+// Retired Ghost blog addresses that are not mapped (public/_redirects redirects the mapped
+// ones, tested in pages.spec.ts; any other old address stays a 404).
 const RETIRED_ADDRESSES = ["/drift/2025/x/", "/topic/x/"] as const;
 
 // Ghost-only addresses (FR-019, FR-027a): no redirect, the site's own not-found page.

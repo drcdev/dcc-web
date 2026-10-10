@@ -77,8 +77,8 @@ describe("waitForPreview", () => {
 
 describe("previewOrigin", () => {
   it("builds the alias address from the head ref and config", () => {
-    expect(previewOrigin({ HEAD_REF: "011-launch" }, config)).toBe(
-      "https://br-011-launch-dcc-web-preview.drc-dev.workers.dev",
+    expect(previewOrigin({ HEAD_REF: "042-sample-feature" }, config)).toBe(
+      "https://br-042-sample-feature-dcc-web-preview.drc-dev.workers.dev",
     );
   });
   it("fails plainly when no alias can be derived", () => {

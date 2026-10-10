@@ -138,7 +138,7 @@ describe(".github/workflows/ci.yml job rules", () => {
   });
 });
 
-describe(".github/workflows/ci.yml preview crawl (011-launch FR-001a, FR-002a)", () => {
+describe(".github/workflows/ci.yml preview crawl", () => {
   const contents = read(".github/workflows/ci.yml");
   const e2e = job(contents, "e2e");
   const step = stepBlock(e2e, "node scripts/site-check/preview.ts");

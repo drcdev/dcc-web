@@ -4,7 +4,6 @@
 // Without JavaScript the fields are usable but Send is disabled and a notice
 // says why. The island below posts JSON to /api/contact, loads Cloudflare
 // Turnstile only after the first interaction, and shows accessible errors.
-// Dropped from Flux: the Ghost member pre-fill, Supabase and its auth bridge.
 import { PUBLIC_TURNSTILE_SITE_KEY } from "astro:env/client";
 import { EMAIL_MAX, MESSAGE_MAX, NAME_MAX, ORGANIZATION_MAX } from "../../../worker/src/contact/rules.ts";
 import { allowTurnstile } from "./contact-csp.ts";

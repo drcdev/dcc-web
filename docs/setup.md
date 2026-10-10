@@ -554,7 +554,7 @@ and `PUBLIC_TURNSTILE_SITE_KEY` (a public build variable, not a secret).
 
 # Edge protections
 
-These are dashboard settings Don made by hand on 2026-10-09, right after the domain switch, for
+These are dashboard settings Don made by hand on 2026-10-09, for
 issue #91. They are recorded here for reference. They are not setup items, they are not in the
 16-item registry, and `pnpm setup:check` does not check them.
 

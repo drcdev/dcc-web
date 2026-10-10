@@ -131,7 +131,7 @@ export function formatHumanReport(report: CheckReport, options: FormatHumanOptio
   lines.push(
     `  ${report.counts.complete} of ${report.counts.total} complete · ${report.counts.missing} missing · ` +
       `${report.counts.pending} pending · ${report.counts.couldNotCheck} could not check · ` +
-      `${report.counts.waiting} waiting for the switch`,
+      `${report.counts.waiting} waiting`,
   );
 
   return lines.join("\n");

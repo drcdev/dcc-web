@@ -1,6 +1,5 @@
-// Dependency-free sitemap and internal-link crawler (011-launch contracts/site-check.md,
-// data-model.md "Crawl"). Pure: every request goes through the injected fetcher, which must never
-// follow redirects itself.
+// Dependency-free sitemap and internal-link crawler. Pure: every request goes through the injected fetcher,
+// which must never follow redirects itself.
 
 export interface FetchResult {
   status: number;

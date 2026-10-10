@@ -28,13 +28,13 @@ describe("providers/http.ts manual redirects (T005)", () => {
 
   it("with { redirect: 'manual' } returns the redirect status and the raw Location header", async () => {
     const fetchMock = vi.fn<typeof fetch>(
-      async () => new Response(null, { status: 301, headers: { location: "https://doncoleman.ca/about/?launch-check=1" } }),
+      async () => new Response(null, { status: 301, headers: { location: "https://doncoleman.ca/about/?check=1" } }),
     );
     vi.stubGlobal("fetch", fetchMock);
-    const response = await createHttpReader().get("https://www.doncoleman.ca/about/?launch-check=1", { redirect: "manual" });
+    const response = await createHttpReader().get("https://www.doncoleman.ca/about/?check=1", { redirect: "manual" });
     expect(fetchMock.mock.calls[0]![1]).toMatchObject({ method: "GET", redirect: "manual" });
     expect(response.status).toBe(301);
-    expect(response.headers.location).toBe("https://doncoleman.ca/about/?launch-check=1");
+    expect(response.headers.location).toBe("https://doncoleman.ca/about/?check=1");
   });
 });
 

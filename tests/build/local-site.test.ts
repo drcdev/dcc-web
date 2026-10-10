@@ -141,12 +141,12 @@ describe("a page that is one file", () => {
     const sitemap = l1.read("sitemap-0.xml");
     expect(sitemap).toContain("/workshops/");
 
-    // Header navigation is the launch navigation: no entry for the new page.
+    // Header navigation is unchanged: no entry for the new page.
     const about = l1.read("about/index.html");
     expect(navList(html)).not.toContain("Workshops");
     expect(withoutCurrent(navList(html))).toBe(withoutCurrent(navList(about)));
 
-    // Not a draft: no notice, and the robots meta matches a draft launch page's (Work with me is
+    // Not a draft: no notice, and the robots meta matches a draft page's (Work with me is
     // still a draft; About went live with feature 010).
     const workWithMe = l1.read("work-with-me/index.html");
     expect(html).not.toContain("data-draft-notice");

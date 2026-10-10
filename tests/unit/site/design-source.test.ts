@@ -24,11 +24,9 @@ describe("docs/design-source.md", () => {
 
   const doc = existsSync(docPath) ? readDoc() : "";
 
-  it("has the five required headings", () => {
+  it("has the three required headings", () => {
     expect(doc).toMatch(/#{1,6}\s*How to get Flux/);
     expect(doc).toMatch(/#{1,6}\s*Mapping/);
-    expect(doc).toMatch(/#{1,6}\s*What doesn't carry over/);
-    expect(doc).toMatch(/#{1,6}\s*Current live URLs/);
     expect(doc).toMatch(/#{1,6}\s*Accessibility adjustments/);
   });
 
@@ -95,7 +93,6 @@ describe("docs/design-source.md", () => {
     "content-feature-image.hbs",
     "ui-contact-form.hbs",
     "contact-form.js",
-    "supabase/functions/contact/index.ts",
     "default.hbs",
     "layout-header.hbs",
     "layout-footer.hbs",
@@ -122,63 +119,6 @@ describe("docs/design-source.md", () => {
 
   it.each(requiredFluxNames)("Mapping: mentions Flux name %s verbatim", (name) => {
     expect(doc).toContain(name);
-  });
-
-  const doesntCarryOverPhrases = [
-    "member sign-up",
-    "subscribe",
-    "account",
-    "portal",
-    "Ghost search",
-    "comments",
-    "content-cta.hbs",
-    "ui-post-ai.hbs",
-    "post-ai.js",
-    "Supabase functions",
-    "drift.hbs",
-    "convergence.hbs",
-    "news.hbs",
-    "newsletter-",
-    "routes.yaml",
-    "Ghost deploy",
-    "gscan",
-    ".scripts",
-    "Prism",
-    "marked",
-    "dompurify",
-    "terser",
-    "SRI hash",
-  ];
-
-  it.each(doesntCarryOverPhrases)("What doesn't carry over: mentions %s", (phrase) => {
-    expect(doc.toLowerCase()).toContain(phrase.toLowerCase());
-  });
-
-  const currentUrlPatterns = [
-    "/drift/{year}/{slug}/",
-    "/convergence/{year}/{slug}/",
-    "/news/{year}/{slug}/",
-    "/drift/",
-    "/convergence/",
-    "/news/",
-    "/topic/{slug}/",
-    "/author/{slug}/",
-    "/about/",
-    "/contact/",
-    "/privacy-policy/",
-    "/cookie-policy/",
-    "/terms-of-use/",
-    "/technology/",
-  ];
-
-  it.each(currentUrlPatterns)("Current live URLs: contains %s", (pattern) => {
-    expect(doc).toContain(pattern);
-  });
-
-  it("Current live URLs: states the old Ghost addresses redirect", () => {
-    expect(doc.toLowerCase()).not.toContain("no redirects");
-    expect(doc).toContain("redirect permanently");
-    expect(doc).toContain("public/_redirects");
   });
 
   it("Accessibility adjustments: section has content (may be 'None')", () => {

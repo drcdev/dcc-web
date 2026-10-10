@@ -65,9 +65,6 @@ describe("astro.config.mjs security.csp", () => {
       "unsafe-inline",
       "unsafe-eval",
       "unsafe-hashes",
-      "web3forms",
-      "jsdelivr",
-      "supabase",
       "localhost",
       "127.0.0.1",
       "ws:",
@@ -82,10 +79,14 @@ describe("astro.config.mjs security.csp", () => {
     }
   });
 
-  it("allows an external origin only from the Web Analytics allow-list", () => {
+  it("allows an external host only from the Web Analytics allow-list", () => {
     const allowed = ["https://static.cloudflareinsights.com", "https://cloudflareinsights.com"];
-    const origins = [...policy.values()].flat().filter((source) => /^[a-z]+:\/\//.test(source));
-    for (const origin of origins) expect(allowed, origin).toContain(origin);
+    // Keywords and hashes ('self', 'none', 'sha256-...') and bare schemes (data:, blob:) are not
+    // hosts; every other source, with or without a scheme, is an external host.
+    const hosts = [...policy.values()]
+      .flat()
+      .filter((source) => !/^'.*'$/.test(source) && !/^[a-z][a-z0-9+.-]*:$/i.test(source));
+    for (const host of hosts) expect(allowed, host).toContain(host);
   });
 });
 
