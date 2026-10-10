@@ -130,7 +130,7 @@ describe("docs/launch.md Part A readiness", () => {
 
 describe("docs/launch.md Parts B to D", () => {
   const web = baseline.records.filter(
-    (r) => r.decision === "keep" && ["A", "AAAA", "CNAME"].includes(r.type) && /^(www\.)?doncoleman\.ca$/.test(r.name),
+    (r) => ["A", "AAAA", "CNAME"].includes(r.type) && /^(www\.)?doncoleman\.ca$/.test(r.name),
   );
 
   it("the baseline has the Ghost web records the walkthrough records", () => {
@@ -235,7 +235,7 @@ describe("docs/launch.md Part E rollback", () => {
 
   it("names every Ghost record from L8, with TTL", () => {
     for (const r of baseline.records.filter(
-      (x) => x.decision === "keep" && ["A", "CNAME"].includes(x.type) && /^(www\.)?doncoleman\.ca$/.test(x.name),
+      (x) => ["A", "CNAME"].includes(x.type) && /^(www\.)?doncoleman\.ca$/.test(x.name),
     )) {
       expect(partE).toContain(r.content);
     }

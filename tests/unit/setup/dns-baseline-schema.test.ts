@@ -60,18 +60,28 @@ describe("dnsBaselineSchema record-level rules", () => {
 });
 
 describe("setup/dns-baseline.json: launch subsets derivable by name and type (T007)", () => {
-  type Record_ = { type: string; name: string; content: string; decision: string | null };
+  type Record_ = { type: string; name: string; content: string; decision: string | null; reason: string | null };
   const baseline = readBaseline() as { records: Record_[] };
   const zone = "doncoleman.ca";
 
-  it("has Ghost web records: kept A, AAAA and CNAME records on the apex or www", () => {
+  it("has the retired Ghost web records: A, AAAA and CNAME on the apex or www, all dropped with a reason", () => {
     const ghostWeb = baseline.records.filter(
-      (r) => r.decision === "keep" && ["A", "AAAA", "CNAME"].includes(r.type) && (r.name === zone || r.name === `www.${zone}`),
+      (r) => ["A", "AAAA", "CNAME"].includes(r.type) && (r.name === zone || r.name === `www.${zone}`),
     );
     expect(ghostWeb.map((r) => `${r.type} ${r.name} ${r.content}`).sort()).toEqual([
       "A doncoleman.ca 49.13.201.194",
       "CNAME www.doncoleman.ca drift-and-convergence.mymagic.page",
     ]);
+    for (const r of ghostWeb) {
+      expect(r.decision).toBe("drop");
+      expect((r.reason ?? "").trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps the DMARC and CAA records, so dns-records-parity guards them (#93)", () => {
+    const kept = baseline.records.filter((r) => r.decision === "keep");
+    expect(kept.some((r) => r.type === "TXT" && r.name === `_dmarc.${zone}` && r.content.startsWith("v=DMARC1"))).toBe(true);
+    expect(kept.some((r) => r.type === "CAA" && r.name === zone && /^\d+ issue "/.test(r.content))).toBe(true);
   });
 
   it("has mail records: kept MX and TXT records plus _domainkey CNAMEs, including the iCloud MX hosts", () => {

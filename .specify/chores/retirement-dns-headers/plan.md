@@ -202,7 +202,7 @@ Mechanical criteria (the review phase checks each one):
 - **Test:** existing (edited; it passes after W2 and would fail with W2 alone).
 - **Layer:** build (second layer for the copy only, reason above).
 
-### [ ] W4 — Baseline tests: Ghost web records dropped, DMARC and CAA kept (test first)
+### [x] W4 — Baseline tests: Ghost web records dropped, DMARC and CAA kept (test first)
 
 - **Files:** `tests/unit/setup/dns-baseline-schema.test.ts` (the "launch subsets derivable by
   name and type (T007)" block, lines ~62–86) and `tests/unit/setup/launch-doc.test.ts` (lines
@@ -233,7 +233,7 @@ Mechanical criteria (the review phase checks each one):
   existing; it keeps the tests from going vacuous.
 - **Layer:** unit (the real baseline file parsed; the docs read as text).
 
-### [ ] W5 — Update the baseline
+### [x] W5 — Update the baseline
 
 - **Files:** `setup/dns-baseline.json`.
 - **What:**
