@@ -33,41 +33,65 @@ Files under `docs/` are in none of the narrow tiers, so a change that only edits
 or the testing guide runs the full build and end-to-end run, which takes several minutes and adds
 nothing: no part of the built site reads `docs/`.
 
-Some files under `docs/` are read by checks. Today these are `docs/setup.md`, `docs/launch.md`,
-`docs/pages.md`, `docs/posts.md`, `docs/projects.md` and `docs/design-source.md`, read by unit
-checks of the setup walkthrough, the launch runbook and the authoring guides. Others, such as
-`docs/cutover-plan.md`, `docs/testing.md` and the design notes under `docs/design/`, are read by
-no check. A docs-only change must still run every check that reads a documentation file, so a
-broken guide or runbook is still caught.
+Some files under `docs/` are read by unit checks (for example `docs/setup.md`, `docs/launch.md`
+and the authoring guides, read by checks of the setup walkthrough, the launch runbook and the
+guides). A docs-only change therefore still runs the whole unit and component suite, so a broken
+guide or runbook is still caught, and no list of which checks read `docs/` has to be kept.
+
+Production is deployed by Cloudflare Workers Builds on every push to `main`, independently of
+this workflow, so the CI run on `main` never gates a deploy. The `main` ruleset requires a pull
+request that is up to date with `main`, so the tree that lands on `main` is one CI already
+checked on its pull request.
 
 **Major change (Constitution Principle III)**: this changes CI configuration, so it is a major
 change and its pull request is flagged as one. Principle II ("checks are never skipped") is met
 in the same way as the existing skip-safe tier: the only checks left out are ones that cannot
-observe the change, and every check that reads a changed file still runs.
+observe the change, and every unit check, including each one that reads a changed file, still
+runs.
+
+## Clarifications
+
+### Session 2026-10-09
+
+- Q: Should pushes to `main` be sorted into tiers too, and if so, into which ones? → A: Every
+  tier, by the same rules as pull requests.
+- Q: Which files should a `main` push be compared against, and should a newer merge still be
+  allowed to cancel the `main` run already going? → A: Compare `github.event.before` with the
+  pushed commit, fetching enough history for that; run the full gate if `before` is missing, all
+  zeros or cannot be fetched; stop cancelling in-progress runs on `main`, while pull requests keep
+  cancelling.
+- Q: On a docs-only change, should CI run a hand-kept list of "docs checks" protected by a guard,
+  or simply the whole unit and component suite? → A: The secret scan and the whole unit and
+  component suite (`test:unit`); lint, type-check, worker tests, build, build tests and end-to-end
+  tests are skipped; no named list and no drift guard.
+- Q: Which files count as documentation for the docs tier? → A: Only `.md` files under `docs/`,
+  at any depth.
 
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - A docs-only pull request gets a fast verify (Priority: P1)
 
 Don or an agent opens a pull request that changes only documentation, for example ticking boxes
-in the cutover plan. CI runs the secret scan and the checks that read documentation, skips the
-lint, type-check, build, build tests and end-to-end tests, and reports `verify` as passed once
-those checks pass. Don can approve and the pull request merges without waiting for the full gate.
+in the cutover plan. CI runs the secret scan and the unit and component suite, skips the lint,
+type-check, worker tests, build, build tests and end-to-end tests, and reports `verify` as passed
+once those checks pass. Don can approve and the pull request merges without waiting for the full
+gate.
 
 **Why this priority**: It is the problem the issue names (PR #126 waited on the full gate for a
 checklist edit), and the most frequent case during the cutover.
 
 **Independent Test**: Open a pull request that changes only a Markdown file under `docs/` and
-confirm that the docs checks and the secret scan run, the build, build tests and end-to-end
-tests are skipped, and `verify` passes.
+confirm that the secret scan and the unit and component suite run, the build, build tests and
+end-to-end tests are skipped, and `verify` passes.
 
 **Acceptance Scenarios**:
 
 1. **Given** a pull request whose only change is `docs/cutover-plan.md`, **When** CI runs,
-   **Then** the secret scan and the docs checks run, the lint, type-check, remaining unit checks,
-   worker tests, build, build tests and end-to-end tests do not run, and `verify` passes.
+   **Then** the secret scan and the unit and component suite run, the lint, type-check, worker
+   tests, build, build tests and end-to-end tests do not run, and `verify` passes.
 2. **Given** a pull request that changes `docs/launch.md` so that a launch-runbook check fails,
-   **When** CI runs, **Then** that check runs and fails, and `verify` fails.
+   **When** CI runs, **Then** that check runs as part of the unit and component suite and fails,
+   and `verify` fails.
 3. **Given** a pull request that changes only documentation and skip-safe files (for example
    `docs/testing.md` and a file under `specs/`), **When** CI runs, **Then** it gets the docs
    tier, not the full gate.
@@ -79,8 +103,9 @@ tests are skipped, and `verify` passes.
 ### User Story 2 - A docs-only push to `main` gets the same fast verify (Priority: P2)
 
 When a pull request merges, or a commit lands on `main` some other way, CI sorts the push by the
-files it changed against the previous state of `main`, using the same tiers as a pull request.
-A merge that brought in only documentation runs the docs tier on `main` too.
+files it changed between the commit `main` was on before the push and the pushed commit, using
+the same tiers as a pull request. A merge that brought in only documentation runs the docs tier
+on `main` too. Each push to `main` gets its own complete run: a later push does not cancel it.
 
 **Why this priority**: Every merge today runs the full gate again on `main`, whatever it changed.
 It matters less than the pull request case because nothing waits on it, but it doubles the cost
@@ -93,55 +118,39 @@ the full gate.
 **Acceptance Scenarios**:
 
 1. **Given** a merge to `main` whose changes against the previous `main` are only documentation,
-   **When** CI runs on the push, **Then** it runs the docs tier and `verify` passes once the docs
-   checks and the secret scan pass.
+   **When** CI runs on the push, **Then** it runs the docs tier and `verify` passes once the unit
+   and component suite and the secret scan pass.
 2. **Given** a merge to `main` that brings in any code, configuration, dependency or test change,
    **When** CI runs on the push, **Then** the full gate runs.
-3. **Given** a push to `main` whose changed files cannot be worked out (for example the previous
-   commit is unknown), **When** CI runs, **Then** the full gate runs.
-
----
-
-### User Story 3 - A new check that reads documentation cannot be missed (Priority: P3)
-
-An agent adds a check that reads a file under `docs/`, but forgets to add it to the docs checks.
-The gate refuses that change, so the docs tier never silently stops covering a documentation file
-that a check depends on.
-
-**Why this priority**: It keeps the docs tier honest over time, in the same way the content-only
-tier is guarded today. Without it the tier is correct on the day it lands and drifts afterwards.
-
-**Independent Test**: Add a scratch check that reads a `docs/` file and is not in the docs checks,
-and confirm the guard fails and names it.
-
-**Acceptance Scenarios**:
-
-1. **Given** a check outside the docs checks that reads a file under `docs/`, **When** the guard
-   runs, **Then** it fails and names that check and the file.
-2. **Given** the docs checks name a check that no longer exists, **When** the guard runs, **Then**
-   it fails and names the missing check.
+3. **Given** a push to `main` whose previous commit is missing, all zeros or cannot be fetched,
+   **When** CI runs, **Then** the full gate runs.
+4. **Given** a merge to `main` whose run is in progress, **When** a second merge is pushed,
+   **Then** the first run is not cancelled and both runs complete.
 
 ### Edge Cases
 
-- **Deleting a documentation file** that a check reads: the change is still docs-only, the docs
-  checks run, and the check that reads it fails.
+- **Deleting a documentation file** that a check reads: the change is still docs-only, the unit
+  and component suite runs, and the check that reads it fails.
 - **Moving a file into or out of `docs/`**: the change is treated as a deletion plus an addition.
   The side outside `docs/` decides the tier, so moving a code file into `docs/`, or a doc out of
   it, runs the full gate unless the other side is itself skip-safe.
-- **A non-Markdown file under `docs/`** (an image, a script, a data file): not documentation for
-  this rule; the full gate runs.
+- **A non-Markdown file under `docs/`** (an image such as the design images under `docs/design/`,
+  a script, a data file): not documentation for this rule; the full gate runs.
 - **A Markdown file outside `docs/`**, such as `README.md` or a `.md` file under `src/`: not
   documentation for this rule; the full gate runs.
 - **Unusual paths** (containing `..`, starting with `/`, or containing a backslash): never
   documentation; the full gate runs.
 - **Documentation plus content files**: the content-only tier runs (the whole gate with the
-  narrower build tests), and the docs checks run as part of the unit checks.
+  narrower build tests), which includes the unit and component suite.
 - **An empty diff** or a diff that cannot be computed, on a pull request or a push: the full gate
   runs.
 - **A push to `main` of several commits at once**: the tier is decided by every file changed
-  across the whole push, not only the last commit.
-- **The workflow file, the tier rules or the docs checks themselves change**: those are not
-  documentation, so the full gate runs.
+  between the commit `main` was on before the push and the pushed commit, not only the last
+  commit.
+- **Two merges to `main` in quick succession**: neither run is cancelled, so each push is sorted
+  and checked on its own. Pull request runs still cancel an older run on the same branch.
+- **The workflow file or the tier rules themselves change**: those are not documentation, so the
+  full gate runs.
 - **The preview site check on pull requests**: it runs inside the end-to-end job, so it is skipped
   on a docs-only change. Documentation does not reach the built site, so there is nothing for it
   to check.
@@ -161,25 +170,21 @@ and confirm the guard fails and names it.
   content-only, full. A change containing any file that is none of skip-safe, documentation or
   content runs the full gate, and a change that mixes documentation with content files runs the
   content-only tier.
-- **FR-005**: On the docs tier CI MUST run the secret scan over the whole repository and the
-  **docs checks**, and MUST NOT run the lint, type-check, the other unit and component checks, the
-  worker tests, the build, the build tests, the end-to-end, accessibility, visual and budget
-  tests, or the preview site check.
-- **FR-006**: The **docs checks** MUST be every automated check that reads a file under `docs/`,
-  named in one place. At the time of writing they are the checks that read `docs/setup.md`,
-  `docs/launch.md`, `docs/pages.md`, `docs/posts.md`, `docs/projects.md` and
-  `docs/design-source.md`.
-- **FR-007**: A guard MUST fail when a check outside the docs checks reads a file under `docs/`,
-  or when the docs checks name a check that does not exist. The guard runs as part of the unit
-  checks, so it runs on every change that is not skip-safe or docs-only, including any change to
-  the checks themselves.
+- **FR-005**: On the docs tier CI MUST run the secret scan over the whole repository and the whole
+  unit and component suite (`test:unit`), and MUST NOT run the lint, type-check, the worker tests,
+  the build, the build tests, the end-to-end, accessibility, visual and budget tests, or the
+  preview site check.
+- **FR-006**: The docs tier MUST NOT depend on a list of which checks read files under `docs/`:
+  running the whole unit and component suite covers every such check, including ones added later.
 - **FR-008**: `verify` MUST report on every pull request and every push to `main`, on every tier.
-  On the docs tier it MUST pass only when the change sorting, the secret scan and the docs checks
-  all succeed and the skipped jobs were skipped because the tier said so. Any failure, cancellation
-  or unexpected skip MUST fail it.
-- **FR-009**: A push to `main` MUST be sorted into a tier by the same rules as a pull request,
-  from every file changed between the previous state of `main` and the pushed commit. If that
-  set cannot be worked out, or is empty, the full gate MUST run.
+  On the docs tier it MUST pass only when the change sorting, the secret scan and the unit and
+  component suite all succeed and the skipped jobs and steps were skipped because the tier said
+  so. Any failure, cancellation or unexpected skip MUST fail it.
+- **FR-009**: A push to `main` MUST be sorted into a tier (skip-safe, docs, content-only or full)
+  by the same rules as a pull request, from every file changed between the push's previous commit
+  (`github.event.before`) and the pushed commit. CI MUST fetch enough history to compute that
+  diff. If the previous commit is missing, all zeros or cannot be fetched, or the set of changed
+  files is empty or cannot be worked out, the full gate MUST run.
 - **FR-010**: Anything the change sorting cannot positively recognise, and any error while sorting,
   MUST run the full gate (fail closed). An error MUST never make `verify` pass.
 - **FR-011**: The existing skip-safe and content-only tiers MUST keep their current rules and the
@@ -187,14 +192,15 @@ and confirm the guard fails and names it.
 - **FR-012**: The change sorting MUST log which tier it chose, why, and the changed files, so a
   reader of the run can see why a job was skipped.
 - **FR-013**: `docs/testing.md` ("Change tiers" and the CI job table) MUST describe the docs tier,
-  what counts as documentation, which checks run, and that pushes to `main` are now sorted too.
+  what counts as documentation, which checks run, that pushes to `main` are now sorted too, and
+  that runs on `main` are no longer cancelled by a later push.
+- **FR-014**: A CI run for a push to `main` MUST NOT be cancelled by a later push to `main`. Pull
+  request runs MUST keep cancelling an in-progress run for the same pull request.
 
 ### Key Entities
 
-- **Documentation file**: a `.md` file under `docs/`. The only kind of file that can put a change
-  in the docs tier.
-- **Docs checks**: the named set of automated checks that read files under `docs/`, kept complete
-  by the guard.
+- **Documentation file**: a `.md` file under `docs/`, at any depth. The only kind of file that
+  can put a change in the docs tier.
 - **Change tier**: skip-safe, docs, content-only or full, chosen per pull request or push from the
   changed files; decides which jobs and steps run and which skips `verify` accepts.
 
@@ -210,25 +216,24 @@ and confirm the guard fails and names it.
   list.
 - **SC-004**: A docs-only change that breaks a check reading that documentation fails `verify`
   every time.
-- **SC-005**: Adding a check that reads `docs/` without adding it to the docs checks fails the
-  gate every time.
+- **SC-005**: Every push to `main` ends with a completed `verify` run of its own; none is
+  cancelled by a later push.
 
 ## Assumptions
 
 - No part of the built site, the Worker or the end-to-end tests reads files under `docs/` at run
-  time; code comments that mention `docs/` paths do not count. If that ever changes, the file it
-  reads stops being safe to skip for, and the guard (FR-007) is the place to catch it.
+  time; code comments that mention `docs/` paths do not count. Checks that read `docs/` are unit
+  checks, which run on the docs tier.
 - Only `.md` files count. Images and other files under `docs/design/` are rare changes and are
   left on the full gate to keep the rule narrow; widening it is follow-up work.
 - `README.md` and other Markdown outside `docs/` stay on the full gate; adding them is follow-up
   work if it proves useful.
-- The production deployment is triggered by its own platform build on `main`, not by this
-  workflow, so sorting pushes to `main` does not change what gets deployed. A docs-only merge
-  changes nothing on the site.
-- Lint does not check Markdown, and the type-check does not read `docs/`, so skipping them on
-  the docs tier loses no coverage.
+- Production is deployed by Cloudflare Workers Builds on every push to `main`, not by this
+  workflow, so sorting pushes to `main` does not change what gets deployed or when. A docs-only
+  merge changes nothing on the site.
+- Lint (`eslint`) does not check Markdown, and the type-check does not read `docs/`, so skipping
+  them on the docs tier loses no coverage.
 - The branch rule requires only the `verify` check, which reports on every tier, so the docs tier
   needs no change to the ruleset.
-- Choices made without asking (the spec phase cannot interview Don): documentation means `.md`
-  under `docs/` only; pushes to `main` use all tiers, not only the docs tier; mixed docs and
-  content changes take the content-only tier. Each is open to change in `/speckit-clarify`.
+- The `launch-main-checks` setup check reads the newest `verify` on `main`; a passing docs-tier
+  `verify` satisfies it as before.
