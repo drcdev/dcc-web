@@ -205,7 +205,7 @@ describe("docs/launch.md Parts B to D", () => {
     const ids = steps().map((x) => x.id);
     expect(ids.indexOf("L15")).toBe(ids.indexOf("L14") + 1);
     expect(step("L15").toLowerCase()).toMatch(/external|linkedin/);
-    expect(step("L15").toLowerCase()).toMatch(/not redirected/);
+    expect(step("L15").toLowerCase()).toMatch(/redirect to their\s+new pages/);
   });
 
   it("L16 removes the review address and its DNS record", () => {
