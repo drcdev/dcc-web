@@ -374,17 +374,46 @@ These checks need neither the preview deployment nor Don's review before merge, 
 hold auto-merge; they are done after the merge and their results noted on issue #127
 (quickstart.md, "On GitHub"):
 
+Confirmed 2026-10-09 from real runs, issue #133. All five pass.
+
 1. A docs-only pull request (for example a cutover-plan edit) logs `tier=docs`, runs only the
    secret scan and the unit and component suite, skips `build-tests` and `e2e`, and passes
    `verify` in under 2 minutes (SC-001); the log shows tier, reason and one file per line
    (FR-012).
+   - **Result: PASS.** Run 38023035528, PR #132 (2 `docs/` and 2 `.specify/chores/` files):
+     `tier=docs: 2 documentation file(s) and 2 skip-safe file(s), running secretlint and the unit
+     tests`, then "Changed files:" one per line. `changes` and `static` succeeded, `build-tests`
+     and `e2e` skipped, `verify` passed in 75 s.
 2. A pull request changing a `docs/` file and a `src/` file logs `tier=full` naming the `src/`
    file (User Story 1, scenario 4).
+   - **Result: PASS, with a wording note.** Run 38029587425, PR #138 (`docs/` plus
+     `src/lib/site-origin.ts`, `src/content/projects/flux.mdx`, `scripts/`, `tests/` and a
+     `.claude/` skill): `tier=full: .claude/skills/setup-walkthrough/SKILL.md is not skip-safe,
+     documentation or content-only, running the full gate`; `build-tests` and `e2e` ran. The reason
+     names the first such path in order (here a `READ_BY_CHECKS` file), not specifically the `src/`
+     file; this check's "naming the `src/` file" assumed a two-file PR. Run 38024829035 (PR #135,
+     `docs/` plus `public/_headers`) also sorted to full, naming `public/_headers`.
 3. The `main` push run for a docs-only merge logs `tier=docs`, lists the files from `before` to
    the pushed commit, and passes `verify` in under 2 minutes (SC-002); a code merge runs the full
    gate.
+   - **Result: PASS.** Run 38024085668 (merge of #132): `tier=docs`, the same four files listed
+     from `before` to the pushed commit, `build-tests` and `e2e` skipped, `verify` passed in 80 s.
+     Code merges ran the full gate: 38022980128 (#131, `ci.yml`), 38024788337 (#134,
+     `tier=full: package.json …`, 6 files) and 38025226789 (#135, 16 files).
 4. Merges in quick succession each end with a completed, not cancelled, `verify` (SC-005).
+   - **Result: PASS.** #134 merged 04:38:44Z and #135 04:46:24Z; their `main` runs 38024788337
+     (04:38:47-04:48:56) and 38025226789 (04:46:26-04:56:35) overlapped and each ended with a
+     completed `verify`; neither was cancelled (the concurrency group keys non-PR events on
+     `github.sha`; cancel-in-progress applies to pull requests only). The #134 `verify` concluded
+     failure from an unrelated e2e flake (`projects-fixtures.spec.ts` "going back from a story
+     restores the index with its ?theme=", `page.goBack` "Not attached to an active page", 1 of
+     1463), which passed on PR run 38024136289 and the next `main` run; SC-005 is about
+     completion, so it holds. Two overlapping merges were observed, not three.
 5. `pnpm setup:check --item launch-main-checks` still reports complete after a docs-tier `main`
    run.
+   - **Result: PASS.** `launch-main-checks` reads the newest `verify` check run on `main` and
+     passes on success; it reports `[x] complete ... The newest verify run on main succeeded.` The
+     docs-tier `main` run 38024085668 had `verify` success, which is all the check reads.
 
-If any of these fails, the fix is its own reviewed change.
+No check failed, so no fix change was needed. (Had one failed, the fix would be its own
+reviewed change.)
