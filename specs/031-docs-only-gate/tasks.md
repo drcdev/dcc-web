@@ -7,7 +7,7 @@ description: "Task list for the docs-only verify gate"
 
 **Input**: Design documents from `/specs/031-docs-only-gate/` (spec.md, plan.md, research.md, data-model.md, contracts/ci-tiers.md, quickstart.md)
 
-**Tests**: Mandatory (Constitution Principle I). Every test task names its one primary layer and is ordered before the implementation it covers. All logic here is observable at the **unit** layer (Vitest `unit` project, `tests/unit/ci/`), the cheapest layer ("Where a test goes", `docs/testing.md`); no second layer is used for any behaviour. This slice changes CI only, so there is no visual baseline, build-test or e2e task. Live CI runs that need a real PR or a real push to `main` are `[PREVIEW-CHECK]` (see `.claude/skills/_shared/preview-check.md`): left unticked by the implementing subagent and listed in its summary.
+**Tests**: Mandatory (Constitution Principle I). Every test task names its one primary layer and is ordered before the implementation it covers. All logic here is observable at the **unit** layer (Vitest `unit` project, `tests/unit/ci/`), the cheapest layer ("Where a test goes", `docs/testing.md`); no second layer is used for any behaviour. This slice changes CI only, so there is no visual baseline, build-test or e2e task. Live CI runs that need a real docs-only PR or a real push to `main` can only happen after this PR merges (this PR edits the workflow, so it always sorts to `full`), and they need neither the preview deployment nor Don's eyes before merge, so they are not `[PREVIEW-CHECK]` items and do not hold auto-merge. They are recorded as post-merge verification in spec.md ("Post-merge verification" under Accepted risks and follow-up); this task list holds only the local spot checks.
 
 **Toolchain**: run `node -v` before any `pnpm` command; if it is not the `.nvmrc` version, run `source ~/.nvm/nvm.sh && nvm use` in the same Bash command (see `CLAUDE.md`).
 
@@ -56,9 +56,9 @@ description: "Task list for the docs-only verify gate"
 - [ ] T013 [US1] Implement the four-tier `decide` in `scripts/ci/changed-paths.ts` (skip-safe, docs, content-only admitting docs, full; first match wins; workflow and tier-rule files never match a narrow tier). Makes T009 pass.
 - [ ] T014 [P] [US1] Make `scripts/ci/verify-needs.ts` and `.github/workflows/ci.yml` satisfy T010 and T011 (docs skips lint, type-check, worker tests, build tests and e2e; unit tests and secretlint still run); adjust any `if:` that differs from `contracts/ci-tiers.md`.
 - [ ] T015 [US1] Update `docs/testing.md`: "Change tiers" as a table with the new Docs row and what counts as documentation, the CI job table, the `verify` description, and the accepted risk that no guard notices a future non-unit check that reads `docs/` (FR-013, FR-017).
-- [ ] T016 [US1] [PREVIEW-CHECK] On the real PR, confirm `changes` logs `tier=full` for this slice (it edits the workflow). Then open a throwaway docs-only PR (quickstart step 1): `changes` logs `tier=docs`, only secretlint and `test:unit` run, `build-tests` and `e2e` are skipped, `verify` passes, and wall time from first job start to `verify` is under 2 minutes (SC-001, SC-004). Also quickstart step 2 (docs plus `src/` logs `tier=full`).
+- [ ] T016 [US1] Local spot check, no file changes: with `GITHUB_EVENT_NAME=pull_request` run `node scripts/ci/changed-paths.ts` in the worktree and confirm it prints a recognised `tier=<value>` line, the reason and one changed file per line as plain text (FR-012). The live docs-only PR checks (quickstart steps 1 and 2, SC-001) are post-merge verification in spec.md, not tasks here.
 
-**Checkpoint**: US1 works at the unit layer; the live check is open for Don.
+**Checkpoint**: US1 works at the unit layer; live confirmation is post-merge verification (spec.md).
 
 ---
 
@@ -70,17 +70,17 @@ description: "Task list for the docs-only verify gate"
 
 ### Tests for User Story 2 (write first, seen failing)
 
-- [ ] T017 [P] [US2] Test, layer unit: in `tests/unit/ci/changed-paths.test.ts`, `collectFiles` with an injected fake git runner: pull request runs `diff --name-only --no-renames HEAD^1 HEAD`; push with missing, empty, short, non-hex, uppercase and all-zero `before` returns `null` without calling git; push fetch throws gives `null`; push diff throws gives `null`; push success runs the fetch of the validated id then `diff <before> HEAD`; other events give `null`; `decide` on a `push` with docs only gives `docs` and with `files: null` gives `full` (FR-009, FR-010, FR-018, SC-003).
+- [ ] T017 [P] [US2] Test, layer unit: in `tests/unit/ci/changed-paths.test.ts`, `collectFiles` with an injected fake git runner: pull request runs `diff --name-only --no-renames HEAD^1 HEAD`; push with missing, empty, short, non-hex, uppercase and all-zero `before` returns `null` without calling git; push fetch throws gives `null`; push diff throws gives `null`; push success runs the fetch of the validated id then `diff --name-only --no-renames <before> HEAD` (so a rename counts both paths, spec edge cases); other events give `null`; `decide` on a `push` with docs only gives `docs` and with `files: null` gives `full` (FR-009, FR-010, FR-018, SC-003).
 - [ ] T018 [P] [US2] Test, layer unit: in `tests/unit/ci/workflows.test.ts`, the `changes` step passes `BEFORE_SHA: ${{ github.event.before }}` through `env:` and no `run:` line contains `github.event.before`; the concurrency group and `cancel-in-progress` strings equal those in research R5 (push runs group by `github.sha`, pull requests keep per-ref cancelling) (FR-014, FR-018, SC-005).
 
 ### Implementation for User Story 2
 
 - [ ] T019 [US2] Implement `collectFiles({ event, before }, git)` in `scripts/ci/changed-paths.ts` per research R4 and wire `main()` to `execFileSync("git", ...)`, `process.env.GITHUB_EVENT_NAME` and `process.env.BEFORE_SHA`; paths are read from git output and never passed back to git or a shell; any failure yields `null`, which `decide` maps to `full`. Makes T017 pass.
 - [ ] T020 [US2] Implement in `.github/workflows/ci.yml`: `BEFORE_SHA` via `env:` on the `changes` step, and the per-push concurrency group with `cancel-in-progress: ${{ github.event_name == 'pull_request' }}`; keep `fetch-depth: 2`, read-only permissions and the pinned actions. Makes T018 pass.
-- [ ] T021 [US2] Update `docs/testing.md` (pushes to `main` are sorted, runs on `main` are not cancelled, the residual-risk paragraph now says a content-only merge loses its full `main` backstop, the measurement method says to pick a full-tier run) and `docs/setup.md` item 11 (replace "Pushes to `main` always run the full gate"). Confirm no statement that pushes always run the full gate remains (FR-013).
-- [ ] T022 [US2] [PREVIEW-CHECK] After the merge, observe the `main` push runs (quickstart steps 3 to 5): a docs-only merge logs `tier=docs` with the files from `before` to the pushed commit and `verify` passes in under 2 minutes (SC-002); a code merge runs the full gate; three quick merges each end with a completed, not cancelled, `verify` (SC-005); `pnpm setup:check --item launch-main-checks` still reports complete.
+- [ ] T021 [US2] Update `docs/testing.md` (pushes to `main` are sorted, runs on `main` are not cancelled, the residual-risk paragraph now says a content-only merge loses its full `main` backstop, the measurement method says to pick a full-tier run and that docs-tier timings exclude the wait for the first runner, the runner-queueing accepted risk) and `docs/setup.md` item 11 (replace "Pushes to `main` always run the full gate"). Confirm no statement that pushes always run the full gate remains (FR-013).
+- [ ] T022 [US2] Local spot check, no file changes (quickstart "Local"): `GITHUB_EVENT_NAME=push BEFORE_SHA=0000000000000000000000000000000000000000 node scripts/ci/changed-paths.ts` logs `tier=full` naming the all-zeros `before`; with `BEFORE_SHA` set to the commit `origin/main` points at, it fetches that commit, logs the files changed from it to `HEAD` one per line, and logs `tier=full` (this branch changes the workflow) (FR-009, FR-012). The live `main` push checks (quickstart steps 3 to 5, SC-002, SC-005, setup check) are post-merge verification in spec.md, not tasks here.
 
-**Checkpoint**: both stories work at the unit layer; live checks are open for Don.
+**Checkpoint**: both stories work at the unit layer and in local spot checks; live checks are post-merge verification (spec.md).
 
 ---
 
@@ -94,8 +94,8 @@ description: "Task list for the docs-only verify gate"
 ## Dependencies and order
 
 - T001, then Phase 2 (T002 to T004 before T005 to T007), then US1, then US2 (US2 reuses `decide` from US1 but is independently testable).
-- Within each story: tests, seen failing, then implementation, then docs, then the `[PREVIEW-CHECK]` task.
-- T024 last; T016 and T022 stay open until the PR and the merge run exist.
+- Within each story: tests, seen failing, then implementation, then docs, then the local spot check.
+- T024 last. No task is `[PREVIEW-CHECK]`; the live CI checks are post-merge verification recorded in spec.md and do not hold auto-merge.
 
 ## Parallel opportunities
 

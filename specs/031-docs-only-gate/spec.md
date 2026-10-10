@@ -365,3 +365,26 @@ the full gate.
   end-to-end test, or site code, reads `docs/` is possible follow-up work if this ever slips.
 - **Runner queueing** can push a docs-tier run past 2 minutes; SC-001 and SC-002 exclude the
   wait for the first runner for that reason.
+
+### Post-merge verification (follow-up)
+
+This pull request edits the workflow, so its own run always sorts to the full tier (FR-016), and
+a docs-only pull request or a push to `main` can only show the new tiers once it has merged.
+These checks need neither the preview deployment nor Don's review before merge, so they do not
+hold auto-merge; they are done after the merge and their results noted on issue #127
+(quickstart.md, "On GitHub"):
+
+1. A docs-only pull request (for example a cutover-plan edit) logs `tier=docs`, runs only the
+   secret scan and the unit and component suite, skips `build-tests` and `e2e`, and passes
+   `verify` in under 2 minutes (SC-001); the log shows tier, reason and one file per line
+   (FR-012).
+2. A pull request changing a `docs/` file and a `src/` file logs `tier=full` naming the `src/`
+   file (User Story 1, scenario 4).
+3. The `main` push run for a docs-only merge logs `tier=docs`, lists the files from `before` to
+   the pushed commit, and passes `verify` in under 2 minutes (SC-002); a code merge runs the full
+   gate.
+4. Merges in quick succession each end with a completed, not cancelled, `verify` (SC-005).
+5. `pnpm setup:check --item launch-main-checks` still reports complete after a docs-tier `main`
+   run.
+
+If any of these fails, the fix is its own reviewed change.

@@ -19,7 +19,7 @@ GITHUB_EVENT_NAME=push BEFORE_SHA=0000000000000000000000000000000000000000 node 
 
 Expected log: `tier=full: ...` naming the all-zeros `before`.
 
-## On GitHub (the PR for this slice runs the full tier; checks below are follow-ups)
+## On GitHub (post-merge verification, spec.md; the PR for this slice runs the full tier)
 
 1. **Docs-only PR (US1, SC-001)**: open a PR changing only `docs/cutover-plan.md`. In the run,
    `changes` logs `tier=docs`, `static` runs secretlint and the unit tests only, `build-tests`
@@ -29,7 +29,7 @@ Expected log: `tier=full: ...` naming the all-zeros `before`.
    `tier=full` naming the `src/` file.
 3. **Docs-only merge (US2, SC-002)**: after merging (1), the `main` push run logs `tier=docs`,
    lists the changed files from `before` to the pushed commit, and `verify` passes.
-4. **No cancellation (SC-005)**: two merges in quick succession each end with a completed
+4. **No cancellation (SC-005)**: three merges in quick succession each end with a completed
    `verify` on their own commit (`gh run list --workflow ci.yml --branch main`).
 5. **Setup check**: `pnpm setup:check --item launch-main-checks` still reports complete after a
    docs-tier `main` run.
