@@ -191,7 +191,7 @@ a pull request authored by Don cannot be merged through the normal review gate.
 collaborator permission is write or maintain, and not admin.
 
 **Constitution principle**
-III (Human Review for Major Changes) and VII (Private Data) — the machine account's credential
+III (Human Review of Every Change) and VII (Private Data) — the machine account's credential
 lives only in the agent's sign-in store.
 
 **Secrets**
@@ -267,12 +267,16 @@ Nothing new to do here; `.github/workflows/ci.yml` is part of this slice's pull 
 item confirms it exists on `main` and that the latest run succeeded, after the merge.
 Linux visual baselines are regenerated locally with `pnpm run test:visual:update:linux`, which runs in the
 Playwright Docker image matching `@playwright/test` and needs Docker Desktop running.
-A pull request that changes only skip-safe paths (agent instructions and Spec Kit documents that
-no check reads, listed in `scripts/ci/changed-paths.ts`) runs secretlint in the `static` job and
-skips `build-tests` and `e2e`; the `verify` job still reports success. A pull request that changes
-only `.md` files under `docs/` (plus skip-safe files) runs the docs tier: secretlint and the unit and
-component tests, skipping lint, type-check, worker tests, `build-tests` and `e2e`; `verify` still reports. Pushes to `main` are sorted by
-the same rules, from the commit before the push to the pushed commit, and runs on `main` are never cancelled.
+A pull request that changes only skip-safe paths (`CLAUDE.md`, `VOICE.md`, and any file under
+`.claude/` or `.specify/` that is not code and not a skill file, as defined in
+`scripts/ci/changed-paths.ts`) runs secretlint in the `static` job and skips `build-tests` and
+`e2e`; the `verify` job still reports success. A pull request that changes only `.md` files under
+`docs/` or non-code files under `.claude/skills/` (plus skip-safe files) runs the docs tier:
+secretlint and the unit and component tests, skipping lint, type-check, worker tests,
+`build-tests` and `e2e`; `verify` still reports. Pushes to `main` are sorted by the same rules,
+from the commit before the push to the pushed commit, and runs on `main` are never cancelled.
+Before opening a pull request, the agent pipelines run `node scripts/ci/changed-paths.ts --base
+origin/main` and run only that tier's checks locally; CI recomputes the tier and remains the gate.
 
 **How it will be confirmed**
 `pnpm setup:check --item github-ci-workflow` reports complete when `ci.yml` exists on
@@ -299,7 +303,7 @@ confirms it on `main` after the merge.
 has the catch-all line `* @drcdev` and GitHub reports no errors in it.
 
 **Constitution principle**
-III (Human Review for Major Changes).
+III (Human Review of Every Change).
 
 **Secrets**
 None.
@@ -318,12 +322,12 @@ Import `setup/github-ruleset.json` as a repository ruleset on `main`:
 **How it will be confirmed**
 `pnpm setup:check --item github-main-protection` reports complete when the active ruleset on
 `main` matches `setup/github-ruleset.json` — pull request required with one approving review,
-code-owner review required, stale approvals dismissed on new commits, required check `verify`
-(strict), no force-push, no deletion, no bypass actors — with each missing or weaker rule named
+code-owner review required, stale approvals dismissed on new commits, required check `verify`,
+no force-push, no deletion, no bypass actors — with each missing or weaker rule named
 individually if it does not.
 
 **Constitution principle**
-II (Automated Release Gate) and III (Human Review for Major Changes).
+II (Automated Release Gate) and III (Human Review of Every Change).
 
 **Secrets**
 None.

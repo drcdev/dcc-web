@@ -7,7 +7,7 @@ paraphrase them into a subagent prompt; pass them by reference.
 The visual project snapshots only the shell (header, footer and open mobile menu), the
 not-found page and the fixture site, never real content, so a content edit cannot fail it.
 Its per-platform baselines change only when the shell, a template or the design system
-changes, which is a major change under Principle III in any case.
+changes.
 
 The baselines are committed in `tests/e2e/visual.spec.ts-snapshots/`, and a change to them
 refreshes both sets.

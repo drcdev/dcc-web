@@ -23,7 +23,7 @@ gate times (see "Measured gate times").
 | Real `astro build` | `tests/build/indexing.test.ts`, which runs `astro build` on the repository's own content in the main-branch and preview environments, plus `pnpm run build`, which runs in the `e2e` job in CI and in the local `verify` script. `indexing.test.ts` also runs on content-only changes, through `pnpm run test:build:content`. | That the real site builds and that its sitemap, robots and headers match the environment | Two environments | Keep. |
 | E2E | Playwright `e2e` and sibling projects, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Journeys in a real browser: navigation, theme, menu, contact submission, not-found, behaviour without JavaScript, layout geometry per template at 320, 390 and 1280 px (no sideways scroll, no element wider than the viewport, header and footer clear of the main content), the theme token each key component resolves to in both themes (`theme-tokens.spec.ts`) | Journeys, plus the template matrix | Keep journeys; review matrices (#40). |
 | Accessibility | Playwright `a11y` projects (axe), `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | WCAG 2.2 AA per template, both widths, both themes | Full template matrix | Keep (Principle X). |
-| Visual | Playwright `visual` project, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Pixel baselines of the design system: the shell (header, footer, open mobile menu), the not-found page, and on the fixture site the sections page, the post and story templates, the listing cards, the lead story, a series banner, four projects index rows (shipped, experiment, draft and in progress) and the contact form. Never real content. Text renders in self-hosted Inter and code in self-hosted JetBrains Mono, so the project waits for the fonts, including the code faces, before every shot (`tests/e2e/fonts.spec.ts` proves faces and requests). | Per platform | Keep, blocking. A diff is a design-system change (Principle III). Real-content shots removed in #40 phase 1; fixture template shots added in phase 2; see "Visual coverage". |
+| Visual | Playwright `visual` project, `pnpm run test:e2e` locally and `pnpm run test:e2e:parallel` in CI | Pixel baselines of the design system: the shell (header, footer, open mobile menu), the not-found page, and on the fixture site the sections page, the post and story templates, the listing cards, the lead story, a series banner, four projects index rows (shipped, experiment, draft and in progress) and the contact form. Never real content. Text renders in self-hosted Inter and code in self-hosted JetBrains Mono, so the project waits for the fonts, including the code faces, before every shot (`tests/e2e/fonts.spec.ts` proves faces and requests). | Per platform | Keep, blocking. A diff is a design-system change, reviewed on its pull request. Real-content shots removed in #40 phase 1; fixture template shots added in phase 2; see "Visual coverage". |
 | Budget | Playwright `budget` project, `pnpm run test:budget` | LCP, CLS, long tasks and bytes under throttling | Per template, own invocation with one worker (`pnpm run test:budget`) | Keep. Slow by design. |
 | Preview site-check | `scripts/site-check`, run against the preview deployment | Sitemap and links on the deployed preview | Once per PR; the crawl runs in the `e2e` job on pull requests | Keep. |
 
@@ -57,8 +57,8 @@ output, `tier`. A pull request is diffed against its first parent; a push is dif
 
 | Tier | What counts | What runs | What is skipped |
 |---|---|---|---|
-| Skip-safe | Every changed file is on the skip-safe allowlist: `.md`, `.yml`, `.yaml`, `.json`, `.sh`, `.py` and `.ps1` files under `.claude/`, `.specify/` and `specs/`, except the files a test or check reads (`setup-walkthrough`'s `SKILL.md`). Edits to the pipeline skills, `_shared/`, `CLAUDE.md` and the constitution run the skip-safe tier. `tier=skip-safe`. | secretlint only (`static`) and `verify` | `build-tests` and `e2e`, and the lint, type-check, unit and worker test steps of `static` |
-| Docs | Every changed file is skip-safe or a `.md` file under `docs/` (lower-case `.md` only; images, `.mdx` and other files under `docs/` are not documentation), with at least one such `docs/` file. `tier=docs`. | secretlint and the unit and component tests (`static`) and `verify` | lint, type check and worker tests, `build-tests` and `e2e` |
+| Skip-safe | Every changed file is `CLAUDE.md`, `VOICE.md`, any file under `.claude/` or `.specify/` that is not a code file (`.js`, `.mjs`, `.cjs`, `.jsx`, `.ts`, `.mts`, `.cts`, `.tsx`, `.astro`, which `eslint .` and the type check read) and not under `.claude/skills/`, or a `.md`, `.yml`, `.yaml`, `.json`, `.sh`, `.py` or `.ps1` file under `specs/`. The constitution, agent settings and Spec Kit files run the skip-safe tier. `tier=skip-safe`. | secretlint only (`static`) and `verify` | `build-tests` and `e2e`, and the lint, type-check, unit and worker test steps of `static` |
+| Docs | Every changed file is skip-safe, a `.md` file under `docs/` (lower-case `.md` only; images, `.mdx` and other files under `docs/` are not documentation), or a non-code file under `.claude/skills/` (the pipeline skills and `_shared/`, which a unit test reads), with at least one such file. `tier=docs`. | secretlint and the unit and component tests (`static`) and `verify` | lint, type check and worker tests, `build-tests` and `e2e` |
 | Content-only | Every changed file is skip-safe, documentation or an `.mdx` file or an image or video file under `src/content/pages`, `src/content/posts` or `src/content/projects`. `.md` files, schemas, `src/content.config.ts` and `public/` are not content-only. `tier=content-only`. | The whole gate, except that `build-tests` runs `pnpm run test:build:content` (`indexing.test.ts`, `local-site.test.ts`, `navigation.test.ts` and `project-template.test.ts`, the build files that read real content by name) | The other build files (listed below) |
 | Full | Everything else, an empty diff, and any failure to compute the diff. `tier=full`. | Every job and the whole `test:build` project | Nothing |
 
@@ -67,9 +67,17 @@ Runs on `main` are never cancelled: each push gets its own concurrency group (by
 The rule fails closed: a path that is not positively recognised runs the full gate, and an
 unset `tier` runs every job and `verify` fails.
 
+**Local tier.** Before opening a pull request, the pipelines run
+`node scripts/ci/changed-paths.ts --base origin/main` after `git fetch origin`. It diffs the merge
+base of that ref against `HEAD`, prints `tier=<tier>: <reason>` and writes no output file; a base
+that is not a plain ref prints `tier=full`. The pipelines then run only that tier's checks
+locally: `pnpm run lint:secrets` for skip-safe, `pnpm run lint:secrets && pnpm run test:unit` for
+docs, and the full `pnpm run verify` for content-only or full. CI recomputes the tier and remains
+the gate.
+
 Accepted risk: nothing notices if a future check outside the unit tests starts reading files under
-`docs/`. A docs change would skip that check. Whoever adds such a check must move `docs/` out of the
-docs tier.
+`docs/` or `.claude/skills/`. A docs change would skip that check. Whoever adds such a check must
+move that directory out of the docs tier.
 
 **Coverage on a content-only change.** Each skipped file, and where its guarantee lives:
 

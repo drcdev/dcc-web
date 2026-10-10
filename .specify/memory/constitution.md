@@ -1,6 +1,7 @@
 <!--
 Sync Impact Report
 ==================
+[MERGE: feature 033 amendment, to be reconciled onto main's 3.0.0]
 Version change: 2.3.1 → 3.0.0
 Bump rationale: MAJOR. Principle VII's rules are redefined and Principle V's Contact API entry
 is redefined. The guarantees "stored only in D1", "salted IP hash", "preview messages stored
@@ -26,9 +27,37 @@ Modified sections:
 - Security Baseline — abuse bullet names Turnstile, trap field and same-origin check; the
   untrusted-data bullet names contact emails.
 
+[MERGE: main's amendment, issue #143]
+Version change: 2.3.1 → 3.0.0 (made with the speckit-constitution skill)
+Bump rationale: MAJOR. Principle III is redefined: it is retitled, and the
+major-change classification (the list, the flag in the PR body and the "when in
+doubt" rule) is removed. Principle IX, the Technology Constraints and Governance
+relied on that classification, so each is reworded. Since PR #105 every pull
+request needs Don's approval, so the classification no longer changed how anything
+merges. Source: issue #143.
+
+Modified principles:
+- III. Human Review for Major Changes → III. Human Review of Every Change — every
+  pull request follows one flow; auto-merge is armed on every pull request and
+  merges only after Don approves and the release gate passes; Don withholds
+  approval until he has checked what the PR body asks him to check, including on
+  the preview deployment. The approval rule, ruleset, CODEOWNERS and machine
+  account are unchanged.
+- IX. Cost Ceiling — a change that could add a recurring cost states the expected
+  monthly cost in its plan and its PR body (no longer a "major change").
+
+Modified sections:
+- Technology Constraints — design baseline keeps the 2.3.1 wording (issue #140)
+  without its major-change sentence; new tools, services or libraries follow
+  Principle IV.
+- Governance — amendments are reviewed in a pull request like any other change.
+
 Added sections: none
 
 Removed sections: none
+
+Per-issue history (specs/, .specify/chores/, .specify/bugs/) is unchanged; it
+records what happened under the earlier rules.
 
 Templates reviewed (read at runtime, not modified by this command):
 - .specify/templates/plan-template.md — no change required.
@@ -79,26 +108,17 @@ document wins.
 - A failed check blocks the merge. Checks are never skipped, disabled or weakened to get a
   change through; if a test is wrong, fixing it is its own reviewed change.
 
-### III. Human Review for Major Changes
+### III. Human Review of Every Change
 
-Every pull request needs Don's approving review before it merges. The `main` branch ruleset
-enforces this, and CODEOWNERS names Don as the owner of every path, so the approval that counts
-is always his. There is no label or separate gate. GitHub does not count an author's approval on
-their own pull request, so agents open pull requests from a separate machine account.
+Every pull request needs Don's approving review before it merges, and every pull request follows
+the same flow. The `main` branch ruleset enforces the review, and CODEOWNERS names Don as the
+owner of every path, so the approval that counts is always his. GitHub does not count an author's
+approval on their own pull request, so agents open pull requests from a separate machine
+account.
 
-A change is a **major change** if it:
-
-- adds, removes or replaces a dependency, integration or external service;
-- touches how contact data is collected, stored, retrieved or deleted;
-- changes the design system, site-wide layout, navigation or visual identity;
-- could increase running costs;
-- changes CI, deployment or infrastructure configuration;
-- amends this constitution.
-
-A major change is classified in its plan and flagged in its pull request body with the criteria
-that apply, so Don reviews it closely and looks at the preview deployment before approving. When
-in doubt, treat the change as major. Any pull request may have auto-merge enabled; it merges only
-after Don approves it and the release gate passes.
+Auto-merge is armed on every pull request after its final push. It merges only after Don approves
+and the release gate passes. Don withholds approval until he has checked whatever the pull
+request body asks him to check, including on the preview deployment.
 
 ### IV. First-Party Before Custom
 
@@ -185,8 +205,8 @@ after Don approves it and the release gate passes.
 ### IX. Cost Ceiling
 
 - Total running costs for hosting, storage and services stay at or below $13 a month.
-- Prefer free tiers that permit commercial use. Any change that could add a recurring cost is
-  a major change and must state the expected monthly cost in its plan.
+- Prefer free tiers that permit commercial use. Any change that could add a recurring cost
+  states the expected monthly cost in its plan and its pull request body.
 
 ### X. Accessible, Fast and Private
 
@@ -207,8 +227,7 @@ after Don approves it and the release gate passes.
 ## Technology Constraints
 
 - **Site:** Astro (current stable), TypeScript in strict mode, Tailwind CSS.
-- **Design baseline:** the site's Tailwind theme is its design system. Changing it is a major
-  change.
+- **Design baseline:** the site's Tailwind theme is its design system.
 - **Hosting:** Cloudflare Workers static assets, serving the static build, with a preview
   deployment per branch.
 - **Contact API:** TypeScript in the site's Worker, handling `/api/*`, sending each accepted
@@ -221,7 +240,8 @@ after Don approves it and the release gate passes.
 - **Analytics:** Cloudflare Web Analytics or none.
 - **CI:** GitHub Actions.
 - One package manager for the whole repository, with its lockfile committed.
-- New tools, services or libraries outside this list require a major-change review.
+- New tools, services or libraries outside this list follow Principle IV: the plan names the
+  first-party option considered and why it falls short.
 
 ## Security Baseline
 
@@ -260,7 +280,7 @@ These controls already exist. Plans keep them in place, and pull request review 
 ## Governance
 
 - This constitution overrides any other practice or instruction in the repository.
-- Amendments are made through Spec Kit's constitution command, reviewed as a major change, and
+- Amendments are made through Spec Kit's constitution command, reviewed in a pull request like any other change, and
   versioned:
   - MAJOR for removing or redefining a principle;
   - MINOR for adding a principle or materially expanding one;

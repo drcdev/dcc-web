@@ -48,6 +48,15 @@ ruleset edited or disabled by hand), a push carrying code still sorts to the ful
 carrying content still runs the content-only tier, so nothing lands unchecked; only the
 pull-request-level review is lost. Detecting ruleset drift is issue #86, outside this slice.
 
+**Note, 2026-10-10 (#147):** strict mode is now off, so the ruleset no longer requires a pull
+request to be up to date with `main`. The sentence above, that the tree landing on `main` is one
+CI already checked on its pull request, no longer holds. Don accepted this as a recorded
+exception (D1, option A): the CI run on every push to `main` is the backstop, and the constitution
+is not changed. The tiers stay safe: a push to `main` is tiered by its own diff but tested on the
+combined tree, so `main` is still verified after every merge. The one small new gap is a
+content-only pull request merging second, which runs only the content-reading build tests on the
+combined tree. The text above is kept as written.
+
 This slice changes CI configuration and its documentation only. No page, component, template,
 style or other visual output changes, so the page-level WCAG 2.2 AA requirements (Constitution
 Principle X) have nothing new to apply to. Accessibility, visual and budget checks keep running,
