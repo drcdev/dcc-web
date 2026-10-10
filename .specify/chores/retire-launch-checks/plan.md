@@ -689,7 +689,7 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
   - The `# Contact form` part heading stays before `{#contact-bindings}`.
 - **Layer:** unit.
 
-### W9 — Trim the setup-walkthrough skill
+### W9 — Trim the setup-walkthrough skill [x]
 
 - **Files:** `.claude/skills/setup-walkthrough/SKILL.md`, and
   `tests/unit/setup/skill-behaviour.test.ts` if a pinned phrase moves.
