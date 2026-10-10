@@ -43,15 +43,15 @@ None. The three stories touch separate files and need no shared prerequisite bey
 
 ### Tests (write first, see them fail)
 
-- [ ] T005 [US2] Replace the mark test in `tests/component/project/PartPicture.test.ts` (primary layer: component, Astro container render of one component) with a "no mark" test: render a picture whose data object still carries `placeholder: true`, passed explicitly through `makeProject({ visuals: { ... } })` so the test does not depend on the shared `screenshot` data that T009 cleans, and assert the output has no "Placeholder" text and no `data-placeholder` or `data-visual-mark`. Keep existing assertions for alt text, diagram `aria-describedby` figcaption, and eager first / lazy rest loading. Seen to fail today.
-- [ ] T006 [US2] Flip the `data-placeholder` assertion in `tests/build/local-site.test.ts` (~line 372) to `not.toContain("data-placeholder")` and also assert no `data-visual-mark` (primary layer: build, only the real build over the fixture site shows the whole story page output; second layer reason: it replaces the end-to-end check being deleted in T010, and the component test T005 cannot see the assembled page). Seen to fail today.
+- [X] T005 [US2] Replace the mark test in `tests/component/project/PartPicture.test.ts` (primary layer: component, Astro container render of one component) with a "no mark" test: render a picture whose data object still carries `placeholder: true`, passed explicitly through `makeProject({ visuals: { ... } })` so the test does not depend on the shared `screenshot` data that T009 cleans, and assert the output has no "Placeholder" text and no `data-placeholder` or `data-visual-mark`. Keep existing assertions for alt text, diagram `aria-describedby` figcaption, and eager first / lazy rest loading. Seen to fail today.
+- [X] T006 [US2] Flip the `data-placeholder` assertion in `tests/build/local-site.test.ts` (~line 372) to `not.toContain("data-placeholder")` and also assert no `data-visual-mark` (primary layer: build, only the real build over the fixture site shows the whole story page output; second layer reason: it replaces the end-to-end check being deleted in T010, and the component test T005 cannot see the assembled page). Seen to fail today.
 
 ### Implementation
 
-- [ ] T007 [P] [US2] Remove the mark line (and its `data-placeholder` / `data-visual-mark` use) from `src/components/project/PartPicture.astro` and update its header comment. T005 and T006 pass after the fixtures in T011/T012 land.
-- [ ] T008 [P] [US2] In `src/components/project/portfolio.css` remove the `[data-visual-mark]` rule (~line 98) and the `[data-placeholder]` entry from the forced-colours border selector list (~line 225), keeping every other entry and a valid selector list (FR-003).
-- [ ] T009 [US2] Remove `placeholder` from the `screenshot` visual in `tests/component/project/helpers.ts`.
-- [ ] T010 [US2] Delete the e2e test "marks placeholders with real text" in `tests/e2e/projects-fixtures.spec.ts` (~line 253); the behaviour it covered is removed, and its replacement is T005/T006 at cheaper layers. Leave the existing forced-colours and a11y project checks unchanged (FR-009; no new accessibility test, no remaining element's markup or style changes).
+- [X] T007 [P] [US2] Remove the mark line (and its `data-placeholder` / `data-visual-mark` use) from `src/components/project/PartPicture.astro` and update its header comment. T005 and T006 pass after the fixtures in T011/T012 land.
+- [X] T008 [P] [US2] In `src/components/project/portfolio.css` remove the `[data-visual-mark]` rule (~line 98) and the `[data-placeholder]` entry from the forced-colours border selector list (~line 225), keeping every other entry and a valid selector list (FR-003).
+- [X] T009 [US2] Remove `placeholder` from the `screenshot` visual in `tests/component/project/helpers.ts`.
+- [X] T010 [US2] Delete the e2e test "marks placeholders with real text" in `tests/e2e/projects-fixtures.spec.ts` (~line 253); the behaviour it covered is removed, and its replacement is T005/T006 at cheaper layers. Leave the existing forced-colours and a11y project checks unchanged (FR-009; no new accessibility test, no remaining element's markup or style changes).
 
 **Checkpoint**: the component tests under `tests/component/project` pass; `astro check` reports no reader of `picture.placeholder`.
 

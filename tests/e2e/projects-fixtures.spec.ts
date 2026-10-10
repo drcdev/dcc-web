@@ -250,11 +250,6 @@ test.describe("the every-part story", () => {
     expect(loading).toEqual(["eager", "lazy", "lazy", "lazy"]);
   });
 
-  test("marks placeholders with real text", async ({ page }) => {
-    await page.goto("/projects/every-part/");
-    await expect(page.locator("[data-placeholder]").first()).toContainText("Placeholder");
-  });
-
   test("the comparison scrolls with the keyboard at a narrow width", async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });
     await page.goto("/projects/every-part/");

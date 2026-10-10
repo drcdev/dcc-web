@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import PartPicture from "../../../src/components/project/PartPicture.astro";
 import { byName } from "../html.ts";
-import { renderWithProject } from "./helpers.ts";
+import { image, makeProject, renderWithProject } from "./helpers.ts";
 
 describe("PartPicture", () => {
   it("renders an image with alt text in a figure", async () => {
@@ -10,11 +10,15 @@ describe("PartPicture", () => {
     expect(byName(html, "img")[0]!.attrs.alt).toBe("A screenshot of the tool");
   });
 
-  it("shows a visible Placeholder mark only for placeholders", async () => {
-    const placeholder = await renderWithProject(PartPicture, { name: "screenshot" });
-    expect(placeholder).toContain("Placeholder");
-    const real = await renderWithProject(PartPicture, { name: "architecture" });
-    expect(real).not.toContain("Placeholder");
+  it("shows no Placeholder mark, even for data that still carries the old setting", async () => {
+    const legacy = makeProject({
+      visuals: { legacy: { kind: "image", src: image, alt: "A legacy picture", placeholder: true, part: "build" } },
+    });
+    const html = await renderWithProject(PartPicture, { name: "legacy" }, undefined, legacy);
+    expect(html).not.toContain("Placeholder");
+    expect(html).not.toContain("data-placeholder");
+    expect(html).not.toContain("data-visual-mark");
+    expect(byName(html, "img")[0]!.attrs.alt).toBe("A legacy picture");
   });
 
   it("renders a diagram with a reachable visible description", async () => {
