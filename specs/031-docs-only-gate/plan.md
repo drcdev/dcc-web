@@ -88,7 +88,9 @@ before and after design; no exceptions, so Complexity Tracking is empty.
 - `docs/testing.md`: CI jobs table, `verify` bullet, "Change tiers" (intro, new Docs row, Full
   row, pushes to `main` sorted, `main` runs not cancelled, output now `tier`), residual-risk
   paragraph (the `main` push run is no longer a guaranteed full backstop for content-only
-  merges; say so plainly), measurement method ("choose a full-tier run").
+  merges; say so plainly), measurement method ("choose a full-tier run"), and the second accepted
+  risk from the spec (no guard notices a future non-unit check that reads `docs/`; the change
+  that adds one adjusts the docs tier, FR-017).
 - `docs/setup.md` item 11: replace "Pushes to `main` always run the full gate" with the tiered
   behaviour and add the docs tier to the skip description.
 - `scripts/setup-check/checks/launch-main-checks.ts`: no change (research R9).
@@ -97,11 +99,13 @@ before and after design; no exceptions, so Complexity Tracking is empty.
 
 1. `tests/unit/ci/changed-paths.test.ts`
    - `isDocs`: true for `docs/testing.md`, `docs/design/blog.md`; false for `docs/x.png`,
-     `docs/x.mdx`, `docs/x.MD`, `README.md`, `src/docs/a.md`, `docs`, `docs/../src/a.md`,
-     `/docs/a.md`, `docs\\a.md`.
+     `docs/x.mdx`, `docs/x.MD`, `docs/x.markdown`, `Docs/a.md`, `README.md`, `src/docs/a.md`,
+     `docs`, `docs/../src/a.md`, `/docs/a.md`, `docs\\a.md`, and a git-quoted path
+     (`"docs/\303\274.md"`) (FR-001, FR-002, spec edge cases).
    - `decide`: docs only → `docs`; docs + skip-safe → `docs`; skip-safe only → `skip-safe`;
      docs + content → `content-only`; docs + `src/` → `full` naming the `src/` file; docs +
-     `docs/design/x.png` → `full`; `push` with docs only → `docs`; `push` with `files: null` →
+     `docs/design/x.png` → `full`; docs + `.github/workflows/ci.yml` → `full`; docs +
+     `scripts/ci/changed-paths.ts` → `full` (FR-016); `push` with docs only → `docs`; `push` with `files: null` →
      `full`; unknown event → `full`; empty and blank diffs → `full`; the existing skip-safe and
      content-only cases re-expressed with `tier` (FR-011).
    - `collectFiles` with a fake git runner: PR runs `diff HEAD^1 HEAD`; push with empty, short,
@@ -114,6 +118,8 @@ before and after design; no exceptions, so Complexity Tracking is empty.
      fail.
    - content-only and full: a skipped `build-tests` or `e2e` → fail.
    - unknown tier (`"bogus"`, `""`, missing, old `full` output only) → fail naming `tier`.
+   - `changes` failed, cancelled or skipped → fail, on any tier value (FR-008).
+   - `static` failed (for example the secret scan) on `skip-safe` and `docs` → fail (FR-015).
    - existing failure / cancelled / missing-job cases re-expressed with `tier`.
 3. `tests/unit/ci/workflows.test.ts`
    - `changes` outputs exactly `tier`; the step passes `BEFORE_SHA: ${{ github.event.before }}`
@@ -160,7 +166,10 @@ docs/setup.md
   to pushes, so the residual risk `docs/testing.md` describes (a content edit colliding with a
   fixture-build assertion) is no longer caught by a full run on `main`; it shows on the next
   full-tier run instead. The spec chose this; the docs say it plainly.
-- **Runner queueing** can push a docs-tier run past 2 minutes; the tier cannot control that.
+- **Runner queueing** can push a docs-tier run past 2 minutes; the tier cannot control that, so
+  SC-001 and SC-002 measure from the first job starting.
+- **No guard for future `docs/` readers** outside the unit project (spec Accepted risks; Don
+  chose no drift guard). FR-017 puts the duty on the change that adds such a reader.
 - **Fetching `before` by SHA** relies on GitHub serving reachable commits by id; if that fails,
   the run is full, never wrongly narrow.
 
