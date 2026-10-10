@@ -203,7 +203,7 @@ All three `.astro` edits are inside the frontmatter fence (confirmed: lines 1-15
 Test: `no behaviour: n/a (comments; tsc/eslint in the gate and the component tests confirm
 nothing else moved)`.
 
-### W4 Setup-check summary wording
+### [x] W4 Setup-check summary wording
 
 Files: `scripts/setup-check/report.ts:134`, `tests/unit/setup-check/report.test.ts:277-282`,
 `tests/unit/setup-check/redact.test.ts:7,12`.

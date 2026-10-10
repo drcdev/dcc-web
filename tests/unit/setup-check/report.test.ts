@@ -274,12 +274,13 @@ describe("setup-check/report: the waiting status (T004)", () => {
     expect(plain).toMatch(/^\s*Next: Nothing to do yet\./m);
   });
 
-  it("adds '<w> waiting for the switch' to the summary line", () => {
+  it("adds '<w> waiting' to the summary line", () => {
     const items = [item("a", 1), item("b", 2), item("c", 3)];
     const report = buildReport([complete("a", 1), waitingResult("b", 2), waitingResult("c", 3)], items);
     const human = formatHumanReport(report);
     expect(human).toContain("1 of 3 complete");
-    expect(human).toContain("2 waiting for the switch");
+    expect(human).toContain("2 waiting");
+    expect(human).not.toContain("for the switch");
   });
 
   it("validates a waiting result against the report schema, and counts.waiting is part of the schema", () => {
