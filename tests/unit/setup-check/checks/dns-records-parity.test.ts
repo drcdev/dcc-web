@@ -115,7 +115,7 @@ describe("checks/dns-records-parity", () => {
     expect(result.reason).toMatch(/CLOUDFLARE_API_TOKEN/);
   });
 
-  it("compares the whole zone without reading the launch phase", async () => {
+  it("compares the whole zone", async () => {
     const mx = keepRecord({ type: "MX", content: "mx01.mail.icloud.com", priority: 10 });
     const cfMx: CloudflareDnsRecord = { type: "MX", name: "doncoleman.ca", content: "mx01.mail.icloud.com", priority: 10, ttl: 1, proxied: false };
     const wwwAdded: CloudflareDnsRecord = { type: "AAAA", name: "www.doncoleman.ca", content: "100::", priority: null, ttl: 1, proxied: true };

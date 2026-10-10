@@ -9,9 +9,6 @@
 // heading levels, a non-empty title, lang="en", no horizontal scroll at
 // 200% zoom (the 320 px check lives in geometry.spec.ts), readable without JavaScript, and a
 // first Tab stop with an accessible name and a visible focus style (now the skip link).
-// Deliberately dropped (they contradict this feature's spec; listed for the
-// PR description, T097): "has no non-text content" and "first Tab stop is the
-// link to the current site".
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { TEMPLATES } from "./templates.ts";

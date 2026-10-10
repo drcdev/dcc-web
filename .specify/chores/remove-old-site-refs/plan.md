@@ -217,7 +217,7 @@ Files: `scripts/setup-check/report.ts:134`, `tests/unit/setup-check/report.test.
 Layer: unit (the string is produced by a pure formatter). This is developer CLI output, not site
 behaviour. Removing the dead `waiting` status is a follow-up (see Scope).
 
-### W5 Test names, comments and branch fixtures
+### [x] W5 Test names, comments and branch fixtures
 
 Files and edits (no assertion changes):
 

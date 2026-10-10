@@ -25,8 +25,8 @@ test("the home page is served with the /* rule and a page CSP that holds", async
   expect(response.status()).toBe(200);
   const headers = response.headers();
   for (const [name, value] of allPaths) expect(headers[name], name).toBe(value);
-  // The noindex header is a host rule for workers.dev previews and the review host; this
-  // host (wrangler dev on 127.0.0.1) is neither (FR-010d).
+  // The noindex header is a host rule for the workers.dev preview host; this
+  // host (wrangler dev on 127.0.0.1) is not it (FR-010d).
   expect(headers["x-robots-tag"]).toBeUndefined();
   expect(headers["set-cookie"]).toBeUndefined();
   // The HTML is not fingerprinted, so an over-broad cache rule would cache pages for a year.

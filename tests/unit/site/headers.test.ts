@@ -75,7 +75,7 @@ describe("public/_headers", () => {
     expect(starRule().get(name.toLowerCase()), name).toBeTruthy();
   });
 
-  // A security invariant (#93, FR-010d reopened once Ghost was retired), like "no 'unsafe-inline'":
+  // A security invariant (#93), like "no 'unsafe-inline'":
   // the policy must cover subdomains. max-age and preload are reviewed config edits, not asserted.
   it("HSTS on /* covers subdomains (#93)", () => {
     const directives = (starRule().get("strict-transport-security") ?? "")

@@ -163,7 +163,7 @@ describe("Seo robots meta follows the build", () => {
   });
 
   it("adds noindex to a preview branch build", async () => {
-    const html = await renderIn({ WORKERS_CI: "1", WORKERS_CI_BRANCH: "011-launch" });
+    const html = await renderIn({ WORKERS_CI: "1", WORKERS_CI_BRANCH: "042-sample-feature" });
     expect(content(html, "name", "robots")).toBe("noindex");
   });
 

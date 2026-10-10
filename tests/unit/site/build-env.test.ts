@@ -19,7 +19,7 @@ describe("isIndexableBuild", () => {
     expect(isIndexableBuild({ WORKERS_CI: "1" })).toBe(false);
   });
 
-  it.each(["011-launch", "feature/x", "Main", "main-2"])("is false on the preview branch %s", (branch) => {
+  it.each(["042-sample-feature", "feature/x", "Main", "main-2"])("is false on the preview branch %s", (branch) => {
     expect(isIndexableBuild({ WORKERS_CI: "1", WORKERS_CI_BRANCH: branch })).toBe(false);
   });
 
