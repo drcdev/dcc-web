@@ -107,7 +107,7 @@ issue.
   Change the closing sentence to note that no check failed, so no fix change was needed.
 - **Test:** no behaviour: n/a (documentation record).
 
-### [ ] W2 — Results comment on issue #127 (orchestrator, at Finish)
+### [x] W2 — Results comment on issue #127 (orchestrator, at Finish)
 
 - **Files:** none (a GitHub comment, posted by the orchestrator after the PR opens).
 - **What:** post this on #127 with `gh issue comment 127 --body-file <file>`:
