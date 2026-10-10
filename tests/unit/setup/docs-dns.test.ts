@@ -25,10 +25,4 @@ describe("docs/setup.md DNS content", () => {
     expect(section.toLowerCase()).toMatch(/informational/);
     expect(section.toLowerCase()).toMatch(/auto/);
   });
-
-  it("contains the baseline-nameserver / delegated-subdomain-NS recording note", () => {
-    const section = extractSection(readDocs(), "dns-records-parity");
-    expect(section.toLowerCase()).toContain("nameserver");
-    expect(section.toLowerCase()).toMatch(/delegat.*subdomain|subdomain.*ns/);
-  });
 });

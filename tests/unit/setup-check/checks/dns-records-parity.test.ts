@@ -14,15 +14,12 @@ function keepRecord(partial: Partial<DnsBaselineRecord>): DnsBaselineRecord {
     content: "192.0.2.10",
     priority: null,
     ttl: 3600,
-    source: "squarespace",
-    decision: "keep",
-    reason: null,
     ...partial,
   };
 }
 
 function baseline(records: DnsBaselineRecord[]): DnsBaseline {
-  return { originalNameservers: ["ns1.squarespacedns.com", "ns2.squarespacedns.com"], records };
+  return { records };
 }
 
 function contextWith(
@@ -53,33 +50,13 @@ describe("checks/dns-records-parity", () => {
     expect(result.docs).toBe("docs/setup.md#dns-records-parity");
   });
 
-  it("stays missing with 'record the Squarespace baseline first' when the baseline has no records", async () => {
-    const ctx = contextWith({ originalNameservers: [], records: [] }, []);
+  it("stays missing, so it never passes vacuously, when the baseline has no records", async () => {
+    const ctx = contextWith({ records: [] }, []);
 
     const result = await check(ctx);
 
     expect(result.status).toBe("missing");
-    expect(result.nextAction?.toLowerCase()).toContain("record the squarespace baseline first");
-  });
-
-  it("stays missing with 'record the Squarespace baseline first' when originalNameservers is empty even if records exist", async () => {
-    const records = [keepRecord({})];
-    const ctx = contextWith({ originalNameservers: [], records }, []);
-
-    const result = await check(ctx);
-
-    expect(result.status).toBe("missing");
-    expect(result.nextAction?.toLowerCase()).toContain("record the squarespace baseline first");
-  });
-
-  it("is missing when a baseline record has no keep/drop decision", async () => {
-    const records = [keepRecord({ decision: null })];
-    const ctx = contextWith(baseline(records), []);
-
-    const result = await check(ctx);
-
-    expect(result.status).toBe("missing");
-    expect(result.details.join(" ")).toContain("doncoleman.ca");
+    expect(result.summary).toBe("The DNS baseline has no records.");
   });
 
   it("is complete, with an informational TTL note, when a keep record differs from Cloudflare only by TTL (Cloudflare auto vs. baseline value)", async () => {

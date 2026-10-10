@@ -1,200 +1,81 @@
 {
-  "originalNameservers": [
-    "ns-cloud-b1.googledomains.com",
-    "ns-cloud-b2.googledomains.com",
-    "ns-cloud-b3.googledomains.com",
-    "ns-cloud-b4.googledomains.com"
-  ],
   "records": [
-    {
-      "type": "A",
-      "name": "doncoleman.ca",
-      "content": "49.13.201.194",
-      "priority": null,
-      "ttl": 14400,
-      "source": "squarespace",
-      "decision": "drop",
-      "reason": "Ghost web hosting retired: replaced at the switch by the dcc-web Worker and deleted from Cloudflare; Ghost cancelled (Don, 2026-10-09)"
-    },
     {
       "type": "MX",
       "name": "doncoleman.ca",
       "content": "mx02.mail.icloud.com",
       "priority": 0,
-      "ttl": 14400,
-      "source": "squarespace",
-      "decision": "keep",
-      "reason": null
+      "ttl": 1
     },
     {
       "type": "MX",
       "name": "doncoleman.ca",
       "content": "mx01.mail.icloud.com",
       "priority": 0,
-      "ttl": 14400,
-      "source": "squarespace",
-      "decision": "keep",
-      "reason": null
+      "ttl": 1
     },
     {
       "type": "TXT",
       "name": "doncoleman.ca",
       "content": "apple-domain=9VwD5sulsuHIiPsJ",
       "priority": null,
-      "ttl": 14400,
-      "source": "squarespace",
-      "decision": "keep",
-      "reason": null
+      "ttl": 1
     },
     {
       "type": "TXT",
       "name": "doncoleman.ca",
       "content": "v=spf1 include:icloud.com ~all",
       "priority": null,
-      "ttl": 14400,
-      "source": "squarespace",
-      "decision": "keep",
-      "reason": null
+      "ttl": 1
     },
     {
       "type": "TXT",
       "name": "doncoleman.ca",
       "content": "google-site-verification=Fm2OA7X4UZwI7o4GLpWhUy23kctO23d63m8F8dSxr6g",
       "priority": null,
-      "ttl": 3600,
-      "source": "cloudflare",
-      "decision": "keep",
-      "reason": null
+      "ttl": 3600
     },
     {
       "type": "TXT",
       "name": "_dmarc.doncoleman.ca",
       "content": "v=DMARC1; p=none; rua=mailto:a689ba2b4e8e46018da5c62d5df6361c@dmarc-reports.cloudflare.net",
       "priority": null,
-      "ttl": 1,
-      "source": "cloudflare",
-      "decision": "keep",
-      "reason": null
+      "ttl": 1
     },
     {
       "type": "CAA",
       "name": "doncoleman.ca",
       "content": "0 issue \"letsencrypt.org\"",
       "priority": null,
-      "ttl": 1,
-      "source": "cloudflare",
-      "decision": "keep",
-      "reason": null
+      "ttl": 1
     },
     {
       "type": "CAA",
       "name": "doncoleman.ca",
       "content": "0 issue \"pki.goog\"",
       "priority": null,
-      "ttl": 1,
-      "source": "cloudflare",
-      "decision": "keep",
-      "reason": null
+      "ttl": 1
     },
     {
       "type": "CAA",
       "name": "doncoleman.ca",
       "content": "0 issue \"sectigo.com\"",
       "priority": null,
-      "ttl": 1,
-      "source": "cloudflare",
-      "decision": "keep",
-      "reason": null
+      "ttl": 1
     },
     {
       "type": "CAA",
       "name": "doncoleman.ca",
       "content": "0 issue \"ssl.com\"",
       "priority": null,
-      "ttl": 1,
-      "source": "cloudflare",
-      "decision": "keep",
-      "reason": null
-    },
-    {
-      "type": "MX",
-      "name": "mail.doncoleman.ca",
-      "content": "mxb.eu.mailgun.org",
-      "priority": 10,
-      "ttl": 14400,
-      "source": "squarespace",
-      "decision": "drop",
-      "reason": "Ghost newsletter sending retired early; deleted from Cloudflare after the switch (Don, 2026-10-09)"
-    },
-    {
-      "type": "MX",
-      "name": "mail.doncoleman.ca",
-      "content": "mxa.eu.mailgun.org",
-      "priority": 10,
-      "ttl": 14400,
-      "source": "squarespace",
-      "decision": "drop",
-      "reason": "Ghost newsletter sending retired early; deleted from Cloudflare after the switch (Don, 2026-10-09)"
-    },
-    {
-      "type": "TXT",
-      "name": "mail.doncoleman.ca",
-      "content": "v=spf1 include:mailgun.org ~all",
-      "priority": null,
-      "ttl": 14400,
-      "source": "squarespace",
-      "decision": "drop",
-      "reason": "Ghost newsletter sending retired early; deleted from Cloudflare after the switch (Don, 2026-10-09)"
-    },
-    {
-      "type": "CNAME",
-      "name": "www.doncoleman.ca",
-      "content": "drift-and-convergence.mymagic.page",
-      "priority": null,
-      "ttl": 14400,
-      "source": "squarespace",
-      "decision": "drop",
-      "reason": "Ghost web hosting retired: replaced at the switch by the dcc-web Worker and deleted from Cloudflare; Ghost cancelled (Don, 2026-10-09)"
+      "ttl": 1
     },
     {
       "type": "CNAME",
       "name": "sig1._domainkey.doncoleman.ca",
       "content": "sig1.dkim.doncoleman.ca.at.icloudmailadmin.com",
       "priority": null,
-      "decision": "keep",
-      "reason": null,
-      "ttl": 14400,
-      "source": "squarespace"
-    },
-    {
-      "type": "TXT",
-      "name": "mta._domainkey.mail.doncoleman.ca",
-      "content": "k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCp1Cc84EdRYbMN/Xdy78yv65EdIZ0figIkM2QAE2FzYMBjdV6wBBA3yM9p9ZE3QCanMYyk2I3AtoCsOyRxbKLebcmmsxsMJ8RTk3HEW+YiriDGMyz/pEagjoLSA5q46twJped3sdRGSvT+YgndC6nyNFDXQ0B8wLeBxTLUvBo99QIDAQAB",
-      "priority": null,
-      "decision": "drop",
-      "reason": "Ghost newsletter sending retired early; deleted from Cloudflare after the switch (Don, 2026-10-09)",
-      "ttl": 14400,
-      "source": "squarespace"
-    },
-    {
-      "type": "CNAME",
-      "name": "email.mail.doncoleman.ca",
-      "content": "eu.mailgun.org",
-      "priority": null,
-      "decision": "drop",
-      "reason": "Ghost newsletter sending retired early; deleted from Cloudflare after the switch (Don, 2026-10-09)",
-      "ttl": 14400,
-      "source": "squarespace"
-    },
-    {
-      "type": "CNAME",
-      "name": "_domainconnect.doncoleman.ca",
-      "content": "_domainconnect.domains.squarespace.com",
-      "priority": null,
-      "decision": "drop",
-      "reason": "Squarespace Domain Connect helper; not needed once DNS is served by Cloudflare (Don, 2026-09-28)",
-      "ttl": 14400,
-      "source": "squarespace"
+      "ttl": 1
     }
   ]
 }

@@ -1,12 +1,10 @@
 // checks/dns-records-parity.ts (setup item 4, data-model.md "dns-records-parity"):
-// every `keep` record in setup/dns-baseline.json matches the Cloudflare zone
-// (type, name, content and — for MX/SRV — priority, with the proxy off), and
-// no record is left without a decision (FR-035, FR-036, FR-037). TTL is not
+// every record in setup/dns-baseline.json (the must-exist list) matches the Cloudflare zone
+// (type, name, content and — for MX/SRV — priority, with the proxy off). TTL is not
 // part of the match: Cloudflare's dashboard only offers TTL presets (no
 // custom value), so Cloudflare records stay on "Auto" and a TTL difference
 // is reported as an informational detail only, never a mismatch. Stays
-// `missing` while the baseline has no records or no original nameservers, so
-// parity can never pass vacuously before the nameserver switch.
+// `missing` while the baseline has no records, so parity can never pass vacuously.
 // Cloudflare-only records not in the baseline are reported in `details` for
 // Don to add or delete, without blocking completion.
 // A Cloudflare record matched by no baseline entry is informational on the apex and www, where the
@@ -67,7 +65,6 @@ function describeTtlInformational(baseline: DnsBaselineRecord, cf: CloudflareDns
 export interface DnsParityEvaluation {
   ok: boolean;
   missingBaseline: boolean;
-  undecided: DnsBaselineRecord[];
   problems: string[];
   ttlInformational: string[];
   cloudflareOnly: string[];
@@ -81,11 +78,10 @@ export function evaluateDnsParity(
   cfRecords: CloudflareDnsRecord[],
   zone = "doncoleman.ca",
 ): DnsParityEvaluation {
-  if (baseline.records.length === 0 || baseline.originalNameservers.length === 0) {
+  if (baseline.records.length === 0) {
     return {
       ok: false,
       missingBaseline: true,
-      undecided: [],
       problems: [],
       ttlInformational: [],
       cloudflareOnly: [],
@@ -94,15 +90,12 @@ export function evaluateDnsParity(
   }
 
   const switchNames = [normName(zone), normName(`www.${zone}`)];
-  const undecided = baseline.records.filter((r) => r.decision === null);
-  const keepRecords = baseline.records.filter((r) => r.decision === "keep");
-  const otherRecords = baseline.records.filter((r) => r.decision !== "keep");
 
   const problems: string[] = [];
   const ttlInformational: string[] = [];
   const matchedCf = new Set<CloudflareDnsRecord>();
 
-  for (const record of keepRecords) {
+  for (const record of baseline.records) {
     const sameTypeName = cfRecords.filter((cf) => sameNameAndType(record, cf));
     const available = sameTypeName.filter((cf) => !matchedCf.has(cf));
     const contentMatch = available.find(
@@ -126,25 +119,14 @@ export function evaluateDnsParity(
     }
   }
 
-  // Records covered by a "drop" (or undecided) baseline entry aren't content-verified, but a
-  // matching type+name record is still accounted for in the baseline, so it shouldn't also be
-  // reported as Cloudflare-only.
-  for (const record of otherRecords) {
-    const candidate = cfRecords.find((cf) => sameNameAndType(record, cf) && !matchedCf.has(cf));
-    if (candidate) {
-      matchedCf.add(candidate);
-    }
-  }
-
   const unmatched = cfRecords.filter((cf) => !matchedCf.has(cf));
   const unexpectedRecords = unmatched.filter((cf) => !switchNames.includes(normName(cf.name)));
   const cloudflareOnly = unmatched.filter((cf) => !unexpectedRecords.includes(cf)).map((cf) => `${cf.type} ${cf.name} ${cf.content}`);
   const unexpected = unexpectedRecords.map((cf) => `${cf.type} ${cf.name} ${cf.content}: not in the baseline`);
 
   return {
-    ok: undecided.length === 0 && problems.length === 0 && unexpected.length === 0,
+    ok: problems.length === 0 && unexpected.length === 0,
     missingBaseline: false,
-    undecided,
     problems,
     ttlInformational,
     cloudflareOnly,
@@ -171,7 +153,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     );
   }
 
-  const baseline = ctx.fs.readJson<DnsBaseline>("setup/dns-baseline.json") ?? { originalNameservers: [], records: [] };
+  const baseline = ctx.fs.readJson<DnsBaseline>("setup/dns-baseline.json") ?? { records: [] };
 
   let cfRecords: CloudflareDnsRecord[];
   try {
@@ -191,18 +173,8 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
   if (evaluation.missingBaseline) {
     return missing(
       ITEM,
-      "The DNS baseline has no records yet.",
-      "Record the Squarespace baseline first: list every DNS record from Squarespace's DNS screen into setup/dns-baseline.json, with the original nameservers.",
-    );
-  }
-
-  if (evaluation.undecided.length > 0) {
-    const names = evaluation.undecided.map((r) => recordLabel(r));
-    return missing(
-      ITEM,
-      `${evaluation.undecided.length} baseline record(s) have no keep/drop decision.`,
-      "Decide keep or drop (with a reason for drop) for every record in setup/dns-baseline.json.",
-      names,
+      "The DNS baseline has no records.",
+      "Add the zone's records that must exist to setup/dns-baseline.json (docs/setup.md#dns-records-parity).",
     );
   }
 
@@ -216,7 +188,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     ]);
   }
 
-  return complete(ITEM, "Every keep record in the baseline matches the Cloudflare zone.", [
+  return complete(ITEM, "Every record in the baseline matches the Cloudflare zone.", [
     ...evaluation.ttlInformational,
     ...evaluation.cloudflareOnly.map((r) => `Cloudflare-only, not in baseline: ${r}`),
   ]);

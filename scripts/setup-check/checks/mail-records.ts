@@ -1,9 +1,7 @@
 // checks/mail-records.ts (setup item 5, 011-launch contracts/setup-items.md; FR-016, SC-004): the
-// mail records recorded in the baseline still answer unchanged at both public resolvers. A group is every baseline record with `decision: "keep"` of one name and type
+// mail records recorded in the baseline still answer unchanged at both public resolvers. A group is every baseline mail record of one name and type
 // (MX, TXT, and CNAMEs under `._domainkey.`); MX is compared as `priority:host`, TXT joined and
-// normalised, CNAME lower-case without a trailing dot. Order and TTL are ignored. A baseline record
-// marked `drop` that still answers is information only, so the item keeps passing for the retired
-// Mailgun records, which the baseline marks `drop`.
+// normalised, CNAME lower-case without a trailing dot. Order and TTL are ignored.
 import type { CheckResult, DnsAnswer, DnsBaseline, DnsBaselineRecord, DnsRecordType, ProviderContext } from "../types.ts";
 import { complete, fromProviderError, missing, pending } from "./shared.ts";
 import { normalizeTxtContent } from "./shared.ts";
@@ -55,12 +53,11 @@ interface Group {
 export async function check(ctx: ProviderContext): Promise<CheckResult> {
   const baseline = ctx.fs.readJson<DnsBaseline>("setup/dns-baseline.json");
   const mailRecords = (baseline?.records ?? []).filter(isMailRecord);
-  const kept = mailRecords.filter((r) => r.decision === "keep");
-  if (kept.length === 0) {
+  if (mailRecords.length === 0) {
     return missing(
       ITEM,
       "No mail records are recorded in the baseline.",
-      "Record the Squarespace baseline first (step 4), including the MX, TXT and DKIM CNAME records.",
+      "Add the iCloud MX, SPF and DKIM records to setup/dns-baseline.json.",
     );
   }
 
@@ -77,10 +74,9 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
 
   const problems: string[] = [];
   const settling: string[] = [];
-  const information: string[] = [];
 
   try {
-    for (const group of groupsOf(kept)) {
+    for (const group of groupsOf(mailRecords)) {
       const expected = new Set(group.records.map(expectedValue));
       const answers = await ctx.dns.resolveEach(group.name, group.type);
       const results = answers.map(({ resolver, answers: list }) => ({ resolver, values: actualValues(list) }));
@@ -94,13 +90,6 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       const line = `${label}: expected ${listing(expected)}; ${found}`;
       if (matching.length > 0) settling.push(line);
       else problems.push(line);
-    }
-
-    for (const group of groupsOf(mailRecords.filter((r) => r.decision === "drop"))) {
-      const dropped = new Set(group.records.map(expectedValue));
-      const answers = await ctx.dns.resolveEach(group.name, group.type);
-      const stillAnswering = answers.some((a) => [...actualValues(a.answers)].some((v) => dropped.has(v)));
-      if (stillAnswering) information.push(`${group.type} ${group.name}: dropped from the baseline but still answers (information only)`);
     }
   } catch (err) {
     return fromProviderError(ITEM, "Could not read public DNS for the mail records.", err, "Check public DNS is reachable, then try again.");
@@ -117,5 +106,5 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       settling,
     );
   }
-  return complete(ITEM, "Every recorded mail record still answers unchanged at both public resolvers.", information);
+  return complete(ITEM, "Every recorded mail record still answers unchanged at both public resolvers.");
 }

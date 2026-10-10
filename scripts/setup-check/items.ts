@@ -122,7 +122,7 @@ const seeds: ItemSeed[] = [
     where:
       "Cloudflare dashboard -> the zone -> DNS: keep each record in setup/dns-baseline.json present as DNS only, leaving TTL on Cloudflare's Auto preset (the dashboard has no custom TTL option).",
     confirmedBy:
-      "Every keep record in setup/dns-baseline.json exists in the Cloudflare zone with identical type/name/content/priority and proxied: false (TTL is informational only); every record without a decision keeps the item missing; any record outside the apex and www that is not in the baseline is a problem",
+      "Every record in setup/dns-baseline.json exists in the Cloudflare zone with identical type/name/content/priority and proxied: false (TTL is informational only); an empty baseline keeps the item missing; any record outside the apex and www that is not in the baseline is a problem",
     needsDon: true,
     principles: ["VI", "X"],
     requirements: ["FR-019", "FR-034", "FR-035", "FR-036", "FR-037"],
@@ -138,7 +138,7 @@ const seeds: ItemSeed[] = [
     where:
       "Cloudflare dashboard -> the zone -> DNS: restore any MX, TXT or DKIM CNAME record the details list, exactly as recorded in setup/dns-baseline.json.",
     confirmedBy:
-      "Both public resolvers (1.1.1.1 and 8.8.8.8) return the baseline MX, TXT and DKIM CNAME records for every group marked keep; pending when only one resolver matches",
+      "Both public resolvers (1.1.1.1 and 8.8.8.8) return the baseline MX, TXT and DKIM CNAME records for every baseline mail group; pending when only one resolver matches",
     needsDon: false,
     principles: ["VII"],
     requirements: ["FR-016", "SC-004"],

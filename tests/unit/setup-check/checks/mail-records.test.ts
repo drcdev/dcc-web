@@ -13,19 +13,17 @@ function rec(
   name: string,
   content: string,
   priority: number | null = null,
-  decision: "keep" | "drop" = "keep",
 ): DnsBaselineRecord {
-  return { type, name, content, priority, ttl: 14400, source: "squarespace", decision, reason: null };
+  return { type, name, content, priority, ttl: 1 };
 }
 
 const baseline = (extra: DnsBaselineRecord[] = []): DnsBaselineRecord[] => [
-  rec("A", "doncoleman.ca", "49.13.201.194"),
+  rec("CAA", "doncoleman.ca", '0 issue "pki.goog"'),
   rec("MX", "doncoleman.ca", "mx01.mail.icloud.com", 0),
   rec("MX", "doncoleman.ca", "mx02.mail.icloud.com", 0),
   rec("TXT", "doncoleman.ca", "v=spf1 include:icloud.com ~all"),
   rec("CNAME", "sig1._domainkey.doncoleman.ca", "sig1.dkim.doncoleman.ca.at.icloudmailadmin.com"),
   rec("TXT", "mta._domainkey.mail.doncoleman.ca", LONG_TXT),
-  rec("MX", "mail.doncoleman.ca", "mxa.eu.mailgun.org", 10),
   ...extra,
 ];
 
@@ -45,7 +43,6 @@ function liveBaseline(): Live {
     [key("mta._domainkey.mail.doncoleman.ca", "TXT")]: [
       { type: "TXT", name: "mta._domainkey.mail.doncoleman.ca", value: LONG_TXT },
     ],
-    [key("mail.doncoleman.ca", "MX")]: [{ type: "MX", name: "mail.doncoleman.ca", value: "mxa.eu.mailgun.org", priority: 10 }],
   };
 }
 
@@ -57,7 +54,7 @@ function ctxFor(
   return fakeProviderContext({
     fs: {
       readJson: ((path: string) =>
-        path === "setup/dns-baseline.json" ? { originalNameservers: [], records } : { zone: "doncoleman.ca" }) as never,
+        path === "setup/dns-baseline.json" ? { records } : { zone: "doncoleman.ca" }) as never,
     },
     dns: {
       resolveEach: async (name: string, type: DnsRecordType): Promise<DnsResolverAnswers[]> => {
@@ -114,20 +111,10 @@ describe("checks/mail-records (item 5)", () => {
     expect(result.details.join(" ")).toContain("sig1._domainkey.doncoleman.ca");
   });
 
-  it("lists a dropped baseline record that still answers as information only, and still passes after Mailgun moves to drop", async () => {
-    const dropped = baseline().map((r) => (r.name === "mail.doncoleman.ca" ? { ...r, decision: "drop" as const } : r));
-    const result = await check(ctxFor(dropped, liveBaseline));
-    expect(result.status).toBe("complete");
-    expect(result.details.join(" ")).toMatch(/mail\.doncoleman\.ca.*dropped.*still answers/);
-
-    const withoutMailgun = (): Live => {
-      const live = liveBaseline();
-      delete live["mail.doncoleman.ca|MX"];
-      return live;
-    };
-    const after = await check(ctxFor(dropped, withoutMailgun));
-    expect(after.status).toBe("complete");
-    expect(after.details).toEqual([]);
+  it("is missing, telling Don to add the iCloud records, when the baseline holds no mail record", async () => {
+    const result = await check(ctxFor([rec("CAA", "doncoleman.ca", '0 issue "pki.goog"')], liveBaseline));
+    expect(result.status).toBe("missing");
+    expect(result.nextAction).toBe("Add the iCloud MX, SPF and DKIM records to setup/dns-baseline.json.");
   });
 
   it("is could-not-check when DNS cannot be read", async () => {

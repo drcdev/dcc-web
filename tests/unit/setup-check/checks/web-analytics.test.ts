@@ -16,7 +16,6 @@ const CONFIG = {
   workerName: "dcc-web",
 };
 const BASELINE = {
-  originalNameservers: ["ns1.squarespacedns.com", "ns2.squarespacedns.com"],
   records: [
     {
       type: "A",
@@ -24,9 +23,6 @@ const BASELINE = {
       content: "192.0.2.10",
       priority: null,
       ttl: 3600,
-      source: "squarespace",
-      decision: "keep",
-      reason: null,
     },
   ],
 };

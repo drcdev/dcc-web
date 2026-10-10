@@ -89,41 +89,27 @@ None beyond the `CLOUDFLARE_ZONE_ID` variable recorded under "Local credentials"
 ## 4. DNS records parity {#dns-records-parity}
 
 **What it is for**
-Before the domain's nameservers move to Cloudflare, every DNS record Squarespace serves today
-(the Ghost site, mail records, verification records) must exist in Cloudflare with identical
-values, so the live site and email keep working through the switch.
+Every DNS record the site and its email depend on (mail, verification, DMARC and CAA records) must
+exist in the Cloudflare zone with identical values, and the zone must hold nothing else off the
+apex and `www`.
 
 **Where to do it**
-List every record from Squarespace's DNS screen for `doncoleman.ca` and its subdomains — of any
-type (A, AAAA, CNAME, MX, TXT, SRV, CAA, and NS for any delegated subdomain) — into
-`setup/dns-baseline.json`, with a keep or drop decision (and a reason for drop) for each. The
-domain's own apex nameservers are not copied as records (Cloudflare supplies them), but the
-original nameservers must be recorded in `originalNameservers` for rollback — see "DNS
-nameservers" below. Then create or import the matching `keep` records in the Cloudflare zone as
-DNS only (grey cloud). Leave each record's TTL on Cloudflare's "Auto" preset: the Cloudflare
-dashboard offers only TTL presets, not a custom value, so an exact TTL match isn't possible. The
-baseline still records each record's Squarespace TTL for the audit trail; the check reports a
-difference between it and Cloudflare's TTL as an informational detail only, never a mismatch.
-A record added in Cloudflare after the move, with no Squarespace original, carries `source:
-"cloudflare"` and records the TTL Cloudflare's API reports (`1` when the record is on Auto).
+`setup/dns-baseline.json` is the list of records that must exist: `type`, `name`, `content`,
+`priority` and `ttl` for each. Keep each of them in the Cloudflare zone as DNS only (grey cloud).
+Leave each record's TTL on Cloudflare's "Auto" preset: the Cloudflare dashboard offers only TTL
+presets, not a custom value, so an exact TTL match isn't possible. The baseline records the TTL
+Cloudflare's API reports (`1` when the record is on Auto), and the check reports a difference
+between it and Cloudflare's TTL as an informational detail only, never a mismatch. To add or
+change a record, edit the baseline in the same reviewed change as the Cloudflare dashboard change.
 
 **How it will be confirmed**
-`pnpm setup:check --item dns-records-parity` reports complete only when every `keep` record in
-the baseline matches the Cloudflare zone (type, name, content, and priority for MX/SRV, proxy
-off) and no record is left without a decision. A TTL difference is shown as an informational
-detail and does not block completion. It stays `missing` with "record the Squarespace baseline
-first" while the baseline has no records or no original nameservers, so parity can never pass
-vacuously before the nameserver switch.
-
-After the launch switch (Custom Domain `doncoleman.ca` on `dcc-web`, see `docs/launch.md`) the
-check changes in three ways. The Ghost web records (A, AAAA and CNAME on the apex and `www`) are
-no longer expected in the zone; each shows a detail "replaced at launch, kept in the baseline for
-rollback". The records the switch adds on the apex and `www` (the Custom Domain's managed apex
-record and `AAAA www 100::`) stay informational. And the whole zone is compared: any other added,
-removed or changed record, on any name other than the apex and `www`, is a difference and reports
-`missing` with a summary starting "Problem:" and the rollback next action. If the launch phase
-cannot be read (no `CLOUDFLARE_ACCOUNT_ID`, or Cloudflare cannot be reached) it reports
-`could-not-check`.
+`pnpm setup:check --item dns-records-parity` reports complete only when every record in the
+baseline matches the Cloudflare zone (type, name, content, and priority for MX/SRV, proxy off) and
+the zone holds no other record on a name besides the apex and `www`. A TTL difference is shown as
+an informational detail and does not block completion. The records Cloudflare adds on the apex and
+`www` for the Worker's Custom Domain stay informational. Any other added, removed or changed record
+reports `missing` with a summary starting "Problem:". It stays `missing` while the baseline has no
+records, so parity can never pass vacuously.
 
 **Constitution principle**
 VI (Content as Files) and X (Accessible, Fast and Private) — the baseline is a committed,
@@ -136,8 +122,7 @@ None — DNS records are public data, not secrets.
 
 **What it is for**
 The domain's mail keeps working: every mail record recorded in `setup/dns-baseline.json` still answers
-unchanged, before and after the switch. The iCloud records must always match. The Mailgun records match
-while they are marked `keep`; once they move to `drop` (once Mailgun sending is retired) they are information only.
+unchanged. Every mail record in the baseline must match.
 
 **Where to do it**
 Cloudflare dashboard → the zone → DNS. Restore any MX, TXT or DKIM CNAME record the details list, exactly as
@@ -145,9 +130,14 @@ recorded in the baseline.
 
 **How it will be confirmed**
 `pnpm setup:check --item mail-records` asks both public resolvers (1.1.1.1 and 8.8.8.8) and reports complete
-when each returns the baseline MX, TXT and DKIM CNAME records for every group marked `keep` (order and TTL
-ignored). It is `pending` when only one resolver matches, with the 24-hour rule (still pending 24 hours after
-the switch means rollback, see `docs/launch.md`), and a `Problem:` otherwise.
+when each returns the baseline MX, TXT and DKIM CNAME records for every mail group (order and TTL
+ignored). It is `pending` when only one resolver matches (wait for DNS to finish updating, then run it
+again), and a `Problem:` otherwise.
+
+The `_dmarc` record is at `p=none`, with reports through Cloudflare DMARC Management
+(developers.cloudflare.com/dmarc-management/). Tightening it to `quarantine` and then `reject` is
+tracked in #136. When the policy changes, update the `_dmarc` record in `setup/dns-baseline.json` in
+the same reviewed change, or `dns-records-parity` reports the difference.
 
 **Constitution principle**
 VII (Private Data: Minimal and Protected).

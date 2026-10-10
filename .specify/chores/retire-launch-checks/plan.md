@@ -477,7 +477,7 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
   - skill-behaviour `setup:dns-snapshot` → **retired**. The other allowed commands stay pinned.
 - **Layer:** n/a (removal).
 
-### W7 — Slim the DNS baseline to a must-exist list (test first)
+### W7 — Slim the DNS baseline to a must-exist list (test first) [x]
 
 - **Files:**
   - `setup/dns-baseline.json`;

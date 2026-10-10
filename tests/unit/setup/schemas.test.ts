@@ -71,35 +71,22 @@ describe("dnsBaselineSchema (setup/dns-baseline.json)", () => {
     content: "192.0.2.1",
     priority: null,
     ttl: 3600,
-    source: "squarespace",
-    decision: "keep",
-    reason: null,
   };
 
   it("accepts an empty baseline", () => {
-    const result = dnsBaselineSchema.safeParse({ originalNameservers: [], records: [] });
-    expect(result.success).toBe(true);
+    expect(dnsBaselineSchema.safeParse({ records: [] }).success).toBe(true);
   });
 
   it("accepts a valid populated baseline", () => {
-    const result = dnsBaselineSchema.safeParse({
-      originalNameservers: ["ns1.squarespace.com", "ns2.squarespace.com"],
-      records: [validRecord],
-    });
-    expect(result.success).toBe(true);
+    expect(dnsBaselineSchema.safeParse({ records: [validRecord] }).success).toBe(true);
   });
 
   it("rejects a record missing a required field", () => {
-    const result = dnsBaselineSchema.safeParse({
-      originalNameservers: [],
-      records: [omit(validRecord, "ttl")],
-    });
-    expect(result.success).toBe(false);
+    expect(dnsBaselineSchema.safeParse({ records: [omit(validRecord, "ttl")] }).success).toBe(false);
   });
 
   it("rejects an MX record without a priority", () => {
     const result = dnsBaselineSchema.safeParse({
-      originalNameservers: [],
       records: [{ ...validRecord, type: "MX", content: "mx1.example.net", priority: null }],
     });
     expect(result.success).toBe(false);
@@ -107,50 +94,9 @@ describe("dnsBaselineSchema (setup/dns-baseline.json)", () => {
 
   it("accepts an MX record with a priority", () => {
     const result = dnsBaselineSchema.safeParse({
-      originalNameservers: [],
       records: [{ ...validRecord, type: "MX", content: "mx1.example.net", priority: 10 }],
     });
     expect(result.success).toBe(true);
-  });
-
-  it("rejects a dropped record with no reason", () => {
-    const result = dnsBaselineSchema.safeParse({
-      originalNameservers: [],
-      records: [{ ...validRecord, decision: "drop", reason: null }],
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it("accepts a dropped record with a reason", () => {
-    const result = dnsBaselineSchema.safeParse({
-      originalNameservers: [],
-      records: [{ ...validRecord, decision: "drop", reason: "unused legacy verification record" }],
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it("accepts a record added in Cloudflare (source: cloudflare)", () => {
-    const result = dnsBaselineSchema.safeParse({
-      originalNameservers: [],
-      records: [
-        {
-          ...validRecord,
-          type: "TXT",
-          content: "example-verification=abc123",
-          ttl: 1,
-          source: "cloudflare",
-        },
-      ],
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it("rejects an unknown source", () => {
-    const result = dnsBaselineSchema.safeParse({
-      originalNameservers: [],
-      records: [{ ...validRecord, source: "registrar" }],
-    });
-    expect(result.success).toBe(false);
   });
 });
 

@@ -113,14 +113,10 @@ export interface DnsBaselineRecord {
   content: string;
   priority: number | null;
   ttl: number;
-  source: "squarespace" | "cloudflare";
-  decision: "keep" | "drop" | null;
-  reason: string | null;
 }
 
-/** setup/dns-baseline.json shape. */
+/** setup/dns-baseline.json shape: the records that must exist in the zone. */
 export interface DnsBaseline {
-  originalNameservers: string[];
   records: DnsBaselineRecord[];
 }
 
