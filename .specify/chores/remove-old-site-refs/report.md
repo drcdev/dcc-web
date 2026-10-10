@@ -77,3 +77,34 @@ A further scan for "the switch", "portal", "old site" and "go-live" found only t
 
 - **Dead `waiting` status:** `scripts/setup-check/types.ts:36`, and no check produces it. Removing it from types, schemas, the report, the check-report JSON schema and the `report.test.ts` waiting block (including L1) is a separate chore. This one only rewords its summary line.
 - **Constitution wording:** Technology Constraints (`.specify/memory/constitution.md:194`) still says "the existing Tailwind theme from Don's current site". Changing it is a constitution amendment, which must go through `speckit-constitution`, so it is not done here.
+
+## Round 2
+
+Fix commit `2702ee0` checked against round 1.
+
+### Findings
+
+- **CRITICAL:** none.
+- **HIGH:** none. H1 is closed. The "describes the current design source, not the Ghost or Supabase setup it came from" test is gone from `tests/unit/site/design-source.test.ts`, and no `/ghost/i` or `/supabase/i` remains in the file.
+- **MEDIUM:** none.
+- **LOW:** L1–L3 from round 1 are unchanged. They are cosmetic or follow-up items and do not block.
+
+### Checks
+
+- **Scope of the fix:** the commit touches only `tests/unit/site/design-source.test.ts` (5 lines removed) and `plan.md` (a 2-line H1 note under W1). Nothing else changed.
+- **The doc's shape is still pinned:**
+  - "has the three required headings": How to get Flux, Mapping, Accessibility adjustments.
+  - The clone-command and read-only, gitignored and never-imported wording.
+  - The Mapping column header, the 19-row count, the allowed owners, and the 32 Flux name literals.
+  - The Accessibility adjustments table and ratio rows.
+- **Plan note is accurate:** the coverage note added to W1 in `plan.md` is true. It names the heading test, the Flux literals and the row count, and says reintroduced history is caught in review. (Round 1 put the literal count at 18; the file holds 32. The plan note gives no count, so it stays correct.)
+- **Tests:** `pnpm exec vitest run tests/unit/site/design-source.test.ts tests/unit/site/docs-content-structure.test.ts` passed (2 files, 127 tests).
+
+### Measurement
+
+| Grep | Before | After |
+|---|---|---|
+| Primary (acceptance 1) | 62 | 4 (exactly the allowed residue: `speckit-analyze/SKILL.md:116`, `speckit-converge/SKILL.md:118`, `VOICE.md:114`, `tests/e2e/blog.spec.ts:430`) |
+| Secondary (acceptance 2) | 12 | 0 |
+
+The round 1 verdict is cleared. The branch is ready for the verify gate.
