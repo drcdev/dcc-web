@@ -109,11 +109,22 @@ export type GitRunner = (args: string[]) => string;
 const FULL_SHA = /^[0-9a-f]{40}$/;
 const ZERO_SHA = /^0{40}$/;
 
+function hasCommit(git: GitRunner, sha: string): boolean {
+  try {
+    git(["cat-file", "-e", `${sha}^{commit}`]);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * The files a run changed, or null when they cannot be determined (which `decide` maps to the
  * full gate). A pull request diffs the merge commit against its first parent. A push diffs the
  * `before` commit against HEAD; `before` must be 40 lowercase hex characters and not all zeros,
- * and is fetched by id first. Paths are only read from git output, never passed back to git.
+ * and is fetched by id first unless it is already present (a shallow fetch into a full local
+ * clone would make that clone shallow). Paths are only read from git output, never passed back
+ * to git.
  */
 export function collectFiles(
   input: { event: string; before?: string | undefined },
@@ -129,7 +140,7 @@ export function collectFiles(
         console.error("push has no usable before commit, running the full gate");
         return null;
       }
-      git(["fetch", "--no-tags", "--depth=1", "origin", before]);
+      if (!hasCommit(git, before)) git(["fetch", "--no-tags", "--depth=1", "origin", before]);
       return git(["diff", "--name-only", "--no-renames", before, "HEAD"]).split("\n");
     }
   } catch (error) {

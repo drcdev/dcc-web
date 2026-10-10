@@ -351,7 +351,7 @@ describe("collectFiles()", () => {
 
   it("returns null when the fetch throws", () => {
     const { git } = fake((args) => {
-      if (args[0] === "fetch") throw new Error("no such commit");
+      if (args[0] === "cat-file" || args[0] === "fetch") throw new Error("no such commit");
       return "x";
     });
     expect(collectFiles({ event: "push", before: BEFORE }, git)).toBeNull();
@@ -365,12 +365,26 @@ describe("collectFiles()", () => {
     expect(collectFiles({ event: "push", before: BEFORE }, git)).toBeNull();
   });
 
-  it("fetches the validated id, then diffs it to HEAD with renames split", () => {
-    const { git, calls } = fake((args) => (args[0] === "diff" ? "docs/a.md\ndocs/b.md\n" : ""));
+  it("fetches the validated id when it is missing, then diffs it to HEAD with renames split", () => {
+    const { git, calls } = fake((args) => {
+      if (args[0] === "cat-file") throw new Error("missing");
+      return args[0] === "diff" ? "docs/a.md\ndocs/b.md\n" : "";
+    });
     const files = collectFiles({ event: "push", before: BEFORE }, git);
     expect(files).toEqual(["docs/a.md", "docs/b.md", ""]);
     expect(calls).toEqual([
+      ["cat-file", "-e", `${BEFORE}^{commit}`],
       ["fetch", "--no-tags", "--depth=1", "origin", BEFORE],
+      ["diff", "--name-only", "--no-renames", BEFORE, "HEAD"],
+    ]);
+  });
+
+  // A shallow fetch into a full local clone would make that clone shallow.
+  it("does not fetch when the before commit is already present", () => {
+    const { git, calls } = fake((args) => (args[0] === "diff" ? "docs/a.md\n" : ""));
+    expect(collectFiles({ event: "push", before: BEFORE }, git)).toEqual(["docs/a.md", ""]);
+    expect(calls).toEqual([
+      ["cat-file", "-e", `${BEFORE}^{commit}`],
       ["diff", "--name-only", "--no-renames", BEFORE, "HEAD"],
     ]);
   });

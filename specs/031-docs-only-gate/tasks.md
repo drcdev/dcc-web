@@ -87,7 +87,7 @@ description: "Task list for the docs-only verify gate"
 ## Phase 5: Polish and cross-cutting
 
 - [X] T023 [P] Re-read `docs/testing.md` and `docs/setup.md` against FR-013 and the spec's Accepted risks; fix wording to plain language with no leftover `full`/`content_only` output names. Scope stays inside the files named in plan.md.
-- [ ] T024 Run the full local gate: `pnpm run verify` (ask Don first; use `ASTRO_PREVIEW_BACKGROUND=1`, check port 4321 with lsof first, read the `VERIFY_EXIT=` line). The PR body flags the major-change criterion "changes CI, deployment or infrastructure configuration".
+- [x] T024 Run the full local gate: `pnpm run verify` (ask Don first; use `ASTRO_PREVIEW_BACKGROUND=1`, check port 4321 with lsof first, read the `VERIFY_EXIT=` line). The PR body flags the major-change criterion "changes CI, deployment or infrastructure configuration".
 
 ---
 
@@ -114,3 +114,4 @@ MVP is Phase 1, 2 and US1 (the pull request case the issue names). Add US2 after
 - [x] T026 Fix `docs/testing.md` "Change tiers": the Skip-safe row's skipped list also names the worker tests step, and the fail-closed sentence says an unset `tier` runs every job and `verify` fails, rather than "runs the full gate" per FR-010, FR-015 (partial)
 - [x] T027 Test, layer unit: in `tests/unit/ci/verify-needs.test.ts`, add `docs` to the tiers in "fails on any tier when changes is failure/cancelled/skipped" so a failed, cancelled or skipped `changes` is shown to fail `verify` on the docs tier too per FR-008, T003 (partial)
 - [x] T028 Update the header comments of `scripts/ci/changed-paths.ts` (sorts pull requests and pushes to `main`) and `scripts/ci/verify-needs.ts` (skips accepted only on the skip-safe and docs tiers) to match the four-tier behaviour per plan: Design (partial)
+- [x] T029 In `collectFiles` (`scripts/ci/changed-paths.ts`), skip the `git fetch --depth=1` of `before` when `git cat-file -e <before>^{commit}` shows the commit is already present, so a local run against a full clone cannot make that clone shallow (found when the T022 spot check did exactly that). Unit layer: `tests/unit/ci/changed-paths.test.ts` (seen red first).
