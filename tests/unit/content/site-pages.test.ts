@@ -116,8 +116,8 @@ describe("Privacy policy (FR-022, FR-022a)", () => {
     expect(text).toMatch(/ask (what|for)/);
   });
 
-  // The contact-form facts (region, retention, Turnstile, deletion route) are pinned
-  // against the shared rules in tests/unit/site/privacy-policy.test.ts.
+  // The contact-form facts (email delivery, Turnstile, deletion route) are pinned
+  // in tests/unit/site/privacy-policy.test.ts.
 
   it("does not link to the old cookie policy and shows a Last updated date", () => {
     expect(all).not.toContain("/cookie-policy/");

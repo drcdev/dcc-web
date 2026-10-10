@@ -26,7 +26,7 @@ describe(`the ${expected} environment`, () => {
     expect(env.EXPECTED_DATABASE_NAME).not.toBe(env.OTHER_DATABASE_NAME);
   });
 
-  it("marks the contact email as preview only when SITE_ENVIRONMENT is preview (FR-016)", async () => {
+  it("marks the contact email as preview only when SITE_ENVIRONMENT is preview (FR-006)", async () => {
     mockSiteverify();
     const email = fakeEmail();
     const response = await run(post(), { CONTACT_EMAIL: email });

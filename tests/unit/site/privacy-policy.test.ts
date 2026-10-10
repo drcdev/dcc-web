@@ -1,6 +1,6 @@
-// The privacy policy states the contact-form facts of spec FR-019 and FR-012b, and
-// takes the retention period from the shared rules so the policy and the Worker
-// cannot drift apart (FR-019a). Reads the page source directly.
+// The privacy policy states the contact-form facts of spec FR-019 and FR-012b. It
+// describes email delivery: the message is sent by email and nothing is stored, so
+// there is no region or retention period to state. Reads the page source directly.
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";

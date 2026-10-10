@@ -13,7 +13,7 @@ type Outcome =
   | "forbidden"
   | "too_large";
 
-// One structured line per request, outcome only (FR-016). Never a value, IP, hash or token.
+// One structured line per request, outcome only (FR-013). Never a value, IP, hash or token.
 function log(outcome: Outcome, error?: unknown): void {
   const line: Record<string, string> = { event: "contact", outcome };
   if (outcome === "unavailable") {
@@ -59,7 +59,7 @@ export async function handleSubmit(request: Request, env: Env): Promise<Response
     return fail(400, "invalid_json");
   }
 
-  // 1. Honeypot: pretend success, touch nothing (FR-011).
+  // 1. Honeypot: pretend success, touch nothing (FR-007).
   if (typeof body.website === "string" && body.website !== "") {
     log("honeypot");
     return ok();
@@ -94,7 +94,7 @@ export async function handleSubmit(request: Request, env: Env): Promise<Response
       return fail(422, "turnstile_failed");
     }
 
-    // 4. Email. Nothing is stored: success means send() resolved (FR-009, FR-012a).
+    // 4. Email. Nothing is stored: success means send() resolved (FR-009, FR-005).
     await env.CONTACT_EMAIL.send(
       buildContactEmail(submission, {
         receivedAt: Date.now(),
