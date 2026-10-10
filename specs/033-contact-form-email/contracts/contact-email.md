@@ -8,7 +8,7 @@ Built by `buildContactEmail()` in `worker/src/contact/email.ts`; passed to
 
 ```ts
 export const CONTACT_DESTINATION = "contact@doncoleman.ca";
-export const CONTACT_SENDER = "contact-form@mail.doncoleman.ca";
+export const CONTACT_SENDER = "contact-form@drc.dev";
 export const CONTACT_SENDER_NAME = "doncoleman.ca contact form";
 export function headerText(value: string): string;           // sanitiser, see Subject
 export function safeReplyTo(email: string): string | undefined;

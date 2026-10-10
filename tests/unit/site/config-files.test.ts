@@ -89,6 +89,8 @@ describe("wrangler.jsonc", () => {
       });
       expect(block.send_email[0]).not.toHaveProperty("remote");
     }
+    // The sender is on the separate sending domain drc.dev, never on doncoleman.ca or a subdomain of it.
+    expect(CONTACT_SENDER).toBe("contact-form@drc.dev");
   });
 
   it("requires only the Turnstile secret in both environments", () => {

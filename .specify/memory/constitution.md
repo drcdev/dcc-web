@@ -23,8 +23,12 @@ Modified principles:
   bullets replaced by the email-delivery rules (title unchanged).
 - VIII. Cloudflare Best Practices — Email Routing named; retrieval no longer the bearer-token
   example; rate-limit sentence removed from the contact API; contact email goes only to
-  verified destinations; Email Routing setup for the sending subdomain and destination
+  verified destinations; Email Routing setup for the sending domain (drc.dev) and destination
   verification are one-time account setup by Don, confirmed by the setup check.
+
+Correction 2026-10-10, within the unreleased 4.0.0 (no further bump): the sending subdomain of
+doncoleman.ca was replaced by the separate sending domain drc.dev, because Email Routing on a
+doncoleman.ca subdomain would have changed the apex iCloud mail records.
 
 Modified sections:
 - Technology Constraints — Contact API line names the email binding and drops D1 and the Cron
@@ -170,7 +174,7 @@ request body asks him to check, including on the preview deployment.
 - The site and its API endpoints run in one Worker. Only `/api/*` invokes Worker code; every
   other request is served as a static asset.
 - Worker configuration, D1 migrations and Cron Triggers are committed and applied through CI,
-  never by hand in the dashboard. Turning on Email Routing for the sending subdomain and
+  never by hand in the dashboard. Turning on Email Routing for the sending domain and
   verifying the destination address are one-time account setup by Don, confirmed by the setup
   check (like the Turnstile widget); they are not Worker configuration.
 - Every API endpoint serves HTTPS only. An endpoint called from the site's pages accepts
@@ -212,8 +216,8 @@ request body asks him to check, including on the preview deployment.
   deployment per branch.
 - **Contact API:** TypeScript in the site's Worker, handling `/api/*`, sending each accepted
   submission through the Worker's `send_email` binding. It uses no database and no Cron Trigger.
-- **Email:** Cloudflare Email Routing on a sending subdomain, with the Worker's `send_email`
-  binding restricted to one destination.
+- **Email:** Cloudflare Email Routing on a separate sending domain (drc.dev), with the
+  Worker's `send_email` binding restricted to one destination.
 - **Questions API:** TypeScript in the same Worker, Cloudflare Workers AI through the Worker's
   `ai` binding, and Cloudflare D1 for cached question sets and the usage bucket.
 - **Spam protection:** Cloudflare Turnstile, verified by the contact API.

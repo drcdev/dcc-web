@@ -324,5 +324,13 @@ export function createCloudflareReader(options: CloudflareReaderOptions): Cloudf
         return addresses.map((a) => ({ email: a.email ?? "", verified: stringOrNull(a.verified) }));
       });
     },
+
+    async getEmailRoutingSettings(zoneId: string) {
+      return guarded("Email Routing Rules: Read", async () => {
+        const settings = (await client.emailRouting.get({ zone_id: zoneId })) as { enabled?: unknown; status?: unknown };
+        // Only whether routing is on and its status: the tag, id and dates are dropped.
+        return { enabled: settings.enabled === true, status: stringOrNull(settings.status) };
+      });
+    },
   };
 }

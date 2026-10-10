@@ -50,8 +50,9 @@ describe("setupItems registry invariants", () => {
     expect(item.phase).toBe("before-merge");
     expect(item.needsDon).toBe(true);
     expect(item.principles).toEqual(["VII", "VIII", "IX"]);
-    expect(item.dependsOn).toEqual(["local-credentials", "cloudflare-zone", "mail-records"]);
-    expect(item.where).toContain("mail.doncoleman.ca");
+    expect(item.dependsOn).toEqual(["local-credentials"]);
+    expect(item.where).toContain("drc.dev");
+    expect(item.where + item.purpose + item.confirmedBy).not.toMatch(/mail\.doncoleman\.ca|subdomain/i);
   });
 
   it("item 16 needs only the Turnstile secret and the manifest has no retired contact secrets", () => {
@@ -65,6 +66,7 @@ describe("setupItems registry invariants", () => {
   it("the read-only token's manifest entry names Email Routing Addresses Read for contact-email", () => {
     const token = secretManifest.find((s) => s.name === "CLOUDFLARE_API_TOKEN")!;
     expect(token.permissions).toContain("Email Routing Addresses Read");
+    expect(token.permissions).toContain("Email Routing Rules Read");
     expect(token.usedBy).toContain("contact-email");
     expect(secretManifest.find((s) => s.name === "CLOUDFLARE_ACCOUNT_ID")!.usedBy).toContain("contact-email");
   });

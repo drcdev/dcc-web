@@ -88,16 +88,16 @@ describe(".claude/skills/setup-walkthrough/SKILL.md", () => {
     }
   });
 
-  it("has a contact email step: subdomain mail only, stop on apex changes, destination check, token permission, secret deletion shown for Don", () => {
+  it("has a contact email step: drc.dev sending domain, no doncoleman.ca DNS change, destination check, token permissions, secret deletion shown for Don", () => {
     const start = contents.indexOf("## Contact email (item 17)");
     expect(start).toBeGreaterThan(-1);
     const section = contents.slice(start);
-    expect(section).toContain("mail.doncoleman.ca");
-    expect(section).toMatch(/stop/i);
-    expect(section).toMatch(/apex|doncoleman\.ca itself/i);
+    expect(section).toContain("drc.dev");
+    expect(section).not.toMatch(/mail\.doncoleman\.ca|Subdomains/);
+    expect(section).toMatch(/no DNS change on doncoleman\.ca/i);
     expect(section).toContain("contact@doncoleman.ca");
     expect(section).toContain("Email Routing Addresses: Read");
-    expect(section).toContain("setup/dns-baseline.json");
+    expect(section).toContain("Email Routing Rules: Read");
     expect(section).toMatch(/7 days/);
     const delIndex = section.indexOf("wrangler secret delete");
     expect(delIndex).toBeGreaterThan(-1);

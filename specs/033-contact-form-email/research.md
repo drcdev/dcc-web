@@ -44,7 +44,7 @@ read from developers.cloudflare.com on 2026-10-10; Astro facts from the Astro Do
   "send_email": [{
     "name": "CONTACT_EMAIL",
     "destination_address": "contact@doncoleman.ca",
-    "allowed_sender_addresses": ["contact-form@mail.doncoleman.ca"]
+    "allowed_sender_addresses": ["contact-form@drc.dev"]
   }]
   ```
 
@@ -69,9 +69,17 @@ read from developers.cloudflare.com on 2026-10-10; Astro facts from the Astro Do
   one); no restriction at all (any verified address in the account; weaker); a secret or var for
   the address (FR-001 says committed configuration, and the address is not secret).
 
-## R3. Email Routing on a sending subdomain only, apex keeps iCloud (FR-016) — **open risk**
+## R3. Sending domain for Email Routing, apex keeps iCloud (FR-016) — **answered 2026-10-10**
 
-- **Decision**: Turn on Email Routing for `mail.doncoleman.ca` only. Send from
+- **Outcome (2026-10-10)**: subdomain-only routing is **not** possible here. When Don tried to turn
+  on Email Routing for `mail.doncoleman.ca`, the dashboard proposed changing the apex doncoleman.ca
+  MX, SPF and DKIM (iCloud) records. Don chose fallback 2 (a separate domain) using **`drc.dev`**,
+  which he already owns and which already has Email Routing on in Cloudflare. The Worker sends from
+  `contact-form@drc.dev` (display name unchanged) to the verified destination
+  `contact@doncoleman.ca`. doncoleman.ca's DNS and iCloud mail are untouched; no DNS record is added
+  anywhere; no new cost (no registration needed). **Assumption (risk)**: `drc.dev` is a zone in the
+  same Cloudflare account as the Worker; setup item 17 verifies it before the first push.
+- **Original decision (superseded)**: Turn on Email Routing for `mail.doncoleman.ca` only. Send from
   `contact-form@mail.doncoleman.ca`. Leave the apex `doncoleman.ca` MX (`mx01/mx02.mail.icloud.com`),
   SPF (`include:icloud.com`), `apple-domain` TXT and `sig1._domainkey` CNAME untouched. Verify
   `contact@doncoleman.ca` as an Email Routing destination address (account-scoped; the verification
@@ -100,14 +108,14 @@ read from developers.cloudflare.com on 2026-10-10; Astro facts from the Astro Do
      Sends to verified destinations are still free and outside the quota per the pricing page, but
      the pricing table also lists outbound sending as "Not available" on Workers Free, and the page
      does not reconcile the two. Confirm in the dashboard; $0 if allowed.
-  2. **A separate, otherwise-unused domain** added to the Cloudflare account with Email Routing on
-     its apex (no existing mail to break). Cost: registration only, about $10–15 a year
-     (≈ $1/month), inside the $13 ceiling but a new recurring cost, which Principle IX requires
-     to be stated in this plan and the PR body before it is used.
+  2. **A separate domain** in the Cloudflare account with Email Routing on its apex (no existing
+     mail to break). A new registration would cost about $1/month; **chosen 2026-10-10 using
+     `drc.dev`, which Don already owns, so the cost is $0.**
   3. **Workers Paid** ($5/month) with Email Sending on the subdomain. Inside the ceiling only if
      current spend allows; last resort.
-- **Rollback**: disabling routing for the subdomain removes only the subdomain records. The apex
-  records are protected by setup item 5 (`mail-records`), which fails if any apex mail record changes.
+- **Rollback**: the chosen design adds no record to doncoleman.ca. Its apex records stay protected
+  by setup item 5 (`mail-records`), which fails if any apex mail record changes. Anything left
+  half-applied on doncoleman.ca by the failed subdomain attempt is for Don to undo (tasks T043).
 
 ## R4. Header safety: subject, From, Reply-To (FR-003, FR-004, edge cases)
 
@@ -117,8 +125,7 @@ read from developers.cloudflare.com on 2026-10-10; Astro facts from the Astro Do
     CR, LF, TAB, U+0085) and the Unicode line and paragraph separators (U+2028, U+2029) replaced
     by a space, runs of whitespace collapsed, and are trimmed. Validation
     already caps both at 100 characters, so the subject stays well under header limits.
-  - From: `{ email: "contact-form@mail.doncoleman.ca", name: "doncoleman.ca contact form" }`, a
-    constant.
+  - From: `{ email: "contact-form@drc.dev", name: "doncoleman.ca contact form" }`, a constant.
   - Reply-To: the visitor's email address as a **plain string**, never with the visitor's name as a
     display name. It is used only when it also matches a header-safe pattern (no whitespace,
     control characters, `<`, `>`, `,`, `;`, `"`, `(`, `)`, `\`, and exactly one `@`). Otherwise
@@ -254,31 +261,32 @@ read from developers.cloudflare.com on 2026-10-10; Astro facts from the Astro Do
     1. **Destination verified**: Cloudflare API `emailRouting.addresses.list({ account_id })`
        (SDK `cloudflare@7.2.0`) has `contact@doncoleman.ca` with a non-null `verified` date. The
        read-only token gains **Account → Email Routing Addresses: Read**.
-    2. **Sending subdomain routing records**: the public resolvers (existing `dns` provider) return
-       the subdomain's Cloudflare MX (`route1/2/3.mx.cloudflare.net`) and SPF TXT
-       (`include:_spf.mx.cloudflare.net`) at `mail.doncoleman.ca`, and the baseline lists them.
-    3. **Apex untouched**: delegated to item 5 (`mail-records`), referenced in the item text.
+    2. **Sending domain routing on**: the Cloudflare API finds the `drc.dev` zone
+       (`zones.list({ name })`) and its Email Routing settings (`emailRouting.get({ zone_id })`)
+       report `enabled: true` and status `ready`. The token gains the `drc.dev` zone with
+       **Zone: Read** and **Email Routing Rules: Read**. (Revised 2026-10-10 from public-DNS MX/SPF
+       checks on `mail.doncoleman.ca`.)
+    3. **doncoleman.ca untouched**: delegated to item 5 (`mail-records`); item 17 adds no record.
   - Item 16 (`contact-bindings`): Worker-secrets part requires only `TURNSTILE_SECRET_KEY`; the
     production-deploy part stops requiring a cron and instead reports a leftover Cron Trigger on
     `dcc-web` as a problem ("the deploy should have removed it"). Databases stay (questions feature).
   - `secrets.ts`: remove `CONTACT_READ_TOKEN` and `IP_HASH_SALT`; extend the token's permission list.
-  - `setup/dns-baseline.json`: add the subdomain records **as Cloudflare creates them** (exact
-    content and DKIM selector are known only after Don enables routing, so this is a pre-merge task
-    that follows Don's step). Items 4 and 5 then cover them automatically.
+  - `setup/dns-baseline.json`: unchanged. (The earlier plan to copy subdomain records into it was
+    dropped with the subdomain on 2026-10-10.)
   - Walkthrough (`.claude/skills/setup-walkthrough/SKILL.md`) and `docs/setup.md` gain item 17 and
     lose the two secrets and the cron, with an after-release step for Don to delete the two retired
     secrets (`wrangler secret delete`, his action).
 - **Ordering risk**: Wrangler may refuse to upload a Worker whose `send_email.destination_address`
   is not yet a verified destination in the account. The first commit that adds the binding is
-  therefore pushed only after Don has completed item 17 (routing on the subdomain, destination
+  therefore pushed only after Don has completed item 17 (routing on `drc.dev`, destination
   verified). Until then, implementation stays local (all tests run locally and offline).
 
 ## R12. Cost (Principle IX)
 
 - Email Routing: free on Workers Free. Sends to verified destinations: free on all plans and outside
   the sending quota (pricing page). Removing the cron and the message table lowers D1 usage.
-  **Expected change: $0/month.** Fallback 2 in R3 would add about $1/month and needs a recorded
-  decision first.
+  **Expected change: $0/month.** The R3 separate-domain fallback uses `drc.dev`, already owned, so
+  it adds no cost.
 
 ## R13. Constitution amendment content (first task)
 

@@ -24,7 +24,7 @@ How to prove feature 033 works. Contracts: [contact-api](./contracts/contact-api
 Manual local look (optional): `pnpm run build`, then `node scripts/e2e-wrangler-config.ts` and
 `pnpm exec wrangler dev --config wrangler.e2e.json --env-file tests/fixtures/worker/e2e.env --var ALLOW_TURNSTILE_TESTING:true`;
 send the form at `http://127.0.0.1:8787/contact/`. The terminal prints
-`send_email binding called with MessageBuilder:` with From `contact-form@mail.doncoleman.ca`,
+`send_email binding called with MessageBuilder:` with From `contact-form@drc.dev`,
 To `contact@doncoleman.ca`, the subject, and a path to the text body. Open that file: every field,
 `Received:` in UTC, no preview line (local runs use the production config).
 
@@ -33,9 +33,12 @@ Removed routes: `curl -i http://127.0.0.1:8787/api/messages/new -H "Authorizatio
 
 ## 2. One-time setup (Don, before the binding is pushed)
 
-Follow `docs/setup.md#contact-email` (walkthrough item 17), then `pnpm run setup:check`:
-items 4, 5 and 17 complete. Item 5 passing confirms the apex iCloud records are unchanged
-(SC-008); also send yourself a normal email to `contact@doncoleman.ca` and see it arrive.
+Follow `docs/setup.md#contact-email` (walkthrough item 17): verify `contact@doncoleman.ca` as an
+Email Routing destination address, confirm Email Routing is on for `drc.dev`, and give the
+read-only token Email Routing read access for the account addresses and the `drc.dev` zone. Then
+`pnpm run setup:check`: items 4, 5 and 17 complete. No DNS record is added to doncoleman.ca; item 5
+passing confirms its iCloud records are unchanged (SC-008). Also send yourself a normal email to
+`contact@doncoleman.ca` and see it arrive.
 
 ## 3. Preview (Don, `[PREVIEW-CHECK]` in the PR)
 

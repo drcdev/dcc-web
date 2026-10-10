@@ -44,13 +44,14 @@ account/zone IDs live in a local file the check reads, never in the repository.
 
 **Where to do it**
 Create a read-only Cloudflare API token first (Cloudflare dashboard → My Profile → API Tokens →
-Create Token), scoped to Don's account and the `doncoleman.ca` zone only, with permissions Zone →
-Zone: Read, Zone → DNS: Read, Account → Workers Scripts: Read, Account → Account Settings: Read
+Create Token), scoped to Don's account and the `doncoleman.ca` zone only (item 17 adds `drc.dev`),
+with permissions Zone → Zone: Read, Zone → DNS: Read, Account → Workers Scripts: Read, Account → Account Settings: Read
 (the permission Cloudflare's API requires to list Web Analytics sites; there is no "Web
 Analytics" token permission), and, for the contact form (item 16), Account → D1: Read,
 Account → Workers Builds Configuration: Read and Account → Turnstile Sites: Read, and, for the
-contact email (item 17), Account → Email Routing Addresses: Read. If you made the token before the
-contact form, edit it and add those four. Then copy `.env.example` to `.env` in the repository root and fill in the values in your own
+contact email (item 17), Account → Email Routing Addresses: Read, plus the `drc.dev` zone with
+Zone → Zone: Read and Zone → Email Routing Rules: Read. If you made the token before the contact
+form, edit it and add those. Then copy `.env.example` to `.env` in the repository root and fill in the values in your own
 editor.
 
 **How it will be confirmed**
@@ -556,24 +557,21 @@ build variable, not a secret).
 
 **What it is for**
 The contact form emails each accepted message to `contact@doncoleman.ca` through the Worker's
-`send_email` binding. Cloudflare Email Routing must be on for the sending subdomain
-`mail.doncoleman.ca`, and the destination address must be verified, before the first deploy that
-carries the binding. This step is done before the pull request's first push. Email Routing is set
-up on the subdomain only, so the apex records that carry Don's iCloud mail stay untouched.
+`send_email` binding. It sends from `contact-form@drc.dev`, on Don's separate domain `drc.dev`,
+which already uses Cloudflare Email Routing. Email Routing must be on for `drc.dev`, and the
+destination address must be verified, before the first deploy that carries the binding. This step
+is done before the pull request's first push. There is no DNS change on doncoleman.ca: its iCloud
+mail records stay as they are.
 
 **Where to do it**
-1. Cloudflare dashboard → Email Routing → `doncoleman.ca` → Settings → Subdomains: add `mail`.
-   **Stop if the dashboard offers to add, change or remove any record on `doncoleman.ca` itself**
-   (MX, SPF or DKIM at the apex). Decline it, tell the agent, and choose a fallback; do not accept
-   an apex change.
-2. Email Routing → Destination addresses: add `contact@doncoleman.ca`, then open the verification
-   link sent to that mailbox. Send yourself a normal email to the address to see it arrive.
-3. Tell the agent. It copies the records Cloudflare created on `mail.doncoleman.ca` (MX, SPF and any
-   DKIM record) exactly into `setup/dns-baseline.json`.
-4. Run `pnpm setup:check --item contact-email`; then `pnpm setup:check` should show items 4, 5 and
-   17 complete.
-5. Add Account → **Email Routing Addresses: Read** to the read-only API token from step 2, so the
-   check can read the destination addresses.
+1. Cloudflare dashboard → Email Routing → Destination addresses: add `contact@doncoleman.ca` if it
+   is not there yet, then open the verification link sent to that mailbox.
+2. Cloudflare dashboard → `drc.dev` → Email → Email Routing: confirm routing is enabled and the page
+   shows no DNS warnings.
+3. Edit the read-only API token from step 2: add Account → **Email Routing Addresses: Read**, add the
+   `drc.dev` zone to its zone resources, and give it Zone → Zone: Read and Zone →
+   **Email Routing Rules: Read**.
+4. Run `pnpm setup:check --item contact-email`; it should report complete.
 
 After the release, within 7 days (hygiene, not a security deadline), delete the two retired Worker
 secrets from both Workers. `--env-file /dev/null` keeps Wrangler on your dashboard login instead of
@@ -595,12 +593,12 @@ prefixed with its part.
 - **Destination address:** `contact@doncoleman.ca` (the `destination_address` in `wrangler.jsonc`)
   is in the account's Email Routing destination addresses with a verification time. "Not added" and
   "waiting for the verification link" are reported separately.
-- **Sending subdomain:** public DNS answers MX for `mail.doncoleman.ca` with
-  `route1.mx.cloudflare.net`, `route2.mx.cloudflare.net` and `route3.mx.cloudflare.net`, and a TXT
-  SPF record containing `include:_spf.mx.cloudflare.net`.
-- The apex is not re-checked here: item 5 (`mail-records`) fails if any apex iCloud record changes.
+- **Sending domain:** the token can read the `drc.dev` zone, and Cloudflare reports Email Routing
+  enabled and ready on it.
+- doncoleman.ca's own mail records are not checked here: item 5 (`mail-records`) does that.
 
-It needs the Email Routing Addresses: Read permission on the token, and never reads a secret value.
+It needs the Email Routing Addresses: Read and Email Routing Rules: Read permissions on the token,
+and never reads a secret value.
 
 **Constitution principle**
 VII (Private Data: Minimal and Protected), VIII (Cloudflare Best Practices) and IX (Cost Ceiling).

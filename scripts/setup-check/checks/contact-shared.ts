@@ -63,11 +63,11 @@ export function readContactConfig(ctx: ProviderContext): ContactConfig | null {
 export interface EmailConfig {
   /** `send_email[0].destination_address`: the one verified address the form emails. */
   destination: string;
-  /** The sending subdomain, taken from `allowed_sender_addresses[0]` (e.g. "mail.doncoleman.ca"). */
-  subdomain: string;
+  /** The sending domain, taken from `allowed_sender_addresses[0]` (e.g. "drc.dev"). */
+  sendingDomain: string;
 }
 
-/** Reads the email destination and sending subdomain from wrangler.jsonc; null when unreadable or absent. */
+/** Reads the email destination and sending domain from wrangler.jsonc; null when unreadable or absent. */
 export function readEmailConfig(ctx: ProviderContext): EmailConfig | null {
   const text = ctx.fs.readText("wrangler.jsonc");
   if (text === null) return null;
@@ -80,9 +80,9 @@ export function readEmailConfig(ctx: ProviderContext): EmailConfig | null {
   const binding = parsed.send_email?.[0];
   const destination = binding?.destination_address;
   const sender = binding?.allowed_sender_addresses?.[0];
-  const subdomain = sender?.split("@")[1];
-  if (!destination || !subdomain) return null;
-  return { destination, subdomain };
+  const sendingDomain = sender?.split("@")[1];
+  if (!destination || !sendingDomain) return null;
+  return { destination, sendingDomain };
 }
 
 export function workerNames(ctx: ProviderContext): { production: string; preview: string } {

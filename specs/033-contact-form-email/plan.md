@@ -8,9 +8,9 @@
 
 Each accepted contact submission is sent as one plain-text email to a single fixed, verified
 address (`contact@doncoleman.ca`) through the Worker's Cloudflare `send_email` binding, using the
-structured `send()` builder API, from `contact-form@mail.doncoleman.ca` with the visitor as
-Reply-To. Email Routing is turned on for the `mail.doncoleman.ca` subdomain only, so the apex
-keeps its iCloud mail records. The site stops storing anything: a migration drops the `messages`
+structured `send()` builder API, from `contact-form@drc.dev` with the visitor as
+Reply-To. The sender is on Don's separate domain `drc.dev`, which already has Email Routing on, so
+doncoleman.ca's DNS and iCloud mail records are not touched (decision 2026-10-10, research R3). The site stops storing anything: a migration drops the `messages`
 table, and the retrieval endpoint, its bearer token, the IP-fingerprint salt, the per-sender rate
 limit, the retention job and its Cron Trigger are removed. The visitor's form is unchanged except
 for the privacy wording. The slice starts by amending the constitution (I, V, VII, VIII,
@@ -43,7 +43,7 @@ and preview `dcc-web-preview`.
 **Performance Goals**: contact page unchanged and within the existing budget (FR-008); no new
 client script. The send adds one binding call per accepted submission.
 
-**Constraints**: Workers Free plan; Email Routing on a subdomain only; one fixed destination;
+**Constraints**: Workers Free plan; Email Routing on the separate sending domain `drc.dev` (no DNS change on doncoleman.ca); one fixed destination;
 nothing about a submission or sender stored or logged; Turnstile + honeypot + same-origin as the
 only spam controls.
 
@@ -69,11 +69,11 @@ the amended text, with the current-text conflicts listed so the reviewer sees ea
 | V. Static by Default | Pass after amendment | Pages stay prerendered; the contact page and form island are unchanged apart from copy and one dead error branch. **Conflict with current text**: the Contact API entry says it "stores", "lets Don retrieve" and "rate-limits each sender". Amended to: receives submissions and emails each accepted one to one fixed verified address; stores nothing; verifies Turnstile. The endpoint list shrinks (retrieval endpoint removed). |
 | VI. Content as Files | Pass | Privacy policy, contact and technology pages stay MDX in the repo; no CMS. |
 | VII. Private Data: Minimal and Protected | Pass after amendment | No field is written to D1, a file or a log; no IP or fingerprint is computed. Logs carry outcome + error kind only. Destination is configuration, not data. **Conflict with current text**: "stored only in D1", "salted hash of IP", "preview messages stored separately", "deleted automatically after a retention period". Amended to the email model: not stored by the site; emailed to one fixed destination; no sender data stored; preview emails marked; Don keeps emails only as long as needed and deletes on request. The secrets bullet stays. |
-| VIII. Cloudflare Best Practices | Pass after amendment | Binding, vars, `crons: []` and the migration are committed and CI-applied. HTTPS-only and same-origin checks unchanged. Email Routing setup (subdomain routing, destination verification) is a one-time dashboard action by Don, like the Turnstile widget today; the check verifies it. **Conflict with current text**: names message retrieval as the bearer-token example and says the contact API rate-limits submissions; list of products omits Email Routing. Amended accordingly. |
-| IX. Cost Ceiling | Pass | Expected change **$0/month**: Email Routing is free; sends to verified destinations are free on all plans and outside the sending quota (R12). D1 use falls. Fallback 2 in R3 (separate domain, ≈ $1/month) would need a recorded decision first. |
+| VIII. Cloudflare Best Practices | Pass after amendment | Binding, vars, `crons: []` and the migration are committed and CI-applied. HTTPS-only and same-origin checks unchanged. Email Routing setup (routing on `drc.dev`, destination verification) is a one-time dashboard action by Don, like the Turnstile widget today; the check verifies it. **Conflict with current text**: names message retrieval as the bearer-token example and says the contact API rate-limits submissions; list of products omits Email Routing. Amended accordingly. |
+| IX. Cost Ceiling | Pass | Expected change **$0/month**: Email Routing is free; sends to verified destinations are free on all plans and outside the sending quota (R12). D1 use falls. The R3 separate-domain fallback uses `drc.dev`, which Don already owns, so it adds no cost. |
 | X. Accessible, Fast and Private | Pass | Form markup, focus handling and budget unchanged; no new third-party script (email is server-side). Visual baselines unaffected unless the contact note's wording changes line wrapping (checked by the visual project; refresh via the documented route if so). |
 | XI. Spec Kit Workflow | Pass | Spec Kit branch `033-contact-form-email`, one feature, own worktree. Files shared with other open branches (wrangler.jsonc, setup items) are merged from `main` before the gate. |
-| Technology Constraints | Pass after amendment | **Conflict**: "Contact API … with Cloudflare D1 for storage and a Cron Trigger for retention"; no email service listed. Amended: Contact API in the Worker with Cloudflare Email Routing's `send_email` binding to one verified destination from a sending subdomain; no storage, no Cron Trigger. |
+| Technology Constraints | Pass after amendment | **Conflict**: "Contact API … with Cloudflare D1 for storage and a Cron Trigger for retention"; no email service listed. Amended: Contact API in the Worker with Cloudflare Email Routing's `send_email` binding to one verified destination, sending from the separate domain `drc.dev`; no storage, no Cron Trigger. |
 | Security Baseline | Pass after amendment | **Conflict**: "the contact API's per-sender rate limit". Amended to "the contact API's Turnstile check, hidden trap field and same-origin check". The "untrusted data" bullet stays and now also covers contact emails read by any assistant. |
 | Development Workflow | Pass | Constitution Check present; Astro decisions cite docs; tests before code; one primary layer per behaviour. |
 
@@ -103,10 +103,11 @@ automatic retention). Made as **3.0.0 → 4.0.0**: main's issue #143 amendment h
   API also verifies Turnstile server-side and rate-limits submissions" → "verifies Turnstile
   server-side"; free-plan bullet adds "contact email goes only to verified destination addresses";
   the CI-applied-configuration bullet states that turning on Email Routing for the sending
-  subdomain and verifying the destination are one-time account setup by Don, confirmed by the
+  domain and verifying the destination are one-time account setup by Don, confirmed by the
   setup check (like the Turnstile widget), not Worker configuration.
 - **Technology Constraints**: Contact API line as above; add "**Email:** Cloudflare Email Routing
-  on a sending subdomain, with the Worker's `send_email` binding restricted to one destination."
+  on a separate sending domain (drc.dev), with the Worker's `send_email` binding restricted to one
+  destination."
 - **Security Baseline**: abuse bullet as above.
 - Sync Impact Report lists the templates reviewed (no template change expected) and the follow-up
   to delete `CONTACT_READ_TOKEN` and `IP_HASH_SALT` from the secret stores after release.
@@ -138,17 +139,18 @@ Migration `0003_drop_messages.sql`; delete `worker/src/messages/`, `worker/src/r
 
 ### Setup and operations
 
-Setup item 17 `contact-email` (new) and item 16 changes, secret manifest, DNS baseline, docs and
+Setup item 17 `contact-email` (new) and item 16 changes, secret manifest, docs and
 walkthrough: research R11; contract: [contracts/setup-check.md](./contracts/setup-check.md).
 
 ### Pre-merge sequence (PR body; auto-merge armed, Don's approval is the hold)
 
-1. **Before the first push that adds the binding** (R11 ordering): Don turns on Email Routing for
-   `mail.doncoleman.ca` only and verifies `contact@doncoleman.ca` (walkthrough item 17). This is
-   also the practical confirmation of research R3; if the dashboard insists on touching apex mail
-   records, Don stops and picks a fallback, and the plan is updated before work continues.
-2. Agent copies the subdomain records Cloudflare created into `setup/dns-baseline.json`;
-   `pnpm run setup:check` passes items 4, 5 and 17.
+1. **Before the first push that adds the binding** (R11 ordering): Don verifies
+   `contact@doncoleman.ca` as an Email Routing destination address, confirms Email Routing is on
+   for `drc.dev`, and gives the read-only token Email Routing read access for the account
+   addresses and the `drc.dev` zone (walkthrough item 17). He also undoes anything left half-applied
+   on doncoleman.ca from the failed subdomain attempt.
+2. `pnpm run setup:check` passes items 4, 5 and 17 (items 4 and 5 confirm doncoleman.ca's DNS and
+   iCloud records are unchanged).
 3. `[PREVIEW-CHECK]` Don sends a message from the branch preview: it arrives within 5 minutes,
    subject starts `[Preview]`, Reply addresses the visitor (SC-002 on preview).
 4. Immediately before approving: Don collects unread production messages through the retrieval
@@ -228,7 +230,6 @@ scripts/
 ├── setup-check/checks/{contact-bindings.ts,contact-shared.ts,contact-email.ts(new)}
 ├── setup-check/providers/cloudflare.ts  # listEmailRoutingAddresses (read-only)
 └── deploy/preview.ts                    # "additive only" comment corrected
-setup/dns-baseline.json                  # subdomain routing records (after Don's step)
 tests/
 ├── fixtures/worker/e2e.env              # two retired names removed
 ├── e2e/contact.spec.ts
@@ -246,9 +247,10 @@ tooling in `scripts/setup-check/`) is kept. The only new source file is
 ## Post-design Constitution re-check
 
 Re-checked after writing research, data model and contracts: no new dependency, no stored contact
-data, no new endpoint, no cost. The design depends on one unconfirmed platform behaviour (research
-R3: subdomain routing with the apex off), handled by putting Don's setup step first and naming
-fallbacks that each need his decision. Gate still passes.
+data, no new endpoint, no cost. Research R3's open risk (subdomain routing with the apex off) was
+settled on 2026-10-10: it is not possible without touching the apex, so the sender moved to
+`drc.dev`. The remaining assumption is that `drc.dev` is a zone in the same Cloudflare account,
+which setup item 17 verifies before the first push. Gate still passes.
 
 ## Complexity Tracking
 

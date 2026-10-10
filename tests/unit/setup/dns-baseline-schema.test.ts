@@ -17,16 +17,6 @@ describe("setup/dns-baseline.json", () => {
   });
 });
 
-describe("dnsBaselineSchema accepts the Email Routing subdomain records", () => {
-  it("accepts MX and SPF TXT records on mail.doncoleman.ca", () => {
-    const records = [
-      { type: "MX", name: "mail.doncoleman.ca", content: "route1.mx.cloudflare.net", priority: 12, ttl: 1 },
-      { type: "TXT", name: "mail.doncoleman.ca", content: "v=spf1 include:_spf.mx.cloudflare.net ~all", priority: null, ttl: 1 },
-    ];
-    expect(dnsBaselineSchema.safeParse({ records }).success).toBe(true);
-  });
-});
-
 describe("dnsBaselineSchema record-level rules", () => {
   const base = {
     type: "A",

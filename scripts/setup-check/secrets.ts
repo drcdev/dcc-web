@@ -11,7 +11,7 @@ export const secretManifest: SecretRef[] = [
     store: "local-env",
     purpose: "Read-only token the setup check uses for Cloudflare reads",
     permissions:
-      "Cloudflare: Zone Read, DNS Read, Workers Scripts Read, Account Settings Read, D1 Read, Workers Builds Configuration Read, Turnstile Sites Read, Email Routing Addresses Read",
+      "Cloudflare: Zone Read, DNS Read, Workers Scripts Read, Account Settings Read, D1 Read, Workers Builds Configuration Read, Turnstile Sites Read, Email Routing Addresses Read, Email Routing Rules Read (drc.dev zone)",
     usedBy: [
       "local-credentials",
       "cloudflare-zone",

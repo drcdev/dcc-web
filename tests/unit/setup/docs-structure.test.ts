@@ -158,16 +158,16 @@ describe("docs/setup.md contact-form part", () => {
     expect(s).toMatch(/never[^.]*chat/i);
   });
 
-  it("the contact email item gives the subdomain-only steps, the stop rule, the token permission and the secret clean-up", () => {
+  it("the contact email item gives the drc.dev steps, leaves doncoleman.ca DNS alone, names the token permissions and the secret clean-up", () => {
     const s = extractSection(contents, "contact-email");
     expect(contents.indexOf("{#contact-email}")).toBeGreaterThan(contents.indexOf("{#contact-bindings}"));
-    expect(s).toContain("mail.doncoleman.ca");
+    expect(s).toContain("drc.dev");
+    expect(s).toContain("contact-form@drc.dev");
     expect(s).toContain("contact@doncoleman.ca");
-    expect(s).toMatch(/Subdomains/);
-    expect(s).toMatch(/stop/i);
-    expect(s).toMatch(/apex|doncoleman\.ca itself/i);
+    expect(s).not.toMatch(/mail\.doncoleman\.ca|Subdomains/);
+    expect(s).toMatch(/no DNS change on doncoleman\.ca/i);
     expect(s).toContain("Email Routing Addresses: Read");
-    expect(s).toContain("setup/dns-baseline.json");
+    expect(s).toContain("Email Routing Rules: Read");
     expect(s).toContain("pnpm setup:check --item contact-email");
     expect(s).toContain("wrangler secret delete CONTACT_READ_TOKEN");
     expect(s).toContain("wrangler secret delete IP_HASH_SALT");

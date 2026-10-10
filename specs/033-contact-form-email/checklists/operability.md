@@ -17,6 +17,8 @@
 
 ## Setup and DNS Safety
 
+*2026-10-10: the sending subdomain was replaced by `drc.dev` (spec Clarifications Q3 update, research R3). CHK008, CHK009, CHK011, CHK012 and CHK016 now resolve to that design: the fallback was taken, no record is added to doncoleman.ca, and the sender is exactly `contact-form@drc.dev`.*
+
 - [x] CHK007 Is the requirement that the apex iCloud MX, SPF and DKIM records stay unchanged verifiable by a named comparison against a recorded baseline? [Measurability, Spec §FR-016, §SC-008]
 - [x] CHK008 Is a fallback defined if subdomain-only routing cannot coexist with the apex left off, including who decides and what stops work? [Gap, Spec §Assumptions]
 - [x] CHK009 Is the exact list of records Email Routing adds on the sending subdomain specified, or left to discovery with a rule for capturing them? [Completeness, Spec §FR-016]

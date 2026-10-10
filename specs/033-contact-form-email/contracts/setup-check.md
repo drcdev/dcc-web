@@ -10,7 +10,7 @@ All reads stay read-only and names-only (feature 001 rules). No check ever reads
 | phase | `before-merge` (the binding's destination must be verified before the first deploy that carries it) |
 | needsDon | `true` |
 | principles | `VII`, `VIII`, `IX` |
-| dependsOn | `local-credentials`, `cloudflare-zone`, `mail-records` |
+| dependsOn | `local-credentials` |
 | secrets | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` (names only) |
 | docs anchor | `docs/setup.md#contact-email` |
 
@@ -21,15 +21,20 @@ Parts (one run shows every gap, like item 16):
    `wrangler.jsonc` `send_email[0].destination_address` with a non-empty `verified` timestamp.
    Missing → "not added"; present but unverified → "waiting for the verification link".
    An authorisation error → could-not-check naming the **Email Routing Addresses: Read** permission.
-2. **Sending subdomain records**: the DNS reader (public resolvers) answers MX for the subdomain of
-   `allowed_sender_addresses[0]` (`mail.doncoleman.ca`) with Cloudflare routing hosts
-   (`route1/2/3.mx.cloudflare.net`) and a TXT SPF record containing `include:_spf.mx.cloudflare.net`.
-   Missing → "Email Routing is not on for mail.doncoleman.ca".
-3. **Apex untouched** is not re-checked here: the item's text points to item 5 (`mail-records`),
-   which fails if any apex iCloud record changes.
+2. **Sending domain routing on**: the domain of `allowed_sender_addresses[0]` (`drc.dev`) is found
+   with `cloudflare.listZones(domain)`, and `cloudflare.getEmailRoutingSettings(zoneId)` (new
+   read-only provider method over `client.emailRouting.get`, returning only `enabled` and `status`)
+   reports `enabled: true` and status `ready`. No zone found → "drc.dev is not a zone this token
+   can read"; disabled → "Email Routing is not on for drc.dev"; another status → named. An
+   authorisation error → could-not-check naming **Email Routing Rules: Read**. Public DNS is not
+   read.
+3. **doncoleman.ca untouched** is not re-checked here: item 5 (`mail-records`) fails if any apex
+   iCloud record changes, and item 17 adds no record.
 
-Complete summary: "Email Routing is on for mail.doncoleman.ca and contact@doncoleman.ca is
-verified." Next action when missing: the walkthrough step for that part.
+Complete summary: "Email Routing is on for drc.dev and contact@doncoleman.ca is verified." Next
+action when missing: the walkthrough step for that part.
+
+(Revised 2026-10-10: the sender moved from `mail.doncoleman.ca` to `drc.dev`, research R3.)
 
 ## Item 16 `contact-bindings` changes
 
@@ -45,31 +50,27 @@ verified." Next action when missing: the walkthrough step for that part.
 ## Secret manifest (`scripts/setup-check/secrets.ts`)
 
 - Remove `CONTACT_READ_TOKEN` and `IP_HASH_SALT`.
-- `CLOUDFLARE_API_TOKEN.permissions` adds "Email Routing Addresses Read"; `usedBy` adds
+- `CLOUDFLARE_API_TOKEN.permissions` adds "Email Routing Addresses Read" and "Email Routing Rules
+  Read (drc.dev zone)"; `usedBy` adds
   `contact-email`. `CLOUDFLARE_ACCOUNT_ID.usedBy` adds `contact-email`.
 - `tests/unit/setup/drift.test.ts` keeps proving every name in wrangler, workflows and
   `.env.example` is in the manifest.
 
 ## DNS baseline (`setup/dns-baseline.json`)
 
-Adds the records Cloudflare created on `mail.doncoleman.ca` (MX ×3, SPF TXT, and the DKIM TXT
-if routing adds one), copied exactly from the dashboard or `wrangler email routing dns get`
-output after Don's step. Apex records unchanged. Items 4 (`dns-records-parity`) and 5
-(`mail-records`) then cover them without code changes.
+Unchanged. No record is added to doncoleman.ca, so items 4 and 5 need no change.
 
 ## Walkthrough and docs
 
 `docs/setup.md` gains `## 17. Contact email {#contact-email}` and the walkthrough skill a matching
 step, each saying what to do, where, and how to confirm:
 
-1. Cloudflare dashboard → Compute → Email Service → Email Routing → `doncoleman.ca` → Settings →
-   Subdomains: add `mail`. **Stop if the dashboard offers to add, change or remove any record on
-   `doncoleman.ca` itself (MX, SPF, DKIM)**; report it, choose a fallback (research R3).
-2. Email Routing → Destination addresses: add `contact@doncoleman.ca`; open the verification link
-   in that mailbox.
-3. Tell the agent; it copies the subdomain records into the DNS baseline.
+1. Email Routing → Destination addresses: add `contact@doncoleman.ca` if it is not there yet;
+   open the verification link in that mailbox.
+2. `drc.dev` → Email → Email Routing: confirm routing is enabled with no DNS warnings.
+3. Token: add Account → Email Routing Addresses: Read, and the `drc.dev` zone with Zone: Read and
+   Email Routing Rules: Read, to the read-only token.
 4. `pnpm run setup:check`: items 4, 5 and 17 pass.
-5. Token: add Account → Email Routing Addresses: Read to the read-only token.
 
 After release (follow-up, Don): `pnpm exec wrangler secret delete CONTACT_READ_TOKEN` and
 `IP_HASH_SALT`, each for both Workers (`--env preview` for the preview Worker), using the

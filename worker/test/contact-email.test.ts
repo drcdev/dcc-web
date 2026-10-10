@@ -34,6 +34,9 @@ describe("buildContactEmail: fields", () => {
     const email = build();
     expect(email.to).toBe(CONTACT_DESTINATION);
     expect(email.from).toEqual({ email: CONTACT_SENDER, name: CONTACT_SENDER_NAME });
+    // Sent from the separate sending domain drc.dev, so doncoleman.ca's own mail records stay untouched.
+    expect(CONTACT_SENDER).toBe("contact-form@drc.dev");
+    expect(CONTACT_DESTINATION).toBe("contact@doncoleman.ca");
     expect(email.replyTo).toBe("ada@example.com");
     expect(typeof email.text).toBe("string");
     for (const key of ["cc", "bcc", "html", "headers", "attachments"]) {

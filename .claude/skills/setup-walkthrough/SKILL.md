@@ -157,20 +157,18 @@ retries the build) so the branch alias inherits the new value.
 
 `contact-email` is `phase: before-merge`: it must be complete before the branch's first push, because
 the first deploy carrying the email binding needs a verified destination. Use `docs/setup.md#contact-email`.
-The walkthrough only ever involves the sending subdomain `mail.doncoleman.ca`.
+The form sends from `contact-form@drc.dev`, Don's separate domain that already uses Email Routing, so
+there is no DNS change on doncoleman.ca and its iCloud mail (guarded by item 5) is never involved.
 
-1. Subdomain. Don adds `mail` under Email Routing, Settings, Subdomains, in the dashboard. **Stop** if the
-   dashboard offers to add, change or remove any record on `doncoleman.ca` itself (the apex MX, SPF or
-   DKIM): tell Don to decline it, do not continue, and report it so a fallback can be chosen. The apex
-   carries his iCloud mail and item 5 (`mail-records`) guards it.
-2. Destination. Don adds `contact@doncoleman.ca` under Destination addresses and opens the verification
-   link in that mailbox, then sends himself a normal email to see it arrive.
-3. Baseline. Once Don says Done, the records Cloudflare created on `mail.doncoleman.ca` (MX, SPF, any
-   DKIM) are copied exactly into `setup/dns-baseline.json` (a repository file; the skill still never
-   changes DNS), then `pnpm setup:check --json --item contact-email` runs, followed by a full run to see
-   items 4, 5 and 17 complete.
-4. Token. If the check says it could not read the destination addresses, send Don back to
-   `local-credentials` (item 2) to add Account, Email Routing Addresses: Read to his read-only token.
+1. Destination. Don adds `contact@doncoleman.ca` under Email Routing, Destination addresses (if it is
+   not already there) and opens the verification link in that mailbox.
+2. Sending domain. Don opens `drc.dev`, Email, Email Routing in the dashboard and confirms routing is
+   enabled with no DNS warnings. If it is off, he turns it on for `drc.dev` only.
+3. Token. Don edits his read-only token: Account, Email Routing Addresses: Read; and the `drc.dev` zone
+   added to its zone resources with Zone: Read and Email Routing Rules: Read. If the check says it
+   could not read either part, send Don back to `local-credentials` (item 2) for these permissions.
+4. Check. `pnpm setup:check --json --item contact-email` runs, followed by a full run to see item 17
+   complete.
 5. Retired secrets. Within 7 days of release Don deletes `CONTACT_READ_TOKEN` and `IP_HASH_SALT` from
    both Workers. `--env-file /dev/null` keeps Wrangler on his dashboard login.
    Shown for Don to run himself:

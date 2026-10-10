@@ -268,6 +268,27 @@ describe("listEmailRoutingAddresses", () => {
   });
 });
 
+describe("getEmailRoutingSettings", () => {
+  it("returns only enabled and status for the zone", async () => {
+    const get = vi.fn(async () => ({ id: "x", tag: "t", name: "drc.dev", enabled: true, status: "ready", skip_wizard: true }));
+    const result = await reader({ emailRouting: { get } }).getEmailRoutingSettings("zone-drc");
+    expect(result).toEqual({ enabled: true, status: "ready" });
+    expect(get).toHaveBeenCalledWith({ zone_id: "zone-drc" });
+  });
+
+  it("treats a missing status as null", async () => {
+    const get = vi.fn(async () => ({ enabled: false }));
+    expect(await reader({ emailRouting: { get } }).getEmailRoutingSettings("z")).toEqual({ enabled: false, status: null });
+  });
+
+  it("gives the permission hint on 403", async () => {
+    const get = vi.fn(async () => {
+      throw new HttpError(403);
+    });
+    await expect(reader({ emailRouting: { get } }).getEmailRoutingSettings("z")).rejects.toThrow(/Email Routing Rules: Read/);
+  });
+});
+
 describe("new reader failures are ProviderAccessError", () => {
   it("wraps a generic failure and redacts the token", async () => {
     const get = vi.fn(async () => {

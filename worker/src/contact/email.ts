@@ -6,8 +6,9 @@ import type { ValidSubmission } from "./rules";
 /** The only address a contact submission is ever emailed to (verified in Email Routing). */
 export const CONTACT_DESTINATION = "contact@doncoleman.ca";
 
-/** The sender address, on the Email Routing sending subdomain. */
-export const CONTACT_SENDER = "contact-form@mail.doncoleman.ca";
+/** The sender address, on the separate sending domain drc.dev (Email Routing is on there), so
+ * doncoleman.ca's own mail records are never touched. */
+export const CONTACT_SENDER = "contact-form@drc.dev";
 
 /** Display name shown on the From line. */
 export const CONTACT_SENDER_NAME = "doncoleman.ca contact form";

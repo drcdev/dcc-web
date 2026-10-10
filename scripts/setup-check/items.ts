@@ -303,16 +303,16 @@ const seeds: ItemSeed[] = [
     order: 17,
     title: "Contact email",
     purpose:
-      "The contact form emails each message to contact@doncoleman.ca through Cloudflare Email Routing on the mail.doncoleman.ca subdomain. Routing must be on for that subdomain and the destination address verified before the first deploy that carries the email binding.",
+      "The contact form emails each message to contact@doncoleman.ca through Cloudflare Email Routing, sending from contact-form@drc.dev. Routing must be on for drc.dev and the destination address verified before the first deploy that carries the email binding. There is no DNS change on doncoleman.ca.",
     where:
-      "Cloudflare dashboard -> Email Routing -> doncoleman.ca -> Settings -> Subdomains: add mail, giving mail.doncoleman.ca (stop if the dashboard offers to change any record on doncoleman.ca itself). Then Destination addresses: add contact@doncoleman.ca and open the verification link in that mailbox. Add Account -> Email Routing Addresses: Read to the read-only token.",
+      "Cloudflare dashboard -> Email Routing -> Destination addresses: add contact@doncoleman.ca (if it is not there) and open the verification link in that mailbox. Cloudflare dashboard -> drc.dev -> Email -> Email Routing: confirm routing is enabled. Give the read-only token Account -> Email Routing Addresses: Read, and add the drc.dev zone to it with Zone: Read and Email Routing Rules: Read.",
     confirmedBy:
-      "contact@doncoleman.ca is a verified destination address in the account; public DNS answers MX for mail.doncoleman.ca with route1/2/3.mx.cloudflare.net and an SPF record containing include:_spf.mx.cloudflare.net. Item 5 separately confirms the apex mail records are unchanged.",
+      "contact@doncoleman.ca is a verified destination address in the account, and the Cloudflare API reports Email Routing enabled and ready on the drc.dev zone.",
     needsDon: true,
     principles: ["VII", "VIII", "IX"],
     requirements: ["FR-016", "FR-016a"],
     secrets: ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID"],
-    dependsOn: ["local-credentials", "cloudflare-zone", "mail-records"],
+    dependsOn: ["local-credentials"],
     phase: "before-merge",
   },
 ];

@@ -33,7 +33,7 @@ the result is the `EmailMessageBuilder` passed to `env.CONTACT_EMAIL.send()`. Ex
 | Field | Value |
 |---|---|
 | `to` | `CONTACT_DESTINATION` constant (`contact@doncoleman.ca`) |
-| `from` | `{ email: CONTACT_SENDER ("contact-form@mail.doncoleman.ca"), name: "doncoleman.ca contact form" }` |
+| `from` | `{ email: CONTACT_SENDER ("contact-form@drc.dev"), name: "doncoleman.ca contact form" }` |
 | `replyTo` | visitor `email` as a plain string when header-safe, else omitted |
 | `subject` | `[Preview] `? + `Contact form: <name>` + ` (about <project>)`? with header text sanitised (C0/C1 controls, U+2028 and U+2029 → space, whitespace collapsed, trimmed; FR-004) |
 | `text` | plain-text body: optional preview line, labelled fields, `Received:` ISO UTC, then the message |
@@ -47,7 +47,7 @@ header-safe Reply-To.
 | Where | Value |
 |---|---|
 | `wrangler.jsonc` `send_email[0].destination_address` (both envs) | `contact@doncoleman.ca` |
-| `wrangler.jsonc` `send_email[0].allowed_sender_addresses` (both envs) | `["contact-form@mail.doncoleman.ca"]` |
+| `wrangler.jsonc` `send_email[0].allowed_sender_addresses` (both envs) | `["contact-form@drc.dev"]` |
 | `worker/src/contact/email.ts` constants | same two values; a config test proves equality |
 | Cloudflare Email Routing (account) | destination address verified by Don |
 

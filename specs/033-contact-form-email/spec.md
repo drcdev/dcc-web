@@ -40,6 +40,12 @@ database; those are amended as this slice's first task (see Dependencies).
   sending subdomain only (for example `mail.doncoleman.ca`), sending from an address there to
   contact@doncoleman.ca. The apex domain's iCloud MX, SPF and DKIM records stay untouched; planning
   confirms that subdomain-only routing works with the apex left off.
+  *Update 2026-10-10: when Don tried to turn on Email Routing for `mail.doncoleman.ca`, the
+  Cloudflare dashboard proposed changing the apex doncoleman.ca MX, SPF and DKIM (iCloud) records,
+  so subdomain-only routing is not possible there. Don chose the separate-domain fallback (research
+  R3) using `drc.dev`, a domain he already owns with Email Routing on in Cloudflare. The Worker
+  sends from `contact-form@drc.dev` to the fixed, verified destination `contact@doncoleman.ca`.
+  doncoleman.ca's DNS and iCloud mail are untouched, and there is no new cost.*
 - Q: Is the constitution amendment made inside this slice or first as a separate step? → A: Inside
   this slice, as the first task, through the constitution command, in the same pull request.
 - Q: Does dropping the message store ship in the same pull request as the switch to email? → A: Yes,
@@ -238,10 +244,9 @@ are stored in a database or that no email is sent.
 
 ### User Story 7 - Don completes the one-time email setup (Priority: P3)
 
-The setup walkthrough and setup check cover the steps only Don can do: turning on Cloudflare's
-email routing for a sending subdomain only (for example `mail.doncoleman.ca`), leaving the apex
-domain's iCloud mail records untouched,
-verifying the fixed destination address, and confirming that the old message-retrieval access key
+The setup walkthrough and setup check cover the steps only Don can do: confirming Cloudflare's
+email routing is on for the separate sending domain `drc.dev` (so doncoleman.ca's DNS and iCloud
+mail records are never touched), verifying the fixed destination address, and confirming that the old message-retrieval access key
 and the sender-fingerprint salt are no longer required. The setup check reports what is missing and passes when it is all done.
 
 **Why this priority**: Needed before release, but the feature can be built and tested locally
@@ -257,10 +262,9 @@ key and fingerprint salt are no longer listed as required.
    missing email setup items.
 2. **Given** email routing is on and the destination is verified, **When** Don runs the setup
    check, **Then** those items pass.
-3. **Given** the existing iCloud mail records on the apex domain, **When** email setup is
-   complete, **Then** those records are unchanged, Don's existing mailbox still receives mail, and
-   the DNS baseline and its parity check include the records email routing adds on the sending
-   subdomain.
+3. **Given** the existing iCloud mail records on doncoleman.ca, **When** email setup is
+   complete, **Then** those records are unchanged and Don's existing mailbox still receives mail;
+   email setup adds no DNS record on doncoleman.ca.
 4. **Given** the setup check after this change, **When** it lists required secrets, **Then**
    neither the message-retrieval key (`CONTACT_READ_TOKEN`) nor the sender-fingerprint salt
    (`IP_HASH_SALT`) is among them.
@@ -356,7 +360,7 @@ key and fingerprint salt are no longer listed as required.
   control characters, `<`, `>`, `,`, `;`, `"`, `(`, `)`, `\`. When it fails that rule the email has
   no reply address and the body still shows the address; the visitor sees no difference. The
   form's email validation is unchanged (FR-007). The sender MUST be the fixed address
-  `contact-form@mail.doncoleman.ca` with the display name `doncoleman.ca contact form`; neither
+  `contact-form@drc.dev` (on the separate sending domain `drc.dev`) with the display name `doncoleman.ca contact form`; neither
   is taken from visitor input.
 - **FR-004**: The subject MUST identify the email as a contact-form message and include the
   visitor's name and, when present, the project (`Contact form: <name>` or
@@ -472,34 +476,24 @@ key and fingerprint salt are no longer listed as required.
 
 **Setup and operations**
 
-- **FR-016**: The setup check and walkthrough MUST include: email routing turned on for the
-  sending subdomain only (for example `mail.doncoleman.ca`), never the apex domain; the fixed
-  destination address verified in Email Routing; and the sender authentication records on the
-  sending subdomain in place. Each step says what to do, where, and how to confirm it. The apex
-  domain's iCloud MX, SPF and DKIM records MUST stay unchanged, and the DNS baseline MUST be
-  updated to include the records email routing adds on the subdomain. Planning MUST confirm from
-  Cloudflare's documentation that routing can be turned on for the subdomain while the apex stays
-  off; where the documentation cannot settle it, Don's setup step is the confirmation (see
-  Assumptions for the fallback rule). Each walkthrough step names a pass condition that the setup
-  check reports:
-  - **Routing on the subdomain**: public DNS answers Cloudflare's routing MX records and an SPF
-    record including Cloudflare's sending range for the sending subdomain.
+- **FR-016**: The setup check and walkthrough MUST include: email routing on for the separate
+  sending domain `drc.dev`, and the fixed destination address verified in Email Routing. Each step
+  says what to do, where, and how to confirm it. Nothing is added, changed or removed in
+  doncoleman.ca's DNS: its iCloud MX, SPF and DKIM records MUST stay unchanged. Each walkthrough
+  step names a pass condition that the setup check reports:
+  - **Routing on the sending domain**: the Cloudflare API reports Email Routing enabled and ready
+    on the `drc.dev` zone (the zone is in the same account; the read-only token covers it).
   - **Destination verified**: the Cloudflare API's list of Email Routing destination addresses
     for the account contains the fixed destination with a verification date. A script cannot read
     the inbox, so this API record is the only evidence of verification; an address that is listed
     without a date is reported as waiting for the verification link.
-  - **Sender authentication**: the subdomain's SPF and DKIM records, exactly as Cloudflare creates
-    them, are in the DNS baseline and match public DNS (the existing parity check). Mail from the
-    subdomain is authenticated by SPF and DKIM aligned to the subdomain. The subdomain has no DMARC
-    record of its own, so the apex's DMARC policy (as its subdomain policy) applies to it.
-  - **Apex untouched**: the existing mail-records check compares every apex iCloud MX, SPF and
-    DKIM record with the committed DNS baseline and fails on any difference.
-  The records email routing adds on the subdomain MUST be copied exactly as Cloudflare created them
-  (from the dashboard or wrangler's routing DNS output) after Don's step, never written from
-  guesswork.
+  - **Sender authentication**: `drc.dev`'s routing and sender records are the ones Cloudflare
+    already manages for that zone; this slice adds none.
+  - **doncoleman.ca untouched**: the existing mail-records check compares every apex iCloud MX,
+    SPF and DKIM record with the committed DNS baseline and fails on any difference.
 - **FR-016a** (ordering): No commit that adds the email binding is pushed (so no preview or
-  production deploy carries it) until Email Routing is on for the sending subdomain and the fixed
-  destination is verified. Until then the work stays local, with every test running offline.
+  production deploy carries it) until Email Routing is on for `drc.dev` and the fixed destination
+  is verified. Until then the work stays local, with every test running offline.
 - **FR-017**: The message store's removal ships in the same pull request as the switch to email.
   That pull request MUST list collecting any unread stored production messages as a pre-merge
   item for Don, to be done immediately before he approves, with a final re-check of the retrieval
@@ -571,8 +565,8 @@ key and fingerprint salt are no longer listed as required.
 - **SC-007**: Running costs do not rise: contact email uses only the free allowance for sending
   to verified addresses, and monthly cost stays at or below the $13 ceiling (expected change: $0).
 - **SC-008**: Don's existing domain mailbox keeps receiving mail after email setup, confirmed by
-  the setup check's mail-record check (every apex iCloud MX, SPF and DKIM record identical to the
-  committed DNS baseline) and DNS parity check passing.
+  the setup check's mail-record check (every doncoleman.ca iCloud MX, SPF and DKIM record identical
+  to the committed DNS baseline) and DNS parity check passing; email setup adds no record there.
 - **SC-009**: The Contact page and the privacy policy pass the site's automated accessibility
   checks with no WCAG 2.2 AA violations after the change, in the existing accessibility test
   project that covers every page template.
@@ -593,16 +587,15 @@ key and fingerprint salt are no longer listed as required.
   that page before release and whenever Cloudflare announces a change to Email Routing or Email
   Service pricing; if it stops holding, the change is a cost question for Don under Principle IX.
 - Free sends to verified destinations must come from a domain with Email Routing turned on.
-  Turning routing on for the apex would replace the domain's iCloud MX records, which Cloudflare
-  says cannot coexist with an external mail server, so routing is turned on for a sending
-  subdomain only (for example `mail.doncoleman.ca`). Cloudflare's subdomain documentation says
-  routing can be added per subdomain with records placed on that subdomain; whether that works
-  with the apex left off is the main technical risk. The documentation does not settle it, so
-  Don's first setup step confirms it. If the dashboard proposes adding, changing or removing any
-  apex mail record, Don stops without accepting, no commit carrying the binding is pushed, and Don
-  chooses among the fallbacks planning lists (research R3); the spec and plan are updated with his
-  choice before work continues, and any fallback that adds a recurring cost is recorded as a major
-  change under Principle IX first.
+  Turning routing on for doncoleman.ca would replace its iCloud MX records, which Cloudflare says
+  cannot coexist with an external mail server. The first plan was a sending subdomain
+  (`mail.doncoleman.ca`), but on 2026-10-10 the dashboard proposed changing the apex MX, SPF and
+  DKIM records when Don tried it, so Don chose the separate-domain fallback (research R3): the
+  Worker sends from `contact-form@drc.dev`. `drc.dev` is a domain Don already owns with Email
+  Routing on, so there is no new cost.
+- **Assumption (risk)**: `drc.dev` is a zone in the same Cloudflare account as the Worker, so the
+  `send_email` binding can send from it and the read-only token can read its routing settings.
+  Setup item 17 verifies this; if it fails, the binding cannot send and the plan is revisited.
 - The visitor does not receive a copy of their message (it would need sending to an unverified
   address). The confirmation on screen is unchanged.
 - Duplicate emails from an unclear retry are acceptable; the site keeps no record to prevent them.
@@ -637,27 +630,25 @@ key and fingerprint salt are no longer listed as required.
   - **VIII**: Email Routing joins the named products; message retrieval is no longer the
     bearer-token example; the contact API "verifies Turnstile server-side" with no rate limit;
     contact email goes only to verified destination addresses; turning on Email Routing for the
-    sending subdomain and verifying the destination are one-time account setup done by Don and
+    sending domain and verifying the destination are one-time account setup done by Don and
     confirmed by the setup check (like the Turnstile widget), not Worker configuration, so the
     "never by hand in the dashboard" rule still covers the binding, migrations and Cron Triggers.
   - **I**: the integration-test layer runs against the local Workers runtime, with a real local
     database where the endpoint uses one.
   - **Technology Constraints**: the Contact API line names the email binding instead of D1 and the
-    Cron Trigger, and an Email line is added (Email Routing on a sending subdomain, the binding
-    restricted to one destination).
+    Cron Trigger, and an Email line is added (Email Routing on a separate sending domain, drc.dev,
+    the binding restricted to one destination).
   - **Security Baseline**: abuse is limited by the contact API's Turnstile check, hidden trap field
     and same-origin check; the untrusted-data bullet names contact emails.
   - **Version**: MAJOR is recommended because V's Contact API entry and VII's rules are
     redefined; the constitution command makes the final call and records why. Made as 4.0.0:
     main's issue #143 amendment had already taken 2.3.1 → 3.0.0, and this slice's amendment sits
     on top of it (3.0.0 → 4.0.0).
-- Cloudflare Email Routing on the sending subdomain only, and a verified destination address
-  (Don, during setup).
-- **Apex DMARC follow-up (issue #136)**: the domain's DMARC record is still to be tightened
-  through Cloudflare DMARC Management. Mail from the sending subdomain is governed by the apex
-  policy's subdomain setting, so #136 MUST account for `mail.doncoleman.ca`: its SPF and DKIM
-  alignment must pass before any stricter policy applies to it. This slice adds no DMARC record and
-  changes no apex record.
+- Cloudflare Email Routing on `drc.dev` (already on), and a verified destination address (Don,
+  during setup).
+- **DMARC follow-up (issue #136)**: doncoleman.ca's DMARC record is still to be tightened through
+  Cloudflare DMARC Management. Contact email is sent from `drc.dev`, not from doncoleman.ca or a
+  subdomain of it, so #136 does not govern it. This slice adds no DNS record on doncoleman.ca.
 
 ## Out of Scope / Follow-up Work
 

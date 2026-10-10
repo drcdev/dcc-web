@@ -247,6 +247,12 @@ export interface CloudflareEmailAddress {
   verified: string | null;
 }
 
+export interface CloudflareEmailRoutingSettings {
+  enabled: boolean;
+  /** "ready" when routing works; null when Cloudflare does not say. */
+  status: string | null;
+}
+
 export interface CloudflareTurnstileWidget {
   name: string;
   domains: string[];
@@ -278,6 +284,8 @@ export interface CloudflareReader {
   listTurnstileWidgets(accountId: string): Promise<CloudflareTurnstileWidget[]>;
   /** Email Routing destination addresses: email and verified timestamp (null when unverified). */
   listEmailRoutingAddresses(accountId: string): Promise<CloudflareEmailAddress[]>;
+  /** Email Routing settings of one zone: whether it is enabled and its status. */
+  getEmailRoutingSettings(zoneId: string): Promise<CloudflareEmailRoutingSettings>;
 }
 
 export interface DnsAnswer {

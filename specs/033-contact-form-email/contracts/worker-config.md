@@ -13,7 +13,7 @@ Changes only; everything else in `wrangler.jsonc` (assets, `ai`, observability, 
   {
     "name": "CONTACT_EMAIL",
     "destination_address": "contact@doncoleman.ca",
-    "allowed_sender_addresses": ["contact-form@mail.doncoleman.ca"]
+    "allowed_sender_addresses": ["contact-form@drc.dev"]
   }
 ]
 ```
