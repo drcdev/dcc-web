@@ -114,7 +114,7 @@ Out (follow-ups for the PR body):
 
 ### W1: Bump wrangler and @cloudflare/vitest-plugin together (clears sharp, alert #4)
 
-- [ ] W1 done
+- [x] W1 done
 - **Files:** `package.json` (l.66 `"wrangler": "4.144.0"` → `"4.149.0"`), `worker/package.json`
   (l.10 `"@cloudflare/vitest-plugin": "1.3.3"` → `"1.4.0"`), `pnpm-lock.yaml`.
 - **Test:** existing checks. **Layer: n/a** (tool check, not a test file; a test that pins one
@@ -134,7 +134,7 @@ Out (follow-ups for the PR body):
 
 ### W2: Regenerate the Worker runtime types
 
-- [ ] W2 done
+- [x] W2 done
 - **Files:** `worker/worker-configuration.d.ts`.
 - **Test:** existing. `corepack pnpm run typecheck` runs `wrangler types
   worker/worker-configuration.d.ts --check`, which is red after W1 because the committed file
