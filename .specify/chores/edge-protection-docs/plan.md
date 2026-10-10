@@ -185,7 +185,7 @@ Mechanical criteria (the review phase checks each one):
   labels being present there. No new test (see Constitution Check I).
 - **Layer:** unit (existing doc-structure tests); the new prose itself: n/a.
 
-### [ ] W2 — Tick the cutover-plan line
+### [x] W2 — Tick the cutover-plan line
 
 - **Files:** `docs/cutover-plan.md` (stage 4, line ~119).
 - **What:** `- [ ]` → `- [x]`; append "Done 2026-10-09: recorded in the Edge protections part at

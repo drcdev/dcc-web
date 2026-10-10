@@ -116,8 +116,9 @@ Tick T094 to T097.
   per IP, 10-second period, Block for 10 s (confirmed by a burst returning 429); HTTP DDoS Attack
   Alert saved under the account's Notifications. Still open: the assistant's daily-run counts and
   pacing.
-- [ ] **#91 follow-up `/chore`** — `docs/setup.md` records the WAF rule, the DDoS alert and the
-  Workers Free tier. Closes #91.
+- [x] **#91 follow-up `/chore`** — `docs/setup.md` records the WAF rule, the DDoS alert and the
+  Workers Free tier. Done 2026-10-09: recorded in the Edge protections part at the end of
+  `docs/setup.md`. #91 was closed by #128; this PR refers to it.
 - [x] **L15** — Update external links (LinkedIn and other sites Don controls). With stage 1b in
   place a stale link still lands on the post, so this is tidying rather than urgent.
 - [x] **L16** — Remove `new.doncoleman.ca` from `dcc-web` and delete its DNS record.
