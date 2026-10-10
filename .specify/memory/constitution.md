@@ -1,23 +1,19 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 2.2.0 → 2.3.0
-Bump rationale: MINOR. A section is added (Security Baseline), Principle III is
-materially expanded (every pull request needs Don's approving review, enforced by
-the main ruleset and a catch-all CODEOWNERS; the major-change list is unchanged,
-the label and separate gate are gone), and Principle VIII is clarified (origin
-check for browser endpoints, bearer token for program endpoints, HTTPS for all).
-No principle is removed or renamed, so not MAJOR. Sources: issues #85, #94.
+Version change: 2.3.0 → 2.3.1
+Bump rationale: PATCH. Wording only. The Technology Constraints design baseline
+now names the site's own Tailwind theme as the design system and refers to no
+earlier site. The rule is unchanged: changing
+the design system is still a major change (Principle III). Source: issue #140,
+deferred from the remove-old-site-refs chore plan.
 
-Modified principles:
-- III. Human Review for Major Changes — title kept; approval now required on every
-  pull request; "major change" becomes a classification flagged in the PR body;
-  auto-merge allowed only after approval and a green gate.
-- VIII. Cloudflare Best Practices — endpoint rule reworded: HTTPS only for all,
-  origin check for endpoints called from the site's pages, bearer authentication
-  for endpoints called by programs.
+Modified principles: none
 
-Added sections: Security Baseline (after Technology Constraints).
+Modified sections:
+- Technology Constraints — "Design baseline" reworded to describe the site as it is.
+
+Added sections: none
 
 Removed sections: none
 
@@ -28,8 +24,6 @@ Templates reviewed (read at runtime, not modified by this command):
   below still stands).
 
 Follow-up TODOs:
-- #86: ruleset drift detection and Actions hardening (the baseline deliberately
-  claims no drift check).
 - Add a layer field to the tasks template and speckit-tasks (carried from 2.1.0).
 - Principle I's layer list does not yet name build, visual or budget tests
   (carried from 2.1.0).
@@ -191,8 +185,8 @@ after Don approves it and the release gate passes.
 ## Technology Constraints
 
 - **Site:** Astro (current stable), TypeScript in strict mode, Tailwind CSS.
-- **Design baseline:** the existing Tailwind theme from Don's current site is ported as the
-  starting design system. Deviations from it are major changes.
+- **Design baseline:** the site's Tailwind theme is its design system. Changing it is a major
+  change.
 - **Hosting:** Cloudflare Workers static assets, serving the static build, with a preview
   deployment per branch.
 - **Contact API:** TypeScript in the site's Worker, handling `/api/*`, with Cloudflare D1 for
@@ -248,4 +242,4 @@ These controls already exist. Plans keep them in place, and pull request review 
   - PATCH for wording and clarifications.
 - Every pull request review checks compliance with this document.
 
-**Version**: 2.3.0 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-10-05
+**Version**: 2.3.1 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-10-10
