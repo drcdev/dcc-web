@@ -143,7 +143,7 @@ documented path where the issue asks for Docker to be the only one.
   `_shared/visual-baselines.md` and the tasks-row Docker mentions stay.
 - **Test:** no behaviour: n/a (agent guidance; no alignment test since PR #109).
 
-### W4 — Delete the fallback workflow and its tests
+### [x] W4 — Delete the fallback workflow and its tests
 
 - **Files:** `.github/workflows/visual-baselines.yml` (delete), `tests/unit/ci/workflows.test.ts`
   (delete the `describe(".github/workflows/visual-baselines.yml", …)` block, lines 141–179).
