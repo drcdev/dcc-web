@@ -132,27 +132,34 @@ Rollback (`launch.md` Part E, T098) stays possible until Ghost is cancelled in s
 ## Stage 5 — Retirement, no earlier than 14 days after the switch (`launch.md` Part F)
 
 Tick T099 to T104. Steps marked **Irreversible** need their evidence first, as `launch.md` says.
+Don started stage 5 on 2026-10-09, before the 14-day mark.
 
-- [ ] **T1** — Don satisfied with the live site; private-records rules read.
-- [ ] **T2** — Ghost content (JSON) and members (CSV) exported outside the repository; agent checks
-  both with `ls -l` only.
-- [ ] **T3** — **Irreversible.** Cancel Ghost; revoke Ghost integration keys; remove leftover Ghost
+- [x] **T1** — Don satisfied with the live site; private-records rules read.
+- [x] **T2** — Ghost content (JSON) and members (CSV) exported outside the repository; agent checks
+  both with `ls -l` only. Waived by Don, 2026-10-09 (no Ghost export).
+- [x] **T3** — **Irreversible.** Cancel Ghost; revoke Ghost integration keys; remove leftover Ghost
   secrets. Rollback ends here.
-- [ ] **T4** — **Irreversible.** Delete the five Mailgun records on `mail.doncoleman.ca`, the
+- [x] **T4** — **Irreversible.** Delete the five Mailgun records on `mail.doncoleman.ca`, the
   Mailgun sending domain and its keys. Mail test. The DNS half was done early on 2026-10-09 (the
-  five records are deleted and the baseline marks them `drop`); the sending domain and keys remain.
-- [ ] **T5 to T7** — **Irreversible.** Review and export the Supabase submissions, confirm the
-  project is Flux's, delete it, remove leftover Supabase secrets.
-- [ ] **T8** — Scan `drcdev/flux` for secrets and personal data, then archive it.
-- [ ] **#93 manual half** — list the zone's hostnames and confirm each browser-facing one serves
+  five records are deleted and the baseline marks them `drop`). The sending domain and keys were
+  deleted and the mail test passed on 2026-10-09.
+- [x] **T5 to T7** — **Irreversible.** Review and export the Supabase submissions, confirm the
+  project is Flux's, delete it, remove leftover Supabase secrets. Done 2026-10-09: no Supabase export
+  needed; the Flux Supabase project was already gone; no Supabase secrets left.
+- [x] **T8** — Scan `drcdev/flux` for secrets and personal data, then archive it. Done 2026-10-09:
+  the working-tree scan was clean, and by Don's decision Flux stays in place unarchived.
+- [x] **#93 manual half** — list the zone's hostnames and confirm each browser-facing one serves
   HTTPS; add a `_dmarc` TXT at `p=none` with reporting (and for `mail.` if it still sends); add CAA
-  records naming only the certificate authorities Cloudflare uses for the zone.
-- [ ] **T9 + #93 repo half, one `/chore`** — `setup/dns-baseline.json` sets the two Ghost web
+  records naming only the certificate authorities Cloudflare uses for the zone. Done 2026-10-09:
+  only the apex and `www` resolve; DMARC via Cloudflare DMARC Management at `p=none`; four CAA
+  `issue` records; DNSSEC already on.
+- [x] **T9 + #93 repo half, one `/chore`** — `setup/dns-baseline.json` sets the two Ghost web
   records to `drop` with dated reasons and adds the DMARC and CAA records as
   `keep`; `public/_headers` drops the `new.doncoleman.ca` noindex rule (and its assertions in
   `tests/unit/site/headers.test.ts` and `tests/build/indexing.test.ts`) and gains `includeSubDomains`
   on HSTS (preload decided separately); `docs/setup.md` DNSSEC text says the zone is signed;
-  FR-010d in `specs/011-launch/spec.md` is reopened; `docs/design-source.md` says Flux is archived;
+  FR-010d in `specs/011-launch/spec.md` is reopened; `docs/design-source.md` notes Flux's site is retired and the repository
+  stays unarchived (T8);
   optionally the apex Custom Domain moves into `wrangler.jsonc`. Done when `verify` passes and
   `mail-records` and `dns-records-parity` are complete against the new baseline. Closes #93.
 - [ ] **DMARC tightening** (manual, about 4 weeks later) — after the reports show only iCloud

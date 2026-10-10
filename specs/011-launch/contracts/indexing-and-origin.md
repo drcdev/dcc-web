@@ -59,7 +59,8 @@ https://new.doncoleman.ca/*
 | `new.doncoleman.ca`, until it is removed | `noindex` |
 | `/api/*` on any host | `noindex`, set by the Worker (`worker/src/http.ts`, unchanged) |
 
-The `new.doncoleman.ca` rule is deleted in the retirement follow-up pull request.
+The `new.doncoleman.ca` rule is deleted in the retirement follow-up pull request. Done in #93's
+chore (2026-10-09), which also added `includeSubDomains` to HSTS.
 
 ## Old Ghost addresses (FR-019)
 

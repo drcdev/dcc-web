@@ -13,8 +13,8 @@
       "priority": null,
       "ttl": 14400,
       "source": "squarespace",
-      "decision": "keep",
-      "reason": null
+      "decision": "drop",
+      "reason": "Ghost web hosting retired: replaced at the switch by the dcc-web Worker and deleted from Cloudflare; Ghost cancelled (Don, 2026-10-09)"
     },
     {
       "type": "MX",
@@ -67,6 +67,56 @@
       "reason": null
     },
     {
+      "type": "TXT",
+      "name": "_dmarc.doncoleman.ca",
+      "content": "v=DMARC1; p=none; rua=mailto:a689ba2b4e8e46018da5c62d5df6361c@dmarc-reports.cloudflare.net",
+      "priority": null,
+      "ttl": 1,
+      "source": "cloudflare",
+      "decision": "keep",
+      "reason": null
+    },
+    {
+      "type": "CAA",
+      "name": "doncoleman.ca",
+      "content": "0 issue \"letsencrypt.org\"",
+      "priority": null,
+      "ttl": 1,
+      "source": "cloudflare",
+      "decision": "keep",
+      "reason": null
+    },
+    {
+      "type": "CAA",
+      "name": "doncoleman.ca",
+      "content": "0 issue \"pki.goog\"",
+      "priority": null,
+      "ttl": 1,
+      "source": "cloudflare",
+      "decision": "keep",
+      "reason": null
+    },
+    {
+      "type": "CAA",
+      "name": "doncoleman.ca",
+      "content": "0 issue \"sectigo.com\"",
+      "priority": null,
+      "ttl": 1,
+      "source": "cloudflare",
+      "decision": "keep",
+      "reason": null
+    },
+    {
+      "type": "CAA",
+      "name": "doncoleman.ca",
+      "content": "0 issue \"ssl.com\"",
+      "priority": null,
+      "ttl": 1,
+      "source": "cloudflare",
+      "decision": "keep",
+      "reason": null
+    },
+    {
       "type": "MX",
       "name": "mail.doncoleman.ca",
       "content": "mxb.eu.mailgun.org",
@@ -103,8 +153,8 @@
       "priority": null,
       "ttl": 14400,
       "source": "squarespace",
-      "decision": "keep",
-      "reason": null
+      "decision": "drop",
+      "reason": "Ghost web hosting retired: replaced at the switch by the dcc-web Worker and deleted from Cloudflare; Ghost cancelled (Don, 2026-10-09)"
     },
     {
       "type": "CNAME",

@@ -224,12 +224,11 @@ describe.each(environments)("astro build with the $label environment", ({ env })
     expect(scriptAt).toBeLessThan(stylesheetAt);
   });
 
-  it("copies _headers with the two host noindex rules and no site-wide noindex", () => {
+  it("copies _headers with the workers.dev noindex rule and no site-wide noindex", () => {
     const headers = readFileSync(join(outDir, "_headers"), "utf-8");
     const starBlock = /^\/\*\s*\n((?:[ \t]+.*\n?)*)/m.exec(headers)?.[1] ?? "";
     expect(starBlock).not.toMatch(/x-robots-tag/i);
     expect(headers).toMatch(/^https:\/\/:worker\.:subdomain\.workers\.dev\/\*\s*\n\s+X-Robots-Tag:\s*noindex\s*$/m);
-    expect(headers).toMatch(/^https:\/\/new\.doncoleman\.ca\/\*\s*\n\s+X-Robots-Tag:\s*noindex\s*$/m);
   });
 });
 
