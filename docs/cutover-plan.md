@@ -104,23 +104,27 @@ Tick T092 to T094.
 
 Tick T094 to T097.
 
-- [ ] **L14** — Post-launch checks complete; "Launch test" message from `https://doncoleman.ca/contact/`;
+- [x] **L14** — Post-launch checks complete; "Launch test" message from `https://doncoleman.ca/contact/`;
   mail test again.
-- [ ] **Redirect spot check** — open two old Ghost post addresses on `www` and on the bare domain
+- [x] **Redirect spot check** — open two old Ghost post addresses on `www` and on the bare domain
   and confirm each lands on the post (stage 1b).
-- [ ] **#91 edge rate limit, same day.** In the dashboard: one WAF rate-limiting rule on
+- [x] **#91 edge rate limit, same day.** In the dashboard: one WAF rate-limiting rule on
   `doncoleman.ca/api/*`, counted per IP, with thresholds Don picks (not published); turn on the
   HTTP DDoS attack alert. The assistant's daily run reports `limited`, `unauthorized` and refused
   contact counts and paces its `/api/messages` calls under the rule.
+  Done 2026-10-09: the Free plan matches on path only, so the rule is URI Path starts with `/api/`,
+  per IP, 10-second period, Block for 10 s (confirmed by a burst returning 429); HTTP DDoS Attack
+  Alert saved under the account's Notifications. Still open: the assistant's daily-run counts and
+  pacing.
 - [ ] **#91 follow-up `/chore`** — `docs/setup.md` records the WAF rule, the DDoS alert and the
   Workers Free tier. Closes #91.
-- [ ] **L15** — Update external links (LinkedIn and other sites Don controls). With stage 1b in
+- [x] **L15** — Update external links (LinkedIn and other sites Don controls). With stage 1b in
   place a stale link still lands on the post, so this is tidying rather than urgent.
-- [ ] **L16** — Remove `new.doncoleman.ca` from `dcc-web` and delete its DNS record.
-- [ ] **Turnstile hostname** — remove `new.doncoleman.ca` from the "dcc-web contact" widget's
+- [x] **L16** — Remove `new.doncoleman.ca` from `dcc-web` and delete its DNS record.
+- [x] **Turnstile hostname** — remove `new.doncoleman.ca` from the "dcc-web contact" widget's
   hostname list (not in `launch.md`; keep `doncoleman.ca`).
-- [ ] **L17** (optional) — Submit `https://doncoleman.ca/sitemap-index.xml` in Search Console.
-- [ ] **L18** — Switch date written above.
+- [x] **L17** (optional) — Submit `https://doncoleman.ca/sitemap-index.xml` in Search Console.
+- [x] **L18** — Switch date written above.
 
 Rollback (`launch.md` Part E, T098) stays possible until Ghost is cancelled in stage 5.
 
