@@ -263,8 +263,10 @@ added but the check is not yet happy, carry on to L12 in the same sitting and wa
 
 **What to do**
 In the same sitting, delete the `CNAME www` record, add `AAAA www 100::` (Proxied), and create the
-Redirect Rule: wildcard `*://www.doncoleman.ca/*` to `https://doncoleman.ca/${2}`, status 301,
-preserve query string. If either half cannot be confirmed, finish it in this sitting or follow Part
+Redirect Rule: custom filter expression Hostname equals `www.doncoleman.ca`, dynamic target
+`concat("https://doncoleman.ca", http.request.uri.path)`, status 301 (ignore the dashboard's
+307/308 hint), preserve query string. The dashboard's wildcard editor does not accept a request URL
+that starts with `*`, and this form covers http and https in one hop. If either half cannot be confirmed, finish it in this sitting or follow Part
 E for both halves. A half-switched domain is never left when the sitting ends.
 
 **Pause:** the agent stops here and waits for Don's answer: `Done — check it`, `Skip for now` or `Stop here`.
