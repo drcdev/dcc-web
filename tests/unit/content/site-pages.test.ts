@@ -110,9 +110,7 @@ describe("Privacy policy (FR-022, FR-022a)", () => {
     expect(text).toContain("ip address");
   });
 
-  it("names Cloudflare D1 for storage, retention, spam protection and how to ask about or delete data", () => {
-    expect(text).toContain("cloudflare d1");
-    expect(text).toContain("deleted automatically");
+  it("covers spam protection and how to ask about or delete data", () => {
     expect(text).toContain("spam");
     expect(text).toMatch(/delet/);
     expect(text).toMatch(/ask (what|for)/);
@@ -127,7 +125,27 @@ describe("Privacy policy (FR-022, FR-022a)", () => {
   });
 });
 
+describe("Contact note (FR-015)", () => {
+  const { text } = load("contact.mdx");
+
+  it("matches the policy's retention statement and keeps the consent link", () => {
+    expect(text).toContain("only as long as needed");
+    expect(text).toContain("delete");
+    expect(text).not.toContain("12 months");
+    expect(text).not.toContain("deleted automatically");
+    expect(text).toContain('href="/privacy-policy/"');
+  });
+});
+
 describe("Technology", () => {
+  it("names email delivery and no longer names D1 storage or the cron for contact data", () => {
+    const { text } = load("technology.mdx");
+    const contact = text.slice(text.indexOf("## contact form"), text.indexOf("## analytics"));
+    expect(contact).toContain("email");
+    for (const old of ["d1", "12 months", "salted", "fingerprint", "deleted automatically"]) expect(contact).not.toContain(old);
+    expect(text).not.toContain("stores contact submissions");
+  });
+
   it("does not assert a storage location", () => {
     expect(load("technology.mdx").text).not.toMatch(/canada|toronto/);
   });
