@@ -247,7 +247,7 @@ Judged against the constitution on `main` (2.3.0), because that is what this PR 
   question to Don each time. CI already sorts the same branch into the same tier; W5 tells the
   orchestrator to run only that tier's checks locally.
 
-### W4 — Docs: tiers, setup guide, design note
+### W4 — Docs: tiers, setup guide, design note [x] done
 
 - **Files:** `docs/testing.md` (Change tiers table and the accepted-risk note, lines ~49–72; the
   Visual row's "(Principle III)" at line 26), `docs/setup.md` (item 10 paragraph lines ~269–272;
