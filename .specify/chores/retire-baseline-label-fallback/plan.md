@@ -131,7 +131,7 @@ documented path where the issue asks for Docker to be the only one.
   fallback)".
 - **Test:** no behaviour: n/a (agent notes; `CLAUDE.md` is skip-safe and no check reads it).
 
-### W3 — Four pipeline skills: remove Finish step 5
+### [x] W3 — Four pipeline skills: remove Finish step 5
 
 - **Files:** `.claude/skills/deliver/SKILL.md` (lines 237–238), `.claude/skills/tweak/SKILL.md`
   (212–213), `.claude/skills/squash/SKILL.md` (177–178), `.claude/skills/chore/SKILL.md`
