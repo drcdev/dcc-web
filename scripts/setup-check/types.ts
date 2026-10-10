@@ -33,7 +33,7 @@ export interface CheckReportCounts {
   missing: number;
   pending: number;
   couldNotCheck: number;
-  /** Post-launch items that cannot be checked until the switch (011-launch research R3). */
+  /** Items waiting on an outside event; no check currently produces this status. */
   waiting: number;
   total: number;
 }
@@ -87,10 +87,6 @@ export interface SetupItem {
   secrets: string[];
   dependsOn: string[];
   phase: ItemPhase;
-  /** True for an after-merge item that is reported but must not fail the check before the merge (FR-028a). */
-  deferredUntilMerge?: boolean;
-  /** True for an item whose check returns `waiting` before the switch (011-launch data-model.md). */
-  postLaunch?: boolean;
   check: (ctx: ProviderContext) => Promise<CheckResult>;
 }
 
@@ -115,14 +111,10 @@ export interface DnsBaselineRecord {
   content: string;
   priority: number | null;
   ttl: number;
-  source: "squarespace" | "cloudflare";
-  decision: "keep" | "drop" | null;
-  reason: string | null;
 }
 
-/** setup/dns-baseline.json shape. */
+/** setup/dns-baseline.json shape: the records that must exist in the zone. */
 export interface DnsBaseline {
-  originalNameservers: string[];
   records: DnsBaselineRecord[];
 }
 
@@ -135,20 +127,11 @@ export interface SetupConfig {
   /** The preview Worker (`dcc-web-preview`) that serves non-main branch builds. */
   previewWorkerName?: string;
   zone: string;
-  reviewHost: string;
-  ghostMarker: string;
   /** The account's public workers.dev subdomain, used to compute preview
    * origins (002-site-foundation contracts/site-origin.md). Public, never a
    * secret. Absent until it is read from the account (T023); previews then
    * fall back to the production origin. */
   workersSubdomain?: string;
-  /** What must be live at launch (011-launch data-model.md). */
-  launch?: {
-    /** Page content ids (file names in `src/content/pages/` without `.mdx`). */
-    expectedPages: string[];
-    /** Site paths that must appear in the sitemap. */
-    expectedPaths: string[];
-  };
 }
 
 export interface MajorGateReview {
@@ -183,7 +166,7 @@ export type ProviderAccessErrorKind = "tls" | "timeout" | "network";
 
 export class ProviderAccessError extends Error {
   readonly reason: string;
-  /** Set by the HTTP reader so a post-launch check can tell a certificate not yet issued (`tls`) from other failures. */
+  /** Set by the HTTP reader so a check can tell a certificate not yet issued (`tls`) from other failures. */
   readonly kind?: ProviderAccessErrorKind;
 
   constructor(reason: string, kind?: ProviderAccessErrorKind) {
@@ -233,11 +216,6 @@ export interface CloudflareWorkersSubdomain {
   enabled: boolean;
 }
 
-export interface CloudflareWorkerDomain {
-  hostname: string;
-  service: string;
-}
-
 export interface CloudflareWebAnalyticsSite {
   siteTag: string;
   /** Hostname for a site added by JS snippet; null for a zone-level automatic-setup site. */
@@ -278,7 +256,6 @@ export interface CloudflareReader {
   listDnsRecords(zoneId: string): Promise<CloudflareDnsRecord[]>;
   getWorkerScript(accountId: string, scriptName: string): Promise<CloudflareWorkerScript | null>;
   getWorkersSubdomain(accountId: string): Promise<CloudflareWorkersSubdomain>;
-  listWorkerDomains(accountId: string, hostname?: string): Promise<CloudflareWorkerDomain[]>;
   listWebAnalyticsSites(accountId: string): Promise<CloudflareWebAnalyticsSite[]>;
   /** D1 databases, optionally filtered by name. Drops everything except uuid, name and region. */
   listD1Databases(accountId: string, name?: string): Promise<CloudflareD1Database[]>;

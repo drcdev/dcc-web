@@ -106,7 +106,7 @@ The work runs in three phases.
    Launch part. Tasks for these steps are marked as post-merge manual tasks. The retirement steps follow two
    weeks later, with a small follow-up pull request:
    - set the baseline's `drop` decisions;
-   - update `docs/design-source.md` to say Flux is archived;
+   - update `docs/design-source.md` to say Flux is archived (superseded: Don chose to keep Flux unarchived (2026-10-09));
    - remove the `new.doncoleman.ca` `_headers` rule;
    - optionally move the apex Custom Domain into `wrangler.jsonc`.
 

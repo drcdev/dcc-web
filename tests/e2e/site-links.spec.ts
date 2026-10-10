@@ -1,4 +1,4 @@
-// Local layer of the launch site check (011-launch contracts/site-check.md): the crawler runs
+// Local layer of the site check (011-launch contracts/site-check.md): the crawler runs
 // against the production build served by `wrangler dev`. A local build declares the fallback
 // origin; the crawler maps it onto the base. No `expectNoindex`: a localhost host does not match
 // the host-scoped `_headers` rules.

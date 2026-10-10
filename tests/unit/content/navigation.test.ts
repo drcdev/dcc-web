@@ -12,7 +12,7 @@ const page = (file: string, address: string, title: string, nav?: NavigationPage
   nav,
 });
 
-const launchPages = [
+const sitePages = [
   page("index.mdx", "/", "Don Coleman", { location: "header", position: 1, label: "Home" }),
   page("work-with-me.mdx", "/work-with-me/", "Work with me", { location: "header", position: 2 }),
   page("writing.mdx", "/writing/", "Writing", { location: "header", position: 4 }),
@@ -27,7 +27,7 @@ const launchPages = [
 
 describe("buildMenus", () => {
   it("splits the entries by location and orders each menu by position", () => {
-    const { header, footer } = buildMenus([...launchPages].reverse());
+    const { header, footer } = buildMenus([...sitePages].reverse());
     expect(header.map(({ label, href }) => [label, href])).toEqual([
       ["Home", "/"],
       ["Work with me", "/work-with-me/"],
@@ -46,18 +46,18 @@ describe("buildMenus", () => {
   });
 
   it("defaults the label to the page title and keeps an explicit label", () => {
-    const { header } = buildMenus(launchPages);
+    const { header } = buildMenus(sitePages);
     expect(header.find((item) => item.href === "/")?.label).toBe("Home");
     expect(header.find((item) => item.href === "/about/")?.label).toBe("About");
   });
 
   it("leaves out pages without nav", () => {
-    const { header, footer } = buildMenus(launchPages);
+    const { header, footer } = buildMenus(sitePages);
     expect([...header, ...footer].some((item) => item.href === "/privacy/example-app/")).toBe(false);
   });
 
   it("records the page file as the source of each item", () => {
-    const { header } = buildMenus(launchPages);
+    const { header } = buildMenus(sitePages);
     expect(header[0]?.source).toBe("src/content/pages/index.mdx");
   });
 

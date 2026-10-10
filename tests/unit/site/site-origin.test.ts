@@ -4,7 +4,6 @@ import { describe, expect, it } from "vitest";
 import { FALLBACK_ORIGIN, previewAlias, resolveSiteOrigin } from "../../../src/lib/site-origin.ts";
 
 const baseConfig = {
-  reviewHost: "new.doncoleman.ca",
   workerName: "dcc-web",
   previewWorkerName: "dcc-web-preview",
   workersSubdomain: "drc-agents",
@@ -20,17 +19,6 @@ describe("resolveSiteOrigin", () => {
   it("resolves to https://doncoleman.ca when WORKERS_CI=1 and branch is main (FR-010a)", () => {
     const origin = resolveSiteOrigin({ WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" }, baseConfig);
     expect(origin).toBe("https://doncoleman.ca");
-  });
-
-  it("no longer reads reviewHost for a main build", () => {
-    const { reviewHost, ...withoutReviewHost } = baseConfig;
-    void reviewHost;
-    expect(resolveSiteOrigin({ WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" }, withoutReviewHost)).toBe(
-      "https://doncoleman.ca",
-    );
-    expect(
-      resolveSiteOrigin({ WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" }, { ...baseConfig, reviewHost: "elsewhere.example" }),
-    ).toBe("https://doncoleman.ca");
   });
 
   it("resolves to the aliased workers.dev origin for another branch when workersSubdomain is set", () => {

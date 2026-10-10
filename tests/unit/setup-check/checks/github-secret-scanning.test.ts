@@ -25,7 +25,7 @@ describe("checks/github-secret-scanning", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("complete");
-    expect(result.step).toBe(`Step 9 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 8 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#github-secret-scanning");
   });
 

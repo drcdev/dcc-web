@@ -160,16 +160,6 @@ export function createCloudflareReader(options: CloudflareReaderOptions): Cloudf
       });
     },
 
-    async listWorkerDomains(accountId: string, hostname?: string) {
-      return guarded("Workers Scripts: Read", async () => {
-        const domains: Array<{ hostname?: string; service?: string }> = [];
-        for await (const domain of client.workers.domains.list({ account_id: accountId, hostname })) {
-          domains.push(domain as never);
-        }
-        return domains.map((d) => ({ hostname: d.hostname ?? "", service: d.service ?? "" }));
-      });
-    },
-
     async listWebAnalyticsSites(accountId: string) {
       return guarded("Account Settings Read", async () => {
         const sites: Array<{

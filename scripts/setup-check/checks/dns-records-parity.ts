@@ -1,27 +1,20 @@
 // checks/dns-records-parity.ts (setup item 4, data-model.md "dns-records-parity"):
-// every `keep` record in setup/dns-baseline.json matches the Cloudflare zone
-// (type, name, content and — for MX/SRV — priority, with the proxy off), and
-// no record is left without a decision (FR-035, FR-036, FR-037). TTL is not
+// every record in setup/dns-baseline.json (the must-exist list) matches the Cloudflare zone
+// (type, name, content and — for MX/SRV — priority, with the proxy off). TTL is not
 // part of the match: Cloudflare's dashboard only offers TTL presets (no
 // custom value), so Cloudflare records stay on "Auto" and a TTL difference
 // is reported as an informational detail only, never a mismatch. Stays
-// `missing` while the baseline has no records or no original nameservers, so
-// parity can never pass vacuously before the nameserver switch.
+// `missing` while the baseline has no records, so parity can never pass vacuously.
 // Cloudflare-only records not in the baseline are reported in `details` for
-// Don to add or delete, without blocking completion.
-// Once the launch phase is `switched` (011-launch, contracts/setup-items.md item 4) the Ghost web
-// records (A/AAAA/CNAME on the apex and www) are no longer expected: each adds a "replaced at
-// launch" detail, records the switch adds on the apex and www stay informational, and a record on
-// any other name that is not in the baseline is a difference (FR-010).
+// Don to add or delete; on the apex and www they do not block completion.
+// A Cloudflare record matched by no baseline entry is informational on the apex and www, where the
+// Worker Custom Domain adds its own records; on any other name it is a difference (FR-010).
 import type { CheckResult, CloudflareDnsRecord, DnsBaseline, DnsBaselineRecord, ProviderContext, SetupConfig } from "../types.ts";
-import { detectLaunchPhase } from "./launch-phase.ts";
-import type { LaunchPhase } from "./launch-phase.ts";
 import { complete, couldNotCheck, fromProviderError, missing, normalizeTxtContent } from "./shared.ts";
 
 const ITEM = { id: "dns-records-parity", order: 4 };
-const GHOST_WEB_TYPES = ["A", "AAAA", "CNAME"];
 const ROLLBACK_NEXT_ACTION =
-  "Restore the record in Cloudflare → DNS exactly as in setup/dns-baseline.json, or remove the unexpected record; if the switch caused it, follow docs/launch.md#rollback.";
+  "Restore the record in Cloudflare → DNS exactly as in setup/dns-baseline.json, or delete the unexpected record (or add it to the baseline in a reviewed change).";
 
 function normName(name: string): string {
   return name.toLowerCase().replace(/\.$/, "");
@@ -72,13 +65,10 @@ function describeTtlInformational(baseline: DnsBaselineRecord, cf: CloudflareDns
 export interface DnsParityEvaluation {
   ok: boolean;
   missingBaseline: boolean;
-  undecided: DnsBaselineRecord[];
   problems: string[];
   ttlInformational: string[];
   cloudflareOnly: string[];
-  /** Ghost web records not expected once switched, kept in the baseline for rollback. */
-  replacedAtLaunch: string[];
-  /** Switched only: Cloudflare records on a name other than the apex and www that are not in the baseline. */
+  /** Cloudflare records on a name other than the apex and www that are not in the baseline. */
   unexpected: string[];
 }
 
@@ -86,40 +76,26 @@ export interface DnsParityEvaluation {
 export function evaluateDnsParity(
   baseline: DnsBaseline,
   cfRecords: CloudflareDnsRecord[],
-  phase: LaunchPhase = "before-switch",
   zone = "doncoleman.ca",
 ): DnsParityEvaluation {
-  if (baseline.records.length === 0 || baseline.originalNameservers.length === 0) {
+  if (baseline.records.length === 0) {
     return {
       ok: false,
       missingBaseline: true,
-      undecided: [],
       problems: [],
       ttlInformational: [],
       cloudflareOnly: [],
-      replacedAtLaunch: [],
       unexpected: [],
     };
   }
 
-  const switched = phase === "switched";
   const switchNames = [normName(zone), normName(`www.${zone}`)];
-  const isGhostWeb = (r: DnsBaselineRecord) => GHOST_WEB_TYPES.includes(r.type) && switchNames.includes(normName(r.name));
-  const replacedAtLaunch = switched
-    ? baseline.records
-        .filter((r) => r.decision === "keep" && isGhostWeb(r))
-        .map((r) => `${recordLabel(r)}: replaced at launch, kept in the baseline for rollback`)
-    : [];
-
-  const undecided = baseline.records.filter((r) => r.decision === null);
-  const keepRecords = baseline.records.filter((r) => r.decision === "keep" && !(switched && isGhostWeb(r)));
-  const otherRecords = baseline.records.filter((r) => r.decision !== "keep");
 
   const problems: string[] = [];
   const ttlInformational: string[] = [];
   const matchedCf = new Set<CloudflareDnsRecord>();
 
-  for (const record of keepRecords) {
+  for (const record of baseline.records) {
     const sameTypeName = cfRecords.filter((cf) => sameNameAndType(record, cf));
     const available = sameTypeName.filter((cf) => !matchedCf.has(cf));
     const contentMatch = available.find(
@@ -143,29 +119,17 @@ export function evaluateDnsParity(
     }
   }
 
-  // Records covered by a "drop" (or undecided) baseline entry aren't content-verified, but a
-  // matching type+name record is still accounted for in the baseline, so it shouldn't also be
-  // reported as Cloudflare-only.
-  for (const record of otherRecords) {
-    const candidate = cfRecords.find((cf) => sameNameAndType(record, cf) && !matchedCf.has(cf));
-    if (candidate) {
-      matchedCf.add(candidate);
-    }
-  }
-
   const unmatched = cfRecords.filter((cf) => !matchedCf.has(cf));
-  const unexpectedRecords = switched ? unmatched.filter((cf) => !switchNames.includes(normName(cf.name))) : [];
+  const unexpectedRecords = unmatched.filter((cf) => !switchNames.includes(normName(cf.name)));
   const cloudflareOnly = unmatched.filter((cf) => !unexpectedRecords.includes(cf)).map((cf) => `${cf.type} ${cf.name} ${cf.content}`);
   const unexpected = unexpectedRecords.map((cf) => `${cf.type} ${cf.name} ${cf.content}: not in the baseline`);
 
   return {
-    ok: undecided.length === 0 && problems.length === 0 && unexpected.length === 0,
+    ok: problems.length === 0 && unexpected.length === 0,
     missingBaseline: false,
-    undecided,
     problems,
     ttlInformational,
     cloudflareOnly,
-    replacedAtLaunch,
     unexpected,
   };
 }
@@ -189,19 +153,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     );
   }
 
-  const baseline = ctx.fs.readJson<DnsBaseline>("setup/dns-baseline.json") ?? { originalNameservers: [], records: [] };
-
-  let phase: LaunchPhase;
-  try {
-    phase = await detectLaunchPhase(ctx);
-  } catch (err) {
-    return fromProviderError(
-      ITEM,
-      "Could not tell whether the domain has switched, so the DNS records cannot be compared.",
-      err,
-      "Check CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in .env are set and valid, then try again.",
-    );
-  }
+  const baseline = ctx.fs.readJson<DnsBaseline>("setup/dns-baseline.json") ?? { records: [] };
 
   let cfRecords: CloudflareDnsRecord[];
   try {
@@ -216,55 +168,28 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
   }
 
   const config = ctx.fs.readJson<SetupConfig>("setup/config.json");
-  const evaluation = evaluateDnsParity(baseline, cfRecords, phase, config?.zone ?? "doncoleman.ca");
+  const evaluation = evaluateDnsParity(baseline, cfRecords, config?.zone ?? "doncoleman.ca");
 
   if (evaluation.missingBaseline) {
     return missing(
       ITEM,
-      "The DNS baseline has no records yet.",
-      "Record the Squarespace baseline first: list every DNS record from Squarespace's DNS screen into setup/dns-baseline.json, with the original nameservers.",
+      "The DNS baseline has no records.",
+      "Add the zone's records that must exist to setup/dns-baseline.json (docs/setup.md#dns-records-parity).",
     );
   }
 
-  if (evaluation.undecided.length > 0) {
-    const names = evaluation.undecided.map((r) => recordLabel(r));
-    return missing(
-      ITEM,
-      `${evaluation.undecided.length} baseline record(s) have no keep/drop decision.`,
-      "Decide keep or drop (with a reason for drop) for every record in setup/dns-baseline.json.",
-      names,
-    );
-  }
-
-  if (phase === "switched" && (evaluation.problems.length > 0 || evaluation.unexpected.length > 0)) {
+  if (evaluation.problems.length > 0 || evaluation.unexpected.length > 0) {
     const count = evaluation.problems.length + evaluation.unexpected.length;
-    return missing(ITEM, `Problem: ${count} difference(s) between the Cloudflare zone and the baseline since the switch.`, ROLLBACK_NEXT_ACTION, [
+    return missing(ITEM, `Problem: ${count} difference(s) between the Cloudflare zone and the baseline.`, ROLLBACK_NEXT_ACTION, [
       ...evaluation.problems,
       ...evaluation.unexpected,
-      ...evaluation.replacedAtLaunch,
       ...evaluation.ttlInformational,
       ...evaluation.cloudflareOnly.map((r) => `Cloudflare-only, not in baseline: ${r}`),
     ]);
   }
 
-  if (evaluation.problems.length > 0) {
-    return missing(
-      ITEM,
-      `${evaluation.problems.length} keep record(s) do not match the Cloudflare zone.`,
-      "Add or fix these records in Cloudflare → DNS → Records (DNS only), or mark them \"drop\" in setup/dns-baseline.json with a reason.",
-      [
-        ...evaluation.problems,
-        ...evaluation.ttlInformational,
-        ...evaluation.cloudflareOnly.map((r) => `Cloudflare-only, not in baseline: ${r}`),
-      ],
-    );
-  }
-
-  return complete(
-    ITEM,
-    phase === "switched"
-      ? "Every keep record in the baseline matches the Cloudflare zone; the Ghost web records were replaced at launch."
-      : "Every keep record in the baseline matches the Cloudflare zone.",
-    [...evaluation.replacedAtLaunch, ...evaluation.ttlInformational, ...evaluation.cloudflareOnly.map((r) => `Cloudflare-only, not in baseline: ${r}`)],
-  );
+  return complete(ITEM, "Every record in the baseline matches the Cloudflare zone.", [
+    ...evaluation.ttlInformational,
+    ...evaluation.cloudflareOnly.map((r) => `Cloudflare-only, not in baseline: ${r}`),
+  ]);
 }

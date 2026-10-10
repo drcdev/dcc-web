@@ -34,9 +34,7 @@
     "types:worker": "wrangler types worker/worker-configuration.d.ts",
     "verify": "pnpm run lint:secrets && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build && pnpm run test:e2e",
     "verify:quick": "pnpm run lint:secrets && pnpm run lint && pnpm run typecheck && pnpm run test:unit && pnpm run test:worker && pnpm run build",
-    "setup:check": "node scripts/setup-check/cli.ts",
-    "site:check": "node scripts/site-check/cli.ts",
-    "setup:dns-snapshot": "node scripts/setup-check/dns-snapshot.ts"
+    "setup:check": "node scripts/setup-check/cli.ts"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "0.4.2",

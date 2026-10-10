@@ -1,4 +1,4 @@
-// checks/github-secret-scanning.ts (setup item 9, data-model.md
+// checks/github-secret-scanning.ts (setup item 8, data-model.md
 // "github-secret-scanning"): security_and_analysis.secret_scanning and
 // …secret_scanning_push_protection and …dependabot_security_updates are all enabled for the
 // repository. GitHub only lets security updates be on while Dependabot alerts are on, so
@@ -6,7 +6,7 @@
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "github-secret-scanning", order: 9 };
+const ITEM = { id: "github-secret-scanning", order: 8 };
 
 interface RepoSettings {
   security_and_analysis?: {

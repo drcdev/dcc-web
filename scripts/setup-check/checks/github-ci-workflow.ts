@@ -1,11 +1,11 @@
-// checks/github-ci-workflow.ts (setup item 11, data-model.md
+// checks/github-ci-workflow.ts (setup item 10, data-model.md
 // "github-ci-workflow"): .github/workflows/ci.yml exists
 // on main, and the latest verify (ci.yml) run on main succeeded (FR-015,
 // FR-016).
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "github-ci-workflow", order: 11 };
+const ITEM = { id: "github-ci-workflow", order: 10 };
 const REQUIRED_WORKFLOW_PATHS = [".github/workflows/ci.yml"];
 
 interface WorkflowSummary {

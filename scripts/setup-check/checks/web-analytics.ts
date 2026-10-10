@@ -1,16 +1,14 @@
-// checks/web-analytics.ts (setup item 17, data-model.md "web-analytics"): a
-// Web Analytics site covers new.doncoleman.ca with automatic setup on, and
+// checks/web-analytics.ts (setup item 15, data-model.md "web-analytics"): a
+// Web Analytics site covers the zone apex with automatic setup on, and
 // the served page references the Cloudflare beacon (FR-022). The dashboard's
 // automatic setup registers the zone (ruleset.zone_name, host empty), not a
 // hostname, so a zone-level automatic site for the configured zone counts as
-// covering the review host; a JS-snippet site records the hostname instead.
-// The host checked is the zone apex once the launch phase is `switched` and the review host before
-// (011-launch contracts/setup-items.md item 17); the item no longer depends on any other item.
+// covering the apex; a JS-snippet site records the hostname instead.
+// The item does not depend on any other item.
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
-import { detectLaunchPhase } from "./launch-phase.ts";
 import { complete, couldNotCheck, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "web-analytics", order: 17 };
+const ITEM = { id: "web-analytics", order: 15 };
 const BEACON_MARKER = "static.cloudflareinsights.com/beacon";
 
 export async function check(ctx: ProviderContext): Promise<CheckResult> {
@@ -36,39 +34,39 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
   const zoneName = config?.zone ?? "doncoleman.ca";
 
   try {
-    const reviewHost = (await detectLaunchPhase(ctx)) === "switched" ? zoneName : (config?.reviewHost ?? "new.doncoleman.ca");
+    const host = zoneName;
     const sites = await ctx.cloudflare.listWebAnalyticsSites(accountId);
     const site =
-      sites.find((s) => s.host === reviewHost) ??
+      sites.find((s) => s.host === host) ??
       sites.find((s) => s.host === null && s.zoneName === zoneName);
 
     if (!site) {
       return missing(
         ITEM,
-        `No Web Analytics site exists for ${reviewHost} (or the ${zoneName} zone) yet.`,
+        `No Web Analytics site exists for ${host} (or the ${zoneName} zone) yet.`,
         `Add a site with automatic setup: Cloudflare dashboard → Analytics & Logs → Web Analytics → Add a site → select ${zoneName} → Enable.`,
       );
     }
     if (!site.autoInstall) {
       return missing(
         ITEM,
-        `Web Analytics for ${reviewHost} exists, but automatic setup is off.`,
-        `Turn on automatic setup for ${reviewHost} in Cloudflare dashboard → Analytics & Logs → Web Analytics.`,
+        `Web Analytics for ${host} exists, but automatic setup is off.`,
+        `Turn on automatic setup for ${host} in Cloudflare dashboard → Analytics & Logs → Web Analytics.`,
       );
     }
 
-    const response = await ctx.http.get(`https://${reviewHost}/`);
+    const response = await ctx.http.get(`https://${host}/`);
     if (!response.body.includes(BEACON_MARKER)) {
       return missing(
         ITEM,
-        `Web Analytics is on for ${reviewHost}, but the served page does not reference the Cloudflare beacon yet.`,
+        `Web Analytics is on for ${host}, but the served page does not reference the Cloudflare beacon yet.`,
         "Wait a few minutes for Cloudflare to inject the beacon automatically, then run the check again.",
       );
     }
 
     return complete(
       ITEM,
-      `Web Analytics is set up for ${reviewHost} with automatic setup on, and the served page references the beacon.`,
+      `Web Analytics is set up for ${host} with automatic setup on, and the served page references the beacon.`,
     );
   } catch (err) {
     return fromProviderError(

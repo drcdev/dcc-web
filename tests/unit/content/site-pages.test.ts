@@ -1,5 +1,4 @@
-// The launch page files (data-model.md "Launch content"; FR-020 to
-// FR-024). Reads the files directly, so a missing page, a wrong nav position or
+// The site page files (FR-020 to FR-024). Reads the files directly, so a missing page, a wrong nav position or
 // draft flag, or a data-handling claim fails here before any build. It checks
 // structure and data handling, not page copy: Don reviews every copy edit.
 import { existsSync, readFileSync } from "node:fs";
@@ -31,7 +30,7 @@ const LAUNCH = [
   ["technology.mdx", ["footer", 3], false, true],
 ] as const;
 
-describe("launch page files", () => {
+describe("site page files", () => {
   for (const [name, nav, draft, visible] of LAUNCH) {
     it(`${name} is ${visible ? "visible" : "not visible"}, ${draft ? "a draft" : "published"}, with the expected nav location and position`, () => {
       const { front } = load(name);
@@ -70,7 +69,7 @@ describe("launch page files", () => {
     for (const page of apps) expect(page.data.nav, page.file).toBeUndefined();
   });
 
-  it("every launch page's front matter passes the page schema", () => {
+  it("every page's front matter passes the page schema", () => {
     const schema = pageSchema({ image: () => z.string() });
     for (const [name] of LAUNCH) {
       const entry = pages.find((page) => page.file.endsWith(`/${name}`));

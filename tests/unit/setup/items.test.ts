@@ -9,82 +9,37 @@ const docsContents = readFileSync(docsPath, "utf-8");
 const docsAnchors = new Set(
   [...docsContents.matchAll(/^##\s+.*\{#([a-z0-9-]+)\}\s*$/gm)].map((m) => m[1]),
 );
-const CONTACT_IDS = [
-  "contact-d1-databases",
-  "contact-turnstile-widget",
-  "contact-worker-secrets",
-  "contact-preview-builds",
-  "contact-turnstile-site-key",
-  "contact-preview-deploy",
-  "contact-production-deploy",
-];
 const secretNames = new Set(secretManifest.map((s) => s.name));
 
 describe("setupItems registry invariants", () => {
-  it("has exactly 31 items, the contact-form items at 18 to 24 and the launch items at 25 to 31", () => {
-    expect(setupItems).toHaveLength(31);
-    expect(setupItems.slice(17, 24).map((i) => i.id)).toEqual(CONTACT_IDS);
-    expect(setupItems.slice(24).map((i) => i.id)).toEqual([
-      "launch-content-ready",
-      "launch-main-checks",
-      "live-apex",
-      "live-www-redirect",
-      "live-sitemap",
-      "live-contact-endpoint",
-      "mail-records",
-    ]);
+  it("has exactly 16 items, mail-records at 5 and contact-bindings last", () => {
+    expect(setupItems).toHaveLength(16);
+    expect(setupItems[4]!.id).toBe("mail-records");
+    expect(setupItems[15]!.id).toBe("contact-bindings");
   });
 
-  it("items 15 to 17 follow the switch (T051): review-address-removed, preview-noindex, web-analytics", () => {
-    expect(setupItems.slice(14, 17).map((i) => i.id)).toEqual(["review-address-removed", "preview-noindex", "web-analytics"]);
-    const [removed, noindex, analytics] = setupItems.slice(14, 17);
-    expect(removed!.postLaunch).toBe(true);
-    expect(removed!.dependsOn).toEqual(["dns-nameservers"]);
-    expect(noindex!.postLaunch).toBeUndefined();
-    expect(noindex!.dependsOn).toEqual([]);
-    expect(analytics!.dependsOn).toEqual([]);
-    expect(setupItems.find((i) => i.id === "live-domain-ghost")!.title).toBe("Live domain: Ghost or switched");
-  });
-
-  it("item 25 is before-merge and needs Don, item 26 is after-merge (011-launch)", () => {
-    const item25 = setupItems[24]!;
-    expect(item25.phase).toBe("before-merge");
-    expect(item25.needsDon).toBe(true);
-    expect(setupItems[25]!.phase).toBe("after-merge");
-  });
-
-  it("items 27 to 30 are postLaunch and after-merge, item 31 always applies and is before-merge (T062)", () => {
-    for (const item of setupItems.slice(26, 30)) {
-      expect(item.postLaunch).toBe(true);
-      expect(item.phase).toBe("after-merge");
+  it("preview-noindex and web-analytics depend on no other item", () => {
+    for (const id of ["preview-noindex", "web-analytics"]) {
+      expect(setupItems.find((i) => i.id === id)!.dependsOn).toEqual([]);
     }
-    const mail = setupItems[30]!;
-    expect(mail.postLaunch).toBeUndefined();
-    expect(mail.phase).toBe("before-merge");
-    expect(setupItems.filter((i) => i.postLaunch).map((i) => i.order)).toEqual([15, 27, 28, 29, 30]);
   });
 
-  it("contact items 18 to 23 are before-merge and item 24 is after-merge and deferred until merge (FR-028a)", () => {
-    for (const item of setupItems.slice(17, 23)) expect(item.phase).toBe("before-merge");
-    const last = setupItems[23]!;
-    expect(last.phase).toBe("after-merge");
-    expect(last.deferredUntilMerge).toBe(true);
-    expect(setupItems.filter((i) => i.deferredUntilMerge)).toHaveLength(1);
+  it("items 1 to 8 are before-merge and 9 to 16 are after-merge", () => {
+    for (const item of setupItems.slice(0, 8)) expect(item.phase).toBe("before-merge");
+    for (const item of setupItems.slice(8)) expect(item.phase).toBe("after-merge");
   });
 
-  it("item 2 names the three new read permissions and item 10 names the preview Worker", () => {
+  it("item 2 names the three new read permissions and item 9 names the preview Worker", () => {
     const item2 = setupItems.find((i) => i.id === "local-credentials")!;
     for (const p of ["D1", "Workers Builds Configuration", "Turnstile Sites"]) expect(item2.where).toContain(p);
-    const item10 = setupItems.find((i) => i.id === "workers-builds")!;
-    expect(item10.where).toContain("dcc-web-preview");
+    const workersBuilds = setupItems.find((i) => i.id === "workers-builds")!;
+    expect(workersBuilds.where).toContain("dcc-web-preview");
   });
 
-  it("item 18's where text restates the region and gives the exact d1 create commands (FR-027a)", () => {
-    const where = setupItems.find((i) => i.id === "contact-d1-databases")!.where;
+  it("the contact bindings item's where text restates the region (FR-027a)", () => {
+    const where = setupItems.find((i) => i.id === "contact-bindings")!.where;
     expect(where).toContain("wnam");
-    expect(where).toMatch(/cannot be changed/i);
-    expect(where).toContain("wrangler d1 create dcc-web --location wnam");
-    expect(where).toContain("wrangler d1 create dcc-web-preview --location wnam");
+    expect(where).toContain("Western North America");
   });
 
   it("has unique ids", () => {
@@ -148,19 +103,10 @@ describe("setupItems registry invariants", () => {
     for (const item of setupItems) {
       expect(["before-merge", "after-merge"]).toContain(item.phase);
     }
-    // Items 1-9 and 18-23 are before-merge, 10-17 and 24 are after-merge (plan.md walkthrough order).
-    const beforeMerge = setupItems.filter((i) => i.order <= 9 || (i.order >= 18 && i.order <= 23) || i.order === 25 || i.order === 31);
-    const afterMerge = setupItems.filter((i) => (i.order >= 10 && i.order <= 17) || i.order === 24 || (i.order >= 26 && i.order <= 30));
+    // Items 1-8 are before-merge, 9-16 are after-merge (plan.md walkthrough order).
+    const beforeMerge = setupItems.filter((i) => i.order <= 8);
+    const afterMerge = setupItems.filter((i) => i.order >= 9);
     expect(beforeMerge.every((i) => i.phase === "before-merge")).toBe(true);
     expect(afterMerge.every((i) => i.phase === "after-merge")).toBe(true);
-  });
-});
-
-describe("package.json scripts for the launch (T002)", () => {
-  it("has a site:check script that runs the site check CLI, with no new dependency", () => {
-    const pkg = JSON.parse(readFileSync(fileURLToPath(new URL("../../../package.json", import.meta.url)), "utf-8")) as {
-      scripts: Record<string, string>;
-    };
-    expect(pkg.scripts["site:check"]).toBe("node scripts/site-check/cli.ts");
   });
 });

@@ -1,4 +1,4 @@
-// checks/workers-builds.ts (setup item 10, data-model.md "workers-builds"):
+// checks/workers-builds.ts (setup item 9, data-model.md "workers-builds"):
 // the latest commit on main has a successful Workers Builds check run, and
 // the latest open pull request (if any) has one too, with a preview URL
 // (FR-017, FR-018). The GitHub Checks API run name is matched by the
@@ -10,7 +10,7 @@
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, fromProviderError, missing, pending } from "./shared.ts";
 
-const ITEM = { id: "workers-builds", order: 10 };
+const ITEM = { id: "workers-builds", order: 9 };
 const RUN_NAME_PREFIX = "Workers Builds";
 
 interface CheckRun {

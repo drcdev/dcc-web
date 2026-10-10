@@ -65,7 +65,7 @@ description: "Task list for launching the new doncoleman.ca"
 - [X] T021 [US1] Implement `waitForPreview` and `previewOrigin` in `scripts/site-check/preview.ts` (poll every 20 seconds for up to 20 minutes; crawl with `expectNoindex: true`; `::error` annotations and a `$GITHUB_STEP_SUMMARY` table) so T016 passes.
 - [X] T022 [US1] Add the preview-crawl step and `checks: read` permission to the `verify` job in `.github/workflows/ci.yml` as written in contracts/site-check.md so T017 passes. This is a CI change under Principle III.
 - [X] T023 [US1] Build, then run the E2E spec so T018 passes, and confirm that adding a link to `/does-not-exist/` fails it naming the target and the linking page (quickstart scenario 1). Revert the link. The spec runs inside the existing `test:e2e`, so `verify` needs no new script.
-- [ ] T024 [US1] [PREVIEW-CHECK] After the first push, confirm in the PR's `verify` run that the crawl step waited for `Workers Builds: dcc-web-preview`, passed with the `Preview site check passed` summary, and proved `--expect-noindex` on the real `workers.dev` host (local `wrangler dev` cannot exercise the host-scoped `_headers` rule).
+- [x] T024 [US1] [PREVIEW-CHECK] After the first push, confirm in the PR's `verify` run that the crawl step waited for `Workers Builds: dcc-web-preview`, passed with the `Preview site check passed` summary, and proved `--expect-noindex` on the real `workers.dev` host (local `wrangler dev` cannot exercise the host-scoped `_headers` rule). (closed out, #101: confirmed by CI run 37998017533 on 2026-10-09, which crawled the preview: 26 pages, 35 links)
 
 **Checkpoint**: a broken link blocks the merge (US1 scenarios 1 and 2).
 
@@ -98,7 +98,7 @@ description: "Task list for launching the new doncoleman.ca"
 - [X] T040 [US4] Add `isIndexableBuild` to `src/lib/build-mode.ts`, drop the `indexable: false` constant from `src/config/site.ts`, and default `noindex` in `src/components/Seo.astro` from `astro:env/server` so T034 to T036 pass.
 - [X] T041 [US4] Rewrite `public/_headers` per contracts/indexing-and-origin.md so T037 passes. Edit the 404 page copy only if T038 shows the wording is missing, with no change to titles, landmarks or other markup.
 - [X] T042 [US4] Run the new tests, the existing axe checks in `tests/e2e/a11y.spec.ts` (WCAG 2.2 A and AA, zero violations, including the not-found page) and the visual project in compare mode; any visual diff is a regression to fix.
-- [ ] T043 [US4] [PREVIEW-CHECK] Don checks the preview: pages send `X-Robots-Tag: noindex` and carry noindex meta, canonical links name the preview's own address, and an old Ghost path such as `/rss/` shows the plain not-found page.
+- [x] T043 [US4] [PREVIEW-CHECK] Don checks the preview: pages send `X-Robots-Tag: noindex` and carry noindex meta, canonical links name the preview's own address, and an old Ghost path such as `/rss/` shows the plain not-found page. (closed out 2026-10-09, #101: PR #23 merged; the launch then passed the live checks, and setup:check was 31 of 31 before stage 6)
 
 **Checkpoint**: origin and indexing rules are correct on `main` after merge.
 
@@ -158,7 +158,7 @@ description: "Task list for launching the new doncoleman.ca"
 - [X] T076 [P] [US6] Extend the same test for derived requirements: a secret and personal-data scan of `drcdev/flux` before archiving (FR-023); revocation of retired services' keys (Mailgun sending domain and keys, Ghost integration keys) and removal of leftover secrets from GitHub, Cloudflare and local untracked files (FR-025b); confirmation that nothing but Ghost's newsletter sends through Mailgun before deletion; a final check that no DNS record points at Ghost, Mailgun or the review address (FR-025a, SC-008); exports stay outside the repository and are never committed (FR-007).
 - [X] T077 [US6] Write Part F (T1 to T9) per the contract with the T075 and T076 content. Keep ids T1 to T9, placing the scan, key revocation and Mailgun-sender confirmation inside the existing steps' What/Where/How text rather than renumbering.
 - [X] T078 [US6] In T4's text require the baseline update (`drop` with dated reasons for the five Mailgun records and the Ghost web records) in the follow-up PR straight after deletion, and say retirement is not complete until `--item mail-records` passes against the updated baseline (FR-024).
-- [X] T079 [US6] In T9's text describe the small follow-up PR (FR-025c): `docs/design-source.md` says Flux is archived but still cloneable with the same command; baseline drops; the `new.doncoleman.ca` `_headers` rule removed; optional move of the apex Custom Domain into `wrangler.jsonc`. Do not edit `docs/design-source.md`, the baseline or `_headers` for this in the current PR.
+- [X] T079 [US6] In T9's text describe the small follow-up PR (FR-025c): `docs/design-source.md` says Flux is archived but still cloneable with the same command; baseline drops; the `new.doncoleman.ca` `_headers` rule removed; optional move of the apex Custom Domain into `wrangler.jsonc`. Do not edit `docs/design-source.md`, the baseline or `_headers` for this in the current PR. (Superseded: Don chose to keep Flux unarchived (2026-10-09).)
 - [X] T080 [US6] Run `pnpm exec vitest run tests/unit/setup` fully green.
 - [X] T081 [US6] Read `docs/launch.md` once end to end against FR-005 to FR-007: plain language, no step asking for a pasted secret, every Don step marked as a pause.
 
@@ -169,8 +169,8 @@ description: "Task list for launching the new doncoleman.ca"
 - [X] T084 Run quickstart scenarios 1 to 6 (those needing no live domain) and note the results.
 - [X] T085 Confirm no new dependency in `package.json` or the lockfile, no secret or `.env` content in any committed file, and no `specs/` path literal in tests (drift guard).
 - [X] T086 Prepare the PR body (opened from `drc-agents`): major change under Principle III, label applied, auto-merge off; the post-merge switch runs separately from `docs/launch.md` (Phases 11 and 12); the open `[PREVIEW-CHECK]` items; expected monthly cost $0 with running costs going down.
-- [ ] T087 [PREVIEW-CHECK] Don checks the preview deployment (robots, canonical, 404 page, crawl step green) and approves the PR.
-- [ ] T088 [PREVIEW-CHECK] Confirm the first preview run shows `X-Robots-Tag: noindex` on the `workers.dev` host through the crawl step, proving the `_headers` host match that local `wrangler dev` cannot exercise.
+- [x] T087 [PREVIEW-CHECK] Don checks the preview deployment (robots, canonical, 404 page, crawl step green) and approves the PR. (closed out 2026-10-09, #101: PR #23 merged; the launch then passed the live checks, and setup:check was 31 of 31 before stage 6)
+- [x] T088 [PREVIEW-CHECK] Confirm the first preview run shows `X-Robots-Tag: noindex` on the `workers.dev` host through the crawl step, proving the `_headers` host match that local `wrangler dev` cannot exercise. (closed out, #101: confirmed by CI run 37998017533 on 2026-10-09, which crawled the preview: 26 pages, 35 links)
 
 ## Phase 11: Post-merge switch (run with Don from docs/launch.md)
 

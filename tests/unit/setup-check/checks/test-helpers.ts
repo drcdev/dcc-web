@@ -10,7 +10,6 @@ import type {
   CloudflareDnsRecord,
   CloudflareReader,
   CloudflareWebAnalyticsSite,
-  CloudflareWorkerDomain,
   CloudflareWorkerScript,
   CloudflareWorkersSubdomain,
   CloudflareZone,
@@ -77,7 +76,6 @@ export function fakeProviderContext(overrides: FakeProviderOverrides = {}): Prov
     listDnsRecords: notConfigured("cloudflare.listDnsRecords"),
     getWorkerScript: notConfigured("cloudflare.getWorkerScript"),
     getWorkersSubdomain: notConfigured("cloudflare.getWorkersSubdomain"),
-    listWorkerDomains: notConfigured("cloudflare.listWorkerDomains"),
     listWebAnalyticsSites: notConfigured("cloudflare.listWebAnalyticsSites"),
     listD1Databases: notConfigured("cloudflare.listD1Databases"),
     listD1AppliedMigrations: notConfigured("cloudflare.listD1AppliedMigrations"),
@@ -162,7 +160,6 @@ export const cloudflareDnsRecordsAllPresent =() => loadFixture<CloudflareDnsReco
 export type {
   CloudflareDnsRecord,
   CloudflareWebAnalyticsSite,
-  CloudflareWorkerDomain,
   CloudflareWorkerScript,
   CloudflareWorkersSubdomain,
   CloudflareZone,

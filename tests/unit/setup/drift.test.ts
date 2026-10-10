@@ -112,29 +112,6 @@ describe("ruleset contexts <-> CI job names", () => {
   });
 });
 
-describe("registry, docs/setup.md and docs/launch.md agree (011-launch)", () => {
-  const launch = read("docs/launch.md");
-
-  it("every --item id named in docs/launch.md is a registry id with a docs/setup.md section", () => {
-    const ids = new Set(setupItems.map((i) => i.id));
-    const named = new Set([...launch.matchAll(/--item ([a-z0-9-]+)/g)].map((m) => m[1]!));
-    expect(named.size).toBeGreaterThan(5);
-    for (const id of named) {
-      expect(ids.has(id), `${id} is not a registry id`).toBe(true);
-      expect(docsAnchors, `docs/setup.md has no section for ${id}`).toContain(id);
-    }
-  });
-
-  it("docs/setup.md counts the registry and links docs/launch.md, and every launch.md link target exists", () => {
-    const intro = docsContents.slice(0, docsContents.indexOf("## 1."));
-    expect(intro).toContain(`${setupItems.length}-item registry`);
-    expect(intro).toContain("docs/launch.md");
-    for (const m of docsContents.matchAll(/docs\/launch\.md#([a-z0-9-]+)/g)) {
-      expect(launch, `docs/launch.md has no anchor #${m[1]}`).toContain(`{#${m[1]}}`);
-    }
-  });
-});
-
 describe("Worker secrets <-> manifest drift", () => {
   const config = JSON.parse(stripJsonc(read("wrangler.jsonc"))) as {
     secrets?: { required?: string[] };

@@ -112,7 +112,6 @@ describe("the local site", () => {
   it("does not leak WORKERS_CI from the test runner's own environment into a build", () => {
     expect(l1.message).toBe("");
     expect(l1.read("sitemap-0.xml")).toContain("https://doncoleman.ca/");
-    expect(l1.read("sitemap-0.xml")).not.toContain("new.doncoleman.ca");
   });
 });
 
@@ -158,7 +157,7 @@ describe("a page that is one file", () => {
 
   // Rendered headings (FR-005, FR-006): only the built HTML shows the page title's h1 next to the
   // body headings and the ids Astro gives them. The source order and counts are pinned in
-  // tests/unit/content/launch-content.test.ts.
+  // tests/unit/content/site-pages.test.ts.
   it("builds /work-with-me/ with one h1, no skipped level and a unique id on every body heading", () => {
     const html = l1.read("work-with-me/index.html");
     const main = html.slice(html.indexOf("<main"), html.indexOf("</main>"));

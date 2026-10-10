@@ -14,15 +14,7 @@ export const configSchema = z.object({
   workerName: z.string().min(1),
   previewWorkerName: z.string().min(1).optional(),
   zone: z.string().min(1),
-  reviewHost: z.string().min(1),
-  ghostMarker: z.string().min(1),
   workersSubdomain: dnsLabelSchema.optional(),
-  launch: z
-    .object({
-      expectedPages: z.array(z.string().regex(/^[a-z0-9-]+$/)).min(1),
-      expectedPaths: z.array(z.string().regex(/^\/([a-z0-9-]+\/)*$/)).min(1),
-    })
-    .optional(),
 });
 
 const dnsRecordTypeSchema = z.enum(["A", "AAAA", "CNAME", "MX", "TXT", "SRV", "CAA", "NS"]);
@@ -34,10 +26,8 @@ const dnsBaselineRecordSchema = z
     content: z.string().min(1),
     priority: z.number().int().nullable(),
     ttl: z.number().int().positive(),
-    source: z.enum(["squarespace", "cloudflare"]),
-    decision: z.enum(["keep", "drop"]).nullable(),
-    reason: z.string().min(1).nullable(),
   })
+  .strict()
   .check((ctx) => {
     const record = ctx.value;
     if ((record.type === "MX" || record.type === "SRV") && record.priority === null) {
@@ -48,20 +38,14 @@ const dnsBaselineRecordSchema = z
         path: ["priority"],
       });
     }
-    if (record.decision === "drop" && !record.reason) {
-      ctx.issues.push({
-        code: "custom",
-        message: `dropped record "${record.name}" must have a reason`,
-        input: record,
-        path: ["reason"],
-      });
-    }
   });
 
-export const dnsBaselineSchema = z.object({
-  originalNameservers: z.array(z.string().min(1)),
-  records: z.array(dnsBaselineRecordSchema),
-});
+// The must-exist list: every record here has to be in the Cloudflare zone.
+export const dnsBaselineSchema = z
+  .object({
+    records: z.array(dnsBaselineRecordSchema),
+  })
+  .strict();
 
 // setup/github-ruleset.json: the body imported as a GitHub repository ruleset
 // (research R9). Only the fields this slice's drift and setup checks rely on
