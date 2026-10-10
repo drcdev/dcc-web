@@ -271,7 +271,7 @@ Coverage mapping: `web3forms`, `jsdelivr`, `supabase` substrings are covered by 
 allow-list test, which rejects every external host, with or without a scheme, other than the two
 Web Analytics origins. Net coverage goes up, not down.
 
-### W7 Ghost-leftover guards in shell and setup tests
+### [x] W7 Ghost-leftover guards in shell and setup tests
 
 Files: `tests/component/SiteHeader.test.ts:194-199`, `tests/component/SiteFooter.test.ts:110-115`,
 `tests/unit/setup/dns-baseline-schema.test.ts:47-49,84-88`, `tests/unit/setup/schemas.test.ts:24-26`.

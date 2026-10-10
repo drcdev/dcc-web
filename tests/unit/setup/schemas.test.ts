@@ -21,10 +21,6 @@ describe("configSchema (setup/config.json)", () => {
     zone: "doncoleman.ca",
   };
 
-  it("accepts a config with only the keys the checks read (no review host or Ghost marker)", () => {
-    expect(configSchema.safeParse(valid).success).toBe(true);
-  });
-
   it("accepts a valid config", () => {
     const result = configSchema.safeParse(valid);
     expect(result.success).toBe(true);

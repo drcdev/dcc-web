@@ -45,7 +45,7 @@ describe("dnsBaselineSchema record-level rules", () => {
   });
 
   it("rejects a record carrying a source or a reason", () => {
-    expect(dnsBaselineSchema.safeParse({ records: [{ ...base, source: "squarespace" }] }).success).toBe(false);
+    expect(dnsBaselineSchema.safeParse({ records: [{ ...base, source: "example" }] }).success).toBe(false);
     expect(dnsBaselineSchema.safeParse({ records: [{ ...base, reason: null }] }).success).toBe(false);
   });
 
@@ -79,11 +79,5 @@ describe("setup/dns-baseline.json: must-exist records", () => {
   it("has the DMARC and CAA records, so dns-records-parity guards them (#93)", () => {
     expect(records.some((r) => r.type === "TXT" && r.name === `_dmarc.${zone}` && r.content.startsWith("v=DMARC1"))).toBe(true);
     expect(records.some((r) => r.type === "CAA" && r.name === zone && /^\d+ issue "/.test(r.content))).toBe(true);
-  });
-
-  it("names no retired Ghost, Mailgun or Squarespace record", () => {
-    for (const r of records) {
-      expect(r.content.toLowerCase()).not.toMatch(/mailgun|mymagic\.page|squarespace/);
-    }
   });
 });

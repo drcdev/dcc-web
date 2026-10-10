@@ -191,9 +191,8 @@ describe("SiteHeader menu button", () => {
   });
 });
 
-describe("SiteHeader leaves out Ghost-only pieces", () => {
-  it("has no search, Subscribe, Sign in, Account or portal markup", () => {
-    expect(home).not.toMatch(/data-ghost-search|data-portal|#\/portal/);
+describe("SiteHeader has no account or search controls", () => {
+  it("has no search, Subscribe, Sign in or Account text", () => {
     const text = home.replace(/<[^>]+>/g, " ");
     expect(text).not.toMatch(/\bSubscribe\b|\bSign in\b|\bAccount\b|\bSearch\b/i);
   });
