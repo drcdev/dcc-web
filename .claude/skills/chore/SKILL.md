@@ -276,9 +276,7 @@ gate as it is **after** the change.
    the list of `[PREVIEW-CHECK]` items for Don, the review's LOW findings, the follow-ups
    deliberately left out, and whether auto-merge is armed. Open the PR and arm auto-merge: read
    `.claude/skills/_shared/open-pr.md` and follow it exactly.
-5. If Linux baselines are still owed because Docker could not be started, run the CI-label
-   fallback in `.claude/skills/_shared/visual-baselines.md` now, before watching the gate.
-6. **Watch the release gate.** Run `gh pr checks --watch` with a time limit
+5. **Watch the release gate.** Run `gh pr checks --watch` with a time limit
    (20 minutes). Red → dispatch a fix subagent on the branch, which fixes
    the cause (never the check), commits and pushes; watch again. For a
    chore whose acceptance is a CI measurement, read the wall time of
@@ -286,7 +284,7 @@ gate as it is **after** the change.
    lasts seconds, so its own duration is not the measurement). Take it from
    `gh run view <id> --json jobs`: the earliest job `startedAt` to the
    `verify` job's `completedAt`. Record it as the CI after-measurement.
-7. Final report to the user: the goal, the before/after measurement (local
+6. Final report to the user: the goal, the before/after measurement (local
    and CI), work items done, test counts, PR link, the major-change
    verdict and whether auto-merge is armed, the `[PREVIEW-CHECK]` items awaiting Don, and the follow-ups and
    residual risks the review flagged.

@@ -17,13 +17,10 @@ refreshes both sets.
 2. **Linux (what CI compares against).** Regenerate with `pnpm run test:visual:update:linux`,
    which needs Docker Desktop and runs in the Docker image matching the installed
    `@playwright/test` version. If `docker info` fails, ask Don to start Docker Desktop with an
-   `AskUserQuestion` whose question text carries the instruction. Do not fall back to CI without
-   asking.
-3. **Commit and push the images before opening the PR**, so `verify` is green.
-4. **Fallback only if Docker cannot be started.** After the PR is open, add the
-   `visual-baselines` label, wait for the `update-baselines` job, and download its
-   `visual-baselines-linux` artifact with `gh run download`. The artifact holds both platforms,
-   so copy only the `*-linux.png` files. Review, commit and push. Until that lands, the `verify`
-   check on the PR is expected to be red on visual only, so say so in the PR body.
+   `AskUserQuestion` whose question text carries the instruction, then wait for him to
+   start it. There is no other way to make the Linux baselines.
+3. **Commit and push the images before opening the PR**, so `verify` is green. If CI's
+   visual check then fails on images Docker made, stop and tell Don: Docker has drifted from CI,
+   and fixing that is its own change. Do not refresh the images from a CI run.
 
 A visual diff nobody predicted up front is a regression to fix, not a baseline to refresh.
