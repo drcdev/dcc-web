@@ -247,7 +247,7 @@ Files and edits (no assertion changes):
 Test: existing; each file runs green after its edit (renames and fixture swaps do not change
 what is asserted).
 
-### W6 CSP forbidden vendor names become a host-source allow-list
+### [x] W6 CSP forbidden vendor names become a host-source allow-list
 
 Files: `tests/unit/site/csp.test.ts:62-88`.
 
