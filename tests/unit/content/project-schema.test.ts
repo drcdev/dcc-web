@@ -28,7 +28,7 @@ const full = {
   invitation: "Got a similar problem? Get in touch.",
   draft: true,
   visuals: {
-    screenshot: { kind: "image", src: "./a.png", alt: "A screenshot", placeholder: true, part: "build" },
+    screenshot: { kind: "image", src: "./a.png", alt: "A screenshot", part: "build" },
     architecture: { kind: "diagram", src: "./a.svg", alt: "A diagram", description: "Boxes and arrows.", part: "options" },
     spare: { kind: "image", src: "./b.png", alt: "Kept for reference" },
   },
@@ -62,6 +62,19 @@ describe("projectSchema", () => {
   });
 
   it("accepts a project with every setting", () => ok(full));
+
+  describe("placeholder is not a picture setting", () => {
+    const image = { kind: "image", src: "./a.png", alt: "x" };
+    const diagram = { kind: "diagram", src: "./a.svg", alt: "x", description: "d" };
+    it.each([
+      ["list image", (p: object) => ({ ...minimal, visual: p }), image],
+      ["list diagram", (p: object) => ({ ...minimal, visual: p }), diagram],
+      ["story image", (p: object) => ({ ...minimal, visuals: { a: p } }), image],
+      ["story diagram", (p: object) => ({ ...minimal, visuals: { a: p } }), diagram],
+    ])("rejects it on a %s, true or false, naming the key", (_name, wrap, picture) => {
+      for (const value of [true, false]) expect(issueText(wrap({ ...picture, placeholder: value }))).toContain("placeholder");
+    });
+  });
 
   it.each(["title", "problem", "description", "themes", "status", "visual", "date"])("S01 requires %s", (key) =>
     rejects(without(key)));
