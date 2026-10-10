@@ -203,7 +203,7 @@ Order rule: rewrite the readers before deleting what they read. The suite is gre
 item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates the
 `Step N of T` pins it shifts.
 
-### W1 — Retire the launch runbook tests
+### W1 — Retire the launch runbook tests [x]
 
 - **Files:**
   - `tests/unit/setup/launch-doc.test.ts` (delete);
