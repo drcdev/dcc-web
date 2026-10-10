@@ -48,7 +48,6 @@ describe("checks/github-main-protection", () => {
       "one approving review required",
       "code-owner review required",
       "required check verify",
-      "branch must be up to date before merging",
       "force-pushes blocked",
       "no bypass actors",
     ]);

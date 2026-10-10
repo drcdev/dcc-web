@@ -157,7 +157,7 @@ Options:
 
 ## Work items
 
-### W1 Setup check, fixture, test and committed ruleset stop requiring strict mode
+### [x] W1 Setup check, fixture, test and committed ruleset stop requiring strict mode
 
 - **Files:**
   - `tests/fixtures/providers/github/ruleset-full.json`: strict `true` → `false`;
