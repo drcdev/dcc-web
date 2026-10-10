@@ -71,7 +71,7 @@ issue.
 
 ## Work items
 
-### [ ] W1 — Record the post-merge results in the 031 spec
+### [x] W1 — Record the post-merge results in the 031 spec
 
 - **Files:** `specs/031-docs-only-gate/spec.md` ("Post-merge verification (follow-up)",
   lines ~369–390).
