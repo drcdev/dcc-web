@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { decide, isContentOnly, isSkipSafe, toOutput } from "../../../scripts/ci/changed-paths.ts";
+import { collectFiles, decide, isContentOnly, isDocs, isSkipSafe, toOutput } from "../../../scripts/ci/changed-paths.ts";
 import type { ChangeInput } from "../../../scripts/ci/changed-paths.ts";
 import { filesUnder } from "../../helpers/files.ts";
 
@@ -103,22 +103,84 @@ describe("isContentOnly()", () => {
   });
 });
 
+const DOCS_TRUE = ["docs/testing.md", "docs/design/blog.md", "docs/--help.md"];
+const DOCS_FALSE = [
+  "docs/x.png",
+  "docs/x.mdx",
+  "docs/x.MD",
+  "docs/x.markdown",
+  "Docs/a.md",
+  "README.md",
+  "src/docs/a.md",
+  "docs",
+  "docs/../src/a.md",
+  "/docs/a.md",
+  "docs\\a.md",
+  '"docs/\\303\\251.md"',
+];
+
+describe("isDocs()", () => {
+  it.each(DOCS_TRUE)("treats %s as documentation", (p) => {
+    expect(isDocs(p)).toBe(true);
+  });
+  it.each(DOCS_FALSE)("treats %s as not documentation", (p) => {
+    expect(isDocs(p)).toBe(false);
+  });
+});
+
+describe("decide() docs tier", () => {
+  const pr = (files: string[] | null) => decide({ event: "pull_request", files });
+  it("picks docs for docs files only", () => {
+    expect(pr(["docs/testing.md", "docs/design/blog.md"]).tier).toBe("docs");
+  });
+  it("picks docs for docs plus skip-safe files", () => {
+    expect(pr(["docs/testing.md", ".specify/feature.json"]).tier).toBe("docs");
+  });
+  it("keeps skip-safe when no docs file changed", () => {
+    expect(pr([".specify/feature.json"]).tier).toBe("skip-safe");
+  });
+  it("picks content-only for docs plus content", () => {
+    expect(pr(["docs/testing.md", "src/content/posts/starting-something-new.mdx"]).tier).toBe("content-only");
+  });
+  it("runs full for docs plus source, naming the file", () => {
+    const d = pr(["docs/testing.md", "src/pages/index.astro"]);
+    expect(d.tier).toBe("full");
+    expect(d.reason).toContain("src/pages/index.astro");
+  });
+  it("runs full for docs plus a non-markdown docs file", () => {
+    const d = pr(["docs/testing.md", "docs/design/x.png"]);
+    expect(d.tier).toBe("full");
+    expect(d.reason).toContain("docs/design/x.png");
+  });
+  it.each([".github/workflows/ci.yml", "scripts/ci/changed-paths.ts", "scripts/ci/verify-needs.ts"])(
+    "runs full for docs plus %s",
+    (file) => {
+      const d = pr(["docs/testing.md", file]);
+      expect(d.tier).toBe("full");
+      expect(d.reason).toContain(file);
+    },
+  );
+  it.each([[[]], [["", "  "]], [null]] as const)("fails closed for %j", (files) => {
+    expect(pr(files as string[] | null).tier).toBe("full");
+  });
+  it("names the counts in the docs reason", () => {
+    expect(pr(["docs/a.md", "docs/b.md"]).reason).toContain("2");
+  });
+});
+
 describe("decide()", () => {
   it("skips when every changed file is skip-safe on a pull_request", () => {
     const d = decide({ event: "pull_request", files: [".specify/feature.json", ".claude/skills/other/SKILL.md"] });
-    expect(d.full).toBe(false);
-    expect(d.contentOnly).toBe(false);
+    expect(d.tier).toBe("skip-safe");
   });
   it("runs everything and names the first unsafe file", () => {
     const d = decide({ event: "pull_request", files: [".specify/feature.json", "src/pages/index.astro"] });
-    expect(d.full).toBe(true);
-    expect(d.contentOnly).toBe(false);
+    expect(d.tier).toBe("full");
     expect(d.reason).toContain("src/pages/index.astro");
   });
   it("picks the content-only tier for a single content file", () => {
     const d = decide({ event: "pull_request", files: ["src/content/posts/starting-something-new.mdx"] });
-    expect(d.full).toBe(true);
-    expect(d.contentOnly).toBe(true);
+    expect(d.tier).toBe("content-only");
   });
   it("picks the content-only tier for content plus skip-safe files", () => {
     const d = decide({
@@ -130,28 +192,23 @@ describe("decide()", () => {
         ".specify/chores/x/plan.md",
       ],
     });
-    expect(d.full).toBe(true);
-    expect(d.contentOnly).toBe(true);
+    expect(d.tier).toBe("content-only");
   });
   it("runs the full tier when content changes with a schema", () => {
     const d = decide({
       event: "pull_request",
       files: ["src/content/posts/starting-something-new.mdx", "src/content/schemas/post.ts"],
     });
-    expect(d.full).toBe(true);
-    expect(d.contentOnly).toBe(false);
+    expect(d.tier).toBe("full");
     expect(d.reason).toContain("src/content/schemas/post.ts");
   });
   it.each([[[]], [["", "  "]], [null]] as const)("fails closed for %j", (files) => {
     const d = decide({ event: "pull_request", files: files as string[] | null });
-    expect(d.full).toBe(true);
-    expect(d.contentOnly).toBe(false);
+    expect(d.tier).toBe("full");
   });
-  it.each(["push", "workflow_dispatch", "pull_request_target"])("always runs everything for %s", (event) => {
-    expect(decide({ event, files: [".specify/feature.json"] }).full).toBe(true);
-    const d = decide({ event, files: ["src/content/posts/starting-something-new.mdx"] });
-    expect(d.full).toBe(true);
-    expect(d.contentOnly).toBe(false);
+  it.each(["workflow_dispatch", "pull_request_target"])("always runs everything for %s", (event) => {
+    expect(decide({ event, files: [".specify/feature.json"] }).tier).toBe("full");
+    expect(decide({ event, files: ["src/content/posts/starting-something-new.mdx"] }).tier).toBe("full");
   });
   it("skips when only pipeline skills, shared wording, CLAUDE.md or the constitution change", () => {
     const d = decide({
@@ -166,13 +223,12 @@ describe("decide()", () => {
         ".specify/memory/constitution.md",
       ],
     });
-    expect(d.full).toBe(false);
-    expect(d.contentOnly).toBe(false);
+    expect(d.tier).toBe("skip-safe");
   });
   it("runs everything when a deny-listed file changes", () => {
-    expect(decide({ event: "pull_request", files: [".claude/skills/setup-walkthrough/SKILL.md"] }).full).toBe(true);
+    expect(decide({ event: "pull_request", files: [".claude/skills/setup-walkthrough/SKILL.md"] }).tier).toBe("full");
   });
-  it("never reports contentOnly without full", () => {
+  it("always returns one of the known tiers with a reason", () => {
     const inputs: ChangeInput[] = [
       { event: "pull_request", files: ["CLAUDE.md"] },
       { event: "pull_request", files: ["src/content/pages/about.mdx"] },
@@ -183,16 +239,15 @@ describe("decide()", () => {
     ];
     for (const input of inputs) {
       const d = decide(input);
-      expect(!d.contentOnly || d.full).toBe(true);
+      expect(["skip-safe", "docs", "content-only", "full"]).toContain(d.tier);
+      expect(d.reason.length).toBeGreaterThan(0);
     }
   });
 });
 
 describe("toOutput()", () => {
-  it("renders the GITHUB_OUTPUT lines", () => {
-    expect(toOutput({ full: true, contentOnly: false, reason: "" })).toBe("full=true\ncontent_only=false\n");
-    expect(toOutput({ full: false, contentOnly: false, reason: "" })).toBe("full=false\ncontent_only=false\n");
-    expect(toOutput({ full: true, contentOnly: true, reason: "" })).toBe("full=true\ncontent_only=true\n");
+  it.each(["skip-safe", "content-only", "full"] as const)("renders tier=%s for GITHUB_OUTPUT", (tier) => {
+    expect(toOutput({ tier, reason: "" })).toBe(`tier=${tier}\n`);
   });
 });
 
@@ -260,5 +315,88 @@ describe("drift guard", () => {
       }
     }
     expect(offenders, "add these paths to READ_BY_CHECKS").toEqual([]);
+  });
+});
+
+describe("collectFiles()", () => {
+  const BEFORE = "a".repeat(40);
+  function fake(impl: (args: string[]) => string = () => "") {
+    const calls: string[][] = [];
+    const git = (args: string[]): string => {
+      calls.push(args);
+      return impl(args);
+    };
+    return { git, calls };
+  }
+
+  it("diffs HEAD^1 to HEAD for a pull request", () => {
+    const { git, calls } = fake(() => "a.md\nb.md\n");
+    expect(collectFiles({ event: "pull_request" }, git)).toEqual(["a.md", "b.md", ""]);
+    expect(calls).toEqual([["diff", "--name-only", "--no-renames", "HEAD^1", "HEAD"]]);
+  });
+
+  it.each([
+    ["missing", undefined],
+    ["empty", ""],
+    ["short", "abc123"],
+    ["non-hex", "g".repeat(40)],
+    ["uppercase", "A".repeat(40)],
+    ["all zeros", "0".repeat(40)],
+    ["too long", "a".repeat(41)],
+  ])("returns null without calling git for a %s before on a push", (_name, before) => {
+    const { git, calls } = fake();
+    expect(collectFiles({ event: "push", before }, git)).toBeNull();
+    expect(calls).toEqual([]);
+  });
+
+  it("returns null when the fetch throws", () => {
+    const { git } = fake((args) => {
+      if (args[0] === "cat-file" || args[0] === "fetch") throw new Error("no such commit");
+      return "x";
+    });
+    expect(collectFiles({ event: "push", before: BEFORE }, git)).toBeNull();
+  });
+
+  it("returns null when the diff throws", () => {
+    const { git } = fake((args) => {
+      if (args[0] === "diff") throw new Error("bad object");
+      return "";
+    });
+    expect(collectFiles({ event: "push", before: BEFORE }, git)).toBeNull();
+  });
+
+  it("fetches the validated id when it is missing, then diffs it to HEAD with renames split", () => {
+    const { git, calls } = fake((args) => {
+      if (args[0] === "cat-file") throw new Error("missing");
+      return args[0] === "diff" ? "docs/a.md\ndocs/b.md\n" : "";
+    });
+    const files = collectFiles({ event: "push", before: BEFORE }, git);
+    expect(files).toEqual(["docs/a.md", "docs/b.md", ""]);
+    expect(calls).toEqual([
+      ["cat-file", "-e", `${BEFORE}^{commit}`],
+      ["fetch", "--no-tags", "--depth=1", "origin", BEFORE],
+      ["diff", "--name-only", "--no-renames", BEFORE, "HEAD"],
+    ]);
+  });
+
+  // A shallow fetch into a full local clone would make that clone shallow.
+  it("does not fetch when the before commit is already present", () => {
+    const { git, calls } = fake((args) => (args[0] === "diff" ? "docs/a.md\n" : ""));
+    expect(collectFiles({ event: "push", before: BEFORE }, git)).toEqual(["docs/a.md", ""]);
+    expect(calls).toEqual([
+      ["cat-file", "-e", `${BEFORE}^{commit}`],
+      ["diff", "--name-only", "--no-renames", BEFORE, "HEAD"],
+    ]);
+  });
+
+  it("returns null for any other event", () => {
+    const { git, calls } = fake();
+    expect(collectFiles({ event: "workflow_dispatch", before: BEFORE }, git)).toBeNull();
+    expect(calls).toEqual([]);
+  });
+
+  it("lets decide() sort a docs-only push and fail closed on unknown files", () => {
+    expect(decide({ event: "push", files: ["docs/testing.md"] }).tier).toBe("docs");
+    expect(decide({ event: "push", files: null }).tier).toBe("full");
   });
 });

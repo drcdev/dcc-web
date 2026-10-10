@@ -1,6 +1,6 @@
 # Testing: layers, placement and where each rule is proven
 
-`pnpm run verify` is the gate for every PR and every push to `main`. This page says what each
+`pnpm run verify` is the gate for every PR and every push to `main` (narrowed by the change tiers below). This page says what each
 layer of the gate is for, where a new test goes, where every build-error row of the content
 contracts is asserted today, and how many Astro builds the `build` Vitest project may run.
 It came out of [issue #26](https://github.com/drcdev/dcc-web/issues/26) (phases 1 and 2); the
@@ -34,10 +34,10 @@ dependencies, and the `verify` job is the one check that branch protection requi
 
 | Job | Scripts | When it runs |
 |---|---|---|
-| `changes` | `node scripts/ci/changed-paths.ts` | Always. Decides the tier: skip-safe, content-only or full, and writes the outputs `full` and `content_only`. |
-| `static` | `pnpm run lint:secrets`, then `pnpm run lint`, `pnpm run typecheck`, `pnpm run test:unit`, `pnpm run test:worker` | Always. On a skip-safe change only secretlint runs. |
-| `build-tests` | `pnpm run test:build`; on a content-only change `pnpm run test:build:content` instead | Unless the change is skip-safe. |
-| `e2e` | `pnpm run build`, `pnpm run test:e2e:parallel`, `pnpm run test:budget`, and on pull requests `node scripts/site-check/preview.ts` | Unless the change is skip-safe. |
+| `changes` | `node scripts/ci/changed-paths.ts` | Always. Decides the tier: skip-safe, docs, content-only or full, and writes one output, `tier`. |
+| `static` | `pnpm run lint:secrets`, then `pnpm run lint`, `pnpm run typecheck`, `pnpm run test:unit`, `pnpm run test:worker` | Always. On a skip-safe change only secretlint runs; on a docs change secretlint and `pnpm run test:unit` run. |
+| `build-tests` | `pnpm run test:build`; on a content-only change `pnpm run test:build:content` instead | Unless the change is skip-safe or docs. |
+| `e2e` | `pnpm run build`, `pnpm run test:e2e:parallel`, `pnpm run test:budget`, and on pull requests `node scripts/site-check/preview.ts` | Unless the change is skip-safe or docs. |
 | `verify` | `node scripts/ci/verify-needs.ts` | Always, after the others finish. |
 
 - A new script, or a new Playwright or Vitest project, must be added to one of these jobs. The
@@ -47,22 +47,29 @@ dependencies, and the `verify` job is the one check that branch protection requi
   own, after the parallel projects, at one worker (`test:budget` passes `--workers=1`),
   because it measures timing and would be skewed by sibling tests competing for the CPU.
 - The `verify` job passes when every job succeeded, or when `build-tests` and `e2e` were
-  skipped on a skip-safe change. A failed, cancelled or unexpectedly skipped job fails it. On a
-  content-only change `build-tests` runs and must succeed; only the skip-safe tier skips jobs.
+  skipped on a skip-safe or docs change. A failed, cancelled or unexpectedly skipped job fails it. On a
+  content-only change `build-tests` runs and must succeed; only the skip-safe and docs tiers skip jobs.
 
 ### Change tiers
 
-`scripts/ci/changed-paths.ts` sorts each pull request into one of three tiers and writes two
-outputs, `full` and `content_only`. A push to `main` and a missing or empty diff are full; otherwise the first matching row wins.
+`scripts/ci/changed-paths.ts` sorts each pull request and each push to `main` into one of four tiers and writes one
+output, `tier`. A pull request is diffed against its first parent; a push is diffed from the commit before the push (`github.event.before`) to the pushed commit, which covers every commit in a multi-commit push. The script fetches that one commit by id. A missing, malformed or all-zero `before`, a failed fetch or diff, or an empty diff is full. Otherwise the first matching row wins.
 
 | Tier | What counts | What runs | What is skipped |
 |---|---|---|---|
-| Skip-safe | Every changed file is on the skip-safe allowlist: `.md`, `.yml`, `.yaml`, `.json`, `.sh`, `.py` and `.ps1` files under `.claude/`, `.specify/` and `specs/`, except the files a test or check reads (`setup-walkthrough`'s `SKILL.md`). Edits to the pipeline skills, `_shared/`, `CLAUDE.md` and the constitution run the skip-safe tier. `full=false`. | secretlint only (`static`) and `verify` | `build-tests` and `e2e`, and the lint, type-check and unit steps of `static` |
-| Content-only | Every changed file is either skip-safe or an `.mdx` file or an image or video file under `src/content/pages`, `src/content/posts` or `src/content/projects`. `.md` files, schemas, `src/content.config.ts` and `public/` are not content-only. `full=true`, `content_only=true`. | The whole gate, except that `build-tests` runs `pnpm run test:build:content` (`indexing.test.ts`, `local-site.test.ts`, `navigation.test.ts` and `project-template.test.ts`, the build files that read real content by name) | The other build files (listed below) |
-| Full | Everything else, every push to `main`, an empty diff, and any failure to compute the diff. `full=true`, `content_only=false`. | Every job and the whole `test:build` project | Nothing |
+| Skip-safe | Every changed file is on the skip-safe allowlist: `.md`, `.yml`, `.yaml`, `.json`, `.sh`, `.py` and `.ps1` files under `.claude/`, `.specify/` and `specs/`, except the files a test or check reads (`setup-walkthrough`'s `SKILL.md`). Edits to the pipeline skills, `_shared/`, `CLAUDE.md` and the constitution run the skip-safe tier. `tier=skip-safe`. | secretlint only (`static`) and `verify` | `build-tests` and `e2e`, and the lint, type-check, unit and worker test steps of `static` |
+| Docs | Every changed file is skip-safe or a `.md` file under `docs/` (lower-case `.md` only; images, `.mdx` and other files under `docs/` are not documentation), with at least one such `docs/` file. `tier=docs`. | secretlint and the unit and component tests (`static`) and `verify` | lint, type check and worker tests, `build-tests` and `e2e` |
+| Content-only | Every changed file is skip-safe, documentation or an `.mdx` file or an image or video file under `src/content/pages`, `src/content/posts` or `src/content/projects`. `.md` files, schemas, `src/content.config.ts` and `public/` are not content-only. `tier=content-only`. | The whole gate, except that `build-tests` runs `pnpm run test:build:content` (`indexing.test.ts`, `local-site.test.ts`, `navigation.test.ts` and `project-template.test.ts`, the build files that read real content by name) | The other build files (listed below) |
+| Full | Everything else, an empty diff, and any failure to compute the diff. `tier=full`. | Every job and the whole `test:build` project | Nothing |
+
+Runs on `main` are never cancelled: each push gets its own concurrency group (by commit SHA), while a newer pull request run still cancels the older one for the same ref. Accepted risk: runs on `main` can queue for a runner behind other runs.
 
 The rule fails closed: a path that is not positively recognised runs the full gate, and an
-unset `content_only` runs the full `test:build`.
+unset `tier` runs every job and `verify` fails.
+
+Accepted risk: nothing notices if a future check outside the unit tests starts reading files under
+`docs/`. A docs change would skip that check. Whoever adds such a check must move `docs/` out of the
+docs tier.
 
 **Coverage on a content-only change.** Each skipped file, and where its guarantee lives:
 
@@ -82,11 +89,11 @@ build assertion belongs in a file listed in `test:build:content`.
 
 Residual risk: fixture builds copy the real `src/`, so the real pages and projects are present
 in them. A content edit whose text collides with a fixture assertion's string would show only
-on the push run on `main`, which always runs the full gate. That is a test-isolation flaw to
+on the push run on `main`, which runs the full gate only when the merge is not content-only or docs-only. A content-only merge therefore loses its full `main` backstop. That is a test-isolation flaw to
 fix, not a gap in the gate. One known case: `drafts.test.ts` reads the home page built from the
 real `src/content/pages/index.mdx` (its `<RecentWriting />` assertions, "mentions no draft ... home
 page" and "leaves the Recent writing section off the home page"), so a literal collision in that
-file would show only on the `main` push run.
+file would show only on a full-tier `main` push run.
 
 ## Inner loop: `verify:quick`
 
@@ -502,8 +509,7 @@ Locally, Vitest (mostly the `build` project) is slightly longer than Playwright,
 Method:
 
 - CI wall time is the earliest job `startedAt` to the `verify` job's `completedAt`, from
-  `gh run view <id> --json jobs`, on a push to `main`. A push to `main` is always the full tier;
-  PR runs add the preview site-check.
+  `gh run view <id> --json jobs`, on a full-tier push to `main`; pick a full-tier run, because the tiers differ. Docs-tier timings exclude the wait for the first runner. PR runs add the preview site-check.
 - Local time is `date +%s` around one `pnpm run verify` on the Mac, under `perl -e 'alarm N'`,
   with the agent-shell setup and nothing else running.
 - Re-measure when a layer or job changes, and add a dated row rather than overwrite.
