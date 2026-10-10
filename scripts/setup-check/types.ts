@@ -242,6 +242,11 @@ export interface CloudflareBuildTrigger {
   deployCommand: string | null;
 }
 
+export interface CloudflareEmailAddress {
+  email: string;
+  verified: string | null;
+}
+
 export interface CloudflareTurnstileWidget {
   name: string;
   domains: string[];
@@ -271,6 +276,8 @@ export interface CloudflareReader {
   listBuildVariableNames(accountId: string, triggerUuid: string): Promise<string[]>;
   /** Turnstile widgets by name, domains and mode. `sitekey` and `secret` are dropped. */
   listTurnstileWidgets(accountId: string): Promise<CloudflareTurnstileWidget[]>;
+  /** Email Routing destination addresses: email and verified timestamp (null when unverified). */
+  listEmailRoutingAddresses(accountId: string): Promise<CloudflareEmailAddress[]>;
 }
 
 export interface DnsAnswer {

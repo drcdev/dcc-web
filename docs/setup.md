@@ -4,10 +4,10 @@ This is the plain-language record of every account-side setup item this reposito
 what each item is for, where Don does it, how it is confirmed, which constitution principle it
 serves, and the names (never values) of any secrets involved. It is the no-agent fallback for
 the `/setup-walkthrough` Claude Code skill, and the two must never disagree — both read the same
-16-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
+17-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
 
-Run `pnpm setup:check` at any time to see which of the 16 items below are complete. Each item's
-step number and anchor match the registry in `scripts/setup-check/items.ts`; item 16 is the
+Run `pnpm setup:check` at any time to see which of the 17 items below are complete. Each item's
+step number and anchor match the registry in `scripts/setup-check/items.ts`; items 16 and 17 are the
 "Contact form" part. The edge protections Don set up in the Cloudflare dashboard are recorded
 in the Edge protections part at the end; they are not setup items.
 
@@ -48,8 +48,9 @@ Create Token), scoped to Don's account and the `doncoleman.ca` zone only, with p
 Zone: Read, Zone → DNS: Read, Account → Workers Scripts: Read, Account → Account Settings: Read
 (the permission Cloudflare's API requires to list Web Analytics sites; there is no "Web
 Analytics" token permission), and, for the contact form (item 16), Account → D1: Read,
-Account → Workers Builds Configuration: Read and Account → Turnstile Sites: Read. If you made
-the token before the contact form, edit it and add those three. Then copy `.env.example` to `.env` in the repository root and fill in the values in your own
+Account → Workers Builds Configuration: Read and Account → Turnstile Sites: Read, and, for the
+contact email (item 17), Account → Email Routing Addresses: Read. If you made the token before the
+contact form, edit it and add those four. Then copy `.env.example` to `.env` in the repository root and fill in the values in your own
 editor.
 
 **How it will be confirmed**
@@ -421,18 +422,20 @@ done in the order shown. Two rules apply throughout:
 ## 16. Contact bindings present {#contact-bindings}
 
 **What it is for**
-The contact form needs five Cloudflare pieces in place: the two D1 databases, the Turnstile
-widget, three Worker secrets, the site key build variable and a production deploy that applies the
-database migrations. One check reads all five and names every gap in a single run.
+The contact form needs five Cloudflare pieces in place: the two D1 databases (which serve the
+critical thinking questions; contact messages are no longer stored), the Turnstile widget, one Worker
+secret, the site key build variable and a production deploy that applies the database migrations.
+One check reads all five and names every gap in a single run. The email side of the form is
+[Contact email](#contact-email).
 
 **Where to do it**
 Work through the parts in this order.
 
 ### Databases
 
-The site's Worker keeps its data in Cloudflare D1: contact messages, and the cached critical
-thinking questions and their usage bucket. Production (`dcc-web`) and preview (`dcc-web-preview`)
-are separate databases so a test message never lands in the real one.
+The site's Worker keeps its data in Cloudflare D1: the cached critical thinking questions and their
+usage bucket. Production (`dcc-web`) and preview (`dcc-web-preview`) are separate databases so
+preview testing never touches the real one.
 
 Read this first. Both databases are created in Western North America (`wnam`). D1 cannot keep
 data only in Canada, and the location **cannot be changed** after the databases are created. If you
@@ -469,42 +472,35 @@ keys for **preview only** (research R6 in `specs/007-contact-form/research.md`).
 
 ### Worker secrets
 
-The contact form's Workers need three secrets, stored as Worker secrets and never in the
-repository: the Turnstile secret key, a read token for the scheduled assistant that fetches new
-messages, and a salt used to hash visitor addresses for rate limiting.
+The contact form's Workers need one secret, stored as a Worker secret and never in the
+repository: the Turnstile secret key.
 
-In a terminal in the repository, run these yourself and type or paste each value at the prompt.
-Never paste a value into the chat. For the read token, generate a new random value in your password
-manager first. The repository's `.env` holds the read-only token from step 2, and Wrangler would use
-it instead of your dashboard login, so every command passes `--env-file /dev/null`. Production
-(`dcc-web`, `--env ""` selects the top-level environment):
+In a terminal in the repository, run this yourself and type or paste the value at the prompt.
+Never paste a value into the chat. The repository's `.env` holds the read-only token from step 2,
+and Wrangler would use it instead of your dashboard login, so every command passes
+`--env-file /dev/null`. Production (`dcc-web`, `--env ""` selects the top-level environment):
 
 ```sh
 pnpm exec wrangler secret put TURNSTILE_SECRET_KEY --env "" --env-file /dev/null
-pnpm exec wrangler secret put CONTACT_READ_TOKEN --env "" --env-file /dev/null
-openssl rand -hex 32 | pnpm exec wrangler secret put IP_HASH_SALT --env "" --env-file /dev/null
 ```
 
-Preview (`dcc-web-preview`): the same three commands with `--env preview` in place of `--env ""`,
-using a **different** read token and salt. The first preview command offers to create the Worker
-`dcc-web-preview`; answer yes. "No access to the specified resource" means the read-only token was
-used: check that `--env-file /dev/null` is on the command.
-Give each read token only to the scheduled assistant for that environment.
+Preview (`dcc-web-preview`): the same command with `--env preview` in place of `--env ""`. The first
+preview command offers to create the Worker `dcc-web-preview`; answer yes. "No access to the
+specified resource" means the read-only token was used: check that `--env-file /dev/null` is on the
+command.
 
-**Replacing a secret.** If a read token, salt or Turnstile secret leaks, run the same
-`wrangler secret put` command again with a new value. On `dcc-web` it takes effect on the next
-request with no redeploy. On `dcc-web-preview`, plain `secret put` refuses once a branch build has
-uploaded a preview-alias version ("the latest version of your Worker isn't currently deployed"), so
-use the versions form, deploy it, then rebuild the branch so its alias inherits the new value:
+**Replacing a secret.** If the Turnstile secret leaks, run the same `wrangler secret put` command
+again with a new value. On `dcc-web` it takes effect on the next request with no redeploy. On
+`dcc-web-preview`, plain `secret put` refuses once a branch build has uploaded a preview-alias
+version ("the latest version of your Worker isn't currently deployed"), so use the versions form,
+deploy it, then rebuild the branch so its alias inherits the new value:
 
 ```sh
-pnpm exec wrangler versions secret put CONTACT_READ_TOKEN --env preview --env-file /dev/null
+pnpm exec wrangler versions secret put TURNSTILE_SECRET_KEY --env preview --env-file /dev/null
 pnpm exec wrangler versions deploy --env preview --env-file /dev/null
 ```
 
-then choose **Retry build** on the latest `dcc-web-preview` build (or push a commit). After replacing
-a read token, give the new value to the scheduled assistant. A value from `openssl rand -hex 32`
-avoids shell-quoting trouble when the assistant sends it as a bearer token.
+then choose **Retry build** on the latest `dcc-web-preview` build (or push a commit).
 
 ### Site key build variable
 
@@ -516,13 +512,13 @@ add a **build** variable named `PUBLIC_TURNSTILE_SITE_KEY` (plain text) with the
 ### Production deploy
 
 `dcc-web`'s production deploy command is `pnpm run deploy:production`, which applies the database
-migrations and registers the daily clean-up schedule on every build of `main`. If the command is
-wrong: `dcc-web` → Settings → Build → production deploy command →
-`pnpm run deploy:production`, then Retry the latest `main` build. Until it has run, production's
-contact form answers "service unavailable".
+migrations on every build of `main`. The Worker has no Cron Trigger any more: the deploy removes the
+old daily clean-up schedule, and the check reports one still registered as a problem. If the command
+is wrong: `dcc-web` → Settings → Build → production deploy command →
+`pnpm run deploy:production`, then Retry the latest `main` build.
 
 `dcc-web-preview` builds branches with `pnpm run deploy:preview` (see
-[Workers Builds](#workers-builds)); its migrations and clean-up schedule come from that deploy, and
+[Workers Builds](#workers-builds)); its migrations come from that deploy, and
 the CI preview check fails the pull request if the preview deploy fails. The Workers Builds API token
 may need the **Workers AI** permission for the preview build to deploy the `AI` binding.
 
@@ -536,11 +532,11 @@ deploy), and the next action is the fix for the first failing part.
   could not be confirmed" and stays missing.
 - **Turnstile widget:** a widget named `dcc-web contact` exists in managed mode and its domains
   include `doncoleman.ca`, plus either `drc-dev.workers.dev` or the preview fallback.
-- **Worker secrets:** `TURNSTILE_SECRET_KEY`, `CONTACT_READ_TOKEN` and `IP_HASH_SALT` exist on both
-  `dcc-web` and `dcc-web-preview`. Only the secret **names** are read.
+- **Worker secrets:** `TURNSTILE_SECRET_KEY` exists on both `dcc-web` and `dcc-web-preview`. Only
+  the secret **name** is read.
 - **Site key:** the name `PUBLIC_TURNSTILE_SITE_KEY` exists on every build trigger of both Workers.
 - **Production deploy:** `dcc-web`'s production trigger uses `pnpm run deploy:production`, its
-  database has applied every file in `migrations/`, and it has the cron `17 3 * * *`.
+  database has applied every file in `migrations/`, and no Cron Trigger is registered on it.
 
 It needs the D1: Read, Turnstile Sites: Read, Workers Builds Configuration: Read and Workers Scripts:
 Read permissions (step 2), and never reads a key or a secret value.
@@ -549,14 +545,72 @@ Read permissions (step 2), and never reads a key or a secret value.
 VII (Private Data: Minimal and Protected), VIII (Secure by Default) and IX (Free-Tier First).
 
 **Secrets**
-`TURNSTILE_SECRET_KEY`, `CONTACT_READ_TOKEN` and `IP_HASH_SALT` (Worker secrets, on both Workers),
-and `PUBLIC_TURNSTILE_SITE_KEY` (a public build variable, not a secret).
+`TURNSTILE_SECRET_KEY` (a Worker secret, on both Workers), and `PUBLIC_TURNSTILE_SITE_KEY` (a public
+build variable, not a secret).
+
+## 17. Contact email {#contact-email}
+
+**What it is for**
+The contact form emails each accepted message to `contact@doncoleman.ca` through the Worker's
+`send_email` binding. Cloudflare Email Routing must be on for the sending subdomain
+`mail.doncoleman.ca`, and the destination address must be verified, before the first deploy that
+carries the binding. This step is done before the pull request's first push. Email Routing is set
+up on the subdomain only, so the apex records that carry Don's iCloud mail stay untouched.
+
+**Where to do it**
+1. Cloudflare dashboard → Email Routing → `doncoleman.ca` → Settings → Subdomains: add `mail`.
+   **Stop if the dashboard offers to add, change or remove any record on `doncoleman.ca` itself**
+   (MX, SPF or DKIM at the apex). Decline it, tell the agent, and choose a fallback; do not accept
+   an apex change.
+2. Email Routing → Destination addresses: add `contact@doncoleman.ca`, then open the verification
+   link sent to that mailbox. Send yourself a normal email to the address to see it arrive.
+3. Tell the agent. It copies the records Cloudflare created on `mail.doncoleman.ca` (MX, SPF and any
+   DKIM record) exactly into `setup/dns-baseline.json`.
+4. Run `pnpm setup:check --item contact-email`; then `pnpm setup:check` should show items 4, 5 and
+   17 complete.
+5. Add Account → **Email Routing Addresses: Read** to the read-only API token from step 2, so the
+   check can read the destination addresses.
+
+After the release, within 7 days (hygiene, not a security deadline), delete the two retired Worker
+secrets from both Workers. `--env-file /dev/null` keeps Wrangler on your dashboard login instead of
+the read-only token in `.env`:
+
+```sh
+pnpm exec wrangler secret delete CONTACT_READ_TOKEN --env "" --env-file /dev/null
+pnpm exec wrangler secret delete IP_HASH_SALT --env "" --env-file /dev/null
+pnpm exec wrangler secret delete CONTACT_READ_TOKEN --env preview --env-file /dev/null
+pnpm exec wrangler secret delete IP_HASH_SALT --env preview --env-file /dev/null
+```
+
+Also retire or reconfigure any scheduled assistant that called the old retrieval endpoint.
+
+**How it will be confirmed**
+`pnpm setup:check --item contact-email` reports complete when both parts pass. Any failing line is
+prefixed with its part.
+
+- **Destination address:** `contact@doncoleman.ca` (the `destination_address` in `wrangler.jsonc`)
+  is in the account's Email Routing destination addresses with a verification time. "Not added" and
+  "waiting for the verification link" are reported separately.
+- **Sending subdomain:** public DNS answers MX for `mail.doncoleman.ca` with
+  `route1.mx.cloudflare.net`, `route2.mx.cloudflare.net` and `route3.mx.cloudflare.net`, and a TXT
+  SPF record containing `include:_spf.mx.cloudflare.net`.
+- The apex is not re-checked here: item 5 (`mail-records`) fails if any apex iCloud record changes.
+
+It needs the Email Routing Addresses: Read permission on the token, and never reads a secret value.
+
+**Constitution principle**
+VII (Private Data: Minimal and Protected), VIII (Cloudflare Best Practices) and IX (Cost Ceiling).
+
+**Secrets**
+None are set in this step. The check uses `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from
+`.env` (names only). The retired Worker secrets `CONTACT_READ_TOKEN` and `IP_HASH_SALT` are
+deleted as above.
 
 # Edge protections
 
 These are dashboard settings Don made by hand on 2026-10-09, for
 issue #91. They are recorded here for reference. They are not setup items, they are not in the
-16-item registry, and `pnpm setup:check` does not check them.
+17-item registry, and `pnpm setup:check` does not check them.
 
 ### API rate-limiting rule
 

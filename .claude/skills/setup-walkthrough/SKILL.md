@@ -139,14 +139,12 @@ commit and push. This is the only non-check command the skill runs during the wa
 
 Don never pastes a secret into the chat. The check confirms these by name only and the skill
 never asks for a value. Shown for Don to run himself at the Worker secrets part, typing or
-pasting each value at Wrangler's prompt (production first, then the same three with `--env preview`
-in place of `--env ""`, using a different read token and salt). `--env-file /dev/null` keeps Wrangler
-from using the read-only token in the repository's `.env` instead of Don's dashboard login:
+pasting the value at Wrangler's prompt (production first, then the same command with `--env preview`
+in place of `--env ""`). `--env-file /dev/null` keeps Wrangler from using the read-only token in the
+repository's `.env` instead of Don's dashboard login:
 
 ```sh
 pnpm exec wrangler secret put TURNSTILE_SECRET_KEY --env "" --env-file /dev/null
-pnpm exec wrangler secret put CONTACT_READ_TOKEN --env "" --env-file /dev/null
-openssl rand -hex 32 | pnpm exec wrangler secret put IP_HASH_SALT --env "" --env-file /dev/null
 ```
 
 To replace a leaked secret on `dcc-web`, Don runs the same `wrangler secret put` command again with
@@ -154,3 +152,31 @@ a new value; no redeploy is needed. On `dcc-web-preview` plain `secret put` refu
 build, so Don runs `wrangler versions secret put NAME --env preview --env-file /dev/null`, then
 `wrangler versions deploy --env preview --env-file /dev/null`, and the agent pushes a commit (or Don
 retries the build) so the branch alias inherits the new value.
+
+## Contact email (item 17)
+
+`contact-email` is `phase: before-merge`: it must be complete before the branch's first push, because
+the first deploy carrying the email binding needs a verified destination. Use `docs/setup.md#contact-email`.
+The walkthrough only ever involves the sending subdomain `mail.doncoleman.ca`.
+
+1. Subdomain. Don adds `mail` under Email Routing, Settings, Subdomains, in the dashboard. **Stop** if the
+   dashboard offers to add, change or remove any record on `doncoleman.ca` itself (the apex MX, SPF or
+   DKIM): tell Don to decline it, do not continue, and report it so a fallback can be chosen. The apex
+   carries his iCloud mail and item 5 (`mail-records`) guards it.
+2. Destination. Don adds `contact@doncoleman.ca` under Destination addresses and opens the verification
+   link in that mailbox, then sends himself a normal email to see it arrive.
+3. Baseline. Once Don says Done, the records Cloudflare created on `mail.doncoleman.ca` (MX, SPF, any
+   DKIM) are copied exactly into `setup/dns-baseline.json` (a repository file; the skill still never
+   changes DNS), then `pnpm setup:check --json --item contact-email` runs, followed by a full run to see
+   items 4, 5 and 17 complete.
+4. Token. If the check says it could not read the destination addresses, send Don back to
+   `local-credentials` (item 2) to add Account, Email Routing Addresses: Read to his read-only token.
+5. Retired secrets. Within 7 days of release Don deletes `CONTACT_READ_TOKEN` and `IP_HASH_SALT` from
+   both Workers. `--env-file /dev/null` keeps Wrangler on his dashboard login.
+   Shown for Don to run himself:
+
+```sh
+pnpm exec wrangler secret delete CONTACT_READ_TOKEN --env "" --env-file /dev/null
+pnpm exec wrangler secret delete IP_HASH_SALT --env "" --env-file /dev/null
+pnpm exec wrangler secret delete CONTACT_READ_TOKEN --env preview --env-file /dev/null
+pnpm exec wrangler secret delete IP_HASH_SALT --env preview --env-file /dev/null

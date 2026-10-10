@@ -313,5 +313,16 @@ export function createCloudflareReader(options: CloudflareReaderOptions): Cloudf
         }));
       });
     },
+
+    async listEmailRoutingAddresses(accountId: string) {
+      return guarded("Email Routing Addresses: Read", async () => {
+        const addresses: Array<{ email?: string; verified?: unknown }> = [];
+        for await (const address of client.emailRouting.addresses.list({ account_id: accountId })) {
+          addresses.push(address as never);
+        }
+        // Only the address and whether it is verified: the tag and id are dropped.
+        return addresses.map((a) => ({ email: a.email ?? "", verified: stringOrNull(a.verified) }));
+      });
+    },
   };
 }

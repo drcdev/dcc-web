@@ -6,9 +6,8 @@ import { couldNotCheck, type ItemLabel } from "./shared.ts";
 
 export const PRODUCTION_DB_NAME = "dcc-web";
 export const PREVIEW_DB_NAME = "dcc-web-preview";
-export const REQUIRED_WORKER_SECRETS = ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"] as const;
+export const REQUIRED_WORKER_SECRETS = ["TURNSTILE_SECRET_KEY"] as const;
 export const SITE_KEY_VARIABLE = "PUBLIC_TURNSTILE_SITE_KEY";
-export const DEFAULT_CRON = "17 3 * * *";
 export const PRODUCTION_DEPLOY_COMMAND = "pnpm run deploy:production";
 export const EXPECTED_REGION = "WNAM";
 
@@ -18,7 +17,7 @@ interface WranglerDatabase {
 }
 
 interface WranglerConfig {
-  triggers?: { crons?: string[] };
+  send_email?: Array<{ destination_address?: string; allowed_sender_addresses?: string[] }>;
   d1_databases?: WranglerDatabase[];
   env?: { preview?: { d1_databases?: WranglerDatabase[] } };
 }
@@ -34,7 +33,6 @@ export interface ContactDatabaseConfig {
 export interface ContactConfig {
   production: ContactDatabaseConfig;
   preview: ContactDatabaseConfig;
-  productionCron: string;
 }
 
 export function isPlaceholderId(id: string): boolean {
@@ -46,7 +44,7 @@ function toDatabase(entry: WranglerDatabase | undefined, fallbackName: string): 
   return { name: entry?.database_name ?? fallbackName, id, placeholder: isPlaceholderId(id) };
 }
 
-/** Reads the D1 IDs and crons the Workers are expected to have from wrangler.jsonc; null when unreadable. */
+/** Reads the D1 IDs the Workers are expected to have from wrangler.jsonc; null when unreadable. */
 export function readContactConfig(ctx: ProviderContext): ContactConfig | null {
   const text = ctx.fs.readText("wrangler.jsonc");
   if (text === null) return null;
@@ -59,8 +57,32 @@ export function readContactConfig(ctx: ProviderContext): ContactConfig | null {
   return {
     production: toDatabase(parsed.d1_databases?.[0], PRODUCTION_DB_NAME),
     preview: toDatabase(parsed.env?.preview?.d1_databases?.[0], PREVIEW_DB_NAME),
-    productionCron: parsed.triggers?.crons?.[0] ?? DEFAULT_CRON,
   };
+}
+
+export interface EmailConfig {
+  /** `send_email[0].destination_address`: the one verified address the form emails. */
+  destination: string;
+  /** The sending subdomain, taken from `allowed_sender_addresses[0]` (e.g. "mail.doncoleman.ca"). */
+  subdomain: string;
+}
+
+/** Reads the email destination and sending subdomain from wrangler.jsonc; null when unreadable or absent. */
+export function readEmailConfig(ctx: ProviderContext): EmailConfig | null {
+  const text = ctx.fs.readText("wrangler.jsonc");
+  if (text === null) return null;
+  let parsed: WranglerConfig;
+  try {
+    parsed = JSON.parse(stripJsonc(text)) as WranglerConfig;
+  } catch {
+    return null;
+  }
+  const binding = parsed.send_email?.[0];
+  const destination = binding?.destination_address;
+  const sender = binding?.allowed_sender_addresses?.[0];
+  const subdomain = sender?.split("@")[1];
+  if (!destination || !subdomain) return null;
+  return { destination, subdomain };
 }
 
 export function workerNames(ctx: ProviderContext): { production: string; preview: string } {

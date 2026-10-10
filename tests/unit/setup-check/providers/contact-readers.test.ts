@@ -242,6 +242,32 @@ describe("listTurnstileWidgets", () => {
   });
 });
 
+describe("listEmailRoutingAddresses", () => {
+  it("returns email and verified timestamp only, null when unverified", async () => {
+    const list = vi.fn(() =>
+      iterate([
+        { email: "contact@doncoleman.ca", verified: "2026-10-10T12:00:00Z", tag: "t", id: "i" },
+        { email: "other@example.com" },
+      ]),
+    );
+    const result = await reader({ emailRouting: { addresses: { list } } }).listEmailRoutingAddresses("acct");
+    expect(result).toEqual([
+      { email: "contact@doncoleman.ca", verified: "2026-10-10T12:00:00Z" },
+      { email: "other@example.com", verified: null },
+    ]);
+    expect(list).toHaveBeenCalledWith({ account_id: "acct" });
+  });
+
+  it("gives the permission hint on 403", async () => {
+    const list = vi.fn(() => {
+      throw new HttpError(403);
+    });
+    await expect(reader({ emailRouting: { addresses: { list } } }).listEmailRoutingAddresses("acct")).rejects.toThrow(
+      /Email Routing Addresses: Read/,
+    );
+  });
+});
+
 describe("new reader failures are ProviderAccessError", () => {
   it("wraps a generic failure and redacts the token", async () => {
     const get = vi.fn(async () => {

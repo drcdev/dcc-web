@@ -24,6 +24,7 @@ const ITEM_IDS = [
   "preview-noindex",
   "web-analytics",
   "contact-bindings",
+  "contact-email",
 ];
 
 // Single-section extractor (distinct from extractSections below), matching
@@ -50,7 +51,7 @@ function extractSections(markdown: string): { id: string; body: string }[] {
 }
 
 describe("docs/setup.md structure", () => {
-  it("has exactly 16 item sections whose anchors are the spec's fixed item IDs in step order", () => {
+  it("has exactly 17 item sections whose anchors are the spec's fixed item IDs in step order", () => {
     const sections = extractSections(contents);
     expect(sections.map((s) => s.id)).toEqual(ITEM_IDS);
   });
@@ -149,15 +150,29 @@ describe("docs/setup.md contact-form part", () => {
 
   it("the contact bindings item gives secret put commands and the replacement rule, and never asks for a value in chat", () => {
     const s = extractSection(contents, "contact-bindings");
-    for (const name of ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"]) {
-      expect(s).toContain(name);
-    }
     expect(s).toContain("wrangler secret put TURNSTILE_SECRET_KEY");
-    expect(s).toContain("wrangler secret put CONTACT_READ_TOKEN");
-    expect(s).toContain("wrangler secret put IP_HASH_SALT");
+    expect(s).not.toMatch(/CONTACT_READ_TOKEN|IP_HASH_SALT/);
+    expect(s).not.toContain("17 3 * * *");
     expect(s).toContain("--env preview");
     expect(s).toMatch(/replac/i);
     expect(s).toMatch(/never[^.]*chat/i);
+  });
+
+  it("the contact email item gives the subdomain-only steps, the stop rule, the token permission and the secret clean-up", () => {
+    const s = extractSection(contents, "contact-email");
+    expect(contents.indexOf("{#contact-email}")).toBeGreaterThan(contents.indexOf("{#contact-bindings}"));
+    expect(s).toContain("mail.doncoleman.ca");
+    expect(s).toContain("contact@doncoleman.ca");
+    expect(s).toMatch(/Subdomains/);
+    expect(s).toMatch(/stop/i);
+    expect(s).toMatch(/apex|doncoleman\.ca itself/i);
+    expect(s).toContain("Email Routing Addresses: Read");
+    expect(s).toContain("setup/dns-baseline.json");
+    expect(s).toContain("pnpm setup:check --item contact-email");
+    expect(s).toContain("wrangler secret delete CONTACT_READ_TOKEN");
+    expect(s).toContain("wrangler secret delete IP_HASH_SALT");
+    expect(s).toContain("--env-file /dev/null");
+    expect(s).toMatch(/7 days/);
   });
 
   it("the contact bindings item names the preview and production deploy commands and the site-key variable", () => {
