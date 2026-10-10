@@ -71,7 +71,7 @@
       "name": "_dmarc.doncoleman.ca",
       "content": "v=DMARC1; p=none; rua=mailto:a689ba2b4e8e46018da5c62d5df6361c@dmarc-reports.cloudflare.net",
       "priority": null,
-      "ttl": 3600,
+      "ttl": 1,
       "source": "cloudflare",
       "decision": "keep",
       "reason": null
@@ -81,7 +81,7 @@
       "name": "doncoleman.ca",
       "content": "0 issue \"letsencrypt.org\"",
       "priority": null,
-      "ttl": 3600,
+      "ttl": 1,
       "source": "cloudflare",
       "decision": "keep",
       "reason": null
@@ -91,7 +91,7 @@
       "name": "doncoleman.ca",
       "content": "0 issue \"pki.goog\"",
       "priority": null,
-      "ttl": 3600,
+      "ttl": 1,
       "source": "cloudflare",
       "decision": "keep",
       "reason": null
@@ -101,7 +101,7 @@
       "name": "doncoleman.ca",
       "content": "0 issue \"sectigo.com\"",
       "priority": null,
-      "ttl": 3600,
+      "ttl": 1,
       "source": "cloudflare",
       "decision": "keep",
       "reason": null
@@ -111,7 +111,7 @@
       "name": "doncoleman.ca",
       "content": "0 issue \"ssl.com\"",
       "priority": null,
-      "ttl": 3600,
+      "ttl": 1,
       "source": "cloudflare",
       "decision": "keep",
       "reason": null

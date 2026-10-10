@@ -14,8 +14,8 @@ it into the repository-local reference folder from the repository root:
 gh repo clone drcdev/flux .reference/flux -- --depth 1
 ```
 
-Flux is being retired with Ghost (`docs/launch.md` T8). Archiving keeps the repository readable,
-so the same command still clones it.
+Flux's site is retired with Ghost (`docs/launch.md` T8), but the repository stays where it is and
+is not archived, so the same command still clones it.
 
 `.reference/` is gitignored — the clone never gets committed. Treat `.reference/flux` as
 **read-only**: read it to understand markup, styles and behaviour, and port what's needed by

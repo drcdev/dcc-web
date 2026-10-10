@@ -145,7 +145,8 @@ Don started stage 5 on 2026-10-09, before the 14-day mark.
 - [x] **T5 to T7** — **Irreversible.** Review and export the Supabase submissions, confirm the
   project is Flux's, delete it, remove leftover Supabase secrets. Done 2026-10-09: no Supabase export
   needed; the Flux Supabase project was already gone; no Supabase secrets left.
-- [ ] **T8** — Scan `drcdev/flux` for secrets and personal data, then archive it.
+- [x] **T8** — Scan `drcdev/flux` for secrets and personal data, then archive it. Done 2026-10-09:
+  the working-tree scan was clean, and by Don's decision Flux stays in place unarchived.
 - [x] **#93 manual half** — list the zone's hostnames and confirm each browser-facing one serves
   HTTPS; add a `_dmarc` TXT at `p=none` with reporting (and for `mail.` if it still sends); add CAA
   records naming only the certificate authorities Cloudflare uses for the zone. Done 2026-10-09:
@@ -156,7 +157,8 @@ Don started stage 5 on 2026-10-09, before the 14-day mark.
   `keep`; `public/_headers` drops the `new.doncoleman.ca` noindex rule (and its assertions in
   `tests/unit/site/headers.test.ts` and `tests/build/indexing.test.ts`) and gains `includeSubDomains`
   on HSTS (preload decided separately); `docs/setup.md` DNSSEC text says the zone is signed;
-  FR-010d in `specs/011-launch/spec.md` is reopened; `docs/design-source.md` notes Flux is being retired (archive pending T8);
+  FR-010d in `specs/011-launch/spec.md` is reopened; `docs/design-source.md` notes Flux's site is retired and the repository
+  stays unarchived (T8);
   optionally the apex Custom Domain moves into `wrangler.jsonc`. Done when `verify` passes and
   `mail-records` and `dns-records-parity` are complete against the new baseline. Closes #93.
 - [ ] **DMARC tightening** (manual, about 4 weeks later) — after the reports show only iCloud

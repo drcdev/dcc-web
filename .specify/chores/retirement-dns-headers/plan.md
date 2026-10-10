@@ -364,3 +364,11 @@ Work-item count: **7**.
   before the gate whichever lands first, and re-check the stage 5 lines.
 - **Major change.** The PR body must flag Principle III ("changes CI, deployment or
   infrastructure configuration", `public/_headers`) and name the preview HSTS check.
+
+## Review round 1 fixes
+
+- HIGH-1: the five new keep records in `setup/dns-baseline.json` (`_dmarc` TXT and four CAA) now
+  carry `"ttl": 1` (Cloudflare Auto), per acceptance 3 / W5.
+- Don's decision (2026-10-09): Flux stays in place unarchived and T8 is complete. Updated
+  `docs/cutover-plan.md` (T8 ticked, T9 wording), `specs/011-launch/tasks.md` T103 (ticked) and
+  `docs/design-source.md`. `docs/launch.md` is untouched.
