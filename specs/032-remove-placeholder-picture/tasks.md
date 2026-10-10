@@ -78,8 +78,8 @@ None. The three stories touch separate files and need no shared prerequisite bey
 
 ## Phase 6: Polish and cross-cutting
 
-- [ ] T018 Run `pnpm run verify` (ask Don first per the memory note; run via the wrapper in the background under `perl alarm`, read the `VERIFY_EXIT=` line); lint, type check (`astro check`), unit, component, build, e2e, a11y, visual and budget checks all pass. Push for CI if local failure is load-only and Don allows.
-- [ ] T019 Confirm the PR body states: not a major change (Constitution III), expected cost $0, and the eight refreshed baselines. No `[PREVIEW-CHECK]` items: nothing here needs the preview deployment, since the visual diff is covered by T017, so auto-merge may be armed after the final push.
+- [X] T018 Run `pnpm run verify` (ask Don first per the memory note; run via the wrapper in the background under `perl alarm`, read the `VERIFY_EXIT=` line); lint, type check (`astro check`), unit, component, build, e2e, a11y, visual and budget checks all pass. Push for CI if local failure is load-only and Don allows.
+- [X] T019 Confirm the PR body states: not a major change (Constitution III), expected cost $0, and the eight refreshed baselines. No `[PREVIEW-CHECK]` items: nothing here needs the preview deployment, since the visual diff is covered by T017, so auto-merge may be armed after the final push.
 
 ## Dependencies and order
 
