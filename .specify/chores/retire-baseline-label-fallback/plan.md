@@ -166,7 +166,7 @@ documented path where the issue asks for Docker to be the only one.
   A future workflow file would need its own block (no generic all-workflows test exists today;
   adding one is out of scope).
 
-### W5 — Setup guide item 10 and the script comment
+### [x] W5 — Setup guide item 10 and the script comment
 
 - **Files:** `docs/setup.md` (item 10, lines 266–273 and the "Secrets" line 288),
   `scripts/visual-baselines-linux.sh` (header comment, lines 4–5).
