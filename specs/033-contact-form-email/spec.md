@@ -23,12 +23,27 @@ This is a **major change** under Constitution Principle III: it replaces an inte
 email service, removes the message store and retrieval endpoint), changes how contact data is
 collected, stored, retrieved and deleted, and changes Worker and DNS configuration. It also
 conflicts with the current wording of Principles V, VII and VIII and the Technology Constraints,
-which describe contact submissions as stored in D1 and retrieved with a bearer token; those must
-be amended first (see Dependencies).
+which describe contact submissions as stored in D1, rate-limited per sender and retrieved with a
+bearer token; those are amended as this slice's first task (see Dependencies).
 
 ## Clarifications
 
-_None yet. Open questions are marked [NEEDS CLARIFICATION] below for the clarify phase._
+### Session 2026-10-10
+
+- Q: With the message store gone, how should repeat senders be limited? → A: By the human check
+  (Turnstile) alone. The per-sender limits of 3 an hour and 5 a day are removed, and nothing about
+  senders is stored. Accepted trade-off: spam that passes the human check reaches Don's inbox.
+- Q: What should the privacy policy promise about how long Don keeps contact emails? → A: Kept only
+  as long as needed to deal with the enquiry, and deleted on request. No fixed period.
+- Q: Where should Email Routing be turned on, given the domain's mail is hosted by iCloud? → A: On a
+  sending subdomain only (for example `mail.doncoleman.ca`), sending from an address there to
+  contact@doncoleman.ca. The apex domain's iCloud MX, SPF and DKIM records stay untouched; planning
+  confirms that subdomain-only routing works with the apex left off.
+- Q: Is the constitution amendment made inside this slice or first as a separate step? → A: Inside
+  this slice, as the first task, through the constitution command, in the same pull request.
+- Q: Does dropping the message store ship in the same pull request as the switch to email? → A: Yes,
+  the same pull request. Collecting unread stored messages is a pre-merge step, and auto-merge stays
+  off until Don confirms it is done.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -68,8 +83,7 @@ the reply address.
 
 ### User Story 2 - A visitor learns when sending fails, and keeps what they typed (Priority: P1)
 
-If the message cannot be delivered for sending (the email service refuses it, is unreachable, or
-a free-plan sending limit is reached), the visitor sees the existing "not sent, please try again"
+If the message cannot be handed off for sending (the email service refuses it or is unreachable), the visitor sees the existing "not sent, please try again"
 error and everything they typed stays in the form. The site never shows the confirmation for a
 message that was not handed off for delivery.
 
@@ -85,8 +99,8 @@ all values remain, no confirmation is shown, and the failure is logged with its 
    message, **Then** they see the existing service-unavailable error and their entries are kept.
 2. **Given** a send failure, **When** it is logged, **Then** the log records only that sending
    failed and the kind of error, never any field value, address or fingerprint.
-3. **Given** the existing validation, consent, human-check and sending-limit errors, **When** they
-   occur, **Then** the visitor sees the same errors as today and no email is sent.
+3. **Given** the existing validation, consent and human-check errors, **When** they occur,
+   **Then** the visitor sees the same errors as today and no email is sent.
 
 ---
 
@@ -115,23 +129,26 @@ the message store.
 3. **Given** the production and preview databases after the change is deployed, **When** they are
    inspected, **Then** the contact message store no longer exists, and the questions feature's
    data is untouched.
-4. **Given** messages still stored before the deploy, **When** the change is prepared for release,
-   **Then** the release steps tell Don to collect any unread messages first, and the store is
-   removed only after that step.
+4. **Given** messages still stored before the deploy, **When** the pull request is ready to merge,
+   **Then** it lists collecting any unread messages as a pre-merge step, auto-merge stays off, and
+   the pull request merges (removing the store) only after Don confirms the step is done.
 
 ---
 
 ### User Story 4 - Spam and abuse are still kept out (Priority: P2)
 
 Automated and abusive submissions are still rejected before any email is sent, so Don's inbox does
-not fill with spam and the free-plan sending allowance is not used up by abuse.
+not fill with spam. The human check (Turnstile), the hidden trap field and the same-origin check
+are the only spam controls; there is no per-sender limit and nothing about senders is stored. Spam
+that passes the human check reaches Don's inbox; this trade-off is accepted.
 
 **Why this priority**: Every accepted submission now lands in Don's inbox, so the spam controls
 matter more than before, but the form works without the extra hardening.
 
-**Independent Test**: Submit with the hidden trap field filled, with a failed human check, from
-another origin, and more often than the sending limits allow; confirm each is refused (or, for the
-trap field, silently accepted) and no email is sent for any of them.
+**Independent Test**: Submit with the hidden trap field filled, with a failed human check and from
+another origin; confirm each is refused (or, for the trap field, silently accepted) and no email is
+sent for any of them. Submit several valid messages in a row from one sender and confirm each is
+sent and no "too many messages" error appears.
 
 **Acceptance Scenarios**:
 
@@ -141,12 +158,9 @@ trap field, silently accepted) and no email is sent for any of them.
    as today and no email is sent.
 3. **Given** a submission from another website or with no origin information, **When** it is
    sent, **Then** it is refused and no email is sent.
-4. **Given** a sender who has reached the sending limit, **When** they send again, **Then** they
-   see the existing "too many messages" error and no email is sent. The limits are
-   [NEEDS CLARIFICATION: keep today's per-sender limits of 3 an hour and 5 a day, which needs the
-   site to keep a short-lived record of each sender's salted fingerprint and send times (no message
-   content) — or replace them with a coarser limit the platform provides that needs no stored
-   record — or rely on the human check alone?]
+4. **Given** a sender who has already sent several messages, **When** they send again and pass
+   the human check, **Then** the message is sent; the per-sender limits of 3 an hour and 5 a day
+   no longer exist, and no fingerprint or send time is recorded.
 
 ---
 
@@ -174,8 +188,8 @@ body say it came from a preview; send one from production and confirm it carries
 
 The privacy policy and the note on the Contact page describe the new handling in plain language:
 the message is sent by email to Don's inbox and not stored on the site; the email service used;
-what happens to the sender's IP address; how long Don keeps the email; and how to ask for it to be
-deleted.
+that the sender's IP address is not stored; that Don keeps the email only as long as needed to
+deal with the enquiry; and how to ask for it to be deleted.
 
 **Why this priority**: Consent is only informed if the policy matches what actually happens.
 
@@ -188,7 +202,8 @@ are stored in a database or that no email is sent.
 
 1. **Given** the privacy policy, **When** a visitor reads the contact form section, **Then** it
    says the message is emailed to Don and not stored by the site, names the email service, states
-   how long the email is kept, and no longer mentions database storage, its region or "no email is
+   that the email is kept only as long as needed to deal with the enquiry and is deleted on
+   request, and no longer mentions database storage, its region or "no email is
    sent".
 2. **Given** the privacy policy, **When** a visitor reads how to have a message deleted, **Then**
    it describes deleting the email from Don's inbox, with no mention of database recovery history.
@@ -202,7 +217,8 @@ are stored in a database or that no email is sent.
 ### User Story 7 - Don completes the one-time email setup (Priority: P3)
 
 The setup walkthrough and setup check cover the steps only Don can do: turning on Cloudflare's
-email routing for the domain (or a sending subdomain) without breaking his existing mailbox,
+email routing for a sending subdomain only (for example `mail.doncoleman.ca`), leaving the apex
+domain's iCloud mail records untouched,
 verifying the fixed destination address, and confirming that the old message-retrieval access key
 is no longer required. The setup check reports what is missing and passes when it is all done.
 
@@ -219,9 +235,10 @@ key is no longer listed as required.
    missing email setup items.
 2. **Given** email routing is on and the destination is verified, **When** Don runs the setup
    check, **Then** those items pass.
-3. **Given** the existing mail records for the domain, **When** email setup is complete, **Then**
-   Don's existing mailbox still receives mail, and the DNS baseline and its parity check reflect
-   any records email routing adds.
+3. **Given** the existing iCloud mail records on the apex domain, **When** email setup is
+   complete, **Then** those records are unchanged, Don's existing mailbox still receives mail, and
+   the DNS baseline and its parity check include the records email routing adds on the sending
+   subdomain.
 4. **Given** the setup check after this change, **When** it lists required secrets, **Then** the
    message-retrieval key is not among them.
 
@@ -234,14 +251,17 @@ key is no longer listed as required.
   This is accepted; the site keeps no record that could detect it, and a duplicate email is
   harmless. (Today a repeated submission identifier is answered from the store without storing
   twice; with no store, that check goes away.)
+- **One sender sends many messages that each pass the human check**: every one is emailed. There
+  is no per-sender limit; this is the accepted trade-off of keeping no record of senders.
 - **Markup, script or line breaks in any field**: the email shows them as plain text. No field can
   add headers, recipients or change the subject's structure (line breaks and control characters in
   the name or project never reach a header).
 - **Very long message (5,000 characters)**: delivered whole; field limits are unchanged.
 - **Visitor's email address is on the destination domain or is Don's own address**: still
   delivered to the fixed destination; the reply address is still the visitor's.
-- **Email service daily or monthly sending allowance reached**: sending fails closed with the
-  existing service-unavailable error; nothing is billed.
+- **Email service refuses a send for any limit of its own**: sending fails closed with the
+  existing service-unavailable error; nothing is billed. (Sends to a verified destination do not
+  count toward Cloudflare's sending quota or daily limits.)
 - **The fixed destination stops being verified** (for example Don removes it): every send fails
   closed and the setup check reports the destination as missing.
 - **Delivery is delayed or the email lands in spam after hand-off**: outside the site's control;
@@ -264,7 +284,8 @@ key is no longer listed as required.
   given"), project (or "not given"), message, and the time received. It MUST be plain text, with
   every field shown as text and never interpreted as markup.
 - **FR-003**: The email MUST set the visitor's email address as its reply address, and its sender
-  MUST be an address on the site's own domain (or sending subdomain) that names the site.
+  MUST be an address on the sending subdomain (for example `mail.doncoleman.ca`) with a display
+  name that names the site.
 - **FR-004**: The subject MUST identify the email as a contact-form message and include the
   visitor's name and, when present, the project; any line break or control character in those
   values MUST be removed before it is used in the subject.
@@ -279,7 +300,8 @@ key is no longer listed as required.
 - **FR-007**: The Contact page, its fields, limits, consent text, validation, accessibility
   behaviour, error and confirmation states, human check, hidden trap field, same-origin check and
   body-size limit MUST behave as they do today (feature 007), except for the privacy wording in
-  FR-014 and FR-015. No email is sent for any refused or trap-field submission.
+  FR-014 and FR-015 and the removed per-sender limit (FR-012). No email is sent for any refused
+  or trap-field submission.
 - **FR-008**: The contact form MUST stay within the existing performance budget and load no new
   client-side script.
 
@@ -292,40 +314,45 @@ key is no longer listed as required.
 - **FR-010**: The message-retrieval endpoint (list new messages, mark read) MUST be removed; any
   request to its addresses MUST receive the site's normal "not found" API response. Its access
   key MUST no longer be required by the Worker configuration or the setup check.
-- **FR-011**: The scheduled daily clean-up of contact messages MUST be removed. Any scheduled job
-  or stored record that remains MUST exist only for what User Story 4's sending limit needs.
-- **FR-012**: Sending limits MUST refuse a sender who exceeds them with the existing "too many
-  messages" error and its retry time, as resolved in User Story 4. If a per-sender record is kept,
-  it MUST hold only a salted fingerprint of the sender's IP address and send times, never any
-  field value, and MUST be deleted automatically within 2 days.
+- **FR-011**: The scheduled daily clean-up of contact messages MUST be removed. It is the Worker's
+  only scheduled job, so the Cron Trigger is removed from the Worker configuration in both
+  environments.
+- **FR-012**: The contact API MUST NOT limit submissions per sender and MUST NOT store or compute
+  anything about a sender (no IP address, salted fingerprint or send time). The per-sender limits
+  of 3 an hour and 5 a day, and the "too many messages" response, are removed from the contact
+  API. The human check, hidden trap field and same-origin check (FR-007) are the spam controls;
+  spam that passes the human check reaching Don's inbox is an accepted trade-off.
 - **FR-013**: Logs MUST record one outcome line per request (sent, trap, invalid, human check
-  failed, rate limited, unavailable, forbidden, too large), with no field value, address,
-  fingerprint or token. The "stored" and "duplicate" outcomes are replaced by "sent".
+  failed, unavailable, forbidden, too large), with no field value, address or token. The "stored"
+  and "duplicate" outcomes are replaced by "sent", and the "rate limited" outcome is removed.
 
 **Privacy wording**
 
 - **FR-014**: The privacy policy MUST state that contact messages are sent by email to Don's
-  inbox and are not stored by the site; name the email service; describe what is done with the
-  sender's IP address under the chosen sending limit; state how long Don keeps contact emails
-  [NEEDS CLARIFICATION: keep the 12-month promise, with Don deleting contact emails by hand
-  after 12 months — or say they are kept only as long as needed to deal with the enquiry, with no
-  fixed period — or another period?]; explain how to ask for a message to be deleted; and remove
-  every statement about D1 storage, its region, database recovery history and "no email is sent".
-  Its "Last updated" date MUST change.
+  inbox and are not stored by the site; name the email service; state that the sender's IP
+  address is not stored or used to limit sending; state that Don keeps contact emails only as
+  long as needed to deal with the enquiry and deletes one on request (no fixed period); explain
+  how to ask for a message to be deleted; and remove every statement about D1 storage, its
+  region, database recovery history, the 12-month retention period, stored IP fingerprints and
+  "no email is sent". Its "Last updated" date MUST change.
 - **FR-015**: The note on the Contact page MUST match the policy's retention statement and keep
   its link to the privacy policy.
 
 **Setup and operations**
 
 - **FR-016**: The setup check and walkthrough MUST include: email routing turned on for the
-  sending domain or subdomain; the fixed destination address verified; and sender
-  authentication records in place. Each step says what to do, where, and how to confirm it. The
-  steps MUST keep Don's existing domain mail working, and the DNS baseline MUST be updated to
-  include any record email routing adds.
-- **FR-017**: The release steps MUST tell Don to collect any unread stored messages before the
-  change that removes the message store is applied to production.
-- **FR-018**: All Worker configuration, the removal of the message store and any remaining
-  scheduled job MUST be committed and applied through CI, never by hand in the dashboard
+  sending subdomain only (for example `mail.doncoleman.ca`), never the apex domain; the fixed
+  destination address verified in Email Routing; and the sender authentication records on the
+  sending subdomain in place. Each step says what to do, where, and how to confirm it. The apex
+  domain's iCloud MX, SPF and DKIM records MUST stay unchanged, and the DNS baseline MUST be
+  updated to include the records email routing adds on the subdomain. Planning MUST confirm from
+  Cloudflare's documentation that routing can be turned on for the subdomain while the apex stays
+  off.
+- **FR-017**: The message store's removal ships in the same pull request as the switch to email.
+  That pull request MUST list collecting any unread stored messages (production and preview) as a
+  pre-merge item for Don, with auto-merge left off until he confirms it is done.
+- **FR-018**: All Worker configuration (including the email binding and the removed Cron Trigger)
+  and the removal of the message store MUST be committed and applied through CI, never by hand in the dashboard
   (Principle VIII).
 - **FR-019**: Setup and repository documentation that describes stored contact messages, the
   retrieval key or message retrieval MUST be updated to describe email delivery instead.
@@ -341,8 +368,6 @@ key is no longer listed as required.
   sent from a preview. Once handed to the email service it lives only in Don's mailbox.
 - **Fixed destination**: the one verified address Don owns that every contact email goes to. It
   is configuration, not data, and it is the only recipient the site can ever send to.
-- **Sender limit record** (only if kept, see User Story 4): a salted fingerprint of the sender's
-  IP address and the times they sent, with no message content, deleted within 2 days.
 
 ## Success Criteria *(mandatory)*
 
@@ -358,8 +383,8 @@ key is no longer listed as required.
   exist in either environment and no submitted field value appears in any site storage or log.
 - **SC-005**: Every request to the old retrieval addresses returns "not found", with or without
   the old key.
-- **SC-006**: 0 emails are sent for trap-field, failed-human-check, cross-origin, invalid or
-  rate-limited submissions in tests.
+- **SC-006**: 0 emails are sent for trap-field, failed-human-check, cross-origin or invalid
+  submissions in tests.
 - **SC-007**: Running costs do not rise: contact email uses only the free allowance for sending
   to verified addresses, and monthly cost stays at or below the $13 ceiling (expected change: $0).
 - **SC-008**: Don's existing domain mailbox keeps receiving mail after email setup, confirmed by
@@ -370,17 +395,19 @@ key is no longer listed as required.
 - The fixed destination is a mailbox Don owns and can verify (default: the site's published
   contact address, contact@doncoleman.ca, already public in the privacy policy, so committing it
   exposes nothing new). The exact address is a setup choice made in planning.
-- Cloudflare allows a Worker to send email to verified destination addresses at no cost on the
-  free plan; sending to arbitrary recipients would need the paid plan. This is why the destination
-  is fixed and why no copy is sent to the visitor.
-- Sending requires Cloudflare's email routing on the sender's domain. The domain's mail is
-  currently hosted elsewhere (its mail records point at another provider), so planning must find a
-  way to turn email routing on that leaves that mailbox working, most likely a dedicated sending
-  subdomain. This is the main technical risk.
+- Cloudflare allows a Worker to send email to verified destination addresses at no cost on any
+  plan, including when only Email Routing is configured, and such sends do not count toward its
+  sending quota or daily limits; sending to arbitrary recipients would need the paid plan. This is
+  why the destination is fixed and why no copy is sent to the visitor.
+- Free sends to verified destinations must come from a domain with Email Routing turned on.
+  Turning routing on for the apex would replace the domain's iCloud MX records, which Cloudflare
+  says cannot coexist with an external mail server, so routing is turned on for a sending
+  subdomain only (for example `mail.doncoleman.ca`). Cloudflare's subdomain documentation says
+  routing can be added per subdomain with records placed on that subdomain; whether that works
+  with the apex left off is the main technical risk and is confirmed in planning.
 - The visitor does not receive a copy of their message (it would need sending to an unverified
   address). The confirmation on screen is unchanged.
-- Duplicate emails from an unclear retry are acceptable; the site keeps no record to prevent them
-  unless one is kept for sending limits anyway.
+- Duplicate emails from an unclear retry are acceptable; the site keeps no record to prevent them.
 - The questions feature keeps the shared database, so only the contact message store is removed,
   not the database itself.
 - Messages already in the store are collected by Don before the store is removed; no export of
@@ -390,14 +417,17 @@ key is no longer listed as required.
 
 ## Dependencies
 
-- **Constitution amendment (blocking, via the constitution command)**: Principle V describes the
-  Contact API as storing submissions and letting Don retrieve them; Principle VII requires contact
-  submissions to be stored only in D1, preview messages stored separately and stored submissions
-  deleted after a retention period; Principle VIII names message retrieval as the bearer-token
-  endpoint and lists D1 migrations and Cron Triggers; the Technology Constraints list D1 storage
-  and a Cron Trigger for the Contact API and do not list an email service. These must be amended
-  to describe email delivery before implementation, as a reviewed major change.
-- Cloudflare email routing on the sending domain or subdomain, and a verified destination address
+- **Constitution amendment (first task of this slice, via the constitution command, same pull
+  request)**: Principle V describes the Contact API as storing submissions, letting Don retrieve
+  them and rate-limiting each sender; Principle VII requires contact submissions to be stored only
+  in D1, a salted IP hash, preview messages stored separately and stored submissions deleted after
+  a retention period; Principle VIII names message retrieval as the bearer-token endpoint, lists
+  D1 migrations and Cron Triggers, and says the contact API rate-limits submissions; the Technology
+  Constraints list D1 storage and a Cron Trigger for the Contact API and do not list an email
+  service; the Security Baseline names the contact API's per-sender rate limit. The amendment
+  describes email delivery with no stored contact data and no per-sender limit. It is made before
+  any other implementation task and reviewed with this pull request as a major change.
+- Cloudflare Email Routing on the sending subdomain only, and a verified destination address
   (Don, during setup).
 
 ## Out of Scope / Follow-up Work
