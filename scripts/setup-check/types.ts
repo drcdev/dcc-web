@@ -115,7 +115,7 @@ export interface DnsBaselineRecord {
   content: string;
   priority: number | null;
   ttl: number;
-  source: "squarespace";
+  source: "squarespace" | "cloudflare";
   decision: "keep" | "drop" | null;
   reason: string | null;
 }

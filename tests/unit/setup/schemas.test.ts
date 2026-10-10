@@ -126,6 +126,30 @@ describe("dnsBaselineSchema (setup/dns-baseline.json)", () => {
     });
     expect(result.success).toBe(true);
   });
+
+  it("accepts a record added in Cloudflare (source: cloudflare)", () => {
+    const result = dnsBaselineSchema.safeParse({
+      originalNameservers: [],
+      records: [
+        {
+          ...validRecord,
+          type: "TXT",
+          content: "example-verification=abc123",
+          ttl: 1,
+          source: "cloudflare",
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an unknown source", () => {
+    const result = dnsBaselineSchema.safeParse({
+      originalNameservers: [],
+      records: [{ ...validRecord, source: "registrar" }],
+    });
+    expect(result.success).toBe(false);
+  });
 });
 
 describe("githubRulesetSchema (setup/github-ruleset.json)", () => {

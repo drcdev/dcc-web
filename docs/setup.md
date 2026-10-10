@@ -107,6 +107,8 @@ DNS only (grey cloud). Leave each record's TTL on Cloudflare's "Auto" preset: th
 dashboard offers only TTL presets, not a custom value, so an exact TTL match isn't possible. The
 baseline still records each record's Squarespace TTL for the audit trail; the check reports a
 difference between it and Cloudflare's TTL as an informational detail only, never a mismatch.
+A record added in Cloudflare after the move, with no Squarespace original, carries `source:
+"cloudflare"` and records the TTL Cloudflare's API reports (`1` when the record is on Auto).
 Run `pnpm setup:dns-snapshot` to see any name in public DNS that is not yet in the baseline.
 
 **How it will be confirmed**
@@ -894,7 +896,7 @@ None.
 **What it is for**
 The domain's mail keeps working: every mail record recorded in `setup/dns-baseline.json` still answers
 unchanged, before and after the switch. The iCloud records must always match. The Mailgun records match
-while they are marked `keep`; once they move to `drop` (after Ghost is retired) they are information only.
+while they are marked `keep`; once they move to `drop` (once Mailgun sending is retired) they are information only.
 
 **Where to do it**
 Cloudflare dashboard → the zone → DNS. Restore any MX, TXT or DKIM CNAME record the details list, exactly as

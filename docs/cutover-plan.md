@@ -138,15 +138,16 @@ Tick T099 to T104. Steps marked **Irreversible** need their evidence first, as `
 - [ ] **T3** — **Irreversible.** Cancel Ghost; revoke Ghost integration keys; remove leftover Ghost
   secrets. Rollback ends here.
 - [ ] **T4** — **Irreversible.** Delete the five Mailgun records on `mail.doncoleman.ca`, the
-  Mailgun sending domain and its keys. Mail test.
+  Mailgun sending domain and its keys. Mail test. The DNS half was done early on 2026-10-09 (the
+  five records are deleted and the baseline marks them `drop`); the sending domain and keys remain.
 - [ ] **T5 to T7** — **Irreversible.** Review and export the Supabase submissions, confirm the
   project is Flux's, delete it, remove leftover Supabase secrets.
 - [ ] **T8** — Scan `drcdev/flux` for secrets and personal data, then archive it.
 - [ ] **#93 manual half** — list the zone's hostnames and confirm each browser-facing one serves
   HTTPS; add a `_dmarc` TXT at `p=none` with reporting (and for `mail.` if it still sends); add CAA
   records naming only the certificate authorities Cloudflare uses for the zone.
-- [ ] **T9 + #93 repo half, one `/chore`** — `setup/dns-baseline.json` sets the five Mailgun records
-  and the two Ghost web records to `drop` with dated reasons and adds the DMARC and CAA records as
+- [ ] **T9 + #93 repo half, one `/chore`** — `setup/dns-baseline.json` sets the two Ghost web
+  records to `drop` with dated reasons and adds the DMARC and CAA records as
   `keep`; `public/_headers` drops the `new.doncoleman.ca` noindex rule (and its assertions in
   `tests/unit/site/headers.test.ts` and `tests/build/indexing.test.ts`) and gains `includeSubDomains`
   on HSTS (preload decided separately); `docs/setup.md` DNSSEC text says the zone is signed;
@@ -162,11 +163,16 @@ Starts once stage 5 is done, so the launch items can only ever report complete. 
 the full scope; the sweep on 2026-10-09 adds the items marked *new*.
 
 - [ ] **Setup check** — remove `live-domain-ghost`, `review-address-removed`,
-  `launch-content-ready`, `launch-main-checks`, the `live-*` items, `mail-records`,
-  `dns-nameservers`, `launch-phase.ts`, the one-shot `preview-builds` and `preview-deploy` items,
+  `launch-content-ready`, `launch-main-checks`, the `live-*` items, `dns-nameservers`,
+  `launch-phase.ts`, the one-shot `preview-builds` and `preview-deploy` items,
   and fold the contact migration items into one "contact bindings present" check. Keep
-  `dns-records-parity` and the baseline (#93 relies on them). Remove the retired `dcc-web-contact`
+  `dns-records-parity` and `mail-records` (the slimmed baseline below relies on them). Remove the retired `dcc-web-contact`
   database branch and the `cloudflare` devDependency if nothing else needs it.
+- [ ] *new* — Slim `setup/dns-baseline.json` to a short list of records that must exist: the iCloud
+  mail MX, SPF and DKIM records, the apex `apple-domain` TXT, the Google verification TXT, and the DMARC and CAA records #93
+  adds. Once Ghost is gone, retire its Squarespace-inventory and rollback roles: the Ghost web
+  records, `originalNameservers`, the `source` field and the `drop` records. `dns-records-parity`
+  and `mail-records` keep guarding the records that remain.
 - [ ] *new* — Ghost-only helpers that go with those items: the Ghost-marker logic in
   `checks/live-apex.ts`, `ghostTargets` in `checks/live-shared.ts`, `GHOST_WEB_TYPES` and the
   "replaced at launch" branch in `checks/dns-records-parity.ts`, and
