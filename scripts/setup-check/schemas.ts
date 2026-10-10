@@ -34,7 +34,7 @@ const dnsBaselineRecordSchema = z
     content: z.string().min(1),
     priority: z.number().int().nullable(),
     ttl: z.number().int().positive(),
-    source: z.literal("squarespace"),
+    source: z.enum(["squarespace", "cloudflare"]),
     decision: z.enum(["keep", "drop"]).nullable(),
     reason: z.string().min(1).nullable(),
   })

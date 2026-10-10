@@ -168,7 +168,7 @@ Mechanical criteria (the review phase checks each one):
 - **Test:** new-first.
 - **Layer:** unit (schema tests are unit tests; the cheapest layer that observes parsing).
 
-### W2 — Widen `source` in schema and type
+### [x] W2 — Widen `source` in schema and type
 
 - **Files:** `scripts/setup-check/schemas.ts` (line ~37), `scripts/setup-check/types.ts`
   (line ~118).
