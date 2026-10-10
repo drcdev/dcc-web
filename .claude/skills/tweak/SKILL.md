@@ -209,13 +209,11 @@ checklists by design; note it in the final report and continue.
    walk on the preview deployment, any risks the phase agents flagged, and whether auto-merge
    is armed. Open the PR and arm auto-merge: read `.claude/skills/_shared/open-pr.md` and
    follow it exactly.
-5. If Linux baselines are still owed because Docker could not be started, run the CI-label
-   fallback in `.claude/skills/_shared/visual-baselines.md` now, before watching the gate.
-6. **Watch the release gate.** Run `gh pr checks --watch` with a time limit
+5. **Watch the release gate.** Run `gh pr checks --watch` with a time limit
    (20 minutes). Red → dispatch a fix subagent on the branch, which fixes
    the cause (never the check), commits and pushes; watch again. Record the
    preview deployment URL from the checks or the Cloudflare PR comment.
-7. Final report to the user: what changed, test counts, PR link, preview
+6. Final report to the user: what changed, test counts, PR link, preview
    URL, the major-change verdict and whether auto-merge is armed, whether baselines were updated, the
    `[PREVIEW-CHECK]` items awaiting them, and any risks the phase agents
    flagged.
