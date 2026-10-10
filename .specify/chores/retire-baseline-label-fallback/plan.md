@@ -13,8 +13,8 @@ pipeline skills still describe a CI fallback for a predicted visual change: add 
 the `*-linux.png` files. [Issue #77](https://github.com/drcdev/dcc-web/issues/77) asks that, once
 a few more PRs with predicted visual changes land green first time, the guidance be simplified so
 the Docker route is the only documented path and the label fallback is removed or demoted. This
-chore makes that change. With the recommended option (A) it also deletes the fallback workflow
-and its unit-test block, so nothing undocumented is left behind. No page, test subject or baseline
+chore makes that change. Don chose to remove the fallback (decision D1, recorded on #77), so it
+also deletes the fallback workflow, its unit-test block and the label, leaving nothing undocumented behind. No page, test subject or baseline
 image changes.
 
 **Before evidence (the issue's condition, orchestrator-verified):** since PR #72, PRs #80, #112,
@@ -23,8 +23,6 @@ used the `visual-baselines` label. The condition in #77 ("after a few more pull 
 predicted visual changes land green first time") is met. No runtime measurement applies.
 
 ## Acceptance
-
-Written for option A (recommended). Under option B, criteria 4, 5 and 6 change as noted in W3–W5.
 
 1. `.claude/skills/_shared/visual-baselines.md` has no fallback step: no mention of the
    `visual-baselines` label, `update-baselines`, the `visual-baselines-linux` artifact or
@@ -83,13 +81,12 @@ script comment) and W6 (delete the GitHub label after merge).
   alignment test (removed in PR #109) and a "file does not exist" test would only mirror the diff.
 - **II. Automated Release Gate:** nothing in `ci.yml` or `verify` changes; the deleted workflow
   was never part of the gate. No check is skipped or weakened.
-- **III. Human Review for Major Changes:** under option A, **"changes CI, deployment or
+- **III. Human Review for Major Changes:** **"changes CI, deployment or
   infrastructure configuration" fires**: a GitHub Actions workflow file is deleted. No other
   criterion fires (no dependency, integration or service change; the label is repository
   metadata, not an integration; no contact data, design, cost or constitution change).
-  **Verdict: major change (option A)**, flagged in the PR body; it merges on Don's approval like
-  any PR, so auto-merge may be armed. Under option B (workflow left untouched) none fires: not
-  major.
+  **Verdict: major change (CI configuration)**, flagged in the PR body; it merges on Don's
+  approval like any PR, so auto-merge may be armed.
 - **IV. First-Party Before Custom:** unchanged; the remaining route is Playwright's own Docker
   image, already in use. No new tool.
 - **V. Static by Default:** unchanged.
@@ -102,32 +99,14 @@ script comment) and W6 (delete the GitHub label after merge).
 - **XI. Spec Kit Workflow:** one chore on its own `chore/<slug>` branch via `/chore`. No sibling
   worktree is known to edit these files; if one does, merge `origin/main` before the gate.
 
-## [NEEDS DECISION] D1 — Remove or demote the CI label fallback
+## Decision D1 — Remove the CI label fallback (decided)
 
-Issue #77 allows either "removed or demoted". The options:
-
-- **(A) Remove (recommended).** Delete `.github/workflows/visual-baselines.yml` and its block in
-  `tests/unit/ci/workflows.test.ts`; drop the fallback from `_shared/visual-baselines.md`,
-  `CLAUDE.md`, the four skills' Finish step 5, `docs/setup.md` item 10 and the script comment;
-  delete the `visual-baselines` label after merge. Docker becomes the only route: if Docker
-  cannot run, Don starts it. Major change (CI configuration), full CI tier.
-- **(B) Demote.** Keep the workflow file as it is (still label- and dispatch-triggered) and its
-  tests; reduce the shared doc's step 4 to one "last resort, only when Don asks for it" line naming
-  `gh workflow run visual-baselines.yml --ref <branch>`; remove the fallback from the four skills
-  and `CLAUDE.md`; leave `docs/setup.md` and the script comment as they are. Not major; CI sorts it
-  to `tier=skip-safe` (only `.claude/`, `CLAUDE.md` and `.specify/` change).
-
-**Recommendation: A.** The issue's own target is that "the Docker route is the only documented
-path"; B keeps a second documented path, only demoted, and keeps a workflow, a label and six
-tests that exist only to serve a route nobody has used since #72. Four consecutive visual PRs
-passed first time from Docker, the step 2 rule already sends a Docker failure to Don rather than to
-CI, and the deleted file stays recoverable from git history. A's costs are small: one full-tier CI
-run (about 6 minutes) and a major-change flag in the PR body, which under constitution 2.3.0 is a
-review note, not a separate gate.
+Don chose **(A) Remove** (2026-10-09; the decision record is on issue #77): delete the workflow,
+its tests and the label, and document Docker as the only route. (B) Demote (keep the workflow,
+reduced to a one-line last resort) was considered and rejected, because it keeps a second
+documented path where the issue asks for Docker to be the only one.
 
 ## Work items
-
-Written for option A. Each item says what changes under option B.
 
 ### W1 — Shared visual-baselines doc: Docker only
 
@@ -139,9 +118,7 @@ Written for option A. Each item says what changes under option B.
   sentence. Add one sentence to step 3: if CI's visual check then fails on images Docker made,
   stop and tell Don (Docker has drifted from CI; fixing that is its own change), rather than
   refreshing from a CI run. This file stays the single copy of the wording.
-- **Under B:** replace step 4 with one line: "Last resort, only when Don asks for it: `gh workflow
-  run visual-baselines.yml --ref <branch>`, download the `visual-baselines-linux` artifact and copy
-  only the `*-linux.png` files." Step 2 keeps "Do not use it without asking."
+
 - **Test:** no behaviour: n/a (agent guidance; no test reads this file since PR #109).
 
 ### W2 — CLAUDE.md: drop the fallback mentions
@@ -151,7 +128,7 @@ Written for option A. Each item says what changes under option B.
 - **What:** the Docker bullet ends at "… with an `AskUserQuestion` whose question text carries the
   instruction." (remove "; do not fall back to CI without asking"). The Visual baselines section
   reads "(macOS, and Linux via Docker)" instead of "(macOS, Linux via Docker, the CI label
-  fallback)". Same under B.
+  fallback)".
 - **Test:** no behaviour: n/a (agent notes; `CLAUDE.md` is skip-safe and no check reads it).
 
 ### W3 — Four pipeline skills: remove Finish step 5
@@ -163,7 +140,7 @@ Written for option A. Each item says what changes under option B.
   not be started, run the CI-label fallback …" and renumber the following Finish steps (6 → 5,
   7 → 6, and so on). No "step 6"/"step 7" cross-reference exists in these files (checked); the
   implementer re-checks after renumbering. The verify-phase pointers to
-  `_shared/visual-baselines.md` and the tasks-row Docker mentions stay. Same under B.
+  `_shared/visual-baselines.md` and the tasks-row Docker mentions stay.
 - **Test:** no behaviour: n/a (agent guidance; no alignment test since PR #109).
 
 ### W4 — Delete the fallback workflow and its tests
@@ -188,7 +165,6 @@ Written for option A. Each item says what changes under option B.
     guarded the deleted job; gone with it.
   A future workflow file would need its own block (no generic all-workflows test exists today;
   adding one is out of scope).
-- **Under B:** this item is dropped; the workflow and its tests stay unchanged.
 
 ### W5 — Setup guide item 10 and the script comment
 
@@ -203,7 +179,6 @@ Written for option A. Each item says what changes under option B.
   site and runs `pnpm run test:visual:update` inside the official Playwright image …", keeping the
   rest of the comment. No command in the script changes. The `scripts/build-fixture-site.ts:141`
   comment names the script, not the workflow; leave it.
-- **Under B:** this item is dropped (the workflow still exists, so both texts stay accurate).
 - **Test:** no behaviour: n/a (documentation and a comment; `docs-content-structure.test.ts`
   bans only removed section names, `TextBlock`/`Offerings`, and is unaffected).
 
@@ -214,7 +189,6 @@ Written for option A. Each item says what changes under option B.
 - **What:** after the PR merges, run `gh label delete visual-baselines --repo drcdev/dcc-web
   --yes`. If the shell is not allowed to, hand Don that command. Deleting it earlier would leave
   the label route half-removed while the PR is open.
-- **Under B:** dropped; the label stays.
 - **Test:** no behaviour: n/a (repository label).
 
 ## Docs citations
@@ -225,18 +199,17 @@ Written for option A. Each item says what changes under option B.
   https://docs.github.com/en/actions/writing-workflows/about-workflows); deleting the file stops
   both the `pull_request: labeled` and `workflow_dispatch` triggers. Past runs stay in the Actions
   history.
-- Under B only: `gh workflow run`: https://cli.github.com/manual/gh_workflow_run.
 
 No Astro or Cloudflare usage changes, so no Astro Docs MCP lookup is needed.
 
 ## Risks
 
-- **Docker drifts from CI later.** With A there is no CI route to fall back on. Mitigation: four
+- **Docker drifts from CI later.** With the workflow gone there is no CI route to fall back on. Mitigation: four
   first-time matches since #72; W1's new step 3 sentence sends a drift to Don as its own change;
   the workflow is one `git show` away in history.
 - **Docker Desktop unavailable when Don is away.** A pipeline needing Linux baselines waits for
-  Don. That is already the rule ("ask Don … do not fall back to CI without asking"); A only
-  removes the asked-for exception.
+  Don. That is already the rule ("ask Don … do not fall back to CI without asking");
+  this change only removes the asked-for exception.
 - **Full CI tier for a mostly-docs change.** W4 and W5 touch `.github/`, `tests/` and `scripts/`,
   so CI runs the full gate (~6 minutes). Acceptable for one PR; the local gate covers only a deleted
   unit block, so the orchestrator puts the local full-gate run to Don rather than running it by
