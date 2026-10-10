@@ -169,7 +169,7 @@ the full scope; the sweep on 2026-10-09 adds the items marked *new*.
   `dns-records-parity` and `mail-records` (the slimmed baseline below relies on them). Remove the retired `dcc-web-contact`
   database branch and the `cloudflare` devDependency if nothing else needs it.
 - [ ] *new* — Slim `setup/dns-baseline.json` to a short list of records that must exist: the iCloud
-  mail MX, SPF and DKIM records, the Google verification TXT, and the DMARC and CAA records #93
+  mail MX, SPF and DKIM records, the apex `apple-domain` TXT, the Google verification TXT, and the DMARC and CAA records #93
   adds. Once Ghost is gone, retire its Squarespace-inventory and rollback roles: the Ghost web
   records, `originalNameservers`, the `source` field and the `drop` records. `dns-records-parity`
   and `mail-records` keep guarding the records that remain.

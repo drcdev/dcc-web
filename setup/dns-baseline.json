@@ -61,7 +61,7 @@
       "name": "doncoleman.ca",
       "content": "google-site-verification=Fm2OA7X4UZwI7o4GLpWhUy23kctO23d63m8F8dSxr6g",
       "priority": null,
-      "ttl": 1,
+      "ttl": 3600,
       "source": "cloudflare",
       "decision": "keep",
       "reason": null

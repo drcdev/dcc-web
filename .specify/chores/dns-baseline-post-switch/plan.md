@@ -40,7 +40,7 @@ Mechanical criteria (the review phase checks each one):
    (`MX mail.` x2, `TXT mail.` SPF, `TXT mta._domainkey.mail.`, `CNAME email.mail.`) have
    `decision: "drop"` and a non-empty dated reason; the apex TXT
    `google-site-verification=Fm2OA7X4UZwI7o4GLpWhUy23kctO23d63m8F8dSxr6g` is present with
-   `decision: "keep"`, `source: "cloudflare"`, `priority: null`, `reason: null`, `ttl: 1`. Every
+   `decision: "keep"`, `source: "cloudflare"`, `priority: null`, `reason: null`, `ttl: 3600` (the review found the live TTL is 3600, not Auto). Every
    other record is unchanged (`git diff main -- setup/dns-baseline.json` shows only those six
    records).
 4. **Setup check.** `pnpm setup:check` (run with the local Cloudflare credentials; the agent never
@@ -190,12 +190,10 @@ Mechanical criteria (the review phase checks each one):
     Other fields unchanged.
   - New record after the apex TXT records: `type: "TXT"`, `name: "doncoleman.ca"`,
     `content: "google-site-verification=Fm2OA7X4UZwI7o4GLpWhUy23kctO23d63m8F8dSxr6g"`,
-    `priority: null`, `ttl: 1`, `source: "cloudflare"`, `decision: "keep"`, `reason: null`.
-  - **TTL judgment:** `1` is the value Cloudflare's API returns for a record left on "Auto"
-    (300 s for DNS-only records). `dns-records-parity` compares the baseline TTL with the API
-    value and already renders `1` as "auto", so `1` records exactly what the zone holds and adds
-    no informational TTL note; it is positive, so the schema accepts it. `300` was considered
-    (the effective TTL) but would show a spurious "TTL differs" note on every run.
+    `priority: null`, `ttl: 3600`, `source: "cloudflare"`, `decision: "keep"`, `reason: null`.
+  - **TTL judgment (revised after review):** the plan assumed the record was on Auto (`1`), but
+    the review found the live TTL is 3600 (`dns-records-parity` showed "TTL differs: Cloudflare
+    3600"). The baseline records the value Cloudflare reports, `3600`, so no TTL note appears.
 - **Test:** existing — `tests/unit/setup/dns-baseline-schema.test.ts` parses the real baseline
   (kept Ghost web records exactly A apex + CNAME `www`; kept mail non-empty with iCloud MX) and
   `tests/unit/setup/launch-doc.test.ts` reads it; both must stay green. Live confirmation is
