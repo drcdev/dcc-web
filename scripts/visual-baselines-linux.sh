@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # Regenerate the Linux visual baselines locally.
 #
-# Runs the same steps as the `update-baselines` job in
-# .github/workflows/visual-baselines.yml, inside the official Playwright image
-# that matches the installed @playwright/test version (Ubuntu 24.04, the same
-# Chromium build and fonts as `ubuntu-latest`). node_modules (and the pnpm
+# Builds the site and runs `pnpm run test:visual:update` inside the official
+# Playwright image that matches the installed @playwright/test version (Ubuntu
+# 24.04, the same Chromium build and fonts as `ubuntu-latest`). node_modules (and the pnpm
 # store inside it) live in a named Docker volume so the Linux-native binaries
 # never touch the macOS node_modules; the repository itself is bind-mounted, so
 # the refreshed images land directly in tests/e2e/visual.spec.ts-snapshots/.

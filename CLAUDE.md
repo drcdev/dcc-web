@@ -16,13 +16,12 @@ the constitution wins.
   `perl -e 'alarm N; exec @ARGV' <cmd...>` instead.
 - **Docker Desktop is normally off.** It is only needed to regenerate the Linux visual
   baselines locally (see `.claude/skills/_shared/visual-baselines.md`). If `docker info` fails, ask Don to start Docker Desktop with an
-  `AskUserQuestion` whose question text carries the instruction; do not fall back to CI
-  without asking.
+  `AskUserQuestion` whose question text carries the instruction.
 
 ## Visual baselines
 
-The visual project, its per-platform baselines and how to refresh them (macOS, Linux via Docker,
-the CI label fallback) are in `.claude/skills/_shared/visual-baselines.md`. Read it before
+The visual project, its per-platform baselines and how to refresh them (macOS, and Linux via Docker)
+are in `.claude/skills/_shared/visual-baselines.md`. Read it before
 changing or refreshing a baseline.
 
 ## Merging

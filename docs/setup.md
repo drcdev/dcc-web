@@ -263,13 +263,9 @@ in parallel, and a final `verify` job reports the result that branch protection 
 
 **Where to do it**
 Nothing new to do here; `.github/workflows/ci.yml` is part of this slice's pull request. This
-item confirms it exists on `main` and that the latest run succeeded, after the merge. `.github/workflows/visual-baselines.yml` is a separate workflow
-that regenerates the Linux visual baselines for a human or agent to review and commit — it is not
-part of the `verify` gate and never runs on push; before it exists on `main` it can only be
-triggered by adding the `visual-baselines` label to a pull request (`workflow_dispatch` isn't
-registered until the file is on the default branch), and afterwards `gh workflow run` works too.
-The same baselines can be regenerated locally with `pnpm run test:visual:update:linux`, which
-runs the job's steps in the matching Playwright Docker image and needs Docker Desktop running.
+item confirms it exists on `main` and that the latest run succeeded, after the merge.
+Linux visual baselines are regenerated locally with `pnpm run test:visual:update:linux`, which runs in the
+Playwright Docker image matching `@playwright/test` and needs Docker Desktop running.
 A pull request that changes only skip-safe paths (agent instructions and Spec Kit documents that
 no check reads, listed in `scripts/ci/changed-paths.ts`) runs secretlint in the `static` job and
 skips `build-tests` and `e2e`; the `verify` job still reports success. A pull request that changes
@@ -285,7 +281,7 @@ the same rules, from the commit before the push to the pushed commit, and runs o
 II (Automated Release Gate).
 
 **Secrets**
-None — the workflows use only the automatic per-run `GITHUB_TOKEN`.
+None — the workflow uses only the automatic per-run `GITHUB_TOKEN`.
 
 ## 11. GitHub CODEOWNERS {#github-codeowners}
 
