@@ -183,7 +183,7 @@ Judged against the constitution on `main` (2.3.0), because that is what this PR 
   Governance), the templates reviewed, and that the per-issue history is unchanged.
 - **Test:** no behaviour: n/a (no test reads the constitution; confirmed by the explore phase).
 
-### W2 — Widen the skip-safe tier, route skills to docs, fix the drift guard
+### W2 — Widen the skip-safe tier, route skills to docs, fix the drift guard [x] done
 
 - **Files:** `scripts/ci/changed-paths.ts`, `tests/unit/ci/changed-paths.test.ts`.
 - **Tests first (unit over config; primary layer unit — the classifier is a pure function and

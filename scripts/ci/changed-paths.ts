@@ -3,16 +3,24 @@ import { appendFileSync } from "node:fs";
 
 /**
  * Decides which tier of the verify gate a pull request or a push to `main` runs. There are four:
- * skip-safe only (secretlint only), docs (secretlint and the unit tests, for
- * Markdown files under `docs/`), content-only (the full gate, but the build
- * tests that read real content by name instead of the whole build project) and
- * full. A path is skip-safe only when no check reads it, and content-only only
- * when it is an `.mdx` file or an image under a content collection. Anything
- * not positively recognised runs the full gate (fail closed).
+ * skip-safe only (secretlint only), docs (secretlint and the unit tests, for Markdown files under
+ * `docs/` and non-code files under `.claude/skills/`, which unit tests read), content-only (the
+ * full gate, but the build tests that read real content by name instead of the whole build
+ * project) and full. A path is skip-safe only when no check reads it, and content-only only when
+ * it is an `.mdx` file or an image under a content collection. Anything not positively
+ * recognised runs the full gate (fail closed).
+ *
+ * Under `.claude/` and `.specify/` every file is skip-safe (only the local Claude Code harness and
+ * Spec Kit read them) except code files, which `eslint .` and `astro check`/`tsc` read, and
+ * `.claude/skills/`, which is docs tier. CODE_EXTENSIONS follows ESLint's flat-config default
+ * patterns plus the typescript-eslint and Astro plugin patterns; update it when `eslint.config.js`
+ * lints a new extension.
  */
 
-export const SKIP_SAFE_FILES: readonly string[] = ["CLAUDE.md"];
-export const SKIP_SAFE_PREFIXES: readonly string[] = [".claude/", ".specify/", "specs/"];
+export const SKIP_SAFE_FILES: readonly string[] = ["CLAUDE.md", "VOICE.md"];
+/** Every file under these prefixes is skip-safe unless it is code or under SKILLS_PREFIX. */
+export const AGENT_PREFIXES: readonly string[] = [".claude/", ".specify/"];
+/** Under `specs/` only these extensions are skip-safe. */
 export const SKIP_SAFE_EXTENSIONS: readonly string[] = [
   ".md",
   ".yml",
@@ -22,15 +30,36 @@ export const SKIP_SAFE_EXTENSIONS: readonly string[] = [
   ".py",
   ".ps1",
 ];
-/** Files under a skip-safe prefix that a test or check reads. */
-export const READ_BY_CHECKS: readonly string[] = [".claude/skills/setup-walkthrough/SKILL.md"];
+export const CODE_EXTENSIONS: readonly string[] = [
+  ".js",
+  ".mjs",
+  ".cjs",
+  ".jsx",
+  ".ts",
+  ".mts",
+  ".cts",
+  ".tsx",
+  ".astro",
+];
+/** Skill files: a unit test reads them, so they are docs tier, not skip-safe. */
+export const SKILLS_PREFIX = ".claude/skills/";
+
+function isMalformed(path: string): boolean {
+  return path.includes("..") || path.startsWith("/") || path.includes("\\");
+}
+
+function isCode(path: string): boolean {
+  return CODE_EXTENSIONS.some((ext) => path.endsWith(ext));
+}
 
 export function isSkipSafe(path: string): boolean {
-  if (path.includes("..") || path.startsWith("/") || path.includes("\\")) return false;
-  if (READ_BY_CHECKS.includes(path)) return false;
+  if (isMalformed(path)) return false;
   if (SKIP_SAFE_FILES.includes(path)) return true;
-  if (!SKIP_SAFE_PREFIXES.some((prefix) => path.startsWith(prefix))) return false;
-  return SKIP_SAFE_EXTENSIONS.some((ext) => path.endsWith(ext));
+  if (AGENT_PREFIXES.some((prefix) => path.startsWith(prefix))) {
+    return !path.startsWith(SKILLS_PREFIX) && !isCode(path);
+  }
+  if (path.startsWith("specs/")) return SKIP_SAFE_EXTENSIONS.some((ext) => path.endsWith(ext));
+  return false;
 }
 
 export const CONTENT_FILE =
@@ -39,14 +68,18 @@ export const CONTENT_IMAGE =
   /^src\/content\/(pages|posts|projects)\/images\/(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+\.(avif|gif|jpe?g|mp4|png|svg|webm|webp)$/;
 
 export function isContentOnly(path: string): boolean {
-  if (path.includes("..") || path.startsWith("/") || path.includes("\\")) return false;
+  if (isMalformed(path)) return false;
   return CONTENT_FILE.test(path) || CONTENT_IMAGE.test(path);
 }
 
-/** A Markdown file under `docs/`. Only unit tests read these files, so only unit tests run. */
+/**
+ * A Markdown file under `docs/`, or a non-code file under `.claude/skills/`. Only unit tests read
+ * these files, so only unit tests run.
+ */
 export function isDocs(path: string): boolean {
-  if (path.includes("..") || path.startsWith("/") || path.includes("\\")) return false;
-  return path.startsWith("docs/") && path.endsWith(".md");
+  if (isMalformed(path)) return false;
+  if (path.startsWith("docs/")) return path.endsWith(".md");
+  return path.startsWith(SKILLS_PREFIX) && !isCode(path);
 }
 
 export interface ChangeInput {
