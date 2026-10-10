@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { decide, isContentOnly, isSkipSafe, toOutput } from "../../../scripts/ci/changed-paths.ts";
+import { decide, isContentOnly, isDocs, isSkipSafe, toOutput } from "../../../scripts/ci/changed-paths.ts";
 import type { ChangeInput } from "../../../scripts/ci/changed-paths.ts";
 import { filesUnder } from "../../helpers/files.ts";
 
@@ -100,6 +100,71 @@ describe("isContentOnly()", () => {
   });
   it.each(CONTENT_FALSE)("treats %s as not content-only", (p) => {
     expect(isContentOnly(p)).toBe(false);
+  });
+});
+
+const DOCS_TRUE = ["docs/testing.md", "docs/design/blog.md", "docs/--help.md"];
+const DOCS_FALSE = [
+  "docs/x.png",
+  "docs/x.mdx",
+  "docs/x.MD",
+  "docs/x.markdown",
+  "Docs/a.md",
+  "README.md",
+  "src/docs/a.md",
+  "docs",
+  "docs/../src/a.md",
+  "/docs/a.md",
+  "docs\\a.md",
+  '"docs/\\303\\251.md"',
+];
+
+describe("isDocs()", () => {
+  it.each(DOCS_TRUE)("treats %s as documentation", (p) => {
+    expect(isDocs(p)).toBe(true);
+  });
+  it.each(DOCS_FALSE)("treats %s as not documentation", (p) => {
+    expect(isDocs(p)).toBe(false);
+  });
+});
+
+describe("decide() docs tier", () => {
+  const pr = (files: string[] | null) => decide({ event: "pull_request", files });
+  it("picks docs for docs files only", () => {
+    expect(pr(["docs/testing.md", "docs/design/blog.md"]).tier).toBe("docs");
+  });
+  it("picks docs for docs plus skip-safe files", () => {
+    expect(pr(["docs/testing.md", ".specify/feature.json"]).tier).toBe("docs");
+  });
+  it("keeps skip-safe when no docs file changed", () => {
+    expect(pr([".specify/feature.json"]).tier).toBe("skip-safe");
+  });
+  it("picks content-only for docs plus content", () => {
+    expect(pr(["docs/testing.md", "src/content/posts/starting-something-new.mdx"]).tier).toBe("content-only");
+  });
+  it("runs full for docs plus source, naming the file", () => {
+    const d = pr(["docs/testing.md", "src/pages/index.astro"]);
+    expect(d.tier).toBe("full");
+    expect(d.reason).toContain("src/pages/index.astro");
+  });
+  it("runs full for docs plus a non-markdown docs file", () => {
+    const d = pr(["docs/testing.md", "docs/design/x.png"]);
+    expect(d.tier).toBe("full");
+    expect(d.reason).toContain("docs/design/x.png");
+  });
+  it.each([".github/workflows/ci.yml", "scripts/ci/changed-paths.ts", "scripts/ci/verify-needs.ts"])(
+    "runs full for docs plus %s",
+    (file) => {
+      const d = pr(["docs/testing.md", file]);
+      expect(d.tier).toBe("full");
+      expect(d.reason).toContain(file);
+    },
+  );
+  it.each([[[]], [["", "  "]], [null]] as const)("fails closed for %j", (files) => {
+    expect(pr(files as string[] | null).tier).toBe("full");
+  });
+  it("names the counts in the docs reason", () => {
+    expect(pr(["docs/a.md", "docs/b.md"]).reason).toContain("2");
   });
 });
 

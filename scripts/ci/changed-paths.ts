@@ -2,8 +2,9 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
 
 /**
- * Decides which tier of the verify gate a pull request runs. There are three:
- * skip-safe only (secretlint only), content-only (the full gate, but the build
+ * Decides which tier of the verify gate a pull request runs. There are four:
+ * skip-safe only (secretlint only), docs (secretlint and the unit tests, for
+ * Markdown files under `docs/`), content-only (the full gate, but the build
  * tests that read real content by name instead of the whole build project) and
  * full. A path is skip-safe only when no check reads it, and content-only only
  * when it is an `.mdx` file or an image under a content collection. Anything
@@ -42,6 +43,12 @@ export function isContentOnly(path: string): boolean {
   return CONTENT_FILE.test(path) || CONTENT_IMAGE.test(path);
 }
 
+/** A Markdown file under `docs/`. Only unit tests read these files, so only unit tests run. */
+export function isDocs(path: string): boolean {
+  if (path.includes("..") || path.startsWith("/") || path.includes("\\")) return false;
+  return path.startsWith("docs/") && path.endsWith(".md");
+}
+
 export interface ChangeInput {
   /** GITHUB_EVENT_NAME */
   event: string;
@@ -73,7 +80,14 @@ export function decide(input: ChangeInput): ChangeDecision {
       reason: `all ${files.length} changed file(s) are skip-safe, running secretlint only`,
     };
   }
-  const other = files.find((f) => !isSkipSafe(f) && !isContentOnly(f));
+  if (files.every((f) => isSkipSafe(f) || isDocs(f))) {
+    const docs = files.filter((f) => isDocs(f)).length;
+    return {
+      tier: "docs",
+      reason: `${docs} documentation file(s) and ${files.length - docs} skip-safe file(s), running secretlint and the unit tests`,
+    };
+  }
+  const other = files.find((f) => !isSkipSafe(f) && !isDocs(f) && !isContentOnly(f));
   if (other === undefined) {
     return {
       tier: "content-only",
@@ -82,7 +96,7 @@ export function decide(input: ChangeInput): ChangeDecision {
   }
   return {
     tier: "full",
-    reason: `${other} is neither skip-safe nor content-only, running the full gate`,
+    reason: `${other} is not skip-safe, documentation or content-only, running the full gate`,
   };
 }
 

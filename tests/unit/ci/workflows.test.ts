@@ -33,10 +33,6 @@ function runCount(contents: string, command: string): number {
   return contents.split("\n").filter((l) => l.trim() === `run: ${command}`).length;
 }
 
-function count(haystack: string, needle: string): number {
-  return haystack.split(needle).length - 1;
-}
-
 describe(".github/workflows/ci.yml", () => {
   const contents = read(".github/workflows/ci.yml");
 
@@ -102,6 +98,18 @@ describe(".github/workflows/ci.yml job rules", () => {
     expect(runCount(contents, "pnpm run test:build:content")).toBe(1);
     expect(job(contents, "static")).not.toContain("content-only");
     expect(job(contents, "e2e")).not.toContain("content-only");
+  });
+
+  it("gates each static step and the heavy jobs on the tier, failing closed to the heavier side", () => {
+    const NARROW = "needs.changes.outputs.tier != 'skip-safe' && needs.changes.outputs.tier != 'docs'";
+    const staticJob = job(contents, "static");
+    expect(stepBlock(staticJob, "run: pnpm run lint\n")).toContain(`if: ${NARROW}`);
+    expect(stepBlock(staticJob, "run: pnpm run typecheck")).toContain(`if: ${NARROW}`);
+    expect(stepBlock(staticJob, "run: pnpm run test:worker")).toContain(`if: ${NARROW}`);
+    expect(stepBlock(staticJob, "run: pnpm run test:unit")).toContain("if: needs.changes.outputs.tier != 'skip-safe'\n");
+    for (const id of ["build-tests", "e2e"]) {
+      expect(job(contents, id)).toMatch(new RegExp(`^ {4}if: ${NARROW.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "m"));
+    }
   });
 
   it("runs secretlint in static on every path, after install", () => {

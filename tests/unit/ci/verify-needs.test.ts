@@ -32,6 +32,25 @@ describe("decide()", () => {
     expect(decide(needs("skip-safe")).pass).toBe(true);
   });
 
+  it("passes the docs case: heavy jobs skipped, static succeeded", () => {
+    expect(decide(needs("docs", { "build-tests": "skipped", e2e: "skipped" }))).toEqual({ pass: true, problems: [] });
+  });
+
+  it("passes on docs when the heavy jobs also succeeded", () => {
+    expect(decide(needs("docs")).pass).toBe(true);
+  });
+
+  it.each(["failure", "skipped", "cancelled"])("fails on docs when static is %s", (result) => {
+    const d = decide(needs("docs", { static: result, "build-tests": "skipped", e2e: "skipped" }));
+    expect(d.pass).toBe(false);
+    expect(d.problems.join("\n")).toContain("static");
+  });
+
+  it.each(["content-only", "full"])("fails on %s when build-tests or e2e is skipped", (tier) => {
+    expect(decide(needs(tier, { "build-tests": "skipped" })).pass).toBe(false);
+    expect(decide(needs(tier, { e2e: "skipped" })).pass).toBe(false);
+  });
+
   it("fails and names e2e when the full tier skipped e2e", () => {
     const d = decide(needs("full", { e2e: "skipped" }));
     expect(d.pass).toBe(false);
