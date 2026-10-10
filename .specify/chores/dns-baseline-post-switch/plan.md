@@ -159,7 +159,7 @@ Mechanical criteria (the review phase checks each one):
 
 ## Work items
 
-### W1 — Schema cases for `source` (test first)
+### [x] W1 — Schema cases for `source` (test first)
 
 - **Files:** `tests/unit/setup/schemas.test.ts` (the `dnsBaselineSchema` describe block).
 - **What:** add "accepts a record added in Cloudflare (`source: "cloudflare"`)" and "rejects an
