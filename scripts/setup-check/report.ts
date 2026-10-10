@@ -68,11 +68,8 @@ export function buildReport(results: CheckResult[], items: SetupItem[], options:
   const entries: ReportResultEntry[] = results.map((result) => {
     const item = items.find((i) => i.id === result.id);
     const redacted = redactResult(result, secretValues);
-    const afterMergeNote =
-      item?.deferredUntilMerge && result.status !== "complete" ? "After merge (does not fail the check before the merge): " : "";
     return {
       ...redacted,
-      summary: `${afterMergeNote}${redacted.summary}`,
       title: item?.title ?? result.id,
       needsDon: item?.needsDon ?? false,
     };
@@ -89,10 +86,8 @@ export function buildReport(results: CheckResult[], items: SetupItem[], options:
 
   return {
     generatedAt: options.generatedAt ?? new Date().toISOString(),
-    // A waiting item (011-launch R3) and a deferred-until-merge item (FR-028a) are reported but do not fail the check.
-    ok: entries.every(
-      (e) => e.status === "complete" || e.status === "waiting" || items.find((i) => i.id === e.id)?.deferredUntilMerge === true,
-    ),
+    // A waiting item is reported but does not fail the check.
+    ok: entries.every((e) => e.status === "complete" || e.status === "waiting"),
     counts,
     results: entries,
   };

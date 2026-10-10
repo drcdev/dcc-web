@@ -1,4 +1,4 @@
-// Fixtures shared by the contact-form check tests (items 18 to 24). Not a test file.
+// Fixtures shared by the contact-bindings check test. Not a test file.
 import { vi } from "vitest";
 import type { CloudflareBuildTrigger, ProviderContext } from "../../../../scripts/setup-check/types.ts";
 import { envFrom, fakeProviderContext, type FakeProviderOverrides } from "./test-helpers.ts";
@@ -12,7 +12,7 @@ export const MIGRATIONS = ["0001_create_messages.sql"];
 /** wrangler.jsonc text with comments and trailing commas, like the real file. */
 export function wranglerText(
   ids: { production: string; preview: string } = { production: PROD_ID, preview: PREVIEW_ID },
-  names: { production: string; preview: string } = { production: "dcc-web-contact", preview: "dcc-web-contact-preview" },
+  names: { production: string; preview: string } = { production: "dcc-web", preview: "dcc-web-preview" },
 ) {
   return `{
   // comment with a "quoted" word and a url https://example.com

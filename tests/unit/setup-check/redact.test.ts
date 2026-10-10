@@ -27,7 +27,7 @@ describe("waiting report output (T008)", () => {
     summary: `Waiting for the switch: doncoleman.ca is not on the new site yet. ${SECRETS[0]}`,
     details: [`account ${SECRETS[1]}`],
     nextAction: `Nothing to do yet. ${SECRETS[2]}`,
-    step: "Step 15 of 22",
+    step: "Step 15 of 16",
     docs: "docs/setup.md#web-analytics",
     reason: null,
   };

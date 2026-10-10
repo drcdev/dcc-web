@@ -18,13 +18,7 @@ export const secretManifest: SecretRef[] = [
       "dns-records-parity",
       "cloudflare-worker",
       "web-analytics",
-      "contact-d1-databases",
-      "contact-turnstile-widget",
-      "contact-worker-secrets",
-      "contact-preview-builds",
-      "contact-turnstile-site-key",
-      "contact-preview-deploy",
-      "contact-production-deploy",
+      "contact-bindings",
     ],
   },
   {
@@ -33,7 +27,7 @@ export const secretManifest: SecretRef[] = [
     store: "local-env",
     purpose: "Account the check reads",
     permissions: null,
-    usedBy: ["local-credentials", "cloudflare-worker", "web-analytics"],
+    usedBy: ["local-credentials", "cloudflare-worker", "web-analytics", "contact-bindings"],
   },
   {
     name: "CLOUDFLARE_ZONE_ID",
@@ -57,7 +51,7 @@ export const secretManifest: SecretRef[] = [
     store: "cloudflare-worker",
     purpose: "Turnstile secret key the Worker uses to verify a contact-form submission; set on dcc-web and dcc-web-preview with wrangler secret put",
     permissions: null,
-    usedBy: ["contact-worker-secrets"],
+    usedBy: ["contact-bindings"],
   },
   {
     name: "CONTACT_READ_TOKEN",
@@ -65,7 +59,7 @@ export const secretManifest: SecretRef[] = [
     store: "cloudflare-worker",
     purpose: "Bearer token the scheduled assistant uses to read new contact messages; a different value on each Worker",
     permissions: null,
-    usedBy: ["contact-worker-secrets"],
+    usedBy: ["contact-bindings"],
   },
   {
     name: "IP_HASH_SALT",
@@ -73,7 +67,7 @@ export const secretManifest: SecretRef[] = [
     store: "cloudflare-worker",
     purpose: "Salt for the short-lived rate-limit fingerprint of a visitor's address; a different value on each Worker",
     permissions: null,
-    usedBy: ["contact-worker-secrets"],
+    usedBy: ["contact-bindings"],
   },
   {
     name: "PUBLIC_TURNSTILE_SITE_KEY",
@@ -81,7 +75,7 @@ export const secretManifest: SecretRef[] = [
     store: "cloudflare-worker",
     purpose: "Public Turnstile site key, set as a build variable on both Workers' Workers Builds so the page can render the widget",
     permissions: null,
-    usedBy: ["contact-turnstile-site-key"],
+    usedBy: ["contact-bindings"],
   },
 ];
 

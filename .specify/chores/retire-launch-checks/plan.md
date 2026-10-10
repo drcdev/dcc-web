@@ -571,7 +571,7 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
   - `docs-dns` delegated-NS note → **retired** with the inventory role.
 - **Layer:** unit.
 
-### W8 — Fold the contact items into `contact-bindings` (test first)
+### W8 — Fold the contact items into `contact-bindings` (test first) [x]
 
 - **Files:**
   - new `scripts/setup-check/checks/contact-bindings.ts` and

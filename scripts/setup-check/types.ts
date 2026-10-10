@@ -87,8 +87,6 @@ export interface SetupItem {
   secrets: string[];
   dependsOn: string[];
   phase: ItemPhase;
-  /** True for an after-merge item that is reported but must not fail the check before the merge (FR-028a). */
-  deferredUntilMerge?: boolean;
   check: (ctx: ProviderContext) => Promise<CheckResult>;
 }
 

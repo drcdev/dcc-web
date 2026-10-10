@@ -23,13 +23,7 @@ const ITEM_IDS = [
   "pipeline-secrets",
   "preview-noindex",
   "web-analytics",
-  "contact-d1-databases",
-  "contact-turnstile-widget",
-  "contact-worker-secrets",
-  "contact-preview-builds",
-  "contact-turnstile-site-key",
-  "contact-preview-deploy",
-  "contact-production-deploy",
+  "contact-bindings",
 ];
 
 // Single-section extractor (distinct from extractSections below), matching
@@ -56,7 +50,7 @@ function extractSections(markdown: string): { id: string; body: string }[] {
 }
 
 describe("docs/setup.md structure", () => {
-  it("has exactly 22 item sections whose anchors are the spec's fixed item IDs in step order", () => {
+  it("has exactly 16 item sections whose anchors are the spec's fixed item IDs in step order", () => {
     const sections = extractSections(contents);
     expect(sections.map((s) => s.id)).toEqual(ITEM_IDS);
   });
@@ -120,7 +114,7 @@ describe("docs/setup.md contact-form part", () => {
   it("has a Contact form part heading before the first contact section", () => {
     const part = contents.indexOf("# Contact form");
     expect(part).toBeGreaterThan(contents.indexOf("{#web-analytics}"));
-    expect(part).toBeLessThan(contents.indexOf("{#contact-d1-databases}"));
+    expect(part).toBeLessThan(contents.indexOf("{#contact-bindings}"));
   });
 
   it("item 2 lists the D1, Workers Builds Configuration and Turnstile Sites read permissions", () => {
@@ -138,8 +132,8 @@ describe("docs/setup.md contact-form part", () => {
     expect(s).not.toContain("only the non-production branch command changes");
   });
 
-  it("the site databases item restates the region, says it cannot be changed, and shows the exact commands", () => {
-    const s = extractSection(contents, "contact-d1-databases");
+  it("the contact bindings item restates the region, says it cannot be changed, and shows the exact commands", () => {
+    const s = extractSection(contents, "contact-bindings");
     expect(s).toContain("Western North America");
     expect(s).toContain("`wnam`");
     expect(s).toMatch(/cannot be changed/i);
@@ -149,28 +143,12 @@ describe("docs/setup.md contact-form part", () => {
     expect(s).toContain("usage bucket");
   });
 
-  it("the preview deploy item notes the Workers Builds token may need the Workers AI permission", () => {
-    expect(extractSection(contents, "contact-preview-deploy")).toContain("Workers AI");
+  it("the contact bindings item notes the Workers Builds token may need the Workers AI permission", () => {
+    expect(extractSection(contents, "contact-bindings")).toContain("Workers AI");
   });
 
-  it("the production deploy item deletes the retired dcc-web-contact databases after the production deploy", () => {
-    const s = extractSection(contents, "contact-production-deploy");
-    expect(s).toContain("pnpm exec wrangler d1 delete dcc-web-contact --env-file /dev/null");
-    expect(s).toContain("pnpm exec wrangler d1 delete dcc-web-contact-preview --env-file /dev/null");
-  });
-
-  it("the production deploy item checks each retired database is empty and deletes the preview one first", () => {
-    const s = extractSection(contents, "contact-production-deploy");
-    expect(s).toContain("SELECT count(*) FROM messages");
-    expect(s).toContain("pnpm exec wrangler d1 migrations list dcc-web --remote --env-file /dev/null");
-    expect(s).toContain("pnpm setup:check --item contact-d1-databases");
-    expect(s.indexOf("d1 delete dcc-web-contact-preview")).toBeGreaterThan(-1);
-    expect(s.indexOf("d1 delete dcc-web-contact-preview")).toBeLessThan(s.indexOf("d1 delete dcc-web-contact --env-file"));
-    expect(s).not.toContain("is replaced by the new databases");
-  });
-
-  it("the contact secrets item gives secret put commands and the replacement rule, and never asks for a value in chat", () => {
-    const s = extractSection(contents, "contact-worker-secrets");
+  it("the contact bindings item gives secret put commands and the replacement rule, and never asks for a value in chat", () => {
+    const s = extractSection(contents, "contact-bindings");
     for (const name of ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"]) {
       expect(s).toContain(name);
     }
@@ -182,12 +160,11 @@ describe("docs/setup.md contact-form part", () => {
     expect(s).toMatch(/never[^.]*chat/i);
   });
 
-  it("the last four contact items name the deploy commands, the site-key variable and the D1 Edit permission", () => {
-    expect(extractSection(contents, "contact-preview-builds")).toContain("pnpm run deploy:preview");
-    expect(extractSection(contents, "contact-turnstile-site-key")).toContain("PUBLIC_TURNSTILE_SITE_KEY");
-    expect(extractSection(contents, "contact-preview-deploy")).toContain("D1: Edit");
-    const last = extractSection(contents, "contact-production-deploy");
-    expect(last).toContain("pnpm run deploy:production");
-    expect(last.toLowerCase()).toContain("after");
+  it("the contact bindings item names the preview and production deploy commands and the site-key variable", () => {
+    const s = extractSection(contents, "contact-bindings");
+    expect(s).toContain("pnpm run deploy:preview");
+    expect(s).toContain("PUBLIC_TURNSTILE_SITE_KEY");
+    expect(s).toContain("pnpm run deploy:production");
+    expect(s.toLowerCase()).toContain("after");
   });
 });

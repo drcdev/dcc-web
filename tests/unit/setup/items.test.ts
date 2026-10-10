@@ -9,22 +9,13 @@ const docsContents = readFileSync(docsPath, "utf-8");
 const docsAnchors = new Set(
   [...docsContents.matchAll(/^##\s+.*\{#([a-z0-9-]+)\}\s*$/gm)].map((m) => m[1]),
 );
-const CONTACT_IDS = [
-  "contact-d1-databases",
-  "contact-turnstile-widget",
-  "contact-worker-secrets",
-  "contact-preview-builds",
-  "contact-turnstile-site-key",
-  "contact-preview-deploy",
-  "contact-production-deploy",
-];
 const secretNames = new Set(secretManifest.map((s) => s.name));
 
 describe("setupItems registry invariants", () => {
-  it("has exactly 22 items, mail-records at 5 and the contact-form items at 16 to 22", () => {
-    expect(setupItems).toHaveLength(22);
+  it("has exactly 16 items, mail-records at 5 and contact-bindings last", () => {
+    expect(setupItems).toHaveLength(16);
     expect(setupItems[4]!.id).toBe("mail-records");
-    expect(setupItems.slice(15).map((i) => i.id)).toEqual(CONTACT_IDS);
+    expect(setupItems[15]!.id).toBe("contact-bindings");
   });
 
   it("preview-noindex and web-analytics depend on no other item", () => {
@@ -33,14 +24,9 @@ describe("setupItems registry invariants", () => {
     }
   });
 
-  it("items 1 to 8 are before-merge, 9 to 15 after-merge, 16 to 21 before-merge and 22 after-merge and deferred until merge (FR-028a)", () => {
+  it("items 1 to 8 are before-merge and 9 to 16 are after-merge", () => {
     for (const item of setupItems.slice(0, 8)) expect(item.phase).toBe("before-merge");
-    for (const item of setupItems.slice(8, 15)) expect(item.phase).toBe("after-merge");
-    for (const item of setupItems.slice(15, 21)) expect(item.phase).toBe("before-merge");
-    const last = setupItems[21]!;
-    expect(last.phase).toBe("after-merge");
-    expect(last.deferredUntilMerge).toBe(true);
-    expect(setupItems.filter((i) => i.deferredUntilMerge)).toHaveLength(1);
+    for (const item of setupItems.slice(8)) expect(item.phase).toBe("after-merge");
   });
 
   it("item 2 names the three new read permissions and item 9 names the preview Worker", () => {
@@ -50,12 +36,10 @@ describe("setupItems registry invariants", () => {
     expect(workersBuilds.where).toContain("dcc-web-preview");
   });
 
-  it("the site databases item's where text restates the region and gives the exact d1 create commands (FR-027a)", () => {
-    const where = setupItems.find((i) => i.id === "contact-d1-databases")!.where;
+  it("the contact bindings item's where text restates the region (FR-027a)", () => {
+    const where = setupItems.find((i) => i.id === "contact-bindings")!.where;
     expect(where).toContain("wnam");
-    expect(where).toMatch(/cannot be changed/i);
-    expect(where).toContain("wrangler d1 create dcc-web --location wnam");
-    expect(where).toContain("wrangler d1 create dcc-web-preview --location wnam");
+    expect(where).toContain("Western North America");
   });
 
   it("has unique ids", () => {
@@ -119,9 +103,9 @@ describe("setupItems registry invariants", () => {
     for (const item of setupItems) {
       expect(["before-merge", "after-merge"]).toContain(item.phase);
     }
-    // Items 1-8 and 16-21 are before-merge, 9-15 and 22 are after-merge (plan.md walkthrough order).
-    const beforeMerge = setupItems.filter((i) => i.order <= 8 || (i.order >= 16 && i.order <= 21));
-    const afterMerge = setupItems.filter((i) => (i.order >= 9 && i.order <= 15) || i.order === 22);
+    // Items 1-8 are before-merge, 9-16 are after-merge (plan.md walkthrough order).
+    const beforeMerge = setupItems.filter((i) => i.order <= 8);
+    const afterMerge = setupItems.filter((i) => i.order >= 9);
     expect(beforeMerge.every((i) => i.phase === "before-merge")).toBe(true);
     expect(afterMerge.every((i) => i.phase === "after-merge")).toBe(true);
   });

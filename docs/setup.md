@@ -4,11 +4,11 @@ This is the plain-language record of every account-side setup item this reposito
 what each item is for, where Don does it, how it is confirmed, which constitution principle it
 serves, and the names (never values) of any secrets involved. It is the no-agent fallback for
 the `/setup-walkthrough` Claude Code skill, and the two must never disagree — both read the same
-22-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
+16-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
 
-Run `pnpm setup:check` at any time to see which of the 22 items below are complete. Each item's
-step number and anchor match the registry in `scripts/setup-check/items.ts`; items 16 to 22 are
-the "Contact form" part. The edge protections Don set up in the Cloudflare dashboard are recorded
+Run `pnpm setup:check` at any time to see which of the 16 items below are complete. Each item's
+step number and anchor match the registry in `scripts/setup-check/items.ts`; item 16 is the
+"Contact form" part. The edge protections Don set up in the Cloudflare dashboard are recorded
 in the Edge protections part at the end; they are not setup items.
 
 A few terms used below: a **nameserver** is the server that answers "where is doncoleman.ca's
@@ -49,7 +49,7 @@ Create a read-only Cloudflare API token first (Cloudflare dashboard → My Profi
 Create Token), scoped to Don's account and the `doncoleman.ca` zone only, with permissions Zone →
 Zone: Read, Zone → DNS: Read, Account → Workers Scripts: Read, Account → Account Settings: Read
 (the permission Cloudflare's API requires to list Web Analytics sites; there is no "Web
-Analytics" token permission), and, for the contact form (items 16 to 22), Account → D1: Read,
+Analytics" token permission), and, for the contact form (item 16), Account → D1: Read,
 Account → Workers Builds Configuration: Read and Account → Turnstile Sites: Read. If you made
 the token before the contact form, edit it and add those three. Then copy `.env.example` to `.env` in the repository root and fill in the values in your own
 editor.
@@ -230,13 +230,12 @@ from `main` on the `dcc-web` Worker, and a preview for every other branch on the
 its own served address (for its canonical link, `og:url` and `robots.txt`), and Cloudflare does
 not hand a non-aliased preview upload a predictable URL, so the preview deploy command uploads an
 aliased preview instead of a plain one. Previews live on their own Worker so they use the preview
-database and the preview secrets, never production's (see step 19).
+database and the preview secrets, never production's (see step 16).
 
 **Where to do it**
-Nothing new beyond step 6 for the `dcc-web` Worker, and the preview Worker is connected in step 19.
+Nothing new beyond step 6 for the `dcc-web` Worker, and the preview Worker is connected to the same repository under Workers & Pages → `dcc-web-preview` → Settings → Build.
 On `dcc-web`, the **build command stays `pnpm run build`, unchanged**. Its production deploy command
-is `pnpm run deploy:production` once this feature has merged (step 22); until then it stays
-`pnpm exec wrangler deploy`. Non-production branch builds are turned **off** on `dcc-web` (step 19)
+is `pnpm run deploy:production` (confirmed by step 16, Contact bindings). Non-production branch builds are turned **off** on `dcc-web`
 — they now belong to `dcc-web-preview`, whose Workers Builds connection uses `pnpm run build` and
 `pnpm run deploy:preview` for every branch. No secret or token is involved in the deploy command:
 `pnpm run deploy:preview` runs `scripts/deploy/preview.ts`, which derives a stable alias from the
@@ -415,8 +414,8 @@ None.
 
 # Contact form
 
-Items 16 to 22 set up the contact form's storage, spam protection, secrets and deployments. They
-are done in the order shown. Two rules apply to every step:
+Item 16 covers the contact form's storage, spam protection, secrets and deployment. Its parts are
+done in the order shown. Two rules apply throughout:
 
 - **You never paste a secret into the chat or into a repository file.** Type or pipe secrets straight
   into `wrangler secret put`, or paste them into a Cloudflare dashboard field yourself. The setup
@@ -426,17 +425,23 @@ are done in the order shown. Two rules apply to every step:
   Cloudflare, or whose token lacks a permission, says "could not check" with the permission to add;
   it is never shown as complete.
 
-## 16. Site databases {#contact-d1-databases}
+## 16. Contact bindings present {#contact-bindings}
 
 **What it is for**
-The site's Worker keeps its data in Cloudflare D1: contact messages, and the cached critical
-thinking questions and their usage bucket. Production (`dcc-web`) and preview (`dcc-web-preview`)
-are separate databases so a test message never lands in the real one. These replace the earlier
-`dcc-web-contact` and `dcc-web-contact-preview` databases, which item 22 deletes after the
-production deploy.
+The contact form needs five Cloudflare pieces in place: the two D1 databases, the Turnstile
+widget, three Worker secrets, the site key build variable and a production deploy that applies the
+database migrations. One check reads all five and names every gap in a single run.
 
 **Where to do it**
-Read this first. Both databases will be created in Western North America (`wnam`). D1 cannot keep
+Work through the parts in this order.
+
+### Databases
+
+The site's Worker keeps its data in Cloudflare D1: contact messages, and the cached critical
+thinking questions and their usage bucket. Production (`dcc-web`) and preview (`dcc-web-preview`)
+are separate databases so a test message never lands in the real one.
+
+Read this first. Both databases are created in Western North America (`wnam`). D1 cannot keep
 data only in Canada, and the location **cannot be changed** after the databases are created. If you
 do not confirm this, stop here: nothing is created until you do, and a different region needs a
 reviewed change to the spec, plan and privacy policy first.
@@ -460,51 +465,21 @@ create it again:
 pnpm exec wrangler d1 delete dcc-web --env-file /dev/null
 ```
 
-**How it will be confirmed**
-`pnpm setup:check --item contact-d1-databases` reports complete when both databases exist by name,
-their IDs equal the `database_id` values in `wrangler.jsonc`, and each reports region `WNAM`. If
-Cloudflare does not report a region, the check says "region could not be confirmed" and stays
-missing.
+### Turnstile widget
 
-**Constitution principle**
-VII (Private Data: Minimal and Protected), VIII (Secure by Default) and IX (Free-Tier First).
-
-**Secrets**
-None.
-
-## 17. Spam-protection widget {#contact-turnstile-widget}
-
-**What it is for**
 A Cloudflare Turnstile widget keeps bots from filling the contact form, without a visible puzzle for
-real visitors.
+real visitors. In the Cloudflare dashboard go to Turnstile → Add widget. Name it `dcc-web contact`;
+hostnames `doncoleman.ca` and `drc-dev.workers.dev` (this covers preview addresses); mode
+**Managed**; no pre-clearance. Keep the page open, because the next two parts need the secret key
+and the site key. If the dashboard refuses `drc-dev.workers.dev`, use Turnstile's always-pass test
+keys for **preview only** (research R6 in `specs/007-contact-form/research.md`).
 
-**Where to do it**
-Cloudflare dashboard → Turnstile → Add widget. Name it `dcc-web contact`; hostnames `doncoleman.ca`
-and `drc-dev.workers.dev` (this covers preview addresses); mode
-**Managed**; no pre-clearance. Keep the page open, because steps 18 and 20 need the secret key and
-the site key. If the dashboard refuses `drc-dev.workers.dev`, use Turnstile's always-pass test keys
-for **preview only** (research R6 in `specs/007-contact-form/research.md`).
+### Worker secrets
 
-**How it will be confirmed**
-`pnpm setup:check --item contact-turnstile-widget` reports complete when a widget named
-`dcc-web contact` exists in managed mode and its domains include `doncoleman.ca`, plus either
-`drc-dev.workers.dev` or the preview fallback. It needs the Account → Turnstile Sites: Read
-permission (step 2), and reads only the widget's name, domains and mode, never its keys.
+The contact form's Workers need three secrets, stored as Worker secrets and never in the
+repository: the Turnstile secret key, a read token for the scheduled assistant that fetches new
+messages, and a salt used to hash visitor addresses for rate limiting.
 
-**Constitution principle**
-VIII (Secure by Default) and X (Accessible, Fast and Private).
-
-**Secrets**
-None read. The widget's secret key is used in step 18.
-
-## 18. Contact secrets {#contact-worker-secrets}
-
-**What it is for**
-The contact form's Workers need three secrets, stored as Worker secrets and never in the repository:
-the Turnstile secret key, a read token for the scheduled assistant that fetches new messages, and a
-salt used to hash visitor addresses for rate limiting.
-
-**Where to do it**
 In a terminal in the repository, run these yourself and type or paste each value at the prompt.
 Never paste a value into the chat. For the read token, generate a new random value in your password
 manager first. The repository's `.env` holds the read-only token from step 2, and Wrangler would use
@@ -538,137 +513,57 @@ then choose **Retry build** on the latest `dcc-web-preview` build (or push a com
 a read token, give the new value to the scheduled assistant. A value from `openssl rand -hex 32`
 avoids shell-quoting trouble when the assistant sends it as a bearer token.
 
-**How it will be confirmed**
-`pnpm setup:check --item contact-worker-secrets` reports complete when `TURNSTILE_SECRET_KEY`,
-`CONTACT_READ_TOKEN` and `IP_HASH_SALT` exist on both `dcc-web` and `dcc-web-preview`. It reads the
-secret **names** only and lists any missing name per Worker.
+### Site key build variable
 
-**Constitution principle**
-VII (Private Data: Minimal and Protected) and VIII (Secure by Default).
-
-**Secrets**
-`TURNSTILE_SECRET_KEY`, `CONTACT_READ_TOKEN` and `IP_HASH_SALT` (Worker secrets, on both Workers).
-
-## 19. Preview Worker builds {#contact-preview-builds}
-
-**What it is for**
-Branch previews are built and deployed by their own Worker, `dcc-web-preview`, so a preview uses the
-preview database and preview secrets and never touches production's.
-
-**Where to do it**
-Cloudflare dashboard → Workers & Pages → `dcc-web-preview` → Settings → Build → Connect →
-`drcdev/dcc-web`. Build command `pnpm run build`. Production branch `main`, with deploy command
-`pnpm run deploy:preview`. Turn **on** non-production branch builds, also with deploy command
-`pnpm run deploy:preview`. Then Settings → Domains & Routes: turn on the `workers.dev` address and
-preview URLs; `wrangler.jsonc` `env.preview` now sets both explicitly. Only `main` replaces the active
-deployment on `dcc-web-preview`; every other branch uploads an aliased version. Finally open `dcc-web` → Settings → Build → Branch control and turn **off**
-non-production branch builds. The first build of `main` on `dcc-web-preview` fails until this feature
-merges; that failure is expected.
-
-**How it will be confirmed**
-`pnpm setup:check --item contact-preview-builds` reports complete when `dcc-web-preview` exists, its
-Workers Builds triggers use `pnpm run deploy:preview` for both branch kinds, and `dcc-web` has no
-non-production trigger. It needs the Account → Workers Builds Configuration: Read permission (step 2).
-
-**Constitution principle**
-II (Automated Release Gate), VII (Private Data: Minimal and Protected) and VIII (Secure by Default).
-
-**Secrets**
-None.
-
-## 20. Site key build variable {#contact-turnstile-site-key}
-
-**What it is for**
 The page needs the widget's public site key at build time. It is public, but it is set in the build
 settings rather than committed, so preview and production can differ under the Turnstile preview
-fallback.
+fallback. For each of `dcc-web` and `dcc-web-preview`: Settings → Build → Variables and secrets →
+add a **build** variable named `PUBLIC_TURNSTILE_SITE_KEY` (plain text) with the widget's site key.
 
-**Where to do it**
-For each of `dcc-web` and `dcc-web-preview`: Settings → Build → Variables and secrets → add a
-**build** variable named `PUBLIC_TURNSTILE_SITE_KEY` (plain text) with the widget's site key from
-step 17.
+### Production deploy
 
-**How it will be confirmed**
-`pnpm setup:check --item contact-turnstile-site-key` reports complete when the name
-`PUBLIC_TURNSTILE_SITE_KEY` exists on every build trigger of both Workers. Only names are read.
+`dcc-web`'s production deploy command is `pnpm run deploy:production`, which applies the database
+migrations and registers the daily clean-up schedule on every build of `main`. If the command is
+wrong: `dcc-web` → Settings → Build → production deploy command →
+`pnpm run deploy:production`, then Retry the latest `main` build. Until it has run, production's
+contact form answers "service unavailable".
 
-**Constitution principle**
-VIII (Secure by Default) and X (Accessible, Fast and Private).
-
-**Secrets**
-`PUBLIC_TURNSTILE_SITE_KEY` (a public build variable, not a secret).
-
-## 21. Preview migrations and clean-up schedule {#contact-preview-deploy}
-
-**What it is for**
-The preview deployment applies the database migrations to the `dcc-web-preview` database and registers the daily
-clean-up schedule, so a test submission on the preview address works end to end.
-
-**Where to do it**
-Cloudflare dashboard → My Profile → API Tokens → the token Workers Builds uses (named in each
-Worker's Settings → Build → API token) → Edit → add Account → **D1: Edit**. The same token may also
-need the **Workers AI** permission for the preview build to deploy the `AI` binding. Then push the
-branch (the agent does this) or choose Retry build on `dcc-web-preview`.
-
-The `dcc-web-preview` database is disposable: Don may wipe or recreate it, and nothing in it is kept.
-Branch migrations are applied to it before merge, so every migration must be additive only (the "only
-additive migrations" unit test enforces this).
+`dcc-web-preview` builds branches with `pnpm run deploy:preview` (see
+[Workers Builds](#workers-builds)); its migrations and clean-up schedule come from that deploy, and
+the CI preview check fails the pull request if the preview deploy fails. The Workers Builds API token
+may need the **Workers AI** permission for the preview build to deploy the `AI` binding.
 
 **How it will be confirmed**
-`pnpm setup:check --item contact-preview-deploy` reports complete when the `dcc-web-preview` database has applied
-every file in `migrations/` and the `dcc-web-preview` Worker has the cron `17 3 * * *`. That is also how the
-Workers Builds token's D1 permission is confirmed, indirectly. It reports `pending` while a
-`dcc-web-preview` build is running.
+`pnpm setup:check --item contact-bindings` reports complete when all five parts pass. Any failing
+line is prefixed with its part (Databases, Turnstile widget, Worker secrets, Site key, Production
+deploy), and the next action is the fix for the first failing part.
+
+- **Databases:** both exist by name, their IDs equal the `database_id` values in `wrangler.jsonc`,
+  and each reports region `WNAM`. If Cloudflare does not report a region, the check says "region
+  could not be confirmed" and stays missing.
+- **Turnstile widget:** a widget named `dcc-web contact` exists in managed mode and its domains
+  include `doncoleman.ca`, plus either `drc-dev.workers.dev` or the preview fallback.
+- **Worker secrets:** `TURNSTILE_SECRET_KEY`, `CONTACT_READ_TOKEN` and `IP_HASH_SALT` exist on both
+  `dcc-web` and `dcc-web-preview`. Only the secret **names** are read.
+- **Site key:** the name `PUBLIC_TURNSTILE_SITE_KEY` exists on every build trigger of both Workers.
+- **Production deploy:** `dcc-web`'s production trigger uses `pnpm run deploy:production`, its
+  database has applied every file in `migrations/`, and it has the cron `17 3 * * *`.
+
+It needs the D1: Read, Turnstile Sites: Read, Workers Builds Configuration: Read and Workers Scripts:
+Read permissions (step 2), and never reads a key or a secret value.
 
 **Constitution principle**
-II (Automated Release Gate), VII (Private Data: Minimal and Protected) and VIII (Secure by Default).
+VII (Private Data: Minimal and Protected), VIII (Secure by Default) and IX (Free-Tier First).
 
 **Secrets**
-None.
-
-## 22. Production migrations and clean-up schedule {#contact-production-deploy}
-
-**What it is for**
-After the merge, production applies its migrations and registers the clean-up schedule, so the live
-contact form has a table to write to.
-
-**Where to do it**
-Right after this feature's pull request merges (this is an after-merge step): `dcc-web` → Settings →
-Build → production deploy command → `pnpm run deploy:production`, then Retry the latest `main`
-build. Until this is done, production's contact form answers "service unavailable". Production
-traffic is still only the review address.
-
-Delete the retired databases only after the production deploy is green,
-`pnpm exec wrangler d1 migrations list dcc-web --remote --env-file /dev/null` shows nothing pending
-and `pnpm setup:check --item contact-d1-databases` passes. Contact data is not migrated to the new
-databases; the count below proves the old ones hold none. These are shown for Don to run himself.
-Delete `dcc-web-contact-preview` first, then `dcc-web-contact`. Before each delete, run the count and
-stop and export the rows if it is not 0:
-
-```sh
-pnpm exec wrangler d1 execute dcc-web-contact-preview --remote --env-file /dev/null --command "SELECT count(*) FROM messages"
-pnpm exec wrangler d1 delete dcc-web-contact-preview --env-file /dev/null
-pnpm exec wrangler d1 execute dcc-web-contact --remote --env-file /dev/null --command "SELECT count(*) FROM messages"
-pnpm exec wrangler d1 delete dcc-web-contact --env-file /dev/null
-```
-
-**How it will be confirmed**
-`pnpm setup:check --item contact-production-deploy` reports complete when `dcc-web`'s production
-trigger uses `pnpm run deploy:production`, the `dcc-web` database has applied every file in `migrations/`, and
-`dcc-web` has the cron `17 3 * * *`. Before the merge it is shown as an after-merge item and does not
-fail the check.
-
-**Constitution principle**
-II (Automated Release Gate), VII (Private Data: Minimal and Protected) and VIII (Secure by Default).
-
-**Secrets**
-None.
+`TURNSTILE_SECRET_KEY`, `CONTACT_READ_TOKEN` and `IP_HASH_SALT` (Worker secrets, on both Workers),
+and `PUBLIC_TURNSTILE_SITE_KEY` (a public build variable, not a secret).
 
 # Edge protections
 
 These are dashboard settings Don made by hand on 2026-10-09, right after the domain switch, for
 issue #91. They are recorded here for reference. They are not setup items, they are not in the
-22-item registry, and `pnpm setup:check` does not check them.
+16-item registry, and `pnpm setup:check` does not check them.
 
 ### API rate-limiting rule
 

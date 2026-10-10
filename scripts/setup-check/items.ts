@@ -18,13 +18,7 @@ import { check as checkGithubMainProtection } from "./checks/github-main-protect
 import { check as checkPipelineSecrets } from "./checks/pipeline-secrets.ts";
 import { check as checkPreviewNoindex } from "./checks/preview-noindex.ts";
 import { check as checkWebAnalytics } from "./checks/web-analytics.ts";
-import { check as checkContactD1Databases } from "./checks/contact-d1-databases.ts";
-import { check as checkContactTurnstileWidget } from "./checks/contact-turnstile-widget.ts";
-import { check as checkContactWorkerSecrets } from "./checks/contact-worker-secrets.ts";
-import { check as checkContactPreviewBuilds } from "./checks/contact-preview-builds.ts";
-import { check as checkContactTurnstileSiteKey } from "./checks/contact-turnstile-site-key.ts";
-import { check as checkContactPreviewDeploy } from "./checks/contact-preview-deploy.ts";
-import { check as checkContactProductionDeploy } from "./checks/contact-production-deploy.ts";
+import { check as checkContactBindings } from "./checks/contact-bindings.ts";
 import { check as checkMailRecords } from "./checks/mail-records.ts";
 
 const checksById: Record<string, (ctx: ProviderContext) => ReturnType<SetupItem["check"]>> = {
@@ -42,13 +36,7 @@ const checksById: Record<string, (ctx: ProviderContext) => ReturnType<SetupItem[
   "pipeline-secrets": checkPipelineSecrets,
   "preview-noindex": checkPreviewNoindex,
   "web-analytics": checkWebAnalytics,
-  "contact-d1-databases": checkContactD1Databases,
-  "contact-turnstile-widget": checkContactTurnstileWidget,
-  "contact-worker-secrets": checkContactWorkerSecrets,
-  "contact-preview-builds": checkContactPreviewBuilds,
-  "contact-turnstile-site-key": checkContactTurnstileSiteKey,
-  "contact-preview-deploy": checkContactPreviewDeploy,
-  "contact-production-deploy": checkContactProductionDeploy,
+  "contact-bindings": checkContactBindings,
   "mail-records": checkMailRecords,
 };
 
@@ -65,7 +53,6 @@ interface ItemSeed {
   secrets: string[];
   dependsOn: string[];
   phase: ItemPhase;
-  deferredUntilMerge?: boolean;
 }
 
 const seeds: ItemSeed[] = [
@@ -196,7 +183,7 @@ const seeds: ItemSeed[] = [
     title: "Workers Builds",
     purpose: "Confirms Workers Builds is building and deploying this repository once this slice's files are on main.",
     where:
-      "Nothing new beyond step 6 for the dcc-web Worker (production deploys from main; non-production branch builds are turned off there). Branch previews are built by the separate dcc-web-preview Worker, connected in step 19; this step confirms the pipeline once this slice's pull request has merged.",
+      "Nothing new beyond step 6 for the dcc-web Worker (production deploys from main; non-production branch builds are turned off there). Branch previews are built by the separate dcc-web-preview Worker, connected under its own Settings → Build; this step confirms the pipeline once this slice's pull request has merged.",
     confirmedBy:
       "Latest commit on main has a successful Workers Builds check run; latest open PR head has one with a preview URL",
     needsDon: false,
@@ -293,115 +280,21 @@ const seeds: ItemSeed[] = [
     phase: "after-merge",
   },
   {
-    id: "contact-d1-databases",
+    id: "contact-bindings",
     order: 16,
-    title: "Site databases",
-    purpose: "The site keeps contact messages and the questions cache in Cloudflare D1, with production and preview in separate databases.",
+    title: "Contact bindings present",
+    purpose:
+      "The contact form needs its Cloudflare pieces in place: the two D1 databases, the Turnstile widget, the Worker secrets, the site key build variable and the production deploy that applies migrations.",
     where:
-      "Both databases will be created in Western North America (wnam). D1 cannot keep data only in Canada, and the location cannot be changed after the databases are created. In a terminal in the repository run: pnpm exec wrangler login (if needed), pnpm exec wrangler d1 create dcc-web --location wnam, then pnpm exec wrangler d1 create dcc-web-preview --location wnam. Choose no if Wrangler offers to add the binding to the config. The agent then reads the two IDs with pnpm exec wrangler d1 list --json and records them in wrangler.jsonc.",
+      "Five parts, each described in docs/setup.md: the D1 databases (created in Western North America, wnam), the Turnstile widget, three Worker secrets on each Worker, the PUBLIC_TURNSTILE_SITE_KEY build variable, and the production deploy command pnpm run deploy:production.",
     confirmedBy:
-      "Both databases exist by name, each reports region WNAM, and their IDs equal the database_id values in wrangler.jsonc",
+      "Both databases exist in WNAM and match wrangler.jsonc; the dcc-web contact widget is managed and covers the site hostnames; the three secret names exist on both Workers (names only); PUBLIC_TURNSTILE_SITE_KEY exists on every build trigger; dcc-web deploys with pnpm run deploy:production, has every migration applied and has its cron",
     needsDon: true,
     principles: ["VII", "VIII", "IX"],
-    requirements: ["FR-017", "FR-027a", "FR-028"],
-    secrets: [],
+    requirements: ["FR-012", "FR-017", "FR-018", "FR-023", "FR-024", "FR-027a", "FR-028"],
+    secrets: ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT", "PUBLIC_TURNSTILE_SITE_KEY"],
     dependsOn: ["local-credentials", "cloudflare-worker"],
-    phase: "before-merge",
-  },
-  {
-    id: "contact-turnstile-widget",
-    order: 17,
-    title: "Spam-protection widget",
-    purpose: "A Cloudflare Turnstile widget protects the contact form from bots without a visible puzzle.",
-    where:
-      "Cloudflare dashboard -> Turnstile -> Add widget. Name dcc-web contact; hostnames doncoleman.ca and drc-dev.workers.dev; mode Managed; no pre-clearance. Keep the page open for steps 18 and 20.",
-    confirmedBy:
-      "A widget named dcc-web contact exists in managed mode, its domains include doncoleman.ca, and either include drc-dev.workers.dev or the preview fallback is in use",
-    needsDon: true,
-    principles: ["VIII", "X"],
-    requirements: ["FR-012"],
-    secrets: [],
-    dependsOn: ["local-credentials"],
-    phase: "before-merge",
-  },
-  {
-    id: "contact-worker-secrets",
-    order: 18,
-    title: "Contact secrets",
-    purpose: "The contact Workers need a Turnstile secret, a read token and a salt, stored as Worker secrets and never in the repository.",
-    where:
-      "In a terminal in the repository, run wrangler secret put for TURNSTILE_SECRET_KEY, CONTACT_READ_TOKEN and IP_HASH_SALT on dcc-web, then the same with --env preview on dcc-web-preview (different read token and salt). Type or pipe the values yourself; never paste them into the chat.",
-    confirmedBy: "The three secret names exist on both dcc-web and dcc-web-preview (names only; values are never read)",
-    needsDon: true,
-    principles: ["VII", "VIII"],
-    requirements: ["FR-023", "FR-024", "FR-028"],
-    secrets: ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"],
-    dependsOn: ["cloudflare-worker", "contact-turnstile-widget"],
-    phase: "before-merge",
-  },
-  {
-    id: "contact-preview-builds",
-    order: 19,
-    title: "Preview Worker builds",
-    purpose: "Branch previews are built and deployed by their own Worker, dcc-web-preview, so they use the preview database and secrets.",
-    where:
-      "Cloudflare dashboard -> Workers & Pages -> dcc-web-preview -> Settings -> Build -> Connect drcdev/dcc-web; build command pnpm run build; deploy command pnpm run deploy:preview for production and non-production branches; then turn on the workers.dev address and preview URLs (wrangler.jsonc env.preview now sets both explicitly). Only main replaces the active deployment; branches upload an aliased version. On dcc-web turn non-production branch builds off.",
-    confirmedBy:
-      "dcc-web-preview exists and its Workers Builds triggers use pnpm run deploy:preview; dcc-web has no non-production trigger",
-    needsDon: true,
-    principles: ["II", "VII", "VIII"],
-    requirements: ["FR-017", "FR-024"],
-    secrets: [],
-    dependsOn: ["contact-worker-secrets"],
-    phase: "before-merge",
-  },
-  {
-    id: "contact-turnstile-site-key",
-    order: 20,
-    title: "Site key build variable",
-    purpose: "The public Turnstile site key reaches the built page through a build variable on each Worker.",
-    where:
-      "For dcc-web and dcc-web-preview: Settings -> Build -> Variables and secrets -> add the build variable PUBLIC_TURNSTILE_SITE_KEY (plain text) with the widget's site key.",
-    confirmedBy: "The variable name PUBLIC_TURNSTILE_SITE_KEY exists on every build trigger of both Workers (names only)",
-    needsDon: true,
-    principles: ["VIII", "X"],
-    requirements: ["FR-012", "FR-028"],
-    secrets: ["PUBLIC_TURNSTILE_SITE_KEY"],
-    dependsOn: ["contact-preview-builds"],
-    phase: "before-merge",
-  },
-  {
-    id: "contact-preview-deploy",
-    order: 21,
-    title: "Preview migrations and clean-up schedule",
-    purpose: "The preview deployment applies the database migrations and registers the daily clean-up schedule.",
-    where:
-      "Cloudflare dashboard -> My Profile -> API Tokens -> the token Workers Builds uses -> Edit -> add Account -> D1: Edit. Then push the branch or choose Retry build on dcc-web-preview. The dcc-web-preview database is disposable (Don may wipe or recreate it; nothing in it is kept), and branch migrations are applied to it before merge, so every migration must be additive only.",
-    confirmedBy:
-      "the dcc-web-preview database has every migration in migrations/ applied and the dcc-web-preview Worker has the cron 17 3 * * *; pending while a build is running",
-    needsDon: true,
-    principles: ["II", "VII", "VIII"],
-    requirements: ["FR-018", "FR-028"],
-    secrets: [],
-    dependsOn: ["contact-d1-databases", "contact-worker-secrets", "contact-preview-builds", "contact-turnstile-site-key"],
-    phase: "before-merge",
-  },
-  {
-    id: "contact-production-deploy",
-    order: 22,
-    title: "Production migrations and clean-up schedule",
-    purpose: "After the merge, production applies the migrations and registers the clean-up schedule so the contact form works.",
-    where:
-      "Right after the pull request merges: dcc-web -> Settings -> Build -> production deploy command pnpm run deploy:production, then Retry the latest main build.",
-    confirmedBy:
-      "dcc-web's production trigger uses pnpm run deploy:production, contact has every migration applied, and dcc-web has the cron 17 3 * * *",
-    needsDon: true,
-    principles: ["II", "VII", "VIII"],
-    requirements: ["FR-018", "FR-028"],
-    secrets: [],
-    dependsOn: ["contact-preview-deploy"],
     phase: "after-merge",
-    deferredUntilMerge: true,
   },
 ];
 
