@@ -36,8 +36,10 @@ changing or refreshing a baseline.
   the ruleset.
 - **What branch protection enforces** (ruleset `main-protection`, committed as
   `setup/github-ruleset.json`): a PR is required, with one approving review from a code owner
-  (Don); stale approvals are dismissed on push; the `verify` check is required and the branch
-  must be up to date; no force-push or deletion, and no bypass actors.
+  (Don); stale approvals are dismissed on push; the `verify` check is required; no
+  force-push or deletion, and no bypass actors. A PR that falls behind `main` can merge without
+  catching up, and only real conflicts need resolving. The CI run on the push to `main` catches
+  breakage that only shows when two PRs are combined (#147).
 - The repository allows **merge commits only**; squash and rebase merges are disabled. Any
   `--squash` or `--rebase` form of `gh pr merge` fails.
 - **Enable auto-merge by default.** When the work is done and nothing is left that needs Don's

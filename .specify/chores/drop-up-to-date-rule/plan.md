@@ -181,7 +181,7 @@ Options:
   gets no replacement. The "complete" test against a fixture with strict mode `false` now
   shows the rule is not required. No new test restates the config value (#97).
 
-### W2 CLAUDE.md Merging wording
+### [x] W2 CLAUDE.md Merging wording
 
 - **Files:** `CLAUDE.md` (lines 37-40, "What branch protection enforces").
 - **Change:** drop "and the branch must be up to date". Add one sentence: a PR that falls
