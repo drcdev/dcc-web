@@ -337,7 +337,7 @@ const seeds: ItemSeed[] = [
     title: "Web Analytics",
     purpose: "Gives Don basic, privacy-focused visitor statistics for the site, with no cookies and no personal data.",
     where: "Cloudflare dashboard -> Analytics & Logs -> Web Analytics -> Add a site -> select doncoleman.ca (the dashboard offers the zone, not a hostname) -> Enable (automatic setup).",
-    confirmedBy: "Web Analytics site for the doncoleman.ca zone (or the checked host) exists with automatic setup on; the served HTML of doncoleman.ca once switched, new.doncoleman.ca before, references the Cloudflare beacon",
+    confirmedBy: "Web Analytics site for the doncoleman.ca zone exists with automatic setup on; the served HTML of doncoleman.ca references the Cloudflare beacon",
     needsDon: true,
     principles: ["X"],
     requirements: ["FR-022"],

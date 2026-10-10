@@ -224,7 +224,7 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
     removes every link. The `setup.md` count assertion stays in `docs-structure.test.ts`.
 - **Layer:** n/a (removal).
 
-### W2 — web-analytics checks the zone apex (test first)
+### W2 — web-analytics checks the zone apex (test first) [x]
 
 - **Files:**
   - `scripts/setup-check/checks/web-analytics.ts`;

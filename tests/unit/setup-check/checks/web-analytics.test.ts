@@ -14,7 +14,6 @@ const CONFIG = {
   repo: "dcc-web",
   zone: "doncoleman.ca",
   workerName: "dcc-web",
-  reviewHost: "new.doncoleman.ca",
 };
 const BASELINE = {
   originalNameservers: ["ns1.squarespacedns.com", "ns2.squarespacedns.com"],
@@ -66,7 +65,9 @@ async function reviewAddressCompleteContext(overrides: Parameters<typeof fakePro
       listDnsRecords: async () => [
         { type: "A", name: "doncoleman.ca", content: "192.0.2.10", priority: null, ttl: 3600, proxied: false },
       ],
-      listWorkerDomains: async () => loadFixture("cloudflare", "worker-domains-review-host"),
+      listWorkerDomains: async () => {
+        throw new Error("listWorkerDomains must not be called");
+      },
       listWebAnalyticsSites: async () =>
         toWebAnalyticsSites(loadFixture("cloudflare", "web-analytics-site-present")),
       ...overrides.cloudflare,
@@ -87,43 +88,28 @@ describe("checks/web-analytics", () => {
     expect(setupItems.find((i) => i.id === "web-analytics")!.dependsOn).toEqual([]);
   });
 
-  it("checks the review host before the switch and the apex once switched (T048)", async () => {
+  it("checks https://doncoleman.ca/ without reading the Worker's Custom Domains", async () => {
     const urls: string[] = [];
     const get = async (url: string) => {
       urls.push(url);
       return loadFixture("http", "analytics-beacon-referenced") as never;
     };
-    const before = await check(await reviewAddressCompleteContext({ http: { get } }));
-    expect(before.status).toBe("complete");
-    const after = await check(
-      await reviewAddressCompleteContext({
-        http: { get },
-        cloudflare: {
-          listWorkerDomains: async () => loadFixture("cloudflare", "worker-domains-apex-switched"),
-          listWebAnalyticsSites: async () => toWebAnalyticsSites(loadFixture("cloudflare", "web-analytics-site-zone-automatic")),
-        },
-      }),
-    );
-    expect(after.status).toBe("complete");
-    expect(urls).toEqual(["https://new.doncoleman.ca/", "https://doncoleman.ca/"]);
-    expect(after.summary).toContain("doncoleman.ca");
-  });
-
-  it("is could-not-check when the launch phase cannot be read", async () => {
     const ctx = await reviewAddressCompleteContext({
+      http: { get },
       cloudflare: {
-        listWorkerDomains: async () => {
-          throw new ProviderAccessError("Cloudflare rejected the API token (401)");
-        },
+        listWebAnalyticsSites: async () => [
+          { siteTag: "abc123", host: "doncoleman.ca", autoInstall: true, zoneName: null },
+        ],
       },
     });
 
     const result = await check(ctx);
 
-    expect(result.status).toBe("could-not-check");
+    expect(result.status).toBe("complete");
+    expect(urls).toEqual(["https://doncoleman.ca/"]);
   });
 
-  it("is missing when no Web Analytics site exists for new.doncoleman.ca", async () => {
+  it("is missing when no Web Analytics site exists for doncoleman.ca", async () => {
     const ctx = await reviewAddressCompleteContext({
       cloudflare: { listWebAnalyticsSites: async () => loadFixture("cloudflare", "web-analytics-site-absent") },
     });
@@ -160,7 +146,7 @@ describe("checks/web-analytics", () => {
     expect(result.summary).toMatch(/automatic setup is off/i);
   });
 
-  it("is complete when a zone-level automatic-setup site covers the review host", async () => {
+  it("is complete when a zone-level automatic-setup site covers the apex", async () => {
     const ctx = await reviewAddressCompleteContext({
       cloudflare: {
         listWebAnalyticsSites: async () =>
