@@ -13,7 +13,6 @@ const starRule = () => rules().get("/*") ?? new Map<string, string>();
 
 const WORKERS_DEV_RULE = "https://:worker.:subdomain.workers.dev/*";
 const ASTRO_RULE = "/_astro/*";
-const REVIEW_HOST_RULE = "https://new.doncoleman.ca/*";
 const QUESTION_SOURCE_RULE = "/writing/*/question-source.json";
 const SVG_RULE = "/_astro/*.svg";
 const publicAstroPath = fileURLToPath(new URL("../../../public/_astro", import.meta.url));
@@ -58,7 +57,6 @@ describe("public/_headers", () => {
   it("sets X-Robots-Tag: noindex on every host rule other than the live domain, and on the question source files", () => {
     const targets = [...rules().keys()].filter((path) => path.startsWith("https://") || path === QUESTION_SOURCE_RULE);
     expect(targets).toContain(WORKERS_DEV_RULE);
-    expect(targets).toContain(REVIEW_HOST_RULE);
     expect(targets).toContain(QUESTION_SOURCE_RULE);
     for (const path of targets) expect(rules().get(path)?.get("x-robots-tag"), path).toBe("noindex");
   });
@@ -75,6 +73,15 @@ describe("public/_headers", () => {
     "Strict-Transport-Security",
   ])("sets %s on /*", (name) => {
     expect(starRule().get(name.toLowerCase()), name).toBeTruthy();
+  });
+
+  // A security invariant (#93, FR-010d reopened once Ghost was retired), like "no 'unsafe-inline'":
+  // the policy must cover subdomains. max-age and preload are reviewed config edits, not asserted.
+  it("HSTS on /* covers subdomains (#93)", () => {
+    const directives = (starRule().get("strict-transport-security") ?? "")
+      .split(";")
+      .map((d) => d.trim().toLowerCase());
+    expect(directives).toContain("includesubdomains");
   });
 
   it("never sets a cookie", () => {

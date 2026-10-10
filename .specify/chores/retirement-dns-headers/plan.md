@@ -162,7 +162,7 @@ Mechanical criteria (the review phase checks each one):
 
 ## Work items
 
-### [ ] W1 — Headers test: HSTS covers subdomains; review-host rule gone (test first)
+### [x] W1 — Headers test: HSTS covers subdomains; review-host rule gone (test first)
 
 - **Files:** `tests/unit/site/headers.test.ts`.
 - **What:**
@@ -180,7 +180,7 @@ Mechanical criteria (the review phase checks each one):
 - **Test:** new-first.
 - **Layer:** unit. Parsing `public/_headers` is the cheapest layer that observes the rule.
 
-### [ ] W2 — `public/_headers`
+### [x] W2 — `public/_headers`
 
 - **Files:** `public/_headers`.
 - **What:** line 8 becomes `Strict-Transport-Security: max-age=31536000; includeSubDomains`.
@@ -189,7 +189,7 @@ Mechanical criteria (the review phase checks each one):
 - **Test:** existing (W1 turns green).
 - **Layer:** unit.
 
-### [ ] W3 — Build test: copied `_headers` keeps the workers.dev noindex rule
+### [x] W3 — Build test: copied `_headers` keeps the workers.dev noindex rule
 
 - **Files:** `tests/build/indexing.test.ts` (lines ~227–233).
 - **What:** delete the `new.doncoleman.ca` regexp (line 232). Retitle "copies _headers with the
