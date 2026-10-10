@@ -148,7 +148,7 @@ Judged against the constitution on `main` (2.3.0), because that is what this PR 
 
 ## Work items
 
-### W1 — Amend the constitution to 3.0.0 (via `speckit-constitution`)
+### W1 — Amend the constitution to 3.0.0 (via `speckit-constitution`) [x] done
 
 - **Files:** `.specify/memory/constitution.md`.
 - **Order note:** first `git fetch origin` and check PR #146 (`gh pr view 146 --json state`). If
