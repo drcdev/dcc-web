@@ -64,35 +64,41 @@ Both pull requests must merge to `main` before Part A of the walkthrough starts.
 Run with an assistant using the **Pause:** answers in `launch.md`. Tick T090 and T091 in
 `specs/011-launch/tasks.md` as each completes.
 
-- [ ] **L1** — `git switch main && git pull`, then `pnpm setup:check`. Every item before the
+- [x] **L1** — `git switch main && git pull`, then `pnpm setup:check`. Every item before the
   live items is complete, with `review-address-removed` `waiting`.
-- [ ] **L2** — Satisfied by 1a with Work with me hidden. Confirm the privacy policy names Cloudflare
+- [x] **L2** — Satisfied by 1a with Work with me hidden. Confirm the privacy policy names Cloudflare
   D1 and no retired service.
-- [ ] **L3** — Don compares Ghost Admin → Posts with `https://new.doncoleman.ca/writing/` (four
+- [x] **L3** — Don compares Ghost Admin → Posts with `https://new.doncoleman.ca/writing/` (four
   posts, already matched by the agent on 2026-10-09).
-- [ ] **L4** — `pnpm run site:check -- --base https://new.doncoleman.ca --expect-origin https://doncoleman.ca`
+- [x] **L4** — `pnpm run site:check -- --base https://new.doncoleman.ca --expect-origin https://doncoleman.ca`
   exits 0.
-- [ ] **L5** — "Launch test" message through `https://new.doncoleman.ca/contact/`, received and
+- [x] **L5** — "Launch test" message through `https://new.doncoleman.ca/contact/`, received and
   deleted.
-- [ ] **L6** — `pnpm setup:check --item launch-main-checks` complete.
-- [ ] **L7** — Readiness table filled in, every row confirmed.
-- [ ] **L8** — Ghost records checked against the zone; whole-zone export saved outside the
+- [x] **L6** — `pnpm setup:check --item launch-main-checks` complete.
+- [x] **L7** — Readiness table filled in, every row confirmed.
+- [x] **L8** — Ghost records checked against the zone; whole-zone export saved outside the
   repository.
-- [ ] **L9** — Part E read end to end; mail test to and from the domain address.
-- [ ] **L10** — Always Use HTTPS on.
+- [x] **L9** — Part E read end to end; mail test to and from the domain address.
+- [x] **L10** — Always Use HTTPS on.
 
 ## Stage 3 — The switch (manual, `launch.md` Part C, one sitting)
 
 Tick T092 to T094.
 
-- [ ] **L11** — Delete the apex `A` record, add Custom Domain `doncoleman.ca` on `dcc-web`. Write
+- [x] **L11** — Delete the apex `A` record, add Custom Domain `doncoleman.ca` on `dcc-web`. Write
   down the **switch date** and **Ghost's next renewal date** here:
-  - Switch date: ____
-  - Ghost renewal date: ____
-  - Earliest retirement date (switch + 14 days): ____
-- [ ] **L12** — Delete the `www` CNAME, add `AAAA www 100::` (proxied) and the 301 Redirect Rule.
-- [ ] **L13** — Re-run `pnpm setup:check` until the live items are complete. A `Problem:` that cannot
+  - Switch date: 2026-10-09
+  - Ghost renewal date: 2026-11-05
+  - Earliest retirement date (switch + 14 days): 2026-10-23
+- [x] **L12** — Delete the `www` CNAME, add `AAAA www 100::` (proxied) and the 301 Redirect Rule.
+- [x] **L13** — Re-run `pnpm setup:check` until the live items are complete. A `Problem:` that cannot
   be fixed in the sitting, or anything still pending after 24 hours, means Part E (rollback).
+  Done 2026-10-09: items 27 to 31 complete, 28 of 31 overall. `dns-records-parity` (4) reports one
+  difference, the review address's `AAAA new.doncoleman.ca 100::`, so `dns-nameservers` (5) and
+  `review-address-removed` (15) stay missing until L16 removes it. Expected, not a rollback.
+  The www Redirect Rule went in as a dynamic redirect (Hostname equals `www.doncoleman.ca` to
+  `concat("https://doncoleman.ca", http.request.uri.path)`, 301, query string kept), because the
+  dashboard rejected the `*://` wildcard; `launch.md` L12 now says so.
 
 ## Stage 4 — After the switch (manual, `launch.md` Part D, plus #91)
 
