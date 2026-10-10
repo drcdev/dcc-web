@@ -129,6 +129,36 @@ describe("POST /api/contact: accepted", () => {
   });
 });
 
+describe("POST /api/contact: sending fails", () => {
+  const failures = [
+    "E_SENDER_NOT_VERIFIED",
+    "E_RECIPIENT_NOT_ALLOWED",
+    "E_RATE_LIMIT_EXCEEDED",
+    "E_DELIVERY_FAILED",
+    "E_INTERNAL_SERVER_ERROR",
+    "",
+  ];
+  for (const code of failures) {
+    it(`503 unavailable with one send and no retry when send() rejects with ${code || "a plain Error"}`, async () => {
+      mockSiteverify();
+      const email = fakeEmail({ rejectsWith: code });
+      const response = await run(post(), { CONTACT_EMAIL: email });
+      expect(response.status).toBe(503);
+      expect(await response.json()).toEqual({ ok: false, error: "unavailable" });
+      expect(email.sent).toHaveLength(1);
+    });
+  }
+
+  it("503 with zero sends when Turnstile has a network error", async () => {
+    mockSiteverify("network-error");
+    const email = fakeEmail();
+    const response = await run(post(), { CONTACT_EMAIL: email });
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ ok: false, error: "unavailable" });
+    expect(email.sent).toHaveLength(0);
+  });
+});
+
 describe("POST /api/contact: refused at the edge", () => {
   it("405 with Allow: POST for other methods", async () => {
     const response = await run(new Request(`${ORIGIN}/api/contact`, { method: "GET" }));
