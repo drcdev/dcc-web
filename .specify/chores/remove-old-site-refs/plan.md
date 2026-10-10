@@ -180,7 +180,7 @@ Test: `no behaviour: n/a (prose only; setup-check tests read docs/setup.md item 
 edited paragraph is under "Edge protections", which the doc says is not a setup item — run
 tests/unit/setup-check to confirm)`.
 
-### W3 Script and component comments
+### [x] W3 Script and component comments
 
 Files and edits (comments only):
 

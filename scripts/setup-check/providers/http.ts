@@ -16,7 +16,7 @@ const HTTP_TIMEOUT_MS = 10_000;
 const HEADERS = { accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" };
 
 // A failed TLS handshake means the certificate is not issued (or not valid) yet. Node reports it in
-// the fetch error's `cause.code` (011-launch research R7).
+// the fetch error's `cause.code`.
 const TLS_CODE = /^(ERR_TLS_|ERR_SSL_|UNABLE_TO_VERIFY_|CERT_|DEPTH_ZERO_|SELF_SIGNED_|EPROTO$)/;
 const TLS_RESET_MESSAGE = /secure TLS connection|handshake/i;
 

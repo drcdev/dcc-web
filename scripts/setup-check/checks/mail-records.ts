@@ -1,4 +1,4 @@
-// checks/mail-records.ts (setup item 5, 011-launch contracts/setup-items.md; FR-016, SC-004): the
+// checks/mail-records.ts (setup item 5): the
 // mail records recorded in the baseline still answer unchanged at both public resolvers. A group is every baseline mail record of one name and type
 // (MX, TXT, and CNAMEs under `._domainkey.`); MX is compared as `priority:host`, TXT joined and
 // normalised, CNAME lower-case without a trailing dot. Order and TTL are ignored.

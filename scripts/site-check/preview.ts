@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// CI step `node scripts/site-check/preview.ts` (011-launch contracts/site-check.md). Waits for the
+// CI step `node scripts/site-check/preview.ts`. Waits for the
 // `Workers Builds: dcc-web-preview` check run on the pull request's head commit, then crawls the
 // preview's sitemap and internal links with --expect-noindex. Fails closed: a failed, cancelled or
 // missing preview build never passes.
