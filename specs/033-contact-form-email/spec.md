@@ -44,6 +44,15 @@ bearer token; those are amended as this slice's first task (see Dependencies).
 - Q: Does dropping the message store ship in the same pull request as the switch to email? → A: Yes,
   the same pull request. Collecting unread stored messages is a pre-merge step, and auto-merge stays
   off until Don confirms it is done.
+- Q: The shared preview database applies migrations on every branch push, so its message table is
+  dropped as soon as this branch is pushed. How are preview messages handled? → A: They are test
+  sends and are dropped without collecting; the pre-merge collection step covers production only.
+  Other open branches' previews showing "service unavailable" on the contact form until they merge
+  main is accepted.
+- Q: Messages can still reach the production store between Don collecting and the merge deploy
+  dropping it. How is that gap handled? → A: The small window is accepted. The pre-merge step tells
+  Don to collect immediately before approving and to re-check the retrieval endpoint just before
+  approving.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -108,9 +117,10 @@ all values remain, no confirmation is shown, and the failure is logged with its 
 
 After this change the site holds no copy of any contact message. The message store is removed
 from both production and preview, the retrieval endpoint that Don's assistant used is gone, its
-access key is retired, and the daily clean-up of old messages is no longer needed for contact
-data. Messages already stored when the change ships are not lost: Don has had the chance to
-collect them before the store is removed.
+access key and the sender-fingerprint salt are retired, and the daily clean-up of old messages is
+no longer needed for contact data. Real messages already stored in production when the change
+ships are not lost: Don collects them immediately before approving the pull request. Preview
+messages are test sends and are dropped without collecting.
 
 **Why this priority**: Removing the store is the second half of the issue and the main privacy
 gain (Principle VII: collect and keep the minimum).
@@ -129,9 +139,14 @@ the message store.
 3. **Given** the production and preview databases after the change is deployed, **When** they are
    inspected, **Then** the contact message store no longer exists, and the questions feature's
    data is untouched.
-4. **Given** messages still stored before the deploy, **When** the pull request is ready to merge,
-   **Then** it lists collecting any unread messages as a pre-merge step, auto-merge stays off, and
-   the pull request merges (removing the store) only after Don confirms the step is done.
+4. **Given** messages still stored in production before the deploy, **When** the pull request is
+   ready to merge, **Then** it lists collecting any unread production messages, immediately before
+   approving and with a final re-check of the retrieval endpoint, as a pre-merge step; auto-merge
+   stays off, and the pull request merges (removing the store) only after Don confirms the step is
+   done.
+5. **Given** the shared preview database, **When** this branch's preview deploy applies the change,
+   **Then** its message store is dropped without collection, and other open branches' previews may
+   answer the contact form with "service unavailable" until they merge main (accepted).
 
 ---
 
@@ -220,14 +235,14 @@ The setup walkthrough and setup check cover the steps only Don can do: turning o
 email routing for a sending subdomain only (for example `mail.doncoleman.ca`), leaving the apex
 domain's iCloud mail records untouched,
 verifying the fixed destination address, and confirming that the old message-retrieval access key
-is no longer required. The setup check reports what is missing and passes when it is all done.
+and the sender-fingerprint salt are no longer required. The setup check reports what is missing and passes when it is all done.
 
 **Why this priority**: Needed before release, but the feature can be built and tested locally
 first.
 
 **Independent Test**: Run the setup check with email routing off and the destination unverified
 and see both reported as missing; after the walkthrough, see them pass; confirm the old retrieval
-key is no longer listed as required.
+key and fingerprint salt are no longer listed as required.
 
 **Acceptance Scenarios**:
 
@@ -239,8 +254,9 @@ key is no longer listed as required.
    complete, **Then** those records are unchanged, Don's existing mailbox still receives mail, and
    the DNS baseline and its parity check include the records email routing adds on the sending
    subdomain.
-4. **Given** the setup check after this change, **When** it lists required secrets, **Then** the
-   message-retrieval key is not among them.
+4. **Given** the setup check after this change, **When** it lists required secrets, **Then**
+   neither the message-retrieval key (`CONTACT_READ_TOKEN`) nor the sender-fingerprint salt
+   (`IP_HASH_SALT`) is among them.
 
 ### Edge Cases
 
@@ -268,8 +284,13 @@ key is no longer listed as required.
   the visitor has already seen the confirmation. The setup steps cover the sender authentication
   that keeps these emails out of spam.
 - **JavaScript turned off**: unchanged from today; the page explains the form needs JavaScript.
-- **Old retrieval key still set in a secret store after the change**: harmless; the setup check
-  no longer requires it and the follow-up notes it can be deleted.
+- **Old retrieval key or fingerprint salt still set in a secret store after the change**:
+  harmless; the setup check no longer requires either and the follow-up notes they can be deleted.
+- **A production message arrives after Don's final collection but before the merge deploy drops
+  the store**: it is lost. This small window is accepted; the pre-merge step has Don collect and
+  re-check immediately before approving to keep it as short as possible.
+- **Other open branches' previews after this branch's preview deploy drops the shared preview
+  store**: their contact form answers "service unavailable" until they merge main. Accepted.
 
 ## Requirements *(mandatory)*
 
@@ -313,7 +334,8 @@ key is no longer listed as required.
   feature's data in the same databases MUST be unaffected.
 - **FR-010**: The message-retrieval endpoint (list new messages, mark read) MUST be removed; any
   request to its addresses MUST receive the site's normal "not found" API response. Its access
-  key MUST no longer be required by the Worker configuration or the setup check.
+  key (`CONTACT_READ_TOKEN`) and the sender-fingerprint salt (`IP_HASH_SALT`) MUST no longer be
+  required by the Worker configuration, the code or the setup check.
 - **FR-011**: The scheduled daily clean-up of contact messages MUST be removed. It is the Worker's
   only scheduled job, so the Cron Trigger is removed from the Worker configuration in both
   environments.
@@ -349,8 +371,11 @@ key is no longer listed as required.
   Cloudflare's documentation that routing can be turned on for the subdomain while the apex stays
   off.
 - **FR-017**: The message store's removal ships in the same pull request as the switch to email.
-  That pull request MUST list collecting any unread stored messages (production and preview) as a
-  pre-merge item for Don, with auto-merge left off until he confirms it is done.
+  That pull request MUST list collecting any unread stored production messages as a pre-merge
+  item for Don, to be done immediately before he approves, with a final re-check of the retrieval
+  endpoint just before approving; auto-merge stays off until he confirms it is done. Messages that
+  arrive after that re-check and before the deploy are an accepted loss. Preview messages are test
+  sends and are dropped without collection when the branch's preview deploy applies the change.
 - **FR-018**: All Worker configuration (including the email binding and the removed Cron Trigger)
   and the removal of the message store MUST be committed and applied through CI, never by hand in the dashboard
   (Principle VIII).
@@ -410,8 +435,9 @@ key is no longer listed as required.
 - Duplicate emails from an unclear retry are acceptable; the site keeps no record to prevent them.
 - The questions feature keeps the shared database, so only the contact message store is removed,
   not the database itself.
-- Messages already in the store are collected by Don before the store is removed; no export of
-  them is kept in the repository.
+- Production messages already in the store are collected by Don immediately before he approves
+  the pull request; no export of them is kept in the repository. Preview messages are test sends
+  and are not collected.
 - Preview deployments send to the same fixed destination, marked as preview, rather than to a
   second address.
 
@@ -434,8 +460,8 @@ key is no longer listed as required.
 
 - Sending a copy or acknowledgement email to the visitor (needs paid sending to arbitrary
   addresses).
-- Deleting the retired retrieval key from the production and preview secret stores (Don, after
-  release; noted in the walkthrough).
+- Deleting the retired retrieval key (`CONTACT_READ_TOKEN`) and fingerprint salt (`IP_HASH_SALT`)
+  from the production and preview secret stores (Don, after release; noted in the walkthrough).
 - Retiring or reconfiguring Don's scheduled assistant that used the retrieval endpoint (outside
   this repository).
 - HTML-formatted contact emails, attachments, or more than one destination.
