@@ -30,11 +30,6 @@ describe("docs/design-source.md", () => {
     expect(doc).toMatch(/#{1,6}\s*Accessibility adjustments/);
   });
 
-  it("describes the current design source, not the Ghost or Supabase setup it came from", () => {
-    expect(doc).not.toMatch(/ghost/i);
-    expect(doc).not.toMatch(/supabase/i);
-  });
-
   it("How to get Flux: contains the clone command and read-only/gitignored/never imported language", () => {
     expect(doc).toContain("gh repo clone drcdev/flux .reference/flux -- --depth 1");
     expect(doc.toLowerCase()).toContain("read-only");

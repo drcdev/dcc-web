@@ -119,6 +119,8 @@ Follow-ups for the PR body:
 
 ### [x] W1 Rewrite `docs/design-source.md` to describe the current design source
 
+> Review H1: the negative Ghost/Supabase guard described under Test below was removed on review. Mapping: the doc's shape is pinned by the required-headings test, the Flux name literals and the 19-row count; reintroduced history is caught in review.
+
 Judgment: rewrite, not delete. Most of the doc still guides future work: how to clone Flux (the
 live design reference), the Flux-to-component mapping, the Content structure table (cited by
 `src/components/Pill.astro` and tested by `docs-content-structure.test.ts`), Flux deviations and
