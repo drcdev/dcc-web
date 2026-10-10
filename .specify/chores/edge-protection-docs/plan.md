@@ -146,7 +146,7 @@ Mechanical criteria (the review phase checks each one):
 
 ## Work items
 
-### [ ] W1 — Edge protections part in `docs/setup.md`
+### [x] W1 — Edge protections part in `docs/setup.md`
 
 - **Files:** `docs/setup.md` (intro, lines 1–21: one sentence; end of file after item 31: the new
   part).
