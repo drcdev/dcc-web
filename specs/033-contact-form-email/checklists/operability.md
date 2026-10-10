@@ -8,28 +8,28 @@
 
 ## Failure Handling
 
-- [ ] CHK001 Is "accepted by the email service" defined precisely as the success point, with the guarantee level (queued vs delivered) stated? [Clarity, Spec §FR-005]
-- [ ] CHK002 Are timeout requirements defined for the send call and the Turnstile call, so a hung dependency fails closed predictably? [Gap, Spec §FR-005]
-- [ ] CHK003 Are failure kinds (refused, unreachable, destination unverified, quota) distinguished in the logged outcome without leaking content? [Completeness, Spec §FR-013, §Edge Cases]
-- [ ] CHK004 Is detection of silent loss addressed (accepted but never delivered, or bounced), or explicitly accepted? [Gap, Spec §Edge Cases]
-- [ ] CHK005 Is the duplicate-email-on-retry acceptance consistent with the submission identifier still being kept? [Consistency, Spec §Edge Cases]
-- [ ] CHK006 Is the visitor-facing behaviour of other branches' previews during the "service unavailable" window stated as an acceptance criterion? [Coverage, Spec §US3]
+- [x] CHK001 Is "accepted by the email service" defined precisely as the success point, with the guarantee level (queued vs delivered) stated? [Clarity, Spec §FR-005]
+- [x] CHK002 Are timeout requirements defined for the send call and the Turnstile call, so a hung dependency fails closed predictably? [Gap, Spec §FR-005]
+- [x] CHK003 Are failure kinds (refused, unreachable, destination unverified, quota) distinguished in the logged outcome without leaking content? [Completeness, Spec §FR-013, §Edge Cases]
+- [x] CHK004 Is detection of silent loss addressed (accepted but never delivered, or bounced), or explicitly accepted? [Gap, Spec §Edge Cases]
+- [x] CHK005 Is the duplicate-email-on-retry acceptance consistent with the submission identifier still being kept? [Consistency, Spec §Edge Cases]
+- [x] CHK006 Is the visitor-facing behaviour of other branches' previews during the "service unavailable" window stated as an acceptance criterion? [Coverage, Spec §US3]
 
 ## Setup and DNS Safety
 
-- [ ] CHK007 Is the requirement that the apex iCloud MX, SPF and DKIM records stay unchanged verifiable by a named comparison against a recorded baseline? [Measurability, Spec §FR-016, §SC-008]
-- [ ] CHK008 Is a fallback defined if subdomain-only routing cannot coexist with the apex left off, including who decides and what stops work? [Gap, Spec §Assumptions]
-- [ ] CHK009 Is the exact list of records Email Routing adds on the sending subdomain specified, or left to discovery with a rule for capturing them? [Completeness, Spec §FR-016]
-- [ ] CHK010 Is the ordering constraint (routing and verified destination in place before the binding deploys) a requirement rather than only a plan step? [Gap, Spec §FR-016, §FR-018]
-- [ ] CHK011 Are sender-authentication requirements (SPF, DKIM, DMARC alignment for the subdomain) stated with how each is confirmed? [Clarity, Spec §FR-016]
-- [ ] CHK012 Is the interaction with the apex DMARC policy and its pending follow-up addressed for mail sent from the subdomain? [Dependency, Gap]
-- [ ] CHK013 Does the spec state what evidences "destination verified" to the setup check, given a script cannot read inbox state? [Measurability, Spec §US7]
-- [ ] CHK014 Does every walkthrough item have an unambiguous pass condition as well as what to do and where? [Clarity, Spec §FR-016]
+- [x] CHK007 Is the requirement that the apex iCloud MX, SPF and DKIM records stay unchanged verifiable by a named comparison against a recorded baseline? [Measurability, Spec §FR-016, §SC-008]
+- [x] CHK008 Is a fallback defined if subdomain-only routing cannot coexist with the apex left off, including who decides and what stops work? [Gap, Spec §Assumptions]
+- [x] CHK009 Is the exact list of records Email Routing adds on the sending subdomain specified, or left to discovery with a rule for capturing them? [Completeness, Spec §FR-016]
+- [x] CHK010 Is the ordering constraint (routing and verified destination in place before the binding deploys) a requirement rather than only a plan step? [Gap, Spec §FR-016, §FR-018]
+- [x] CHK011 Are sender-authentication requirements (SPF, DKIM, DMARC alignment for the subdomain) stated with how each is confirmed? [Clarity, Spec §FR-016]
+- [x] CHK012 Is the interaction with the apex DMARC policy and its pending follow-up addressed for mail sent from the subdomain? [Dependency, Gap]
+- [x] CHK013 Does the spec state what evidences "destination verified" to the setup check, given a script cannot read inbox state? [Measurability, Spec §US7]
+- [x] CHK014 Does every walkthrough item have an unambiguous pass condition as well as what to do and where? [Clarity, Spec §FR-016]
 
 ## Configuration and Cost
 
-- [ ] CHK015 Is the claim that sends to a verified destination are free and quota-exempt cited to Cloudflare documentation with a re-verification trigger? [Assumption, Spec §Assumptions, §SC-007]
-- [ ] CHK016 Is the sender display name and address specified exactly, or only by example (`mail.doncoleman.ca`)? [Ambiguity, Spec §FR-003]
-- [ ] CHK017 Is the requirement that configuration is applied only through CI measurable for both environments, including the removed Cron Trigger? [Measurability, Spec §FR-011, §FR-018]
-- [ ] CHK018 Is the delivery-time criterion (5 minutes) defined for production only, with preview expectations stated? [Consistency, Spec §SC-002]
-- [ ] CHK019 Are requirements stated for how Don learns that delivery has stopped (monitoring or alerting)? [Gap]
+- [x] CHK015 Is the claim that sends to a verified destination are free and quota-exempt cited to Cloudflare documentation with a re-verification trigger? [Assumption, Spec §Assumptions, §SC-007]
+- [x] CHK016 Is the sender display name and address specified exactly, or only by example (`mail.doncoleman.ca`)? [Ambiguity, Spec §FR-003]
+- [x] CHK017 Is the requirement that configuration is applied only through CI measurable for both environments, including the removed Cron Trigger? [Measurability, Spec §FR-011, §FR-018]
+- [x] CHK018 Is the delivery-time criterion (5 minutes) defined for production only, with preview expectations stated? [Consistency, Spec §SC-002]
+- [x] CHK019 Are requirements stated for how Don learns that delivery has stopped (monitoring or alerting)? [Gap]

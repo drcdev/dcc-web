@@ -8,30 +8,30 @@
 
 ## Requirement Completeness
 
-- [ ] CHK001 Is "accessibility behaviour ... as they do today" in FR-007 backed by a named list of the feature 007 accessibility requirements, rather than an unresolved cross-reference? [Clarity, Spec §FR-007]
-- [ ] CHK002 Are WCAG 2.2 AA requirements stated explicitly for the Contact page and privacy policy as changed by this slice, not only inherited from the constitution? [Completeness, Gap]
-- [ ] CHK003 Is the accessible announcement of the confirmation state defined (how a screen reader user learns the message was sent)? [Coverage, Spec §US1]
-- [ ] CHK004 Is the accessible announcement of the service-unavailable error defined, including where focus goes after a failed send? [Coverage, Spec §US2]
-- [ ] CHK005 Are focus-management requirements defined for the new failure path in which entries are kept and the form is re-enabled? [Gap, Spec §FR-005]
-- [ ] CHK006 Is the disabled-while-sending state specified so that it is perceivable by assistive technology, not only visually? [Clarity, Spec §Edge Cases]
-- [ ] CHK007 Is the removal of the "too many messages" error reflected in the list of error states that must be accessible, so no orphaned error text remains? [Consistency, Spec §FR-012]
+- [x] CHK001 Is "accessibility behaviour ... as they do today" in FR-007 backed by a named list of the feature 007 accessibility requirements, rather than an unresolved cross-reference? [Clarity, Spec §FR-007]
+- [x] CHK002 Are WCAG 2.2 AA requirements stated explicitly for the Contact page and privacy policy as changed by this slice, not only inherited from the constitution? [Completeness, Gap]
+- [x] CHK003 Is the accessible announcement of the confirmation state defined (how a screen reader user learns the message was sent)? [Coverage, Spec §US1]
+- [x] CHK004 Is the accessible announcement of the service-unavailable error defined, including where focus goes after a failed send? [Coverage, Spec §US2]
+- [x] CHK005 Are focus-management requirements defined for the new failure path in which entries are kept and the form is re-enabled? [Gap, Spec §FR-005]
+- [x] CHK006 Is the disabled-while-sending state specified so that it is perceivable by assistive technology, not only visually? [Clarity, Spec §Edge Cases]
+- [x] CHK007 Is the removal of the "too many messages" error reflected in the list of error states that must be accessible, so no orphaned error text remains? [Consistency, Spec §FR-012]
 
 ## Requirement Clarity
 
-- [ ] CHK008 Is "plain language" for the reworded privacy and contact-note text quantified or tied to a readability standard? [Measurability, Spec §FR-014, §FR-015]
-- [ ] CHK009 Are link-purpose requirements (WCAG 2.4.4) defined for the note's link to the privacy policy and for the contact address and deletion-request wording? [Clarity, Spec §FR-015]
-- [ ] CHK010 Is the instruction for how to request deletion specified in a form that does not depend on a visual-only cue? [Ambiguity, Spec §FR-014]
-- [ ] CHK011 Are contrast, reflow and zoom requirements stated for any new or changed text, or is the design baseline explicitly the authority? [Gap, Spec §FR-007]
+- [x] CHK008 Is "plain language" for the reworded privacy and contact-note text quantified or tied to a readability standard? [Measurability, Spec §FR-014, §FR-015]
+- [x] CHK009 Are link-purpose requirements (WCAG 2.4.4) defined for the note's link to the privacy policy and for the contact address and deletion-request wording? [Clarity, Spec §FR-015]
+- [x] CHK010 Is the instruction for how to request deletion specified in a form that does not depend on a visual-only cue? [Ambiguity, Spec §FR-014]
+- [x] CHK011 Are contrast, reflow and zoom requirements stated for any new or changed text, or is the design baseline explicitly the authority? [Gap, Spec §FR-007]
 
 ## Scenario and Edge Coverage
 
-- [ ] CHK012 Is the JavaScript-off explanation required to be reachable and readable by assistive technology? [Coverage, Spec §Edge Cases]
-- [ ] CHK013 Are the human-check (Turnstile) failure and unavailability states specified accessibly, including a non-visual alternative path? [Gap, Spec §US4]
-- [ ] CHK014 Is the hidden trap field required to be excluded from the accessibility tree and keyboard order? [Gap, Spec §US4]
-- [ ] CHK015 Are requirements defined for the double-submission case from keyboard (Enter) as well as pointer? [Coverage, Spec §Edge Cases]
+- [x] CHK012 Is the JavaScript-off explanation required to be reachable and readable by assistive technology? [Coverage, Spec §Edge Cases]
+- [x] CHK013 Are the human-check (Turnstile) failure and unavailability states specified accessibly, including a non-visual alternative path? [Gap, Spec §US4]
+- [x] CHK014 Is the hidden trap field required to be excluded from the accessibility tree and keyboard order? [Gap, Spec §US4]
+- [x] CHK015 Are requirements defined for the double-submission case from keyboard (Enter) as well as pointer? [Coverage, Spec §Edge Cases]
 
 ## Acceptance Criteria Quality
 
-- [ ] CHK016 Does a success criterion cover the automated accessibility check on the Contact page and privacy policy templates, or is it left to the constitution alone? [Measurability, Gap]
-- [ ] CHK017 Is the "Last updated" date requirement specified in a machine-readable and human-readable form consistently? [Consistency, Spec §FR-014]
-- [ ] CHK018 Are the contact email's own accessibility properties (plain-text structure, readable field labels) specified for Don's mail reader? [Completeness, Spec §FR-002]
+- [x] CHK016 Does a success criterion cover the automated accessibility check on the Contact page and privacy policy templates, or is it left to the constitution alone? [Measurability, Gap]
+- [x] CHK017 Is the "Last updated" date requirement specified in a machine-readable and human-readable form consistently? [Consistency, Spec §FR-014]
+- [x] CHK018 Are the contact email's own accessibility properties (plain-text structure, readable field labels) specified for Don's mail reader? [Completeness, Spec §FR-002]

@@ -8,26 +8,26 @@
 
 ## Migration Completeness
 
-- [ ] CHK001 Is the scope of the drop defined as exactly the contact message store and its indexes, with the questions tables named as untouched? [Clarity, Spec §FR-009]
-- [ ] CHK002 Is behaviour specified if the store is already absent or partly present (idempotence)? [Edge Case, Gap]
-- [ ] CHK003 Are rollback or recovery requirements defined for the irreversible drop, including what happens if the merge is reverted? [Gap, Spec §FR-017]
-- [ ] CHK004 Is the drop required identically on production and the shared preview database, with how each is confirmed? [Measurability, Spec §US3]
-- [ ] CHK005 Is the order of deploying code and dropping the store defined so no request can hit a missing table or an unreachable email path? [Gap, Spec §FR-018]
+- [x] CHK001 Is the scope of the drop defined as exactly the contact message store and its indexes, with the questions tables named as untouched? [Clarity, Spec §FR-009]
+- [x] CHK002 Is behaviour specified if the store is already absent or partly present (idempotence)? [Edge Case, Gap]
+- [x] CHK003 Are rollback or recovery requirements defined for the irreversible drop, including what happens if the merge is reverted? [Gap, Spec §FR-017]
+- [x] CHK004 Is the drop required identically on production and the shared preview database, with how each is confirmed? [Measurability, Spec §US3]
+- [x] CHK005 Is the order of deploying code and dropping the store defined so no request can hit a missing table or an unreachable email path? [Gap, Spec §FR-018]
 
 ## Pre-merge Collection
 
-- [ ] CHK006 Is "collect unread production messages" a verifiable step, including how Don confirms none remain and where collected messages are kept once the store is gone? [Clarity, Spec §FR-017]
-- [ ] CHK007 Is the accepted loss window bounded (collection, re-check, approval, deploy) and worded consistently across Edge Cases, Assumptions and FR-017? [Consistency, Spec §FR-017]
-- [ ] CHK008 Are already-read messages addressed: must they be kept, or may they be dropped with the store? [Gap, Spec §US3]
-- [ ] CHK009 Is the auto-merge-off requirement specified with how Don's confirmation is recorded in the pull request? [Measurability, Spec §US3]
-- [ ] CHK010 Is the effect on the scheduled assistant that polls the retrieval endpoint specified as a requirement, or as an out-of-scope risk with an owner? [Dependency, Spec §Out of Scope]
+- [x] CHK006 Is "collect unread production messages" a verifiable step, including how Don confirms none remain and where collected messages are kept once the store is gone? [Clarity, Spec §FR-017]
+- [x] CHK007 Is the accepted loss window bounded (collection, re-check, approval, deploy) and worded consistently across Edge Cases, Assumptions and FR-017? [Consistency, Spec §FR-017]
+- [x] CHK008 Are already-read messages addressed: must they be kept, or may they be dropped with the store? [Gap, Spec §US3]
+- [x] CHK009 Is the auto-merge-off requirement specified with how Don's confirmation is recorded in the pull request? [Measurability, Spec §US3]
+- [x] CHK010 Is the effect on the scheduled assistant that polls the retrieval endpoint specified as a requirement, or as an out-of-scope risk with an owner? [Dependency, Spec §Out of Scope]
 
 ## Retired Components
 
-- [ ] CHK011 Is the list of removed artefacts (endpoint, clean-up job, fingerprint salt, rate-limit constants, store) complete against the current codebase and docs? [Completeness, Spec §FR-010, §FR-011, §FR-019]
-- [ ] CHK012 Is removal of the retired secrets from required-secret manifests, local env templates and CI configuration covered by requirements? [Coverage, Spec §FR-010]
-- [ ] CHK013 Is the documentation update scoped by a search rule rather than the vague "describes stored messages"? [Ambiguity, Spec §FR-019]
-- [ ] CHK014 Is the published 12-month retention commitment addressed for messages collected before removal? [Gap, Spec §FR-014]
-- [ ] CHK015 Are the constitution amendment contents specified closely enough (principles, constraints, baseline, version bump) to be made first without interpretation? [Clarity, Spec §Dependencies]
-- [ ] CHK016 Is it required that the pull request body flags the major-change criteria that apply? [Traceability, Spec §Background]
-- [ ] CHK017 Is deletion on request defined for the only remaining copy (Don's mailbox), including backups and forwarded copies? [Gap, Spec §FR-014]
+- [x] CHK011 Is the list of removed artefacts (endpoint, clean-up job, fingerprint salt, rate-limit constants, store) complete against the current codebase and docs? [Completeness, Spec §FR-010, §FR-011, §FR-019]
+- [x] CHK012 Is removal of the retired secrets from required-secret manifests, local env templates and CI configuration covered by requirements? [Coverage, Spec §FR-010]
+- [x] CHK013 Is the documentation update scoped by a search rule rather than the vague "describes stored messages"? [Ambiguity, Spec §FR-019]
+- [x] CHK014 Is the published 12-month retention commitment addressed for messages collected before removal? [Gap, Spec §FR-014]
+- [x] CHK015 Are the constitution amendment contents specified closely enough (principles, constraints, baseline, version bump) to be made first without interpretation? [Clarity, Spec §Dependencies]
+- [x] CHK016 Is it required that the pull request body flags the major-change criteria that apply? [Traceability, Spec §Background]
+- [x] CHK017 Is deletion on request defined for the only remaining copy (Don's mailbox), including backups and forwarded copies? [Gap, Spec §FR-014]
