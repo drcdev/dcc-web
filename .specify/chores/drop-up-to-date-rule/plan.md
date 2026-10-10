@@ -52,8 +52,8 @@ After:
    combined.
 7. `specs/001-setup-walkthrough/research.md` (R9, "Decision, deploy only after CI") and
    `specs/031-docs-only-gate/spec.md` (rationale paragraph, about lines 43-48) each gain a dated
-   note (2026-10-10, #147). The note says strict mode is off and records the outcome of
-   **D1** below. Their existing text is not rewritten.
+   note (2026-10-10, #147). The note says strict mode is off and records D1
+   (option A): the Principle II exception is accepted and the CI run on `main` is the backstop. Their existing text is not rewritten.
 8. Every test is green under `pnpm run verify:quick` after each item. The orchestrator runs the
    full `pnpm run verify` before the PR.
 9. After Don's live change, `pnpm setup:check --item github-main-protection` reports complete.
@@ -87,15 +87,13 @@ After:
    `PUT --input setup/github-ruleset.json` becomes safe. This needs a new issue, because #86 is
    closed.
 2. Revisit a merge queue under #147 if hand-holding is still a problem.
-3. If D1 is answered with option B, gate the production deploy on `verify` for the `main` SHA
-   (new issue).
 
 ## Constitution Check
 
 - **I. Test-First:** W1 changes the fixture and the expected gap list first, and both fail
   against today's check before the code changes. W2 and W3 are documents, with
   `no behaviour` lines.
-- **II. Automated Release Gate:** **exception, see D1.** `verify` stays required, pinned and
+- **II. Automated Release Gate:** **recorded exception (D1, option A, Don 2026-10-10).** `verify` stays required, pinned and
   unweakened on every PR and every push to `main`. R9 named strict mode as *the* way Principle
   II's "production deploys only after CI passes" is met. Workers Builds deploys every push to
   `main` independently of CI. Without strict mode, a PR that is behind `main` merges a combined
@@ -130,11 +128,17 @@ tree `verify` passed on the PR. Mitigations:
 
 Don accepted this trade-off in #147 ("CI on every push to `main` catches two PRs that break only
 when combined"). The constitution still says production deploys happen "only after CI passes",
-so the exception is recorded here and put to him explicitly.
+so the exception was put to him explicitly. He confirmed it on 2026-10-10 (D1, option A): it is
+recorded here and in the dated notes (W3), with no constitution change.
 
-## [NEEDS DECISION]
+## Decisions
 
-**D1 — Principle II and deploys of an unchecked combined tree.** R9 (`specs/001-setup-walkthrough/research.md`,
+**D1 — Principle II and deploys of an unchecked combined tree. Decided 2026-10-10: option A.**
+Don chose to record the exception: dated notes in R9 and the 031 spec cite #147, the CI run on
+`main` is the backstop, and the constitution is not changed. The original question and options
+are kept below for the record.
+
+R9 (`specs/001-setup-walkthrough/research.md`,
 "Decision, deploy only after CI") says strict mode is how "production deploys only after CI
 passes" is met, because Workers Builds deploys every push to `main` without waiting for CI.
 Turning strict mode off means a PR that is behind `main` can put a combined tree on `main` that
@@ -194,7 +198,8 @@ Options:
   - `specs/031-docs-only-gate/spec.md`: a dated note after the rationale paragraph that says
     the ruleset requires an up-to-date PR.
 
-  Each note gives the date, #147 and the D1 outcome. For 031 it also records the tier-safety
+  Each note gives the date, #147 and the D1 outcome (option A: the exception is accepted, the CI run on `main` is the
+  backstop, no constitution change). For 031 it also records the tier-safety
   conclusion under Risks. The original text stays as written.
 - **Test:** `no behaviour: n/a (design records under specs/; skip-safe, and the drift guard keeps specs/ paths out of tests)`.
 - **Layer:** n/a.
