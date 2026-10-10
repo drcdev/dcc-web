@@ -234,12 +234,12 @@ describe("checks/dns-records-parity", () => {
     ];
 
     it("is missing with a Problem and the restore-or-delete next action when a record appears on any other name", async () => {
-      const stray: CloudflareDnsRecord = { type: "A", name: "new.doncoleman.ca", content: "192.0.2.9", priority: null, ttl: 1, proxied: false };
+      const stray: CloudflareDnsRecord = { type: "A", name: "stray.doncoleman.ca", content: "192.0.2.9", priority: null, ttl: 1, proxied: false };
       const result = await check(contextWith(baseline([mx]), [cfMx, ...workerAdded, stray]));
 
       expect(result.status).toBe("missing");
       expect(result.summary).toMatch(/^Problem:/);
-      expect(result.details.join("\n")).toContain("new.doncoleman.ca");
+      expect(result.details.join("\n")).toContain("stray.doncoleman.ca");
       expect(result.nextAction).toContain("delete the unexpected record");
     });
 

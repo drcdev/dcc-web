@@ -242,9 +242,9 @@ describe("setup-check/report: the waiting status (T004)", () => {
     return {
       id,
       status: "waiting",
-      summary: "Waiting for the switch: new.doncoleman.ca stays until the bare domain is live.",
+      summary: "Waiting for an outside event.",
       details: [],
-      nextAction: "Nothing to do yet. Follow docs/launch.md Part C when the readiness checklist is complete.",
+      nextAction: "Nothing to do yet.",
       step: `Step ${order} of 18`,
       docs: `docs/setup.md#${id}`,
       reason: null,

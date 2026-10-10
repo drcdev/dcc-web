@@ -765,7 +765,7 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
 - **Test:** no behaviour: n/a (history notes).
 - **Layer:** n/a.
 
-### W12 — Delete `docs/launch.md` and every link to it
+### W12 — Delete `docs/launch.md` and every link to it [x]
 
 - **Decision:** delete, rather than mark historical. Git history keeps the file, and the
   cutover is finished. Spec 011 and the `.specify/chores/` records keep their own paths as

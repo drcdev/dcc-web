@@ -207,14 +207,14 @@ describe("checkReportSchema (--json report shape)", () => {
 
 describe("checkReportSchema: the waiting status (T004)", () => {
   const waiting = {
-    id: "review-address-removed",
-    title: "Review address removed",
+    id: "example-item",
+    title: "Example item",
     status: "waiting",
-    summary: "Waiting for the switch: new.doncoleman.ca stays until the bare domain is live.",
+    summary: "Waiting for an outside event.",
     details: [],
-    nextAction: "Nothing to do yet. Follow docs/launch.md Part C when the readiness checklist is complete.",
-    step: "Step 16 of 32",
-    docs: "docs/setup.md#review-address-removed",
+    nextAction: "Nothing to do yet.",
+    step: "Step 1 of 1",
+    docs: "docs/setup.md#example-item",
     reason: null,
     needsDon: true,
   };
