@@ -108,7 +108,7 @@ documented path where the issue asks for Docker to be the only one.
 
 ## Work items
 
-### W1 — Shared visual-baselines doc: Docker only
+### [x] W1 — Shared visual-baselines doc: Docker only
 
 - **Files:** `.claude/skills/_shared/visual-baselines.md`.
 - **What:** delete step 4 ("Fallback only if Docker cannot be started …", lines 23–27). In step 2,
