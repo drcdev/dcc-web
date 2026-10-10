@@ -13,7 +13,9 @@ step number and anchor match the setup item table in `specs/001-setup-walkthroug
 
 The domain switch itself, its rollback and the later retirement of the old services are not
 setup items; they are walked through step by step in `docs/launch.md`, which the `/setup-walkthrough`
-skill hands over to once items 1 to 24 are done.
+skill hands over to once items 1 to 24 are done. The edge protections Don set up in the Cloudflare
+dashboard after the switch are recorded in the Edge protections part at the end; they are not
+setup items.
 
 A few terms used below: a **nameserver** is the server that answers "where is doncoleman.ca's
 DNS?" — moving it to Cloudflare is what puts Cloudflare in charge of the domain's DNS records. A
@@ -914,3 +916,58 @@ VII (Private Data: Minimal and Protected).
 
 **Secrets**
 None.
+
+# Edge protections
+
+These are dashboard settings Don made by hand on 2026-10-09, right after the domain switch, for
+issue #91. They are recorded here for reference. They are not setup items, they are not in the
+31-item registry, and `pnpm setup:check` does not check them.
+
+### API rate-limiting rule
+
+**What it is for**
+Stops one address from hammering the public API. The site's own cap on contact-form messages is the
+last line of defence; this rule keeps abusive traffic from reaching the Worker at all.
+
+**Where it is**
+Cloudflare dashboard → the zone → Security → WAF → Rate limiting rules. There is one rule, which is
+all the Free plan allows. It matches "URI Path starts with `/api/`" (the Free plan matches on path
+only, not on host and path together), counts requests per IP over a 10-second period, and blocks the
+address for 10 seconds once it is past the limit. The request threshold is Don's choice, set in the
+dashboard, and is deliberately not published here.
+
+**How it was confirmed**
+On 2026-10-09 a burst of requests to an `/api/` path returned 429 once it went past the threshold.
+
+**Why it covers the whole API**
+It is a rule on the zone, so it only sees requests that arrive through the zone. That is true of
+every request to the production Worker only because production's `workers.dev` host and Preview
+URLs are off (issue #89, item 7). Turn either back on and that traffic would bypass the rule.
+
+**Constitution principle**
+VIII (Cloudflare Best Practices) and the Security Baseline. A zone rule is not Worker
+configuration, which is why it is set in the dashboard rather than in `wrangler.jsonc`.
+
+### HTTP DDoS attack alert
+
+**What it is for**
+Emails Don when Cloudflare mitigates an HTTP DDoS attack on the zone.
+
+**Where it is**
+Cloudflare dashboard → the account's Notifications (`dash.cloudflare.com/<account-id>/notifications`).
+The HTTP DDoS Attack Alert was saved there on 2026-10-09.
+
+**Constitution principle**
+VIII (Cloudflare Best Practices).
+
+### Plan tier
+
+**What it is**
+The account is on Workers Free. That was Don's decision on 2026-10-04.
+
+**Where it is**
+Only Don changes the tier, and billing would tell him if it changed, so there is no `setup:check`
+item for it.
+
+**Constitution principle**
+VIII (the free-plan limits apply) and IX (Cost Ceiling: Workers Free costs nothing).
