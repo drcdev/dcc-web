@@ -63,10 +63,10 @@ None. The three stories touch separate files and need no shared prerequisite bey
 
 ### Implementation (fixtures and docs)
 
-- [ ] T011 [P] [US3] Remove all four `placeholder: true` lines from `tests/fixtures/projects/every-part.mdx`, two from `tests/fixtures/projects/every-setting.mdx`, one from `tests/fixtures/projects/draft.mdx`. Keep the "A placeholder picture for ..." alt text (research R6).
-- [ ] T012 [P] [US3] Remove the one `placeholder` line from each of the seven broken fixtures under `tests/fixtures/projects/broken/`: `17-missing-image`, `26-duplicate-slug`, `27-bad-file-name`, `R01-removed-order`, `RP04-missing-replacement`, `story-malformed-table`, `story-mdx-element`. Each must still fail for its own reason only; `tests/build/project-validation.test.ts` asserts each message and is the check (no fixture is added or removed).
-- [ ] T013 [P] [US3] In `docs/projects.md` remove the `placeholder` yaml line and its bullet, and rename the "Drafts and placeholders" heading to "Drafts" (FR-006); fix any link to that heading.
-- [ ] T014 [US3] Verify the search: `grep -rn "placeholder:" tests/fixtures tests/component tests/unit src docs/projects.md` returns nothing (SC-003); `git diff --stat` shows nothing under `src/content/projects/` (FR-008). Run the Vitest suites that cover this: `tests/unit/content`, `tests/component/project`, `tests/build/project-validation.test.ts` and `tests/build/local-site.test.ts`; all pass.
+- [X] T011 [P] [US3] Remove all four `placeholder: true` lines from `tests/fixtures/projects/every-part.mdx`, two from `tests/fixtures/projects/every-setting.mdx`, one from `tests/fixtures/projects/draft.mdx`. Keep the "A placeholder picture for ..." alt text (research R6).
+- [X] T012 [P] [US3] Remove the one `placeholder` line from each of the seven broken fixtures under `tests/fixtures/projects/broken/`: `17-missing-image`, `26-duplicate-slug`, `27-bad-file-name`, `R01-removed-order`, `RP04-missing-replacement`, `story-malformed-table`, `story-mdx-element`. Each must still fail for its own reason only; `tests/build/project-validation.test.ts` asserts each message and is the check (no fixture is added or removed).
+- [X] T013 [P] [US3] In `docs/projects.md` remove the `placeholder` yaml line and its bullet, and rename the "Drafts and placeholders" heading to "Drafts" (FR-006); fix any link to that heading.
+- [X] T014 [US3] Verify the search: `grep -rn "placeholder:" tests/fixtures tests/component tests/unit src docs/projects.md` returns nothing (SC-003); `git diff --stat` shows nothing under `src/content/projects/` (FR-008). Run the Vitest suites that cover this: `tests/unit/content`, `tests/component/project`, `tests/build/project-validation.test.ts` and `tests/build/local-site.test.ts`; all pass.
 
 ### Visual baselines (after all fixture, component and style edits, and with no sibling worktree browser tests running)
 

@@ -84,7 +84,6 @@ A picture is written like this (the same shape is used for `visual`, for each en
 kind: image                 # image or diagram
 src: ./images/focus-pocus/screenshot.png
 alt: Claude Desktop listing tasks       # required: describe the picture
-placeholder: true           # optional: marks it "Placeholder" until the real one arrives
 ```
 
 Before adding a photo, remove its location and camera details (the hidden information such
@@ -198,11 +197,10 @@ The Options part has three pieces, in this order:
 The site draws the table with coloured answers and a mark on the chosen option. The list and
 the "Why" paragraph are shown as you wrote them.
 
-## Drafts and placeholders
+## Drafts
 
 - `draft: true` in the settings hides the whole project from the live site while you write it.
   Keep it until you are ready to publish, then change it to `false`.
-- `placeholder: true` on a picture shows a "Placeholder" mark until you swap in the real one.
   Remove the line when you do.
 
 ## Build errors you may see
