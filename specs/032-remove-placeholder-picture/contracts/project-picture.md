@@ -12,7 +12,7 @@ one of them.
 
 | Row | Cause | Detected by | Message names |
 |---|---|---|---|
-| R05 | `placeholder` on `visual` or on a `visuals` entry (any value) | schema (strict) | file, `placeholder` |
+| (unlabelled; R05 is already used in `project-validation.test.ts`) | `placeholder` on `visual` or on a `visuals` entry (any value) | schema (strict) | file, `placeholder` |
 
 Primary test: unit (`tests/unit/content/project-schema.test.ts`). File naming by Astro is covered
 by the existing schema wiring run in `tests/build/project-validation.test.ts`.

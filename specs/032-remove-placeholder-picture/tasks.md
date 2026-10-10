@@ -6,7 +6,7 @@
 
 **Toolchain**: Follow the Local toolchain section of `CLAUDE.md` for every pnpm/astro/playwright call (check `node -v`, run via the wrapper).
 
-**Facts to use** (they correct two slips in the plan and contract): there are **seven** broken fixtures that set `placeholder` (17-missing-image, 26-duplicate-slug, 27-bad-file-name, R01-removed-order, RP04-missing-replacement, story-malformed-table, story-mdx-element), not eight. The contract labels the new error row "R05", which collides with the existing R05 in `tests/build/project-validation.test.ts`; do not reuse that label in code or tests (the analyze phase fixes the plan and contract text).
+**Facts to use**: there are **seven** broken fixtures that set `placeholder` (17-missing-image, 26-duplicate-slug, 27-bad-file-name, R01-removed-order, RP04-missing-replacement, story-malformed-table, story-mdx-element). The new rejection cases carry no "R05" label: R05 is already used in `tests/build/project-validation.test.ts`, so do not reuse it in code or tests.
 
 ## Format: `- [ ] [ID] [P?] [Story] Description with file path`
 
@@ -43,7 +43,7 @@ None. The three stories touch separate files and need no shared prerequisite bey
 
 ### Tests (write first, see them fail)
 
-- [ ] T005 [US2] Replace the mark test in `tests/component/project/PartPicture.test.ts` (primary layer: component, Astro container render of one component) with a "no mark" test: render a picture whose data object still carries `placeholder: true` and assert the output has no "Placeholder" text and no `data-placeholder` or `data-visual-mark`. Keep existing assertions for alt text, diagram `aria-describedby` figcaption, and eager first / lazy rest loading. Seen to fail today.
+- [ ] T005 [US2] Replace the mark test in `tests/component/project/PartPicture.test.ts` (primary layer: component, Astro container render of one component) with a "no mark" test: render a picture whose data object still carries `placeholder: true`, passed explicitly through `makeProject({ visuals: { ... } })` so the test does not depend on the shared `screenshot` data that T009 cleans, and assert the output has no "Placeholder" text and no `data-placeholder` or `data-visual-mark`. Keep existing assertions for alt text, diagram `aria-describedby` figcaption, and eager first / lazy rest loading. Seen to fail today.
 - [ ] T006 [US2] Flip the `data-placeholder` assertion in `tests/build/local-site.test.ts` (~line 372) to `not.toContain("data-placeholder")` and also assert no `data-visual-mark` (primary layer: build, only the real build over the fixture site shows the whole story page output; second layer reason: it replaces the end-to-end check being deleted in T010, and the component test T005 cannot see the assembled page). Seen to fail today.
 
 ### Implementation

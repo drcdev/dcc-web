@@ -39,8 +39,8 @@
   existing wiring run in `tests/build/project-validation.test.ts` ("rows 01 to 08 ... the schema
   is wired and Astro names the file"). The spec's acceptance scenario 1/2 (build fails naming
   file and setting) is therefore met by unit (setting named) plus existing wiring (file named).
-  The spec allows, but does not require, a fixture that proves rejection.
-- **Alternatives considered**: A `broken/R05-removed-placeholder.mdx` fixture with a build run —
+  The spec rules out adding a fixture to prove rejection (US3 scenario 1).
+- **Alternatives considered**: A new broken removed-placeholder fixture with a build run —
   rejected as a second layer with no new behaviour to observe, adding ~build-time cost to the gate.
 
 ## R4. Which visual baselines change

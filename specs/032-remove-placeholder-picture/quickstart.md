@@ -17,7 +17,7 @@ grep -n -i "placeholder" docs/projects.md                                       
 pnpm exec vitest run tests/unit/content/project-schema.test.ts
 ```
 
-Expected: the new R05 cases pass (issue text names `placeholder` for list and story pictures,
+Expected: the new `placeholder` rejection cases pass (issue text names `placeholder` for list and story pictures,
 image and diagram, `true` and `false`).
 
 ## 3. No mark on pictures (US2, FR-003/004)

@@ -11,7 +11,7 @@ project schema, so the existing strict objects reject it as an unknown key and t
 naming the file and the setting. Remove the "Placeholder" mark from `PartPicture.astro` and the
 two styles that existed only for it (`[data-visual-mark]` and the `[data-placeholder]` entry in
 the forced-colours border list in `portfolio.css`). Drop the setting from every fixture (two
-valid fixtures with pictures, one draft fixture, eight deliberately broken ones, and the
+valid fixtures with pictures, one draft fixture, seven deliberately broken ones, and the
 component and schema test data), rewrite the three tests that asserted the mark, add unit tests
 that prove the setting is rejected, update `docs/projects.md`, and refresh only the
 `story-template-*` visual baselines (4 macOS + 4 Linux). The project-row baselines do not change.
@@ -34,7 +34,7 @@ that prove the setting is rejected, update `docs/projects.md`, and refresh only 
 
 **Constraints**: Published project pages and index rows must be byte-for-byte unaffected in what they show (FR-008, SC-004). Broken fixtures must keep failing for their own reason only (FR-005).
 
-**Scale/Scope**: 1 schema file, 1 component, 1 stylesheet, 1 doc, 11 fixture files, 5 test files, 8 baseline PNGs.
+**Scale/Scope**: 1 schema file, 1 component, 1 stylesheet, 1 doc, 10 fixture files, 5 test files, 8 baseline PNGs.
 
 No NEEDS CLARIFICATION remains; Clarify settled the open points (see research.md R2-R5).
 
@@ -72,7 +72,7 @@ specs/032-remove-placeholder-picture/
 ├── quickstart.md        # Phase 1 output
 ├── contracts/
 │   └── project-picture.md   # File-format and DOM delta for a project picture
-├── checklists/requirements.md
+├── checklists/             # requirements, accessibility, fixtures, schema-content, visual-baselines
 └── tasks.md             # Phase 2 output (/speckit-tasks, not created here)
 ```
 
