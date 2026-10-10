@@ -182,9 +182,9 @@ description: "Task list for launching the new doncoleman.ca"
 - [x] T092 [MANUAL] [US2] L11: Don deletes the apex A record, adds Custom Domain `doncoleman.ca` on `dcc-web`, and notes the switch date and Ghost's next renewal date. Confirmed by `--item live-domain-ghost` ("Switched...") and `--item live-apex` (pending or complete).
 - [x] T093 [MANUAL] [US2] L12: in the same sitting as T092, Don deletes the `www` CNAME, adds `AAAA www 100::` (proxied) and the 301 Redirect Rule. Confirmed by `--item live-www-redirect`. If one half fails, finish it or roll back both (T098).
 - [x] T094 [MANUAL] [US4] L13 and L14: wait for DNS and certificates and re-run `pnpm setup:check` until items 28 to 32 are complete; Don sends a "Launch test" message from `https://doncoleman.ca/contact/`, confirms it arrived, deletes it, and confirms mail still works. A `Problem:`, or a state still pending after 24 hours, points to rollback. SC-002, SC-003 and SC-007 are proved here.
-- [ ] T095 [MANUAL] [US5] L15: Don updates external links that point to old blog addresses (LinkedIn posts, profiles, other sites he controls) and opens each to confirm it lands on a page.
-- [ ] T096 [MANUAL] [US2] L16: Don removes `new.doncoleman.ca` (custom domain and DNS record). Confirmed by `--item review-address-removed` and `dig +short new.doncoleman.ca` returning nothing.
-- [ ] T097 [MANUAL] [US4] L17 and L18: optional Search Console sitemap; record the switch date; run the full `pnpm setup:check` and confirm items 6, 16, 17, 18 and 26 to 32 are complete.
+- [x] T095 [MANUAL] [US5] L15: Don updates external links that point to old blog addresses (LinkedIn posts, profiles, other sites he controls) and opens each to confirm it lands on a page.
+- [x] T096 [MANUAL] [US2] L16: Don removes `new.doncoleman.ca` (custom domain and DNS record). Confirmed by `--item review-address-removed` and `dig +short new.doncoleman.ca` returning nothing.
+- [x] T097 [MANUAL] [US4] L17 and L18: optional Search Console sitemap; record the switch date; run the full `pnpm setup:check` and confirm items 6, 16, 17, 18 and 26 to 32 are complete.
 - [ ] T098 [MANUAL] [US3] Rollback, only if needed: Part E R1 to R5. Confirmed by `--item live-domain-ghost`, `--item dns-records-parity` and `--item mail-records`.
 
 ## Phase 12: Post-merge retirement (two or more weeks after the switch, run with Don from docs/launch.md)
