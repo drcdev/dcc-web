@@ -202,7 +202,7 @@ Mechanical criteria (the review phase checks each one):
   acceptance 4 (`pnpm setup:check`), an operational check, not a test layer.
 - **Layer:** unit (schema parse of the real file).
 
-### W4 — Docs
+### [x] W4 — Docs
 
 - **Files:** `docs/cutover-plan.md` (T4 line ~140, T9 + #93 line ~148, stage 6 "Setup check"
   line ~164–169 and a new stage 6 item), `docs/setup.md` (item 4 text near lines 104–116; item
