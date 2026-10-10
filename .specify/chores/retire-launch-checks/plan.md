@@ -737,7 +737,7 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
 - **Test:** no behaviour: n/a (rename; the same assertions run).
 - **Layer:** unit (unchanged).
 
-### W11 — Close out spec 011's stale tasks
+### [x] W11 — Close out spec 011's stale tasks
 
 - **Files:**
   - `specs/011-launch/tasks.md`;
