@@ -106,7 +106,6 @@ baseline still records each record's Squarespace TTL for the audit trail; the ch
 difference between it and Cloudflare's TTL as an informational detail only, never a mismatch.
 A record added in Cloudflare after the move, with no Squarespace original, carries `source:
 "cloudflare"` and records the TTL Cloudflare's API reports (`1` when the record is on Auto).
-Run `pnpm setup:dns-snapshot` to see any name in public DNS that is not yet in the baseline.
 
 **How it will be confirmed**
 `pnpm setup:check --item dns-records-parity` reports complete only when every `keep` record in

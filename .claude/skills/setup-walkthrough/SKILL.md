@@ -92,8 +92,6 @@ domain switch, the rollback and the after-launch checks. Items 25 to 31 stay in 
 The skill runs only these read-only commands:
 
 - `pnpm setup:check` (with `--json`, `--item <id>`, or `--no-network`)
-- `pnpm setup:dns-snapshot`
-- `pnpm run site:check -- --base <url> [--expect-origin <url>]` (read-only crawl, launch step L4)
 - `gh auth status`
 - `node --version`
 - `pnpm --version`

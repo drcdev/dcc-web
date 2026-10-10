@@ -11,7 +11,6 @@ describe(".claude/skills/setup-walkthrough/SKILL.md", () => {
   it("lists only the allowed read-only commands", () => {
     const allowed = [
       "pnpm setup:check",
-      "pnpm setup:dns-snapshot",
       "gh auth status",
       "node --version",
       "pnpm --version",

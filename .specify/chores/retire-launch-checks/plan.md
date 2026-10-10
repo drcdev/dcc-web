@@ -449,7 +449,7 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
     sitemap and canonical URL to the build's own origin.
 - **Layer:** unit (schema). The build-test edits are removals only.
 
-### W6 — Remove the two launch-only scripts
+### W6 — Remove the two launch-only scripts [x]
 
 - **Files:**
   - delete `scripts/setup-check/dns-snapshot.ts`, `tests/unit/setup-check/dns-snapshot.test.ts`
