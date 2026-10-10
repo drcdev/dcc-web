@@ -13,8 +13,6 @@ export const FALLBACK_ORIGIN = "https://doncoleman.ca";
 export type SiteOriginEnv = BuildEnv;
 
 export interface SiteOriginConfig {
-  /** No longer read: a main build is served from the live domain (FR-010a). Kept for the review-address setup items. */
-  reviewHost?: string;
   workerName: string;
   /** The preview Worker (`dcc-web-preview`); non-main branch builds are served from it. */
   previewWorkerName?: string;

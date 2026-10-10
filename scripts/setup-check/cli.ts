@@ -3,9 +3,8 @@
 // [--no-network]`, per contracts/setup-check-cli.md. Prerequisite gating
 // (data-model.md dependsOn) needs no separate logic here: every check that
 // has a dependsOn prerequisite already evaluates it by calling the
-// prerequisite's own check function with the same context (see
-// checks/dns-nameservers.ts) — including when that item is requested directly with
-// `--item`.
+// prerequisite's own check function with the same context — including
+// when that item is requested directly with `--item`.
 import { setupItems, getSetupItem } from "./items.ts";
 import { buildReport, collectSecretValues, formatHumanReport, formatJsonReport } from "./report.ts";
 import { configSchema, dnsBaselineSchema, githubRulesetSchema } from "./schemas.ts";
@@ -87,9 +86,6 @@ export function noNetworkContext(base: ProviderContext): ProviderContext {
       throw networkDisabledError();
     },
     getWorkersSubdomain: async () => {
-      throw networkDisabledError();
-    },
-    listWorkerDomains: async () => {
       throw networkDisabledError();
     },
     listWebAnalyticsSites: async () => {

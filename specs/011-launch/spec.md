@@ -196,7 +196,7 @@ Ghost's content and members, cancel the Ghost subscription, remove the five Mail
 that only Ghost's newsletter used, retire the Flux Supabase project (after Don exports any contact submissions he
 wants to keep and confirms it is the Flux project, not his other Supabase project), archive the
 Flux repository, and update the design-source document to say Flux is archived but can still be
-cloned.
+cloned. (Superseded: Don chose to keep Flux unarchived (2026-10-09).)
 
 **Why this priority**: It saves running costs and tidies up, but only after the launch is proven.
 
@@ -211,6 +211,7 @@ and an explicit project-identity confirmation first.
    preceded by an export step and a step confirming the project is the Flux one.
 2. **Given** the Flux repository is archived, **When** someone reads the design-source document,
    **Then** it says Flux is archived and still cloneable with the same command.
+   (Superseded: Don chose to keep Flux unarchived (2026-10-09).)
 3. **Given** Ghost has been cancelled and all five Mailgun records deleted,
    **When** the setup check compares mail records, **Then** it uses the updated baseline without
    the Mailgun records and reports the iCloud mail records unchanged.
@@ -441,7 +442,7 @@ and an explicit project-identity confirmation first.
   archiving, the repository MUST be checked for committed secrets or personal data: any secret
   found is revoked, and personal data is removed (or the repository kept private) before it
   stays cloneable. The design-source document MUST be updated to say Flux is archived but still
-  cloneable.
+  cloneable. (Superseded: Don chose to keep Flux unarchived (2026-10-09).)
 - **FR-024**: After Ghost is cancelled, the walkthrough MUST have Don delete all five Mailgun
   records that only Ghost's newsletter used:
   - MX `mail.doncoleman.ca` → `mxa.eu.mailgun.org` (priority 10);

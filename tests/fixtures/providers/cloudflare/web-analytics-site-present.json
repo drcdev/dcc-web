@@ -1,3 +1,3 @@
 [
-  { "site_tag": "abc123", "host": "new.doncoleman.ca", "auto_install": true }
+  { "site_tag": "abc123", "host": "doncoleman.ca", "auto_install": true }
 ]

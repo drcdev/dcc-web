@@ -5,11 +5,5 @@
   "workerName": "dcc-web",
   "previewWorkerName": "dcc-web-preview",
   "zone": "doncoleman.ca",
-  "reviewHost": "new.doncoleman.ca",
-  "ghostMarker": "Ghost",
-  "workersSubdomain": "drc-dev",
-  "launch": {
-    "expectedPages": ["index", "about", "technology", "contact", "privacy-policy", "terms-of-use"],
-    "expectedPaths": ["/", "/about/", "/technology/", "/writing/", "/projects/", "/contact/", "/privacy-policy/", "/terms-of-use/"]
-  }
+  "workersSubdomain": "drc-dev"
 }

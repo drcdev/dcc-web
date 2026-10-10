@@ -220,25 +220,17 @@ describe("setup-check/report", () => {
     expect(values).not.toContain(undefined);
   });
 
-  it("an incomplete deferred-until-merge item is reported as after merge and does not fail the check (FR-028a)", () => {
-    const items = [item("a", 1), { ...item("z", 2), phase: "after-merge" as const, deferredUntilMerge: true }];
-    const report = buildReport([complete("a", 1), missing("z", 2)], items);
-    expect(report.ok).toBe(true);
-    const human = formatHumanReport(report);
-    expect(human).toMatch(/after merge/i);
-    expect(checkReportSchema.safeParse(report).success).toBe(true);
-  });
-
-  it("an incomplete before-merge item still fails the check even when a deferred item is complete", () => {
-    const items = [item("a", 1), { ...item("z", 2), phase: "after-merge" as const, deferredUntilMerge: true }];
+  it("an incomplete item fails the check", () => {
+    const items = [item("a", 1), item("z", 2)];
     const report = buildReport([missing("a", 1), complete("z", 2)], items);
     expect(report.ok).toBe(false);
+    expect(checkReportSchema.safeParse(report).success).toBe(true);
   });
 
   it("redacts a Worker secret value that leaked into any text field of a contact item", () => {
     const leaked = "tsk_leaked_secret_value_1234567890";
-    const items = [item("contact-worker-secrets", 21)];
-    const bad = { ...missing("contact-worker-secrets", 21), summary: `Found ${leaked}`, details: [leaked] };
+    const items = [item("contact-bindings", 16)];
+    const bad = { ...missing("contact-bindings", 16), summary: `Found ${leaked}`, details: [leaked] };
     const report = buildReport([bad], items, { secretValues: [leaked] });
     expect(formatJsonReport(report)).not.toContain(leaked);
     expect(formatHumanReport(report)).not.toContain(leaked);
@@ -250,9 +242,9 @@ describe("setup-check/report: the waiting status (T004)", () => {
     return {
       id,
       status: "waiting",
-      summary: "Waiting for the switch: new.doncoleman.ca stays until the bare domain is live.",
+      summary: "Waiting for an outside event.",
       details: [],
-      nextAction: "Nothing to do yet. Follow docs/launch.md Part C when the readiness checklist is complete.",
+      nextAction: "Nothing to do yet.",
       step: `Step ${order} of 18`,
       docs: `docs/setup.md#${id}`,
       reason: null,

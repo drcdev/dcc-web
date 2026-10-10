@@ -59,7 +59,7 @@ describe("checks/github-codeowners", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("complete");
-    expect(result.step).toBe(`Step 12 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 11 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#github-codeowners");
   });
 

@@ -36,7 +36,7 @@ describe("checks/preview-noindex (T047)", () => {
     );
 
     expect(result.status).toBe("complete");
-    expect(result.step).toBe(`Step 16 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 14 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#preview-noindex");
     expect(seen.some((u) => u.includes("//dcc-web.drc-dev"))).toBe(false);
     expect([...seen].sort()).toEqual(HOSTS.flatMap((h) => [`https://${h}/`, `https://${h}/projects/`]).sort());

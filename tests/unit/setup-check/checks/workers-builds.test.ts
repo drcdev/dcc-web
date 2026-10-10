@@ -25,7 +25,7 @@ describe("checks/workers-builds", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("missing");
-    expect(result.step).toBe(`Step 10 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 9 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#workers-builds");
   });
 

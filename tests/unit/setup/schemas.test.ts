@@ -19,9 +19,11 @@ describe("configSchema (setup/config.json)", () => {
     machineAccount: "drc-agents",
     workerName: "dcc-web",
     zone: "doncoleman.ca",
-    reviewHost: "new.doncoleman.ca",
-    ghostMarker: "Ghost",
   };
+
+  it("accepts a config with only the keys the checks read (no review host or Ghost marker)", () => {
+    expect(configSchema.safeParse(valid).success).toBe(true);
+  });
 
   it("accepts a valid config", () => {
     const result = configSchema.safeParse(valid);
@@ -69,35 +71,22 @@ describe("dnsBaselineSchema (setup/dns-baseline.json)", () => {
     content: "192.0.2.1",
     priority: null,
     ttl: 3600,
-    source: "squarespace",
-    decision: "keep",
-    reason: null,
   };
 
   it("accepts an empty baseline", () => {
-    const result = dnsBaselineSchema.safeParse({ originalNameservers: [], records: [] });
-    expect(result.success).toBe(true);
+    expect(dnsBaselineSchema.safeParse({ records: [] }).success).toBe(true);
   });
 
   it("accepts a valid populated baseline", () => {
-    const result = dnsBaselineSchema.safeParse({
-      originalNameservers: ["ns1.squarespace.com", "ns2.squarespace.com"],
-      records: [validRecord],
-    });
-    expect(result.success).toBe(true);
+    expect(dnsBaselineSchema.safeParse({ records: [validRecord] }).success).toBe(true);
   });
 
   it("rejects a record missing a required field", () => {
-    const result = dnsBaselineSchema.safeParse({
-      originalNameservers: [],
-      records: [omit(validRecord, "ttl")],
-    });
-    expect(result.success).toBe(false);
+    expect(dnsBaselineSchema.safeParse({ records: [omit(validRecord, "ttl")] }).success).toBe(false);
   });
 
   it("rejects an MX record without a priority", () => {
     const result = dnsBaselineSchema.safeParse({
-      originalNameservers: [],
       records: [{ ...validRecord, type: "MX", content: "mx1.example.net", priority: null }],
     });
     expect(result.success).toBe(false);
@@ -105,50 +94,9 @@ describe("dnsBaselineSchema (setup/dns-baseline.json)", () => {
 
   it("accepts an MX record with a priority", () => {
     const result = dnsBaselineSchema.safeParse({
-      originalNameservers: [],
       records: [{ ...validRecord, type: "MX", content: "mx1.example.net", priority: 10 }],
     });
     expect(result.success).toBe(true);
-  });
-
-  it("rejects a dropped record with no reason", () => {
-    const result = dnsBaselineSchema.safeParse({
-      originalNameservers: [],
-      records: [{ ...validRecord, decision: "drop", reason: null }],
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it("accepts a dropped record with a reason", () => {
-    const result = dnsBaselineSchema.safeParse({
-      originalNameservers: [],
-      records: [{ ...validRecord, decision: "drop", reason: "unused legacy verification record" }],
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it("accepts a record added in Cloudflare (source: cloudflare)", () => {
-    const result = dnsBaselineSchema.safeParse({
-      originalNameservers: [],
-      records: [
-        {
-          ...validRecord,
-          type: "TXT",
-          content: "example-verification=abc123",
-          ttl: 1,
-          source: "cloudflare",
-        },
-      ],
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it("rejects an unknown source", () => {
-    const result = dnsBaselineSchema.safeParse({
-      originalNameservers: [],
-      records: [{ ...validRecord, source: "registrar" }],
-    });
-    expect(result.success).toBe(false);
   });
 });
 
@@ -259,14 +207,14 @@ describe("checkReportSchema (--json report shape)", () => {
 
 describe("checkReportSchema: the waiting status (T004)", () => {
   const waiting = {
-    id: "review-address-removed",
-    title: "Review address removed",
+    id: "example-item",
+    title: "Example item",
     status: "waiting",
-    summary: "Waiting for the switch: new.doncoleman.ca stays until the bare domain is live.",
+    summary: "Waiting for an outside event.",
     details: [],
-    nextAction: "Nothing to do yet. Follow docs/launch.md Part C when the readiness checklist is complete.",
-    step: "Step 16 of 32",
-    docs: "docs/setup.md#review-address-removed",
+    nextAction: "Nothing to do yet.",
+    step: "Step 1 of 1",
+    docs: "docs/setup.md#example-item",
     reason: null,
     needsDon: true,
   };
@@ -289,40 +237,5 @@ describe("checkReportSchema: the waiting status (T004)", () => {
     const body = report(waiting);
     delete (body.counts as Record<string, unknown>).waiting;
     expect(checkReportSchema.safeParse(body).success).toBe(false);
-  });
-});
-
-describe("configSchema: the optional launch object (T007)", () => {
-  const valid = {
-    owner: "drcdev",
-    repo: "dcc-web",
-    machineAccount: "drc-agents",
-    workerName: "dcc-web",
-    zone: "doncoleman.ca",
-    reviewHost: "new.doncoleman.ca",
-    ghostMarker: "Ghost",
-  };
-  const launch = { expectedPages: ["index", "privacy-policy"], expectedPaths: ["/", "/about/", "/privacy-policy/"] };
-
-  it("accepts a config with no launch object", () => {
-    expect(configSchema.safeParse(valid).success).toBe(true);
-  });
-
-  it("accepts a valid launch object", () => {
-    expect(configSchema.safeParse({ ...valid, launch }).success).toBe(true);
-  });
-
-  it.each(["Index", "has space", "under_score", "", "a/b"])("rejects the expectedPages id %j", (id) => {
-    expect(configSchema.safeParse({ ...valid, launch: { ...launch, expectedPages: [id] } }).success).toBe(false);
-  });
-
-  it.each(["about", "/about", "/About/", "/a b/", "//", ""])("rejects the expectedPaths entry %j", (path) => {
-    expect(configSchema.safeParse({ ...valid, launch: { ...launch, expectedPaths: [path] } }).success).toBe(false);
-  });
-
-  it("rejects empty arrays and a missing array", () => {
-    expect(configSchema.safeParse({ ...valid, launch: { ...launch, expectedPages: [] } }).success).toBe(false);
-    expect(configSchema.safeParse({ ...valid, launch: { ...launch, expectedPaths: [] } }).success).toBe(false);
-    expect(configSchema.safeParse({ ...valid, launch: { expectedPages: launch.expectedPages } }).success).toBe(false);
   });
 });

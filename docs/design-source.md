@@ -14,7 +14,7 @@ it into the repository-local reference folder from the repository root:
 gh repo clone drcdev/flux .reference/flux -- --depth 1
 ```
 
-Flux's site is retired with Ghost (`docs/launch.md` T8), but the repository stays where it is and
+Flux's site is retired with Ghost, but the repository stays where it is and
 is not archived, so the same command still clones it.
 
 `.reference/` is gitignored — the clone never gets committed. Treat `.reference/flux` as

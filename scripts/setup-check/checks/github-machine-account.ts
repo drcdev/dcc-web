@@ -1,4 +1,4 @@
-// checks/github-machine-account.ts (setup item 8, data-model.md
+// checks/github-machine-account.ts (setup item 7, data-model.md
 // "github-machine-account"): the machine account (setup/config.json's
 // machineAccount, "drc-agents") is a repository collaborator with write or
 // maintain permission, never admin (FR-013).
@@ -15,7 +15,7 @@ import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { ProviderAccessError } from "../types.ts";
 import { complete, fromProviderError, missing, pending } from "./shared.ts";
 
-const ITEM = { id: "github-machine-account", order: 8 };
+const ITEM = { id: "github-machine-account", order: 7 };
 
 interface CollaboratorPermission {
   permission?: string;

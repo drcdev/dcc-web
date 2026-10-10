@@ -34,7 +34,7 @@
 - [x] CHK018 Do the identity-confirmation criteria for the Flux project distinguish it from Don's other Supabase project using at least two independent identifiers? [Clarity, Spec §Edge Cases]
 - [x] CHK019 Is secret hygiene for the old stack defined: revoking or rotating Supabase, Mailgun and Ghost keys when each service is retired? [Gap]
 - [x] CHK020 Is removal of leftover secrets or environment values for retired services from GitHub and Cloudflare stores required? [Gap, Constitution §VII]
-- [x] CHK021 Is the archived Flux repository required to be checked for committed secrets or personal data before it stays cloneable? [Gap, Spec §FR-023]
+- [x] CHK021 Is the archived Flux repository required to be checked for committed secrets or personal data before it stays cloneable? [Gap, Spec §FR-023] (superseded: Don chose to keep Flux unarchived (2026-10-09))
 
 ## Security of the Cutover
 

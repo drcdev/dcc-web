@@ -1,4 +1,4 @@
-// Shared helpers for the contact-form setup items 18 to 24 (specs/007-contact-form/contracts/setup-items.md).
+// Shared helpers for the contact-bindings setup item (checks/contact-bindings.ts).
 // Everything here is read-only and names-only: no helper returns a secret or variable value.
 import type { CheckResult, CloudflareBuildTrigger, ProviderContext, SetupConfig } from "../types.ts";
 import { stripJsonc } from "../../lib/jsonc.ts";
@@ -6,12 +6,9 @@ import { couldNotCheck, type ItemLabel } from "./shared.ts";
 
 export const PRODUCTION_DB_NAME = "dcc-web";
 export const PREVIEW_DB_NAME = "dcc-web-preview";
-/** Databases the site used before the rename; item 18 notes one that is still in the account once wrangler.jsonc names others. */
-export const RETIRED_DB_NAMES = ["dcc-web-contact", "dcc-web-contact-preview"] as const;
 export const REQUIRED_WORKER_SECRETS = ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"] as const;
 export const SITE_KEY_VARIABLE = "PUBLIC_TURNSTILE_SITE_KEY";
 export const DEFAULT_CRON = "17 3 * * *";
-export const PREVIEW_DEPLOY_COMMAND = "pnpm run deploy:preview";
 export const PRODUCTION_DEPLOY_COMMAND = "pnpm run deploy:production";
 export const EXPECTED_REGION = "WNAM";
 
@@ -23,14 +20,14 @@ interface WranglerDatabase {
 interface WranglerConfig {
   triggers?: { crons?: string[] };
   d1_databases?: WranglerDatabase[];
-  env?: { preview?: { triggers?: { crons?: string[] }; d1_databases?: WranglerDatabase[] } };
+  env?: { preview?: { d1_databases?: WranglerDatabase[] } };
 }
 
 export interface ContactDatabaseConfig {
   name: string;
   /** The `database_id` committed in wrangler.jsonc ("" when absent). */
   id: string;
-  /** True for the all-zero placeholder IDs that stand in until item 18 is done. */
+  /** True for the all-zero placeholder IDs that stand in until the databases exist. */
   placeholder: boolean;
 }
 
@@ -38,7 +35,6 @@ export interface ContactConfig {
   production: ContactDatabaseConfig;
   preview: ContactDatabaseConfig;
   productionCron: string;
-  previewCron: string;
 }
 
 export function isPlaceholderId(id: string): boolean {
@@ -64,7 +60,6 @@ export function readContactConfig(ctx: ProviderContext): ContactConfig | null {
     production: toDatabase(parsed.d1_databases?.[0], PRODUCTION_DB_NAME),
     preview: toDatabase(parsed.env?.preview?.d1_databases?.[0], PREVIEW_DB_NAME),
     productionCron: parsed.triggers?.crons?.[0] ?? DEFAULT_CRON,
-    previewCron: parsed.env?.preview?.triggers?.crons?.[0] ?? DEFAULT_CRON,
   };
 }
 

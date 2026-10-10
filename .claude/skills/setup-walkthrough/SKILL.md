@@ -12,17 +12,12 @@ confirmation logic (FR-010): every "is this step done?" question is answered by 
 
 ## Behaviour
 
-1. Run `pnpm setup:check --json`. If the `live-domain-ghost` result has a summary starting
-   "Problem:", show it before anything else — the live site may have come off Ghost and needs
-   the rollback procedure in `docs/setup.md#dns-nameservers` right away.
+1. Run `pnpm setup:check --json`.
 2. Show the full ordered step list: each step's number, title and current status only (no
    what/where/how detail yet).
 3. Walk the steps in order. For each step:
    - If it is already `complete`, print one line — "Step N — already done, skipping" — and move
      on (FR-011).
-   - If it is `waiting` (an item that only applies after the launch switch), treat it like a
-     completed step: print one line — "Step N — waiting for the launch switch, skipping" — and
-     move on, with no pause and no `AskUserQuestion`.
    - If its prerequisites (`dependsOn`) are not all `complete`, show it as **blocked**, name the
      prerequisite step, and do not ask Don to act on it or run its confirmation.
    - Otherwise, show **What it is for**, **Where to do it**, **How it will be confirmed** — each
@@ -44,37 +39,10 @@ confirmation logic (FR-010): every "is this step done?" question is answered by 
      blocked until it is done.
    - On `Stop here`: print how to resume (`/setup-walkthrough`) and end. Nothing is stored —
      state is recomputed from a fresh check run next time (FR-011).
-4. Before showing the `dns-nameservers` step as actionable, refuse to continue unless
-   `dns-records-parity` is complete, and show the rollback procedure from
-   `docs/setup.md#dns-nameservers` before Don makes the nameserver switch (FR-039). Also remind
-   Don to confirm DNSSEC is disabled at Squarespace (see the "Before the switch: DNSSEC" note in
-   `docs/setup.md#dns-nameservers`) before he makes the switch.
-5. Before any step whose `phase` is `after-merge`, tell Don this slice's pull request must be
+4. Before any step whose `phase` is `after-merge`, tell Don this slice's pull request must be
    merged first, and give the PR link.
-6. End with the full report (`pnpm setup:check`) and its summary line ("`N` of `T` complete",
+5. End with the full report (`pnpm setup:check`) and its summary line ("`N` of `T` complete",
    where `T` is the registry length: the number of items `setup:check` reports, never a fixed number).
-
-## Launch hand-over (item 25 onwards)
-
-Items 1 to 24 are the account setup. At item 25 (`launch-content-ready`) the walkthrough hands over
-to `docs/launch.md`, the launch walkthrough, which is the single place that covers readiness, the
-domain switch, the rollback and the after-launch checks. Items 25 to 31 stay in the registry and
-`pnpm setup:check`, but the skill does not re-explain them one by one:
-
-1. When every item before 25 is `complete` (item 15 may be `waiting`), say that the account setup is
-   done and that the next part is `docs/launch.md`, starting at Part A.
-2. Follow `docs/launch.md` step by step (L1, L2, ...). Show each step's **What to do**, **Where** and
-   **How to confirm**, then stop at every **Pause:** line with the standard `AskUserQuestion`
-   answers: `Done — check it`, `Skip for now`, `Stop here`. The same halt rule as above applies.
-3. The readiness gate is step L7. If any of L1 to L6 is not confirmed, stop there: do not show Part B
-   or any later step. The confirmations are the commands the step names (for example
-   `pnpm setup:check --json --item launch-content-ready`), never the skill's own judgement.
-4. Show Part E (rollback) before Part C is offered, and again straight away if any check reports a
-   `Problem:` or the 24-hour pending limit passes.
-5. The skill never signs in, never creates accounts, never changes DNS and never handles or asks for
-   a credential. Don alone acts in the Cloudflare dashboard, the DNS zone, an account or an export.
-   The skill only runs the read-only commands listed under "Allowed commands", including, for step
-   L4, `pnpm run site:check -- --base https://new.doncoleman.ca --expect-origin https://doncoleman.ca`.
 
 ## Secret handling (FR-012, FR-024)
 
@@ -86,19 +54,20 @@ domain switch, the rollback and the after-launch checks. Items 25 to 31 stay in 
   `CLOUDFLARE_API_TOKEN=`" or "Paste it into the Cloudflare/GitHub screen", then "Choose Done".
 - If Don pastes something that looks like a secret into the chat, do not repeat it: tell him to
   revoke and recreate it immediately.
+- The skill never signs in, never creates accounts, never changes DNS and never handles or asks for
+  a credential. Don alone acts in the Cloudflare dashboard, the DNS zone, an account or an export.
+  The skill only runs the read-only commands listed under "Allowed commands".
 
 ## Allowed commands
 
 The skill runs only these read-only commands:
 
 - `pnpm setup:check` (with `--json`, `--item <id>`, or `--no-network`)
-- `pnpm setup:dns-snapshot`
-- `pnpm run site:check -- --base <url> [--expect-origin <url>]` (read-only crawl, launch step L4)
 - `gh auth status`
 - `node --version`
 - `pnpm --version`
 - `git status`
-- `pnpm exec wrangler d1 list --json`, only after Don confirms `contact-d1-databases` (see "Contact form order")
+- `pnpm exec wrangler d1 list --json`, only after Don confirms the Databases part of `contact-bindings` (see "Contact bindings (item 16)")
 
 Never run: `cat .env`, `printenv`, `gh auth token`, or any command with a `--verbose` or
 `--debug` flag.
@@ -121,38 +90,18 @@ shown for Don to run himself:
 pnpm exec wrangler deploy
 ```
 
-## Contact form order (items 18 to 24)
+## Contact bindings (item 16)
 
-The contact-form items follow the registry's `dependsOn`, which gives this safe order. Steps that
-Don has already completed are skipped as usual:
+`contact-bindings` is one step. Walk its parts in this order, using the matching sections of
+`docs/setup.md#contact-bindings`: Databases, Turnstile widget, Worker secrets, Site key, Production
+deploy. If the check says the token lacks D1 Read, Workers Builds Configuration Read or Turnstile
+Sites Read, send Don back to `local-credentials` (item 2) to add them to his read-only token. The
+whole `contact-bindings` item is `phase: after-merge`, so the after-merge rule in step 4 of Behaviour
+applies: give the PR link and wait for the merge.
 
-1. `contact-d1-databases` (item 18) — the two D1 databases.
-2. `local-credentials` (item 2) — if the check says the token lacks D1 Read, Workers Builds
-   Configuration Read or Turnstile Sites Read, send Don back to add them to his read-only token
-   before continuing. Also remind him that the Workers Builds token needs D1 Edit (item 23).
-3. `contact-turnstile-widget` (item 19) — the Turnstile widget.
-4. `contact-worker-secrets` (item 20) — the three secrets on both Workers.
-5. `contact-preview-builds` (item 21) — the `dcc-web-preview` Workers Builds connection. It comes
-   before the build variable because the variable is set in that connection's build settings
-   (item 22 depends on item 21).
-6. `contact-turnstile-site-key` (item 22) — the `PUBLIC_TURNSTILE_SITE_KEY` build variable on both
-   Workers.
-7. `contact-preview-deploy` (item 23) — the D1 Edit token permission, then the migrations and
-   the clean-up schedule. After Don confirms item 18, apply the item 18 rule below to record the
-   database IDs; do it before this step.
-8. `contact-production-deploy` (item 24) — `phase: after-merge`, so the after-merge rule in
-   step 5 of Behaviour applies: give the PR link and wait for the merge. It is reported as an
-   after-merge item and does not fail the check before the merge.
-   When it comes to deleting the retired databases, show the order from `docs/setup.md` item 24:
-   only after the production deploy is green, `pnpm exec wrangler d1 migrations list dcc-web
-   --remote --env-file /dev/null` shows nothing pending and `pnpm setup:check --item
-   contact-d1-databases` passes; delete `dcc-web-contact-preview` first, then `dcc-web-contact`, and
-   before each delete run `pnpm exec wrangler d1 execute <old name> --remote --env-file /dev/null
-   --command "SELECT count(*) FROM messages"`, stopping to export the rows if it is not 0.
+### Databases part: region confirmation (FR-027a, FR-027b)
 
-### Item 18: region confirmation (FR-027a, FR-027b)
-
-The `AskUserQuestion` for `contact-d1-databases` carries this text inside the question itself
+The `AskUserQuestion` for the Databases part carries this text inside the question itself
 (Don cannot see prose written before the tool call), together with the three standard answers:
 
 > Both databases will be created in Western North America (`wnam`). D1 cannot keep data only in
@@ -164,7 +113,7 @@ the `wrangler d1 create` commands, do not run anything for later steps, and tell
 region needs a reviewed change to the spec, plan and privacy policy first.
 
 Once he confirms, the commands below are shown for Don to run himself (the skill never runs them).
-Shown for Don to run himself at the `contact-d1-databases` step, choosing **no** if Wrangler offers
+Shown for Don to run himself at the Databases part, choosing **no** if Wrangler offers
 to add the binding to the config:
 
 ```sh
@@ -184,12 +133,12 @@ After Don says Done, the skill may run one non-check command for this item:
 `pnpm exec wrangler d1 list --json`. Its output contains no secrets. Copy the two database IDs
 into `wrangler.jsonc` (`dcc-web` at the top level, `dcc-web-preview` under `env.preview`), then
 commit and push. This is the only non-check command the skill runs during the walkthrough. Then run
-`pnpm setup:check --json --item contact-d1-databases`.
+`pnpm setup:check --json --item contact-bindings`.
 
-### Item 20: secrets by name only
+### Worker secrets part: secrets by name only
 
 Don never pastes a secret into the chat. The check confirms these by name only and the skill
-never asks for a value. Shown for Don to run himself at the `contact-worker-secrets` step, typing or
+never asks for a value. Shown for Don to run himself at the Worker secrets part, typing or
 pasting each value at Wrangler's prompt (production first, then the same three with `--env preview`
 in place of `--env ""`, using a different read token and salt). `--env-file /dev/null` keeps Wrangler
 from using the read-only token in the repository's `.env` instead of Don's dashboard login:
