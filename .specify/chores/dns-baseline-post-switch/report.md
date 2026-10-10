@@ -81,3 +81,29 @@ Items 11 and 26 depend on main's latest verify run and were complete on the afte
   `_headers`, DNSSEC text, FR-010d, design-source); it can also fix LOW 1.
 - Update #101 for the new slimming item and `mail-records` being kept.
 - Serving `www` as the main host is issue #129, not touched here.
+
+## Round 2
+
+Reviewed 2026-10-09 against plan.md, round 1, `git diff main...HEAD` and fix commit 4c1a4c1. Saved by
+the orchestrator.
+
+- **HIGH 1 fixed.** `setup/dns-baseline.json:64` has `ttl: 3600`; `dns-records-parity` shows no TTL
+  note for the Google TXT. `docs/setup.md:110-111` ("records the TTL Cloudflare's API reports (`1`
+  when the record is on Auto)") matches `dns-records-parity.ts:66-69`. Plan acceptance 3 and W3
+  say 3600.
+- **LOW 2 fixed.** `docs/cutover-plan.md:171-172` names the apex `apple-domain` TXT.
+- Nothing else changed; the diff stays within acceptance 7; no check weakened.
+
+### Findings
+
+- CRITICAL: none. HIGH: none.
+- LOW 1: `plan.md:103` and `plan.md:222-225` still describe `ttl: 1` (plan text only).
+- LOW 2: `plan.md:43` and `docs/cutover-plan.md:172` run past the ~100-column wrap (cosmetic).
+- LOW 3 (carried, out of scope): `scripts/setup-check/checks/mail-records.ts:6-7` header comment says
+  the Mailgun records move to `drop` "when Ghost is retired"; follow-up for the T9 + #93 chore.
+
+### Tests and measurement
+
+- `vitest run tests/unit/setup tests/unit/setup-check`: 51 files, 652 tests passed.
+- `pnpm run typecheck`: exit 0.
+- `pnpm setup:check` at 4c1a4c1: **31 of 31 complete**; items 4, 5 and 31 complete.
