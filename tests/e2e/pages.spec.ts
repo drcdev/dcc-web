@@ -1,4 +1,4 @@
-// The launch pages as served from the production build
+// The site pages as served from the production build
 // (contracts/page-dom.md; FR-013, FR-014, FR-015, FR-020, FR-025, FR-027,
 // FR-030; SC-001).
 import { test, expect } from "@playwright/test";

@@ -721,7 +721,7 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
 - **Coverage mapping:** no assertion removed in this item.
 - **Layer:** unit.
 
-### W10 — Drop "launch" from the content test names
+### W10 — Drop "launch" from the content test names [x]
 
 - **Files:**
   - `git mv tests/unit/content/launch-content.test.ts tests/unit/content/site-pages.test.ts`;
