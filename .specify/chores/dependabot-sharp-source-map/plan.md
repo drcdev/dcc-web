@@ -148,7 +148,7 @@ Out (follow-ups for the PR body):
 
 ### W3: Refresh source-map-js inside its ranges (clears alert #3)
 
-- [ ] W3 done
+- [x] W3 done
 - **Files:** `pnpm-lock.yaml` only.
 - **Test:** existing check. **Layer: n/a** (tool check). Red: `pnpm audit` lists
   GHSA-68fv-2mgg-jv7q. Green: it does not, and `grep -c 'source-map-js@1.2.1' pnpm-lock.yaml`
