@@ -26,8 +26,8 @@ It also reshapes what stays:
 - the setup-walkthrough skill is trimmed.
 
 No page changes. Everything removed is developer tooling, tests or docs, and the one `src/` edit
-removes an unused optional type field. The only exception is the project `placeholder` picture
-option, which is held behind a `[NEEDS DECISION]` (W12).
+removes an unused optional type field. The project `placeholder` picture option is split out to
+a follow-up `/tweak` (Don, 2026-10-09).
 
 **Scope change from the issue body (Don, 2026-10-09):** `mail-records` stays, like
 `dns-records-parity`. The slimmed baseline relies on both. The PR body says so, and the
@@ -104,12 +104,13 @@ Mechanical criteria (the review phase checks each one):
    devDependency; `READ_BY_CHECKS` in `scripts/ci/changed-paths.ts`; the setup-walkthrough skill;
    `package.json` dependencies unchanged (only the `site:check` and `setup:dns-snapshot`
    scripts go).
-8. **No page output change** (if W12 is deferred): `git diff --name-only main -- src public worker`
+8. **No page output change:** `git diff --name-only main -- src public worker`
    lists at most `src/lib/site-origin.ts` (a type field and comment) and
-   `src/content/projects/flux.mdx` (an MDX comment, W13). No visual baseline changes.
+   `src/content/projects/flux.mdx` (an MDX comment, W12). No visual baseline changes.
 9. **Spec 011 close-out.** In `specs/011-launch/tasks.md`, T024, T043, T087 and T088 are ticked,
-   each with a dated note (W11). The Flux lines are handled as the `[NEEDS DECISION]` says.
-10. Full `pnpm run verify` is green (locally, or in CI under the usual load caveat).
+   each with a dated note (W11). The spec 011 Flux-archive lines carry the "superseded" note (W11).
+10. Each work item's targeted tests pass locally. The full `pnpm run verify` gate is green in CI
+    (no local full verify, Don 2026-10-09).
 
 **Before** (at e6bf21b, `wc -l`):
 
@@ -157,7 +158,7 @@ The review phase records the same measures after the change.
 
 - DMARC tightening, #136 (moved from the cutover plan before its deletion).
 - Retire the `waiting` status from the setup-check report contract.
-- If W12 is deferred: remove the project `placeholder` picture option in its own `/tweak` with a
+- Remove the project `placeholder` picture option in its own `/tweak` with a
   visual-baseline refresh.
 - #82 (single-Worker previews), when it lands, revisits `contact-bindings`'s preview half.
 
@@ -166,15 +167,14 @@ The review phase records the same measures after the change.
 - **I. Test-First:** W2, W3, W5, W7 and W8 add failing cases first. Each removed assertion has a
   coverage mapping under its work item. Every new or moved test names its layer.
 - **II. Automated Release Gate:** no check is weakened to get a change through. Removed tests
-  guard steps that can no longer run (the coverage mappings say why). The full gate runs before
-  the PR.
+  guard steps that can no longer run (the coverage mappings say why). The full gate runs in CI.
 - **III. Human Review for Major Changes:** no criterion fires.
   - No dependency, integration or service is added, removed or replaced: `package.json`
     dependencies are unchanged, and two `scripts` entries are removed, which is not a dependency.
   - Contact data collection, storage, retrieval and deletion are untouched; the new item only
     reads binding names.
-  - No design, layout, navigation or visual identity change (W12 option (b) touches fixture
-    shots only).
+  - No design, layout, navigation or visual identity change. The placeholder option, which
+    would touch fixture shots, is split out.
   - No running cost.
   - No CI, deployment or infrastructure configuration: `.github/`, `wrangler*.json*`,
     `public/_headers`, `public/_redirects` and `astro.config.mjs` are untouched.
@@ -182,19 +182,17 @@ The review phase records the same measures after the change.
     `setup/dns-baseline.json` is setup-check data that records the zone without changing it.
   - No constitution amendment.
 
-  **Verdict: not major.** Auto-merge is armed after the final push, unless W12 option (b) leaves
-  baselines pending.
-- **IV. First-Party Before Custom:** no new custom code. No Astro approach is chosen; removing an
-  optional field from a content schema (W12, if done) needs no Astro decision, so the Astro Docs
-  MCP is not consulted. Cloudflare DMARC Management stays the source for the DMARC record.
+  **Verdict: not major.** Auto-merge is armed after the final push; no baselines are pending.
+- **IV. First-Party Before Custom:** no new custom code. No Astro approach is chosen (the content
+  schema is untouched), so the Astro Docs MCP is not consulted. Cloudflare DMARC Management stays the source for the DMARC record.
 - **V. Static by Default:** unchanged.
-- **VI. Content as Files:** unchanged. The only content edit is an MDX comment in `flux.mdx` (W13).
+- **VI. Content as Files:** unchanged. The only content edit is an MDX comment in `flux.mdx` (W12).
 - **VII. Private Data:** unchanged. `contact-bindings` keeps the names-only rule: secrets and
   variables are read by name, never by value.
 - **VIII. Cloudflare Best Practices:** unchanged. The preview cron and migrations stay committed
   in `wrangler.jsonc` and are pinned by `tests/unit/site/config-files.test.ts`.
 - **IX. Cost Ceiling:** unchanged.
-- **X. Accessible, Fast and Private:** unchanged; no page output changes (W12 aside).
+- **X. Accessible, Fast and Private:** unchanged; no page output changes.
 - **XI. Spec Kit Workflow:** one chore on `chore/retire-launch-checks` via `/chore`. Before the
   gate, merge `origin/main` and re-check the `docs/setup.md` hunks.
 - **Security Baseline:** unchanged.
@@ -212,17 +210,17 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
   - `tests/unit/setup/drift.test.ts` (delete the `describe("registry, docs/setup.md and
     docs/launch.md agree (011-launch)")` block, lines ~115–135).
 - **Why first:** both read `setupItems` and the baseline. They would break as soon as W3, W4 or
-  W7 changes either. `docs/launch.md` itself stays until W13.
+  W7 changes either. `docs/launch.md` itself stays until W12.
 - **Test:** existing (removal only).
 - **Coverage mapping:**
   - `launch-doc.test.ts`: steps L1–L18, R1–R5, T1–T9, pause steps, Part order, the Part E and L8
     baseline tables, `--item` ids and the Part F ordering.
     → **Guarantee retired:** the runbook can never run again. Ghost was cancelled and its keys
     revoked on 2026-10-09 (stage 5 T3), so there is no rollback target, and the doc is deleted
-    in W13.
+    in W12.
   - drift "every `--item` id in launch.md is a registry id" → **retired** with the doc. Docs to
     registry agreement stays in `drift.test.ts` ("registry <-> docs/setup.md one-to-one").
-  - drift "setup.md links launch.md and every link target exists" → **retired**, because W13
+  - drift "setup.md links launch.md and every link target exists" → **retired**, because W12
     removes every link. The `setup.md` count assertion stays in `docs-structure.test.ts`.
 - **Layer:** n/a (removal).
 
@@ -741,8 +739,21 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
 
 ### W11 — Close out spec 011's stale tasks
 
-- **Files:** `specs/011-launch/tasks.md`, plus the Flux lines per the `[NEEDS DECISION]` below.
+- **Files:**
+  - `specs/011-launch/tasks.md`;
+  - `specs/011-launch/spec.md`, `plan.md`, `contracts/launch-walkthrough.md` and
+    `checklists/privacy-security.md` (the Flux lines).
 - **What:**
+  - **Flux-archive lines (Don, 2026-10-09: annotate).** Append "superseded: Don chose to keep
+    Flux unarchived (2026-10-09)" to each line that requires archiving Flux, leaving the
+    original text as written:
+    - FR-023 (`spec.md:440–443`) and the user story at `spec.md:197–213`;
+    - `plan.md:109`;
+    - `contracts/launch-walkthrough.md:91–92`;
+    - `checklists/privacy-security.md:37` (CHK021);
+    - T079 in `tasks.md`.
+
+    The spec then no longer contradicts `docs/design-source.md`.
   - **T024 and T088** (preview crawl proved noindex on `workers.dev`): find a recent green PR
     `verify` run whose preview step printed `Preview site check passed`, using `gh run list`
     and `gh run view --log` on `ci.yml`. Tick both with "(confirmed by run <id>, 2026-10-09,
@@ -754,35 +765,7 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
 - **Test:** no behaviour: n/a (history notes).
 - **Layer:** n/a.
 
-### W12 — Project `placeholder` picture option (conditional: see `[NEEDS DECISION]`)
-
-- **If (a), deferred (recommended):** no change in this PR. List it as a follow-up `/tweak` in
-  the PR body.
-- **If (b), kept in:**
-  - **Files:**
-    - `src/content/schemas/project.ts` (lines 33 and 40);
-    - `src/components/project/PartPicture.astro` (the mark, line 26);
-    - `src/components/project/portfolio.css` (line ~225, the selector);
-    - `docs/projects.md` (lines 87 and 205);
-    - `placeholder: true` in the `every-part`, `every-setting` and `draft` fixtures and the seven
-      `tests/fixtures/projects/broken/` files;
-    - `tests/component/project/PartPicture.test.ts` and its `helpers.ts`;
-    - `tests/unit/content/project-schema.test.ts`;
-    - `tests/e2e/projects-fixtures.spec.ts` ("marks placeholders with real text");
-    - `tests/build/local-site.test.ts` (lines ~373–374).
-  - **Test:** existing, edited.
-    - Add a schema case that a `placeholder` key is now rejected, or stripped, whichever the
-      schema's object mode gives. Record it red first.
-    - Delete the mark tests: **guarantee retired**, because no real project uses the option
-      (the only hit is a prose comment in `flux.mdx:28`).
-  - **Visual baselines:** refresh the darwin and Linux PNGs for the `story-template` shot of
-    `/projects/every-part/`, and for any project-row shot that changes, following
-    `.claude/skills/_shared/visual-baselines.md` (Docker, or the `visual-baselines` label
-    fallback). Only fixture shots change.
-  - **Layer:** unit (schema), component (picture).
-- Kept separable: it depends on no other item, and nothing after it depends on it.
-
-### W13 — Delete `docs/launch.md` and every link to it
+### W12 — Delete `docs/launch.md` and every link to it
 
 - **Decision:** delete, rather than mark historical. Git history keeps the file, and the
   cutover is finished. Spec 011 and the `.specify/chores/` records keep their own paths as
@@ -803,43 +786,29 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
   and `design-source.test.ts` run in the gate.
 - **Layer:** n/a.
 
-### W14 — Delete `docs/cutover-plan.md` (last)
+### W13 — Delete `docs/cutover-plan.md` (last)
 
 - **Precondition:** the DMARC tightening item is carried in #136 (done by the orchestrator), and
   W7's `docs/setup.md` note cites #136.
 - **Files:** `docs/cutover-plan.md` (delete). `git grep cutover-plan` outside `specs/` and
   `.specify/` returns nothing.
-- **What:** the `Stage 6` checklist is fully covered by W1–W13. #136 is the only item still
+- **What:** the `Stage 6` checklist is fully covered by W1–W12 and the placeholder follow-up. #136 is the only item still
   open. Every other box was ticked in stage 5.
 - **Test:** no behaviour: n/a.
 - **Layer:** n/a.
 
-Work-item count: **14** (W12 is conditional on the decision below).
+Work-item count: **13**. The project `placeholder` picture option is dropped from this chore: Don
+split it to a follow-up `/tweak` with its own visual-baseline refresh (2026-10-09).
 
-## [NEEDS DECISION]
+## Decisions recorded (Don, 2026-10-09)
 
-1. **Project `placeholder` picture option (W12).** Removing it changes the `every-part` fixture
-   story's visual baselines (darwin and Linux). The chore triage says a chore must not alter a
-   snapshotted page.
-   - **(a) Recommended:** split it out of this chore into a follow-up `/tweak` (or a small chore
-     of its own) with its baseline refresh, and list it under follow-ups. W12 is then a no-op,
-     and this PR changes no page or baseline.
-   - **(b)** Keep it in, with a Linux and macOS visual baseline refresh for the fixture shots
-     only. No real page changes, because no real project uses `placeholder`. Auto-merge then
-     waits until the baselines are committed.
-2. **Spec 011's Flux-archive lines.** Spec 011 still requires Flux to be archived:
-   - FR-023 (`spec.md:440–443`) and the user story at `spec.md:197–213`;
-   - `plan.md:109`;
-   - `contracts/launch-walkthrough.md:91–92`;
-   - `checklists/privacy-security.md:37` (CHK021);
-   - T079 in `tasks.md`.
-
-   Don chose to keep Flux unarchived.
-   - **(a) Recommended:** annotate each of these lines with "superseded: Don chose to keep Flux
-     unarchived (2026-10-09)". The text stays; the note is appended in W11. The spec then no
-     longer contradicts `docs/design-source.md`.
-   - **(b)** Leave spec 011 as history, unedited. The current state lives in
-     `docs/design-source.md` and in T103's note.
+1. **Project `placeholder` picture option:** split out to a follow-up `/tweak`. This PR changes
+   no page and no visual baseline.
+2. **Spec 011's Flux-archive lines:** annotated in W11 with "superseded: Don chose to keep Flux
+   unarchived (2026-10-09)".
+3. **Verification:** each work item runs its targeted tests locally (the files it touches, plus
+   `tests/unit/setup` and `tests/unit/setup-check` for registry items). CI is the full gate;
+   no local full `pnpm run verify` is run.
 
 ## Docs citations
 
@@ -877,7 +846,5 @@ Work-item count: **14** (W12 is conditional on the decision below).
   single run still shows every gap.
 - **Report contract.** Removing `deferredUntilMerge` changes when `report.ok` is true only for
   an item that no longer exists. The `waiting` status stays (Scope).
-- **Port collisions and load** (memory) can make the local gate flaky. Use CI as the gate under
-  the usual caveat.
-- **Placeholder decision.** If Don picks (b), the PR needs a baseline refresh. Docker baselines
-  have matched CI for fixture shots before, but use the label fallback if glyphs differ.
+- **Targeted local tests only.** No local full verify is run (Don, 2026-10-09). Any build,
+  e2e or visual regression first shows up in CI; it is fixed on the branch before the merge.
