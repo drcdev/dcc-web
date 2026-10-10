@@ -97,7 +97,7 @@ phase:
 | --- | --------- | ------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | specify   | `speckit-specify`   | opus   | Pass the feature description as args. The `before_specify` hook (`speckit-git-feature`) must run and create the branch. Return the created branch and spec dir.                                                                                                                                                                                                                                                           |
 | 2   | clarify   | `speckit-clarify`   | opus   | **Two steps per round, up to 3 rounds — see below.**                                                                                                                                                                                                                                                                                                                                                                      |
-| 3   | plan      | `speckit-plan`      | opus   | The Constitution Check must address every principle. For each capability, name the Astro / Cloudflare / Fly.io first-party option and use it, or say why it falls short (Principle IV). State the expected monthly cost of anything new (Principle IX). Flag whether the slice is a **major change** under Principle III and why. If `package.json` has no `verify` script yet, the plan must add one that runs the whole local gate.                          |
+| 3   | plan      | `speckit-plan`      | opus   | The Constitution Check must address every principle. For each capability, name the Astro / Cloudflare / Fly.io first-party option and use it, or say why it falls short (Principle IV). State the expected monthly cost of anything new (Principle IX). If `package.json` has no `verify` script yet, the plan must add one that runs the whole local gate.                          |
 | 4   | checklist | `speckit-checklist` | sonnet | Generate the checklist(s) the spec's risk areas call for; always include accessibility (WCAG 2.2 AA) and, if the slice touches the contact form or API, privacy/security. **Generation only — do not evaluate or check off items.**                                                                                                                                                                                       |
 | 4b  | resolve   | — (no skill)        | opus   | **Resolve every checklist item — see below.**                                                                                                                                                                                                                                                                                                                                                                              |
 | 5   | tasks     | `speckit-tasks`     | sonnet | Tests are **mandatory**, not optional: every story gets the test tasks its behaviour needs, ordered before the implementation they cover. Each test task names its one primary layer, the cheapest layer that can observe the behaviour ("Where a test goes" in `docs/testing.md`), and gives the reason for any second layer in the task text. If the slice alters the shell, a template or the design system (what the visual project snapshots), include a task to update the macOS and Linux visual baselines (`pnpm run test:visual:update`, then `pnpm run test:visual:update:linux`, which needs Docker Desktop) after the implementation. Tasks a subagent cannot verify locally carry the `[PREVIEW-CHECK]` marker in tasks.md: read `.claude/skills/_shared/preview-check.md` and follow it exactly.                                                                                                     |
@@ -215,7 +215,8 @@ if the second implement pass still leaves gaps, stop and report them.
 
 ## Finish
 
-1. Run `<pm> run verify` yourself (per the rules above). Red → dispatch a
+1. Run the gate yourself: follow the local tier in `.claude/skills/_shared/verify-gate.md`
+   (`<pm> run verify` when the tier is full, per the rules above). Red → dispatch a
    fix subagent (told to read `.claude/skills/_shared/verify-gate.md`) or report; never proceed red. Missing script → stop and
    report: the slice was required to create it.
 2. **Link the issue.** The backlog lives in GitHub Issues. If the slice
@@ -225,20 +226,17 @@ if the second implement pass still leaves gaps, stop and report them.
    checks may stay open past merge; note outstanding `[PREVIEW-CHECK]` items
    in the PR instead of holding the issue open. If the slice was ad-hoc (no
    issue), skip this step; do not retroactively create one.
-3. **Major-change classification (no pause).** Run `git diff --stat main` and decide, from
-   the diff and the plan's flag, whether the slice is a major change. Classify per
-   `.claude/skills/_shared/open-pr.md`.
-4. Push the branch and open the PR. The PR body covers: summary of the slice, the verify
-   results, the `Closes #<n>` line when step 2 applies, the major-change verdict and criteria,
+3. Push the branch and open the PR. The PR body covers: summary of the slice, the verify
+   results, the `Closes #<n>` line when step 2 applies,
    whether Linux visual baselines are pending, the list of `[PREVIEW-CHECK]` items for Don to
    walk on the preview deployment, any risks the phase agents flagged, and whether auto-merge
    is armed. Open the PR and arm auto-merge: read `.claude/skills/_shared/open-pr.md` and
    follow it exactly.
-5. **Watch the release gate.** Run `gh pr checks --watch` with a timeout
+4. **Watch the release gate.** Run `gh pr checks --watch` with a timeout
    (20 minutes). Red → dispatch a fix subagent on the branch, which fixes
    the cause (never the check), commits and pushes; watch again. Record the
    preview deployment URL from the checks or the Cloudflare PR comment.
-6. Final report to the user: what was built, test counts, PR link, preview
-   URL, the major-change verdict and whether auto-merge is armed, whether baselines were
+5. Final report to the user: what was built, test counts, PR link, preview
+   URL, whether auto-merge is armed, whether baselines were
    updated, the `[PREVIEW-CHECK]` items awaiting them, and any risks the
    phase agents flagged.

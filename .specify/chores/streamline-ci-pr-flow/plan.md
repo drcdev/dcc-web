@@ -288,7 +288,7 @@ Judged against the constitution on `main` (2.3.0), because that is what this PR 
 - **Test:** no behaviour: n/a (agent guidance; no test reads `_shared/` except the
   `docs-content-structure` name ban, which these edits do not trip).
 
-### W6 — `/deliver` and `/tweak` skills
+### W6 — `/deliver` and `/tweak` skills [x] done
 
 - **Files:** `.claude/skills/deliver/SKILL.md`, `.claude/skills/tweak/SKILL.md`.
 - **What:**
@@ -307,7 +307,7 @@ Judged against the constitution on `main` (2.3.0), because that is what this PR 
     verdict.
 - **Test:** no behaviour: n/a (agent guidance; no test reads these files except the name ban).
 
-### W7 — `/squash` and `/chore` skills
+### W7 — `/squash` and `/chore` skills [x] done
 
 - **Files:** `.claude/skills/squash/SKILL.md`, `.claude/skills/chore/SKILL.md`.
 - **What:**
@@ -322,7 +322,7 @@ Judged against the constitution on `main` (2.3.0), because that is what this PR 
     pipeline; the change applies from the next run.)
 - **Test:** no behaviour: n/a (agent guidance).
 
-### W8 — `CLAUDE.md` Merging
+### W8 — `CLAUDE.md` Merging [x] done
 
 - **Files:** `CLAUDE.md` (Merging, lines ~43–50).
 - **What:** "Enable auto-merge by default …" → **Arm auto-merge on every PR**: run
