@@ -133,20 +133,11 @@ export interface SetupConfig {
   /** The preview Worker (`dcc-web-preview`) that serves non-main branch builds. */
   previewWorkerName?: string;
   zone: string;
-  reviewHost: string;
-  ghostMarker: string;
   /** The account's public workers.dev subdomain, used to compute preview
    * origins (002-site-foundation contracts/site-origin.md). Public, never a
    * secret. Absent until it is read from the account (T023); previews then
    * fall back to the production origin. */
   workersSubdomain?: string;
-  /** What must be live at launch (011-launch data-model.md). */
-  launch?: {
-    /** Page content ids (file names in `src/content/pages/` without `.mdx`). */
-    expectedPages: string[];
-    /** Site paths that must appear in the sitemap. */
-    expectedPaths: string[];
-  };
 }
 
 export interface MajorGateReview {

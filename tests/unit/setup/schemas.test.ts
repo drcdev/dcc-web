@@ -19,9 +19,11 @@ describe("configSchema (setup/config.json)", () => {
     machineAccount: "drc-agents",
     workerName: "dcc-web",
     zone: "doncoleman.ca",
-    reviewHost: "new.doncoleman.ca",
-    ghostMarker: "Ghost",
   };
+
+  it("accepts a config with only the keys the checks read (no review host or Ghost marker)", () => {
+    expect(configSchema.safeParse(valid).success).toBe(true);
+  });
 
   it("accepts a valid config", () => {
     const result = configSchema.safeParse(valid);
@@ -289,40 +291,5 @@ describe("checkReportSchema: the waiting status (T004)", () => {
     const body = report(waiting);
     delete (body.counts as Record<string, unknown>).waiting;
     expect(checkReportSchema.safeParse(body).success).toBe(false);
-  });
-});
-
-describe("configSchema: the optional launch object (T007)", () => {
-  const valid = {
-    owner: "drcdev",
-    repo: "dcc-web",
-    machineAccount: "drc-agents",
-    workerName: "dcc-web",
-    zone: "doncoleman.ca",
-    reviewHost: "new.doncoleman.ca",
-    ghostMarker: "Ghost",
-  };
-  const launch = { expectedPages: ["index", "privacy-policy"], expectedPaths: ["/", "/about/", "/privacy-policy/"] };
-
-  it("accepts a config with no launch object", () => {
-    expect(configSchema.safeParse(valid).success).toBe(true);
-  });
-
-  it("accepts a valid launch object", () => {
-    expect(configSchema.safeParse({ ...valid, launch }).success).toBe(true);
-  });
-
-  it.each(["Index", "has space", "under_score", "", "a/b"])("rejects the expectedPages id %j", (id) => {
-    expect(configSchema.safeParse({ ...valid, launch: { ...launch, expectedPages: [id] } }).success).toBe(false);
-  });
-
-  it.each(["about", "/about", "/About/", "/a b/", "//", ""])("rejects the expectedPaths entry %j", (path) => {
-    expect(configSchema.safeParse({ ...valid, launch: { ...launch, expectedPaths: [path] } }).success).toBe(false);
-  });
-
-  it("rejects empty arrays and a missing array", () => {
-    expect(configSchema.safeParse({ ...valid, launch: { ...launch, expectedPages: [] } }).success).toBe(false);
-    expect(configSchema.safeParse({ ...valid, launch: { ...launch, expectedPaths: [] } }).success).toBe(false);
-    expect(configSchema.safeParse({ ...valid, launch: { expectedPages: launch.expectedPages } }).success).toBe(false);
   });
 });

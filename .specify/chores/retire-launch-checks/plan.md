@@ -411,7 +411,7 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
     pinned by `report.test.ts` and `schemas.test.ts`.
 - **Layer:** unit.
 
-### W5 — Remove `reviewHost`, `ghostMarker` and `launch` from the setup config (test first)
+### W5 — Remove `reviewHost`, `ghostMarker` and `launch` from the setup config (test first) [x]
 
 - **Files:**
   - `setup/config.json`;

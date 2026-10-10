@@ -14,15 +14,7 @@ export const configSchema = z.object({
   workerName: z.string().min(1),
   previewWorkerName: z.string().min(1).optional(),
   zone: z.string().min(1),
-  reviewHost: z.string().min(1),
-  ghostMarker: z.string().min(1),
   workersSubdomain: dnsLabelSchema.optional(),
-  launch: z
-    .object({
-      expectedPages: z.array(z.string().regex(/^[a-z0-9-]+$/)).min(1),
-      expectedPaths: z.array(z.string().regex(/^\/([a-z0-9-]+\/)*$/)).min(1),
-    })
-    .optional(),
 });
 
 const dnsRecordTypeSchema = z.enum(["A", "AAAA", "CNAME", "MX", "TXT", "SRV", "CAA", "NS"]);
