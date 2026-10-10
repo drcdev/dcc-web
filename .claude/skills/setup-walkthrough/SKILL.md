@@ -79,7 +79,11 @@ Shown for Don to run himself at the `github-main-protection` step:
 
 ```sh
 gh api -X POST repos/drcdev/dcc-web/rulesets --input setup/github-ruleset.json
+gh api -X PUT repos/drcdev/dcc-web/rulesets/<id> --input setup/github-ruleset.json
 ```
+
+The `POST` creates the ruleset; the `PUT` updates an existing one. The file holds every writable
+field of the live ruleset, so the `PUT` is safe (#149).
 
 Workers Builds deploys automatically once this slice's pull request has merged to main, so the
 skill never shows or runs a deploy command as part of the normal walkthrough. If Don ever needs

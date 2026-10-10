@@ -169,7 +169,7 @@ After:
   already handles it, so this is not a red-first item.
 - **Layer:** unit (the check is pure evaluation of a recorded provider response).
 
-### [ ] W3 Docs stop warning that a PUT of the file is unsafe
+### [x] W3 Docs stop warning that a PUT of the file is unsafe
 
 - **Files:**
   - `docs/setup.md` §12 (#github-main-protection, "Where to do it", about lines 318-320): keep the

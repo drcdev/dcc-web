@@ -317,6 +317,9 @@ passing `verify` check, and no bypass.
 **Where to do it**
 Import `setup/github-ruleset.json` as a repository ruleset on `main`:
 `gh api -X POST repos/drcdev/dcc-web/rulesets --input setup/github-ruleset.json`.
+To update the existing ruleset instead, run
+`gh api -X PUT repos/drcdev/dcc-web/rulesets/<id> --input setup/github-ruleset.json`. This is
+safe because the file holds every writable field of the live ruleset (#149).
 
 **How it will be confirmed**
 `pnpm setup:check --item github-main-protection` reports complete when the active ruleset on

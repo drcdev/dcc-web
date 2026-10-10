@@ -189,6 +189,9 @@ the Astro Cloudflare deploy guide. Package versions were read from the npm regis
   by a `PUT` built from the live ruleset, until #86 adds the live-only parameters to the file;
   a `PUT` of the file as it stands would drop them. The `github-main-protection` check names
   each missing or weaker rule (spec edge case).
+  - Note (2026-10-10, #149): the file now holds every writable field of the live ruleset (merge
+    commits only, extra approval for unattributed changes, `~DEFAULT_BRANCH`), so a `PUT` of the
+    file is a no-op and the warning above is superseded.
 - **Decision, review (#85, 2026-10-04)**: one approving review on every PR. `.github/CODEOWNERS`
   is the single line `* @drcdev`, so with `require_code_owner_review` the approval that counts is
   always Don's, even on a PR opened as `drcdev` by mistake. The `major-change` label, the
