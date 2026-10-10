@@ -786,7 +786,7 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
   and `design-source.test.ts` run in the gate.
 - **Layer:** n/a.
 
-### W13 — Delete `docs/cutover-plan.md` (last)
+### [x] W13 — Delete `docs/cutover-plan.md` (last)
 
 - **Precondition:** the DMARC tightening item is carried in #136 (done by the orchestrator), and
   W7's `docs/setup.md` note cites #136.
