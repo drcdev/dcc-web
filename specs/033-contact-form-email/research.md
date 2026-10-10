@@ -114,7 +114,8 @@ read from developers.cloudflare.com on 2026-10-10; Astro facts from the Astro Do
 - **Decision**:
   - Subject: `Contact form: <name>` or `Contact form: <name> (about <project>)`; preview prefix
     `[Preview] ` (R6). Before use, name and project have every C0/C1 control character (including
-    CR, LF, TAB) replaced by a space, runs of whitespace collapsed, and are trimmed. Validation
+    CR, LF, TAB, U+0085) and the Unicode line and paragraph separators (U+2028, U+2029) replaced
+    by a space, runs of whitespace collapsed, and are trimmed. Validation
     already caps both at 100 characters, so the subject stays well under header limits.
   - From: `{ email: "contact-form@mail.doncoleman.ca", name: "doncoleman.ca contact form" }`, a
     constant.

@@ -22,9 +22,10 @@ message goes.
 This is a **major change** under Constitution Principle III: it replaces an integration (adds an
 email service, removes the message store and retrieval endpoint), changes how contact data is
 collected, stored, retrieved and deleted, and changes Worker and DNS configuration. It also
-conflicts with the current wording of Principles V, VII and VIII and the Technology Constraints,
-which describe contact submissions as stored in D1, rate-limited per sender and retrieved with a
-bearer token; those are amended as this slice's first task (see Dependencies).
+conflicts with the current wording of Principles I, V, VII and VIII, the Technology Constraints
+and the Security Baseline, which describe contact submissions as stored in D1, rate-limited per
+sender and retrieved with a bearer token, and integration tests as running against a real local
+database; those are amended as this slice's first task (see Dependencies).
 
 ## Clarifications
 
@@ -629,7 +630,10 @@ key and fingerprint salt are no longer listed as required.
     rules stay.
   - **VIII**: Email Routing joins the named products; message retrieval is no longer the
     bearer-token example; the contact API "verifies Turnstile server-side" with no rate limit;
-    contact email goes only to verified destination addresses.
+    contact email goes only to verified destination addresses; turning on Email Routing for the
+    sending subdomain and verifying the destination are one-time account setup done by Don and
+    confirmed by the setup check (like the Turnstile widget), not Worker configuration, so the
+    "never by hand in the dashboard" rule still covers the binding, migrations and Cron Triggers.
   - **I**: the integration-test layer runs against the local Workers runtime, with a real local
     database where the endpoint uses one.
   - **Technology Constraints**: the Contact API line names the email binding instead of D1 and the

@@ -62,4 +62,7 @@ On the branch preview URL (`br-033-contact-form-email-dcc-web-preview.drc-dev.wo
 - `curl -i https://doncoleman.ca/api/messages/new` with and without the old token → 404 (SC-005).
 - `pnpm run setup:check`: item 16 reports no cron and needs only `TURNSTILE_SECRET_KEY`;
   item 17 complete.
-- Follow-up: delete `CONTACT_READ_TOKEN` and `IP_HASH_SALT` from both Workers.
+- List each remote database's tables (`dcc-web` and `dcc-web-preview`): no `messages`, and
+  `question_sets` and `usage_bucket` still present (FR-009, SC-004).
+- Within 7 days of release (post-merge PR-body item, FR-017a; hygiene, not a security deadline):
+  delete `CONTACT_READ_TOKEN` and `IP_HASH_SALT` from both Workers.

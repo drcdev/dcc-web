@@ -26,7 +26,7 @@ Removed constants: `RATE_PER_HOUR`, `RATE_PER_DAY`, `RETENTION_MONTHS`. Kept: fi
 
 ## Contact email (value object, built per accepted submission)
 
-Built by `buildContactEmail(submission, { receivedAt, preview })` in `worker/src/contact/email.ts`;
+Built by `buildContactEmail(submission, { receivedAt, preview, host })` in `worker/src/contact/email.ts`;
 the result is the `EmailMessageBuilder` passed to `env.CONTACT_EMAIL.send()`. Exact shape:
 [contracts/contact-email.md](./contracts/contact-email.md).
 
@@ -35,7 +35,7 @@ the result is the `EmailMessageBuilder` passed to `env.CONTACT_EMAIL.send()`. Ex
 | `to` | `CONTACT_DESTINATION` constant (`contact@doncoleman.ca`) |
 | `from` | `{ email: CONTACT_SENDER ("contact-form@mail.doncoleman.ca"), name: "doncoleman.ca contact form" }` |
 | `replyTo` | visitor `email` as a plain string when header-safe, else omitted |
-| `subject` | `[Preview] `? + `Contact form: <name>` + ` (about <project>)`? with header text sanitised |
+| `subject` | `[Preview] `? + `Contact form: <name>` + ` (about <project>)`? with header text sanitised (C0/C1 controls, U+2028 and U+2029 → space, whitespace collapsed, trimmed; FR-004) |
 | `text` | plain-text body: optional preview line, labelled fields, `Received:` ISO UTC, then the message |
 
 Invariants: exactly one recipient, always the constant; no `cc`, `bcc`, `html`, `headers` or

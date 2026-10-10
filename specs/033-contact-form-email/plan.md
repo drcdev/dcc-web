@@ -13,8 +13,8 @@ Reply-To. Email Routing is turned on for the `mail.doncoleman.ca` subdomain only
 keeps its iCloud mail records. The site stops storing anything: a migration drops the `messages`
 table, and the retrieval endpoint, its bearer token, the IP-fingerprint salt, the per-sender rate
 limit, the retention job and its Cron Trigger are removed. The visitor's form is unchanged except
-for the privacy wording. The slice starts by amending the constitution (V, VII, VIII, Technology
-Constraints, Security Baseline). It is a **major change**, and auto-merge stays off until Don
+for the privacy wording. The slice starts by amending the constitution (I, V, VII, VIII,
+Technology Constraints, Security Baseline). It is a **major change**, and auto-merge stays off until Don
 confirms the pre-merge steps.
 
 ## Technical Context
@@ -53,8 +53,8 @@ only spam controls.
 
 *GATE: Must pass before Phase 0 research. Re-checked after Phase 1 design (below).*
 
-The spec conflicts with the current text of V, VII, VIII, Technology Constraints and the Security
-Baseline. Per the spec and the constitution's Governance section, those conflicts are resolved by
+The spec conflicts with the current text of I, V, VII, VIII, Technology Constraints and the
+Security Baseline. Per the spec and the constitution's Governance section, those conflicts are resolved by
 amending the constitution **as the first task of this slice** through the `speckit-constitution`
 skill, in the same pull request, before any other implementation task. The check below is against
 the amended text, with the current-text conflicts listed so the reviewer sees each one.
@@ -100,7 +100,10 @@ MINOR (2.4.0), it records why. Changes:
 - **VIII**: products list adds Email Routing; "Worker configuration, D1 migrations and Cron
   Triggers" stays generic; the bearer-token sentence loses "such as message retrieval"; "The contact
   API also verifies Turnstile server-side and rate-limits submissions" → "verifies Turnstile
-  server-side"; free-plan bullet adds "contact email goes only to verified destination addresses".
+  server-side"; free-plan bullet adds "contact email goes only to verified destination addresses";
+  the CI-applied-configuration bullet states that turning on Email Routing for the sending
+  subdomain and verifying the destination are one-time account setup by Don, confirmed by the
+  setup check (like the Turnstile widget), not Worker configuration.
 - **Technology Constraints**: Contact API line as above; add "**Email:** Cloudflare Email Routing
   on a sending subdomain, with the Worker's `send_email` binding restricted to one destination."
 - **Security Baseline**: abuse bullet as above.
@@ -149,8 +152,13 @@ walkthrough: research R11; contract: [contracts/setup-check.md](./contracts/setu
    subject starts `[Preview]`, Reply addresses the visitor (SC-002 on preview).
 4. Immediately before approving: Don collects unread production messages through the retrieval
    endpoint and re-checks it once more (FR-017). Then approves; merge deploys the drop.
-5. After merge: one production test send (SC-002); Don deletes `CONTACT_READ_TOKEN` and
-   `IP_HASH_SALT` from both Workers (follow-up, his action).
+5. After merge (post-merge PR-body items, Don): one production test send (SC-002); list each
+   remote database's tables and confirm `messages` is gone and the questions tables remain
+   (FR-009, SC-004); delete `CONTACT_READ_TOKEN` and `IP_HASH_SALT` from both Workers **within 7
+   days of release** (FR-017a; hygiene, not a security deadline).
+
+Order: steps 1 and 2 happen before the first push of the binding (FR-016a); step 3 runs on the
+preview that push creates; step 4 is immediately before approving (FR-017); step 5 after merge.
 
 ### Test placement (one primary layer per behaviour)
 

@@ -36,13 +36,16 @@ export function buildContactEmail(
 └─ only on preview ─┘                      └──── only when project is set ────┘
 ```
 
-`headerText(value)`: replace every character in `\u0000-\u001f` and `\u007f-\u009f` with a space,
-collapse whitespace runs to one space, trim. Examples:
+`headerText(value)`: replace every character in `\u0000-\u001f`, `\u007f-\u009f` (which includes
+U+0085), `\u2028` and `\u2029` with a space, collapse whitespace runs to one space, trim (FR-004).
+Examples:
 
 | name / project in | Subject out |
 |---|---|
 | `Ada Lovelace` / null | `Contact form: Ada Lovelace` |
 | `Ada\r\nBcc: x@y.z` / null | `Contact form: Ada Bcc: x@y.z` (one line, no header created) |
+| `Ada\u0085Bcc: x` / null | `Contact form: Ada Bcc: x` |
+| `Ada\u2028Bcc: x` / `Flux\u2029 X` | `Contact form: Ada Bcc: x (about Flux X)` |
 | `Ada` / `Flux` | `Contact form: Ada (about Flux)` |
 | preview, `Ada` / null | `[Preview] Contact form: Ada` |
 
