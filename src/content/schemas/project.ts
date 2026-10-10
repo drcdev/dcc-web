@@ -30,14 +30,12 @@ function pictureVisuals(image: ImageValidator) {
       kind: z.literal("image"),
       src: image(),
       alt: text,
-      placeholder: z.boolean().optional(),
     }),
     z.strictObject({
       kind: z.literal("diagram"),
       src: image(),
       alt: text,
       description: text,
-      placeholder: z.boolean().optional(),
     }),
   ] as const;
 }

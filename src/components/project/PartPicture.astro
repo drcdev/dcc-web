@@ -23,7 +23,6 @@ const describedBy = `picture-${name}-description`;
 ---
 
 <figure data-part-picture data-visual={picture.kind} data-visual-name={name}>
-  {picture.placeholder && <p data-placeholder data-visual-mark class="text-sm font-semibold"><strong>Placeholder</strong></p>}
   <Image
     src={picture.src as ImageMetadata}
     alt={picture.alt}

@@ -12,7 +12,7 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Record the baseline: run `grep -rn "placeholder:" tests/fixtures tests/component tests/unit src docs/projects.md` and note every hit; confirm the expected set from plan.md (3 valid/draft fixtures with 7 uses, 7 broken fixtures with 1 use each, component helper `screenshot`, schema test `full`, `src/content/schemas/project.ts`, `docs/projects.md`). Confirm no file under `src/content/projects/` matches (FR-008). No file changes.
+- [X] T001 Record the baseline: run `grep -rn "placeholder:" tests/fixtures tests/component tests/unit src docs/projects.md` and note every hit; confirm the expected set from plan.md (3 valid/draft fixtures with 7 uses, 7 broken fixtures with 1 use each, component helper `screenshot`, schema test `full`, `src/content/schemas/project.ts`, `docs/projects.md`). Confirm no file under `src/content/projects/` matches (FR-008). No file changes.
 
 ## Phase 2: Foundational
 
@@ -26,12 +26,12 @@ None. The three stories touch separate files and need no shared prerequisite bey
 
 ### Tests (write first, see them fail)
 
-- [ ] T002 [US1] Add schema rejection tests in `tests/unit/content/project-schema.test.ts` (primary layer: unit, the schema is pure logic): `placeholder` is rejected on the list picture `visual` as an image and as a diagram, on a `visuals` entry as an image and as a diagram, and with value `false` as well as `true`; each issue text contains `placeholder`. Seen to fail today (schema accepts the key). No second layer: that Astro names the file for a strict-schema failure is already proven by the existing wiring run in `tests/build/project-validation.test.ts`, so no new broken fixture or build run is added (research R3).
+- [X] T002 [US1] Add schema rejection tests in `tests/unit/content/project-schema.test.ts` (primary layer: unit, the schema is pure logic): `placeholder` is rejected on the list picture `visual` as an image and as a diagram, on a `visuals` entry as an image and as a diagram, and with value `false` as well as `true`; each issue text contains `placeholder`. Seen to fail today (schema accepts the key). No second layer: that Astro names the file for a strict-schema failure is already proven by the existing wiring run in `tests/build/project-validation.test.ts`, so no new broken fixture or build run is added (research R3).
 
 ### Implementation
 
-- [ ] T003 [US1] Remove the optional `placeholder` boolean from both picture shapes (image and diagram) in `src/content/schemas/project.ts` so the strict objects reject it. Check the Astro content collections docs cited in plan.md (Constitution IV). T002 now passes.
-- [ ] T004 [US1] Remove `placeholder` from the `full` picture data and any other accepted-key test data in `tests/unit/content/project-schema.test.ts` so the positive cases do not use the removed key.
+- [X] T003 [US1] Remove the optional `placeholder` boolean from both picture shapes (image and diagram) in `src/content/schemas/project.ts` so the strict objects reject it. Check the Astro content collections docs cited in plan.md (Constitution IV). T002 now passes.
+- [X] T004 [US1] Remove `placeholder` from the `full` picture data and any other accepted-key test data in `tests/unit/content/project-schema.test.ts` so the positive cases do not use the removed key.
 
 **Checkpoint**: the unit test file `tests/unit/content/project-schema.test.ts` passes.
 
