@@ -190,7 +190,7 @@ Options:
 - **Test:** `no behaviour: n/a (agent working notes; skip-safe file read by no check)`.
 - **Layer:** n/a.
 
-### W3 Dated notes on the strict-mode rationale records
+### [x] W3 Dated notes on the strict-mode rationale records
 
 - **Files:**
   - `specs/001-setup-walkthrough/research.md`: R9, a dated sub-bullet under "Decision, deploy
