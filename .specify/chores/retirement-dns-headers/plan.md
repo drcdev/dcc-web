@@ -250,7 +250,7 @@ Mechanical criteria (the review phase checks each one):
   The live confirmation is acceptance 4, an operational check, not a test layer.
 - **Layer:** unit.
 
-### [ ] W6 — `mail-records.ts` header comment
+### [x] W6 — `mail-records.ts` header comment
 
 - **Files:** `scripts/setup-check/checks/mail-records.ts` (lines ~5–7).
 - **What:** the sentence "…so the item keeps passing once the Mailgun records move to `drop`
@@ -259,7 +259,7 @@ Mechanical criteria (the review phase checks each one):
 - **Test:** no behaviour: n/a.
 - **Layer:** n/a.
 
-### [ ] W7 — Specs and docs
+### [x] W7 — Specs and docs
 
 - **Files and what:**
   - `docs/setup.md` (lines ~151–159, "Before the switch: DNSSEC"). Keep the heading:

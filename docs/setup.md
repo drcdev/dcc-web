@@ -155,8 +155,9 @@ still being enabled at Squarespace; it must be disabled — Domains → `doncole
 Settings → DNSSEC — with the DS record cleared from the registry (up to 24 hours) before
 Squarespace will accept the nameserver change. Make the switch itself at Domains →
 `doncoleman.ca` → DNS → Nameservers → "Use custom nameservers" — never "Transfer domain", which
-is a different, unwanted action. Cloudflare DNSSEC can be turned on later, from the Cloudflare
-dashboard, once the zone is active.
+is a different, unwanted action. DNSSEC is now on in Cloudflare, the zone is signed, and the
+registry holds its DS record (`dig +short DS doncoleman.ca` returns a key-tag 2371, algorithm 13
+record).
 
 **How it will be confirmed**
 `pnpm setup:check --item dns-nameservers` reports complete when the public NS records for

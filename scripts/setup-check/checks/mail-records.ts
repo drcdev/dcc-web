@@ -3,8 +3,8 @@
 // after the switch. A group is every baseline record with `decision: "keep"` of one name and type
 // (MX, TXT, and CNAMEs under `._domainkey.`); MX is compared as `priority:host`, TXT joined and
 // normalised, CNAME lower-case without a trailing dot. Order and TTL are ignored. A baseline record
-// marked `drop` that still answers is information only, so the item keeps passing once the Mailgun
-// records move to `drop` when Ghost is retired.
+// marked `drop` that still answers is information only, so the item keeps passing for the retired
+// Mailgun records, which the baseline marks `drop`.
 import type { CheckResult, DnsAnswer, DnsBaseline, DnsBaselineRecord, DnsRecordType, ProviderContext } from "../types.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 import { normalizeTxtContent } from "./shared.ts";

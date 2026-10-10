@@ -228,6 +228,7 @@ theme was read from a local, read-only clone at `.reference/flux` (gitignored; n
     `X-Frame-Options: DENY`, `Cross-Origin-Opener-Policy: same-origin`,
     `Strict-Transport-Security: max-age=31536000` (no `includeSubDomains`/`preload`: the zone
     still serves Ghost and mail-related hosts).
+  - Superseded 2026-10-09 (#93): Ghost retired; HSTS now has `includeSubDomains`, still no preload.
 - **Tightening versus Flux** (`default.hbs` meta CSP): removed `https://web3forms.com`,
   `https://api.web3forms.com` (old form service), `https://cdn.jsdelivr.net` (public script CDN,
   both `script-src` and `style-src`), the Supabase URL in `connect-src` (old database service),

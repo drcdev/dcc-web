@@ -337,9 +337,11 @@ and an explicit project-identity confirmation first.
   not left in place when the sitting ends.
 - **FR-010c**: The records that replace Ghost's MUST have a cache lifetime of 5 minutes or less,
   so that a switch or a rollback reaches most visitors within minutes.
-- **FR-010d**: The bare domain and `www` MUST be served over HTTPS only. The site keeps its
-  existing strict-transport policy (one year, for the bare domain only, with no subdomains and no
-  preload list). Rollback stays safe under it because Ghost also serves the domain over HTTPS.
+- **FR-010d**: The bare domain and `www` MUST be served over HTTPS only. After Ghost was
+  retired (2026-10-09, #93) the strict-transport policy is one year with `includeSubDomains` and no
+  preload list. Preload is decided separately. While rollback to Ghost was possible, the policy
+  covered the bare domain only, and rollback stayed safe under it because Ghost also serves the
+  domain over HTTPS.
 - **FR-011**: The walkthrough MUST include a rollback section that undoes every change the
   switch made: it detaches the bare domain from the new site, removes the `www` redirect and its
   placeholder record, restores the recorded Ghost records exactly, and confirms the domain serves
