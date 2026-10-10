@@ -1,14 +1,18 @@
 <!--
 Sync Impact Report
 ==================
-[MERGE: feature 033 amendment, to be reconciled onto main's 3.0.0]
-Version change: 2.3.1 → 3.0.0
+Version change: 3.0.0 → 4.0.0 (made with the speckit-constitution skill)
 Bump rationale: MAJOR. Principle VII's rules are redefined and Principle V's Contact API entry
 is redefined. The guarantees "stored only in D1", "salted IP hash", "preview messages stored
 separately" and "automatic retention deletion" are removed, replaced by "the site stores no
 contact data; each submission is emailed to one fixed, verified address". These are not
 clarifications: a plan that met the old VII could now violate or no longer need it. Source:
 specs/033-contact-form-email (spec.md Dependencies, plan.md Constitution amendment).
+
+Base: 3.0.0 came from issue #143 (Principle III retitled "Human Review of Every Change", the
+major-change classification removed, and IX, Technology Constraints and Governance reworded to
+match). This amendment keeps all of 3.0.0 unchanged and adds feature 033's changes on top; it
+reintroduces no major-change classification.
 
 Modified principles:
 - I. Test-First — integration-test layer runs against the local Workers runtime, with a real
@@ -23,47 +27,23 @@ Modified principles:
   verification are one-time account setup by Don, confirmed by the setup check.
 
 Modified sections:
-- Technology Constraints — Contact API line names the email binding; new Email line.
+- Technology Constraints — Contact API line names the email binding and drops D1 and the Cron
+  Trigger; new Email line.
 - Security Baseline — abuse bullet names Turnstile, trap field and same-origin check; the
   untrusted-data bullet names contact emails.
-
-[MERGE: main's amendment, issue #143]
-Version change: 2.3.1 → 3.0.0 (made with the speckit-constitution skill)
-Bump rationale: MAJOR. Principle III is redefined: it is retitled, and the
-major-change classification (the list, the flag in the PR body and the "when in
-doubt" rule) is removed. Principle IX, the Technology Constraints and Governance
-relied on that classification, so each is reworded. Since PR #105 every pull
-request needs Don's approval, so the classification no longer changed how anything
-merges. Source: issue #143.
-
-Modified principles:
-- III. Human Review for Major Changes → III. Human Review of Every Change — every
-  pull request follows one flow; auto-merge is armed on every pull request and
-  merges only after Don approves and the release gate passes; Don withholds
-  approval until he has checked what the PR body asks him to check, including on
-  the preview deployment. The approval rule, ruleset, CODEOWNERS and machine
-  account are unchanged.
-- IX. Cost Ceiling — a change that could add a recurring cost states the expected
-  monthly cost in its plan and its PR body (no longer a "major change").
-
-Modified sections:
-- Technology Constraints — design baseline keeps the 2.3.1 wording (issue #140)
-  without its major-change sentence; new tools, services or libraries follow
-  Principle IV.
-- Governance — amendments are reviewed in a pull request like any other change.
 
 Added sections: none
 
 Removed sections: none
 
-Per-issue history (specs/, .specify/chores/, .specify/bugs/) is unchanged; it
-records what happened under the earlier rules.
+Per-issue history (specs/, .specify/chores/, .specify/bugs/) is unchanged; it records what
+happened under the earlier rules.
 
 Templates reviewed (read at runtime, not modified by this command):
 - .specify/templates/plan-template.md — no change required.
 - .specify/templates/spec-template.md — no change required.
-- .specify/templates/tasks-template.md — no change required (the layer-field TODO
-  below still stands).
+- .specify/templates/tasks-template.md — no change required (the layer-field TODO below still
+  stands).
 
 Follow-up TODOs:
 - After release, Don deletes CONTACT_READ_TOKEN and IP_HASH_SALT from both Workers' secret
@@ -280,11 +260,11 @@ These controls already exist. Plans keep them in place, and pull request review 
 ## Governance
 
 - This constitution overrides any other practice or instruction in the repository.
-- Amendments are made through Spec Kit's constitution command, reviewed in a pull request like any other change, and
-  versioned:
+- Amendments are made through Spec Kit's constitution command, reviewed in a pull request like
+  any other change, and versioned:
   - MAJOR for removing or redefining a principle;
   - MINOR for adding a principle or materially expanding one;
   - PATCH for wording and clarifications.
 - Every pull request review checks compliance with this document.
 
-**Version**: 3.0.0 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-10-10
+**Version**: 4.0.0 | **Ratified**: 2026-09-28 | **Last Amended**: 2026-10-10

@@ -29,5 +29,5 @@
 - [x] CHK013 Is the documentation update scoped by a search rule rather than the vague "describes stored messages"? [Ambiguity, Spec §FR-019]
 - [x] CHK014 Is the published 12-month retention commitment addressed for messages collected before removal? [Gap, Spec §FR-014]
 - [x] CHK015 Are the constitution amendment contents specified closely enough (principles, constraints, baseline, version bump) to be made first without interpretation? [Clarity, Spec §Dependencies]
-- [x] CHK016 Is it required that the pull request body flags the major-change criteria that apply? [Traceability, Spec §Background]
+- [x] CHK016 Is it required that the pull request body states the constitution amendment and lists the pre-approval items? [Traceability, Spec §FR-020; the major-change flag was removed by issue #143]
 - [x] CHK017 Is deletion on request defined for the only remaining copy (Don's mailbox), including backups and forwarded copies? [Gap, Spec §FR-014]

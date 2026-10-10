@@ -102,8 +102,8 @@ read from developers.cloudflare.com on 2026-10-10; Astro facts from the Astro Do
      does not reconcile the two. Confirm in the dashboard; $0 if allowed.
   2. **A separate, otherwise-unused domain** added to the Cloudflare account with Email Routing on
      its apex (no existing mail to break). Cost: registration only, about $10–15 a year
-     (≈ $1/month), inside the $13 ceiling but a new recurring cost: a major change under IX that
-     must be recorded in this plan before it is used.
+     (≈ $1/month), inside the $13 ceiling but a new recurring cost, which Principle IX requires
+     to be stated in this plan and the PR body before it is used.
   3. **Workers Paid** ($5/month) with Email Sending on the subdomain. Inside the ceiling only if
      current spend allows; last resort.
 - **Rollback**: disabling routing for the subdomain removes only the subdomain records. The apex
@@ -282,6 +282,7 @@ read from developers.cloudflare.com on 2026-10-10; Astro facts from the Astro Do
 
 ## R13. Constitution amendment content (first task)
 
-See plan.md "Constitution amendment". Recommended bump **2.3.0 → 3.0.0 (MAJOR)**: Principle VII's
+See plan.md "Constitution amendment". Recommended bump **MAJOR** (made as 3.0.0 → 4.0.0, on top of main's issue #143
+amendment to 3.0.0): Principle VII's
 rules are redefined (no store, no salted hash, no store separation, no retention job) and V's
 Contact API entry is redefined. The `speckit-constitution` skill makes the final call on the bump.

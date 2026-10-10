@@ -14,8 +14,9 @@ keeps its iCloud mail records. The site stops storing anything: a migration drop
 table, and the retrieval endpoint, its bearer token, the IP-fingerprint salt, the per-sender rate
 limit, the retention job and its Cron Trigger are removed. The visitor's form is unchanged except
 for the privacy wording. The slice starts by amending the constitution (I, V, VII, VIII,
-Technology Constraints, Security Baseline). It is a **major change**, and auto-merge stays off until Don
-confirms the pre-merge steps.
+Technology Constraints, Security Baseline), as constitution 4.0.0 on top of main's 3.0.0
+(issue #143). The PR follows the single flow: auto-merge is armed, and Don approves only after the
+pre-approval steps listed in the PR body are done.
 
 ## Technical Context
 
@@ -63,7 +64,7 @@ the amended text, with the current-text conflicts listed so the reviewer sees ea
 |---|---|---|
 | I. Test-First | Pass | Every task starts with failing tests at one named layer (see "Test placement"). Removed behaviour gets tests that prove absence (404s, no table, no cron, no secrets required). Amendment adjusts the layer wording "integration tests … against a real local database" to "against the local Workers runtime, with a real local database where the endpoint uses one", because the contact API no longer uses D1. |
 | II. Automated Release Gate | Pass | `pnpm run verify` and CI `verify` unchanged; nothing skipped. Migration and config applied by the existing Workers Builds deploy scripts. |
-| III. Human Review for Major Changes | Pass — **major change** | Criteria that apply: replaces an integration (adds Email Routing / `send_email`, removes the message store and retrieval endpoint); changes how contact data is collected, stored, retrieved and deleted; changes Worker configuration and DNS; amends the constitution. Flagged in the PR body with these criteria. Auto-merge stays **off** until Don confirms the pre-merge steps (FR-017). |
+| III. Human Review of Every Change | Pass | Single PR flow (issue #143 removed the major-change classification): opened from `drc-agents`, auto-merge armed after the final push, Don's approval is the hold. The PR body lists the `[PREVIEW-CHECK]` items and the pre-approval collection step (FR-017, FR-020) and states that it amends the constitution. |
 | IV. First-Party Before Custom | Pass | Cloudflare `send_email` binding with the structured builder (not a MIME library or a third-party email API, R1); binding-level `destination_address` + `allowed_sender_addresses` restriction (R2); Email Routing for sender authentication (R3); D1 migrations for the drop (R8); wrangler `crons: []` to remove the cron (R9). Astro: no Astro capability changes; Astro Actions/server endpoints were considered and rejected because they need on-demand rendering (docs.astro.build/en/guides/actions/, /en/guides/on-demand-rendering/). Custom code is limited to the email text builder and header sanitising, which no first-party option provides. |
 | V. Static by Default | Pass after amendment | Pages stay prerendered; the contact page and form island are unchanged apart from copy and one dead error branch. **Conflict with current text**: the Contact API entry says it "stores", "lets Don retrieve" and "rate-limits each sender". Amended to: receives submissions and emails each accepted one to one fixed verified address; stores nothing; verifies Turnstile. The endpoint list shrinks (retrieval endpoint removed). |
 | VI. Content as Files | Pass | Privacy policy, contact and technology pages stay MDX in the repo; no CMS. |
@@ -81,10 +82,10 @@ unjustified violations; Complexity Tracking is empty.
 
 ### Constitution amendment (task 1, via `speckit-constitution`; not performed in this phase)
 
-Recommended version: **2.3.0 → 3.0.0 (MAJOR)**, because Principle VII's rules and V's Contact
-API entry are redefined (guarantees removed: D1 storage location, salted IP hash, preview store
-separation, automatic retention). If the skill judges VII's title-and-intent continuity enough for
-MINOR (2.4.0), it records why. Changes:
+Recommended bump: **MAJOR**, because Principle VII's rules and V's Contact API entry are
+redefined (guarantees removed: D1 storage location, salted IP hash, preview store separation,
+automatic retention). Made as **3.0.0 → 4.0.0**: main's issue #143 amendment had already taken
+2.3.1 → 3.0.0, and this amendment sits on top of it. Changes:
 
 - **I**: integration-test layer wording as in the table above (PATCH-level in isolation).
 - **V**: Contact API entry → "receives contact form submissions, the site's only personal data
@@ -140,7 +141,7 @@ Migration `0003_drop_messages.sql`; delete `worker/src/messages/`, `worker/src/r
 Setup item 17 `contact-email` (new) and item 16 changes, secret manifest, DNS baseline, docs and
 walkthrough: research R11; contract: [contracts/setup-check.md](./contracts/setup-check.md).
 
-### Pre-merge sequence (PR body; auto-merge off)
+### Pre-merge sequence (PR body; auto-merge armed, Don's approval is the hold)
 
 1. **Before the first push that adds the binding** (R11 ordering): Don turns on Email Routing for
    `mail.doncoleman.ca` only and verifies `contact@doncoleman.ca` (walkthrough item 17). This is

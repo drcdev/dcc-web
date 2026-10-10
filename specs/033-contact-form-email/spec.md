@@ -19,10 +19,10 @@ within Cloudflare's free plan (sending to arbitrary recipients is a paid feature
 experience of the form does not change, apart from the privacy wording that describes where their
 message goes.
 
-This is a **major change** under Constitution Principle III: it replaces an integration (adds an
-email service, removes the message store and retrieval endpoint), changes how contact data is
-collected, stored, retrieved and deleted, and changes Worker and DNS configuration. It also
-conflicts with the current wording of Principles I, V, VII and VIII, the Technology Constraints
+It replaces an integration (adds an email service, removes the message store and retrieval
+endpoint), changes how contact data is collected, stored, retrieved and deleted, and changes
+Worker and DNS configuration. Like every pull request under Constitution Principle III (as amended
+by issue #143), it merges only on Don's approval. It also conflicts with the current wording of Principles I, V, VII and VIII, the Technology Constraints
 and the Security Baseline, which describe contact submissions as stored in D1, rate-limited per
 sender and retrieved with a bearer token, and integration tests as running against a real local
 database; those are amended as this slice's first task (see Dependencies).
@@ -45,6 +45,10 @@ database; those are amended as this slice's first task (see Dependencies).
 - Q: Does dropping the message store ship in the same pull request as the switch to email? → A: Yes,
   the same pull request. Collecting unread stored messages is a pre-merge step, and auto-merge stays
   off until Don confirms it is done.
+  *(Superseded in part by issue #143's single pull-request flow, merged to main during this
+  slice: auto-merge is now armed on every pull request and Don's approval is the hold. The
+  collection step stays a pre-approval item in the pull request body; Don approves only once it
+  is done.)*
 - Q: The shared preview database applies migrations on every branch push, so its message table is
   dropped as soon as this branch is pushed. How are preview messages handled? → A: They are test
   sends and are dropped without collecting; the pre-merge collection step covers production only.
@@ -142,9 +146,8 @@ the message store.
    data is untouched.
 4. **Given** messages still stored in production before the deploy, **When** the pull request is
    ready to merge, **Then** it lists collecting any unread production messages, immediately before
-   approving and with a final re-check of the retrieval endpoint, as a pre-merge step; auto-merge
-   stays off, and the pull request merges (removing the store) only after Don confirms the step is
-   done.
+   approving and with a final re-check of the retrieval endpoint, as a pre-approval step, and the
+   pull request merges (removing the store) only after Don has done the step and approved.
 5. **Given** the shared preview database, **When** this branch's preview deploy applies the change,
    **Then** its message store is dropped without collection, and other open branches' previews may
    answer the contact form with "service unavailable" until they merge main (accepted).
@@ -505,8 +508,8 @@ key and fingerprint salt are no longer listed as required.
   repository; no export is committed). Messages already marked read were collected earlier and are
   dropped with the store. Messages collected before the change keep the promise they were sent
   under: Don keeps them no longer than 12 months from arrival. The pre-merge item is a checkbox in
-  the pull request body; Don confirms it by ticking it (or saying so in a pull request comment),
-  and auto-merge stays off until he has. Messages that arrive after that re-check and before the
+  the pull request body; Don confirms it by ticking it (or saying so in a pull request comment)
+  and withholds approval until he has (auto-merge is armed, so his approval is the hold). Messages that arrive after that re-check and before the
   deploy are an accepted loss. Preview messages are test sends and are dropped without collection
   when the branch's preview deploy applies the change.
 - **FR-017a** (after release): The pull request body MUST also list, as post-merge items owned by
@@ -526,10 +529,13 @@ key and fingerprint salt are no longer listed as required.
   migrations are never edited) that matches `CONTACT_READ_TOKEN`, `IP_HASH_SALT`, `/api/messages`,
   `messages` table references, or contact-message retention, rate limiting or retrieval is either
   updated or shown to be still correct, and the search is repeated before the pull request opens.
-- **FR-020**: The pull request MUST be flagged as a major change in its body, naming the
-  Principle III criteria that apply: it replaces an integration (adds the email service, removes
-  the message store and retrieval endpoint), changes how contact data is collected, stored,
-  retrieved and deleted, changes Worker and DNS configuration, and amends the constitution.
+- **FR-020**: The pull request follows the single flow of Constitution Principle III (as amended
+  by issue #143): it is opened from the machine account, auto-merge is armed after the final push,
+  and its body lists every `[PREVIEW-CHECK]` item and the pre-approval collection step (FR-017)
+  under their own heading for Don to check before approving. The body states that the slice
+  amends the constitution (4.0.0) and summarises what it replaces (the message store and retrieval
+  endpoint, by email delivery) so Don can review it. *(Originally: flag the pull request as a
+  major change; that classification was removed by issue #143.)*
 
 ### Key Entities
 
@@ -619,7 +625,7 @@ key and fingerprint salt are no longer listed as required.
   Constraints list D1 storage and a Cron Trigger for the Contact API and do not list an email
   service; the Security Baseline names the contact API's per-sender rate limit. The amendment
   describes email delivery with no stored contact data and no per-sender limit. It is made before
-  any other implementation task and reviewed with this pull request as a major change. Its
+  any other implementation task and reviewed with this pull request. Its
   content, so it can be made without interpretation:
   - **V**: the Contact API receives submissions and emails each accepted one to one fixed,
     verified address; it stores nothing, has no retrieval endpoint and verifies Turnstile.
@@ -641,8 +647,10 @@ key and fingerprint salt are no longer listed as required.
     restricted to one destination).
   - **Security Baseline**: abuse is limited by the contact API's Turnstile check, hidden trap field
     and same-origin check; the untrusted-data bullet names contact emails.
-  - **Version**: MAJOR (3.0.0) is recommended because V's Contact API entry and VII's rules are
-    redefined; the constitution command makes the final call and records why.
+  - **Version**: MAJOR is recommended because V's Contact API entry and VII's rules are
+    redefined; the constitution command makes the final call and records why. Made as 4.0.0:
+    main's issue #143 amendment had already taken 2.3.1 → 3.0.0, and this slice's amendment sits
+    on top of it (3.0.0 → 4.0.0).
 - Cloudflare Email Routing on the sending subdomain only, and a verified destination address
   (Don, during setup).
 - **Apex DMARC follow-up (issue #136)**: the domain's DMARC record is still to be tightened

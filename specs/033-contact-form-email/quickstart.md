@@ -48,7 +48,7 @@ On the branch preview URL (`br-033-contact-form-email-dcc-web-preview.drc-dev.wo
 3. Press Reply: the To is the address you typed in the form.
 4. Send again straight away: also delivered (no per-sender limit).
 
-## 4. Before approving (Don, pre-merge; auto-merge stays off)
+## 4. Before approving (Don, pre-merge; auto-merge is armed, so approval is the hold)
 
 1. Collect unread production messages through the retrieval endpoint as usual.
 2. Re-check the endpoint once more immediately before approving; anything arriving after this is
