@@ -126,6 +126,27 @@ export async function seedMessage(overrides: SeedMessage = {}) {
   return id;
 }
 
+export interface FakeEmailOptions {
+  /** Every `send()` rejects with an Error carrying this `E_*` code (or a plain Error when `""`). */
+  rejectsWith?: string;
+}
+
+/** A stand-in for the `CONTACT_EMAIL` `send_email` binding. `sent` records every `send()` argument. */
+export function fakeEmail({ rejectsWith }: FakeEmailOptions = {}) {
+  const sent: unknown[] = [];
+  const binding = {
+    sent,
+    send: async (message: unknown) => {
+      sent.push(message);
+      if (rejectsWith !== undefined) {
+        throw Object.assign(new Error(rejectsWith || "send failed"), rejectsWith ? { code: rejectsWith } : {});
+      }
+      return { messageId: "test-message-id" };
+    },
+  };
+  return binding as typeof binding & SendEmail;
+}
+
 export interface FakeAiOptions {
   /** Text the model answers with (the `response` field of a text-generation result). */
   text?: string;

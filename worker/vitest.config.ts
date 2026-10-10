@@ -36,8 +36,6 @@ export default defineConfig(async () => {
             bindings: {
               TEST_MIGRATIONS: migrations,
               TURNSTILE_SECRET_KEY: "test-turnstile-secret",
-              CONTACT_READ_TOKEN: TOKENS[name],
-              IP_HASH_SALT: "test-salt",
               EXPECTED_ENVIRONMENT: name,
               EXPECTED_DATABASE_NAME: databaseName(name === "preview" ? "preview" : undefined),
               OTHER_DATABASE_NAME: databaseName(other === "preview" ? "preview" : undefined),

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { stripJsonc } from "../../../scripts/lib/jsonc.ts";
+import { CONTACT_DESTINATION, CONTACT_SENDER } from "../../../worker/src/contact/email.ts";
 
 describe("wrangler.jsonc", () => {
   const wranglerPath = fileURLToPath(new URL("../../../wrangler.jsonc", import.meta.url));
@@ -72,9 +73,32 @@ describe("wrangler.jsonc", () => {
     expect(read("scripts/deploy/preview.ts")).toContain('"--env", "preview"');
   });
 
-  it("schedules at least one cron trigger (the retention job) in both environments", () => {
-    expect(config.triggers?.crons?.length).toBeGreaterThan(0);
-    expect(config.env.preview.triggers?.crons?.length).toBeGreaterThan(0);
+  // The cron list is present and empty, not omitted: an omitted list leaves the deployed cron in place.
+  it("declares an empty cron list in both environments (no retention job, feature 033)", () => {
+    expect(config.triggers?.crons).toEqual([]);
+    expect(config.env.preview.triggers?.crons).toEqual([]);
+  });
+
+  it("binds exactly one send_email binding, CONTACT_EMAIL, locked to the fixed destination and sender", () => {
+    for (const block of [config, config.env.preview]) {
+      expect(block.send_email).toHaveLength(1);
+      expect(block.send_email[0]).toEqual({
+        name: "CONTACT_EMAIL",
+        destination_address: CONTACT_DESTINATION,
+        allowed_sender_addresses: [CONTACT_SENDER],
+      });
+      expect(block.send_email[0]).not.toHaveProperty("remote");
+    }
+  });
+
+  it("requires only the Turnstile secret in both environments", () => {
+    expect(config.secrets?.required).toEqual(["TURNSTILE_SECRET_KEY"]);
+    expect(config.env.preview.secrets?.required).toEqual(["TURNSTILE_SECRET_KEY"]);
+  });
+
+  it("marks only the preview environment with SITE_ENVIRONMENT", () => {
+    expect(config.env.preview.vars?.SITE_ENVIRONMENT).toBe("preview");
+    expect(config.vars ?? {}).not.toHaveProperty("SITE_ENVIRONMENT");
   });
 
   it("keeps invocation logs off", () => {
@@ -309,8 +333,6 @@ describe("contact Worker files", () => {
   it("provides the e2e env file with public test values only", () => {
     const text = readFileSync(`${root}tests/fixtures/worker/e2e.env`, "utf-8");
     expect(text).toContain("TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA");
-    expect(text).toMatch(/^CONTACT_READ_TOKEN=.+/m);
-    expect(text).toMatch(/^IP_HASH_SALT=.+/m);
     expect(text).not.toContain("ALLOW_TURNSTILE_TESTING");
   });
 });
