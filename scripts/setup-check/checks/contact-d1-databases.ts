@@ -1,4 +1,4 @@
-// checks/contact-d1-databases.ts (setup item 18, contracts/setup-items.md): both D1 databases
+// checks/contact-d1-databases.ts (setup item 16, contracts/setup-items.md): both D1 databases
 // exist, their IDs equal the ones committed in wrangler.jsonc (a placeholder ID counts as
 // missing), and each reports region WNAM. The region comes from `running_in_region`, which is
 // not in Cloudflare's published schema (research R2): when it is absent the check reports
@@ -15,7 +15,7 @@ import {
 } from "./contact-shared.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "contact-d1-databases", order: 18 };
+const ITEM = { id: "contact-d1-databases", order: 16 };
 const SUMMARY = "Could not read the contact databases.";
 
 export async function check(ctx: ProviderContext): Promise<CheckResult> {

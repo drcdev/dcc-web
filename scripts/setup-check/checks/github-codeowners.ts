@@ -1,11 +1,11 @@
-// checks/github-codeowners.ts (setup item 12, data-model.md
+// checks/github-codeowners.ts (setup item 11, data-model.md
 // "github-codeowners"): .github/CODEOWNERS on main has the catch-all line
 // `* @drcdev`, so every approval that counts is Don's (constitution Principle
 // III), and GitHub reports no CODEOWNERS errors for it (FR-014).
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "github-codeowners", order: 12 };
+const ITEM = { id: "github-codeowners", order: 11 };
 
 interface CodeownersErrorsResponse {
   errors: Array<{ line?: number; message?: string }>;

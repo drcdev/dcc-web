@@ -1,4 +1,4 @@
-// checks/cloudflare-worker.ts (setup item 7, data-model.md "cloudflare-worker"):
+// checks/cloudflare-worker.ts (setup item 6, data-model.md "cloudflare-worker"):
 // Worker `dcc-web` exists and the account's workers.dev subdomain is on (the
 // preview Worker needs it; production itself is served on the Custom Domain
 // only, with workers.dev and preview URLs off in wrangler.jsonc). The
@@ -6,7 +6,7 @@
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, couldNotCheck, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "cloudflare-worker", order: 7 };
+const ITEM = { id: "cloudflare-worker", order: 6 };
 
 export async function check(ctx: ProviderContext): Promise<CheckResult> {
   if (!ctx.env.has("CLOUDFLARE_API_TOKEN")) {

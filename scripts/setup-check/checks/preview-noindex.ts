@@ -1,10 +1,10 @@
-// checks/preview-noindex.ts (setup item 16, 011-launch contracts/setup-items.md): the preview
+// checks/preview-noindex.ts (setup item 14, 011-launch contracts/setup-items.md): the preview
 // Worker's workers.dev host (production is off workers.dev) sends `X-Robots-Tag: noindex` on `/` and
 // `/projects/`, so previews are never indexed. Independent of the launch phase and of credentials.
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, couldNotCheck, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "preview-noindex", order: 16 };
+const ITEM = { id: "preview-noindex", order: 14 };
 const PATHS = ["/", "/projects/"];
 const NEXT_ACTION = "Confirm public/_headers has the https://:worker.:subdomain.workers.dev/* noindex rule and redeploy.";
 

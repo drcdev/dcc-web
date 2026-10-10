@@ -9,18 +9,15 @@ import type { CheckResult, ProviderContext } from "../../../scripts/setup-check/
 import { ProviderAccessError } from "../../../scripts/setup-check/types.ts";
 import { check as checkCloudflareWorker } from "../../../scripts/setup-check/checks/cloudflare-worker.ts";
 import { check as checkCloudflareZone } from "../../../scripts/setup-check/checks/cloudflare-zone.ts";
-import { check as checkDnsNameservers } from "../../../scripts/setup-check/checks/dns-nameservers.ts";
 import { check as checkDnsRecordsParity } from "../../../scripts/setup-check/checks/dns-records-parity.ts";
 import { check as checkGithubCiWorkflow } from "../../../scripts/setup-check/checks/github-ci-workflow.ts";
 import { check as checkGithubCodeowners } from "../../../scripts/setup-check/checks/github-codeowners.ts";
 import { check as checkGithubMachineAccount } from "../../../scripts/setup-check/checks/github-machine-account.ts";
 import { check as checkGithubMainProtection } from "../../../scripts/setup-check/checks/github-main-protection.ts";
 import { check as checkGithubSecretScanning } from "../../../scripts/setup-check/checks/github-secret-scanning.ts";
-import { check as checkLiveDomainGhost } from "../../../scripts/setup-check/checks/live-domain-ghost.ts";
 import { check as checkLocalCredentials } from "../../../scripts/setup-check/checks/local-credentials.ts";
 import { check as checkLocalTools } from "../../../scripts/setup-check/checks/local-tools.ts";
 import { check as checkPipelineSecrets } from "../../../scripts/setup-check/checks/pipeline-secrets.ts";
-import { check as checkReviewAddressRemoved } from "../../../scripts/setup-check/checks/review-address-removed.ts";
 import { check as checkPreviewNoindex } from "../../../scripts/setup-check/checks/preview-noindex.ts";
 import { check as checkWebAnalytics } from "../../../scripts/setup-check/checks/web-analytics.ts";
 import { check as checkWorkersBuilds } from "../../../scripts/setup-check/checks/workers-builds.ts";
@@ -81,7 +78,6 @@ const CONFIG = {
   repo: "dcc-web",
   zone: "doncoleman.ca",
   workerName: "dcc-web",
-  reviewHost: "new.doncoleman.ca",
   machineAccount: "drc-agents",
 };
 
@@ -111,26 +107,21 @@ const CF_ENV = {
   CLOUDFLARE_ZONE_ID: "zone-123",
 };
 
-/** A ProviderContext where dns-records-parity, dns-nameservers, review-address
- * and workers-builds all report complete — needed to reach the deeper
- * branches of checks that gate on them (review-address's Custom Domain
- * branch, dns-nameservers' own credential/Squarespace branches). */
+/** A ProviderContext where the zone, DNS parity and workers-builds all report
+ * complete — needed to reach the deeper branches of web-analytics. */
 async function dependenciesSatisfiedContext(overrides: Parameters<typeof fakeProviderContext>[0] = {}): Promise<ProviderContext> {
   const zoneRaw = loadFixture<Parameters<typeof toCloudflareZone>[0]>("cloudflare", "zone-active-free-plan");
-  const { answers } = loadFixture<{ answers: string[] }>("dns", "nameservers-cloudflare-delegated");
   return fakeProviderContext({
     env: overrides.env ?? envFrom(CF_ENV),
     fs: overrides.fs ?? { readJson: fsJson({ "setup/config.json": CONFIG, "setup/dns-baseline.json": COMPLETE_BASELINE }) },
-    dns: { resolveNameservers: async () => answers, ...overrides.dns },
     cloudflare: {
       getZone: async () => toCloudflareZone(zoneRaw),
       listDnsRecords: async () => [
         { type: "A", name: "doncoleman.ca", content: "192.0.2.10", priority: null, ttl: 3600, proxied: false },
       ],
-      listWorkerDomains: async () => loadFixture("cloudflare", "worker-domains-review-host"),
       ...overrides.cloudflare,
     },
-    http: overrides.http ?? { get: async () => loadFixture("http", "review-host-200-noindex") },
+    http: overrides.http ?? { get: async () => ({ status: 200, headers: {}, body: "<!doctype html><html></html>" }) },
     github: overrides.github ?? {
       api: githubApiRoutes({
         "/commits/main/check-runs": loadFixture("github", "check-runs-workers-builds-success"),
@@ -195,39 +186,10 @@ const scenarios: Scenario[] = [
         fakeProviderContext({
           env: envFrom(CF_ENV),
           fs: { readJson: fsJson({ "setup/config.json": CONFIG }) },
-          cloudflare: {
-            listDnsRecords: async () => [],
-            listWorkerDomains: async () => loadFixture("cloudflare", "worker-domains-review-host"),
-          },
+          cloudflare: { listDnsRecords: async () => [] },
         }),
       ),
     couldNotCheck: () => checkDnsRecordsParity(fakeProviderContext({ env: envFrom({}) })),
-  },
-  {
-    name: "dns-nameservers (still points at Squarespace)",
-    missing: () =>
-      dependenciesSatisfiedContext({
-        dns: { resolveNameservers: async () => ["ns1.squarespacedns.com", "ns2.squarespacedns.com"] },
-      }).then((ctx) => checkDnsNameservers(ctx)),
-    couldNotCheck: () =>
-      dependenciesSatisfiedContext({
-        cloudflare: {
-          getZone: async () => {
-            throw new ProviderAccessError("Cloudflare token lacks Zone: Read read access (403): x");
-          },
-        },
-      }).then((ctx) => checkDnsNameservers(ctx)),
-  },
-  {
-    name: "live-domain-ghost",
-    missing: () =>
-      checkLiveDomainGhost(
-        fakeProviderContext({
-          env: envFrom(CF_ENV),
-          fs: { readJson: fsJson({ "setup/config.json": CONFIG, "setup/dns-baseline.json": { originalNameservers: [], records: [] } }) },
-          cloudflare: { listWorkerDomains: async () => loadFixture("cloudflare", "worker-domains-review-host") },
-        }),
-      ),
   },
   {
     name: "cloudflare-worker",
@@ -379,17 +341,6 @@ const scenarios: Scenario[] = [
       ),
   },
   {
-    name: "review-address-removed",
-    missing: () =>
-      dependenciesSatisfiedContext({
-        cloudflare: { listWorkerDomains: async () => loadFixture("cloudflare", "worker-domains-apex-switched") },
-      }).then((ctx) => checkReviewAddressRemoved(ctx)),
-    couldNotCheck: () =>
-      dependenciesSatisfiedContext({
-        env: envFrom({ CLOUDFLARE_API_TOKEN: CF_ENV.CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID: CF_ENV.CLOUDFLARE_ZONE_ID }),
-      }).then((ctx) => checkReviewAddressRemoved(ctx)),
-  },
-  {
     name: "preview-noindex",
     missing: () =>
       checkPreviewNoindex(
@@ -411,7 +362,7 @@ const scenarios: Scenario[] = [
     missing: () =>
       dependenciesSatisfiedContext({
         cloudflare: {
-          listWebAnalyticsSites: async () => [{ siteTag: "t1", host: CONFIG.reviewHost, autoInstall: false, zoneName: null }],
+          listWebAnalyticsSites: async () => [{ siteTag: "t1", host: CONFIG.zone, autoInstall: false, zoneName: null }],
         },
       }).then((ctx) => checkWebAnalytics(ctx)),
   },

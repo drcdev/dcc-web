@@ -21,7 +21,6 @@ function fakeCtx(overrides: Partial<ProviderContext> = {}): ProviderContext {
       listDnsRecords: vi.fn(),
       getWorkerScript: vi.fn(),
       getWorkersSubdomain: vi.fn(),
-      listWorkerDomains: vi.fn(),
       listWebAnalyticsSites: vi.fn(),
     } as never,
     dns: { resolve: vi.fn(), resolveNameservers: vi.fn() } as never,
@@ -141,7 +140,7 @@ describe("setup-check/cli runChecks", () => {
   });
 
   it("an item whose dependsOn prerequisite is not complete is reported missing naming the prerequisite (via the item's own check)", async () => {
-    // Mirrors checks/dns-nameservers.ts's own pattern: the dependent item's
+    // The dependent item's
     // check function evaluates its prerequisite itself; the CLI does not
     // need separate dependsOn logic.
     const prereqCheck: SetupItem["check"] = async () => missingResult("prereq", 1);

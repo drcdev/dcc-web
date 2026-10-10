@@ -10,7 +10,7 @@ import {
 
 const HTTP_TIMEOUT_MS = 10_000;
 // Ask for pages the way a browser does. Node's fetch defaults to `Accept: */*`,
-// and Cloudflare only injects the Web Analytics beacon (setup item 17) into
+// and Cloudflare only injects the Web Analytics beacon (setup item 15) into
 // responses whose request accepts HTML, so a `*/*` probe would report the
 // beacon missing on a page every visitor actually receives with it.
 const HEADERS = { accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" };

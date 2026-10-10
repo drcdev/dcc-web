@@ -71,23 +71,6 @@ export function pending(
   };
 }
 
-/** A post-launch item that cannot be checked until the switch (011-launch research R3). Not a failure. */
-export function waiting(item: ItemLabel, summary: string): CheckResult {
-  return {
-    id: item.id,
-    status: "waiting",
-    summary,
-    details: [],
-    nextAction: WAITING_NEXT_ACTION,
-    step: stepLabel(item.order),
-    docs: docsLink(item.id),
-    reason: null,
-  };
-}
-
-export const WAITING_NEXT_ACTION =
-  "Nothing to do yet. Follow docs/launch.md Part C when the readiness checklist is complete.";
-
 export function couldNotCheck(
   item: ItemLabel,
   summary: string,

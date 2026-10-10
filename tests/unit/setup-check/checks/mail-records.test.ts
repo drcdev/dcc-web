@@ -68,11 +68,11 @@ function ctxFor(
   });
 }
 
-describe("checks/mail-records (item 31)", () => {
+describe("checks/mail-records (item 5)", () => {
   it("is complete when every group matches at both resolvers; order, TTL, case and trailing dots are ignored", async () => {
     const result = await check(ctxFor(baseline(), liveBaseline));
     expect(result.status).toBe("complete");
-    expect(result.step).toBe(`Step 31 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 5 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#mail-records");
   });
 

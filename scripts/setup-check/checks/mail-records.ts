@@ -1,4 +1,4 @@
-// checks/mail-records.ts (setup item 31, 011-launch contracts/setup-items.md; FR-016, SC-004): the
+// checks/mail-records.ts (setup item 5, 011-launch contracts/setup-items.md; FR-016, SC-004): the
 // mail records recorded in the baseline still answer unchanged at both public resolvers. A group is every baseline record with `decision: "keep"` of one name and type
 // (MX, TXT, and CNAMEs under `._domainkey.`); MX is compared as `priority:host`, TXT joined and
 // normalised, CNAME lower-case without a trailing dot. Order and TTL are ignored. A baseline record
@@ -8,7 +8,7 @@ import type { CheckResult, DnsAnswer, DnsBaseline, DnsBaselineRecord, DnsRecordT
 import { complete, fromProviderError, missing, pending } from "./shared.ts";
 import { normalizeTxtContent } from "./shared.ts";
 
-const ITEM = { id: "mail-records", order: 31 };
+const ITEM = { id: "mail-records", order: 5 };
 const ROLLBACK_NEXT = "Restore the record in Cloudflare → DNS exactly as listed.";
 
 function normName(name: string): string {

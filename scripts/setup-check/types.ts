@@ -89,8 +89,6 @@ export interface SetupItem {
   phase: ItemPhase;
   /** True for an after-merge item that is reported but must not fail the check before the merge (FR-028a). */
   deferredUntilMerge?: boolean;
-  /** True for an item whose check returns `waiting` before the switch (011-launch data-model.md). */
-  postLaunch?: boolean;
   check: (ctx: ProviderContext) => Promise<CheckResult>;
 }
 
@@ -233,11 +231,6 @@ export interface CloudflareWorkersSubdomain {
   enabled: boolean;
 }
 
-export interface CloudflareWorkerDomain {
-  hostname: string;
-  service: string;
-}
-
 export interface CloudflareWebAnalyticsSite {
   siteTag: string;
   /** Hostname for a site added by JS snippet; null for a zone-level automatic-setup site. */
@@ -278,7 +271,6 @@ export interface CloudflareReader {
   listDnsRecords(zoneId: string): Promise<CloudflareDnsRecord[]>;
   getWorkerScript(accountId: string, scriptName: string): Promise<CloudflareWorkerScript | null>;
   getWorkersSubdomain(accountId: string): Promise<CloudflareWorkersSubdomain>;
-  listWorkerDomains(accountId: string, hostname?: string): Promise<CloudflareWorkerDomain[]>;
   listWebAnalyticsSites(accountId: string): Promise<CloudflareWebAnalyticsSite[]>;
   /** D1 databases, optionally filtered by name. Drops everything except uuid, name and region. */
   listD1Databases(accountId: string, name?: string): Promise<CloudflareD1Database[]>;

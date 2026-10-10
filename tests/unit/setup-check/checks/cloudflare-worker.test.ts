@@ -27,7 +27,7 @@ describe("checks/cloudflare-worker", () => {
     expect(result.summary).toBe(
       "Worker dcc-web exists and the account's workers.dev subdomain is on (used by the preview Worker).",
     );
-    expect(result.step).toBe(`Step 7 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 6 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#cloudflare-worker");
   });
 

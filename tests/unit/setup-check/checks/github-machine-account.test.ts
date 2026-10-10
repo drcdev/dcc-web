@@ -23,7 +23,7 @@ describe("checks/github-machine-account", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("complete");
-    expect(result.step).toBe(`Step 8 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 7 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#github-machine-account");
   });
 

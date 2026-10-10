@@ -16,10 +16,7 @@ export const secretManifest: SecretRef[] = [
       "local-credentials",
       "cloudflare-zone",
       "dns-records-parity",
-      "dns-nameservers",
-      "live-domain-ghost",
       "cloudflare-worker",
-      "review-address-removed",
       "web-analytics",
       "contact-d1-databases",
       "contact-turnstile-widget",
@@ -36,7 +33,7 @@ export const secretManifest: SecretRef[] = [
     store: "local-env",
     purpose: "Account the check reads",
     permissions: null,
-    usedBy: ["local-credentials", "live-domain-ghost", "cloudflare-worker", "review-address-removed", "web-analytics"],
+    usedBy: ["local-credentials", "cloudflare-worker", "web-analytics"],
   },
   {
     name: "CLOUDFLARE_ZONE_ID",
@@ -44,7 +41,7 @@ export const secretManifest: SecretRef[] = [
     store: "local-env",
     purpose: "Zone the check reads",
     permissions: null,
-    usedBy: ["local-credentials", "cloudflare-zone", "dns-records-parity", "dns-nameservers"],
+    usedBy: ["local-credentials", "cloudflare-zone", "dns-records-parity"],
   },
   {
     name: "DCC_BOT_GITHUB_CREDENTIAL",

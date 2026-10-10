@@ -81,7 +81,7 @@ describe("checks/github-ci-workflow", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("complete");
-    expect(result.step).toBe(`Step 11 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 10 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#github-ci-workflow");
   });
 

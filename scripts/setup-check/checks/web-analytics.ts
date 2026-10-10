@@ -1,4 +1,4 @@
-// checks/web-analytics.ts (setup item 17, data-model.md "web-analytics"): a
+// checks/web-analytics.ts (setup item 15, data-model.md "web-analytics"): a
 // Web Analytics site covers the zone apex with automatic setup on, and
 // the served page references the Cloudflare beacon (FR-022). The dashboard's
 // automatic setup registers the zone (ruleset.zone_name, host empty), not a
@@ -8,7 +8,7 @@
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
 import { complete, couldNotCheck, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "web-analytics", order: 17 };
+const ITEM = { id: "web-analytics", order: 15 };
 const BEACON_MARKER = "static.cloudflareinsights.com/beacon";
 
 export async function check(ctx: ProviderContext): Promise<CheckResult> {

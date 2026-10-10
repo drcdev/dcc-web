@@ -301,7 +301,7 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
     resolver disagreement stays pinned.
 - **Layer:** unit.
 
-### W4 — Remove the launch, live and nameserver items
+### W4 — Remove the launch, live and nameserver items [x]
 
 - **Files:**
   - Sources to delete: `scripts/setup-check/checks/` `dns-nameservers.ts`,

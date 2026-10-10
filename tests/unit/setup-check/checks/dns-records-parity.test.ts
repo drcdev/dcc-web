@@ -33,9 +33,6 @@ function contextWith(
     env: envFrom(ENV),
     fs: { readJson: ((path: string) => (path === "setup/dns-baseline.json" ? baselineValue : null)) as never },
     cloudflare: {
-      listWorkerDomains: async () => {
-        throw new Error("the launch phase must not be read");
-      },
       listDnsRecords: typeof cfRecords === "function" ? cfRecords : async () => cfRecords,
     },
   });
@@ -110,10 +107,7 @@ describe("checks/dns-records-parity", () => {
   });
 
   it("is missing when a keep record has no matching Cloudflare record at all", async () => {
-    const { baselineRecord } = loadFixture<{ baselineRecord: DnsBaselineRecord }>(
-      "dns",
-      "squarespace-only-record-not-in-cloudflare",
-    );
+    const baselineRecord = keepRecord({ type: "TXT", content: "v=spf1 include:_spf.example.net -all" });
     const cf = loadFixture<CloudflareDnsRecord[]>("cloudflare", "dns-records-none");
     const ctx = contextWith(baseline([baselineRecord]), cf);
 

@@ -55,19 +55,14 @@ function toWebAnalyticsSites(
 
 async function reviewAddressCompleteContext(overrides: Parameters<typeof fakeProviderContext>[0] = {}) {
   const zoneRaw = loadFixture<Parameters<typeof toCloudflareZone>[0]>("cloudflare", "zone-active-free-plan");
-  const { answers } = loadFixture<{ answers: string[] }>("dns", "nameservers-cloudflare-delegated");
   return fakeProviderContext({
     env: overrides.env ?? envFrom(ENV),
     fs: overrides.fs ?? { readJson: fsWith() },
-    dns: { resolveNameservers: async () => answers, ...overrides.dns },
     cloudflare: {
       getZone: async () => toCloudflareZone(zoneRaw),
       listDnsRecords: async () => [
         { type: "A", name: "doncoleman.ca", content: "192.0.2.10", priority: null, ttl: 3600, proxied: false },
       ],
-      listWorkerDomains: async () => {
-        throw new Error("listWorkerDomains must not be called");
-      },
       listWebAnalyticsSites: async () =>
         toWebAnalyticsSites(loadFixture("cloudflare", "web-analytics-site-present")),
       ...overrides.cloudflare,
@@ -161,7 +156,7 @@ describe("checks/web-analytics", () => {
 
   it("is missing when the served page does not reference the Cloudflare beacon", async () => {
     const ctx = await reviewAddressCompleteContext({
-      http: { get: async () => loadFixture("http", "review-host-200-noindex") },
+      http: { get: async () => ({ status: 200, headers: {}, body: "<!doctype html><html><head></head><body></body></html>" }) },
     });
 
     const result = await check(ctx);
@@ -176,7 +171,7 @@ describe("checks/web-analytics", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("complete");
-    expect(result.step).toBe(`Step 17 of ${setupItems.length}`);
+    expect(result.step).toBe(`Step 15 of ${setupItems.length}`);
     expect(result.docs).toBe("docs/setup.md#web-analytics");
   });
 

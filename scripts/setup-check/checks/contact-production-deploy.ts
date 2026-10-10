@@ -1,4 +1,4 @@
-// checks/contact-production-deploy.ts (setup item 24, after merge, contracts/setup-items.md):
+// checks/contact-production-deploy.ts (setup item 22, after merge, contracts/setup-items.md):
 // dcc-web's production build trigger deploys with `pnpm run deploy:production`, the
 // production database has every migration, and dcc-web has its Cron Trigger.
 import type { CheckResult, ProviderContext } from "../types.ts";
@@ -14,7 +14,7 @@ import {
 } from "./contact-shared.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 
-const ITEM = { id: "contact-production-deploy", order: 24 };
+const ITEM = { id: "contact-production-deploy", order: 22 };
 const SUMMARY = "Could not read the production migrations and schedule.";
 
 export async function check(ctx: ProviderContext): Promise<CheckResult> {
@@ -39,7 +39,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     const databases = await ctx.cloudflare.listD1Databases(access.accountId);
     const database = databases.find((d) => d.name === config.production.name);
     if (!database) {
-      details.push(`The production database ${config.production.name} does not exist yet (setup item 18).`);
+      details.push(`The production database ${config.production.name} does not exist yet (setup item 16).`);
     } else {
       const applied = await ctx.cloudflare.listD1AppliedMigrations(access.accountId, database.uuid);
       const notApplied = unappliedMigrations(ctx, applied);

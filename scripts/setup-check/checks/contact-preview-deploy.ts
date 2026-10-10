@@ -1,4 +1,4 @@
-// checks/contact-preview-deploy.ts (setup item 23, contracts/setup-items.md): the preview
+// checks/contact-preview-deploy.ts (setup item 21, contracts/setup-items.md): the preview
 // database's applied migrations equal the files in migrations/, and dcc-web-preview has its
 // Cron Trigger. Together they confirm, indirectly, that the Workers Builds token can edit D1
 // (research R13). `pending` while a dcc-web-preview build is still running.
@@ -13,7 +13,7 @@ import {
 } from "./contact-shared.ts";
 import { complete, fromProviderError, missing, pending } from "./shared.ts";
 
-const ITEM = { id: "contact-preview-deploy", order: 23 };
+const ITEM = { id: "contact-preview-deploy", order: 21 };
 const SUMMARY = "Could not read the preview migrations and schedule.";
 const RUN_PREFIX = "Workers Builds: ";
 
@@ -53,7 +53,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       return missing(
         ITEM,
         `The preview database ${config.preview.name} does not exist yet.`,
-        "Finish setup item 18 (contact databases) first.",
+        "Finish setup item 16 (contact databases) first.",
       );
     }
 

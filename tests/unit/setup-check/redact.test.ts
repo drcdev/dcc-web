@@ -22,18 +22,18 @@ describe("expectRedacted helper (T008)", () => {
 
 describe("waiting report output (T008)", () => {
   const waiting: CheckResult = {
-    id: "live-apex",
+    id: "web-analytics",
     status: "waiting",
     summary: `Waiting for the switch: doncoleman.ca is not on the new site yet. ${SECRETS[0]}`,
     details: [`account ${SECRETS[1]}`],
-    nextAction: `Nothing to do yet. Follow docs/launch.md Part C when the readiness checklist is complete. ${SECRETS[2]}`,
-    step: "Step 28 of 32",
-    docs: "docs/setup.md#live-apex",
+    nextAction: `Nothing to do yet. ${SECRETS[2]}`,
+    step: "Step 15 of 22",
+    docs: "docs/setup.md#web-analytics",
     reason: null,
   };
   const item: SetupItem = {
-    id: "live-apex",
-    order: 28,
+    id: "web-analytics",
+    order: 15,
     title: "Bare domain serves the new site",
     purpose: "p",
     where: "w",
@@ -44,7 +44,6 @@ describe("waiting report output (T008)", () => {
     secrets: [],
     dependsOn: [],
     phase: "after-merge",
-    postLaunch: true,
     check: async () => waiting,
   };
 
