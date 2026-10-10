@@ -165,7 +165,7 @@ there is no DNS change on doncoleman.ca and its iCloud mail (guarded by item 5) 
 2. Sending domain. Don opens `drc.dev`, Email, Email Routing in the dashboard and confirms routing is
    enabled with no DNS warnings. If it is off, he turns it on for `drc.dev` only.
 3. Token. Don edits his read-only token: Account, Email Routing Addresses: Read; and the `drc.dev` zone
-   added to its zone resources with Zone: Read and Email Routing Rules: Read. If the check says it
+   added to its zone resources with Zone: Read and Zone Settings: Read. If the check says it
    could not read either part, send Don back to `local-credentials` (item 2) for these permissions.
 4. Check. `pnpm setup:check --json --item contact-email` runs, followed by a full run to see item 17
    complete.

@@ -66,7 +66,7 @@ describe("setupItems registry invariants", () => {
   it("the read-only token's manifest entry names Email Routing Addresses Read for contact-email", () => {
     const token = secretManifest.find((s) => s.name === "CLOUDFLARE_API_TOKEN")!;
     expect(token.permissions).toContain("Email Routing Addresses Read");
-    expect(token.permissions).toContain("Email Routing Rules Read");
+    expect(token.permissions).toContain("Zone Settings Read");
     expect(token.usedBy).toContain("contact-email");
     expect(secretManifest.find((s) => s.name === "CLOUDFLARE_ACCOUNT_ID")!.usedBy).toContain("contact-email");
   });

@@ -305,7 +305,7 @@ const seeds: ItemSeed[] = [
     purpose:
       "The contact form emails each message to contact@doncoleman.ca through Cloudflare Email Routing, sending from contact-form@drc.dev. Routing must be on for drc.dev and the destination address verified before the first deploy that carries the email binding. There is no DNS change on doncoleman.ca.",
     where:
-      "Cloudflare dashboard -> Email Routing -> Destination addresses: add contact@doncoleman.ca (if it is not there) and open the verification link in that mailbox. Cloudflare dashboard -> drc.dev -> Email -> Email Routing: confirm routing is enabled. Give the read-only token Account -> Email Routing Addresses: Read, and add the drc.dev zone to it with Zone: Read and Email Routing Rules: Read.",
+      "Cloudflare dashboard -> Email Routing -> Destination addresses: add contact@doncoleman.ca (if it is not there) and open the verification link in that mailbox. Cloudflare dashboard -> drc.dev -> Email -> Email Routing: confirm routing is enabled. Give the read-only token Account -> Email Routing Addresses: Read, and add the drc.dev zone to it with Zone: Read and Zone Settings: Read.",
     confirmedBy:
       "contact@doncoleman.ca is a verified destination address in the account, and the Cloudflare API reports Email Routing enabled and ready on the drc.dev zone.",
     needsDon: true,

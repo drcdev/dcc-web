@@ -97,7 +97,7 @@ describe(".claude/skills/setup-walkthrough/SKILL.md", () => {
     expect(section).toMatch(/no DNS change on doncoleman\.ca/i);
     expect(section).toContain("contact@doncoleman.ca");
     expect(section).toContain("Email Routing Addresses: Read");
-    expect(section).toContain("Email Routing Rules: Read");
+    expect(section).toContain("Zone Settings: Read");
     expect(section).toMatch(/7 days/);
     const delIndex = section.indexOf("wrangler secret delete");
     expect(delIndex).toBeGreaterThan(-1);

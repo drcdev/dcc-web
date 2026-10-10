@@ -264,7 +264,7 @@ read from developers.cloudflare.com on 2026-10-10; Astro facts from the Astro Do
     2. **Sending domain routing on**: the Cloudflare API finds the `drc.dev` zone
        (`zones.list({ name })`) and its Email Routing settings (`emailRouting.get({ zone_id })`)
        report `enabled: true` and status `ready`. The token gains the `drc.dev` zone with
-       **Zone: Read** and **Email Routing Rules: Read**. (Revised 2026-10-10 from public-DNS MX/SPF
+       **Zone: Read** and **Zone Settings: Read**. (Revised 2026-10-10 from public-DNS MX/SPF
        checks on `mail.doncoleman.ca`.)
     3. **doncoleman.ca untouched**: delegated to item 5 (`mail-records`); item 17 adds no record.
   - Item 16 (`contact-bindings`): Worker-secrets part requires only `TURNSTILE_SECRET_KEY`; the

@@ -146,8 +146,8 @@ walkthrough: research R11; contract: [contracts/setup-check.md](./contracts/setu
 
 1. **Before the first push that adds the binding** (R11 ordering): Don verifies
    `contact@doncoleman.ca` as an Email Routing destination address, confirms Email Routing is on
-   for `drc.dev`, and gives the read-only token Email Routing read access for the account
-   addresses and the `drc.dev` zone (walkthrough item 17). He also undoes anything left half-applied
+   for `drc.dev`, and gives the read-only token Email Routing Addresses read access for the
+   account and Zone Settings: Read on the `drc.dev` zone (walkthrough item 17). He also undoes anything left half-applied
    on doncoleman.ca from the failed subdomain attempt.
 2. `pnpm run setup:check` passes items 4, 5 and 17 (items 4 and 5 confirm doncoleman.ca's DNS and
    iCloud records are unchanged).

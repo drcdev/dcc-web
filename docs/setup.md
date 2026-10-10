@@ -50,7 +50,7 @@ with permissions Zone → Zone: Read, Zone → DNS: Read, Account → Workers Sc
 Analytics" token permission), and, for the contact form (item 16), Account → D1: Read,
 Account → Workers Builds Configuration: Read and Account → Turnstile Sites: Read, and, for the
 contact email (item 17), Account → Email Routing Addresses: Read, plus the `drc.dev` zone with
-Zone → Zone: Read and Zone → Email Routing Rules: Read. If you made the token before the contact
+Zone → Zone: Read and Zone → Zone Settings: Read. If you made the token before the contact
 form, edit it and add those. Then copy `.env.example` to `.env` in the repository root and fill in the values in your own
 editor.
 
@@ -570,7 +570,7 @@ mail records stay as they are.
    shows no DNS warnings.
 3. Edit the read-only API token from step 2: add Account → **Email Routing Addresses: Read**, add the
    `drc.dev` zone to its zone resources, and give it Zone → Zone: Read and Zone →
-   **Email Routing Rules: Read**.
+   **Zone Settings: Read**.
 4. Run `pnpm setup:check --item contact-email`; it should report complete.
 
 After the release, within 7 days (hygiene, not a security deadline), delete the two retired Worker
@@ -597,7 +597,7 @@ prefixed with its part.
   enabled and ready on it.
 - doncoleman.ca's own mail records are not checked here: item 5 (`mail-records`) does that.
 
-It needs the Email Routing Addresses: Read and Email Routing Rules: Read permissions on the token,
+It needs the Email Routing Addresses: Read and Zone Settings: Read permissions on the token,
 and never reads a secret value.
 
 **Constitution principle**

@@ -35,7 +35,7 @@ Removed routes: `curl -i http://127.0.0.1:8787/api/messages/new -H "Authorizatio
 
 Follow `docs/setup.md#contact-email` (walkthrough item 17): verify `contact@doncoleman.ca` as an
 Email Routing destination address, confirm Email Routing is on for `drc.dev`, and give the
-read-only token Email Routing read access for the account addresses and the `drc.dev` zone. Then
+read-only token Email Routing Addresses read access for the account and Zone Settings: Read on the `drc.dev` zone. Then
 `pnpm run setup:check`: items 4, 5 and 17 complete. No DNS record is added to doncoleman.ca; item 5
 passing confirms its iCloud records are unchanged (SC-008). Also send yourself a normal email to
 `contact@doncoleman.ca` and see it arrive.

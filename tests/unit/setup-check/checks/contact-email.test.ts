@@ -109,14 +109,14 @@ describe("checks/contact-email (item 17)", () => {
     expect(result.details.join("\n")).toMatch(/drc\.dev is not a zone this token can read/);
   });
 
-  it("is could-not-check when the routing settings read is refused, naming Email Routing Rules: Read", async () => {
+  it("is could-not-check when the routing settings read is refused, naming Zone Settings: Read", async () => {
     const result = await run({
       routing: async () => {
-        throw new ProviderAccessError("Cloudflare token lacks Email Routing Rules: Read read access (403): x");
+        throw new ProviderAccessError("Cloudflare token lacks Zone Settings: Read read access (403): x");
       },
     }).result;
     expect(result.status).toBe("could-not-check");
-    expect(result.nextAction).toContain("Email Routing Rules: Read");
+    expect(result.nextAction).toContain("Zone Settings: Read");
   });
 
   it("reports both parts in one run", async () => {

@@ -167,7 +167,7 @@ describe("docs/setup.md contact-form part", () => {
     expect(s).not.toMatch(/mail\.doncoleman\.ca|Subdomains/);
     expect(s).toMatch(/no DNS change on doncoleman\.ca/i);
     expect(s).toContain("Email Routing Addresses: Read");
-    expect(s).toContain("Email Routing Rules: Read");
+    expect(s).toContain("Zone Settings: Read");
     expect(s).toContain("pnpm setup:check --item contact-email");
     expect(s).toContain("wrangler secret delete CONTACT_READ_TOKEN");
     expect(s).toContain("wrangler secret delete IP_HASH_SALT");

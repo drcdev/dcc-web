@@ -42,7 +42,7 @@ async function checkDestination(ctx: ProviderContext, accountId: string, config:
 
 async function checkSendingDomain(ctx: ProviderContext, config: EmailConfig): Promise<PartResult> {
   const domain = config.sendingDomain;
-  const fix = `In Cloudflare dashboard → ${domain} → Email → Email Routing, make sure routing is enabled and shows no DNS warnings, and that the read-only token covers the ${domain} zone with Zone: Read and Email Routing Rules: Read (${DOCS}).`;
+  const fix = `In Cloudflare dashboard → ${domain} → Email → Email Routing, make sure routing is enabled and shows no DNS warnings, and that the read-only token covers the ${domain} zone with Zone: Read and Zone Settings: Read (${DOCS}).`;
   const zone = (await ctx.cloudflare.listZones(domain)).find((z) => z.name.toLowerCase() === domain.toLowerCase());
   if (!zone) {
     return { problems: [`${domain} is not a zone this token can read; add the ${domain} zone to the token's zone resources.`], fix };
@@ -90,7 +90,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       ITEM,
       SUMMARY,
       err,
-      "Check the Cloudflare API token in .env is valid and has Account → Email Routing Addresses: Read, plus Zone: Read and Email Routing Rules: Read on the drc.dev zone (docs/setup.md#contact-email), then try again.",
+      "Check the Cloudflare API token in .env is valid and has Account → Email Routing Addresses: Read, plus Zone: Read and Zone Settings: Read on the drc.dev zone (docs/setup.md#contact-email), then try again.",
     );
   }
 }

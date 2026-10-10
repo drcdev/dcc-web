@@ -26,7 +26,7 @@ Parts (one run shows every gap, like item 16):
    read-only provider method over `client.emailRouting.get`, returning only `enabled` and `status`)
    reports `enabled: true` and status `ready`. No zone found → "drc.dev is not a zone this token
    can read"; disabled → "Email Routing is not on for drc.dev"; another status → named. An
-   authorisation error → could-not-check naming **Email Routing Rules: Read**. Public DNS is not
+   authorisation error → could-not-check naming **Zone Settings: Read**. Public DNS is not
    read.
 3. **doncoleman.ca untouched** is not re-checked here: item 5 (`mail-records`) fails if any apex
    iCloud record changes, and item 17 adds no record.
@@ -50,7 +50,7 @@ action when missing: the walkthrough step for that part.
 ## Secret manifest (`scripts/setup-check/secrets.ts`)
 
 - Remove `CONTACT_READ_TOKEN` and `IP_HASH_SALT`.
-- `CLOUDFLARE_API_TOKEN.permissions` adds "Email Routing Addresses Read" and "Email Routing Rules
+- `CLOUDFLARE_API_TOKEN.permissions` adds "Email Routing Addresses Read" and "Zone Settings
   Read (drc.dev zone)"; `usedBy` adds
   `contact-email`. `CLOUDFLARE_ACCOUNT_ID.usedBy` adds `contact-email`.
 - `tests/unit/setup/drift.test.ts` keeps proving every name in wrangler, workflows and
@@ -69,7 +69,7 @@ step, each saying what to do, where, and how to confirm:
    open the verification link in that mailbox.
 2. `drc.dev` → Email → Email Routing: confirm routing is enabled with no DNS warnings.
 3. Token: add Account → Email Routing Addresses: Read, and the `drc.dev` zone with Zone: Read and
-   Email Routing Rules: Read, to the read-only token.
+   Zone Settings: Read, to the read-only token.
 4. `pnpm run setup:check`: items 4, 5 and 17 pass.
 
 After release (follow-up, Don): `pnpm exec wrangler secret delete CONTACT_READ_TOKEN` and

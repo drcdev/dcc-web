@@ -326,7 +326,7 @@ export function createCloudflareReader(options: CloudflareReaderOptions): Cloudf
     },
 
     async getEmailRoutingSettings(zoneId: string) {
-      return guarded("Email Routing Rules: Read", async () => {
+      return guarded("Zone Settings: Read", async () => {
         const settings = (await client.emailRouting.get({ zone_id: zoneId })) as { enabled?: unknown; status?: unknown };
         // Only whether routing is on and its status: the tag, id and dates are dropped.
         return { enabled: settings.enabled === true, status: stringOrNull(settings.status) };

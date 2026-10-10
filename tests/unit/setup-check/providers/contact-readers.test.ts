@@ -285,7 +285,7 @@ describe("getEmailRoutingSettings", () => {
     const get = vi.fn(async () => {
       throw new HttpError(403);
     });
-    await expect(reader({ emailRouting: { get } }).getEmailRoutingSettings("z")).rejects.toThrow(/Email Routing Rules: Read/);
+    await expect(reader({ emailRouting: { get } }).getEmailRoutingSettings("z")).rejects.toThrow(/Zone Settings: Read/);
   });
 });
 
