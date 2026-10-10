@@ -329,8 +329,8 @@ If a check is pending, wait and run it again. If any rollback trigger above appl
 
 **What to do**
 Update links that point to old blog addresses: LinkedIn posts and profile, other sites Don
-controls, and anything else he can edit. Old addresses are not redirected, so a stale link lands
-on the not-found page.
+controls, and anything else he can edit. The old Ghost post and topic addresses redirect to their
+new pages, so a stale link still lands on the right page; this step is tidying.
 
 **Pause:** the agent stops here and waits for Don's answer: `Done — check it`, `Skip for now` or `Stop here`.
 
