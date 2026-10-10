@@ -317,8 +317,8 @@ Import `setup/github-ruleset.json` as a repository ruleset on `main`:
 **How it will be confirmed**
 `pnpm setup:check --item github-main-protection` reports complete when the active ruleset on
 `main` matches `setup/github-ruleset.json` — pull request required with one approving review,
-code-owner review required, stale approvals dismissed on new commits, required check `verify`
-(strict), no force-push, no deletion, no bypass actors — with each missing or weaker rule named
+code-owner review required, stale approvals dismissed on new commits, required check `verify`,
+no force-push, no deletion, no bypass actors — with each missing or weaker rule named
 individually if it does not.
 
 **Constitution principle**

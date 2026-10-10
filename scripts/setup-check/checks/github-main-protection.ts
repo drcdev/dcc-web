@@ -1,6 +1,6 @@
 // checks/github-main-protection.ts (setup item 12, data-model.md
 // "github-main-protection"): the active ruleset on main matches
-// setup/github-ruleset.json, evaluated against the closed list of 10 gaps (the verify check and its Actions pin share one) in
+// setup/github-ruleset.json, evaluated against the closed list of 9 gaps (the verify check and its Actions pin share one) in
 // spec.md's Edge Cases ("Partially configured branch protection"); each gap
 // is named individually, never lumped into one generic message.
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
@@ -67,7 +67,7 @@ function verifyPinnedToActions(rule: RulesetRule | undefined): boolean {
   return list?.some((c) => c.context === "verify" && c.integration_id === GITHUB_ACTIONS_APP_ID) ?? false;
 }
 
-// Evaluates the closed list of 10 gaps from spec.md's "Partially configured
+// Evaluates the closed list of 9 gaps from spec.md's "Partially configured
 // branch protection" edge case against the actual ruleset (or its absence,
 // when `actual` is null). Order matches the closed list in the spec (verify and its pin are one slot).
 function evaluateGaps(actual: FullRuleset | null): string[] {
@@ -87,9 +87,6 @@ function evaluateGaps(actual: FullRuleset | null): string[] {
     gaps.push("required check verify");
   } else if (!verifyPinnedToActions(statusChecks)) {
     gaps.push("required check verify pinned to GitHub Actions");
-  }
-  if (statusChecks?.parameters?.strict_required_status_checks_policy !== true) {
-    gaps.push("branch must be up to date before merging");
   }
 
   if (!rules.some((r) => r.type === "non_fast_forward")) gaps.push("force-pushes blocked");

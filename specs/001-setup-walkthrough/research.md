@@ -206,6 +206,12 @@ the Astro Cloudflare deploy guide. Package versions were read from the npm regis
   - a PR weakening `ci.yml` so `verify` passes trivially: the required approval on every PR;
   - a flaky or time-dependent test passing on the PR and failing on `main`: accepted, because
     rollback is one command.
+  - **Note, 2026-10-10 (#147):** strict mode is now off (`strict_required_status_checks_policy: false`),
+    because a merge queue needs an organization-owned repository. A PR that is behind `main` can
+    merge without catching up, so the tree on `main` may not be the tree `verify` passed on the
+    PR. Don accepted this as a recorded exception to Principle II (D1, option A). The CI run on
+    every push to `main` is the backstop, and the constitution is not changed. The text above is
+    kept as written.
 - **Deferred to #86**: the scheduled ruleset drift check, `persist-credentials: false` on
   checkouts, and the repository Actions settings (SHA pinning, allowed actions, fork-PR
   approval).
