@@ -113,7 +113,7 @@ After:
 
 ## Work items
 
-### [ ] W1 Committed ruleset holds every live writable field, with a unit guard
+### [x] W1 Committed ruleset holds every live writable field, with a unit guard
 
 - **Files:**
   - `tests/unit/setup/drift.test.ts`: new `describe("committed ruleset is a complete PUT body")`
