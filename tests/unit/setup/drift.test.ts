@@ -112,6 +112,40 @@ describe("ruleset contexts <-> CI job names", () => {
   });
 });
 
+describe("committed ruleset is a complete PUT body", () => {
+  // A ruleset PUT replaces the whole rules array, so a parameter missing from the file is reset
+  // when the file is applied (#149). The file must therefore carry every writable parameter.
+  const ruleset = JSON.parse(read("setup/github-ruleset.json")) as {
+    rules: Array<{ type: string; parameters?: Record<string, unknown> }>;
+  };
+  const params = (type: string) => ruleset.rules.find((r) => r.type === type)?.parameters ?? {};
+
+  it("pull_request rule carries every parameter the live ruleset returns", () => {
+    expect(Object.keys(params("pull_request")).sort()).toEqual(
+      [
+        "allowed_merge_methods",
+        "dismiss_stale_reviews_on_push",
+        "require_code_owner_review",
+        "require_extra_approval_for_unattributed_changes",
+        "require_last_push_approval",
+        "required_approving_review_count",
+        "required_review_thread_resolution",
+        "required_reviewers",
+      ].sort(),
+    );
+  });
+
+  it("allows merge commits only and keeps the extra approval for unattributed changes", () => {
+    const p = params("pull_request");
+    expect(p.allowed_merge_methods).toEqual(["merge"]);
+    expect(p.require_extra_approval_for_unattributed_changes).toBe(true);
+  });
+
+  it("required_status_checks rule sets do_not_enforce_on_create explicitly", () => {
+    expect(typeof params("required_status_checks").do_not_enforce_on_create).toBe("boolean");
+  });
+});
+
 describe("Worker secrets <-> manifest drift", () => {
   const config = JSON.parse(stripJsonc(read("wrangler.jsonc"))) as {
     secrets?: { required?: string[] };
