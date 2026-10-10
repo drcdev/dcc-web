@@ -615,8 +615,8 @@ issue #91. They are recorded here for reference. They are not setup items, they 
 ### API rate-limiting rule
 
 **What it is for**
-Stops one address from hammering the public API. The site's own cap on contact-form messages is the
-last line of defence; this rule keeps abusive traffic from reaching the Worker at all.
+Stops one address from hammering the public API. Without a per-sender limit in the Worker, this rule and
+the contact form's Turnstile check are the limits on contact abuse; this rule keeps abusive traffic from reaching the Worker at all.
 
 **Where it is**
 Cloudflare dashboard → the zone → Security → WAF → Rate limiting rules. There is one rule, which is
