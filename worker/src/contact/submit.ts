@@ -16,7 +16,12 @@ type Outcome =
 // One structured line per request, outcome only (FR-016). Never a value, IP, hash or token.
 function log(outcome: Outcome, error?: unknown): void {
   const line: Record<string, string> = { event: "contact", outcome };
-  if (outcome === "unavailable") line.name = error instanceof Error ? error.name : "UnknownError";
+  if (outcome === "unavailable") {
+    line.name = error instanceof Error ? error.name : "UnknownError";
+    // Only a Cloudflare E_* code is logged, never the error message (it could carry an address).
+    const code = (error as { code?: unknown } | null)?.code;
+    if (typeof code === "string" && /^E_[A-Z_]{1,60}$/.test(code)) line.code = code;
+  }
   console.log(JSON.stringify(line));
 }
 

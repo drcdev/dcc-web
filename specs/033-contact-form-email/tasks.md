@@ -114,10 +114,10 @@ Implementation stays **local**. No commit that carries the `send_email` binding 
 
 **Goal**: honeypot, validation, Turnstile, same-origin and size cap each stop a send; repeat senders are not limited; logs carry outcome only.
 
-- [ ] T026 [P] [US4] `[worker-int]` in `worker/test/contact.test.ts`: zero `send()` calls for honeypot (fake `{ok:true}`), invalid fields, Turnstile failure (wrong action or hostname, success false), cross-origin, no `Origin` header, `Origin: null`, wrong content type, over 10 KB (SC-006, US4 scenario 3).
-- [ ] T027 [P] [US4] `[worker-int]` in `worker/test/contact.test.ts`: the same sender sending many times in a row is never refused (no 429), replacing `rate-limit.test.ts`.
-- [ ] T028 [P] [US4] `[worker-int]` in `worker/test/logging.test.ts`: one JSON line per request with outcomes `sent`, `honeypot`, `invalid`, `turnstile_failed`, `unavailable` (adds `name` and an `E_*` `code` only), `forbidden`, `too_large`; no field value, address, IP, token or message id appears in any line (FR-013).
-- [ ] T029 [US4] Make T026 to T028 pass in `worker/src/contact/submit.ts` and the handler's logging (outcome type updated; `stored`, `duplicate`, `rate_limited` removed).
+- [X] T026 [P] [US4] `[worker-int]` in `worker/test/contact.test.ts`: zero `send()` calls for honeypot (fake `{ok:true}`), invalid fields, Turnstile failure (wrong action or hostname, success false), cross-origin, no `Origin` header, `Origin: null`, wrong content type, over 10 KB (SC-006, US4 scenario 3).
+- [X] T027 [P] [US4] `[worker-int]` in `worker/test/contact.test.ts`: the same sender sending many times in a row is never refused (no 429), replacing `rate-limit.test.ts`.
+- [X] T028 [P] [US4] `[worker-int]` in `worker/test/logging.test.ts`: one JSON line per request with outcomes `sent`, `honeypot`, `invalid`, `turnstile_failed`, `unavailable` (adds `name` and an `E_*` `code` only), `forbidden`, `too_large`; no field value, address, IP, token or message id appears in any line (FR-013).
+- [X] T029 [US4] Make T026 to T028 pass in `worker/src/contact/submit.ts` and the handler's logging (outcome type updated; `stored`, `duplicate`, `rate_limited` removed).
 
 ---
 

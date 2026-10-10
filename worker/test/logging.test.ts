@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { mockSiteverify, post, run, validBody } from "./helpers";
+import { fakeEmail, mockSiteverify, post, run, validBody } from "./helpers";
 
 const METHODS = ["log", "info", "warn", "error", "debug"] as const;
 
@@ -20,7 +20,7 @@ afterEach(() => {
 
 describe("submit logging", () => {
   const cases: [string, () => Request, () => void, string][] = [
-    ["stored", () => post(validBody({ name: "Zed Secretname" })), () => mockSiteverify(), "stored"],
+    ["sent", () => post(validBody({ name: "Zed Secretname" })), () => mockSiteverify(), "sent"],
     ["honeypot", () => post(validBody({ website: "spam" })), () => mockSiteverify(), "honeypot"],
     ["invalid", () => post(validBody({ email: "Zed@secret.example x" })), () => mockSiteverify(), "invalid"],
     [
@@ -60,10 +60,25 @@ describe("submit logging", () => {
     });
   }
 
-  it("logs exactly one line for a stored submission", async () => {
+  it("logs exactly one line for a sent submission", async () => {
     mockSiteverify();
     capture();
     await run(post());
     expect(lines).toHaveLength(1);
+  });
+
+  it("logs the error name and E_* code, and nothing else, when send() fails", async () => {
+    mockSiteverify();
+    capture();
+    const email = fakeEmail({ rejectsWith: "E_DELIVERY_FAILED" });
+    await run(post(validBody({ name: "Zed Secretname" })), { CONTACT_EMAIL: email });
+    expect(lines).toHaveLength(1);
+    const parsed = JSON.parse(lines[0]) as Record<string, unknown>;
+    expect(parsed).toEqual({
+      event: "contact",
+      outcome: "unavailable",
+      name: "Error",
+      code: "E_DELIVERY_FAILED",
+    });
   });
 });

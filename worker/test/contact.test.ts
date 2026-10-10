@@ -427,3 +427,65 @@ describe("POST /api/contact: honeypot leaves no trace", () => {
     expect(spy).not.toHaveBeenCalled();
   });
 });
+
+describe("POST /api/contact: refused requests send no email (SC-006)", () => {
+  const refused: [string, () => Request, Parameters<typeof mockSiteverify>[0], number][] = [
+    ["a filled honeypot", () => post(validBody({ website: "spam" })), undefined, 200],
+    ["invalid fields", () => post(validBody({ email: "not an email", message: "" })), undefined, 400],
+    ["a failed Turnstile check", () => post(), { success: false }, 422],
+    [
+      "a Turnstile answer for the wrong action",
+      () => post(),
+      { success: true, action: "other", hostname: "example.com" },
+      422,
+    ],
+    [
+      "a Turnstile answer for the wrong hostname",
+      () => post(),
+      { success: true, action: "contact", hostname: "evil.example" },
+      422,
+    ],
+    ["a cross-origin request", () => post(validBody(), { Origin: "https://evil.example" }), undefined, 403],
+    [
+      "a missing Origin header",
+      () => {
+        const request = post();
+        request.headers.delete("Origin");
+        return request;
+      },
+      undefined,
+      403,
+    ],
+    ["Origin: null", () => post(validBody(), { Origin: "null" }), undefined, 403],
+    ["a wrong content type", () => post(validBody(), { "Content-Type": "text/plain" }), undefined, 415],
+    [
+      "a body over 10 KB",
+      () => post(validBody({ message: "x".repeat(11_000) }), { "Content-Length": "11000" }),
+      undefined,
+      413,
+    ],
+  ];
+
+  for (const [label, request, verdict, status] of refused) {
+    it(`makes no send for ${label}`, async () => {
+      mockSiteverify(verdict);
+      const email = fakeEmail();
+      const response = await run(request(), { CONTACT_EMAIL: email });
+      expect(response.status).toBe(status);
+      expect(email.sent).toHaveLength(0);
+    });
+  }
+});
+
+describe("POST /api/contact: no sender limit (US4 scenario 4)", () => {
+  it("sends every message when one sender submits many times in a row", async () => {
+    const email = fakeEmail();
+    for (let i = 0; i < 12; i++) {
+      mockSiteverify();
+      const response = await run(post(), { CONTACT_EMAIL: email });
+      expect(response.status).toBe(200);
+      vi.restoreAllMocks();
+    }
+    expect(email.sent).toHaveLength(12);
+  });
+});
