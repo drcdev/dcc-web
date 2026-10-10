@@ -70,9 +70,9 @@ None. The three stories touch separate files and need no shared prerequisite bey
 
 ### Visual baselines (after all fixture, component and style edits, and with no sibling worktree browser tests running)
 
-- [ ] T015 [US3] Refresh the macOS baselines: `pnpm run test:visual:update` via the wrapper, following `.claude/skills/_shared/visual-baselines.md`. Then `git status`: the changed PNGs MUST be exactly the four `tests/e2e/visual.spec.ts-snapshots/story-template-{desktop,phone}-{light,dark}-visual-darwin.png`. Restore any other changed PNG with `git checkout -- <file>` and investigate it as a regression (FR-007).
-- [ ] T016 [US3] Refresh the Linux baselines: `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, follow CLAUDE.md and ask Don, do not fall back to CI unasked). Changed PNGs MUST be exactly the four `story-template-*-linux.png`; restore any other with `git checkout` and investigate. If Docker output later differs from CI, use the `visual-baselines` label fallback described in the shared doc.
-- [ ] T017 [US3] Review each refreshed image against its `-previous.png`: it differs only by the three marks gone and the content below moving up; the project-row, retired-story-header and lead-story shots are unchanged.
+- [X] T015 [US3] Refresh the macOS baselines: `pnpm run test:visual:update` via the wrapper, following `.claude/skills/_shared/visual-baselines.md`. Then `git status`: the changed PNGs MUST be exactly the four `tests/e2e/visual.spec.ts-snapshots/story-template-{desktop,phone}-{light,dark}-visual-darwin.png`. Restore any other changed PNG with `git checkout -- <file>` and investigate it as a regression (FR-007).
+- [X] T016 [US3] Refresh the Linux baselines: `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, follow CLAUDE.md and ask Don, do not fall back to CI unasked). Changed PNGs MUST be exactly the four `story-template-*-linux.png`; restore any other with `git checkout` and investigate. If Docker output later differs from CI, use the `visual-baselines` label fallback described in the shared doc.
+- [X] T017 [US3] Review each refreshed image against its `-previous.png`: it differs only by the three marks gone and the content below moving up; the project-row, retired-story-header and lead-story shots are unchanged.
 
 **Checkpoint**: `pnpm run test:visual` passes on the platform available locally with only the eight files changed.
 
