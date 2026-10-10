@@ -1,19 +1,9 @@
-// Contact page journeys (specs/007-contact-form/quickstart.md; FR-008j, FR-009,
-// SC-001). Each test sends a unique CF-Connecting-IP so tests do not share one
-// rate-limit bucket (research R6). Turnstile runs with Cloudflare's always-pass
-// test keys, so this needs network access to challenges.cloudflare.com.
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
+// Contact page journeys (specs/033-contact-form-email; FR-008j, FR-009, SC-001). They
+// assert only what the browser shows; the email itself is covered by the Worker tests.
+// Turnstile runs with Cloudflare's always-pass test keys, so this needs network access
+// to challenges.cloudflare.com.
+import { test, expect, type Page } from "@playwright/test";
 import { cspViolations, recordCspViolations } from "./csp-violations.ts";
-
-let counter = 0;
-async function uniqueSender(page: Page) {
-  const address = `203.0.113.${((Date.now() + counter++) % 250) + 1}`;
-  await page.route("**/api/contact", (route) =>
-    route.continue({ headers: { ...route.request().headers(), "cf-connecting-ip": address } }),
-  );
-}
 
 async function fillValid(page: Page) {
   await page.getByLabel("Name", { exact: true }).fill("Ada Lovelace");
@@ -27,7 +17,6 @@ test.describe("valid send", () => {
     page,
   }) => {
     await recordCspViolations(page);
-    await uniqueSender(page);
     const challengeRequests: string[] = [];
     page.on("request", (request) => {
       if (request.url().includes("challenges.cloudflare.com")) challengeRequests.push(request.url());
@@ -50,7 +39,6 @@ test.describe("valid send", () => {
     await expect(page.locator("#contact-success-heading")).toBeFocused();
     await expect(page.locator("#contact-form")).toBeHidden();
     expect(await cspViolations(page)).toEqual([]);
-    // Retrieval of the stored message is asserted in "retrieval through the API" below.
   });
 
   test("/contact/ allows the Turnstile host in its CSP and the home page does not", async ({ request }) => {
@@ -88,7 +76,6 @@ const send = (page: Page) => page.getByRole("button", { name: /^Send/ });
 
 test.describe("recovering from an error", () => {
   test("shows a consent error tied to the checkbox and keeps the typed values", async ({ page }) => {
-    await uniqueSender(page);
     await page.goto("/contact/");
     await page.getByLabel("Name", { exact: true }).fill("Ada Lovelace");
     await page.getByLabel("Email", { exact: true }).fill("ada@example.com");
@@ -138,8 +125,7 @@ test.describe("recovering from an error", () => {
     expect(await page.locator("#contact-message").inputValue()).toHaveLength(5001);
   });
 
-  test("a double-click on Send stores one message", async ({ page }) => {
-    await uniqueSender(page);
+  test("a double-click on Send sends exactly one POST", async ({ page }) => {
     const posts: string[] = [];
     page.on("request", (request) => {
       if (request.url().endsWith("/api/contact") && request.method() === "POST") posts.push(request.url());
@@ -151,31 +137,47 @@ test.describe("recovering from an error", () => {
     expect(posts).toHaveLength(1);
   });
 
-  for (const [status, error, message] of [
-    [503, "unavailable", "Your message wasn't sent because the service is unavailable. Please try again in a few minutes."],
-    [429, "rate_limited", "You've sent too many messages. Please try again later."],
-  ] as const) {
-    test(`a ${status} answer shows the plain error, keeps every value and returns focus to Send`, async ({ page }) => {
-      await page.route("**/api/contact", (route) =>
-        route.fulfill({ status, contentType: "application/json", body: JSON.stringify({ ok: false, error }) }),
-      );
-      await page.goto("/contact/");
-      await fillValid(page);
-      await send(page).click();
+  test("a 503 answer shows the service-unavailable error, keeps every value and returns focus to Send", async ({
+    page,
+  }) => {
+    await page.route("**/api/contact", (route) =>
+      route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: false, error: "unavailable" }),
+      }),
+    );
+    await page.goto("/contact/");
+    await fillValid(page);
+    await send(page).click();
 
-      await expect(page.locator("#contact-status")).toHaveText(message);
-      await expect(send(page)).toBeEnabled();
-      await expect(send(page)).toBeFocused();
-      await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Ada Lovelace");
-      await expect(page.getByLabel("Email", { exact: true })).toHaveValue("ada@example.com");
-      await expect(page.getByLabel("Message", { exact: true })).toHaveValue(
-        "Hello, I would like to talk about a project.",
-      );
-      await expect(page.getByLabel(/I agree that Don Coleman/)).toBeChecked();
-      await expect(page.locator("#contact-form")).toBeVisible();
-      await expect(page.locator("#contact-success")).toBeHidden();
-    });
-  }
+    await expect(page.locator("#contact-status")).toHaveText(
+      "Your message wasn't sent because the service is unavailable. Please try again in a few minutes.",
+    );
+    await expect(send(page)).toBeEnabled();
+    await expect(send(page)).toBeFocused();
+    await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Ada Lovelace");
+    await expect(page.getByLabel("Email", { exact: true })).toHaveValue("ada@example.com");
+    await expect(page.getByLabel("Message", { exact: true })).toHaveValue(
+      "Hello, I would like to talk about a project.",
+    );
+    await expect(page.getByLabel(/I agree that Don Coleman/)).toBeChecked();
+    await expect(page.locator("#contact-form")).toBeVisible();
+    await expect(page.locator("#contact-success")).toBeHidden();
+  });
+
+  test("a 200 answer shows the confirmation", async ({ page }) => {
+    await page.route("**/api/contact", (route) =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) }),
+    );
+    await page.goto("/contact/");
+    await fillValid(page);
+    await send(page).click();
+
+    await expect(page.locator("#contact-success")).toBeVisible({ timeout: 5000 });
+    await expect(page.locator("#contact-success-heading")).toBeFocused();
+    await expect(page.locator("#contact-form")).toBeHidden();
+  });
 
   test("a blocked Turnstile script shows the spam-check message and keeps the values", async ({ page }) => {
     await page.route("**/challenges.cloudflare.com/**", (route) => route.abort());
@@ -193,7 +195,6 @@ test.describe("recovering from an error", () => {
   });
 
   test("works by keyboard alone, announcing errors and then the success", async ({ page }) => {
-    await uniqueSender(page);
     await page.goto("/contact/");
     await page.getByLabel("Name", { exact: true }).focus();
     // Tab to Send from the first field and press Enter on the empty form.
@@ -224,66 +225,6 @@ test.describe("recovering from an error", () => {
   });
 });
 
-// Retrieval through the API (FR-020 to FR-023b). The token is the public fake value in the
-// e2e env file; the local D1 state is shared across tests, so the message is found by name.
-const FIXTURE_ENV = fileURLToPath(new URL("../fixtures/worker/e2e.env", import.meta.url));
-const READ_TOKEN = /^CONTACT_READ_TOKEN=(.+)$/m.exec(readFileSync(FIXTURE_ENV, "utf-8"))?.[1]?.trim() ?? "";
-
-interface Listed {
-  id: string;
-  name: string;
-  [key: string]: unknown;
-}
-
-async function listNew(request: APIRequestContext, name: string): Promise<Listed | undefined> {
-  let cursor: string | null = null;
-  do {
-    const response = await request.get(`/api/messages/new?limit=100${cursor ? `&after=${cursor}` : ""}`, {
-      headers: { Authorization: `Bearer ${READ_TOKEN}` },
-    });
-    expect(response.status()).toBe(200);
-    const body = (await response.json()) as { messages: Listed[]; next_cursor: string | null };
-    const found = body.messages.find((m) => m.name === name);
-    if (found) return found;
-    cursor = body.next_cursor;
-  } while (cursor);
-  return undefined;
-}
-
-test.describe("retrieval through the API", () => {
-  test("a sent message is listed once, can be marked read, and is then gone", async ({ page, request }) => {
-    expect(READ_TOKEN.length).toBeGreaterThan(0);
-    await uniqueSender(page);
-    const name = `Retrieval ${Date.now()}`;
-    await page.goto("/contact/");
-    await expect(send(page)).toBeEnabled();
-    await fillValid(page);
-    await page.getByLabel("Name", { exact: true }).fill(name);
-    await send(page).click();
-    await expect(page.locator("#contact-success")).toBeVisible({ timeout: 5000 });
-
-    const listed = await listNew(request, name);
-    expect(listed, "the sent message is in the new list").toBeDefined();
-    expect(listed).toMatchObject({ email: "ada@example.com", organization: null, project: null });
-    expect(listed).not.toHaveProperty("ip_hash");
-    expect(listed).not.toHaveProperty("status");
-
-    const auth = { Authorization: `Bearer ${READ_TOKEN}` };
-    const marked = await request.post(`/api/messages/${listed!.id}/read`, { headers: auth });
-    expect(marked.status()).toBe(200);
-    expect(await marked.json()).toEqual({ id: listed!.id, status: "read" });
-
-    expect(await listNew(request, name), "a read message never appears again").toBeUndefined();
-
-    const again = await request.post(`/api/messages/${listed!.id}/read`, { headers: auth });
-    expect(again.status()).toBe(409);
-
-    const refused = await request.get("/api/messages/new");
-    expect(refused.status()).toBe(401);
-    expect(await refused.json()).toEqual({ error: "unauthorized" });
-  });
-});
-
 test.describe("spam and abuse", () => {
   test("keeps the honeypot out of the tab order and the accessibility tree", async ({ page }) => {
     await page.goto("/contact/");
@@ -302,42 +243,43 @@ test.describe("spam and abuse", () => {
     }
   });
 
-  test("shows the success panel when the honeypot is filled, and stores nothing", async ({ page, request }) => {
-    await uniqueSender(page);
-    const name = `Honeypot ${Date.now()}`;
+  test("shows the success panel when the honeypot is filled", async ({ page }) => {
     await page.goto("/contact/");
     await expect(send(page)).toBeEnabled();
     await fillValid(page);
-    await page.getByLabel("Name", { exact: true }).fill(name);
     await page.locator('input[name="website"]').evaluate((el: HTMLInputElement) => {
       el.value = "http://spam.example";
     });
     await send(page).click();
     await expect(page.locator("#contact-success")).toBeVisible({ timeout: 5000 });
-    expect(await listNew(request, name), "a honeypot submission is not stored").toBeUndefined();
   });
 });
 
 test.describe("coming from a project story", () => {
-  test("?project=Metronome shows the About line and stores the project", async ({ page, request }) => {
-    await uniqueSender(page);
-    const name = `Project ${Date.now()}`;
+  // The request body is what the browser sent; the email's project line is a Worker test.
+  const trackBody = (page: Page) => {
+    const bodies: Record<string, unknown>[] = [];
+    page.on("request", (request) => {
+      if (request.url().endsWith("/api/contact") && request.method() === "POST") {
+        bodies.push(request.postDataJSON() as Record<string, unknown>);
+      }
+    });
+    return bodies;
+  };
+
+  test("?project=Metronome shows the About line and sends the project", async ({ page }) => {
+    const bodies = trackBody(page);
     await page.goto("/contact/?project=Metronome");
     await expect(page.locator("#contact-project")).toHaveText("About: Metronome");
     await expect(page.locator("#contact-project")).toBeVisible();
     await fillValid(page);
-    await page.getByLabel("Name", { exact: true }).fill(name);
     await send(page).click();
     await expect(page.locator("#contact-success")).toBeVisible({ timeout: 5000 });
-    expect((await listNew(request, name))?.project).toBe("Metronome");
+    expect(bodies[0]?.project).toBe("Metronome");
   });
 
-  test("a 150-character markup value renders as text, is cut to 100 and is stored the same way", async ({
-    page,
-    request,
-  }) => {
-    await uniqueSender(page);
-    const name = `Project long ${Date.now()}`;
+  test("a 150-character markup value renders as text and is cut to 100 in the request", async ({ page }) => {
+    const bodies = trackBody(page);
     const value = `<b>x</b>${"y".repeat(142)}`;
     expect(value).toHaveLength(150);
     const expected = value.slice(0, 100);
@@ -345,23 +287,20 @@ test.describe("coming from a project story", () => {
     await expect(page.locator("#contact-project")).toHaveText(`About: ${expected}`);
     expect(await page.locator("#contact-project b").count()).toBe(0);
     await fillValid(page);
-    await page.getByLabel("Name", { exact: true }).fill(name);
     await send(page).click();
     await expect(page.locator("#contact-success")).toBeVisible({ timeout: 5000 });
-    expect((await listNew(request, name))?.project).toBe(expected);
+    expect(bodies[0]?.project).toBe(expected);
   });
 
-  test("no parameter shows no line and stores null", async ({ page, request }) => {
-    await uniqueSender(page);
-    const name = `Project none ${Date.now()}`;
+  test("no parameter shows no line and sends no project", async ({ page }) => {
+    const bodies = trackBody(page);
     await page.goto("/contact/");
     await expect(send(page)).toBeEnabled();
     await expect(page.locator("#contact-project")).toBeHidden();
     await fillValid(page);
-    await page.getByLabel("Name", { exact: true }).fill(name);
     await send(page).click();
     await expect(page.locator("#contact-success")).toBeVisible({ timeout: 5000 });
-    expect((await listNew(request, name))?.project).toBeNull();
+    expect(bodies[0]?.project || null).toBeNull();
   });
 });
 

@@ -224,7 +224,6 @@ const link = "underline underline-offset-2 hover:text-rust-700 dark:hover:text-r
     forbidden: "Your message wasn't sent. Please try again from doncoleman.ca.",
     tooLarge: "Your message is too long to send. Please shorten it.",
     botCheck: "We couldn't confirm you're not a bot. Please try again.",
-    rateLimited: "You've sent too many messages. Please try again later.",
     unavailable: "Your message wasn't sent because the service is unavailable. Please try again in a few minutes.",
     checkFailedToLoad: "The spam check couldn't load. Please try again later.",
     checking: "Checking you're not a bot…",
@@ -468,11 +467,9 @@ const link = "underline underline-offset-2 hover:text-rust-700 dark:hover:text-r
               ? MESSAGES.tooLarge
               : response.status === 422
                 ? MESSAGES.botCheck
-                : response.status === 429
-                  ? MESSAGES.rateLimited
-                  : response.status >= 500
-                    ? MESSAGES.unavailable
-                    : MESSAGES.generic,
+                : response.status >= 500
+                  ? MESSAGES.unavailable
+                  : MESSAGES.generic,
         );
       } catch {
         resetCheck();

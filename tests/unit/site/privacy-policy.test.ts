@@ -1,10 +1,9 @@
-// The privacy policy states the contact-form facts of spec FR-019 and FR-012b, and
-// takes the retention period from the shared rules so the policy and the Worker
-// cannot drift apart (FR-019a). Reads the page source directly.
+// The privacy policy states the contact-form facts of spec FR-019 and FR-012b. It
+// describes email delivery: the message is sent by email and nothing is stored, so
+// there is no region or retention period to state. Reads the page source directly.
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { RETENTION_MONTHS } from "../../../worker/src/contact/rules.ts";
 
 const source = readFileSync(
   fileURLToPath(new URL("../../../src/content/pages/privacy-policy.mdx", import.meta.url)),
@@ -29,27 +28,32 @@ describe("privacy policy: contact form", () => {
     expect(form).toContain("reply");
   });
 
-  it("states Cloudflare D1 in Western North America and not Canada", () => {
-    expect(form).toContain("cloudflare d1");
-    expect(form).toContain("western north america");
-    expect(form).toContain("cannot be limited to canada");
+  it("names the email service and says the email is then kept in Don's mailbox with his mail provider", () => {
+    expect(form).toContain("cloudflare");
+    expect(form).toContain("email");
+    expect(form).toContain("mailbox");
+    expect(form).toContain("mail provider");
   });
 
-  it("states the retention period from the shared rules, read or not", () => {
-    expect(form).toContain(`${RETENTION_MONTHS} months`);
-    expect(form).toContain("whether they have been read or not");
+  it("says the site stores nothing", () => {
+    expect(form).toMatch(/this site stores nothing/);
   });
 
-  it("describes the IP fingerprint: only to limit repeat sending, one-way, salted, gone after about two days", () => {
+  it("says the IP address is not stored or used to limit sending but still goes to the human-check service", () => {
     expect(form).toContain("ip address");
-    expect(form).toContain("limit repeat sending");
-    expect(form).toContain("one-way");
-    expect(form).toContain("salted");
-    expect(form).toContain("about two days");
+    expect(form).toMatch(/not stored/);
+    expect(form).toMatch(/not used to limit/);
+    expect(form).toMatch(/human-check|turnstile/);
   });
 
-  it("says no notification email is sent", () => {
-    expect(form).toContain("no email or other notification");
+  it("drops the old storage, region, fingerprint and retention wording", () => {
+    const lower = body.toLowerCase();
+    const old = lower.slice(lower.indexOf("## the contact form"), lower.indexOf("## questions about a post"));
+    for (const word of ["d1", "western north america", "salted", "fingerprint", "12 months", "no email or other notification"]) {
+      expect(old).not.toContain(word);
+    }
+    expect(lower).not.toContain("time travel");
+    expect(lower).not.toContain("recovery history");
   });
 });
 
@@ -72,12 +76,22 @@ describe("privacy policy: spam protection", () => {
 describe("privacy policy: your choices", () => {
   const choices = section("Your choices");
 
-  it("gives the deletion request route, the 30-day answer and the 7-day recovery history", () => {
-    expect(choices).toContain("contact form");
-    expect(choices).toContain("contact@doncoleman.ca");
+  it("says Don keeps contact emails only as long as needed and deletes one on request within 30 days", () => {
+    expect(choices).toContain("only as long as needed");
+    expect(choices).toContain("delete");
     expect(choices).toContain("30 days");
-    expect(choices).toContain("time travel");
-    expect(choices).toContain("7 days");
+  });
+
+  it("explains how to ask: the form, or the address shown as a link whose text is the address", () => {
+    expect(choices).toContain("contact form");
+    expect(choices).toContain("[contact@doncoleman.ca](mailto:contact@doncoleman.ca)");
+  });
+
+  it("says deletion covers copies and the deleted-items folder, and backups follow the provider's terms", () => {
+    expect(choices).toContain("copies");
+    expect(choices).toContain("deleted-items folder");
+    expect(choices).toContain("backups");
+    expect(choices).toContain("provider");
   });
 });
 
@@ -111,5 +125,9 @@ describe("privacy policy: whole page", () => {
   it("is published and shows a Last updated date", () => {
     expect(front).not.toMatch(/^draft: true$/m);
     expect(body).toMatch(/\*\*Last updated:\*\* \d{1,2} \w+ \d{4}/);
+  });
+
+  it("has a current Last updated day (this change is dated 10 October 2026)", () => {
+    expect(body).toContain("**Last updated:** 10 October 2026");
   });
 });

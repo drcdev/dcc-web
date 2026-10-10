@@ -11,7 +11,7 @@ export const secretManifest: SecretRef[] = [
     store: "local-env",
     purpose: "Read-only token the setup check uses for Cloudflare reads",
     permissions:
-      "Cloudflare: Zone Read, DNS Read, Workers Scripts Read, Account Settings Read, D1 Read, Workers Builds Configuration Read, Turnstile Sites Read",
+      "Cloudflare: Zone Read, DNS Read, Workers Scripts Read, Account Settings Read, D1 Read, Workers Builds Configuration Read, Turnstile Sites Read, Email Routing Addresses Read, Zone Settings Read (drc.dev zone)",
     usedBy: [
       "local-credentials",
       "cloudflare-zone",
@@ -19,6 +19,7 @@ export const secretManifest: SecretRef[] = [
       "cloudflare-worker",
       "web-analytics",
       "contact-bindings",
+      "contact-email",
     ],
   },
   {
@@ -27,7 +28,7 @@ export const secretManifest: SecretRef[] = [
     store: "local-env",
     purpose: "Account the check reads",
     permissions: null,
-    usedBy: ["local-credentials", "cloudflare-worker", "web-analytics", "contact-bindings"],
+    usedBy: ["local-credentials", "cloudflare-worker", "web-analytics", "contact-bindings", "contact-email"],
   },
   {
     name: "CLOUDFLARE_ZONE_ID",
@@ -50,22 +51,6 @@ export const secretManifest: SecretRef[] = [
     kind: "secret",
     store: "cloudflare-worker",
     purpose: "Turnstile secret key the Worker uses to verify a contact-form submission; set on dcc-web and dcc-web-preview with wrangler secret put",
-    permissions: null,
-    usedBy: ["contact-bindings"],
-  },
-  {
-    name: "CONTACT_READ_TOKEN",
-    kind: "secret",
-    store: "cloudflare-worker",
-    purpose: "Bearer token the scheduled assistant uses to read new contact messages; a different value on each Worker",
-    permissions: null,
-    usedBy: ["contact-bindings"],
-  },
-  {
-    name: "IP_HASH_SALT",
-    kind: "secret",
-    store: "cloudflare-worker",
-    purpose: "Salt for the short-lived rate-limit fingerprint of a visitor's address; a different value on each Worker",
     permissions: null,
     usedBy: ["contact-bindings"],
   },

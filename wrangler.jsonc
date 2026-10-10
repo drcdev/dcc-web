@@ -17,8 +17,15 @@
     "head_sampling_rate": 1,
     "logs": { "invocation_logs": false }
   },
-  "triggers": { "crons": ["17 3 * * *"] },
-  "secrets": { "required": ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"] },
+  "triggers": { "crons": [] },
+  "secrets": { "required": ["TURNSTILE_SECRET_KEY"] },
+  "send_email": [
+    {
+      "name": "CONTACT_EMAIL",
+      "destination_address": "contact@doncoleman.ca",
+      "allowed_sender_addresses": ["contact-form@drc.dev"]
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",
@@ -32,10 +39,17 @@
       "name": "dcc-web-preview",
       "workers_dev": true,
       "preview_urls": true,
-      "vars": { "ALLOW_TURNSTILE_TESTING": "true" },
+      "vars": { "ALLOW_TURNSTILE_TESTING": "true", "SITE_ENVIRONMENT": "preview" },
       "ai": { "binding": "AI" },
-      "triggers": { "crons": ["17 3 * * *"] },
-      "secrets": { "required": ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"] },
+      "triggers": { "crons": [] },
+      "secrets": { "required": ["TURNSTILE_SECRET_KEY"] },
+      "send_email": [
+        {
+          "name": "CONTACT_EMAIL",
+          "destination_address": "contact@doncoleman.ca",
+          "allowed_sender_addresses": ["contact-form@drc.dev"]
+        }
+      ],
       "d1_databases": [
         {
           "binding": "DB",

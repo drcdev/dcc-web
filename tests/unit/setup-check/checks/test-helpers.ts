@@ -84,6 +84,8 @@ export function fakeProviderContext(overrides: FakeProviderOverrides = {}): Prov
     listBuildTriggers: notConfigured("cloudflare.listBuildTriggers"),
     listBuildVariableNames: notConfigured("cloudflare.listBuildVariableNames"),
     listTurnstileWidgets: notConfigured("cloudflare.listTurnstileWidgets"),
+    listEmailRoutingAddresses: notConfigured("cloudflare.listEmailRoutingAddresses"),
+    getEmailRoutingSettings: notConfigured("cloudflare.getEmailRoutingSettings"),
     ...overrides.cloudflare,
   };
   const dns: DnsReader = {

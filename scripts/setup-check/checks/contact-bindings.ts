@@ -6,12 +6,12 @@
 //                     never a pass.
 //   Turnstile widget  "dcc-web contact" exists in managed mode and covers doncoleman.ca, and
 //                     drc-dev.workers.dev unless the preview site-key fallback is in use.
-//   Worker secrets    the three secret NAMES exist on both Workers. Values are never read.
+//   Worker secrets    the one secret NAME (TURNSTILE_SECRET_KEY) exists on both Workers. Values are never read.
 //   Site key          the PUBLIC_TURNSTILE_SITE_KEY build variable exists on every build trigger of
 //                     both Workers (names only).
 //   Production deploy dcc-web's production trigger runs `pnpm run deploy:production`, its database has
-//                     every migration, and it has the Cron Trigger from wrangler.jsonc.
-// The preview Worker's builds, migrations and cron are covered by the CI preview wait and
+//                     every migration, and no Cron Trigger is still registered (the retention job is gone).
+// The preview Worker's builds and migrations are covered by the CI preview wait and
 // tests/unit/site/config-files.test.ts, not here.
 import type { CheckResult, ProviderContext } from "../types.ts";
 import {
@@ -186,13 +186,15 @@ async function checkProductionDeploy(
   }
 
   const crons = await cloudflare.listWorkerCrons(accountId, worker);
-  if (!crons.includes(config.productionCron)) {
-    problems.push(`${worker} has no Cron Trigger "${config.productionCron}" registered.`);
+  if (crons.length > 0) {
+    problems.push(
+      `${worker} still has a Cron Trigger registered (${crons.join(", ")}); it should have been removed by the last deploy.`,
+    );
   }
   return {
     problems,
     notes: [],
-    fix: `Set dcc-web's production deploy command to ${PRODUCTION_DEPLOY_COMMAND} (Settings → Build), then Retry the latest main build (${DOCS}).`,
+    fix: `Set dcc-web's production deploy command to ${PRODUCTION_DEPLOY_COMMAND} (Settings → Build), then Retry the latest main build; that deploy applies migrations and removes any old Cron Trigger (${DOCS}).`,
   };
 }
 
@@ -221,7 +223,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     }
     return complete(
       ITEM,
-      `The contact databases, Turnstile widget, secrets, site key variable and production deploy are in place.`,
+      `The databases, Turnstile widget, secret, site key variable and production deploy are in place.`,
       notes,
     );
   } catch (err) {

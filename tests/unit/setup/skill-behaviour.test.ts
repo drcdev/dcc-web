@@ -88,6 +88,23 @@ describe(".claude/skills/setup-walkthrough/SKILL.md", () => {
     }
   });
 
+  it("has a contact email step: drc.dev sending domain, no doncoleman.ca DNS change, destination check, token permissions, secret deletion shown for Don", () => {
+    const start = contents.indexOf("## Contact email (item 17)");
+    expect(start).toBeGreaterThan(-1);
+    const section = contents.slice(start);
+    expect(section).toContain("drc.dev");
+    expect(section).not.toMatch(/mail\.doncoleman\.ca|Subdomains/);
+    expect(section).toMatch(/no DNS change on doncoleman\.ca/i);
+    expect(section).toContain("contact@doncoleman.ca");
+    expect(section).toContain("Email Routing Addresses: Read");
+    expect(section).toContain("Zone Settings: Read");
+    expect(section).toMatch(/7 days/);
+    const delIndex = section.indexOf("wrangler secret delete");
+    expect(delIndex).toBeGreaterThan(-1);
+    expect(section.slice(0, delIndex)).toMatch(/shown for Don to run himself/i);
+    expect(section).toContain("--env-file /dev/null");
+  });
+
   it("never signs in, changes DNS or handles credentials", () => {
     const lower = contents.toLowerCase();
     expect(lower).toMatch(/never signs in/);

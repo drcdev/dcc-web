@@ -12,10 +12,11 @@ const docsAnchors = new Set(
 const secretNames = new Set(secretManifest.map((s) => s.name));
 
 describe("setupItems registry invariants", () => {
-  it("has exactly 16 items, mail-records at 5 and contact-bindings last", () => {
-    expect(setupItems).toHaveLength(16);
+  it("has exactly 17 items, mail-records at 5, contact-bindings at 16 and contact-email last", () => {
+    expect(setupItems).toHaveLength(17);
     expect(setupItems[4]!.id).toBe("mail-records");
     expect(setupItems[15]!.id).toBe("contact-bindings");
+    expect(setupItems[16]!.id).toBe("contact-email");
   });
 
   it("preview-noindex and web-analytics depend on no other item", () => {
@@ -24,9 +25,10 @@ describe("setupItems registry invariants", () => {
     }
   });
 
-  it("items 1 to 8 are before-merge and 9 to 16 are after-merge", () => {
+  it("items 1 to 8 and 17 are before-merge and 9 to 16 are after-merge", () => {
     for (const item of setupItems.slice(0, 8)) expect(item.phase).toBe("before-merge");
-    for (const item of setupItems.slice(8)) expect(item.phase).toBe("after-merge");
+    for (const item of setupItems.slice(8, 16)) expect(item.phase).toBe("after-merge");
+    expect(setupItems[16]!.phase).toBe("before-merge");
   });
 
   it("item 2 names the three new read permissions and item 9 names the preview Worker", () => {
@@ -40,6 +42,33 @@ describe("setupItems registry invariants", () => {
     const where = setupItems.find((i) => i.id === "contact-bindings")!.where;
     expect(where).toContain("wnam");
     expect(where).toContain("Western North America");
+  });
+
+  it("item 17 is the contact email item the contract describes", () => {
+    const item = setupItems.find((i) => i.id === "contact-email")!;
+    expect(item.order).toBe(17);
+    expect(item.phase).toBe("before-merge");
+    expect(item.needsDon).toBe(true);
+    expect(item.principles).toEqual(["VII", "VIII", "IX"]);
+    expect(item.dependsOn).toEqual(["local-credentials"]);
+    expect(item.where).toContain("drc.dev");
+    expect(item.where + item.purpose + item.confirmedBy).not.toMatch(/mail\.doncoleman\.ca|subdomain/i);
+  });
+
+  it("item 16 needs only the Turnstile secret and the manifest has no retired contact secrets", () => {
+    const item = setupItems.find((i) => i.id === "contact-bindings")!;
+    expect(item.secrets).toEqual(["TURNSTILE_SECRET_KEY", "PUBLIC_TURNSTILE_SITE_KEY"]);
+    expect(item.where + item.confirmedBy + item.purpose).not.toMatch(/has its cron|three (Worker )?secret/i);
+    expect(secretNames.has("CONTACT_READ_TOKEN")).toBe(false);
+    expect(secretNames.has("IP_HASH_SALT")).toBe(false);
+  });
+
+  it("the read-only token's manifest entry names Email Routing Addresses Read for contact-email", () => {
+    const token = secretManifest.find((s) => s.name === "CLOUDFLARE_API_TOKEN")!;
+    expect(token.permissions).toContain("Email Routing Addresses Read");
+    expect(token.permissions).toContain("Zone Settings Read");
+    expect(token.usedBy).toContain("contact-email");
+    expect(secretManifest.find((s) => s.name === "CLOUDFLARE_ACCOUNT_ID")!.usedBy).toContain("contact-email");
   });
 
   it("has unique ids", () => {
@@ -105,7 +134,7 @@ describe("setupItems registry invariants", () => {
     }
     // Items 1-8 are before-merge, 9-16 are after-merge (plan.md walkthrough order).
     const beforeMerge = setupItems.filter((i) => i.order <= 8);
-    const afterMerge = setupItems.filter((i) => i.order >= 9);
+    const afterMerge = setupItems.filter((i) => i.order >= 9 && i.order <= 16);
     expect(beforeMerge.every((i) => i.phase === "before-merge")).toBe(true);
     expect(afterMerge.every((i) => i.phase === "after-merge")).toBe(true);
   });

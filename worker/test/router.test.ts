@@ -37,7 +37,34 @@ describe("router", () => {
     expect(response.headers.has("Access-Control-Allow-Origin")).toBe(false);
   });
 
-  it("has a scheduled handler", () => {
-    expect(typeof worker.scheduled).toBe("function");
+  describe("the retired retrieval routes (FR-010, SC-005)", () => {
+    const paths = [
+      "/api/messages",
+      "/api/messages/new",
+      "/api/messages/new?limit=1",
+      "/api/messages/3f0c7c1e-8a5b-4d7e-9c1a-2b3c4d5e6f70",
+      "/api/messages/3f0c7c1e-8a5b-4d7e-9c1a-2b3c4d5e6f70/read",
+      "/api/messages/nope/deeper",
+    ];
+    const reference = async () => {
+      const response = await call("/api/nope");
+      return { body: await response.text(), headers: [...response.headers].sort(([a], [b]) => a.localeCompare(b)) };
+    };
+
+    it("answers every path and method with the unknown-route 404, with and without an old bearer token", async () => {
+      const expected = await reference();
+      expect(JSON.parse(expected.body)).toEqual({ error: "not_found" });
+      for (const method of ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]) {
+        for (const path of paths) {
+          for (const headers of [{} as Record<string, string>, { Authorization: "Bearer test-read-token" }]) {
+            const where = `${method} ${path} ${Object.keys(headers).length ? "with" : "without"} a token`;
+            const response = await call(path, { method, headers });
+            expect(response.status, where).toBe(404);
+            expect(await response.text(), where).toBe(expected.body);
+            expect([...response.headers].sort(([a], [b]) => a.localeCompare(b)), where).toEqual(expected.headers);
+          }
+        }
+      }
+    });
   });
 });

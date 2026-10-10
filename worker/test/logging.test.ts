@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { api, clearRows, mockSiteverify, post, run, seedMessage, validBody } from "./helpers";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { fakeEmail, mockSiteverify, post, run, validBody } from "./helpers";
 
 const METHODS = ["log", "info", "warn", "error", "debug"] as const;
 
@@ -14,16 +14,13 @@ function capture() {
   }
 }
 
-beforeEach(async () => {
-  await clearRows();
-});
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
 describe("submit logging", () => {
   const cases: [string, () => Request, () => void, string][] = [
-    ["stored", () => post(validBody({ name: "Zed Secretname" })), () => mockSiteverify(), "stored"],
+    ["sent", () => post(validBody({ name: "Zed Secretname" })), () => mockSiteverify(), "sent"],
     ["honeypot", () => post(validBody({ website: "spam" })), () => mockSiteverify(), "honeypot"],
     ["invalid", () => post(validBody({ email: "Zed@secret.example x" })), () => mockSiteverify(), "invalid"],
     [
@@ -63,39 +60,25 @@ describe("submit logging", () => {
     });
   }
 
-  it("logs exactly one line for a stored submission", async () => {
+  it("logs exactly one line for a sent submission", async () => {
     mockSiteverify();
     capture();
     await run(post());
     expect(lines).toHaveLength(1);
   });
-});
 
-describe("retrieval logging", () => {
-  it("logs nothing that identifies a message, token or caller", async () => {
-    const id = await seedMessage({ name: "Zed Secretname" });
-    const requests = [
-      () => api("/api/messages/new", { token: null }),
-      () => api("/api/messages/new", { token: "wrong-secret-token" }),
-      () => api("/api/messages/new"),
-      () => api(`/api/messages/${id}/read`, { method: "POST" }),
-      () => api(`/api/messages/${id}/read`, { method: "POST" }),
-      () => api(`/api/messages/${crypto.randomUUID()}/read`, { method: "POST" }),
-      () => api("/api/messages/new?limit=0"),
-    ];
-    for (const request of requests) {
-      capture();
-      await run(request());
-      expect(lines.length).toBeLessThanOrEqual(1);
-      for (const line of lines) {
-        const parsed = JSON.parse(line) as Record<string, unknown>;
-        expect(parsed.event).toBe("messages");
-        expect(Object.keys(parsed).sort()).toEqual(["event", "outcome"]);
-        for (const secret of [id, "Zed", "Secretname", "test-read-token", "wrong-secret-token", "ada@example.com", "Hello"]) {
-          expect(line).not.toContain(secret);
-        }
-      }
-      vi.restoreAllMocks();
-    }
+  it("logs the error name and E_* code, and nothing else, when send() fails", async () => {
+    mockSiteverify();
+    capture();
+    const email = fakeEmail({ rejectsWith: "E_DELIVERY_FAILED" });
+    await run(post(validBody({ name: "Zed Secretname" })), { CONTACT_EMAIL: email });
+    expect(lines).toHaveLength(1);
+    const parsed = JSON.parse(lines[0]) as Record<string, unknown>;
+    expect(parsed).toEqual({
+      event: "contact",
+      outcome: "unavailable",
+      name: "Error",
+      code: "E_DELIVERY_FAILED",
+    });
   });
 });

@@ -18,7 +18,7 @@ import {
 } from "./contact-helpers.ts";
 
 const KEY = "PUBLIC_TURNSTILE_SITE_KEY";
-const ALL_SECRETS = ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT"];
+const ALL_SECRETS = ["TURNSTILE_SECRET_KEY"];
 const production = trigger({ deployCommand: "pnpm run deploy:production" });
 const widget = { name: "dcc-web contact", domains: ["doncoleman.ca", "drc-dev.workers.dev"], mode: "managed" };
 const databases = [
@@ -37,7 +37,7 @@ function cloud(overrides: Record<string, unknown> = {}) {
       script === "dcc-web" ? [production] : [trigger({ uuid: "v1" }), nonProdTrigger({ uuid: "v2" })],
     listBuildVariableNames: async () => [KEY],
     listD1AppliedMigrations: async () => MIGRATIONS,
-    listWorkerCrons: async () => ["17 3 * * *"],
+    listWorkerCrons: async () => [],
     ...overrides,
   } as never;
 }
@@ -218,11 +218,11 @@ describe("checks/contact-bindings", () => {
 
     it("lists missing names per Worker", async () => {
       const result = await run({
-        listWorkerSecretNames: secretsFor({ "dcc-web": ALL_SECRETS, "dcc-web-preview": ["TURNSTILE_SECRET_KEY"] }),
+        listWorkerSecretNames: secretsFor({ "dcc-web": ALL_SECRETS, "dcc-web-preview": ["OTHER"] }),
       });
       expect(result.status).toBe("missing");
       const details = result.details.join("\n");
-      expect(details).toMatch(/Worker secrets: dcc-web-preview is missing: CONTACT_READ_TOKEN, IP_HASH_SALT/);
+      expect(details).toMatch(/Worker secrets: dcc-web-preview is missing: TURNSTILE_SECRET_KEY/);
       expect(details).not.toMatch(/Worker secrets: dcc-web is missing/);
       expect(result.nextAction).toMatch(/wrangler secret put/);
       expect(result.nextAction).toMatch(/--env preview/);
@@ -313,10 +313,12 @@ describe("checks/contact-bindings", () => {
       expect(result.nextAction).toMatch(/Retry/);
     });
 
-    it("is missing when the cron is not registered on dcc-web", async () => {
-      const result = await run({ listWorkerCrons: async () => [] });
+    it("is missing when a cron is still registered on dcc-web, and does not require one", async () => {
+      const result = await run({ listWorkerCrons: async () => ["17 3 * * *"] });
       expect(result.status).toBe("missing");
-      expect(result.details.join("\n")).toMatch(/Production deploy: .*Cron Trigger/);
+      expect(result.details.join("\n")).toMatch(/Production deploy: .*Cron Trigger.*removed/);
+      expect(result.nextAction).toMatch(/Retry/);
+      expect((await run({ listWorkerCrons: async () => [] })).status).toBe("complete");
     });
 
     it("is missing when the production database does not exist", async () => {
@@ -330,7 +332,7 @@ describe("checks/contact-bindings", () => {
     const result = await run({
       listD1Databases: async () => [],
       listTurnstileWidgets: async () => [],
-      listWorkerCrons: async () => [],
+      listD1AppliedMigrations: async () => [],
     });
     expect(result.status).toBe("missing");
     const details = result.details.join("\n");

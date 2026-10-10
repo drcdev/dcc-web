@@ -143,14 +143,12 @@ commit and push. This is the only non-check command the skill runs during the wa
 
 Don never pastes a secret into the chat. The check confirms these by name only and the skill
 never asks for a value. Shown for Don to run himself at the Worker secrets part, typing or
-pasting each value at Wrangler's prompt (production first, then the same three with `--env preview`
-in place of `--env ""`, using a different read token and salt). `--env-file /dev/null` keeps Wrangler
-from using the read-only token in the repository's `.env` instead of Don's dashboard login:
+pasting the value at Wrangler's prompt (production first, then the same command with `--env preview`
+in place of `--env ""`). `--env-file /dev/null` keeps Wrangler from using the read-only token in the
+repository's `.env` instead of Don's dashboard login:
 
 ```sh
 pnpm exec wrangler secret put TURNSTILE_SECRET_KEY --env "" --env-file /dev/null
-pnpm exec wrangler secret put CONTACT_READ_TOKEN --env "" --env-file /dev/null
-openssl rand -hex 32 | pnpm exec wrangler secret put IP_HASH_SALT --env "" --env-file /dev/null
 ```
 
 To replace a leaked secret on `dcc-web`, Don runs the same `wrangler secret put` command again with
@@ -158,3 +156,29 @@ a new value; no redeploy is needed. On `dcc-web-preview` plain `secret put` refu
 build, so Don runs `wrangler versions secret put NAME --env preview --env-file /dev/null`, then
 `wrangler versions deploy --env preview --env-file /dev/null`, and the agent pushes a commit (or Don
 retries the build) so the branch alias inherits the new value.
+
+## Contact email (item 17)
+
+`contact-email` is `phase: before-merge`: it must be complete before the branch's first push, because
+the first deploy carrying the email binding needs a verified destination. Use `docs/setup.md#contact-email`.
+The form sends from `contact-form@drc.dev`, Don's separate domain that already uses Email Routing, so
+there is no DNS change on doncoleman.ca and its iCloud mail (guarded by item 5) is never involved.
+
+1. Destination. Don adds `contact@doncoleman.ca` under Email Routing, Destination addresses (if it is
+   not already there) and opens the verification link in that mailbox.
+2. Sending domain. Don opens `drc.dev`, Email, Email Routing in the dashboard and confirms routing is
+   enabled with no DNS warnings. If it is off, he turns it on for `drc.dev` only.
+3. Token. Don edits his read-only token: Account, Email Routing Addresses: Read; and the `drc.dev` zone
+   added to its zone resources with Zone: Read and Zone Settings: Read. If the check says it
+   could not read either part, send Don back to `local-credentials` (item 2) for these permissions.
+4. Check. `pnpm setup:check --json --item contact-email` runs, followed by a full run to see item 17
+   complete.
+5. Retired secrets. Within 7 days of release Don deletes `CONTACT_READ_TOKEN` and `IP_HASH_SALT` from
+   both Workers. `--env-file /dev/null` keeps Wrangler on his dashboard login.
+   Shown for Don to run himself:
+
+```sh
+pnpm exec wrangler secret delete CONTACT_READ_TOKEN --env "" --env-file /dev/null
+pnpm exec wrangler secret delete IP_HASH_SALT --env "" --env-file /dev/null
+pnpm exec wrangler secret delete CONTACT_READ_TOKEN --env preview --env-file /dev/null
+pnpm exec wrangler secret delete IP_HASH_SALT --env preview --env-file /dev/null

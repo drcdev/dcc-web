@@ -313,5 +313,24 @@ export function createCloudflareReader(options: CloudflareReaderOptions): Cloudf
         }));
       });
     },
+
+    async listEmailRoutingAddresses(accountId: string) {
+      return guarded("Email Routing Addresses: Read", async () => {
+        const addresses: Array<{ email?: string; verified?: unknown }> = [];
+        for await (const address of client.emailRouting.addresses.list({ account_id: accountId })) {
+          addresses.push(address as never);
+        }
+        // Only the address and whether it is verified: the tag and id are dropped.
+        return addresses.map((a) => ({ email: a.email ?? "", verified: stringOrNull(a.verified) }));
+      });
+    },
+
+    async getEmailRoutingSettings(zoneId: string) {
+      return guarded("Zone Settings: Read", async () => {
+        const settings = (await client.emailRouting.get({ zone_id: zoneId })) as { enabled?: unknown; status?: unknown };
+        // Only whether routing is on and its status: the tag, id and dates are dropped.
+        return { enabled: settings.enabled === true, status: stringOrNull(settings.status) };
+      });
+    },
   };
 }

@@ -91,6 +91,12 @@ export function noNetworkContext(base: ProviderContext): ProviderContext {
     listWebAnalyticsSites: async () => {
       throw networkDisabledError();
     },
+    listEmailRoutingAddresses: async () => {
+      throw networkDisabledError();
+    },
+    getEmailRoutingSettings: async () => {
+      throw networkDisabledError();
+    },
     listD1Databases: async () => {
       throw networkDisabledError();
     },

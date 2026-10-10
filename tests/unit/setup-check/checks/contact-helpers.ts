@@ -17,14 +17,14 @@ export function wranglerText(
   return `{
   // comment with a "quoted" word and a url https://example.com
   "name": "dcc-web",
-  "triggers": { "crons": ["17 3 * * *"] },
+  "triggers": { "crons": [] },
   "d1_databases": [
     { "binding": "DB", "database_name": "${names.production}", "database_id": "${ids.production}", },
   ],
   "env": {
     "preview": {
       "name": "dcc-web-preview",
-      "triggers": { "crons": ["17 3 * * *"] },
+      "triggers": { "crons": [] },
       /* block */
       "d1_databases": [
         { "binding": "DB", "database_name": "${names.preview}", "database_id": "${ids.preview}" }

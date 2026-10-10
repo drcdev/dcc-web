@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { stripJsonc } from "../../../scripts/lib/jsonc.ts";
+import { CONTACT_DESTINATION, CONTACT_SENDER } from "../../../worker/src/contact/email.ts";
 
 describe("wrangler.jsonc", () => {
   const wranglerPath = fileURLToPath(new URL("../../../wrangler.jsonc", import.meta.url));
@@ -72,9 +73,50 @@ describe("wrangler.jsonc", () => {
     expect(read("scripts/deploy/preview.ts")).toContain('"--env", "preview"');
   });
 
-  it("schedules at least one cron trigger (the retention job) in both environments", () => {
-    expect(config.triggers?.crons?.length).toBeGreaterThan(0);
-    expect(config.env.preview.triggers?.crons?.length).toBeGreaterThan(0);
+  // The cron list is present and empty, not omitted: an omitted list leaves the deployed cron in place.
+  it("declares an empty cron list in both environments (no retention job, feature 033)", () => {
+    expect(config.triggers?.crons).toEqual([]);
+    expect(config.env.preview.triggers?.crons).toEqual([]);
+  });
+
+  it("binds exactly one send_email binding, CONTACT_EMAIL, locked to the fixed destination and sender", () => {
+    for (const block of [config, config.env.preview]) {
+      expect(block.send_email).toHaveLength(1);
+      expect(block.send_email[0]).toEqual({
+        name: "CONTACT_EMAIL",
+        destination_address: CONTACT_DESTINATION,
+        allowed_sender_addresses: [CONTACT_SENDER],
+      });
+      expect(block.send_email[0]).not.toHaveProperty("remote");
+    }
+    // The sender is on the separate sending domain drc.dev, never on doncoleman.ca or a subdomain of it.
+    expect(CONTACT_SENDER).toBe("contact-form@drc.dev");
+  });
+
+  it("requires only the Turnstile secret in both environments", () => {
+    expect(config.secrets?.required).toEqual(["TURNSTILE_SECRET_KEY"]);
+    expect(config.env.preview.secrets?.required).toEqual(["TURNSTILE_SECRET_KEY"]);
+  });
+
+  it("marks only the preview environment with SITE_ENVIRONMENT", () => {
+    expect(config.env.preview.vars?.SITE_ENVIRONMENT).toBe("preview");
+    expect(config.vars ?? {}).not.toHaveProperty("SITE_ENVIRONMENT");
+  });
+
+  it("keeps no retired contact-storage name in configuration, workflows or the e2e environment (FR-009, FR-017a)", () => {
+    const files = [
+      "wrangler.jsonc",
+      ".env.example",
+      "tests/fixtures/worker/e2e.env",
+      ...readdirSync(fileURLToPath(new URL("../../../.github/workflows/", import.meta.url))).map(
+        (name) => `.github/workflows/${name}`,
+      ),
+    ];
+    for (const file of files) {
+      const text = readFileSync(fileURLToPath(new URL(`../../../${file}`, import.meta.url)), "utf-8");
+      expect(text, file).not.toMatch(/CONTACT_READ_TOKEN|IP_HASH_SALT|RETENTION|\/api\/messages/);
+    }
+    expect(JSON.stringify(config)).not.toMatch(/"messages"|messages_/);
   });
 
   it("keeps invocation logs off", () => {
@@ -291,13 +333,15 @@ describe("worker workspace and tooling wiring (007 contact form)", () => {
 describe("contact Worker files", () => {
   const root = fileURLToPath(new URL("../../../", import.meta.url));
 
-  it("has only additive migrations (no DROP, DELETE or RENAME)", () => {
+  // 0003 is the one deliberate destructive migration: it drops the retired messages table (feature 033, FR-009).
+  it("has only additive migrations, apart from the one that drops messages (no DELETE or RENAME)", () => {
     const dir = `${root}migrations/`;
     const files = readdirSync(dir).filter((f) => f.endsWith(".sql"));
     expect(files.length).toBeGreaterThan(0);
     for (const file of files) {
       const sql = readFileSync(`${dir}${file}`, "utf-8");
-      expect(sql, file).not.toMatch(/\b(DROP|DELETE|RENAME)\b/i);
+      const checked = file === "0003_drop_messages.sql" ? sql.replace(/^DROP TABLE IF EXISTS messages;$/m, "") : sql;
+      expect(checked, file).not.toMatch(/\b(DROP|DELETE|RENAME)\b/i);
     }
   });
 
@@ -309,8 +353,6 @@ describe("contact Worker files", () => {
   it("provides the e2e env file with public test values only", () => {
     const text = readFileSync(`${root}tests/fixtures/worker/e2e.env`, "utf-8");
     expect(text).toContain("TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA");
-    expect(text).toMatch(/^CONTACT_READ_TOKEN=.+/m);
-    expect(text).toMatch(/^IP_HASH_SALT=.+/m);
     expect(text).not.toContain("ALLOW_TURNSTILE_TESTING");
   });
 });

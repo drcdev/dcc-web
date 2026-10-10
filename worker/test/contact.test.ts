@@ -1,77 +1,115 @@
 import { env } from "cloudflare:workers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import worker from "../src/index";
 import {
-  clearRows,
-  ipHashFor,
+  fakeEmail,
   mockSiteverify,
   ORIGIN,
   post,
-  rows,
   run,
-  seedMessage,
+  snapshot,
   SITEVERIFY,
   validBody,
 } from "./helpers";
 
+let baseline: Awaited<ReturnType<typeof snapshot>>;
 beforeEach(async () => {
-  await clearRows();
+  baseline = await snapshot();
 });
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
+type SentEmail = { to: string; text: string; subject: string; replyTo?: string };
+
 describe("POST /api/contact: project", () => {
-  it("stores the project as plain text with control characters removed", async () => {
+  it("puts the project in the subject and body as plain text with control characters removed", async () => {
     mockSiteverify();
-    const response = await run(post(validBody({ project: "  <b>Ca\u0000den\u0007ce</b>\n " })));
+    const email = fakeEmail();
+    const response = await run(post(validBody({ project: "  <b>Ca\u0000den\u0007ce</b>\n " })), { CONTACT_EMAIL: email });
     expect(response.status).toBe(200);
-    expect((await rows())[0].project).toBe("<b>Cadence</b>");
+    const sent = email.sent[0] as SentEmail;
+    expect(sent.subject).toBe("Contact form: Ada Lovelace (about <b>Cadence</b>)");
+    expect(sent.text).toContain("Project: <b>Cadence</b>\n");
   });
 
-  it("stores null for an absent, blank or control-only project", async () => {
-    let n = 0;
+  it("says 'not given' for an absent, blank or control-only project", async () => {
     for (const project of [undefined, "", "   ", "\u0000\u0001"]) {
       mockSiteverify();
-      await run(post(validBody({ project }), { "CF-Connecting-IP": `203.0.113.${100 + n++}` }));
+      const email = fakeEmail();
+      await run(post(validBody({ project })), { CONTACT_EMAIL: email });
+      const sent = email.sent[0] as SentEmail;
+      expect(sent.text).toContain("Project: not given\n");
+      expect(sent.subject).not.toContain("about");
       vi.restoreAllMocks();
     }
-    const stored = await rows();
-    expect(stored).toHaveLength(4);
-    expect(stored.every((row) => row.project === null)).toBe(true);
   });
 
   it("refuses a project over 100 characters after cleaning, and accepts exactly 100", async () => {
     mockSiteverify();
-    const tooLong = await run(post(validBody({ project: "p".repeat(101) })));
+    const email = fakeEmail();
+    const tooLong = await run(post(validBody({ project: "p".repeat(101) })), { CONTACT_EMAIL: email });
     expect(tooLong.status).toBe(400);
     expect(await tooLong.json()).toMatchObject({ error: "validation", fields: { project: "too_long" } });
-    const padded = await run(post(validBody({ project: `\u0000${"p".repeat(100)}\u0000` })));
+    expect(email.sent).toHaveLength(0);
+    const padded = await run(post(validBody({ project: `\u0000${"p".repeat(100)}\u0000` })), { CONTACT_EMAIL: email });
     expect(padded.status).toBe(200);
-    expect((await rows())[0].project).toBe("p".repeat(100));
+    expect((email.sent[0] as SentEmail).text).toContain(`Project: ${"p".repeat(100)}\n`);
   });
 });
 
 describe("POST /api/contact: accepted", () => {
-  it("stores one row with a hashed IP and no raw IP", async () => {
+  it("makes exactly one send to the constant destination and answers 200", async () => {
     mockSiteverify();
+    const email = fakeEmail();
     const body = validBody();
-    const response = await run(post(body));
+    const response = await run(post(body), { CONTACT_EMAIL: email });
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true });
-    const stored = await rows();
-    expect(stored).toHaveLength(1);
-    expect(stored[0]).toMatchObject({
-      id: body.submission_id,
-      name: "Ada Lovelace",
-      email: "ada@example.com",
-      organization: null,
-      project: null,
-      message: "Hello there",
-      status: "new",
+    expect(email.sent).toHaveLength(1);
+    const sent = email.sent[0] as SentEmail;
+    expect(sent.to).toBe("contact@doncoleman.ca");
+    expect(sent.replyTo).toBe("ada@example.com");
+    expect(sent.text).toContain("Name: Ada Lovelace\n");
+    expect(sent.text).toContain("Email: ada@example.com\n");
+    expect(sent.text).toContain("Organization: not given\n");
+    expect(sent.text).toContain("Message:\nHello there\n");
+  });
+
+  it("includes organization and project when given", async () => {
+    mockSiteverify();
+    const email = fakeEmail();
+    const response = await run(post(validBody({ organization: "Analytical Engines", project: "Flux" })), {
+      CONTACT_EMAIL: email,
     });
-    expect(String(stored[0].ip_hash)).toMatch(/^[0-9a-f]{64}$/);
-    expect(JSON.stringify(stored[0])).not.toContain("203.0.113.7");
-    expect(typeof stored[0].received_at).toBe("number");
+    expect(response.status).toBe(200);
+    expect(email.sent).toHaveLength(1);
+    const sent = email.sent[0] as SentEmail;
+    expect(sent.text).toContain("Organization: Analytical Engines\n");
+    expect(sent.text).toContain("Project: Flux\n");
+  });
+
+  it("ignores any recipient or header a caller puts in the body", async () => {
+    mockSiteverify();
+    const email = fakeEmail();
+    const response = await run(
+      post(validBody({ to: "evil@example.com", cc: "evil@example.com", bcc: "evil@example.com", headers: { Bcc: "x@y.z" } })),
+      { CONTACT_EMAIL: email },
+    );
+    expect(response.status).toBe(200);
+    expect(email.sent).toHaveLength(1);
+    const sent = email.sent[0] as Record<string, unknown>;
+    expect(sent.to).toBe("contact@doncoleman.ca");
+    for (const key of ["cc", "bcc", "headers"]) expect(sent, key).not.toHaveProperty(key);
+    expect(JSON.stringify(sent)).not.toContain("evil@example.com");
+  });
+
+  it("writes nothing to D1 and the Worker has no scheduled handler (FR-009, FR-011)", async () => {
+    mockSiteverify();
+    const response = await run(post(), { CONTACT_EMAIL: fakeEmail() });
+    expect(response.status).toBe(200);
+    expect(await snapshot()).toEqual(baseline);
+    expect(worker).not.toHaveProperty("scheduled");
   });
 
   it("accepts http on 127.0.0.1 and localhost", async () => {
@@ -83,23 +121,44 @@ describe("POST /api/contact: accepted", () => {
     }
   });
 
-  it("answers a repeated submission id with 200 and stores one row", async () => {
+  it("honeypot returns 200 with no Turnstile call and no send", async () => {
     const { spy } = mockSiteverify();
-    const body = validBody();
-    await run(post(body));
-    const again = await run(post(body));
-    expect(again.status).toBe(200);
-    expect(await rows()).toHaveLength(1);
-    expect(spy).toHaveBeenCalledTimes(1);
-  });
-
-  it("honeypot returns 200 with no Turnstile call and no row", async () => {
-    const { spy } = mockSiteverify();
-    const response = await run(post(validBody({ website: "http://spam.example" })));
+    const email = fakeEmail();
+    const response = await run(post(validBody({ website: "http://spam.example" })), { CONTACT_EMAIL: email });
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true });
     expect(spy).not.toHaveBeenCalled();
-    expect(await rows()).toHaveLength(0);
+    expect(email.sent).toHaveLength(0);
+  });
+});
+
+describe("POST /api/contact: sending fails", () => {
+  const failures = [
+    "E_SENDER_NOT_VERIFIED",
+    "E_RECIPIENT_NOT_ALLOWED",
+    "E_RATE_LIMIT_EXCEEDED",
+    "E_DELIVERY_FAILED",
+    "E_INTERNAL_SERVER_ERROR",
+    "",
+  ];
+  for (const code of failures) {
+    it(`503 unavailable with one send and no retry when send() rejects with ${code || "a plain Error"}`, async () => {
+      mockSiteverify();
+      const email = fakeEmail({ rejectsWith: code });
+      const response = await run(post(), { CONTACT_EMAIL: email });
+      expect(response.status).toBe(503);
+      expect(await response.json()).toEqual({ ok: false, error: "unavailable" });
+      expect(email.sent).toHaveLength(1);
+    });
+  }
+
+  it("503 with zero sends when Turnstile has a network error", async () => {
+    mockSiteverify("network-error");
+    const email = fakeEmail();
+    const response = await run(post(), { CONTACT_EMAIL: email });
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ ok: false, error: "unavailable" });
+    expect(email.sent).toHaveLength(0);
   });
 });
 
@@ -120,14 +179,14 @@ describe("POST /api/contact: refused at the edge", () => {
     expect((await run(post(validBody(), { "Sec-Fetch-Site": "cross-site" }))).status).toBe(403);
     const response = await run(post(validBody(), { Origin: "https://evil.example" }));
     expect(await response.json()).toEqual({ ok: false, error: "forbidden" });
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("403 for http on a non-local host", async () => {
     mockSiteverify();
     const response = await run(post(validBody(), {}, "http://example.com/api/contact"));
     expect(response.status).toBe(403);
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("415 for a wrong content type, accepting parameters on the right one", async () => {
@@ -145,7 +204,7 @@ describe("POST /api/contact: refused at the edge", () => {
     expect(response.status).toBe(413);
     expect(await response.json()).toEqual({ ok: false, error: "too_large" });
     expect(spy).not.toHaveBeenCalled();
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("413 when a streamed body without Content-Length grows past 10,240 bytes", async () => {
@@ -166,7 +225,7 @@ describe("POST /api/contact: refused at the edge", () => {
     const response = await run(request);
     expect(response.status).toBe(413);
     expect(spy).not.toHaveBeenCalled();
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("400 invalid_json for a body that is not a JSON object", async () => {
@@ -188,7 +247,7 @@ describe("POST /api/contact: refused at the edge", () => {
       fields: { email: "invalid", consent: "required" },
     });
     expect(spy).not.toHaveBeenCalled();
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 });
 
@@ -207,7 +266,7 @@ describe("POST /api/contact: Turnstile", () => {
       expect(await response.json()).toEqual({ ok: false, error: "turnstile_failed" });
       vi.restoreAllMocks();
     }
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("accepts Cloudflare's documented testing-key answer only when ALLOW_TURNSTILE_TESTING is \"true\"", async () => {
@@ -225,7 +284,7 @@ describe("POST /api/contact: Turnstile", () => {
     const response = await run(post(validBody(), {}, "http://127.0.0.1:4321/api/contact"));
     expect(response.status).toBe(422);
     expect(await response.json()).toEqual({ ok: false, error: "turnstile_failed" });
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("422 for a testing-key success unless the flag is exactly \"true\"", async () => {
@@ -235,7 +294,7 @@ describe("POST /api/contact: Turnstile", () => {
       expect(response.status).toBe(422);
       vi.restoreAllMocks();
     }
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("422 when the token is missing, without calling siteverify", async () => {
@@ -253,7 +312,7 @@ describe("POST /api/contact: Turnstile", () => {
       expect(await response.json()).toEqual({ ok: false, error: "unavailable" });
       vi.restoreAllMocks();
     }
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("sends the secret, token, remoteip and idempotency_key, and no form field", async () => {
@@ -271,22 +330,6 @@ describe("POST /api/contact: Turnstile", () => {
   });
 });
 
-describe("POST /api/contact: D1 failure", () => {
-  it("503 with nothing stored when the insert fails", async () => {
-    mockSiteverify();
-    const real = env.DB.prepare.bind(env.DB);
-    vi.spyOn(env.DB, "prepare").mockImplementation((sql: string) => {
-      if (sql.trim().toUpperCase().startsWith("INSERT")) throw new Error("d1 down");
-      return real(sql);
-    });
-    const response = await run(post());
-    expect(response.status).toBe(503);
-    expect(await response.json()).toEqual({ ok: false, error: "unavailable" });
-    vi.restoreAllMocks();
-    expect(await rows()).toHaveLength(0);
-  });
-});
-
 describe("POST /api/contact: validation rows (FR-008e, FR-012a)", () => {
   async function fieldsFor(overrides: Record<string, unknown>) {
     const { spy } = mockSiteverify();
@@ -296,7 +339,7 @@ describe("POST /api/contact: validation rows (FR-008e, FR-012a)", () => {
     expect(json.ok).toBe(false);
     expect(json.error).toBe("validation");
     expect(spy).not.toHaveBeenCalled();
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
     vi.restoreAllMocks();
     return json.fields;
   }
@@ -340,7 +383,6 @@ describe("POST /api/contact: validation rows (FR-008e, FR-012a)", () => {
     // The body is over the 10 KiB cap only past ~10,240 bytes; this one is about 5.6 KB.
     expect((await run(post(atLimit))).status).toBe(200);
     vi.restoreAllMocks();
-    await clearRows();
 
     expect(
       await fieldsFor({
@@ -372,46 +414,7 @@ describe("POST /api/contact: validation rows (FR-008e, FR-012a)", () => {
     expect(await response.json()).toEqual({ ok: false, error: "invalid_json" });
   });
 
-  it("503 with nothing stored when the duplicate check fails", async () => {
-    const { spy } = mockSiteverify();
-    const real = env.DB.prepare.bind(env.DB);
-    vi.spyOn(env.DB, "prepare").mockImplementation((sql: string) => {
-      if (sql.trim().toUpperCase().startsWith("SELECT")) throw new Error("d1 down");
-      return real(sql);
-    });
-    const response = await run(post());
-    expect(response.status).toBe(503);
-    expect(await response.json()).toEqual({ ok: false, error: "unavailable" });
-    expect(spy).not.toHaveBeenCalled();
-    vi.restoreAllMocks();
-    expect(await rows()).toHaveLength(0);
-  });
-
-  it("503 with nothing stored when the insert rejects at run time", async () => {
-    mockSiteverify();
-    const real = env.DB.prepare.bind(env.DB);
-    vi.spyOn(env.DB, "prepare").mockImplementation((sql: string) => {
-      const statement = real(sql);
-      if (sql.trim().toUpperCase().startsWith("INSERT")) {
-        vi.spyOn(statement, "bind").mockReturnValue({ run: () => Promise.reject(new Error("d1 down")) } as never);
-      }
-      return statement;
-    });
-    const response = await run(post());
-    expect(response.status).toBe(503);
-    vi.restoreAllMocks();
-    expect(await rows()).toHaveLength(0);
-  });
 });
-
-const MINUTE = 60_000;
-const HOUR = 60 * MINUTE;
-const DAY = 24 * HOUR;
-
-async function seedFor(ip: string, ages: number[]) {
-  const hash = await ipHashFor(ip);
-  for (const age of ages) await seedMessage({ ip_hash: hash, received_at: Date.now() - age });
-}
 
 describe("POST /api/contact: honeypot leaves no trace", () => {
   it("makes no D1 access at all for a filled website field", async () => {
@@ -425,97 +428,64 @@ describe("POST /api/contact: honeypot leaves no trace", () => {
   });
 });
 
-describe("POST /api/contact: rate limit", () => {
-  it("accepts three in an hour and refuses the fourth with 429 and Retry-After", async () => {
-    mockSiteverify();
-    for (let i = 0; i < 3; i += 1) expect((await run(post())).status).toBe(200);
-    const response = await run(post());
-    expect(response.status).toBe(429);
-    expect(await response.json()).toEqual({ ok: false, error: "rate_limited" });
-    const retry = Number(response.headers.get("Retry-After"));
-    expect(retry).toBeGreaterThan(3500);
-    expect(retry).toBeLessThanOrEqual(3600);
-    expect(await rows()).toHaveLength(3);
-  });
+describe("POST /api/contact: refused requests send no email (SC-006)", () => {
+  const refused: [string, () => Request, Parameters<typeof mockSiteverify>[0], number][] = [
+    ["a filled honeypot", () => post(validBody({ website: "spam" })), undefined, 200],
+    ["invalid fields", () => post(validBody({ email: "not an email", message: "" })), undefined, 400],
+    ["a failed Turnstile check", () => post(), { success: false }, 422],
+    [
+      "a Turnstile answer for the wrong action",
+      () => post(),
+      { success: true, action: "other", hostname: "example.com" },
+      422,
+    ],
+    [
+      "a Turnstile answer for the wrong hostname",
+      () => post(),
+      { success: true, action: "contact", hostname: "evil.example" },
+      422,
+    ],
+    ["a cross-origin request", () => post(validBody(), { Origin: "https://evil.example" }), undefined, 403],
+    [
+      "a missing Origin header",
+      () => {
+        const request = post();
+        request.headers.delete("Origin");
+        return request;
+      },
+      undefined,
+      403,
+    ],
+    ["Origin: null", () => post(validBody(), { Origin: "null" }), undefined, 403],
+    ["a wrong content type", () => post(validBody(), { "Content-Type": "text/plain" }), undefined, 415],
+    [
+      "a body over 10 KB",
+      () => post(validBody({ message: "x".repeat(11_000) }), { "Content-Length": "11000" }),
+      undefined,
+      413,
+    ],
+  ];
 
-  it("refuses the sixth in a day once the hour has cleared", async () => {
-    mockSiteverify();
-    await seedFor("203.0.113.7", [2 * HOUR, 3 * HOUR, 4 * HOUR, 5 * HOUR, 6 * HOUR]);
-    const response = await run(post());
-    expect(response.status).toBe(429);
-    const retry = Number(response.headers.get("Retry-After"));
-    expect(retry).toBeGreaterThan(17 * 3600);
-    expect(retry).toBeLessThanOrEqual(18 * 3600);
-  });
-
-  it("window edges: a row just inside the hour counts, just outside does not", async () => {
-    mockSiteverify();
-    await seedFor("203.0.113.7", [HOUR - 5000, 30 * MINUTE, 10 * MINUTE]);
-    expect((await run(post())).status).toBe(429);
-    await clearRows();
-    await seedFor("203.0.113.7", [HOUR + 5000, 30 * MINUTE, 10 * MINUTE]);
-    expect((await run(post())).status).toBe(200);
-  });
-
-  it("window edges: a row just inside the day counts, just outside does not", async () => {
-    mockSiteverify();
-    await seedFor("203.0.113.7", [DAY - 5000, 5 * HOUR, 4 * HOUR, 3 * HOUR, 2 * HOUR]);
-    expect((await run(post())).status).toBe(429);
-    await clearRows();
-    await seedFor("203.0.113.7", [DAY + 5000, 5 * HOUR, 4 * HOUR, 3 * HOUR, 2 * HOUR]);
-    expect((await run(post())).status).toBe(200);
-  });
-
-  it("refused submissions do not count", async () => {
-    mockSiteverify({ success: false });
-    for (let i = 0; i < 6; i += 1) expect((await run(post())).status).toBe(422);
-    vi.restoreAllMocks();
-    mockSiteverify();
-    expect((await run(post())).status).toBe(200);
-    expect(await rows()).toHaveLength(1);
-  });
-
-  it("keeps different senders independent", async () => {
-    mockSiteverify();
-    await seedFor("203.0.113.7", [MINUTE, 2 * MINUTE, 3 * MINUTE]);
-    expect((await run(post())).status).toBe(429);
-    expect((await run(post(validBody(), { "CF-Connecting-IP": "198.51.100.9" }))).status).toBe(200);
-  });
-
-  it("ignores X-Forwarded-For", async () => {
-    mockSiteverify();
-    await seedFor("203.0.113.7", [MINUTE, 2 * MINUTE, 3 * MINUTE]);
-    const spoofed = await run(post(validBody(), { "X-Forwarded-For": "198.51.100.77" }));
-    expect(spoofed.status).toBe(429);
-    const other = await run(post(validBody(), { "CF-Connecting-IP": "198.51.100.9", "X-Forwarded-For": "203.0.113.7" }));
-    expect(other.status).toBe(200);
-  });
-
-  it("counts every request without CF-Connecting-IP against one shared unknown sender", async () => {
-    mockSiteverify();
-    const noIp = () => {
-      const request = post();
-      request.headers.delete("CF-Connecting-IP");
-      return request;
-    };
-    for (let i = 0; i < 3; i += 1) expect((await run(noIp())).status).toBe(200);
-    expect((await run(noIp())).status).toBe(429);
-    const stored = await rows();
-    expect(new Set(stored.map((row) => row.ip_hash)).size).toBe(1);
-    expect(stored[0].ip_hash).toBe(await ipHashFor("unknown"));
-  });
-
-  it("fails closed with 503 and stores nothing when the count query fails", async () => {
-    mockSiteverify();
-    const real = env.DB.prepare.bind(env.DB);
-    vi.spyOn(env.DB, "prepare").mockImplementation((sql: string) => {
-      if (sql.includes("ip_hash = ?1")) throw new Error("d1 down");
-      return real(sql);
+  for (const [label, request, verdict, status] of refused) {
+    it(`makes no send for ${label}`, async () => {
+      mockSiteverify(verdict);
+      const email = fakeEmail();
+      const response = await run(request(), { CONTACT_EMAIL: email });
+      expect(response.status).toBe(status);
+      expect(email.sent).toHaveLength(0);
     });
-    const response = await run(post());
-    expect(response.status).toBe(503);
-    expect(await response.json()).toEqual({ ok: false, error: "unavailable" });
-    vi.restoreAllMocks();
-    expect(await rows()).toHaveLength(0);
+  }
+});
+
+describe("POST /api/contact: no sender limit (US4 scenario 4)", () => {
+  it("sends every message when one sender submits many times in a row", async () => {
+    const email = fakeEmail();
+    for (let i = 0; i < 12; i++) {
+      mockSiteverify();
+      const response = await run(post(), { CONTACT_EMAIL: email });
+      expect(response.status).toBe(200);
+      vi.restoreAllMocks();
+    }
+    expect(email.sent).toHaveLength(12);
   });
 });

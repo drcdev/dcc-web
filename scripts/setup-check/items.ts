@@ -19,6 +19,7 @@ import { check as checkPipelineSecrets } from "./checks/pipeline-secrets.ts";
 import { check as checkPreviewNoindex } from "./checks/preview-noindex.ts";
 import { check as checkWebAnalytics } from "./checks/web-analytics.ts";
 import { check as checkContactBindings } from "./checks/contact-bindings.ts";
+import { check as checkContactEmail } from "./checks/contact-email.ts";
 import { check as checkMailRecords } from "./checks/mail-records.ts";
 
 const checksById: Record<string, (ctx: ProviderContext) => ReturnType<SetupItem["check"]>> = {
@@ -37,6 +38,7 @@ const checksById: Record<string, (ctx: ProviderContext) => ReturnType<SetupItem[
   "preview-noindex": checkPreviewNoindex,
   "web-analytics": checkWebAnalytics,
   "contact-bindings": checkContactBindings,
+  "contact-email": checkContactEmail,
   "mail-records": checkMailRecords,
 };
 
@@ -284,17 +286,34 @@ const seeds: ItemSeed[] = [
     order: 16,
     title: "Contact bindings present",
     purpose:
-      "The contact form needs its Cloudflare pieces in place: the two D1 databases, the Turnstile widget, the Worker secrets, the site key build variable and the production deploy that applies migrations.",
+      "The contact form needs its Cloudflare pieces in place: the two D1 databases (for the critical thinking questions), the Turnstile widget, the Turnstile secret, the site key build variable and the production deploy that applies migrations.",
     where:
-      "Five parts, each described in docs/setup.md: the D1 databases (created in Western North America, wnam), the Turnstile widget, three Worker secrets on each Worker, the PUBLIC_TURNSTILE_SITE_KEY build variable, and the production deploy command pnpm run deploy:production.",
+      "Five parts, each described in docs/setup.md: the D1 databases (created in Western North America, wnam), the Turnstile widget, the Turnstile secret on each Worker, the PUBLIC_TURNSTILE_SITE_KEY build variable, and the production deploy command pnpm run deploy:production.",
     confirmedBy:
-      "Both databases exist in WNAM and match wrangler.jsonc; the dcc-web contact widget is managed and covers the site hostnames; the three secret names exist on both Workers (names only); PUBLIC_TURNSTILE_SITE_KEY exists on every build trigger; dcc-web deploys with pnpm run deploy:production, has every migration applied and has its cron",
+      "Both databases exist in WNAM and match wrangler.jsonc; the dcc-web contact widget is managed and covers the site hostnames; the TURNSTILE_SECRET_KEY name exists on both Workers (names only); PUBLIC_TURNSTILE_SITE_KEY exists on every build trigger; dcc-web deploys with pnpm run deploy:production, has every migration applied and has no Cron Trigger registered",
     needsDon: true,
     principles: ["VII", "VIII", "IX"],
     requirements: ["FR-012", "FR-017", "FR-018", "FR-023", "FR-024", "FR-027a", "FR-028"],
-    secrets: ["TURNSTILE_SECRET_KEY", "CONTACT_READ_TOKEN", "IP_HASH_SALT", "PUBLIC_TURNSTILE_SITE_KEY"],
+    secrets: ["TURNSTILE_SECRET_KEY", "PUBLIC_TURNSTILE_SITE_KEY"],
     dependsOn: ["local-credentials", "cloudflare-worker"],
     phase: "after-merge",
+  },
+  {
+    id: "contact-email",
+    order: 17,
+    title: "Contact email",
+    purpose:
+      "The contact form emails each message to contact@doncoleman.ca through Cloudflare Email Routing, sending from contact-form@drc.dev. Routing must be on for drc.dev and the destination address verified before the first deploy that carries the email binding. There is no DNS change on doncoleman.ca.",
+    where:
+      "Cloudflare dashboard -> Email Routing -> Destination addresses: add contact@doncoleman.ca (if it is not there) and open the verification link in that mailbox. Cloudflare dashboard -> drc.dev -> Email -> Email Routing: confirm routing is enabled. Give the read-only token Account -> Email Routing Addresses: Read, and add the drc.dev zone to it with Zone: Read and Zone Settings: Read.",
+    confirmedBy:
+      "contact@doncoleman.ca is a verified destination address in the account, and the Cloudflare API reports Email Routing enabled and ready on the drc.dev zone.",
+    needsDon: true,
+    principles: ["VII", "VIII", "IX"],
+    requirements: ["FR-016", "FR-016a"],
+    secrets: ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID"],
+    dependsOn: ["local-credentials"],
+    phase: "before-merge",
   },
 ];
 

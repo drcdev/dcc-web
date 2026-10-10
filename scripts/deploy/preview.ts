@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // scripts/deploy/preview.ts — `pnpm run deploy:preview`, the deploy command of the
 // `dcc-web-preview` Workers Builds project (docs/setup.md item 10). Applies D1 migrations to
-// the preview database on every build (additive only), then only `main` deploys the preview
-// Worker (changing its active deployment); other branches upload a Worker Version aliased with
+// the preview database on every build (not always additive: 0003_drop_messages.sql drops the old
+// messages table), then only `main` deploys the preview Worker (changing its active
+// deployment); other branches upload a Worker Version aliased with
 // the same function astro.config.mjs uses to compute the build's `site`, never deploying, so a
 // preview build is reachable at the address its own metadata points to
 // (specs/007-contact-form/contracts/worker-config.md, specs/002-site-foundation/contracts/site-origin.md).
