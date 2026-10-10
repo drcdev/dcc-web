@@ -230,7 +230,7 @@ Judged against the constitution on `main` (2.3.0), because that is what this PR 
   `docs-content-structure.test.ts`, also runs in `test:unit`). The old "deny-listed file" case is
   now asserted as a docs-tier case.
 
-### W3 — Local tier: `changed-paths.ts --base <ref>`
+### W3 — Local tier: `changed-paths.ts --base <ref>` [x] done
 
 - **Files:** `scripts/ci/changed-paths.ts`, `tests/unit/ci/changed-paths.test.ts`.
 - **Tests first (new-first; primary layer unit — `collectFiles` and `decide` take an injected git

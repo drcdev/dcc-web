@@ -454,6 +454,39 @@ describe("collectFiles()", () => {
     expect(calls).toEqual([]);
   });
 
+  it("diffs the merge base of a local base ref to HEAD and never fetches", () => {
+    const { git, calls } = fake(() => "docs/a.md\n");
+    expect(collectFiles({ event: "local", base: "origin/main" }, git)).toEqual(["docs/a.md", ""]);
+    expect(calls).toEqual([["diff", "--name-only", "--no-renames", "origin/main...HEAD"]]);
+  });
+
+  it.each([
+    ["missing", undefined],
+    ["empty", ""],
+    ["leading dash", "--output=x"],
+    ["range", "a..b"],
+    ["whitespace", "origin/main HEAD"],
+    ["backslash", "origin\\main"],
+  ])("returns null without calling git for a %s local base", (_name, base) => {
+    const { git, calls } = fake();
+    expect(collectFiles({ event: "local", base }, git)).toBeNull();
+    expect(calls).toEqual([]);
+  });
+
+  it("returns null when the local diff throws", () => {
+    const { git } = fake(() => {
+      throw new Error("unknown revision");
+    });
+    expect(collectFiles({ event: "local", base: "origin/main" }, git)).toBeNull();
+  });
+
+  it("lets decide() sort a local branch like a pull request", () => {
+    expect(decide({ event: "local", files: ["docs/testing.md"] }).tier).toBe("docs");
+    expect(decide({ event: "local", files: ["CLAUDE.md"] }).tier).toBe("skip-safe");
+    expect(decide({ event: "local", files: ["src/pages/index.astro"] }).tier).toBe("full");
+    expect(decide({ event: "local", files: null }).tier).toBe("full");
+  });
+
   it("lets decide() sort a docs-only push and fail closed on unknown files", () => {
     expect(decide({ event: "push", files: ["docs/testing.md"] }).tier).toBe("docs");
     expect(decide({ event: "push", files: null }).tier).toBe("full");

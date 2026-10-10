@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
+import { parseArgs } from "node:util";
 
 /**
  * Decides which tier of the verify gate a pull request or a push to `main` runs. There are four:
@@ -97,7 +98,7 @@ export interface ChangeDecision {
 }
 
 export function decide(input: ChangeInput): ChangeDecision {
-  if (input.event !== "pull_request" && input.event !== "push") {
+  if (input.event !== "pull_request" && input.event !== "push" && input.event !== "local") {
     return { tier: "full", reason: `event "${input.event}" always runs the full gate` };
   }
   if (input.files === null) {
@@ -157,13 +158,22 @@ function hasCommit(git: GitRunner, sha: string): boolean {
  * `before` commit against HEAD; `before` must be 40 lowercase hex characters and not all zeros,
  * and is fetched by id first unless it is already present (a shallow fetch into a full local
  * clone would make that clone shallow). Paths are only read from git output, never passed back
- * to git.
+ * to git. The `local` event (`--base <ref>`) diffs the merge base of a plain ref against HEAD,
+ * without fetching, so an agent can run only its tier's checks before opening a pull request.
  */
 export function collectFiles(
-  input: { event: string; before?: string | undefined },
+  input: { event: string; before?: string | undefined; base?: string | undefined },
   git: GitRunner,
 ): string[] | null {
   try {
+    if (input.event === "local") {
+      const base = input.base;
+      if (base === undefined || base === "" || base.startsWith("-") || /\.\.|\s|\\/.test(base)) {
+        console.error("local base is not a plain ref, running the full gate");
+        return null;
+      }
+      return git(["diff", "--name-only", "--no-renames", `${base}...HEAD`]).split("\n");
+    }
     if (input.event === "pull_request") {
       return git(["diff", "--name-only", "--no-renames", "HEAD^1", "HEAD"]).split("\n");
     }
@@ -183,8 +193,10 @@ export function collectFiles(
 }
 
 function main(): void {
-  const event = process.env.GITHUB_EVENT_NAME ?? "";
-  const files = collectFiles({ event, before: process.env.BEFORE_SHA }, (args) =>
+  const { values } = parseArgs({ options: { base: { type: "string" } }, strict: false });
+  const base = typeof values.base === "string" ? values.base : undefined;
+  const event = base !== undefined ? "local" : (process.env.GITHUB_EVENT_NAME ?? "");
+  const files = collectFiles({ event, before: process.env.BEFORE_SHA, base }, (args) =>
     execFileSync("git", args, { encoding: "utf-8" }),
   );
   const decision = decide({ event, files });
