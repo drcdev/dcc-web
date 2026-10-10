@@ -125,9 +125,9 @@ Implementation stays **local**. No commit that carries the `send_email` binding 
 
 **Goal**: preview emails say so; production emails do not.
 
-- [ ] T030 [P] [US5] `[worker-unit]` in `worker/test/contact-email.test.ts`: `preview: true` gives subject prefix `[Preview] ` and a first body line naming the host followed by a blank line; `preview: false` gives neither.
-- [ ] T031 [P] [US5] `[worker-int]` in `worker/test/environments.test.ts`, both Vitest projects: with `SITE_ENVIRONMENT = "preview"` the sent email is marked; with it absent it is not. Second-layer reason: proves the var wiring from `Env`, which T030 cannot see.
-- [ ] T032 [US5] Make T030 and T031 pass in `worker/src/contact/email.ts` and `submit.ts` (var read, marker applied).
+- [X] T030 [P] [US5] `[worker-unit]` in `worker/test/contact-email.test.ts`: `preview: true` gives subject prefix `[Preview] ` and a first body line naming the host followed by a blank line; `preview: false` gives neither.
+- [X] T031 [P] [US5] `[worker-int]` in `worker/test/environments.test.ts`, both Vitest projects: with `SITE_ENVIRONMENT = "preview"` the sent email is marked; with it absent it is not. Second-layer reason: proves the var wiring from `Env`, which T030 cannot see.
+- [X] T032 [US5] Make T030 and T031 pass in `worker/src/contact/email.ts` and `submit.ts` (var read, marker applied).
 
 ---
 

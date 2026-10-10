@@ -5,6 +5,7 @@
 // the resolved wrangler configs, not typed here), so the same assertions prove each side against the other.
 import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
+import { fakeEmail, mockSiteverify, post, run } from "./helpers";
 
 const expected = env.EXPECTED_ENVIRONMENT;
 
@@ -23,5 +24,22 @@ describe(`the ${expected} environment`, () => {
     const row = await env.DB.prepare("SELECT tokens FROM usage_bucket WHERE id = 1").first<{ tokens: number }>();
     expect(row?.tokens).toBe(0);
     expect(env.EXPECTED_DATABASE_NAME).not.toBe(env.OTHER_DATABASE_NAME);
+  });
+
+  it("marks the contact email as preview only when SITE_ENVIRONMENT is preview (FR-016)", async () => {
+    mockSiteverify();
+    const email = fakeEmail();
+    const response = await run(post(), { CONTACT_EMAIL: email });
+    expect(response.status).toBe(200);
+    const sent = email.sent[0] as { subject: string; text: string };
+    if (expected === "preview") {
+      expect(env.SITE_ENVIRONMENT).toBe("preview");
+      expect(sent.subject.startsWith("[Preview] ")).toBe(true);
+      expect(sent.text).toContain("preview deployment");
+    } else {
+      expect(env.SITE_ENVIRONMENT).toBeUndefined();
+      expect(sent.subject.startsWith("[Preview] ")).toBe(false);
+      expect(sent.text).not.toContain("preview deployment");
+    }
   });
 });

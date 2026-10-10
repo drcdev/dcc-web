@@ -143,3 +143,20 @@ describe("headerText and the subject", () => {
     expect(subject).toContain("p".repeat(100));
   });
 });
+
+describe("buildContactEmail: preview marking (FR-016)", () => {
+  it("prefixes the subject and opens the body with the host and a blank line when preview", () => {
+    const email = build({}, { preview: true, host: "br-x-dcc-web.example.workers.dev" });
+    expect(email.subject).toBe("[Preview] Contact form: Ada Lovelace");
+    const lines = (email.text as string).split("\n");
+    expect(lines[0]).toContain("br-x-dcc-web.example.workers.dev");
+    expect(lines[1]).toBe("");
+    expect(lines[2]).toBe("Name: Ada Lovelace");
+  });
+
+  it("adds neither marker when not preview", () => {
+    const email = build({}, { preview: false });
+    expect(email.subject).not.toContain("Preview");
+    expect((email.text as string).startsWith("Name: Ada Lovelace\n")).toBe(true);
+  });
+});
