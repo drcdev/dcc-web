@@ -117,7 +117,7 @@ Follow-ups for the PR body:
 
 ## Work items
 
-### W1 Rewrite `docs/design-source.md` to describe the current design source
+### [x] W1 Rewrite `docs/design-source.md` to describe the current design source
 
 Judgment: rewrite, not delete. Most of the doc still guides future work: how to clone Flux (the
 live design reference), the Flux-to-component mapping, the Content structure table (cited by
