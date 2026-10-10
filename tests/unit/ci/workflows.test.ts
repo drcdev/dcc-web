@@ -33,10 +33,6 @@ function runCount(contents: string, command: string): number {
   return contents.split("\n").filter((l) => l.trim() === `run: ${command}`).length;
 }
 
-function count(haystack: string, needle: string): number {
-  return haystack.split(needle).length - 1;
-}
-
 describe(".github/workflows/ci.yml", () => {
   const contents = read(".github/workflows/ci.yml");
 
@@ -85,16 +81,35 @@ describe(".github/workflows/ci.yml", () => {
 
 describe(".github/workflows/ci.yml job rules", () => {
   const contents = read(".github/workflows/ci.yml");
-  it("runs exactly one build-test step in build-tests, chosen by content_only and failing closed to test:build", () => {
+  it("exposes exactly one changes output, tier, and no leftover boolean outputs", () => {
+    const changes = job(contents, "changes");
+    const outputs = changes.slice(changes.indexOf("    outputs:"), changes.indexOf("    steps:"));
+    expect([...outputs.matchAll(/^\s{6}([a-z_]+):/gm)].map((m) => m[1])).toEqual(["tier"]);
+    expect(contents).not.toContain("outputs.full");
+    expect(contents).not.toContain("outputs.content_only");
+  });
+
+  it("runs exactly one build-test step in build-tests, chosen by tier, failing closed to test:build", () => {
     const buildTests = job(contents, "build-tests");
-    expect(stepBlock(buildTests, "run: pnpm run test:build\n")).toContain("if: needs.changes.outputs.content_only != 'true'");
+    expect(stepBlock(buildTests, "run: pnpm run test:build\n")).toContain("if: needs.changes.outputs.tier != 'content-only'");
     expect(stepBlock(buildTests, "run: pnpm run test:build:content")).toContain(
-      "if: needs.changes.outputs.content_only == 'true'",
+      "if: needs.changes.outputs.tier == 'content-only'",
     );
     expect(runCount(contents, "pnpm run test:build:content")).toBe(1);
-    expect(count(contents, "needs.changes.outputs.content_only")).toBe(2);
-    expect(job(contents, "static")).not.toContain("content_only");
-    expect(job(contents, "e2e")).not.toContain("content_only");
+    expect(job(contents, "static")).not.toContain("content-only");
+    expect(job(contents, "e2e")).not.toContain("content-only");
+  });
+
+  it("gates each static step and the heavy jobs on the tier, failing closed to the heavier side", () => {
+    const NARROW = "needs.changes.outputs.tier != 'skip-safe' && needs.changes.outputs.tier != 'docs'";
+    const staticJob = job(contents, "static");
+    expect(stepBlock(staticJob, "run: pnpm run lint\n")).toContain(`if: ${NARROW}`);
+    expect(stepBlock(staticJob, "run: pnpm run typecheck")).toContain(`if: ${NARROW}`);
+    expect(stepBlock(staticJob, "run: pnpm run test:worker")).toContain(`if: ${NARROW}`);
+    expect(stepBlock(staticJob, "run: pnpm run test:unit")).toContain("if: needs.changes.outputs.tier != 'skip-safe'\n");
+    for (const id of ["build-tests", "e2e"]) {
+      expect(job(contents, id)).toMatch(new RegExp(`^ {4}if: ${NARROW.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "m"));
+    }
   });
 
   it("runs secretlint in static on every path, after install", () => {
@@ -172,5 +187,26 @@ describe(".github/workflows/ci.yml preview crawl (011-launch FR-001a, FR-002a)",
     const secrets = step.match(/secrets\.[A-Za-z_]+/g) ?? [];
     expect(new Set(secrets)).toEqual(new Set(["secrets.GITHUB_TOKEN"]));
     expect(step).not.toMatch(/CLOUDFLARE|CF_/);
+  });
+});
+
+describe(".github/workflows/ci.yml push sorting and concurrency (031 FR-014, FR-018)", () => {
+  const contents = read(".github/workflows/ci.yml");
+
+  it("passes github.event.before only through env as BEFORE_SHA", () => {
+    const step = stepBlock(job(contents, "changes"), "node scripts/ci/changed-paths.ts");
+    expect(step).toContain("BEFORE_SHA: ${{ github.event.before }}");
+    for (const line of contents.split("\n")) {
+      if (line.trim().startsWith("run:")) expect(line).not.toContain("github.event.before");
+    }
+    expect(contents.match(/github\.event\.before/g)).toHaveLength(1);
+  });
+
+  it("groups pushes by sha and cancels only pull request runs", () => {
+    expect(contents).toContain(
+      "group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}",
+    );
+    expect(contents).toContain("cancel-in-progress: ${{ github.event_name == 'pull_request' }}");
+    expect(contents).not.toMatch(/cancel-in-progress: true/);
   });
 });

@@ -9,8 +9,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   changes:
@@ -19,8 +19,7 @@ jobs:
     permissions:
       contents: read
     outputs:
-      full: ${{ steps.changes.outputs.full }}
-      content_only: ${{ steps.changes.outputs.content_only }}
+      tier: ${{ steps.changes.outputs.tier }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -34,6 +33,8 @@ jobs:
 
       - name: Decide which checks this change can affect
         id: changes
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
         run: node scripts/ci/changed-paths.ts
 
   static:
@@ -62,25 +63,25 @@ jobs:
         run: pnpm run lint:secrets
 
       - name: Lint
-        if: needs.changes.outputs.full != 'false'
+        if: needs.changes.outputs.tier != 'skip-safe' && needs.changes.outputs.tier != 'docs'
         run: pnpm run lint
 
       - name: Type-check
-        if: needs.changes.outputs.full != 'false'
+        if: needs.changes.outputs.tier != 'skip-safe' && needs.changes.outputs.tier != 'docs'
         run: pnpm run typecheck
 
       - name: Run the unit and component tests
-        if: needs.changes.outputs.full != 'false'
+        if: needs.changes.outputs.tier != 'skip-safe'
         run: pnpm run test:unit
 
       - name: Run the worker tests
-        if: needs.changes.outputs.full != 'false'
+        if: needs.changes.outputs.tier != 'skip-safe' && needs.changes.outputs.tier != 'docs'
         run: pnpm run test:worker
 
   build-tests:
     name: build-tests
     needs: changes
-    if: needs.changes.outputs.full != 'false'
+    if: needs.changes.outputs.tier != 'skip-safe' && needs.changes.outputs.tier != 'docs'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -101,17 +102,17 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run the build tests
-        if: needs.changes.outputs.content_only != 'true'
+        if: needs.changes.outputs.tier != 'content-only'
         run: pnpm run test:build
 
       - name: Run the build tests that read the real content
-        if: needs.changes.outputs.content_only == 'true'
+        if: needs.changes.outputs.tier == 'content-only'
         run: pnpm run test:build:content
 
   e2e:
     name: e2e
     needs: changes
-    if: needs.changes.outputs.full != 'false'
+    if: needs.changes.outputs.tier != 'skip-safe' && needs.changes.outputs.tier != 'docs'
     runs-on: ubuntu-latest
     permissions:
       checks: read

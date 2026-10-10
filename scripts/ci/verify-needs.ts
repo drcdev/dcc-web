@@ -1,7 +1,7 @@
 /**
  * Decides whether the aggregate `verify` job passes, from the `needs` context of the jobs
  * it depends on. GitHub reports a skipped required job as success, so a skip is accepted
- * only where the skip-safe path expects it. Anything unexpected fails (fail closed).
+ * only on the skip-safe and docs tiers, where it is expected. Anything unexpected fails (fail closed).
  */
 
 export interface NeedResult {
@@ -17,8 +17,10 @@ export interface NeedsDecision {
 }
 
 const REQUIRED_JOBS = ["changes", "static", "build-tests", "e2e"] as const;
-/** Jobs that are skipped, by design, when the changed-paths check says the gate is skip-safe. */
+/** Jobs that are skipped, by design, on the narrow tiers. */
 const SKIPPABLE_JOBS: readonly string[] = ["build-tests", "e2e"];
+const TIERS = ["skip-safe", "docs", "content-only", "full"] as const;
+const SKIP_TIERS: readonly string[] = ["skip-safe", "docs"];
 
 export function decide(needs: Needs): NeedsDecision {
   const problems: string[] = [];
@@ -30,12 +32,12 @@ export function decide(needs: Needs): NeedsDecision {
   }
 
   const changes = needs.changes;
-  const full = changes?.outputs?.full;
-  const fullKnown = full === "true" || full === "false";
+  const tier = changes?.outputs?.tier;
+  const tierKnown = typeof tier === "string" && (TIERS as readonly string[]).includes(tier);
   if (changes && changes.result !== "success") {
     problems.push(`job "changes" result is "${changes.result}", expected "success"`);
-  } else if (changes && !fullKnown) {
-    problems.push(`job "changes" output full is ${JSON.stringify(full)}, expected "true" or "false"`);
+  } else if (changes && !tierKnown) {
+    problems.push(`job "changes" output tier is ${JSON.stringify(tier)}, expected one of ${TIERS.join(", ")}`);
   }
 
   for (const job of REQUIRED_JOBS) {
@@ -43,7 +45,7 @@ export function decide(needs: Needs): NeedsDecision {
     const entry = needs[job];
     if (!entry || typeof entry.result !== "string") continue;
     if (entry.result === "success") continue;
-    if (entry.result === "skipped" && SKIPPABLE_JOBS.includes(job) && full === "false") continue;
+    if (entry.result === "skipped" && SKIPPABLE_JOBS.includes(job) && tierKnown && SKIP_TIERS.includes(tier)) continue;
     problems.push(`job "${job}" result is "${entry.result}"`);
   }
 
