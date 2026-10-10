@@ -137,11 +137,11 @@ const seeds: ItemSeed[] = [
     order: 4,
     title: "DNS records parity",
     purpose:
-      "Every DNS record Squarespace serves today (the Ghost site, mail records, verification records) must exist in Cloudflare with identical values before the nameservers move.",
+      "Every DNS record the baseline lists (mail, verification, DMARC and CAA records) must exist in the Cloudflare zone with identical values, and the zone must hold nothing else off the apex and www.",
     where:
-      "List every record from Squarespace's DNS screen into setup/dns-baseline.json (with its Squarespace TTL, for the audit trail) with a keep/drop decision, then create or import the keep records in Cloudflare as DNS only, leaving TTL on Cloudflare's Auto preset (the dashboard has no custom TTL option).",
+      "Cloudflare dashboard -> the zone -> DNS: keep each record in setup/dns-baseline.json present as DNS only, leaving TTL on Cloudflare's Auto preset (the dashboard has no custom TTL option).",
     confirmedBy:
-      "Every keep record in setup/dns-baseline.json exists in the Cloudflare zone with identical type/name/content/priority and proxied: false (TTL is informational only); every record without a decision keeps the item missing. Once the domain has switched, the Ghost web records are replaced on purpose and any other added, removed or changed record outside the apex and www is a problem",
+      "Every keep record in setup/dns-baseline.json exists in the Cloudflare zone with identical type/name/content/priority and proxied: false (TTL is informational only); every record without a decision keeps the item missing; any record outside the apex and www that is not in the baseline is a problem",
     needsDon: true,
     principles: ["VI", "X"],
     requirements: ["FR-019", "FR-034", "FR-035", "FR-036", "FR-037"],
@@ -555,11 +555,11 @@ const seeds: ItemSeed[] = [
     id: "mail-records",
     order: 31,
     title: "Mail records unchanged",
-    purpose: "The domain's mail keeps working: every mail record recorded in the baseline still answers unchanged, before and after the switch.",
+    purpose: "The domain's mail keeps working: every mail record recorded in the baseline still answers unchanged.",
     where:
       "Cloudflare dashboard -> the zone -> DNS: restore any MX, TXT or DKIM CNAME record the details list, exactly as recorded in setup/dns-baseline.json.",
     confirmedBy:
-      "Both public resolvers (1.1.1.1 and 8.8.8.8) return the baseline MX, TXT and DKIM CNAME records for every group marked keep; pending when only one resolver matches; records marked drop that still answer are information only",
+      "Both public resolvers (1.1.1.1 and 8.8.8.8) return the baseline MX, TXT and DKIM CNAME records for every group marked keep; pending when only one resolver matches",
     needsDon: false,
     principles: ["VII"],
     requirements: ["FR-016", "SC-004"],

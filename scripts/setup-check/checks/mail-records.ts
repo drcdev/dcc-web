@@ -1,18 +1,15 @@
 // checks/mail-records.ts (setup item 31, 011-launch contracts/setup-items.md; FR-016, SC-004): the
-// mail records recorded in the baseline still answer unchanged at both public resolvers, before and
-// after the switch. A group is every baseline record with `decision: "keep"` of one name and type
+// mail records recorded in the baseline still answer unchanged at both public resolvers. A group is every baseline record with `decision: "keep"` of one name and type
 // (MX, TXT, and CNAMEs under `._domainkey.`); MX is compared as `priority:host`, TXT joined and
 // normalised, CNAME lower-case without a trailing dot. Order and TTL are ignored. A baseline record
 // marked `drop` that still answers is information only, so the item keeps passing for the retired
 // Mailgun records, which the baseline marks `drop`.
 import type { CheckResult, DnsAnswer, DnsBaseline, DnsBaselineRecord, DnsRecordType, ProviderContext } from "../types.ts";
-import { complete, fromProviderError, missing } from "./shared.ts";
+import { complete, fromProviderError, missing, pending } from "./shared.ts";
 import { normalizeTxtContent } from "./shared.ts";
-import { pendingLive } from "./live-shared.ts";
 
 const ITEM = { id: "mail-records", order: 31 };
-const ROLLBACK_NEXT =
-  "Restore the record in Cloudflare → DNS exactly as listed; if the switch caused it, follow docs/launch.md#rollback.";
+const ROLLBACK_NEXT = "Restore the record in Cloudflare → DNS exactly as listed.";
 
 function normName(name: string): string {
   return name.toLowerCase().replace(/\.$/, "");
@@ -113,7 +110,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     return missing(ITEM, "Problem: mail records differ from the baseline.", ROLLBACK_NEXT, [...problems, ...settling]);
   }
   if (settling.length > 0) {
-    return pendingLive(
+    return pending(
       ITEM,
       "Mail records are still settling: the public resolvers disagree.",
       "Wait for DNS to finish updating, then run this check again.",

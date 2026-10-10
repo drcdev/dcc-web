@@ -252,7 +252,7 @@ item. Two items renumber the registry (W4 to 22 items, W8 to 16); each updates t
     Credential could-not-check cases stay.
 - **Layer:** unit.
 
-### W3 — DNS checks drop the launch phase (test first)
+### W3 — DNS checks drop the launch phase (test first) [x]
 
 - **Files:**
   - `scripts/setup-check/checks/dns-records-parity.ts` and `mail-records.ts`;

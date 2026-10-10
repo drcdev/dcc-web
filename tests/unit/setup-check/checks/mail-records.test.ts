@@ -3,11 +3,9 @@ import { check } from "../../../../scripts/setup-check/checks/mail-records.ts";
 import { setupItems } from "../../../../scripts/setup-check/items.ts";
 import { ProviderAccessError } from "../../../../scripts/setup-check/types.ts";
 import type { DnsAnswer, DnsBaselineRecord, DnsRecordType, DnsResolverAnswers } from "../../../../scripts/setup-check/types.ts";
-import { expectPendingSuffix } from "./live-helpers.ts";
 import { fakeProviderContext } from "./test-helpers.ts";
 
-const ROLLBACK_NEXT =
-  "Restore the record in Cloudflare → DNS exactly as listed; if the switch caused it, follow docs/launch.md#rollback.";
+const ROLLBACK_NEXT = "Restore the record in Cloudflare → DNS exactly as listed.";
 const LONG_TXT = `k=rsa; p=${"A".repeat(300)}`;
 
 function rec(
@@ -78,14 +76,16 @@ describe("checks/mail-records (item 31)", () => {
     expect(result.docs).toBe("docs/setup.md#mail-records");
   });
 
-  it("is pending when the resolvers disagree and one matches, with the 24-hour sentence", async () => {
+  it("is pending when the resolvers disagree and one matches, with a wait-and-rerun next action", async () => {
     const stale = (resolver: string): Live => {
       const live = liveBaseline();
       if (resolver === "8.8.8.8") live["doncoleman.ca|MX"] = [{ type: "MX", name: "doncoleman.ca", value: "mx01.mail.icloud.com", priority: 0 }];
       return live;
     };
     const result = await check(ctxFor(baseline(), stale));
-    expectPendingSuffix(result);
+    expect(result.status).toBe("pending");
+    expect(result.nextAction).toBe("Wait for DNS to finish updating, then run this check again.");
+    expect(result.nextAction).not.toContain("24 hours");
     expect(result.details.join(" ")).toContain("doncoleman.ca");
   });
 

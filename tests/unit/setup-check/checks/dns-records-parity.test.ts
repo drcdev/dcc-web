@@ -28,15 +28,13 @@ function baseline(records: DnsBaselineRecord[]): DnsBaseline {
 function contextWith(
   baselineValue: DnsBaseline | null,
   cfRecords: CloudflareDnsRecord[] | (() => Promise<CloudflareDnsRecord[]>),
-  phase: "before-switch" | "switched" | "unreadable" = "before-switch",
 ) {
   return fakeProviderContext({
     env: envFrom(ENV),
     fs: { readJson: ((path: string) => (path === "setup/dns-baseline.json" ? baselineValue : null)) as never },
     cloudflare: {
       listWorkerDomains: async () => {
-        if (phase === "unreadable") throw new ProviderAccessError("Cloudflare rejected the API token (401)");
-        return loadFixture("cloudflare", phase === "switched" ? "worker-domains-apex-switched" : "worker-domains-review-host");
+        throw new Error("the launch phase must not be read");
       },
       listDnsRecords: typeof cfRecords === "function" ? cfRecords : async () => cfRecords,
     },
@@ -125,7 +123,7 @@ describe("checks/dns-records-parity", () => {
     expect(result.details.join(" ")).toContain("doncoleman.ca");
   });
 
-  it("lists Cloudflare-only records in details without blocking completion", async () => {
+  it("is missing, naming the record, when Cloudflare holds a record on another name that is not in the baseline", async () => {
     const cf = loadFixture<CloudflareDnsRecord[]>("cloudflare", "dns-records-cloudflare-only-extra");
     const matching = cf.find((r) => r.type === "A")!;
     const records = [keepRecord({ content: matching.content, ttl: matching.ttl })];
@@ -133,7 +131,7 @@ describe("checks/dns-records-parity", () => {
 
     const result = await check(ctx);
 
-    expect(result.status).toBe("complete");
+    expect(result.status).toBe("missing");
     expect(result.details.join(" ")).toContain("unexpected.doncoleman.ca");
   });
 
@@ -146,13 +144,20 @@ describe("checks/dns-records-parity", () => {
     expect(result.reason).toMatch(/CLOUDFLARE_API_TOKEN/);
   });
 
-  it("is could-not-check when the launch phase cannot be read (T044)", async () => {
-    const records = [keepRecord({})];
-    const cf: CloudflareDnsRecord[] = [{ type: "A", name: "doncoleman.ca", content: "192.0.2.10", priority: null, ttl: 1, proxied: false }];
-    const result = await check(contextWith(baseline(records), cf, "unreadable"));
+  it("compares the whole zone without reading the launch phase", async () => {
+    const mx = keepRecord({ type: "MX", content: "mx01.mail.icloud.com", priority: 10 });
+    const cfMx: CloudflareDnsRecord = { type: "MX", name: "doncoleman.ca", content: "mx01.mail.icloud.com", priority: 10, ttl: 1, proxied: false };
+    const wwwAdded: CloudflareDnsRecord = { type: "AAAA", name: "www.doncoleman.ca", content: "100::", priority: null, ttl: 1, proxied: true };
+    const stray: CloudflareDnsRecord = { type: "A", name: "mail.doncoleman.ca", content: "192.0.2.9", priority: null, ttl: 1, proxied: false };
 
-    expect(result.status).toBe("could-not-check");
-    expect(result.nextAction).toBeTruthy();
+    const informational = await check(contextWith(baseline([mx]), [cfMx, wwwAdded]));
+    expect(informational.status).toBe("complete");
+    expect(informational.details.join("\n")).toContain("Cloudflare-only, not in baseline: AAAA www.doncoleman.ca 100::");
+
+    const result = await check(contextWith(baseline([mx]), [cfMx, stray]));
+    expect(result.status).toBe("missing");
+    expect(result.summary).toMatch(/^Problem:/);
+    expect(result.details.join("\n")).toContain("A mail.doncoleman.ca 192.0.2.9: not in the baseline");
   });
 
   it("matches two MX records with the same name by content instead of comparing both against the first candidate", async () => {
@@ -249,51 +254,30 @@ describe("checks/dns-records-parity", () => {
     expect(result.reason).toMatch(/403/);
   });
 
-  describe("once switched (T044, FR-010)", () => {
-    const ghostA = keepRecord({ type: "A", name: "doncoleman.ca", content: "49.13.201.194", ttl: 14400 });
-    const ghostWww = keepRecord({ type: "CNAME", name: "www.doncoleman.ca", content: "ghost.example.net", ttl: 14400 });
+  describe("steady state (FR-010)", () => {
     const mx = keepRecord({ type: "MX", name: "doncoleman.ca", content: "mx01.mail.icloud.com", priority: 10 });
     const cfMx: CloudflareDnsRecord = { type: "MX", name: "doncoleman.ca", content: "mx01.mail.icloud.com", priority: 10, ttl: 1, proxied: false };
-    const switchAdded: CloudflareDnsRecord[] = [
+    const workerAdded: CloudflareDnsRecord[] = [
       { type: "A", name: "doncoleman.ca", content: "192.0.2.1", priority: null, ttl: 1, proxied: true },
       { type: "AAAA", name: "www.doncoleman.ca", content: "100::", priority: null, ttl: 1, proxied: true },
     ];
-    const base = baseline([ghostA, ghostWww, mx]);
 
-    it("does not expect the Ghost web records, notes them as replaced, and keeps the Cloudflare-added records informational", async () => {
-      const result = await check(contextWith(base, [cfMx, ...switchAdded], "switched"));
-
-      expect(result.status).toBe("complete");
-      const details = result.details.join("\n");
-      expect(details).toContain("A doncoleman.ca 49.13.201.194: replaced at launch, kept in the baseline for rollback");
-      expect(details).toContain("CNAME www.doncoleman.ca ghost.example.net: replaced at launch, kept in the baseline for rollback");
-      expect(details).toContain("Cloudflare-only, not in baseline: AAAA www.doncoleman.ca 100::");
-    });
-
-    it("is missing with a Problem and the rollback next action when a record appears on any other name", async () => {
+    it("is missing with a Problem and the restore-or-delete next action when a record appears on any other name", async () => {
       const stray: CloudflareDnsRecord = { type: "A", name: "new.doncoleman.ca", content: "192.0.2.9", priority: null, ttl: 1, proxied: false };
-      const result = await check(contextWith(base, [cfMx, ...switchAdded, stray], "switched"));
+      const result = await check(contextWith(baseline([mx]), [cfMx, ...workerAdded, stray]));
 
       expect(result.status).toBe("missing");
       expect(result.summary).toMatch(/^Problem:/);
       expect(result.details.join("\n")).toContain("new.doncoleman.ca");
-      expect(result.nextAction).toContain("docs/launch.md#rollback");
+      expect(result.nextAction).toContain("delete the unexpected record");
     });
 
     it("is missing with a Problem when a kept mail record was removed or changed", async () => {
-      const result = await check(contextWith(base, [...switchAdded], "switched"));
+      const result = await check(contextWith(baseline([mx]), [...workerAdded]));
 
       expect(result.status).toBe("missing");
       expect(result.summary).toMatch(/^Problem:/);
       expect(result.details.join("\n")).toContain("MX doncoleman.ca mx01.mail.icloud.com");
-    });
-
-    it("still reports a Cloudflare-only record on another name as information only before the switch", async () => {
-      const stray: CloudflareDnsRecord = { type: "A", name: "new.doncoleman.ca", content: "192.0.2.9", priority: null, ttl: 1, proxied: false };
-      const result = await check(contextWith(baseline([mx]), [cfMx, stray]));
-
-      expect(result.status).toBe("complete");
-      expect(result.details.join("\n")).toContain("Cloudflare-only, not in baseline: A new.doncoleman.ca 192.0.2.9");
     });
   });
 });
