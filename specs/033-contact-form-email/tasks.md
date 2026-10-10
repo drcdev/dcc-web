@@ -45,7 +45,7 @@ Implementation stays **local**. No commit that carries the `send_email` binding 
 - [X] T006 Edit `wrangler.jsonc` per `contracts/worker-config.md`: `send_email` block, `triggers: { crons: [] }`, `secrets.required: ["TURNSTILE_SECRET_KEY"]` at top level and in `env.preview`; `vars.SITE_ENVIRONMENT = "preview"` in preview. Do not push (FR-016a).
 - [X] T007 Regenerate `worker/worker-configuration.d.ts` with `pnpm run types:worker` (Env gains `CONTACT_EMAIL: SendEmail` and `SITE_ENVIRONMENT`, loses the two retired secrets); remove the two retired secret bindings from `worker/vitest.config.ts` and `worker/test/env.d.ts`; remove the two names from `tests/fixtures/worker/e2e.env`; check `scripts/e2e-wrangler-config.ts` keeps `send_email` (fallback in research R10 if `wrangler dev` cannot run it offline).
 - [X] T008 [P] Add `fakeEmail()` (records every `send()` call, can be told to reject with an `Error` carrying an `E_*` code) to `worker/test/helpers.ts`; the store/retrieval helpers are removed with their tests in T025.
-- [ ] T009 Confirm T004 now passes `[unit]` (`pnpm run test:unit`) and `pnpm run typecheck` is clean.
+- [X] T009 Confirm T004 now passes `[unit]` (`pnpm run test:unit`) and `pnpm run typecheck` is clean.
 
 **Checkpoint**: binding and types in place locally; user stories can start.
 
@@ -95,16 +95,16 @@ Implementation stays **local**. No commit that carries the `send_email` binding 
 
 ### Tests for User Story 3 (write first)
 
-- [ ] T019 [P] [US3] `[worker-int]` in `worker/test/router.test.ts` (replaces `retrieval.contract.test.ts`): `GET /api/messages/new`, `POST /api/messages/{id}/read` and any other `/api/messages*` path or method give byte-identical `404 {"error":"not_found"}` with the security headers, with a valid old-style bearer token and with none (SC-005).
-- [ ] T020 [P] [US3] `[worker-int]` in `worker/test/schema.test.ts` and `worker/test/query-plans.test.ts` (local D1): after all migrations `messages` and its three indexes are absent, `question_sets` and `usage_bucket` are intact, `d1_migrations` lists 0001 to 0003; the query-plan test is trimmed to the questions queries.
-- [ ] T021 [P] [US3] `[worker-int]` in `worker/test/contact.test.ts`: an accepted submission writes nothing to D1 (all tables unchanged) and the Worker entry has no `scheduled` export (FR-009, FR-011). Layer: worker-int because D1 state and the entry export are observed on the real runtime.
-- [ ] T022 [P] [US3] `[unit]` in `tests/unit/site/config-files.test.ts`: no `CONTACT_READ_TOKEN`, `IP_HASH_SALT`, `messages` binding or cron remains in `wrangler.jsonc`, `.env.example`, workflows or `tests/fixtures/worker/e2e.env` (extends T004; `tests/unit/setup/drift.test.ts` keeps the manifest in step).
+- [X] T019 [P] [US3] `[worker-int]` in `worker/test/router.test.ts` (replaces `retrieval.contract.test.ts`): `GET /api/messages/new`, `POST /api/messages/{id}/read` and any other `/api/messages*` path or method give byte-identical `404 {"error":"not_found"}` with the security headers, with a valid old-style bearer token and with none (SC-005).
+- [X] T020 [P] [US3] `[worker-int]` in `worker/test/schema.test.ts` and `worker/test/query-plans.test.ts` (local D1): after all migrations `messages` and its three indexes are absent, `question_sets` and `usage_bucket` are intact, `d1_migrations` lists 0001 to 0003; the query-plan test is trimmed to the questions queries.
+- [X] T021 [P] [US3] `[worker-int]` in `worker/test/contact.test.ts`: an accepted submission writes nothing to D1 (all tables unchanged) and the Worker entry has no `scheduled` export (FR-009, FR-011). Layer: worker-int because D1 state and the entry export are observed on the real runtime.
+- [X] T022 [P] [US3] `[unit]` in `tests/unit/site/config-files.test.ts`: no `CONTACT_READ_TOKEN`, `IP_HASH_SALT`, `messages` binding or cron remains in `wrangler.jsonc`, `.env.example`, workflows or `tests/fixtures/worker/e2e.env` (extends T004; `tests/unit/setup/drift.test.ts` keeps the manifest in step).
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] Add `migrations/0003_drop_messages.sql` (`DROP TABLE IF EXISTS messages;`); T020 passes.
-- [ ] T024 [US3] Delete `worker/src/messages/`, `worker/src/retention.ts`, `worker/src/contact/{ip-hash,rate-limit,queries}.ts`; remove the `/api/messages` route and `scheduled` export from `worker/src/index.ts`; remove `RATE_PER_HOUR`, `RATE_PER_DAY`, `RETENTION_MONTHS` from `worker/src/contact/rules.ts`; keep `CF-Connecting-IP` only as Turnstile `remoteip`. T019, T021, T022 pass.
-- [ ] T025 [US3] Delete the obsolete tests `worker/test/{ip-hash,rate-limit,retention,retrieval.contract}.test.ts`, remove the store/retrieval helpers from `worker/test/helpers.ts`, and update `worker/test/rules.test.ts` for the removed constants (their behaviour is covered by T019 to T021 and T027).
+- [X] T023 [US3] Add `migrations/0003_drop_messages.sql` (`DROP TABLE IF EXISTS messages;`); T020 passes.
+- [X] T024 [US3] Delete `worker/src/messages/`, `worker/src/retention.ts`, `worker/src/contact/{ip-hash,rate-limit,queries}.ts`; remove the `/api/messages` route and `scheduled` export from `worker/src/index.ts`; remove `RATE_PER_HOUR`, `RATE_PER_DAY`, `RETENTION_MONTHS` from `worker/src/contact/rules.ts`; keep `CF-Connecting-IP` only as Turnstile `remoteip`. T019, T021, T022 pass.
+- [X] T025 [US3] Delete the obsolete tests `worker/test/{ip-hash,rate-limit,retention,retrieval.contract}.test.ts`, remove the store/retrieval helpers from `worker/test/helpers.ts`, and update `worker/test/rules.test.ts` for the removed constants (their behaviour is covered by T019 to T021 and T027).
 
 **Checkpoint**: nothing is stored.
 

@@ -10,8 +10,6 @@ declare global {
       EXPECTED_DATABASE_NAME: string;
       /** database_name of the other environment's DB binding. */
       OTHER_DATABASE_NAME: string;
-      /** The other environment's read token (test value). */
-      OTHER_READ_TOKEN: string;
     }
   }
 }

@@ -4,7 +4,6 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { RETENTION_MONTHS } from "../../../worker/src/contact/rules.ts";
 
 const source = readFileSync(
   fileURLToPath(new URL("../../../src/content/pages/privacy-policy.mdx", import.meta.url)),
@@ -35,8 +34,8 @@ describe("privacy policy: contact form", () => {
     expect(form).toContain("cannot be limited to canada");
   });
 
-  it("states the retention period from the shared rules, read or not", () => {
-    expect(form).toContain(`${RETENTION_MONTHS} months`);
+  it("states the retention period, read or not (reworded by the privacy policy task, T033)", () => {
+    expect(form).toContain("12 months");
     expect(form).toContain("whether they have been read or not");
   });
 

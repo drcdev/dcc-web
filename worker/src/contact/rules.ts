@@ -7,9 +7,6 @@ export const ORGANIZATION_MAX = 100;
 export const PROJECT_MAX = 100;
 export const MESSAGE_MAX = 5000;
 export const BODY_MAX_BYTES = 10_240;
-export const RATE_PER_HOUR = 3;
-export const RATE_PER_DAY = 5;
-export const RETENTION_MONTHS = 12;
 
 export type FieldError = "required" | "too_long" | "invalid";
 

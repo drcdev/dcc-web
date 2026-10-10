@@ -2,12 +2,6 @@ import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test"
 import { env } from "cloudflare:workers";
 import { vi } from "vitest";
 import worker from "../src/index";
-import { hashIp } from "../src/contact/ip-hash";
-
-/** The salted hash the Worker stores for a sender IP. */
-export function ipHashFor(ip: string) {
-  return hashIp(ip, env.IP_HASH_SALT);
-}
 
 export const ORIGIN = "https://example.com";
 export const SITEVERIFY = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
@@ -70,61 +64,16 @@ export function mockSiteverify(verdict: Verdict = { success: true, action: "cont
   return { calls, spy };
 }
 
-export async function rows() {
-  const result = await env.DB.prepare("SELECT * FROM messages").all<Record<string, unknown>>();
-  return result.results;
-}
-
-export async function clearRows() {
-  await env.DB.prepare("DELETE FROM messages").run();
-}
-
-export const READ_TOKEN = "test-read-token";
-
-/** A request to a retrieval route. `token: null` sends no Authorization header. */
-export function api(
-  path: string,
-  {
-    method = "GET",
-    token = READ_TOKEN,
-    headers = {},
-  }: { method?: string; token?: string | null; headers?: Record<string, string> } = {},
-) {
-  return new Request(`${ORIGIN}${path}`, {
-    method,
-    headers: { ...(token === null ? {} : { Authorization: `Bearer ${token}` }), ...headers },
-  });
-}
-
-export interface SeedMessage {
-  id?: string;
-  name?: string;
-  status?: "new" | "read";
-  received_at?: number;
-  project?: string | null;
-  organization?: string | null;
-  ip_hash?: string | null;
-}
-
-/** Inserts one row directly and returns its id. */
-export async function seedMessage(overrides: SeedMessage = {}) {
-  const id = overrides.id ?? crypto.randomUUID();
-  await env.DB.prepare(
-    "INSERT INTO messages (id, name, email, organization, project, message, ip_hash, status, received_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
-  )
-    .bind(
-      id,
-      overrides.name ?? "Ada Example",
-      "ada@example.com",
-      overrides.organization ?? null,
-      overrides.project ?? null,
-      "Hello",
-      overrides.ip_hash === undefined ? "a".repeat(64) : overrides.ip_hash,
-      overrides.status ?? "new",
-      overrides.received_at ?? Date.parse("2026-09-29T17:04:11.000Z"),
-    )
-    .run();
-  return id;
+/** Every row of every table in the local database, so a test can prove a request wrote nothing. */
+export async function snapshot() {
+  const tables = await env.DB.prepare(
+    "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' ORDER BY name",
+  ).all<{ name: string }>();
+  const out: Record<string, unknown[]> = {};
+  for (const { name } of tables.results) {
+    out[name] = (await env.DB.prepare(`SELECT * FROM "${name}"`).all()).results;
+  }
+  return out;
 }
 
 export interface FakeEmailOptions {

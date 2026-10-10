@@ -1,19 +1,20 @@
 import { env } from "cloudflare:workers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import worker from "../src/index";
 import {
-  clearRows,
   fakeEmail,
   mockSiteverify,
   ORIGIN,
   post,
-  rows,
   run,
+  snapshot,
   SITEVERIFY,
   validBody,
 } from "./helpers";
 
+let baseline: Awaited<ReturnType<typeof snapshot>>;
 beforeEach(async () => {
-  await clearRows();
+  baseline = await snapshot();
 });
 afterEach(() => {
   vi.restoreAllMocks();
@@ -103,10 +104,12 @@ describe("POST /api/contact: accepted", () => {
     expect(JSON.stringify(sent)).not.toContain("evil@example.com");
   });
 
-  it("writes nothing to D1", async () => {
+  it("writes nothing to D1 and the Worker has no scheduled handler (FR-009, FR-011)", async () => {
     mockSiteverify();
-    await run(post(), { CONTACT_EMAIL: fakeEmail() });
-    expect(await rows()).toHaveLength(0);
+    const response = await run(post(), { CONTACT_EMAIL: fakeEmail() });
+    expect(response.status).toBe(200);
+    expect(await snapshot()).toEqual(baseline);
+    expect(worker).not.toHaveProperty("scheduled");
   });
 
   it("accepts http on 127.0.0.1 and localhost", async () => {
@@ -176,14 +179,14 @@ describe("POST /api/contact: refused at the edge", () => {
     expect((await run(post(validBody(), { "Sec-Fetch-Site": "cross-site" }))).status).toBe(403);
     const response = await run(post(validBody(), { Origin: "https://evil.example" }));
     expect(await response.json()).toEqual({ ok: false, error: "forbidden" });
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("403 for http on a non-local host", async () => {
     mockSiteverify();
     const response = await run(post(validBody(), {}, "http://example.com/api/contact"));
     expect(response.status).toBe(403);
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("415 for a wrong content type, accepting parameters on the right one", async () => {
@@ -201,7 +204,7 @@ describe("POST /api/contact: refused at the edge", () => {
     expect(response.status).toBe(413);
     expect(await response.json()).toEqual({ ok: false, error: "too_large" });
     expect(spy).not.toHaveBeenCalled();
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("413 when a streamed body without Content-Length grows past 10,240 bytes", async () => {
@@ -222,7 +225,7 @@ describe("POST /api/contact: refused at the edge", () => {
     const response = await run(request);
     expect(response.status).toBe(413);
     expect(spy).not.toHaveBeenCalled();
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("400 invalid_json for a body that is not a JSON object", async () => {
@@ -244,7 +247,7 @@ describe("POST /api/contact: refused at the edge", () => {
       fields: { email: "invalid", consent: "required" },
     });
     expect(spy).not.toHaveBeenCalled();
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 });
 
@@ -263,7 +266,7 @@ describe("POST /api/contact: Turnstile", () => {
       expect(await response.json()).toEqual({ ok: false, error: "turnstile_failed" });
       vi.restoreAllMocks();
     }
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("accepts Cloudflare's documented testing-key answer only when ALLOW_TURNSTILE_TESTING is \"true\"", async () => {
@@ -281,7 +284,7 @@ describe("POST /api/contact: Turnstile", () => {
     const response = await run(post(validBody(), {}, "http://127.0.0.1:4321/api/contact"));
     expect(response.status).toBe(422);
     expect(await response.json()).toEqual({ ok: false, error: "turnstile_failed" });
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("422 for a testing-key success unless the flag is exactly \"true\"", async () => {
@@ -291,7 +294,7 @@ describe("POST /api/contact: Turnstile", () => {
       expect(response.status).toBe(422);
       vi.restoreAllMocks();
     }
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("422 when the token is missing, without calling siteverify", async () => {
@@ -309,7 +312,7 @@ describe("POST /api/contact: Turnstile", () => {
       expect(await response.json()).toEqual({ ok: false, error: "unavailable" });
       vi.restoreAllMocks();
     }
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
   });
 
   it("sends the secret, token, remoteip and idempotency_key, and no form field", async () => {
@@ -336,7 +339,7 @@ describe("POST /api/contact: validation rows (FR-008e, FR-012a)", () => {
     expect(json.ok).toBe(false);
     expect(json.error).toBe("validation");
     expect(spy).not.toHaveBeenCalled();
-    expect(await rows()).toHaveLength(0);
+    expect(await snapshot()).toEqual(baseline);
     vi.restoreAllMocks();
     return json.fields;
   }
@@ -380,7 +383,6 @@ describe("POST /api/contact: validation rows (FR-008e, FR-012a)", () => {
     // The body is over the 10 KiB cap only past ~10,240 bytes; this one is about 5.6 KB.
     expect((await run(post(atLimit))).status).toBe(200);
     vi.restoreAllMocks();
-    await clearRows();
 
     expect(
       await fieldsFor({

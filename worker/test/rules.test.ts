@@ -6,9 +6,6 @@ import {
   NAME_MAX,
   ORGANIZATION_MAX,
   PROJECT_MAX,
-  RATE_PER_DAY,
-  RATE_PER_HOUR,
-  RETENTION_MONTHS,
   validateSubmission,
 } from "../src/contact/rules";
 
@@ -28,9 +25,6 @@ describe("limits", () => {
     expect(PROJECT_MAX).toBe(100);
     expect(MESSAGE_MAX).toBe(5000);
     expect(BODY_MAX_BYTES).toBe(10_240);
-    expect(RATE_PER_HOUR).toBe(3);
-    expect(RATE_PER_DAY).toBe(5);
-    expect(RETENTION_MONTHS).toBe(12);
   });
 });
 

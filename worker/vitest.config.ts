@@ -14,9 +14,6 @@ function databaseName(environment?: string) {
   return db.database_name;
 }
 
-// Test-only values; the real secrets are set per environment (Constitution VII).
-const TOKENS = { production: "test-read-token", preview: "preview-test-read-token" } as const;
-
 // Own config so Vitest does not walk up to the repository's Vitest 5 config.
 export default defineConfig(async () => {
   const migrations = await readD1Migrations(path.join(root, "migrations"));
@@ -39,7 +36,6 @@ export default defineConfig(async () => {
               EXPECTED_ENVIRONMENT: name,
               EXPECTED_DATABASE_NAME: databaseName(name === "preview" ? "preview" : undefined),
               OTHER_DATABASE_NAME: databaseName(other === "preview" ? "preview" : undefined),
-              OTHER_READ_TOKEN: TOKENS[other],
             },
           },
         }),

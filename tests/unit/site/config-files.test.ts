@@ -101,6 +101,22 @@ describe("wrangler.jsonc", () => {
     expect(config.vars ?? {}).not.toHaveProperty("SITE_ENVIRONMENT");
   });
 
+  it("keeps no retired contact-storage name in configuration, workflows or the e2e environment (FR-009, FR-017a)", () => {
+    const files = [
+      "wrangler.jsonc",
+      ".env.example",
+      "tests/fixtures/worker/e2e.env",
+      ...readdirSync(fileURLToPath(new URL("../../../.github/workflows/", import.meta.url))).map(
+        (name) => `.github/workflows/${name}`,
+      ),
+    ];
+    for (const file of files) {
+      const text = readFileSync(fileURLToPath(new URL(`../../../${file}`, import.meta.url)), "utf-8");
+      expect(text, file).not.toMatch(/CONTACT_READ_TOKEN|IP_HASH_SALT|RETENTION|\/api\/messages/);
+    }
+    expect(JSON.stringify(config)).not.toMatch(/"messages"|messages_/);
+  });
+
   it("keeps invocation logs off", () => {
     expect(config.observability?.enabled).toBe(true);
     expect(config.observability?.logs?.invocation_logs).toBe(false);
@@ -315,13 +331,15 @@ describe("worker workspace and tooling wiring (007 contact form)", () => {
 describe("contact Worker files", () => {
   const root = fileURLToPath(new URL("../../../", import.meta.url));
 
-  it("has only additive migrations (no DROP, DELETE or RENAME)", () => {
+  // 0003 is the one deliberate destructive migration: it drops the retired messages table (feature 033, FR-009).
+  it("has only additive migrations, apart from the one that drops messages (no DELETE or RENAME)", () => {
     const dir = `${root}migrations/`;
     const files = readdirSync(dir).filter((f) => f.endsWith(".sql"));
     expect(files.length).toBeGreaterThan(0);
     for (const file of files) {
       const sql = readFileSync(`${dir}${file}`, "utf-8");
-      expect(sql, file).not.toMatch(/\b(DROP|DELETE|RENAME)\b/i);
+      const checked = file === "0003_drop_messages.sql" ? sql.replace(/^DROP TABLE IF EXISTS messages;$/m, "") : sql;
+      expect(checked, file).not.toMatch(/\b(DROP|DELETE|RENAME)\b/i);
     }
   });
 
