@@ -178,7 +178,7 @@ Mechanical criteria (the review phase checks each one):
 - **Test:** existing (W1 turns green; typecheck covers the type).
 - **Layer:** unit.
 
-### W3 — Update the baseline
+### [x] W3 — Update the baseline
 
 - **Files:** `setup/dns-baseline.json`.
 - **What:**
