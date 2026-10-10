@@ -1,18 +1,14 @@
 import { json, parseJsonObject, readCapped } from "../http";
 import { isSameOriginRequest } from "../same-origin";
-import { hashIp } from "./ip-hash";
-import { DUPLICATE_CHECK_SQL, INSERT_MESSAGE_SQL } from "./queries";
-import { checkRateLimit } from "./rate-limit";
+import { buildContactEmail } from "./email";
 import { BODY_MAX_BYTES, validateSubmission } from "./rules";
 import { TOKEN_MAX, verifyTurnstile } from "./turnstile";
 
 type Outcome =
-  | "stored"
+  | "sent"
   | "honeypot"
-  | "duplicate"
   | "invalid"
   | "turnstile_failed"
-  | "rate_limited"
   | "unavailable"
   | "forbidden"
   | "too_large";
@@ -73,14 +69,7 @@ export async function handleSubmit(request: Request, env: Env): Promise<Response
   const submission = validation.value;
 
   try {
-    // 3. Duplicate submission id: the earlier one was stored, so this one succeeds (R8).
-    const existing = await env.DB.prepare(DUPLICATE_CHECK_SQL).bind(submission.id).first();
-    if (existing) {
-      log("duplicate");
-      return ok();
-    }
-
-    // 4. Turnstile.
+    // 3. Turnstile.
     const token = typeof body.turnstile_token === "string" ? body.turnstile_token : "";
     if (token === "" || token.length > TOKEN_MAX) {
       log("turnstile_failed");
@@ -100,32 +89,18 @@ export async function handleSubmit(request: Request, env: Env): Promise<Response
       return fail(422, "turnstile_failed");
     }
 
-    // 5. Rate limit. Only CF-Connecting-IP identifies the sender (X-Forwarded-For is ignored);
-    //    a missing header counts against one shared "unknown" sender (FR-013b).
-    const ipHash = await hashIp(remoteIp || "unknown", env.IP_HASH_SALT);
-    const limit = await checkRateLimit(env.DB, ipHash, Date.now());
-    if (limit.limited) {
-      log("rate_limited");
-      return fail(429, "rate_limited", {}, { "Retry-After": String(limit.retryAfter) });
-    }
-
-    // 6. Insert.
-    await env.DB.prepare(INSERT_MESSAGE_SQL)
-      .bind(
-        submission.id,
-        submission.name,
-        submission.email,
-        submission.organization,
-        submission.project,
-        submission.message,
-        ipHash,
-        Date.now(),
-      )
-      .run();
-    log("stored");
+    // 4. Email. Nothing is stored: success means send() resolved (FR-009, FR-012a).
+    await env.CONTACT_EMAIL.send(
+      buildContactEmail(submission, {
+        receivedAt: Date.now(),
+        preview: env.SITE_ENVIRONMENT === "preview",
+        host: url.host,
+      }),
+    );
+    log("sent");
     return ok();
   } catch (error) {
-    // 7. Any dependency failure fails closed (FR-012a).
+    // Any dependency failure fails closed, with no retry.
     log("unavailable", error);
     return fail(503, "unavailable");
   }

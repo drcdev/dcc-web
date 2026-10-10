@@ -44,7 +44,8 @@ export function post(body: unknown = validBody(), headers: Record<string, string
 export async function run(request: Request, envOverrides: Partial<Env> = {}) {
   const ctx = createExecutionContext();
   const handler = worker as unknown as Required<ExportedHandler<Env>>;
-  const bindings = { ...env, ...envOverrides } as Env;
+  // A fake email binding unless the test passes its own, so no test depends on the local send_email simulation.
+  const bindings = { ...env, CONTACT_EMAIL: fakeEmail(), ...envOverrides } as Env;
   const response = await handler.fetch(request as Request<unknown, IncomingRequestCfProperties>, bindings, ctx);
   await waitOnExecutionContext(ctx);
   return response;
