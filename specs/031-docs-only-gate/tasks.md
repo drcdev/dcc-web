@@ -86,7 +86,7 @@ description: "Task list for the docs-only verify gate"
 
 ## Phase 5: Polish and cross-cutting
 
-- [ ] T023 [P] Re-read `docs/testing.md` and `docs/setup.md` against FR-013 and the spec's Accepted risks; fix wording to plain language with no leftover `full`/`content_only` output names. Scope stays inside the files named in plan.md.
+- [X] T023 [P] Re-read `docs/testing.md` and `docs/setup.md` against FR-013 and the spec's Accepted risks; fix wording to plain language with no leftover `full`/`content_only` output names. Scope stays inside the files named in plan.md.
 - [ ] T024 Run the full local gate: `pnpm run verify` (ask Don first; use `ASTRO_PREVIEW_BACKGROUND=1`, check port 4321 with lsof first, read the `VERIFY_EXIT=` line). The PR body flags the major-change criterion "changes CI, deployment or infrastructure configuration".
 
 ---
