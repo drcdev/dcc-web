@@ -265,7 +265,7 @@ Judged against the constitution on `main` (2.3.0), because that is what this PR 
 - **Test:** no behaviour: n/a (documentation). `tests/unit/setup/docs-structure.test.ts` and
   `docs-content-structure.test.ts` read these files and must stay green (run them).
 
-### W5 — Shared pipeline wording
+### W5 — Shared pipeline wording [x] done
 
 - **Files:** `.claude/skills/_shared/open-pr.md`, `preview-check.md`, `visual-baselines.md`,
   `verify-gate.md`.

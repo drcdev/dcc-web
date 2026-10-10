@@ -8,4 +8,5 @@ Do not paraphrase them into a subagent prompt; pass them by reference.
   suffix `[PREVIEW-CHECK]` in the phase artifact. Which artifact holds it stays in each skill.
 - Subagents leave such items unticked and list them in their summary.
 - The orchestrator collects them for the PR body and the final report.
-- Auto-merge stays off while any are open (see `open-pr.md`).
+- Open items are listed in the PR body for Don to walk on the preview before approving; they do
+  not hold back auto-merge (see `open-pr.md`).
