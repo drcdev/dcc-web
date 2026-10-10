@@ -1,11 +1,11 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 2.3.0 → 3.0.0
+Version change: 2.3.1 → 3.0.0 (made with the speckit-constitution skill)
 Bump rationale: MAJOR. Principle III is redefined: it is retitled, and the
 major-change classification (the list, the flag in the PR body and the "when in
 doubt" rule) is removed. Principle IX, the Technology Constraints and Governance
-relied on that classification, so each is reworded. Since issue #105 every pull
+relied on that classification, so each is reworded. Since PR #105 every pull
 request needs Don's approval, so the classification no longer changed how anything
 merges. Source: issue #143.
 
@@ -20,8 +20,9 @@ Modified principles:
   monthly cost in its plan and its PR body (no longer a "major change").
 
 Modified sections:
-- Technology Constraints — design baseline no longer calls deviations major
-  changes; new tools, services or libraries follow Principle IV.
+- Technology Constraints — design baseline keeps the 2.3.1 wording (issue #140)
+  without its major-change sentence; new tools, services or libraries follow
+  Principle IV.
 - Governance — amendments are reviewed in a pull request like any other change.
 
 Added sections: none
@@ -38,8 +39,6 @@ Templates reviewed (read at runtime, not modified by this command):
   below still stands).
 
 Follow-up TODOs:
-- #86: ruleset drift detection and Actions hardening (the baseline deliberately
-  claims no drift check).
 - Add a layer field to the tasks template and speckit-tasks (carried from 2.1.0).
 - Principle I's layer list does not yet name build, visual or budget tests
   (carried from 2.1.0).
@@ -87,7 +86,7 @@ owner of every path, so the approval that counts is always his. GitHub does not 
 approval on their own pull request, so agents open pull requests from a separate machine
 account.
 
-Auto-merge is armed on every pull request once it is opened. It merges only after Don approves
+Auto-merge is armed on every pull request after its final push. It merges only after Don approves
 and the release gate passes. Don withholds approval until he has checked whatever the pull
 request body asks him to check, including on the preview deployment.
 
@@ -192,8 +191,7 @@ request body asks him to check, including on the preview deployment.
 ## Technology Constraints
 
 - **Site:** Astro (current stable), TypeScript in strict mode, Tailwind CSS.
-- **Design baseline:** the existing Tailwind theme from Don's current site is ported as the
-  starting design system.
+- **Design baseline:** the site's Tailwind theme is its design system.
 - **Hosting:** Cloudflare Workers static assets, serving the static build, with a preview
   deployment per branch.
 - **Contact API:** TypeScript in the site's Worker, handling `/api/*`, with Cloudflare D1 for

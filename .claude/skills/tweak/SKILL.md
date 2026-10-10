@@ -178,7 +178,7 @@ checklists by design; note it in the final report and continue.
 **Inner loop and gate.** Read `.claude/skills/_shared/verify-gate.md` and follow it exactly.
 
 1. Run the gate yourself, following the local tier in
-   `.claude/skills/_shared/verify-gate.md`. When the tier is full, run `pnpm run verify` in the **foreground with an explicit
+   `.claude/skills/_shared/verify-gate.md`. When the tier calls for the full gate (content-only or full), run `pnpm run verify` in the **foreground with an explicit
    time limit** (10 minutes, via the `perl` alarm (CLAUDE.md, Local toolchain) — never background
    a run and poll for it). Keep only the pass/fail summary and the failing
    test names. A run that hits the limit is red: report it, do not retry in

@@ -216,7 +216,7 @@ if the second implement pass still leaves gaps, stop and report them.
 ## Finish
 
 1. Run the gate yourself: follow the local tier in `.claude/skills/_shared/verify-gate.md`
-   (`<pm> run verify` when the tier is full, per the rules above). Red → dispatch a
+   (`<pm> run verify` when the tier is content-only or full, per the rules above). Red → dispatch a
    fix subagent (told to read `.claude/skills/_shared/verify-gate.md`) or report; never proceed red. Missing script → stop and
    report: the slice was required to create it.
 2. **Link the issue.** The backlog lives in GitHub Issues. If the slice

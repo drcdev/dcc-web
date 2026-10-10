@@ -333,7 +333,7 @@ Judged against the constitution on `main` (2.3.0), because that is what this PR 
   created.
 - **Test:** no behaviour: n/a (agent notes; no test reads `CLAUDE.md`).
 
-### W9 — Agent memory (outside the repository)
+### W9 — Agent memory (outside the repository) [x] done
 
 - **Files** (in `/Users/doncoleman/.claude/projects/-Users-doncoleman-Repos-dcc-web/memory/`):
   `single-approval-pr-105.md`, `prs-open-from-drc-agents.md`,
