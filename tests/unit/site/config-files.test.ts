@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { stripJsonc } from "../../../scripts/lib/jsonc.ts";
+import { toE2eWranglerConfig } from "../../../scripts/lib/e2e-wrangler-config.ts";
+import { FALLBACK_ORIGIN } from "../../../src/lib/site-origin.ts";
 import { CONTACT_DESTINATION, CONTACT_SENDER } from "../../../worker/src/contact/email.ts";
 
 describe("wrangler.jsonc", () => {
@@ -18,12 +20,29 @@ describe("wrangler.jsonc", () => {
   });
 
   it("reaches the e2e Worker's flag only through the wrangler dev --var, never the generated config", () => {
-    const generator = readFileSync(
-      fileURLToPath(new URL("../../../scripts/e2e-wrangler-config.ts", import.meta.url)),
-      "utf-8",
+    for (const file of ["scripts/e2e-wrangler-config.ts", "scripts/lib/e2e-wrangler-config.ts"]) {
+      const generator = readFileSync(
+        fileURLToPath(new URL(`../../../${file}`, import.meta.url)),
+        "utf-8",
+      );
+      expect(generator).not.toContain("ALLOW_TURNSTILE_TESTING");
+      expect(generator).not.toMatch(/\.vars\b/);
+    }
+  });
+
+  it("generates the e2e config without the ai binding or any route (#156)", () => {
+    const e2e = toE2eWranglerConfig(config) as Record<string, unknown> & {
+      env?: Record<string, Record<string, unknown>>;
+    };
+    for (const scope of [e2e, ...Object.values(e2e.env ?? {})]) {
+      expect(scope).not.toHaveProperty("ai");
+      expect(scope).not.toHaveProperty("$schema");
+      expect(scope).not.toHaveProperty("routes");
+    }
+    const kept = Object.fromEntries(
+      Object.entries(config).filter(([key]) => !["ai", "$schema", "routes", "env"].includes(key)),
     );
-    expect(generator).not.toContain("ALLOW_TURNSTILE_TESTING");
-    expect(generator).not.toMatch(/\.vars\b/);
+    expect(e2e).toMatchObject(kept);
   });
 
   it("runs the Worker only for /api/* (Principle VIII)", () => {
@@ -123,6 +142,34 @@ describe("wrangler.jsonc", () => {
     expect(config.observability?.enabled).toBe(true);
     expect(config.observability?.logs?.invocation_logs).toBe(false);
   });
+
+  it("serves production only on a Custom Domain for the site's own host (#156)", () => {
+    expect(config.routes).toEqual([
+      { pattern: new URL(FALLBACK_ORIGIN).hostname, custom_domain: true },
+    ]);
+  });
+
+  it("never declares the bare domain in any environment (#156)", () => {
+    const bare = new URL(FALLBACK_ORIGIN).hostname.replace(/^www\./, "");
+    const scopes = [config, ...Object.values<{ routes?: unknown[] }>(config.env ?? {})];
+    for (const scope of scopes) {
+      for (const route of scope.routes ?? []) {
+        const pattern = typeof route === "string" ? route : (route as { pattern: string }).pattern;
+        expect(pattern).not.toBe(bare);
+      }
+    }
+  });
+
+  it(
+    "keeps the preview Worker off the production Custom Domain (#156)",
+    async () => {
+      expect(config.env.preview.routes).toEqual([]);
+      const { unstable_readConfig } = await import("wrangler");
+      const resolved = unstable_readConfig({ config: wranglerPath, env: "preview" });
+      expect(resolved.routes ?? []).toEqual([]);
+    },
+    60_000,
+  );
 
   it("holds no secret-looking vars", () => {
     const vars = { ...(config.vars ?? {}), ...(config.env?.preview?.vars ?? {}) };
