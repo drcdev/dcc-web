@@ -2,6 +2,7 @@
 // by the bootstrap script in SelfAssessment.astro. It reads the form, checks it, scores it and
 // draws the chart and the text summary. Nothing leaves the page: no request, no storage. It sets
 // no `style` attribute (the page policy forbids it); the chart's geometry is SVG attributes.
+import stylesheet from "./client.css?url";
 import { planOrder } from "./plan.ts";
 import { decodeResult, encodeResult, resultUrl, type AssessmentResult } from "./result-link.ts";
 import { band, changeText, formatScore, markerPosition, nextToPractise, selectLowBand, summaryLine, sumOf } from "./score.ts";
@@ -158,7 +159,23 @@ function planSheet(data: Data, sums: number[], date: string, url: string): HTMLE
 
 const countText = (count: number): string => (count === 1 ? "1 statement needs an answer." : `${count} statements need an answer.`);
 
+/**
+ * Links the block's own stylesheet (client.css) once. It is imported as a URL and linked here, not
+ * imported as CSS: Astro bundles CSS imported anywhere in a post's component graph, client scripts
+ * included, with every page that calls render() on that post (the listings do, for the reading
+ * time), and the stylesheet must ship only with posts that render the block (FR-017, FR-018b).
+ */
+function addStylesheet(): void {
+  if (document.querySelector("link[data-assessment-stylesheet]")) return;
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = stylesheet;
+  link.dataset.assessmentStylesheet = "";
+  document.head.append(link);
+}
+
 export function init(root: HTMLElement): void {
+  addStylesheet();
   const data = JSON.parse(root.dataset.assessmentData ?? "{}") as Data;
   const form = root.querySelector<HTMLFormElement>("[data-assessment-form]")!;
   const status = root.querySelector<HTMLElement>("[data-assessment-status]")!;

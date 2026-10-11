@@ -46,7 +46,7 @@ const radio =
   aria-labelledby={headingId(assessment.title)}
   class="not-prose my-8 rounded-xl border border-dusk-200 bg-white p-4 text-dusk-700 dark:border-dusk-700 dark:bg-dusk-800 dark:text-mist-300 sm:p-6 forced-colors:border-[CanvasText]"
 >
-  <div data-assessment-nojs class="[.js_&]:hidden">
+  <div data-assessment-nojs class="[.js_&]:hidden print:block!">
     <p class="m-0">The self-assessment needs JavaScript. The statements are listed below for reflection.</p>
     {
       assessment.shifts.map((shift) => (
@@ -62,7 +62,7 @@ const radio =
     }
   </div>
 
-  <div data-assessment-app class="hidden [.js_&]:block">
+  <div data-assessment-app class="hidden [.js_&]:block print:hidden!">
     <p class="m-0 [overflow-wrap:anywhere]">{assessment.intro}</p>
     <p role="status" aria-live="polite" data-assessment-status class="m-0 mt-3 font-medium text-dusk-900 dark:text-white"></p>
     <div hidden data-assessment-earlier class="mt-6 rounded-lg border border-dusk-200 p-4 dark:border-dusk-700 forced-colors:border-[CanvasText]"></div>
@@ -115,65 +115,6 @@ const radio =
     </form>
     <div hidden data-assessment-results class="mt-8"></div>
   </div>
-
-  <style is:global>
-    /* Headings the block links to clear the top of the page when they are scrolled to. */
-    h2[id],
-    h3[id] {
-      scroll-margin-top: 6rem;
-    }
-  </style>
-
-  <style is:global>
-    /* Print (research R7). With a result shown, only the plan sheet prints. Without one, the post
-       prints with the statement list and no form controls. */
-    [data-assessment-plan-sheet] {
-      display: none;
-    }
-    @media print {
-      [data-assessment] [data-assessment-app] {
-        display: none !important;
-      }
-      [data-assessment] [data-assessment-nojs] {
-        display: block !important;
-      }
-      html[data-assessment-plan] body > :not([data-assessment-plan-sheet]) {
-        display: none !important;
-      }
-      html[data-assessment-plan] body > [data-assessment-plan-sheet] {
-        display: block;
-        margin: 0;
-        padding: 0;
-        color: #000;
-        background: #fff;
-        font-size: 10pt;
-        line-height: 1.35;
-        overflow-wrap: anywhere;
-      }
-      [data-assessment-plan-sheet] h2 {
-        margin: 0 0 0.25rem;
-        font-size: 15pt;
-      }
-      [data-assessment-plan-sheet] h3 {
-        margin: 0.6rem 0 0.1rem;
-        font-size: 11pt;
-        break-after: avoid;
-      }
-      [data-assessment-plan-sheet] p,
-      [data-assessment-plan-sheet] ul {
-        margin: 0.1rem 0;
-      }
-      [data-assessment-plan-sheet] ul {
-        padding-left: 1.2rem;
-      }
-      [data-assessment-plan-sheet] [data-plan-week] {
-        break-inside: avoid;
-      }
-    }
-    @page {
-      margin: 15mm;
-    }
-  </style>
 
   <script>
     // Load the module when the block is within one viewport height of the visible area, or at

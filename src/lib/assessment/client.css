@@ -1,0 +1,56 @@
+/* The self-assessment's own global styles. client.ts links this file when it starts, so only a post
+   that renders the block loads them (FR-017, FR-018b; why it is linked and not imported is noted
+   there). They are not a <style> in SelfAssessment.astro because Astro bundles a component's
+   styles with every page that calls render() on a post using it, and the listings do that for the
+   reading time. Every rule
+   here applies only once the module has run: the results link to headings, and the plan sheet is
+   added by the module. Hiding the form in print, which must work before the module loads, is the
+   block's own print: classes. */
+
+/* Headings the block links to clear the top of the page when they are scrolled to. */
+h2[id],
+h3[id] {
+  scroll-margin-top: 6rem;
+}
+
+/* Print (research R7). With a result shown, only the plan sheet prints. */
+[data-assessment-plan-sheet] {
+  display: none;
+}
+@media print {
+  html[data-assessment-plan] body > :not([data-assessment-plan-sheet]) {
+    display: none !important;
+  }
+  html[data-assessment-plan] body > [data-assessment-plan-sheet] {
+    display: block;
+    margin: 0;
+    padding: 0;
+    color: #000;
+    background: #fff;
+    font-size: 10pt;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  [data-assessment-plan-sheet] h2 {
+    margin: 0 0 0.25rem;
+    font-size: 15pt;
+  }
+  [data-assessment-plan-sheet] h3 {
+    margin: 0.6rem 0 0.1rem;
+    font-size: 11pt;
+    break-after: avoid;
+  }
+  [data-assessment-plan-sheet] p,
+  [data-assessment-plan-sheet] ul {
+    margin: 0.1rem 0;
+  }
+  [data-assessment-plan-sheet] ul {
+    padding-left: 1.2rem;
+  }
+  [data-assessment-plan-sheet] [data-plan-week] {
+    break-inside: avoid;
+  }
+}
+@page {
+  margin: 15mm;
+}
