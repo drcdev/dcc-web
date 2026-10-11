@@ -124,3 +124,10 @@ T008 (diagram) and T009 (screenshot) can run while T007 (copy) is written.
 MVP is US1: the draft story with its two pictures and the one test-line edit. US2 and US3 add
 no files; they are verification and copy rules on the same story. Red first: T010 must show
 both unit tests failing before T011 and T012 turn them green.
+
+---
+
+## Phase 7: Convergence
+
+- [ ] T025 [US1] In the Build part of `src/content/projects/doncoleman-ca.mdx`, correct what the gate cut is credited to: CI went from 31 minutes to 6 minutes 15 seconds (run 37090465334, the #36 merge, 2026-10-02) by moving each behaviour to the cheapest test layer, building each fixture set once, and splitting CI into parallel jobs (issue #26, `.specify/chores/verify-gate-phase-2/plan.md` and `verify-gate-phase-3/plan.md`). Pruning tests that only restated configuration was #97 (PR #111, 2026-10-05), after that measurement, so do not name it as part of the cut (it stays in Lessons with #55 and #97). Name the issue #26 record in the notes comment per FR-004, SC-003 (contradicts)
+- [ ] T026 [US1] In the Build part of `src/content/projects/doncoleman-ca.mdx`, replace the three short sentences "Tests come first. Pages are static. Contact messages are emailed and never stored." with plain copy that is not a list of three for rhythm (for example, name one or two principles in one sentence, or state that it sets rules for testing, static pages and private data), keeping every claim true to constitution 4.0.0 per FR-009 (partial)
