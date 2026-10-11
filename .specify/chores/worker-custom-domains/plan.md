@@ -179,7 +179,7 @@ branch preview shows nothing about this change beyond the site still serving.
 
 ### W4: Setup docs say the `www` Custom Domain is in config
 
-- [ ] W4 done
+- [x] W4 done (docs-only; docs-structure 36 pass before and after, no new test applies)
 - **Files:** `docs/setup.md`; `scripts/setup-check/checks/cloudflare-worker.ts` header comment only
   if it needs one clause.
 - **Edits:**

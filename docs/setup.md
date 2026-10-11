@@ -150,8 +150,9 @@ None.
 
 **What it is for**
 The new site is hosted as a Cloudflare Worker serving static assets; this item creates that
-Worker. Production is served only on the zone's Custom Domain, so `workers.dev` and Preview URLs stay
-off for `dcc-web`.
+Worker. Production is served only on the Custom Domain `www.doncoleman.ca`, so `workers.dev` and
+Preview URLs stay off for `dcc-web`. `wrangler.jsonc` declares the Custom Domain in `routes` and each
+production deploy applies it, so do not add or remove it in the dashboard.
 
 **Where to do it**
 Cloudflare dashboard → Workers & Pages → Create → Import a repository → `drcdev/dcc-web` (this
@@ -632,6 +633,10 @@ Cloudflare dashboard, in one sitting after the pull request merges and its produ
 finished. Each step states what must be true before it, the signal that it is done, and how long it
 takes. Do the steps in order.
 
+Since #156, `wrangler.jsonc` declares the `www` Custom Domain, so every production deploy applies
+what step 3 attached by hand (done 2026-10-10). The steps below stay as the record of the swap and
+as the rollback reference. The bare domain stays out of the config.
+
 ### Live swap
 
 0. Confirm SSL/TLS → Edge Certificates → **Always Use HTTPS** is on. It is on today, so this is a
@@ -678,6 +683,8 @@ no point of no return.
   back: filter `http.host eq "www.doncoleman.ca"`, expression
   `concat("https://doncoleman.ca", http.request.uri.path)`, status 301, Preserve query string on.
 - **After step 3**: remove the Custom Domain `www.doncoleman.ca`, then do what "After step 2" says.
+  Revert the `routes` entry in `wrangler.jsonc` in a reviewed pull request too, or the next
+  production deploy attaches `www` again.
 - **After step 4**: add the Custom Domain `doncoleman.ca` again (no record exists on it yet) and wait
   until it serves, then do what "After step 3" says.
 - **After step 5**: delete the bare to `www` rule and `AAAA doncoleman.ca 100::` first, because
