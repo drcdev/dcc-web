@@ -46,23 +46,41 @@ pieces are isolated islands, and the only server code is the two API endpoints t
 lists. A feature that needs shared state, such as a live poll, needs a new endpoint and so a
 constitution amendment.
 
+## Clarifications
+
+### Session 2026-10-11
+
+- Q: How should an earlier result be kept so a reader can compare a retake? → A: A results link.
+  The versioned scores go in the URL fragment (never sent to the server) and are printed on the
+  plan; nothing is stored by the site or the browser.
+- Q: Is the live poll for talks part of this slice? → A: No, follow-up work as its own feature.
+- Q: Are the "What would you do?" branching scenarios part of this slice? → A: No, follow-up
+  work as their own feature, including any Workers AI feedback.
+- Q: Should the fifteen statements be shown all on one page, or one shift at a time? → A: One
+  form: five labelled groups of three five-point scales, then a "Show my results" button.
+- Q: Where should the practical-application reminders and six-week plan activities live? → A:
+  A single source. A validated data file holds the shifts, statements, reminders and week
+  activities, and the post's "Practical Application" paragraphs and 6-Week Development Plan are
+  rendered from it through MDX components.
+
 ## Scope of this slice
 
-In scope: the individual self-assessment inside the Wayfinder post (User Stories 1 to 4).
+In scope: the individual self-assessment inside the Wayfinder post (User Stories 1 to 4), and
+moving the post's "Practical Application" paragraphs and 6-Week Development Plan into the
+assessment's data file so both are rendered from one source.
 
-Decided by this spec, open to the clarify phase:
-
-- The "What would you do?" scenarios are a separate approach and are follow-up work, not part
-  of this slice, unless clarify decides otherwise (see FR-020).
-- The live poll for talks is listed as follow-up work, pending clarify (see FR-019).
+Out of scope (follow-up work, each its own feature): the live poll for talks (FR-019) and the
+"What would you do?" scenarios, including any Workers AI feedback (FR-020). This slice needs no
+constitution amendment.
 
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Take the self-assessment and see where I sit (Priority: P1)
 
 A reader of the Wayfinder post reaches the self-assessment. For each of the five mindset shifts
-they answer three short statements about how they usually act, on a five-point scale. When they
-finish, they see a chart that places them between the shift's "From" and "To" on each of the
+they answer three short statements about how they usually act, on a five-point scale. All
+fifteen statements are on one form, in five labelled groups (one per shift), followed by a "Show
+my results" button. When they finish, they see a chart that places them between the shift's "From" and "To" on each of the
 five shifts, with the same result also written out in text.
 
 **Why this priority**: This is the core of the feature. On its own it turns the post's
@@ -74,8 +92,9 @@ chart and the text summary show one position per shift that matches the answers 
 **Acceptance Scenarios**:
 
 1. **Given** the Wayfinder post is open with JavaScript on, **When** the reader reaches the
-   self-assessment, **Then** they see a short introduction, the five shifts by name, and three
-   statements for each shift, each with a five-point answer scale.
+   self-assessment, **Then** they see a short introduction and one form with five labelled
+   groups, one per shift by name, each holding three statements with a five-point answer scale,
+   followed by a "Show my results" button.
 2. **Given** the reader has answered every statement, **When** they ask to see their results,
    **Then** a chart shows one position per shift on a line from that shift's "From" wording to
    its "To" wording, and a text summary lists the same five positions in words.
@@ -141,31 +160,34 @@ only the plan, with weeks ordered by the reader's scores and the date and positi
 
 ### User Story 4 - Retake later and see how I have grown (Priority: P3)
 
-Weeks later the reader comes back, takes the assessment again, and sees their new positions
-beside their earlier ones, so they can tell which shifts have moved.
+Weeks later the reader comes back through the results link they kept (FR-012), takes the
+assessment again, and sees their new positions beside their earlier ones, so they can tell which
+shifts have moved.
 
-**Why this priority**: It turns a one-off quiz into a development tool, but it depends on how an
-earlier result is kept, which clarify must settle (FR-012).
+**Why this priority**: It turns a one-off quiz into a development tool, but it relies on the
+reader keeping their results link.
 
-**Independent Test**: Take the assessment, keep the result as FR-012 allows, return later, retake
-with different answers, and confirm the chart and text show both results with the change per
-shift.
+**Independent Test**: Take the assessment, copy the results link, open it in a fresh browser
+session, retake with different answers, and confirm the chart and text show both results with
+the change per shift.
 
 **Acceptance Scenarios**:
 
-1. **Given** the reader has an earlier result available, **When** they finish a retake, **Then**
+1. **Given** the reader opened the post through a results link, **When** they finish a retake, **Then**
    the chart shows the earlier and the new position for each shift, told apart by more than
    colour, and the text summary states the change for each shift.
-2. **Given** the reader has no earlier result available, **When** they finish the assessment,
+2. **Given** the reader opened the post without a results link, **When** they finish the assessment,
    **Then** only the new result is shown, with no error.
 3. **Given** the reader wants to start fresh, **When** they choose to clear their answers,
-   **Then** every answer and any earlier result the feature keeps for them is removed.
+   **Then** every answer and the earlier result loaded from the link are removed from the page,
+   and the results fragment is removed from the address bar.
 
 ---
 
 ### Edge Cases
 
-- JavaScript is off or fails to load: the post still reads in full, and in place of the
+- JavaScript is off or fails to load: the post still reads in full (including the Practical
+  Application paragraphs and the 6-Week Development Plan, which are rendered at build time), and in place of the
   assessment the reader sees a short note that the self-assessment needs JavaScript, with the
   statements still readable as a list so the reader can reflect on them unaided.
 - The reader answers every statement with the middle value: every shift sits in the middle, no
@@ -174,7 +196,7 @@ shift.
   links; the plan keeps the post's own order (all tied).
 - An earlier result (Story 4) was made against a different version of the statements: it is not
   compared, and the reader is told that the questions have changed since then.
-- An earlier result held by the reader is malformed or altered: it is ignored and the reader is
+- A results link whose fragment is malformed or altered: it is ignored and the reader is
   told it could not be read; nothing on the page breaks.
 - The post is printed without results (the normal browser print): the assessment prints as its
   statements, not as an empty form with controls.
@@ -197,9 +219,11 @@ shift.
 - **FR-003**: Each statement MUST be answered on a five-point scale from "Rarely" to "Almost
   always", with every point labelled.
 - **FR-004**: The statements, the shift names, their "From" and "To" wording, the practical
-  application reminders and the six-week plan activities MUST live in the site's content files,
-  so Don can edit them without changing code, and invalid content MUST fail the build with a
-  clear error.
+  application text and the six-week plan activities MUST live in one validated data file in the
+  site's content, so Don can edit them without changing code, and invalid content MUST fail the
+  build with a clear error. This file is the single source: the post's five "Practical
+  Application" paragraphs and its 6-Week Development Plan MUST be rendered from it through MDX
+  components at build time, and that text MUST NOT also be written out in the post's prose.
 - **FR-005**: A shift's score MUST be the mean of its three answers, shown on a scale from 1
   ("From") to 5 ("To"). A shift is in the **low band** when its score is below 3.
 
@@ -227,19 +251,18 @@ shift.
 
 **Retake and growth**
 
-- **FR-012**: The reader MUST be able to compare a retake with an earlier result. How the
-  earlier result is kept is [NEEDS CLARIFICATION: the issue says both "stores nothing" and
-  "retake later to see growth". Options: (A) nothing is kept by the site or the browser; the
-  reader keeps a results link or code (in the URL or copied text) and brings it back; (B) the
-  browser keeps the last result on the reader's own device only, never sent anywhere, with a
-  clear control; (C) no comparison in this slice: the printed plan records the positions and the
-  reader compares by eye.]
+- **FR-012**: The reader MUST be able to compare a retake with an earlier result through a
+  results link. The results show a link to the post whose URL fragment holds the five scores, the
+  date taken and the statement set version; the reader can copy it, and the printed plan
+  includes it. Opening the post through such a link loads that result as the earlier result.
+  Nothing is stored by the site or the browser (no cookies, local storage or other browser
+  storage), and the fragment is never sent to the server.
 - **FR-013**: When an earlier result is available, the chart MUST show earlier and new positions
   told apart by more than colour, and the text summary MUST state the change per shift.
 - **FR-014**: Each result MUST record which version of the statements it was made with, and a
   result from a different version MUST NOT be compared.
-- **FR-015**: The reader MUST be able to clear their answers and any result the feature keeps
-  for them.
+- **FR-015**: The reader MUST be able to clear their answers and the earlier result loaded from
+  a results link; clearing also removes the results fragment from the address bar.
 
 **Privacy, performance and accessibility**
 
@@ -255,34 +278,29 @@ shift.
 
 **Related approaches**
 
-- **FR-019**: Live poll for talks: [NEEDS CLARIFICATION: is the live poll part of this slice?
-  It needs shared state across many people's devices, which means a new API endpoint, a store
-  for poll answers and a constitution amendment (Principle V's endpoint list; Principle VIII
-  limits). Options: (A) follow-up work, not in this slice; (B) a "presenter mode" in this slice
-  with no shared state, where the audience takes the assessment on their own devices and Don
-  shows the statements and the anonymous scale on screen to discuss; (C) a real live poll in
-  this slice, with the amendment.]
-- **FR-020**: "What would you do?" scenarios: [NEEDS CLARIFICATION: are branching scenarios,
-  such as the "readmission" scenario, part of this slice? Options: (A) follow-up work, its own
-  feature; (B) one authored scenario in this slice, with responses mapped to shifts and Don's
-  commentary, no free-text and no AI; (C) scenarios with optional AI feedback on free text,
-  which sends reader text to the Workers AI binding and so needs a constitution amendment
-  (Principle V says the questions API never handles text a caller supplies).]
+- **FR-019**: The live poll for talks is NOT part of this slice. It is follow-up work as its own
+  feature (it needs a new API endpoint, shared state and a constitution amendment).
+- **FR-020**: The "What would you do?" scenarios, including the "readmission" scenario and any
+  Workers AI feedback on free text, are NOT part of this slice. They are follow-up work as their
+  own feature.
 
 ### Key Entities
 
-- **Mindset shift**: one of the five shifts. Has a name, a "From" and a "To" wording, the
-  anchor of its section in the post, a practical-application reminder and its six-week plan
-  activities. Order matches the post.
+- **Mindset shift**: one of the five shifts, held in the single assessment data file. Has a
+  name, a "From" and a "To" wording, the anchor of its section in the post, its practical
+  application text (rendered in the post and reused as the results reminder) and its six-week
+  plan activities. Order matches the post.
+- **Integration week**: the week 6 integration and reflection activities, held in the same data
+  file and rendered in the post's 6-Week Development Plan.
 - **Statement**: one of three per shift. Has the text the reader rates and the shift it belongs
   to.
 - **Statement set version**: identifies the current wording of all fifteen statements, so
   results from different wordings are not compared.
 - **Answer**: the reader's 1–5 rating of one statement. Exists only in the reader's browser.
 - **Result**: the five shift scores, the date taken and the statement set version. Exists only
-  on the reader's side (see FR-012).
-- **Six-week plan**: the five shifts ordered by score plus the integration week, with the date
-  and positions, built from a result for printing.
+  in the page and in the results link's URL fragment (FR-012).
+- **Six-week plan**: the five shifts ordered by score plus the integration week, with the date,
+  positions and results link, built from a result for printing.
 
 ## Success Criteria *(mandatory)*
 
@@ -310,8 +328,8 @@ shift.
 - A five-point frequency scale and a low band below 3 are reasonable defaults for a
   self-reflection tool; this is not a validated psychometric instrument, and the introduction
   says so in plain language.
-- The six-week plan reuses the post's existing week activities; no new activity copy is
-  written beyond short practical-application reminders.
+- The six-week plan reuses the post's existing week activities and practical-application text,
+  moved unchanged into the data file; no new activity copy is written.
 - Only the Wayfinder post gets the assessment. Reuse on other posts in the series is follow-up
   work.
 - The chart is drawn by the site itself; no third-party script is added (constitution Principle
@@ -319,10 +337,10 @@ shift.
 
 ## Follow-up work
 
-- Live poll for talks (unless clarify brings it into this slice, FR-019): needs an API endpoint,
-  shared state and a constitution amendment.
-- "What would you do?" branching scenarios (unless clarify brings them in, FR-020), including
-  the "readmission" scenario and Don's commentary.
+- Live poll for talks (FR-019): needs an API endpoint, shared state and a constitution
+  amendment.
+- "What would you do?" branching scenarios (FR-020), including the "readmission" scenario and
+  Don's commentary.
 - Optional Workers AI feedback on free-text scenario answers: needs a constitution amendment,
   since reader-supplied text would reach the AI binding.
 - A self-assessment for the later posts in the systems leadership series.
