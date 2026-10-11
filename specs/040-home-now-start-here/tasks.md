@@ -98,10 +98,10 @@
 
 ## Phase 6: Polish and cross-cutting
 
-- [ ] T041 Update visual baselines after the implementation is final: run `pnpm run test:visual:update` (macOS), then `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, report it to the caller rather than skipping). Commit only the new `home-now-start-here-*` PNGs; if `menu-open-phone-*` moved, refresh those four and say so in the PR. Compare `-previous.png` not `-actual.png` (see `.claude/skills/_shared/visual-baselines.md`).
-- [ ] T042 [P] Guards: no `Cloud Architect` anywhere in `src/` (FR-020); no new script on `/` (FR-017); `git diff origin/main -- src/content/pages/index.mdx` changes only the body, not the front matter (title, description, social image and intro unchanged, FR-016a). Update `docs/testing.md` contract-row mapping with a "Now and reading paths" section for N01-N09 and R01-R10 pointing to the tests above.
+- [X] T041 Update visual baselines after the implementation is final: run `pnpm run test:visual:update` (macOS), then `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, report it to the caller rather than skipping). Commit only the new `home-now-start-here-*` PNGs; if `menu-open-phone-*` moved, refresh those four and say so in the PR. Compare `-previous.png` not `-actual.png` (see `.claude/skills/_shared/visual-baselines.md`).
+- [X] T042 [P] Guards: no `Cloud Architect` anywhere in `src/` (FR-020); no new script on `/` (FR-017); `git diff origin/main -- src/content/pages/index.mdx` changes only the body, not the front matter (title, description, social image and intro unchanged, FR-016a). Update `docs/testing.md` contract-row mapping with a "Now and reading paths" section for N01-N09 and R01-R10 pointing to the tests above.
 - [ ] T043 [PREVIEW-CHECK] Don checks on the preview deployment (rules in `.claude/skills/_shared/preview-check.md`; leave unticked, list in the PR body): the launch Now wording (FR-021, T020), the date style "Updated October 11, 2026", the two path descriptions and item order (FR-022, T035), and a look at the new sections in light and dark themes on a phone and a desktop.
-- [ ] T044 Run `quickstart.md` end to end (fixture build, real build, edit the Now date and confirm only `src/content/now/now.md` changes); open the PR from `drc-agents` with the PREVIEW-CHECK list and arm auto-merge after the final push.
+- [X] T044 Run `quickstart.md` end to end (fixture build, real build, edit the Now date and confirm only `src/content/now/now.md` changes); open the PR from `drc-agents` with the PREVIEW-CHECK list and arm auto-merge after the final push.
 
 ## Dependencies and order
 
