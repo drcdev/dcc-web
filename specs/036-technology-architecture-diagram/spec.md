@@ -56,6 +56,19 @@ The source code is in a public GitHub repository (github.com/drcdev/dcc-web).
   the diagram, each entry with its own anchor; each diagram part links to its entry. With
   JavaScript, the selected part and its entry are highlighted.
 
+### Session 2026-10-11 (round 2)
+
+- Q: Must every part have a source link, even parts with no code in this repository? → A: Each
+  external part links to the code or committed configuration that uses it (the AI model to the
+  questions API, the inbox to the email configuration, Turnstile to the contact API or widget);
+  a part with neither, the reader's browser, has no source link.
+- Q: Should production and preview be drawn as two full copies, or the system once? → A: The
+  full system is drawn once as production, plus a small preview group with its own Worker and
+  database; production and preview are each one part with their own entry.
+- Q: After the page moves to a part's entry, how does the visitor get back to the diagram? →
+  A: Each entry has a "Back to diagram" link; with JavaScript it returns focus to the part just
+  activated, without JavaScript it goes to the diagram.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See how the site fits together (Priority: P1)
@@ -106,10 +119,12 @@ confirm each shows its own explanation and that focus and the selected state are
 1. **Given** the diagram, **When** a visitor activates a part, **Then** the page moves to that
    part's entry in the list of explanations below the diagram (a short explanation of no more
    than a few sentences), and both the part and its entry are visibly marked as selected.
-2. **Given** one part is selected, **When** the visitor activates a different part, **Then**
+2. **Given** a part's entry, **When** the visitor follows its "Back to diagram" link, **Then**
+   the page returns to the diagram; with JavaScript, focus returns to the part just activated.
+3. **Given** one part is selected, **When** the visitor activates a different part, **Then**
    the page moves to the new part's entry and only the new part and its entry are marked as
    selected.
-3. **Given** a keyboard-only visitor, **When** they tab through the page, **Then** every
+4. **Given** a keyboard-only visitor, **When** they tab through the page, **Then** every
    interactive part can be reached and activated, in a sensible order, with a visible focus
    indicator; a screen reader announces each part's name and, on activation, its explanation.
 
@@ -123,14 +138,15 @@ public repository.
 **Why this priority**: The issue asks for it, and it is what makes the page credible to a
 technical reader, but the diagram and explanations stand without it.
 
-**Independent Test**: For each part, follow its source link and confirm it lands on an existing
-file or folder in the public repository that implements that part.
+**Independent Test**: For each part that has a source link, follow it and confirm it lands on
+an existing file or folder in the public repository that implements or configures that part.
 
 **Acceptance Scenarios**:
 
 1. **Given** a part's explanation, **When** the visitor follows its source link, **Then** the
-   public repository opens in a new tab at the file or folder that implements that part on
-   the main branch. The link is clearly labelled as a source link and marked, in its visible
+   public repository opens in a new tab at the file or folder that implements that part, or
+   for an external service the code or configuration that uses it, on the main branch. The
+   reader's browser has no source link. The link is clearly labelled as a source link and marked, in its visible
    text or accessible name, as opening in a new tab. Activating a diagram part never opens the
    repository by itself.
 2. **Given** the site's build, **When** a source link points at a file or folder that does not
@@ -142,18 +158,18 @@ file or folder in the public repository that implements that part.
 ### User Story 4 - Read it all without JavaScript (Priority: P2)
 
 A visitor with JavaScript turned off, or using assistive technology that does not handle the
-diagram, still gets every part's explanation and source link.
+diagram, still gets every part's explanation and, where the part has one, its source link.
 
 **Why this priority**: Required by the constitution (core content readable without JavaScript;
 WCAG 2.2 AA), and it protects the page if the interactive layer fails.
 
 **Independent Test**: Load the page with JavaScript disabled and confirm the diagram still shows
-and every part's explanation and source link can be read and followed.
+and every part's explanation and source link (where it has one) can be read and followed.
 
 **Acceptance Scenarios**:
 
 1. **Given** JavaScript is off, **When** the page loads, **Then** the diagram is visible and
-   every part's name, explanation and source link is present on the page in a readable form.
+   every part's name, explanation and source link (where it has one) is present on the page in a readable form.
 2. **Given** JavaScript is off, **When** a visitor activates a part of the diagram, **Then**
    they reach that part's entry in the list of explanations on the same page (each part is a
    link to its entry's anchor).
@@ -167,7 +183,8 @@ and every part's explanation and source link can be read and followed.
   highlighted when JavaScript is on.
 - A part in the diagram has no single source file (for example "preview vs production" is
   configuration plus CI): its link goes to the configuration that defines it, not to a made-up
-  location.
+  location. An external service (the AI model, Turnstile, the contact inbox) links to the code
+  or committed configuration that uses it; the reader's browser has no source link.
 - Very narrow screens (320 px): the same vertical layout is used as on wider screens; labels
   stay readable and the diagram does not shrink text below a readable size or require
   sideways scrolling.
@@ -187,7 +204,9 @@ and every part's explanation and source link can be read and followed.
   static pages served from Cloudflare's network; the Worker's API; the questions panel; the
   database that caches questions and holds the usage budget; the Workers AI model; the bot
   check (Turnstile); the contact email path and the fixed inbox it delivers to; and the
-  preview and production environments.
+  preview and production environments. The system is drawn once, as production; preview is a
+  small separate group showing its own Worker and its own database. Every other part appears
+  once, with one entry and one anchor.
 - **FR-003**: The diagram MUST show the connections between parts as they work today (as
   described in Background), including that only `/api/` requests run code, that the AI model is
   called only when no saved question set exists and the budget allows, that the contact
@@ -195,20 +214,24 @@ and every part's explanation and source link can be read and followed.
   own Worker and database.
 - **FR-004**: Every part's short plain-language explanation MUST be listed below the diagram,
   one entry per part, each entry with its own anchor. Each diagram part MUST be a link to its
-  entry, activatable by mouse, touch and keyboard.
+  entry, activatable by mouse, touch and keyboard. Each entry MUST end with a "Back to diagram"
+  link; with JavaScript it returns focus to the part just activated, without JavaScript it
+  goes to the diagram's anchor.
 - **FR-005**: With JavaScript on, activating a part MUST mark that part and its entry as the
   current selection; only one part and entry are selected at a time, and both MUST be visually
   distinguished from the others. Without JavaScript, the link to the entry is the whole
   behaviour.
 - **FR-006**: Each part's explanation MUST include a link to the file or folder in the public
-  repository (github.com/drcdev/dcc-web) that implements it, on the main branch
+  repository (github.com/drcdev/dcc-web) that implements it or, for an external service (the
+  AI model, Turnstile, the contact inbox), the code or committed configuration that uses it.
+  The reader's browser has no source link. Links point at the main branch
   (`/blob/main/...` for a file, `/tree/main/...` for a folder). The link is clearly labelled as
   a source link, opens in a new tab, and is marked in its visible text or accessible name as
   opening in a new tab.
 - **FR-007**: Every source link MUST be checked automatically against the repository's files,
   and a link to a path that does not exist MUST fail the release gate.
 - **FR-008**: With JavaScript turned off, the diagram MUST still render and every part's name,
-  explanation and source link MUST be readable on the page.
+  explanation and source link (where it has one) MUST be readable on the page.
 - **FR-009**: Each part MUST be addressable by a link to the page (a fragment), so a visitor
   can be sent straight to a part's entry; the fragment is the entry's anchor.
 - **FR-010**: The diagram and its explanations MUST meet WCAG 2.2 AA in light and dark themes
@@ -237,14 +260,15 @@ and every part's explanation and source link can be read and followed.
   connections to other parts.
 - **Connection**: a directed line between two parts showing that one calls, serves or sends to
   the other, with an optional short label (for example "on a cache miss").
-- **Environment**: preview or production; groups the parts that exist separately in each.
+- **Environment**: preview or production. The system is drawn once as production; preview is a
+  small group holding its own Worker and database.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: All parts listed in FR-002 appear in the diagram, each with an explanation and a
-  source link; 100% of source links resolve to an existing path in the public repository.
+- **SC-001**: All parts listed in FR-002 appear in the diagram, each with an explanation, and
+  every part except the reader's browser has a source link; 100% of source links resolve to an existing path in the public repository.
 - **SC-002**: A keyboard-only visitor can reach and open every part's explanation using only
   Tab and Enter, with no keyboard trap.
 - **SC-003**: The page passes the site's automated accessibility checks with zero violations in
