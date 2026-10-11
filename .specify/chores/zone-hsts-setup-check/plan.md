@@ -187,7 +187,7 @@ header change is overridden by the zone setting on production, and preview respo
   max-age is covered by the new agreement test (it must equal the site's `/*` value). The header's
   presence stays covered by the edited router assertion.
 
-### W3 — live-hosts check: HSTS rule
+### [x] W3 — live-hosts check: HSTS rule
 
 - **Files:** `scripts/setup-check/checks/live-hosts.ts`.
 - **Test:** existing W1 cases go green.

@@ -3,7 +3,10 @@
 // http://bare answer 301 to it, keeping the path and query; the old Ghost address reaches its page on
 // www from both hosts. Public requests only: no credentials, no Cloudflare API call. Each hop is one GET
 // with `redirect: "manual"`, at most 3 redirects per probe, no retry. Only the www and bare hosts are
-// ever followed, so a redirect to a foreign host is reported, never requested.
+// ever followed, so a redirect to a foreign host is reported, never requested. Every HTTPS response
+// (the redirect hops and the final page) must also carry Strict-Transport-Security with includeSubDomains
+// and a positive max-age (the zone HSTS setting, docs/setup.md#live-hosts); plain http replies are not
+// required to, and the max-age value itself is not pinned.
 import { FALLBACK_ORIGIN } from "../../../src/lib/site-origin.ts";
 import { ProviderAccessError } from "../types.ts";
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
@@ -33,6 +36,7 @@ interface Hop {
   url: string;
   status: number;
   location: string | null;
+  hsts: string | null;
 }
 
 function buildProbes(mainHost: string, bareHost: string): Probe[] {
@@ -68,6 +72,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     let url = probe.start;
     let finalBody = "";
     let finalStatus = 0;
+    let finalHsts: string | null = null;
     for (;;) {
       let response;
       try {
@@ -82,10 +87,11 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       if (!REDIRECT_STATUSES.has(response.status)) {
         finalStatus = response.status;
         finalBody = response.body;
+        finalHsts = response.headers["strict-transport-security"] ?? null;
         break;
       }
       const raw = response.headers["location"] ?? null;
-      hops.push({ url, status: response.status, location: raw });
+      hops.push({ url, status: response.status, location: raw, hsts: response.headers["strict-transport-security"] ?? null });
       if (hops.length > MAX_REDIRECTS) {
         return `${describe(probe, hops)}: more than ${MAX_REDIRECTS} redirects (loop?)`;
       }
@@ -97,7 +103,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       }
     }
 
-    const broken = rule(probe, hops, url, finalStatus, finalBody, mainHost, bareHost);
+    const broken = rule(probe, hops, url, finalStatus, finalBody, finalHsts, mainHost, bareHost);
     return broken ? `${describe(probe, hops, url, finalStatus)}: ${broken}` : null;
   }
 
@@ -122,13 +128,13 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     return missing(
       ITEM,
       "Problem: the live hosts do not match the main-address arrangement.",
-      "Finish the live swap in docs/setup.md#live-hosts (or roll back as described there), then run the check again.",
+      "Finish the live swap in docs/setup.md#live-hosts (or roll back as described there), or turn zone HSTS back on as described in its Zone HSTS section, then run the check again.",
       problems,
     );
   }
   return complete(
     ITEM,
-    `${mainHost} serves the site; the bare domain and http redirect to it permanently, keeping the path and query; the old Ghost address reaches its page on www.`,
+    `${mainHost} serves the site; the bare domain and http redirect to it permanently, keeping the path and query; the old Ghost address reaches its page on www; every HTTPS response carries HSTS with includeSubDomains.`,
   );
 }
 
@@ -145,6 +151,7 @@ function rule(
   end: string,
   finalStatus: number,
   body: string,
+  finalHsts: string | null,
   mainHost: string,
   bareHost: string,
 ): string | null {
@@ -174,5 +181,24 @@ function rule(
   if (!body.includes(`<link rel="canonical" href="https://${mainHost}/`)) {
     return "200 without the site's canonical link";
   }
+  for (const hop of hops) {
+    if (!hop.url.startsWith("https:")) continue;
+    const problem = hstsProblem(hop.hsts);
+    if (problem) return `${hop.url}: ${problem}`;
+  }
+  if (end.startsWith("https:")) {
+    const problem = hstsProblem(finalHsts);
+    if (problem) return `${end}: ${problem}`;
+  }
+  return null;
+}
+
+/** What is wrong with an HTTPS response's Strict-Transport-Security value, or null when it is fine. */
+function hstsProblem(value: string | null): string | null {
+  if (value === null) return "no Strict-Transport-Security header";
+  const directives = value.split(";").map((d) => d.trim().toLowerCase());
+  if (!directives.includes("includesubdomains")) return "Strict-Transport-Security without includeSubDomains";
+  const maxAge = /max-age=\s*"?(\d+)/.exec(value.toLowerCase());
+  if (!maxAge || Number(maxAge[1]) <= 0) return "Strict-Transport-Security without a positive max-age";
   return null;
 }
