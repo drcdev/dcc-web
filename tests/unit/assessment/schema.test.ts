@@ -51,6 +51,13 @@ describe("assessment schema", () => {
     expect(parse(data).success).toBe(false);
   });
 
+  it("A1: rejects a scale with two equal labels, with a message on scale", () => {
+    const data = sampleAssessment();
+    data.scale = ["Rarely", "Sometimes", "Sometimes", "Usually", "Almost always"];
+    const found = messages(data);
+    expect(found.some((m) => m.startsWith("scale:") && m.includes("different"))).toBe(true);
+  });
+
   it("A2: rejects a repeated shift id or anchor, naming the value", () => {
     const id = sampleAssessment();
     id.shifts[3]!.id = id.shifts[0]!.id;

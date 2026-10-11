@@ -44,6 +44,13 @@ describe("A9 checkFromToLines", () => {
     expect(() => checkFromToLines({ file: FILE, body, headings, assessment })).toThrow(/\*\*To\*\*[\s\S]*Another place/);
   });
 
+  it("does not throw for a shift whose anchor matches no heading (left to A6)", () => {
+    const { body, headings } = postBody();
+    const withoutOne = headings.filter((heading) => heading.slug !== assessment.shifts[2]!.anchor);
+    expect(() => checkFromToLines({ file: FILE, body, headings: withoutOne, assessment })).not.toThrow();
+    expect(() => checkFromToLines({ file: FILE, body, headings: [], assessment })).not.toThrow();
+  });
+
   it("fails when a shift's section has no From line", () => {
     const { body, headings } = postBody();
     expect(() => checkFromToLines({ file: FILE, body: body.replaceAll("**From**:", "From:"), headings, assessment })).toThrow(FILE);

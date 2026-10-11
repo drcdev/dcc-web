@@ -125,6 +125,9 @@ describe("assessment block checks (build)", () => {
   it("A6: a shift anchor that matches no heading fails, naming the post, the shift and the anchor", () =>
     run("a06-anchor-missing.mdx", "Post file", "a06-anchor-missing", "Charlie", "shift-3-charlie"));
 
+  it("A11: a block with no heading above it fails, naming the post and the needed heading", () =>
+    run("a11-block-without-heading.mdx", "Post file", "a11-block-without-heading", "## Sample assessment"));
+
   it("A7: two blocks for the same assessment fail, naming the post", () =>
     run("a07-block-twice.mdx", "Post file", "a07-block-twice", "sample", "once"));
 });

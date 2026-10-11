@@ -136,3 +136,16 @@ test("the self-assessment post reads without JavaScript and lists the statements
   }
   await expect(block.locator("input:visible, button:visible, form:visible")).toHaveCount(0);
 });
+
+// specs/037 FR-011 (quickstart step 11): with JavaScript off and print media, the statement list
+// prints in full and no form control shows.
+test("the self-assessment post prints all fifteen statements without JavaScript and without controls", async ({ page }) => {
+  const { post, assessment } = postsWithAssessment()[0]!;
+  await page.goto(post.address);
+  await page.emulateMedia({ media: "print" });
+  const block = page.locator("[data-assessment]");
+  const statements = block.locator("[data-assessment-nojs] li");
+  await expect(statements).toHaveCount(assessment.shifts.length * 3);
+  for (const li of await statements.all()) await expect(li).toBeVisible();
+  await expect(block.locator("input:visible, button:visible, form:visible, select:visible")).toHaveCount(0);
+});
