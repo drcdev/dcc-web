@@ -155,8 +155,8 @@ production hosts on 2026-10-10 (no credentials).
   (developers.cloudflare.com/turnstile/concepts/hostname-management/) says "adding a root domain
   covers all subdomains beneath it", so the current widget (`doncoleman.ca`) already works on
   `www`. The explicit entry is therefore belt-and-braces, not a functional need. Kept because the
-  spec requires it and it costs one dashboard edit; noted as an open question for Don (accept
-  either `www.doncoleman.ca` or `doncoleman.ca` instead?).
+  spec requires it and it costs one dashboard edit. The question was settled in the spec
+  (FR-012, "Decision recorded", 2026-10-10): the explicit entry stays required.
 
 ## R9. Web Analytics on `www`
 

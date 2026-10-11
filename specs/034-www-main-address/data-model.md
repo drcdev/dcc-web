@@ -65,7 +65,7 @@ naming the start URL and what it answered.
 ### Probe table (fixed)
 
 Paths `P` = `/` and `/writing/?page=2`; Ghost `G` = `/drift/2025/self-contained-development-for-ghost-themes/`,
-mapped `M` = `/writing/self-contained-development-for-ghost-themes/`.
+mapped `M` = `/writing/self-contained-development-for-ghost-themes/`. `live-hosts.ts` exports them as `GHOST_PROBE = { from: G, to: M }`; tests import it rather than naming the real post.
 
 | Start | Expected end | Hops | Final response |
 |---|---|---|---|

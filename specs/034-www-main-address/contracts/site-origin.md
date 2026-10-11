@@ -14,9 +14,11 @@ Supersedes the fallback value in `specs/002-site-foundation/contracts/site-origi
 ## Guarantees of a production build (FR-001, FR-003, SC-001)
 
 - Every absolute URL on a site host (`doncoleman.ca`, any `*.doncoleman.ca`, `*.workers.dev`) in
-  every built HTML file, `sitemap-index.xml`, `sitemap-*.xml`, `robots.txt` and
-  `writing/rss.xml` has origin `https://www.doncoleman.ca`.
-- No built file contains the string `https://doncoleman.ca` or `http://doncoleman.ca`.
+  every text file of the build output (SC-001: every HTML page, `sitemap-index.xml`,
+  `sitemap-*.xml`, `robots.txt`, the feeds and any other XML, JSON or text file; image and font
+  files are not scanned) has origin `https://www.doncoleman.ca`.
+- No built text file contains `//doncoleman.ca` (which covers `https://`, `http://` and
+  scheme-relative bare-domain URLs, FR-003).
 - Mail addresses (`…@doncoleman.ca`) and prose naming "doncoleman.ca" are not addresses and are
   not matched by the above.
 - The not-found page stays `noindex`; public pages have no robots meta (unchanged).

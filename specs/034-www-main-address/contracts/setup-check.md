@@ -32,9 +32,16 @@ A probe passes only when:
 | any probe fails otherwise | `missing` | "Problem: the live hosts do not match the main-address arrangement." / "Finish the live swap in docs/setup.md#live-hosts (or roll back as described there), then run the check again." Details: one line per failing probe: start URL, each hop's status and Location, and the rule broken (e.g. "302, expected 301", "query string dropped", "ends on https://doncoleman.ca/, expected https://www.doncoleman.ca/", "more than 3 redirects (loop?)", "200 without the site's canonical link"). |
 | request times out or the network fails | `could-not-check` | via `fromProviderError`, "Check the network connection, then run this check again." |
 
-Named cases that must be `missing` (spec US3 scenarios 2–3): old arrangement; `www` serves but
-bare still serves (no redirect); bare redirects to a different path; bare drops the query; bare
-uses 302; bare takes 2 HTTPS hops; loop between bare and `www`; `http://www` not redirected.
+Named cases that must be `missing` (spec US3 scenarios 2–3, FR-009a): old arrangement; `www`
+serves but bare still serves (no redirect); bare redirects to a different path; bare drops the
+query; bare uses 302; bare takes 2 HTTPS hops; a 2-hop `http://doncoleman.ca` chain whose middle
+is not `https://doncoleman.ca` with the same path and query; loop between bare and `www`;
+`http://www` not redirected; a certificate failure on the bare domain (only a TLS failure on
+`https://www.doncoleman.ca/` is `pending`).
+
+The Ghost probe's start and mapped paths are exported from `live-hosts.ts` as `GHOST_PROBE`
+(`{ from, to }`). Tests import it rather than writing the real post address
+(docs/testing.md, "Real content in tests").
 
 ### Registry text
 
@@ -73,5 +80,6 @@ Unit, with injected `http` readers returning recorded responses (no network):
 `tests/unit/setup-check/checks/live-hosts.test.ts` (new), updated `web-analytics.test.ts`,
 `contact-bindings.test.ts`, `dns-records-parity.test.ts`; registry and docs drift in
 `tests/unit/setup/items.test.ts`, `docs-structure.test.ts`, `drift.test.ts`;
-`report.test.ts` for 18 items. A unit test also asserts the Ghost probe's mapping line exists in
-`public/_redirects`.
+`report.test.ts` for 18 items. A unit test in `tests/unit/site/redirects.test.ts` also asserts
+that `GHOST_PROBE.from` (with and without the trailing slash) resolves in `public/_redirects` to a
+301 to `GHOST_PROBE.to`.

@@ -40,5 +40,6 @@ curl -sI 'https://www.doncoleman.ca/drift/2025/self-contained-development-for-gh
 
 ## 5. Rollback rehearsal (reading only)
 
-Read `docs/setup.md#live-hosts` → Rollback and confirm it restores the old arrangement and states
-the 24-hour retry and the revert-PR fallback.
+Read `docs/setup.md#live-hosts` → Rollback and confirm it covers each partial state ("after step
+1" to "after step 5", FR-015b), restores the old arrangement and states the 24-hour retry and the
+revert-PR fallback.

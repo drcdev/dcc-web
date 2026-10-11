@@ -65,7 +65,7 @@ files, `docs/setup.md`, the setup-walkthrough skill, and about 10 test files.
 | V. Static by Default | Pass | Pages stay prerendered. No endpoint is added or changed. `/api/*` on `www` keeps its same-origin checks, which compare against the request's own host. |
 | VI. Content as Files | Pass | No content change. The DNS baseline stays a committed, reviewed file and gains its new record there rather than as a code special case (R7). |
 | VII. Private Data: Minimal and Protected | Pass | Nothing is collected. The setup check sends no credentials for the new item and logs only public status codes and `Location` values. Contact email destination unchanged. |
-| VIII. Cloudflare Best Practices | Pass (dashboard exception stated) | One Worker. Only `/api/*` invokes Worker code (unchanged). "Worker configuration … committed and applied through CI": the Worker configuration does not change. The Custom Domain move, redirect rule, placeholder record and Turnstile hostname are zone and account settings done by Don, as the bare Custom Domain and the old `www` rule are today (clarification 2026-10-10), and the setup check confirms them. HTTPS-only: `http://` on both hosts ends on HTTPS. Free plan limits are kept: one redirect rule replaces one. |
+| VIII. Cloudflare Best Practices | Pass (exception justified in Complexity Tracking) | One Worker. Only `/api/*` invokes Worker code (unchanged). "Worker configuration … committed and applied through CI": the Worker configuration does not change. The Custom Domain move, redirect rule, placeholder record and Turnstile hostname are zone and account settings done by Don, as the bare Custom Domain and the old `www` rule are today (clarification 2026-10-10), and the setup check confirms them. HTTPS-only: `http://` on both hosts ends on HTTPS. Free plan limits are kept: one redirect rule replaces one. |
 | IX. Cost Ceiling | Pass | **Expected change $0/month** (R12). Custom Domain, certificate, Single Redirect, proxied record, Always Use HTTPS, Turnstile and Search Console are all free. Stated in the PR body too. |
 | X. Accessible, Fast and Private | Pass | No page, script or style change. a11y and budget are unaffected. Web Analytics stays the only analytics. The HSTS header still covers `www` (R10). |
 | XI. Spec Kit Workflow | Pass | Spec Kit branch `034-www-main-address`, own worktree. Shared files (`scripts/setup-check/items.ts`, `docs/setup.md`, `setup/dns-baseline.json`) are merged from `main` before the gate. |
@@ -73,7 +73,7 @@ files, `docs/setup.md`, the setup-walkthrough skill, and about 10 test files.
 | Security Baseline | Pass | `_headers` unchanged. The ruleset is untouched. Abuse controls are unchanged: Turnstile now names `www`, and the same-origin check follows the request host. No visitor data is involved. |
 | Development Workflow | Pass | Constitution Check present. Astro choices cite docs (R1). Tests come before code. Each behaviour has one primary layer (see Test placement). Out-of-scope items are listed as follow-ups. |
 
-**Gate result**: pass. No violations; Complexity Tracking is empty.
+**Gate result**: pass. One stated exception (Principle VIII, dashboard-managed Custom Domain), justified in Complexity Tracking below; no other exceptions.
 
 ## Design
 
@@ -119,7 +119,7 @@ doncoleman.ca" is prose naming the site and stays (FR-003). Contract:
 | Resolver returns `www` for main and fallback | unit | `tests/unit/site/astro-config.test.ts` (and the resolver test beside it) |
 | Production output names only `https://www.doncoleman.ca` | build | `tests/build/indexing.test.ts` (expected origin and a "no bare-domain URL" assertion); `drafts.test.ts` and `local-site.test.ts` change their sitemap expectation only |
 | `live-hosts` result for each arrangement | unit | `tests/unit/setup-check/checks/live-hosts.test.ts` (new) |
-| Ghost probe mapping exists in `public/_redirects` | unit | same file |
+| Ghost probe mapping (`GHOST_PROBE` exported by `live-hosts.ts`) resolves in `public/_redirects` | unit | `tests/unit/site/redirects.test.ts` (guard over unchanged behaviour; red comes from the missing export until `live-hosts.ts` exists) |
 | Parity `proxied` rules and baseline content | unit | `dns-records-parity.test.ts`, `tests/unit/setup/dns-baseline-schema.test.ts` |
 | Analytics reads `www`; widget requires `www` | unit | `web-analytics.test.ts`, `contact-bindings.test.ts` |
 | 18 items; docs section, anchor and order; swap and rollback phrases | unit | `tests/unit/setup/items.test.ts`, `docs-structure.test.ts`, `drift.test.ts`, `skill-behaviour.test.ts`, `tests/unit/setup-check/report.test.ts` |
@@ -162,10 +162,12 @@ docs/setup.md                                  # 18 items, Main address part, sw
 tests/
 ├── build/{indexing,drafts,local-site}.test.ts
 ├── e2e/seo.spec.ts                            # comment only
+├── fixtures/site-check/                       # only if a fallback-origin test needs it
 └── unit/
-    ├── site/astro-config.test.ts
-    ├── setup/{items,docs-structure,drift,dns-baseline-schema,skill-behaviour}.test.ts
-    └── setup-check/{report.test.ts, checks/{live-hosts,dns-records-parity,web-analytics,contact-bindings}.test.ts}
+    ├── site/{astro-config,site-origin,sitemap,redirects}.test.ts
+    ├── site-check/crawl.test.ts               # fallback-origin expectations only
+    ├── setup/{items,docs-structure,docs-dns,drift,dns-baseline-schema,skill-behaviour}.test.ts
+    └── setup-check/{report.test.ts, providers/http.test.ts, checks/{live-hosts,dns-records-parity,web-analytics,contact-bindings}.test.ts}
 ```
 
 **Structure Decision**: the existing single-repository layout. There is no new directory apart
@@ -175,6 +177,8 @@ from the one new check module and its test.
 
 1. Wait for the production deploy of the merge commit.
 2. Do the live swap in `docs/setup.md#live-hosts` in one sitting, on the same day as the merge.
+   Hard limit: if it is not complete 24 hours after the production deploy, open a revert pull
+   request of this change (FR-015).
 3. `pnpm setup:check` → 18/18.
 4. Resubmit the sitemap in Search Console.
 5. Submit the contact form once on `www` (SC-005).
@@ -182,12 +186,13 @@ from the one new check module and its test.
 ## Risks and open questions
 
 - **Merge-to-swap window**: the deployed build names `www` while `www` still redirects to the
-  bare domain, so canonicals point at a redirecting host. Keep it to hours. Item 18 reports
+  bare domain, so canonicals point at a redirecting host. Same day as the merge, hard limit
+  24 hours after the production deploy, then a revert pull request (FR-015). Item 18 reports
   `missing` during the window, which is expected.
-- **Turnstile (open question for Don)**: Cloudflare's hostname-management docs say the root
-  `doncoleman.ca` entry already covers `www`. FR-012 still requires an explicit
-  `www.doncoleman.ca` entry. The plan follows the spec. Relaxing FR-012 to accept either entry
-  would remove swap step 1 (R8).
+- **Turnstile (decided)**: Cloudflare's hostname-management docs say the root `doncoleman.ca`
+  entry already covers `www`. FR-012 records the decision to require the explicit
+  `www.doncoleman.ca` entry anyway (it names the served host and is checkable), so swap step 1
+  stays (R8). Not an open question.
 - **Hop count on `http://doncoleman.ca`**: the plan's host-match rule should give one hop, as the
   current `www` rule does, and two hops are also accepted (R3).
 - **HSTS on the bare domain**: edge redirects do not carry the Worker's HSTS header. Turning on
@@ -197,4 +202,6 @@ from the one new check module and its test.
 
 ## Complexity Tracking
 
-None.
+| Exception | Why it is needed | Simpler or compliant alternative rejected because |
+|---|---|---|
+| Principle VIII ("Worker configuration … committed and applied through CI, never by hand in the dashboard"): the Worker's Custom Domain moves from the bare domain to `www` in the dashboard, not in `wrangler.jsonc`. | Don's binding clarification (2026-10-10): the `www` Custom Domain stays a dashboard setting, as the bare-domain Custom Domain is today. The committed Worker configuration does not change, the move is confirmed by setup-check item 18, and the redirect rule, placeholder record and Turnstile hostname are zone and account settings like the existing Turnstile widget. | Declaring Custom Domains in `wrangler.jsonc` would move both domains into committed configuration in the same change and couple the code deploy to the live swap, removing the reversible step-by-step sitting; it is recorded as follow-up work in the spec ("Custom Domains in Worker configuration"). |
