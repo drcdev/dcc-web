@@ -8,6 +8,15 @@
 
 **Input**: User description: "Home page with a Now section and Start here reading paths" (GitHub issue #162). The home page is reworked so it answers three questions for a first-time visitor without sending them to other pages: what Don is doing now, what he is open to, and where to start reading. A dated "Now" section says what Don is working on, what he is reading, how his MBA research is going and which AI experiments he is running, with a plain line on which conversations he is open to (such as advisory work, speaking or senior roles). Don updates it every few months, and the date shows how fresh it is. A "Start here" section offers a few reading paths for different readers (such as leading change in healthcare, practical AI in legacy environments, and building with AI agents). Each path is a short ordered list of posts and project stories with a reading time for each. The recent writing list stays below these sections.
 
+## Clarifications
+
+### Session 2026-10-11
+
+- Q: What should happen to the home page's two existing paragraphs and its "What I do" section once Now and Start here are added? → A: Cut them; the Now "open to" line replaces them. Order is intro, Now, Start here, Recent writing.
+- Q: Which reading paths should launch, and with which items in which order? → A: Two paths. "Leading change in healthcare": The Systems Leadership Wayfinder, then Starting something new. "Building with AI agents": Building Focus Pocus (post), Cadence, drc.dev the first portfolio, Flux (projects). "Practical AI in legacy environments" is follow-up content, not code.
+- Q: Where should the first Now entry's text come from? → A: Agent drafts working on, MBA research and AI experiments from facts already on the site; reading is "Wool by Hugh Howey"; Don edits the wording in review.
+- Q: Which conversations should the Now "open to" line say Don is open to? → A: Speaking and mentoring only: "I'm open to speaking and to mentoring conversations with healthcare and technology leaders. [Get in touch](/contact/)." Advisory work and workshops no longer appear on the home page.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See what Don is doing now and what he is open to (Priority: P1)
@@ -21,7 +30,7 @@ A first-time visitor lands on the home page and, without leaving it, learns what
 **Acceptance Scenarios**:
 
 1. **Given** Don has written a Now entry dated 2026-10-01, **When** a visitor opens the home page, **Then** a section headed "Now" shows the date as a readable date (for example "Updated 1 October 2026"), followed by what he is working on, reading, his MBA research progress and his current AI experiments.
-2. **Given** the Now entry includes an "open to" line, **When** the visitor reads the Now section, **Then** that line names the kinds of conversation he is open to (for example advisory work, speaking or senior roles) and links to the contact page.
+2. **Given** the Now entry includes an "open to" line, **When** the visitor reads the Now section, **Then** that line names the kinds of conversation he is open to (at launch, speaking and mentoring) and links to the contact page.
 3. **Given** Don edits the Now entry and changes its date, **When** the site is rebuilt, **Then** the home page shows the new text and the new date, and no other page or file needs to change.
 4. **Given** JavaScript is turned off, **When** the visitor opens the home page, **Then** the Now section is fully readable.
 
@@ -98,13 +107,20 @@ A returning visitor who wants the latest post still finds the recent writing lis
 **Page as a whole**
 
 - **FR-015**: The Recent writing section MUST stay on the home page, below Start here, and behave as it does today.
-- **FR-016**: Don's intro (photo, name, tagline, short bio and call to action) MUST stay at the top of the home page. [NEEDS CLARIFICATION: The home page today also has two paragraphs and a "What I do" section between the intro and Recent writing. Should these stay (above Now), be cut, or be folded into the Now "open to" line?]
+- **FR-016**: Don's intro (photo, name, tagline, short bio and call to action) MUST stay at the top of the home page. The two paragraphs and the "What I do" section that sit between the intro and Recent writing today MUST be removed; the Now "open to" line replaces them, and the home page MUST NOT mention advisory work or workshops.
 - **FR-017**: The Now and Start here sections MUST be readable with JavaScript turned off and MUST add no client-side JavaScript.
 - **FR-018**: The reworked home page MUST meet WCAG 2.2 AA, with a correct heading order (one page heading, then section headings, then path headings).
 - **FR-019**: The reworked home page MUST stay within the site's performance budget.
 - **FR-020**: All copy MUST be plain language with no hype or filler, and MUST describe Don's current role as Director, Data Infrastructure and Architecture at Island Health; no "Cloud Architect" wording may appear.
-- **FR-021**: The launch content for the Now section MUST be Don's own words. [NEEDS CLARIFICATION: What should the first Now entry say for each topic (working on, reading, MBA research, AI experiments) and which conversations is Don open to? An agent can draft from the About page for Don to edit, or Don can supply the text.]
-- **FR-022**: The site MUST launch with the reading paths Don chooses. [NEEDS CLARIFICATION: Which reading paths launch, and which posts and project stories go in each, in what order? Only four posts are published today, so the three paths in the issue would be short and share items. Options: launch with the paths that the current writing can fill, or launch all three and add items as posts are published.]
+- **FR-021**: The launch Now entry MUST say, as a draft Don edits in review (listed as a preview check in the PR):
+  - Working on: "Leading data warehousing, data modernization, and AI support and compliance at Island Health."
+  - Reading: "Wool by Hugh Howey".
+  - MBA research: "Researching the experienced value of the Certified Health Executive (CHE) designation for my MBA at Royal Roads University."
+  - AI experiments: "Building this site with Claude Code and Spec Kit: agents write the specs, tests and code, and I review every change."
+  - Open to: "I'm open to speaking and to mentoring conversations with healthcare and technology leaders. [Get in touch](/contact/)."
+- **FR-022**: The site MUST launch with exactly two reading paths, items in this order:
+  - "Leading change in healthcare" (for leaders taking a team through complex change): 1. The Systems Leadership Wayfinder (post); 2. Starting something new (post).
+  - "Building with AI agents" (for people curious about letting AI do the build): 1. Building Focus Pocus (post); 2. Cadence (project); 3. drc.dev, the first portfolio (project); 4. Flux (project).
 
 ### Key Entities
 
@@ -130,6 +146,7 @@ A returning visitor who wants the latest post still finds the recent writing lis
 - The section headings are "Now" and "Start here", as in the issue.
 - The "open to" line links to the existing contact page; it adds no new form or contact route.
 - The intro's existing call to action stays as it is.
+- The path descriptions in FR-022 are draft wording Don may edit in review.
 - Current published content: four posts and five project stories; no existing site copy says "Cloud Architect", and the home intro already describes the Island Health role.
 
 ## Follow-up work (out of scope)
@@ -137,4 +154,5 @@ A returning visitor who wants the latest post still finds the recent writing lis
 - A separate /now page or an archive of earlier Now entries.
 - An automatic notice, build warning or reminder when the Now entry is older than a set age.
 - Showing reading time on project story pages and project cards (this feature only shows it inside reading paths).
+- A "Practical AI in legacy environments" reading path, added as content once posts exist for it.
 - Reading paths on pages other than the home page, or a dedicated reading paths page.
