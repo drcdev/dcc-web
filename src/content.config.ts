@@ -14,8 +14,10 @@ import { fileURLToPath } from "node:url";
 import { assertNoTwin, idFromPath, slugFromPath, slugFromPostPath } from "./lib/content/addresses.ts";
 import { assertImagesExist } from "./lib/content/images.ts";
 import { assertHomeVisible, assertLandingBody, bodyAfterFrontMatter } from "./lib/content/page-flags.ts";
+import { assertNowDate } from "./lib/content/now-file.ts";
 import { assertPostDates } from "./lib/content/post-dates.ts";
 import { landingSchema, pageSchema } from "./content/schemas/page.ts";
+import { nowSchema } from "./content/schemas/now.ts";
 import { postSchema } from "./content/schemas/post.ts";
 import { projectSchema } from "./content/schemas/project.ts";
 
@@ -89,4 +91,18 @@ const projects = defineCollection({
   schema: ({ image }) => projectSchema({ image }),
 });
 
-export const collections = { pages, landing, posts, projects };
+// `now`: the one Now file, src/content/now/now.md: the date and four topics in its front matter and
+// the "open to" line as its body. The date check reads the raw text (specs/040-home-now-start-here).
+const now = defineCollection({
+  loader: glob({
+    pattern: "*.md",
+    base: "./src/content/now",
+    generateId: ({ entry, base }) => {
+      assertNowDate(`src/content/now/${entry}`, readFileSync(resolve(fileURLToPath(base), entry), "utf-8"));
+      return entry.replace(/\.md$/, "");
+    },
+  }),
+  schema: nowSchema(),
+});
+
+export const collections = { pages, landing, posts, projects, now };

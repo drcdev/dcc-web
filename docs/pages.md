@@ -110,7 +110,7 @@ See [the kinds of work](/work-with-me/#kinds-of-work) I am considering.
 ## Components
 
 Available in `.mdx` files with no import. Leave a blank line after an opening tag and before a
-closing tag. There are eight, listed here in full.
+closing tag. There are nine, listed here in full.
 
 `Lead` takes no props. It is an intro paragraph.
 
@@ -177,6 +177,14 @@ Speaker at the 2025 health leadership conference.
 
 ```mdx
 <RecentWriting />
+```
+
+`Now` shows the home page's Now section: the date, four short topics and the "open to" line. It takes
+no props and no content. Its text comes from `src/content/now/now.md`, so you edit that file and not
+the page.
+
+```mdx
+<Now />
 ```
 
 ## Build errors you may see

@@ -75,8 +75,8 @@ export interface FixtureSiteOptions {
    * projects are not removed, because they point at real posts and projects.
    */
   readingPaths?: readonly (string | FixtureFile)[];
-  /** A Now fixture file, relative to tests/fixtures/now/, installed as src/content/now/now.md in place of the default. */
-  now?: string;
+  /** A Now fixture file, relative to tests/fixtures/now/, installed as src/content/now/now.md in place of the default; `false` leaves the site with no Now file. */
+  now?: string | false;
   /** Page files to delete from the copied site, relative to src/content/pages/ (for example a landing file). */
   removePages?: readonly string[];
   /** Extra files to write into the site, keyed by path relative to the site root (for example an oversized clip). */
@@ -194,7 +194,8 @@ export async function buildFixtureSite(
     mkdirSync(copiedPaths, { recursive: true });
     copyFixtures(options.readingPaths, readingPathFixturesRoot, copiedPaths);
   }
-  if (options.now) {
+  if (options.now === false) rmSync(resolve(root, "src/content/now/now.md"), { force: true });
+  else if (options.now) {
     mkdirSync(resolve(root, "src/content/now"), { recursive: true });
     copyFixtures([{ from: options.now, to: "now.md" }], nowFixturesRoot, resolve(root, "src/content/now"));
   }

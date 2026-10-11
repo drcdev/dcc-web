@@ -50,4 +50,5 @@ export const sectionSchemas = {
   }),
   ContactForm: section({}),
   RecentWriting: section({}),
+  Now: section({}),
 } satisfies Record<SectionName, z.ZodType>;

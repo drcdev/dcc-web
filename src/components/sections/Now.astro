@@ -1,0 +1,38 @@
+---
+// The home page's "Now" section (spec 040 US1; contracts/home-sections.md): the date of the last
+// update, four labelled topics and the "open to" line with a link to /contact/. The text comes from
+// src/content/now/now.md. A `now` prop replaces the lookup, which is how the component tests feed it.
+// It matches RecentWriting's heading, spacing, colours, links and focus styles, and ships no script.
+import { nowTopics } from "../../content/schemas/now.ts";
+import { formatDate } from "../../lib/format-date.ts";
+import { getNow, type Now } from "../../lib/now.ts";
+
+export interface Props {
+  now?: Now;
+}
+
+const { updated, topics, OpenTo } = Astro.props.now ?? (await getNow());
+---
+
+<section aria-labelledby="now-heading" data-now class="not-prose my-10">
+  <h2 id="now-heading" class="mb-2 mt-0 text-2xl font-bold text-dusk-900 dark:text-white">Now</h2>
+  <p data-now-updated class="mb-4 mt-0 text-sm text-dusk-600 dark:text-dusk-300">
+    Updated <time datetime={updated}>{formatDate(new Date(`${updated}T00:00:00Z`))}</time>
+  </p>
+  <dl class="m-0 grid gap-4">
+    {
+      nowTopics.map(({ key, label }) => (
+        <div class="min-w-0">
+          <dt class="font-bold text-dusk-900 dark:text-white">{label}</dt>
+          <dd class="m-0 [overflow-wrap:anywhere] text-dusk-600 dark:text-dusk-300">{topics[key]}</dd>
+        </div>
+      ))
+    }
+  </dl>
+  <div
+    data-now-open-to
+    class="mt-6 [&_a]:underline [&_a]:underline-offset-4 [&_a]:font-medium [&_a]:text-dusk-900 hover:[&_a]:text-rust-700 dark:[&_a]:text-white dark:hover:[&_a]:text-rust-400 [&_p]:m-0"
+  >
+    <OpenTo />
+  </div>
+</section>

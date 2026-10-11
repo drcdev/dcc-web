@@ -1,0 +1,116 @@
+// The home page on the fixture site (port 4322, playwright.config.ts project `sections`), whose
+// home page is the real index.mdx with the fixture Now file and fixture reading paths
+// (scripts/build-fixture-site.ts). Spec 040: Now (US1), Start here (US2), Recent writing (US3).
+import { expect, test, type Page } from "@playwright/test";
+
+const noHorizontalScroll = async (page: Page) => {
+  const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    clientWidth: document.documentElement.clientWidth,
+  }));
+  expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+};
+
+/** Every element in `selector` sits inside the viewport width and is not cut off by an ancestor. */
+const notClipped = (page: Page, selector: string) =>
+  page.locator(selector).evaluateAll((els) =>
+    els.filter((el) => {
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return true;
+      if (rect.left < -1 || rect.right > document.documentElement.clientWidth + 1) return true;
+      for (let a = el.parentElement; a; a = a.parentElement) {
+        const s = getComputedStyle(a);
+        if (s.overflowX === "visible" && s.overflowY === "visible") continue;
+        const box = a.getBoundingClientRect();
+        if (rect.left < box.left - 1 || rect.right > box.right + 1) return true;
+      }
+      return false;
+    }).length,
+  );
+
+test.describe("Now", () => {
+  test("sits after the intro and directly before Recent writing", async ({ page }) => {
+    await page.goto("/");
+    const order = await page.evaluate(() => {
+      const main = document.querySelector("main")!;
+      const all = [...main.querySelectorAll("h1, [data-now], [data-recent-writing]")];
+      return all.map((el) => (el.hasAttribute("data-now") ? "now" : el.hasAttribute("data-recent-writing") ? "recent" : "intro"));
+    });
+    expect(order).toEqual(["intro", "now", "recent"]);
+  });
+
+  test("the home page has no 'What I do' heading and no mention of advisory work or workshops", async ({ page }) => {
+    await page.goto("/");
+    const text = (await page.locator("main").innerText()).toLowerCase();
+    expect(text).not.toContain("what i do");
+    expect(text).not.toMatch(/advis|workshop/);
+  });
+
+  test("shows the date, the four topics in order and the open-to link", async ({ page }) => {
+    await page.goto("/");
+    const now = page.locator("[data-now]");
+    await expect(now.getByRole("heading", { level: 2, name: "Now" })).toBeVisible();
+    await expect(now.locator("time")).toHaveAttribute("datetime", "2026-01-15");
+    await expect(now.locator("dt")).toHaveText(["Working on", "Reading", "MBA research", "AI experiments"]);
+  });
+
+  test("the contact link is an inline text link that goes to /contact/", async ({ page }) => {
+    await page.goto("/");
+    const link = page.locator("[data-now-open-to] a[href='/contact/']");
+    await expect(link).toBeVisible();
+    expect(await link.evaluate((el) => getComputedStyle(el).display)).toBe("inline");
+    await link.click();
+    await expect(page).toHaveURL(/\/contact\/$/);
+  });
+
+  test.describe("with JavaScript off", () => {
+    test.use({ javaScriptEnabled: false });
+    test("the Now section is fully readable", async ({ page }) => {
+      await page.goto("/");
+      await expect(page.locator("[data-now] dt")).toHaveCount(4);
+      await expect(page.locator("[data-now-open-to] a[href='/contact/']")).toBeVisible();
+    });
+  });
+
+  for (const [name, setup] of [
+    ["320 px", { width: 320, height: 640 }],
+    ["200% zoom (640 px at 2x)", { width: 640, height: 800, zoom: 2 }],
+  ] as const) {
+    test(`no horizontal scroll and no clipped text at ${name}`, async ({ page }) => {
+      await page.setViewportSize({ width: setup.width, height: setup.height });
+      if ("zoom" in setup) await page.addInitScript((z) => { document.addEventListener("DOMContentLoaded", () => { document.documentElement.style.zoom = String(z); }); }, setup.zoom);
+      await page.goto("/");
+      await noHorizontalScroll(page);
+      expect(await notClipped(page, "[data-now] dd, [data-now] dt, [data-now-open-to] a")).toBe(0);
+    });
+  }
+
+  test("survives WCAG 1.4.12 text spacing at 320 px", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto("/");
+    // The page's CSP blocks an injected <style>, so the overrides go in as a constructed stylesheet.
+    await page.evaluate(() => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(`* { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; } p { margin-bottom: 2em !important; }`);
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    });
+    await noHorizontalScroll(page);
+    expect(await notClipped(page, "[data-now] dd, [data-now] dt, [data-now-open-to] a")).toBe(0);
+  });
+
+  test.describe("forced colours", () => {
+    test.use({ forcedColors: "active" });
+    test("the Now link and its focus indicator stay visible", async ({ page }) => {
+      await page.goto("/");
+      const link = page.locator("[data-now-open-to] a[href='/contact/']");
+      await link.focus();
+      await expect(link).toBeVisible();
+      const style = await link.evaluate((el) => {
+        const s = getComputedStyle(el);
+        return { outlineStyle: s.outlineStyle, outlineWidth: parseFloat(s.outlineWidth) };
+      });
+      expect(style.outlineStyle).not.toBe("none");
+      expect(style.outlineWidth).toBeGreaterThanOrEqual(2);
+    });
+  });
+});
