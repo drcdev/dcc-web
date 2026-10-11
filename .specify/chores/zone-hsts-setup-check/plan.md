@@ -167,7 +167,7 @@ header change is overridden by the zone setting on production, and preview respo
 - **Coverage mapping:** no test removed or moved. Existing cases keep their assertions. Only the
   fixture builders gain the header.
 
-### W2 — Fallback headers agree; Worker header covers subdomains (new-first / existing changed)
+### [x] W2 — Fallback headers agree; Worker header covers subdomains (new-first / existing changed)
 
 - **Files:** `tests/unit/site/headers.test.ts`, `worker/test/router.test.ts`.
 - **Test:**
