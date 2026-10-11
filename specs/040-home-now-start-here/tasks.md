@@ -8,8 +8,8 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Run `node -v` against `.nvmrc` (source nvm in the same command if it differs), then confirm `.reference/flux` exists in the worktree (symlink or copy from the main checkout) and `pnpm install --frozen-lockfile` is clean.
-- [ ] T002 Re-read `docs/testing.md` ("Where a test goes", "Real content in tests", "Visual coverage") and `.claude/skills/_shared/visual-baselines.md`; note the layer rules used by the test tasks below.
+- [X] T001 Run `node -v` against `.nvmrc` (source nvm in the same command if it differs), then confirm `.reference/flux` exists in the worktree (symlink or copy from the main checkout) and `pnpm install --frozen-lockfile` is clean.
+- [X] T002 Re-read `docs/testing.md` ("Where a test goes", "Real content in tests", "Visual coverage") and `.claude/skills/_shared/visual-baselines.md`; note the layer rules used by the test tasks below.
 
 ## Phase 2: Foundational (blocks every story)
 
