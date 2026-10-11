@@ -224,7 +224,7 @@ header change is overridden by the zone setting on production, and preview respo
   fallback policy is one policy wherever it applies. The 1-year max-age is kept in both fallbacks
   (stronger than the zone's 6 months, and the zone value wins while it is on).
 
-### W5 — Setup guide and seed text
+### [x] W5 — Setup guide and seed text
 
 - **Files:** `docs/setup.md` (item 18), `scripts/setup-check/items.ts` (`live-hosts`
   `confirmedBy` only).

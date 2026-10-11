@@ -637,6 +637,24 @@ Since #156, `wrangler.jsonc` declares the `www` Custom Domain, so every producti
 what step 3 attached by hand (done 2026-10-10). The steps below stay as the record of the swap and
 as the rollback reference. The bare domain stays out of the config.
 
+### Zone HSTS
+
+Don set HTTP Strict Transport Security on the zone under SSL/TLS → Edge Certificates → **HTTP
+Strict Transport Security (HSTS)**, with Cloudflare's defaults: Max Age 6 months, **Apply HSTS
+policy to subdomains** on, Preload off, and No-Sniff left as it was.
+
+Cloudflare then adds the header to every HTTPS response on both hosts, including the 301 from the
+bare domain, and the zone value replaces the header the site sends. Plain HTTP responses carry none,
+as Cloudflare documents. Two fallbacks cover the case where the zone setting is off: `public/_headers`
+for site responses and `worker/src/http.ts` for Worker responses. Both send `max-age=31536000;
+includeSubDomains`, and the two values must stay identical.
+
+Preload is a separate decision. Once a domain is on the browser preload list it is hard to take
+off, and the list covers every subdomain, so it waits until every subdomain is known to serve HTTPS.
+
+To roll back, turn the setting off. The fallbacks stay in force on site and Worker responses, but
+the bare-domain redirect then carries no HSTS, and the setup check reports this item as a problem.
+
 ### Live swap
 
 0. Confirm SSL/TLS → Edge Certificates → **Always Use HTTPS** is on. It is on today, so this is a
@@ -701,6 +719,9 @@ and `/writing/?page=2` directly, and `http://www.doncoleman.ca`, `https://doncol
 It also checks that the old Ghost address
 `/drift/2025/self-contained-development-for-ghost-themes/` reaches its new page on `www` from both
 hosts. It reports `pending` while the `www` certificate is still issuing.
+The check also requires every HTTPS response it fetches from both hosts (the `www` pages and the HTTPS
+redirects) to carry HSTS with `includeSubDomains` and a positive max-age. Plain HTTP responses are not
+required to.
 
 **Constitution principle**
 VIII (Cloudflare Best Practices) and X (Accessible, Fast and Private).
