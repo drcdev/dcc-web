@@ -32,3 +32,5 @@ The card is part of the post page's HTML contract (`specs/008-blog/contracts/blo
 | A11 | From 768 px: photo left of the text block, text left-aligned. |
 | A12 | Every card link has a target of at least 24 x 24 px (WCAG 2.5.8) and the post templates pass the automated accessibility scan in light and dark themes (FR-010, SC-005). |
 | A13 | The About and Contact pages are visible, so both links resolve on the production build (covered by the existing site-link crawl). |
+| A14 | DOM (reading) order inside the card: `h2`, the two `p`, the `ul` of links, then the `img`; the photo is placed first visually by CSS only. The card has no `time` element, no topic pill and no post title or summary (FR-010b, FR-012a). |
+| A15 | In forced-colours mode the card keeps a visible border in the system text colour, and its text, link underlines and focus indicator stay visible, in both themes (FR-010g). |

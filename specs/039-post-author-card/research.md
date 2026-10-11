@@ -133,6 +133,5 @@ reason and what was rejected.
 | Styling | Tailwind theme (the site's design system) | Yes |
 | Hosting the card and photo | Cloudflare Workers static assets (existing) | Yes, unchanged |
 | Server code | Cloudflare Worker `/api/*` | Not needed (static) |
-| Fly.io | None in this site (retired in feature 004) | Not applicable |
 
 No third-party package and no custom code where a first-party option exists.
