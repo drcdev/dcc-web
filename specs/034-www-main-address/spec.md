@@ -39,6 +39,16 @@ The change has two parts:
 Between the merge and the end of the sitting, the deployed build already names `www` while the
 live hosts still serve the old arrangement. That window is expected and short (see Edge Cases).
 
+## Clarifications
+
+### Session 2026-10-10
+
+- Q: In what order should Don's live-swap steps run, given that Cloudflare will not attach a Custom Domain to a hostname that already has a DNS record? → A: `www` first: allow `www` in the widget; remove the old `www` rule and its record; attach the Custom Domain to `www` and wait until it serves; then detach the bare-domain Custom Domain, add the bare placeholder record (proxied) and the bare-to-`www` rule; run the setup check; resubmit the sitemap.
+- Q: Which placeholder address record should the bare domain get (and the DNS baseline list exactly)? → A: `AAAA doncoleman.ca 100::`, proxied.
+- Q: Should the live-hosts confirmation be a new setup-check item or folded into an existing one? → A: A new after-merge item, "Live hosts", making 18 items.
+- Q: Should the live-hosts check also confirm `http://www` and which paths should it probe? → A: Yes, check `http://www` too, and probe both `/` and a fixed path with a query string (for example `/writing/?page=2`) on every host and scheme.
+- Q: Should the `www` Custom Domain be a dashboard setting or declared in the Worker configuration? → A: Dashboard only, as now; no Worker configuration change.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Readers and search engines land on www (Priority: P1)
@@ -115,8 +125,8 @@ and next action for each.
 
 **Acceptance Scenarios**:
 
-1. **Given** `www` serves the site and the bare domain redirects to it as required, **When** Don
-   runs the setup check, **Then** the item confirming the live hosts reports complete.
+1. **Given** `www` serves the site, `http://www` and the bare domain redirect to it as required,
+   **When** Don runs the setup check, **Then** the "Live hosts" item reports complete.
 2. **Given** the old arrangement (bare domain serves, `www` redirects to bare), **When** Don runs
    the setup check, **Then** that item reports a problem naming what is wrong and the next step.
 3. **Given** only half the swap is done (for example `www` serves the site but the bare domain
@@ -149,10 +159,14 @@ resubmission and a rollback.
 **Acceptance Scenarios**:
 
 1. **Given** the merged change, **When** Don reads the setup documentation, **Then** he finds
-   ordered steps for the swap: allow `www` in the spam-protection widget; move the Custom Domain
-   from the bare domain to `www`; add the bare-domain placeholder record (proxied) and a permanent
-   redirect rule to `www` that keeps the path and query string; remove the old `www` to bare rule
-   and its record; run the setup check; resubmit the sitemap in Search Console.
+   ordered steps for the swap: (1) allow `www` in the spam-protection widget; (2) remove the old
+   `www` to bare rule and its `www` record (Cloudflare will not attach a Custom Domain to a
+   hostname that already has a DNS record); (3) attach the Worker's Custom Domain to `www` and wait
+   until `https://www.doncoleman.ca/` serves the site; (4) detach the Custom Domain from the bare
+   domain; (5) add the bare-domain placeholder record `AAAA doncoleman.ca 100::` (proxied) and a
+   permanent redirect rule to `www` that keeps the path and query string; (6) run the setup check;
+   (7) resubmit the sitemap in Search Console. The bare domain keeps serving the site until step 4,
+   so only `www` (which until then only redirects) is briefly unavailable.
 2. **Given** the swap cannot be completed in the sitting, **When** Don follows the rollback steps,
    **Then** the bare domain serves the site again and `www` redirects to it, as before the swap.
 
@@ -163,9 +177,10 @@ resubmission and a rollback.
   briefly see canonical links pointing at a redirecting host. The swap should follow the merge
   within the same day. The setup check reports the live-hosts item as a problem during this
   window, which is expected.
-- **Downtime during the sitting**: between removing the Custom Domain from the bare domain and
-  adding its redirect, or before the `www` certificate is issued, one host may briefly fail. The
-  steps are ordered to keep this to minutes, and the setup check reports a not-yet-issued
+- **Downtime during the sitting**: between removing the old `www` rule and the `www`
+  certificate being issued, `www` may briefly fail; between detaching the bare-domain Custom
+  Domain and adding its placeholder record and redirect, the bare domain may briefly fail. The
+  steps are ordered (`www` first, bare domain last) to keep each to minutes, and the setup check reports a not-yet-issued
   certificate as a problem with "wait and run again" as the next step.
 - **Redirect loop**: if the old `www` to bare rule is left in place while the new bare to `www`
   rule is added, requests loop. The setup check detects a redirect that does not end on a served
@@ -208,24 +223,29 @@ resubmission and a rollback.
 **Serving arrangement (live, after the swap)**
 
 - **FR-005**: `https://www.doncoleman.ca` MUST serve the site directly over HTTPS with a valid
-  certificate, as the Worker's Custom Domain.
+  certificate, as the Worker's Custom Domain. The Custom Domain stays a dashboard setting, as the
+  bare-domain one is today; the Worker configuration in the repository does not change.
 - **FR-006**: `https://doncoleman.ca` and `http://doncoleman.ca` MUST answer every request with
   a single permanent (301) redirect to `https://www.doncoleman.ca` with the same path and query
   string, unchanged. There MUST be no redirect loop and no interstitial page.
-- **FR-007**: The bare domain MUST have a proxied placeholder address record so that its redirect
-  rule applies. The old `www` to bare redirect rule and its placeholder record MUST be removed.
+- **FR-007**: The bare domain MUST have the proxied placeholder record `AAAA doncoleman.ca 100::`
+  so that its redirect rule applies. The old `www` to bare redirect rule and its placeholder record MUST be removed.
 - **FR-008**: Every other DNS record (mail, verification, DMARC, CAA) MUST stay unchanged.
 
 **Setup check**
 
-- **FR-009**: The setup check MUST include a confirmation that the live hosts follow FR-005 and
-  FR-006: `https://www.doncoleman.ca/` returns the site's page over HTTPS without redirecting
-  to another host, and the bare domain (over both `https://` and `http://`) answers a single
-  permanent redirect to the same path and query string on `https://www.doncoleman.ca`. It MUST
+- **FR-009**: The setup check MUST gain a new after-merge item, "Live hosts" (making 18 items),
+  confirming that the live hosts follow FR-005 and FR-006. It probes two paths, `/` and a fixed
+  path with a query string (for example `/writing/?page=2`), on every host and scheme:
+  `https://www.doncoleman.ca` returns the site's page over HTTPS without redirecting to another
+  host; `http://www.doncoleman.ca` answers a single permanent redirect to the same path and query
+  on `https://www.doncoleman.ca`; and the bare domain (over both `https://` and `http://`) answers
+  a single permanent redirect to the same path and query string on `https://www.doncoleman.ca`. It MUST
   report a problem, naming the failing host and the next step, for the old arrangement, a
   half-switched arrangement, a temporary redirect, a changed path or dropped query string, a
   multi-hop or looping redirect, or a host that does not answer over HTTPS.
-- **FR-010**: The committed DNS baseline MUST list the bare-domain placeholder record, and the
+- **FR-010**: The committed DNS baseline MUST list the bare-domain placeholder record
+  (`AAAA doncoleman.ca 100::`), and the
   DNS parity item MUST accept it only when it is proxied (all other baseline records stay DNS
   only). Records the Worker's Custom Domain adds on `www` stay informational, as Custom Domain
   records on the apex and `www` are today.
@@ -253,8 +273,8 @@ resubmission and a rollback.
 
 - **Main address**: `https://www.doncoleman.ca`, the single origin the production site names
   for itself.
-- **Bare-domain redirect**: a Cloudflare redirect rule on `doncoleman.ca`, applied through a
-  proxied placeholder record, sending every request to the same path and query on the main
+- **Bare-domain redirect**: a Cloudflare redirect rule on `doncoleman.ca`, applied through the
+  proxied placeholder record `AAAA doncoleman.ca 100::`, sending every request to the same path and query on the main
   address.
 - **DNS baseline**: the committed list of records that must exist in the zone; gains the
   bare-domain placeholder record.
@@ -284,8 +304,9 @@ resubmission and a rollback.
 - Ghost's main address was `www.doncoleman.ca`, so moving to `www` needs no new redirect for
   inbound links beyond the bare-domain rule; Search Console already holds a property that covers
   `www` (the domain is verified by the zone's verification record).
-- The Worker's Custom Domain can be attached to `www` the same way it is attached to the bare
-  domain today; Cloudflare issues the `www` certificate automatically.
+- The Worker's Custom Domain can be attached to `www` in the dashboard the same way it is attached
+  to the bare domain today, once no other DNS record exists on `www`; Cloudflare issues the `www`
+  certificate automatically.
 - The setup check confirms the live hosts from public HTTPS and HTTP responses, the same way it
   reads the served page for Web Analytics today; no new secret is needed.
 - The contact and questions APIs compare a request's origin with its own host, so they work on
