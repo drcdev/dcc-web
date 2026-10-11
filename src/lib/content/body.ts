@@ -2,6 +2,7 @@
 // cannot make (data-model.md invariants 2, 4, 5 and 8; contracts/build-errors.md
 // rows 8, 9, 10 and 16). Each failure names the file. Code fences and inline
 // code are ignored, so a page can show example tags and headings.
+import { postComponentNames } from "../../components/assessment/index.ts";
 import { sectionNames } from "../../components/sections/index.ts";
 import { contentError } from "./errors.ts";
 
@@ -43,13 +44,15 @@ export function validatePageBody(file: string, body: string, kind: "page" | "pos
     );
   }
 
-  const known = new Set<string>(sectionNames);
+  // A post may also use the assessment components (row A8); a page may not.
+  const allowed: readonly string[] = kind === "post" ? [...sectionNames, ...postComponentNames] : sectionNames;
+  const known = new Set<string>(allowed);
   for (const [, tag] of text.matchAll(/<([A-Z][A-Za-z0-9]*)/g)) {
     if (!known.has(tag as string)) {
       throw contentError(
         kind,
         file,
-        `<${tag}> is not a section. The sections are: ${sectionNames.join(", ")}.`,
+        `<${tag}> is not a section. The sections are: ${allowed.join(", ")}.`,
       );
     }
   }

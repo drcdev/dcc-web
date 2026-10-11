@@ -5,13 +5,17 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { MAX_INPUT_CHARS } from "../../worker/src/questions/config.ts";
+import { sampleAssessment } from "../helpers/assessment.ts";
 import { buildFixtureSite, type FixtureSiteResult } from "./fixture-site.ts";
 import { filesUnder } from "../helpers/files.ts";
 
 const builds: Record<"production" | "preview", FixtureSiteResult> = {} as never;
 
 beforeAll(async () => {
-  const options = { posts: ["valid/published.mdx", "valid/draft.mdx"] };
+  const options = {
+    posts: ["valid/published.mdx", "valid/draft.mdx", "valid/with-assessment-text.mdx"],
+    assessments: ["valid/sample.yaml"],
+  };
   builds.production = await buildFixtureSite([], { ...options, env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" } });
   builds.preview = await buildFixtureSite([], { ...options, env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "some-branch" } });
 }, 900_000);
@@ -62,6 +66,34 @@ describe("question-source.json", () => {
         expect(readFileSync(path, "utf-8")).not.toContain("question-source");
       }
     }
+  });
+});
+
+describe("question-source.json for a post that uses the assessment components (FR-021)", () => {
+  const assessment = sampleAssessment();
+
+  it("holds each practical application and week text from the data file, and no component tag", () => {
+    for (const build of Object.values(builds)) {
+      const { text } = source(build, "with-assessment-text");
+      expect(text).not.toMatch(/<(PracticalApplication|DevelopmentPlan|SelfAssessment)|assessment="/);
+      for (const shift of assessment.shifts.slice(0, 2)) expect(text).toContain(shift.practicalApplication);
+      for (const shift of assessment.shifts) expect(text).toContain(`Week ${assessment.shifts.indexOf(shift) + 1}: ${shift.name}`);
+      for (const shift of assessment.shifts) expect(text).toContain(shift.week);
+      expect(text).toContain(assessment.integrationWeek.week);
+    }
+  });
+
+  it("hashes the expanded text: the hash on the page equals the hash in the file", () => {
+    for (const build of Object.values(builds)) {
+      const html = build.read("writing/with-assessment-text/index.html");
+      expect(html).toContain(`data-hash="${source(build, "with-assessment-text").hash}"`);
+    }
+  });
+
+  it("renders the moved text into the page", () => {
+    const html = builds.production.read("writing/with-assessment-text/index.html");
+    expect(html).toContain("<strong>Practical Application</strong>");
+    expect(html).toContain(`Week 6: ${assessment.integrationWeek.name}`);
   });
 });
 

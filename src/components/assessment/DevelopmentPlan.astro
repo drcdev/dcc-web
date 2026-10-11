@@ -1,0 +1,34 @@
+---
+// <DevelopmentPlan assessment="...">: the six week paragraphs of the 6-Week Development Plan,
+// rendered from the assessment data file in data order, in the markup the Markdown produced
+// before it moved (specs/037 contracts/assessment-data.md; FR-004). The heading and the intro
+// paragraph stay in the post. The optional `data` prop is for component tests only.
+import type { Assessment } from "../../content/schemas/assessment.ts";
+import { resolveAssessment } from "../../lib/assessment/lookup.ts";
+import { typographic } from "../../lib/assessment/typography.ts";
+
+export interface Props {
+  assessment: string;
+  data?: Assessment;
+}
+
+const { assessment: id, data } = Astro.props;
+const file = Astro.locals.pageFile ?? "this post";
+const assessment = await resolveAssessment(file, id, data);
+const weeks = [
+  ...assessment.shifts.map((shift) => ({ name: shift.name, week: shift.week })),
+  assessment.integrationWeek,
+];
+---
+
+{
+  weeks.map((week, i) => (
+    <p>
+      <strong>
+        Week {i + 1}: {week.name}
+      </strong>
+      <br />
+      {typographic(week.week)}
+    </p>
+  ))
+}

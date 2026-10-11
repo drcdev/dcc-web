@@ -11,6 +11,7 @@ import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { Assessment } from "../../src/content/schemas/assessment.ts";
 import { seriesIds, topicHref, topics } from "../../src/config/topics.ts";
 import { filesUnder } from "./files.ts";
 import { addressFromPath, idFromPath, postHref, projectHref, slugFromPath, slugFromPostPath } from "../../src/lib/content/addresses.ts";
@@ -22,6 +23,8 @@ const fromAstro = createRequire(createRequire(import.meta.url).resolve("astro/pa
 const { parseFrontmatter } = fromAstro("@astrojs/internal-helpers/frontmatter") as {
   parseFrontmatter: (code: string) => { frontmatter: Record<string, unknown>; content: string };
 };
+
+const { load: parseYaml } = fromAstro("js-yaml") as { load: (text: string) => unknown };
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 
@@ -208,3 +211,27 @@ function pickHomeCtaHref(): string {
   return href;
 }
 export const homeCtaHref: string = pickHomeCtaHref();
+
+/** A real post that renders the self-assessment block, with the assessment it names (specs/037). */
+export interface PostWithAssessment {
+  post: Entry;
+  /** The assessment id the post's `<SelfAssessment>` names (the data file name). */
+  id: string;
+  /** The parsed data file, so a spec computes its expectations from the content, not from literals. */
+  assessment: Assessment;
+}
+
+/**
+ * The real posts whose body renders `<SelfAssessment assessment="...">`, each with the parsed YAML of
+ * that assessment. Specs for the block loop over this, so they never name the post or its statements.
+ */
+export function postsWithAssessment(): PostWithAssessment[] {
+  const found: PostWithAssessment[] = [];
+  for (const post of realPosts) {
+    const id = /<SelfAssessment\b[^>]*\bassessment="([^"]+)"/.exec(post.body)?.[1];
+    if (!id) continue;
+    const file = join(root, "src/content/assessments", `${id}.yaml`);
+    found.push({ post, id, assessment: parseYaml(readFileSync(file, "utf-8")) as Assessment });
+  }
+  return found;
+}

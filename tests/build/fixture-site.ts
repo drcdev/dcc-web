@@ -21,6 +21,7 @@ const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
 const fixturesRoot = resolve(repoRoot, "tests/fixtures/pages");
 const postFixturesRoot = resolve(repoRoot, "tests/fixtures/posts");
 const projectFixturesRoot = resolve(repoRoot, "tests/fixtures/projects");
+const assessmentFixturesRoot = resolve(repoRoot, "tests/fixtures/assessments");
 
 /**
  * A fixture file: `from` is relative to tests/fixtures/pages/ (for the `posts` option, to
@@ -53,6 +54,8 @@ export interface FixtureSiteOptions {
    * `WORKERS_CI_BRANCH` are never passed on, so a build depends only on what the test sets.
    */
   env?: Record<string, string>;
+  /** Fixture assessment data files from tests/fixtures/assessments/, copied to src/content/assessments/. */
+  assessments?: readonly (string | FixtureFile)[];
   /** Fixture project files from tests/fixtures/projects/, copied to src/content/projects/ with their images. */
   projects?: readonly (string | FixtureFile)[];
   /**
@@ -185,6 +188,12 @@ export async function buildFixtureSite(
     const postImages = resolve(postFixturesRoot, "images");
     if (existsSync(postImages)) cpSync(postImages, resolve(postsDir, "images"), { recursive: true });
     copyFixtures(options.posts, postFixturesRoot, postsDir);
+  }
+
+  if (options.assessments) {
+    const assessmentsDir = resolve(root, "src/content/assessments");
+    mkdirSync(assessmentsDir, { recursive: true });
+    copyFixtures(options.assessments, assessmentFixturesRoot, assessmentsDir);
   }
 
   if (options.projects) {

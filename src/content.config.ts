@@ -15,6 +15,7 @@ import { assertNoTwin, idFromPath, slugFromPath, slugFromPostPath } from "./lib/
 import { assertImagesExist } from "./lib/content/images.ts";
 import { assertHomeVisible, assertLandingBody, bodyAfterFrontMatter } from "./lib/content/page-flags.ts";
 import { assertPostDates } from "./lib/content/post-dates.ts";
+import { assessmentSchema } from "./content/schemas/assessment.ts";
 import { landingSchema, pageSchema } from "./content/schemas/page.ts";
 import { postSchema } from "./content/schemas/post.ts";
 import { projectSchema } from "./content/schemas/project.ts";
@@ -89,4 +90,11 @@ const projects = defineCollection({
   schema: ({ image }) => projectSchema({ image }),
 });
 
-export const collections = { pages, landing, posts, projects };
+// `assessments`: one YAML file per self-assessment in src/content/assessments/; the file name is
+// the id a post names in its components (specs/037-wayfinder-self-assessment/data-model.md).
+const assessments = defineCollection({
+  loader: glob({ pattern: "*.yaml", base: "./src/content/assessments" }),
+  schema: assessmentSchema,
+});
+
+export const collections = { pages, landing, posts, projects, assessments };
