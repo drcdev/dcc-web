@@ -53,8 +53,18 @@
     statement list. Print it: statements, not an empty form.
 12. Open DevTools Network while doing steps 3–10: no request is made.
 13. Check at 320 px wide and in dark mode: no sideways scrolling; chart and scales legible.
+14. PREVIEW-CHECK (SC-001): take the assessment once without hurrying; it takes under 5 minutes.
+15. PREVIEW-CHECK (SC-006 manual part): with a screen reader, trigger the errors, then show
+    results; the count, each error and the results are announced, and the text summary says
+    everything the chart shows. Print preview reads title, date, positions, link, weeks 1–6.
+16. Open the post without a fragment: the title card shows "Take the self-assessment"; with a
+    results link it reads "Your earlier result is below" and nothing on the page jumps.
+17. The privacy policy has the paragraph about the self-assessment (FR-016a).
 
 ## After release (production only)
 
-- With a results link open on production, inspect the Cloudflare Web Analytics beacon request
-  and confirm the `#result=` fragment is not in its payload (research R14).
+- PREVIEW-CHECK (post-release, spec FR-016b): with a results link open on production, open the
+  network panel and inspect the Cloudflare Web Analytics beacon request
+  (`cloudflareinsights.com/cdn-cgi/rum`). **Pass**: no payload field contains `#`, `result=` or
+  any part of the fragment. **Fail**: any field does; the same day, add a Web Analytics rule
+  excluding the Wayfinder post's path and open a follow-up issue (research R14).

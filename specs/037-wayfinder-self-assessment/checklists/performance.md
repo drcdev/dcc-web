@@ -8,17 +8,17 @@
 
 ## Budget
 
-- [ ] CHK030 Are the JavaScript budget figures consistent between the plan (6 KB module, 10 KB site limit) and the spec's "within the site's budget", and is the compressed-versus-raw basis stated? [Consistency, Spec §FR-018, plan Performance Goals]
-- [ ] CHK031 Is headroom quantified given the post already carries the questions panel script, so the sum is known to fit? [Gap, plan Risks]
-- [ ] CHK032 Is "no earlier than the reader is likely to reach it" defined with a measurable trigger? [Ambiguity, Spec §FR-017]
-- [ ] CHK033 Is SC-005 ("other pages ship no extra script") defined to include the bootstrap script and shared bundles? [Clarity, Spec §SC-005]
-- [ ] CHK034 Are CSS and chart-markup size requirements stated, or only JavaScript? [Gap]
+- [x] CHK030 Are the JavaScript budget figures consistent between the plan (6 KB module, 10 KB site limit) and the spec's "within the site's budget", and is the compressed-versus-raw basis stated? [Consistency, Spec §FR-018, plan Performance Goals]
+- [x] CHK031 Is headroom quantified given the post already carries the questions panel script, so the sum is known to fit? [Gap, plan Risks]
+- [x] CHK032 Is "no earlier than the reader is likely to reach it" defined with a measurable trigger? [Ambiguity, Spec §FR-017]
+- [x] CHK033 Is SC-005 ("other pages ship no extra script") defined to include the bootstrap script and shared bundles? [Clarity, Spec §SC-005]
+- [x] CHK034 Are CSS and chart-markup size requirements stated, or only JavaScript? [Gap]
 
 ## Layout Shift and Timing
 
-- [ ] CHK035 Is the CLS threshold for the results-link path stated explicitly, given the budget run has no fragment and so does not cover it? [Coverage, plan Risks]
-- [ ] CHK036 Is the "earlier result" link's reserved space or insertion timing specified so the shift is bounded (not just "one short line")? [Clarity, plan Risks, Spec §FR-012]
-- [ ] CHK037 Are shift requirements defined for results appearing, the chart rendering, and the earlier-result block loading above the empty form? [Gap]
-- [ ] CHK038 Are interaction-latency requirements (INP, long tasks 200 ms) stated for answering and scoring? [Completeness, plan Performance Goals]
-- [ ] CHK039 Is SC-001 (under 5 minutes) a performance or a usability criterion, and is its measurement method defined? [Measurability, Spec §SC-001]
-- [ ] CHK040 Are mobile-network conditions for the budget case after scrolling specified? [Clarity, plan]
+- [x] CHK035 Is the CLS threshold for the results-link path stated explicitly, given the budget run has no fragment and so does not cover it? [Coverage, plan Risks]
+- [x] CHK036 Is the "earlier result" link's reserved space or insertion timing specified so the shift is bounded (not just "one short line")? [Clarity, plan Risks, Spec §FR-012]
+- [x] CHK037 Are shift requirements defined for results appearing, the chart rendering, and the earlier-result block loading above the empty form? [Gap]
+- [x] CHK038 Are interaction-latency requirements (INP, long tasks 200 ms) stated for answering and scoring? [Completeness, plan Performance Goals]
+- [x] CHK039 Is SC-001 (under 5 minutes) a performance or a usability criterion, and is its measurement method defined? [Measurability, Spec §SC-001]
+- [x] CHK040 Are mobile-network conditions for the budget case after scrolling specified? [Clarity, plan]

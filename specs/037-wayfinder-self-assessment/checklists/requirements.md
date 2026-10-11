@@ -31,11 +31,8 @@
 
 ## Notes
 
-- Three [NEEDS CLARIFICATION] markers remain, left for `/speckit-clarify` as instructed (no
-  interactive questions in this phase):
-  - FR-012: how an earlier result is kept for a retake ("stores nothing" vs "see growth").
-  - FR-019: whether the live poll for talks is in this slice (shared state needs a new endpoint
-    and a constitution amendment).
-  - FR-020: whether "What would you do?" scenarios (and optional AI feedback) are in this slice.
+- The three [NEEDS CLARIFICATION] markers left by `/speckit-specify` (FR-012 results storage,
+  FR-019 live poll, FR-020 scenarios) were resolved in the 2026-10-11 clarify session; none
+  remain.
 - Constitution references (Principles V, VII, X) name governance constraints, not
   implementation choices.

@@ -209,24 +209,46 @@ record the design choices that the spec left to the plan.
   scrolling to the assessment so the lazily loaded module counts too.
 - **Rationale**: SC-005 and Principle X; the budget limits are not raised.
 
-## R13. Side effect on the questions API source
+## R13. Keeping the questions API source complete
 
 - **Finding**: `prepareQuestionSource()` strips tags from the MDX body, so once the Practical
   Application paragraphs and the 6-Week Development Plan move into components, the question
-  source text for this post no longer contains them, and the post's question hash changes
-  (cached sets are regenerated on next request, as for any edited post).
-- **Decision**: Accept it in this slice. The source is capped at `MAX_INPUT_CHARS` and the rest
-  of the post carries the argument; widening the question source to expand components is
-  follow-up work if Don wants it.
+  source text for this post would no longer contain them. Today the whole post (about 20.6 KB of
+  MDX) fits under `MAX_INPUT_CHARS` (24,000), so all of it reaches the questions.
+- **Decision**: Keep the source complete (spec FR-021). A pure build-side helper,
+  `src/lib/assessment/question-text.ts`, replaces each `<PracticalApplication ... />` with
+  `**Practical Application**: <text>` and each `<DevelopmentPlan ... />` with the six
+  `**Week N: <name>**` paragraphs, in place, and drops `<SelfAssessment ... />`. The post route
+  and `question-source.json.ts` pass the expanded body to `prepareQuestionSource()` unchanged, so
+  the source text matches the pre-move text apart from the new assessment heading line, and the
+  hash covers the YAML text too. `prepareQuestionSource()` and the Worker are untouched.
+- **Rationale**: Cheap (one pure function, two call sites), and it avoids a silent regression in
+  an existing feature. The data file is committed site content, so the source is still only the
+  site's own post (Principle V's questions API rule, Principle VI).
+- **Cost**: The hash changes once, so the cached set for this post regenerates once on its next
+  request, one generation from the existing bucket; no recurring cost.
+- **Alternatives considered**: Accepting the loss as follow-up work (rejected: the fix is cheap
+  and the plan activities are exactly what a reader might be quizzed on); expanding every MDX
+  component generically (rejected: no other component carries prose the questions need).
 
 ## R14. Web Analytics and the fragment
 
-- **Finding**: Cloudflare Web Analytics' beacon is injected at the edge on production only. Its
-  SPA mode hooks `history.pushState` and does not support hash routing
-  (developers.cloudflare.com/web-analytics/get-started/web-analytics-spa/). The site uses
-  `replaceState`, and the docs do not say whether the beacon records the fragment of an
-  ordinary page view.
-- **Decision**: The site itself sends no analytics event (FR-016 holds as written). Open
-  question for Don: after release, inspect one beacon request on production with a results
-  link open and confirm the fragment is not in its payload. If it is, the follow-up is to set
-  the beacon's `spa: false` or move the result out of the visible URL.
+- **Finding**: Cloudflare Web Analytics' beacon is injected at the edge on production only (not
+  on previews or in CI). Its SPA mode hooks `history.pushState` only and does not support hash
+  routing (developers.cloudflare.com/web-analytics/get-started/web-analytics-spa/); the site uses
+  `replaceState`, which the beacon does not hook. The beacon source
+  (`static.cloudflareinsights.com/beacon.min.js`, `versions.js` "2026.10.0", read on
+  2026-10-11) passes the page address and the referrer through a sanitiser that sets
+  `hash = ""` and `search = ""` (and clears any user name and password) before building the
+  payload's `location` and `referrer` fields, so a page view of `.../#result=...` is recorded as
+  `.../`. This is observed behaviour, not documented, and Cloudflare can change the script.
+- **Decision**: The site itself sends no analytics event (FR-016). The beacon is covered by a
+  concrete post-release check with a pass/fail rule and a fallback (spec FR-016b): Don inspects
+  one production beacon request with a results link open; pass when no payload field holds `#`,
+  `result=` or the fragment; on a fail, the same day he adds a Web Analytics rule excluding the
+  Wayfinder post's path and files an issue. CI covers every request the site's own code and the
+  browser make (SC-004: an E2E request recorder over a results-link journey).
+- **Alternatives considered**: Running the real beacon in E2E (rejected: third-party script in
+  CI, and the edge injection cannot be reproduced locally); stripping the fragment before the
+  beacon runs and restoring it after (rejected: racy, and it fights FR-012's reload behaviour);
+  moving the result out of the address (rejected: the clarify answer chose the address bar).

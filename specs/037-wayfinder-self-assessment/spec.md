@@ -87,9 +87,11 @@ constitution amendment.
 
 ## Scope of this slice
 
-In scope: the individual self-assessment inside the Wayfinder post (User Stories 1 to 4), and
+In scope: the individual self-assessment inside the Wayfinder post (User Stories 1 to 4),
 moving the post's "Practical Application" paragraphs and 6-Week Development Plan into the
-assessment's data file so both are rendered from one source.
+assessment's data file so both are rendered from one source, keeping the critical-thinking
+questions' source for the post complete after that move (FR-021), and one paragraph in the
+privacy policy about the assessment (FR-016a).
 
 Out of scope (follow-up work, each its own feature): the live poll for talks (FR-019) and the
 "What would you do?" scenarios, including any Workers AI feedback (FR-020). This slice needs no
@@ -197,7 +199,7 @@ the change per shift.
 
 1. **Given** the reader opens the post through a results link, **When** the page loads,
    **Then** the page opens at the top as usual with a short "Your earlier result is below" link
-   near the title that leads to the assessment, and the earlier result is shown at once (chart, text summary, low-band links and print
+   near the title that leads to the earlier result (FR-012), and the earlier result is shown at once (chart, text summary, low-band links and print
    plan), marked "Earlier result from <date>", with an empty form below for the retake.
 2. **Given** the reader opened the post through a results link, **When** they finish a retake, **Then**
    the chart shows the earlier and the new position for each shift, told apart by more than
@@ -227,7 +229,11 @@ the change per shift.
   still shown on its own (chart, summary, date), marked "made with an earlier set of
   questions"; after a retake the two results are shown separately, with no change per shift.
 - A results link whose fragment is malformed or altered: it is ignored and the reader is
-  told it could not be read; nothing on the page breaks.
+  told it could not be read; nothing on the page breaks. The message is the assessment's
+  status line, "This results link could not be read.", announced politely (FR-009) and shown
+  as text above the form; no earlier result is shown, the title-card link keeps its "Take the
+  self-assessment" wording, and the fragment stays as it is until results are shown or
+  cleared.
 - The post is printed without results (the normal browser print): the assessment prints as its
   statements, not as an empty form with controls. Once results are on screen, any print
   (button or browser menu) gives the plan only (FR-011).
@@ -243,80 +249,227 @@ the change per shift.
 
 - **FR-001**: The Wayfinder post MUST contain the self-assessment, placed after the five
   mindset-shift sections and before "The Systems Leadership Wayfinder" section, with a heading
-  so it appears in the page's heading outline.
+  so it appears in the page's heading outline. The heading outline MUST skip no level: the
+  assessment heading is a second-level heading (like the post's other sections); inside it, each
+  shift group (in the form, and in the statement list shown without JavaScript), the results
+  ("Your results") and the earlier result each have a third-level heading, and nothing inside
+  the block goes deeper than a fourth level.
 - **FR-002**: The assessment MUST have three statements per shift, fifteen in all. Each
   statement describes an everyday behaviour, worded so that agreeing places the reader nearer
   that shift's "To".
 - **FR-003**: Each statement MUST be answered on a five-point scale from "Rarely" to "Almost
-  always", with every point labelled.
-- **FR-004**: The statements, the shift names, their "From" and "To" wording, the practical
-  application text and the six-week plan activities MUST live in one validated data file in the
-  site's content, so Don can edit them without changing code, and invalid content MUST fail the
-  build with a clear error. This file is the single source: the post's five "Practical
-  Application" paragraphs and its 6-Week Development Plan MUST be rendered from it through MDX
-  components at build time, and that text MUST NOT also be written out in the post's prose.
+  always", with every point labelled. Each shift's three statements form a group named by the
+  shift; each statement is a group of five choices whose accessible name is the statement text;
+  each choice's accessible name is its visible label, and the label text is part of the
+  choice's click target. Only one choice per statement can be selected.
+- **FR-004**: The statements, the shift names, their "From" and "To" wording, the anchors of the
+  shift headings, the five answer labels, the assessment's title and introduction, the practical
+  application text, the week 1 to 5 activities and the week 6 integration name and activities
+  MUST live in one validated data file in the site's content, so Don can edit them without
+  changing code, and invalid content (a missing or empty field, an unknown field, other than
+  five shifts or three statements per shift, a repeated shift id or anchor, scale ends other
+  than "Rarely" and "Almost always") MUST fail the build with a clear error naming the file and
+  the field. This file is the single source: the post's five "Practical Application" paragraphs
+  and its 6-Week Development Plan MUST be rendered from it through MDX components at build time,
+  and that text MUST NOT also be written out in the post's prose; the build MUST fail, naming
+  the post file, if any of the data file's practical application or week texts also appears
+  verbatim in the post's prose. The shift names (in the post's mindset-shift headings) and the
+  "From" and "To" lines stay in the post's prose, where they belong to the argument; the build
+  MUST fail, naming the post file and the shift, if a shift's "From" or "To" wording in the
+  data file does not match the post's "From" or "To" line for that shift, so the two cannot
+  drift apart. The statement list shown without JavaScript, the results reminders and the
+  printed plan are all built from the same data file fields, so every rendering of a text
+  matches the file exactly.
 - **FR-005**: A shift's score MUST be the mean of its three answers, shown on a scale from 1
   ("From") to 5 ("To"). A shift is in the **low band** when its score is below 3.
 
 **Results**
 
 - **FR-006**: Results MUST be shown only when all fifteen statements are answered. Otherwise the
-  reader is told which statements remain and focus moves to the first unanswered one.
+  reader is told which statements remain and focus moves to the first unanswered one. The
+  message is an error summary above the "Show my results" button that states how many
+  statements need an answer and lists each one as a link to it; each unanswered statement is
+  also marked invalid to assistive technology and shows a visible "Choose an answer" message
+  tied to it; answering a statement removes its message. Focus moves to the first choice of
+  the first unanswered statement, so a screen reader announces that statement.
 - **FR-007**: Results MUST include a chart placing the reader on each of the five shifts between
   its "From" and "To", and a text summary giving the same five positions in words. The text
-  summary is the accessible equivalent of the chart. Each line gives the shift name, the score
-  to one decimal ("2.3 of 5") and a band phrase quoting the nearer wording: "nearer 'From'
-  (<From wording>)" below 3, "in the middle" at exactly 3, "nearer 'To' (<To wording>)" above 3.
+  summary is the accessible equivalent of the chart, and it MUST be complete in every state:
+  everything the chart shows (each position, and when an earlier result is shown, each earlier
+  position and the change) is also in the text. The chart itself is a single image to
+  assistive technology whose name points to the text summary. Each line gives the shift name,
+  the score to one decimal ("2.3 of 5") and a band phrase quoting the nearer wording: "nearer
+  'From' (<From wording>)" below 3, "in the middle" at exactly 3, "nearer 'To' (<To wording>)"
+  above 3. Low-band shifts are marked in the summary by the band phrase, not by colour alone.
 - **FR-008**: Each shift in the low band MUST show a link to that shift's section heading in the
   post and that shift's Practical Application paragraph, reused unchanged from the data file. If no shift is in the
   low band, the results MUST say so and name the lowest-scoring shift as the one to practise
-  next.
-- **FR-009**: Results MUST be announced to assistive technology when they appear or change.
+  next. Each shift's heading anchor in the data file MUST be checked at build against the ids of
+  the post's rendered headings; renaming a mindset-shift heading without updating its anchor
+  MUST fail the build, naming the post file and the shift. Following the link moves focus to
+  the heading and leaves the address-bar fragment unchanged (FR-012).
+- **FR-009**: Results MUST be announced to assistive technology when they appear or change,
+  through one polite status message (it does not interrupt): "Your results are ready below."
+  when they first appear, "Your results are updated." when they change, the error summary's
+  count when statements are missing (FR-006), "Your answers have been cleared." after clearing
+  (FR-015), and "This results link could not be read." for an unreadable link (Edge Cases).
+  Focus rules: after results appear or update (first take or retake), focus stays on the "Show
+  my results" button and the results follow it in reading order; after clearing, focus moves
+  to the first choice of the first statement; after following a low-band link or the "Your
+  earlier result is below" link, focus moves to the target heading. Any scrolling these cause
+  is smooth only when the reader has not asked for reduced motion, and instant otherwise.
 
 **Printable plan**
 
 - **FR-010**: From the results the reader MUST be able to print a six-week plan: weeks 1 to 5
   are the five shifts ordered from lowest score to highest (ties keep the post's order), each
   with the post's activities for that shift; week 6 is the post's integration and reflection
-  week. The printout includes the date and the five positions.
+  week. The printout includes the date and the five positions. The printed plan reads in this
+  order: the assessment title, the date, the five positions (the same lines as the text
+  summary, in the data file's shift order), the results link, then weeks 1 to 6 in plan order,
+  each with its week number, shift name and activities. The week texts and positions come from
+  the same data file fields as the post (FR-004).
 - **FR-011**: Once results are on screen, printing by the "Print my plan" button or by the
   browser's own Print menu MUST give the plan only. The printed plan MUST leave out the site header, footer, share area and the rest
-  of the post, and fit on A4 and US Letter paper.
+  of the post, and fit on A4 and US Letter paper. Without results, the printed post shows the
+  assessment as its statement list (each shift name followed by its three statements, in the
+  data file's order), the same list shown without JavaScript, and no form controls.
 
 **Retake and growth**
 
 - **FR-012**: The reader MUST be able to compare a retake with an earlier result through a
   results link. The results show a link to the post whose URL fragment holds the five scores, the
-  date taken and the statement set version; the reader can copy it, and the printed plan
-  includes it. Opening the post through such a link loads that result as the earlier result and
-  shows it at once (chart, text summary, low-band links and print plan), marked "Earlier result
-  from <date>", with an empty form below for the retake. The page opens at the top as usual,
-  with a short "Your earlier result is below" link near the post title that leads to it.
+  date taken and the statement set version, and nothing else: no individual answers, no
+  identifier, no other reader data. The reader can copy it ("Copy link"; if copying fails the
+  link stays visible and selectable), and the printed plan includes it. Beside the link, one
+  plain sentence tells the reader that anyone they share the link with can see these scores,
+  and that the site does not keep a copy. Opening the post through such a link loads that
+  result as the earlier result and shows it at once (chart, text summary, low-band links and
+  print plan), marked "Earlier result from <date>", with an empty form below for the retake.
+  The page opens at the top as usual, with a short "Your earlier result is below" link near the
+  post title that leads to it.
+  The earlier-result link: the post's title card holds one short link line, just after the post
+  summary, on every post that renders the assessment, built into the page. It reads "Take the
+  self-assessment" and leads to the assessment heading (this also works with JavaScript off).
+  When the page was opened through a readable results link, the assessment code changes its
+  text to "Your earlier result is below" and makes it lead to the earlier result's heading. The
+  line's height is reserved in the built page for one line at every width from 320 px, and both
+  wordings fit on one line, so changing the text moves nothing on the page (FR-018a). Its
+  accessible name is its visible text; it is in the normal tab order after the post summary;
+  activating it moves focus to its target heading and leaves the address-bar fragment unchanged.
   Whenever results are shown, the address-bar fragment is replaced with the new result's
   fragment without adding a history entry; a retake replaces it again, so the newest result is
   the one compared next time.
-  Nothing is stored by the site or the browser (no cookies, local storage or other browser
-  storage), and the fragment is never sent to the server.
+  The site stores nothing in the browser: no cookies, local storage, session storage,
+  IndexedDB, Cache Storage or service worker, and no data in the history entry's state. The
+  only place a result persists is the page address itself, which the reader controls: like any
+  address, the reader's own browser may keep it in its history, and the reader can copy, share,
+  bookmark or print it. That is the "stores nothing" of the issue: the site and its code keep
+  no copy. The fragment is never sent to the server (FR-016).
 - **FR-013**: When an earlier result is available, the chart MUST show earlier and new positions
-  told apart by more than colour, and the text summary MUST state the change per shift.
+  told apart by more than colour: the new position is a filled circle, the earlier one a hollow
+  diamond, with a text legend naming both. Both shapes, the tracks and the legend MUST stay
+  visible in light and dark themes and in forced-colours mode. The text summary MUST give, for
+  each shift, the new position, the earlier position and the change ("up 0.7", "down 0.3" or
+  "no change").
 - **FR-014**: Each result MUST record which version of the statements it was made with, and a
   result from a different version MUST NOT be compared. Such an earlier result is still shown
   on its own (chart, text summary, date), marked "made with an earlier set of questions"; after
-  a retake the two results are shown separately, with no change per shift.
+  a retake the two results are shown separately, each with its own chart and complete text
+  summary, with no change per shift. The version is computed at build from the shift order and
+  the fifteen statement texts, so it changes automatically whenever Don edits any statement's
+  wording (even a typo) or reorders shifts or statements, and only then; editing the reminders,
+  week activities, shift names, "From" and "To" wording, labels, title or introduction does not
+  change it. Don does not set it by hand.
 - **FR-015**: The reader MUST be able to clear their answers and the earlier result loaded from
-  a results link; clearing also removes the results fragment from the address bar.
+  a results link; clearing also removes the results fragment from the address bar without
+  adding a history entry, and removes the plan from print. Clearing acts on the page and its
+  address only: a link the reader has already copied, shared or printed keeps working, because
+  the site holds no copy it could revoke. The results area says so in the same sentence that
+  explains sharing (FR-012).
 
 **Privacy, performance and accessibility**
 
 - **FR-016**: Answers and results MUST NOT leave the reader's browser: the site sends them to no
   server, writes them to no log, and uses no analytics event for them. Answers are not personal
-  data the site collects (constitution Principle VII stays as written).
+  data the site collects (constitution Principle VII stays as written). This covers every
+  request the page makes while a result is in the address, by any means (fetch, XHR, beacon,
+  image, script, style or font load, navigation, prefetch, WebSocket), including the `Referer`
+  header: browsers never put the fragment in `Referer`, and the site's referrer policy
+  (`strict-origin-when-cross-origin`) sends other sites only the origin. It also covers the
+  Cloudflare Web Analytics beacon that the edge adds to production pages, which the site does
+  not control: no page-view record it sends may contain the fragment. The current beacon
+  removes the fragment and query from the page address and referrer before sending (research
+  R14), and FR-016b states the release check and the fallback if that ever changes.
+- **FR-016a**: The privacy policy MUST gain one short paragraph saying that the Wayfinder
+  self-assessment runs only in the reader's browser, that the site never receives or stores the
+  answers or scores, and that the results link holds the scores in the page address, so anyone
+  the reader shares it with can see them.
+- **FR-016b**: After release, Don MUST check one production page view of the Wayfinder post
+  opened through a results link (PREVIEW-CHECK, post-release): in the browser's network panel,
+  the Web Analytics beacon request's payload is inspected. **Pass**: no field of the payload
+  contains `#`, `result=` or any part of the fragment. **Fail**: any field contains them. On a
+  fail, Don the same day adds a Web Analytics rule that excludes the Wayfinder post's path from
+  the beacon (a dashboard setting, which leaves the feature working and the rest of the site
+  measured), and a follow-up issue records the fix. The check is repeated after any change to
+  the Web Analytics setup.
 - **FR-017**: The assessment MUST be an isolated interactive piece that loads only on the
   Wayfinder post and no earlier than the reader is likely to reach it; other pages ship no
-  extra script. The post MUST stay readable in full with JavaScript off (see Edge Cases).
-- **FR-018**: The assessment and results MUST meet WCAG 2.2 AA in both light and dark themes,
-  work at 320 px wide without sideways scrolling, and keep the post within the site's
-  performance budget.
+  extra script. "Likely to reach it" means the assessment block comes within one viewport
+  height of the visible area; the code also loads at once when the page address holds a
+  results fragment, because the earlier result is shown at once (FR-012). The post MUST stay
+  readable in full with JavaScript off (see Edge Cases).
+- **FR-018**: The assessment and results MUST meet WCAG 2.2 AA in both light and dark themes
+  and keep the post within the site's performance budget. In particular:
+  - every control (each answer choice, "Show my results", "Clear my answers", "Print my plan",
+    "Copy link", the low-band links, the error-summary links and the title-card link) can be
+    reached and operated by keyboard alone, with a visible focus indicator that is never fully
+    hidden by other content (2.4.7, 2.4.11);
+  - each answer choice, with its label, and each button is a target at least 24 by 24 CSS
+    pixels (2.5.8);
+  - text meets 4.5:1 contrast, and chart tracks, markers, focus indicators and the boundaries
+    of the answer controls meet 3:1 against their background, checked separately in the light
+    and the dark theme (1.4.3, 1.4.11); nothing, including the low band, is marked by colour
+    alone (1.4.1);
+  - at 320 px wide nothing scrolls sideways: the scales, the chart rows, long band phrases
+    and the results link (which wraps anywhere) all fit (1.4.10); the form and results still
+    work at 200% zoom and with the WCAG text-spacing overrides applied, with no text cut off
+    or overlapping (1.4.4, 1.4.12).
+- **FR-018a**: Layout shift: the assessment MUST add no layout shift that counts toward
+  Cumulative Layout Shift. On a page opened through a results link, the CLS recorded before the
+  reader's first input is 0 at 320 px and at 390 px wide (the title-card line is reserved,
+  FR-012, and the earlier result is inserted far below the visible area while the page is at
+  the top, with the browser's scroll anchoring keeping visible content still if the reader has
+  already scrolled). Results, error messages and the chart appear only in response to the
+  reader's own action, in the same update, so their movement is input-driven and does not
+  count. The post still meets the budget's CLS limit (below 0.1) at load and after scrolling.
+- **FR-018b**: Budget figures: the Wayfinder post MUST stay within the site's existing budget,
+  measured as the budget check does (transferred, compressed bytes; simulated mobile on slow 4G
+  with 4x CPU slowdown at 390 by 844): LCP at most 2.5 s, CLS below 0.1, at most 200 ms of
+  long-task blocking time, at most 10 KB of JavaScript and at most 150 KB in total. The budget
+  check measures the post twice under those same conditions: at load, and after scrolling to
+  the assessment, answering every statement and showing results, so the lazily loaded code,
+  scoring and chart drawing all count. The post today loads no separate script file (its small
+  scripts are inside the page), so the assessment's code file has the whole 10 KB JavaScript
+  allowance and targets 6 KB compressed, leaving 4 KB of headroom. The assessment's styles,
+  including its print styles, ship only on posts that render it; its markup and styles count
+  toward the 150 KB total, with no separate limit.
+
+**Critical-thinking questions**
+
+- **FR-021**: Moving text into the data file MUST NOT shrink what the existing critical-thinking
+  questions feature reads for this post. The post's question source MUST be built from the post
+  with each `PracticalApplication` and `DevelopmentPlan` component expanded back into the text
+  it renders ("Practical Application: …" and the six "Week N: <name>" paragraphs), in place, so
+  it holds the same post text as before the move, and questions about the practical
+  applications and the plan activities stay possible as they are today. The assessment block
+  (its title, introduction and statements) is not part of the post's argument and is left out,
+  as other component tags are today. Acceptance: the question source for every post that uses
+  these components contains each of the data file's practical application and week texts, and
+  no component tag. The source is still only the site's own committed content (the data file is
+  site content under Principle VI), so the questions API rule that it reads only the site's own
+  posts holds. The question source's version hash covers the expanded text, so an edit to the
+  data file also counts as a changed post.
 
 **Related approaches**
 
@@ -349,19 +502,32 @@ the change per shift.
 ### Measurable Outcomes
 
 - **SC-001**: A reader can finish all fifteen statements and see their results in under 5
-  minutes.
+  minutes. This is a usability target, not a performance one: Don checks it on the preview
+  deployment by taking the assessment once without hurrying (PREVIEW-CHECK); the speed of the
+  page itself is covered by SC-005 and FR-018b.
 - **SC-002**: For any set of answers, the five positions shown in the chart and in the text
   summary match the mean of each shift's three answers, and the low-band links appear for
   exactly the shifts scoring below 3.
 - **SC-003**: The printed plan fits on at most two pages of A4 or US Letter and contains no
   site navigation, footer or share area.
-- **SC-004**: No request leaves the browser carrying answers or results (zero network requests
-  triggered by answering, viewing results, printing or clearing).
-- **SC-005**: Pages other than the Wayfinder post load no additional script, and the Wayfinder
-  post still meets the site's performance budget and the "good" Core Web Vitals thresholds on
-  mobile.
+- **SC-004**: No request leaves the browser carrying answers or results: zero network requests
+  are triggered by answering, viewing results, following a low-band link, copying the link,
+  printing or clearing; and across a whole journey opened through a results link, no request of
+  any kind (FR-016) has the fragment, `result=` or any answer in its URL, headers or body. An
+  automated browser test records every request and checks both. The Web Analytics beacon,
+  which exists only on production, is covered by the release check in FR-016b.
+- **SC-005**: Pages other than the Wayfinder post load no additional script: their built HTML
+  holds neither the assessment's loader nor any reference to its code file, and the scripts they
+  share with every page are unchanged in content. The Wayfinder post still meets the budget in
+  FR-018b and the "good" Core Web Vitals thresholds on mobile, and FR-018a's layout-shift
+  requirement holds on a page opened through a results link.
 - **SC-006**: The assessment and results pass the site's automated accessibility checks with no
-  violations, in light and dark themes, and can be completed by keyboard alone.
+  violations, in light and dark themes, in each of these states: the empty form, the form with
+  errors shown, results shown, a comparison with an earlier result, two separate results
+  (different statement versions), and the unreadable-link message; and can be completed by
+  keyboard alone. Manual review on the preview (PREVIEW-CHECK) covers what automated checks
+  cannot: that the text summary says everything the chart shows, the reading order of the
+  printed plan and the no-JavaScript list, and a screen reader pass through errors and results.
 
 ## Assumptions
 
@@ -376,6 +542,13 @@ the change per shift.
   work.
 - The chart is drawn by the site itself; no third-party script is added (constitution Principle
   X).
+- No form or API on the site asks for a results link or scores. The contact form has no field
+  for them; if a reader chooses to paste a link into a contact message, it is part of that
+  message and is handled like any contact message under Principle VII.
+- Changing the post's body changes its question-source hash once, as any post edit does
+  (FR-021): the cached question set for this post is regenerated on its next request, drawing
+  one generation from the site-wide token bucket. This is a one-off cost within the free plan
+  and the existing bucket, with no change to the questions API.
 
 ## Follow-up work
 

@@ -63,6 +63,16 @@ collection lookup; only component tests use it.
   `## The Systems Leadership Wayfinder` (FR-001).
 - No Practical Application or week text remains in the post prose (FR-004).
 
+## Question source (FR-021)
+
+`src/lib/assessment/question-text.ts` exports a pure `expandForQuestions(body, assessments)`:
+each `<PracticalApplication assessment="a" shift="s" />` becomes
+`**Practical Application**: <practicalApplication>`; each `<DevelopmentPlan assessment="a" />`
+becomes the six paragraphs `**Week N: <name>**  \n<week>` separated by blank lines; each
+`<SelfAssessment ... />` is removed. Other text is untouched. The post route and
+`src/pages/writing/[slug]/question-source.json.ts` call it and pass the result as `body` to
+`prepareQuestionSource()`, so the text and the hash both reflect the data file.
+
 ## Build errors
 
 Each fails `astro sync` / `astro build` with a message naming the file. Row ids continue the
@@ -70,7 +80,7 @@ post rows in `docs/posts.md` under a new "A" prefix.
 
 | Row | Cause | Where checked | Message contains |
 |-----|-------|---------------|------------------|
-| A1 | Data file breaks the schema (missing field, unknown key, wrong count of shifts or statements, scale not five labels) | collection schema (Astro's own error) | the file name and the field path |
+| A1 | Data file breaks the schema (missing or empty text field, unknown key, wrong count of shifts or statements, scale not five labels) | collection schema (Astro's own error) | the file name and the field path |
 | A2 | Two shifts with the same `id` or the same `anchor` | schema refinement | `shifts`, the repeated value |
 | A3 | `scale` first/last label not "Rarely"/"Almost always" | schema refinement | `scale` |
 | A4 | A component names an assessment id with no data file | component, through `Astro.locals.pageFile` | post file, `assessment="<id>"`, the known ids |
@@ -78,3 +88,8 @@ post rows in `docs/posts.md` under a new "A" prefix.
 | A6 | A shift's `anchor` is not the id of a heading in a post that renders `SelfAssessment` for that assessment | post route, against `render(entry).headings` | post file, shift name, the anchor |
 | A7 | A post renders `SelfAssessment` for the same assessment twice | post route | post file |
 | A8 | `<Something>` that is neither a section nor one of the three post components | `validatePageBody` (existing P19 wording, list extended for posts) | the tag and the allowed names |
+| A9 | In a post that renders `SelfAssessment`, a shift's `**From**:` or `**To**:` line in the section under its `anchor` heading differs from the data file's `from` / `to` (FR-004) | post route (`src/lib/assessment/checks.ts`) | post file, shift name, `from` or `to`, both texts |
+| A10 | A post that uses any of the three components still contains, verbatim in its MDX body, a `practicalApplication` or `week` text of that assessment (FR-004) | post route (`src/lib/assessment/checks.ts`) | post file, the field (`practicalApplication` of `<shift>`, or `week` of `<shift>` / integration week) |
+
+The `version` is derived, not authored (research R5), so it has no error row; any statement
+wording or order edit changes it.
