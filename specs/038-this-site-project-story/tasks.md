@@ -81,7 +81,7 @@ with JavaScript on and off; the Playwright content-derived specs pass on it as t
 
 **Independent Test**: On the story page, "Source code for doncoleman.ca" opens `https://github.com/drcdev/dcc-web` signed out.
 
-- [ ] T014 [US2] Test (layer: E2E, existing `tests/e2e/projects-no-js.spec.ts` on the picked story, which asserts the source link): no new test; T018 runs it and the picked story must be this one (research R5). Second layer: none.
+- [X] T014 [US2] Test (layer: E2E, existing `tests/e2e/projects-no-js.spec.ts` on the picked story, which asserts the source link): no new test; T018 runs it and the picked story must be this one (research R5). Second layer: none.
 - [ ] T015 [US2] [PREVIEW-CHECK] Open "Source code for doncoleman.ca" in a signed-out window on the branch preview and confirm it opens the public `https://github.com/drcdev/dcc-web` (SC-004). Only Don can check this signed out.
 
 ---
