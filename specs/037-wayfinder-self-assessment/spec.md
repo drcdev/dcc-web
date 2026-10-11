@@ -62,6 +62,18 @@ constitution amendment.
   A single source. A validated data file holds the shifts, statements, reminders and week
   activities, and the post's "Practical Application" paragraphs and 6-Week Development Plan are
   rendered from it through MDX components.
+- Q: When a reader opens the post through a results link, what should they see before
+  retaking? → A: The earlier result right away (chart, summary, low-band links, print plan),
+  marked "Earlier result from <date>", with an empty form below for the retake.
+- Q: How should the text summary state each shift's position "in words"? → A: The score to one
+  decimal plus a band phrase, e.g. "See the Whole System: 2.3 of 5, nearer 'From' (fixing
+  problems in isolation)"; below 3 is nearer From, exactly 3 is in the middle, above 3 is
+  nearer To.
+- Q: For a low-scoring shift, is the results reminder the full Practical Application paragraph
+  or a separate short line? → A: The full Practical Application paragraph, reused unchanged.
+- Q: When results are on screen and the reader prints from the browser's own Print menu, what
+  prints? → A: Once results exist, any print gives the plan only; without results, the post
+  prints with the statements as a list.
 
 ## Scope of this slice
 
@@ -123,8 +135,8 @@ two low shifts show links, and that each link lands on the matching section of t
 **Acceptance Scenarios**:
 
 1. **Given** a result where a shift scores in the low band, **When** the reader views the
-   results, **Then** that shift shows a link to its section in the post and a short reminder of
-   its practical application.
+   results, **Then** that shift shows a link to its section in the post and its Practical
+   Application paragraph.
 2. **Given** the reader follows a shift's link, **When** the page moves, **Then** the matching
    mindset-shift heading is in view and not hidden under the site header.
 3. **Given** no shift scores in the low band, **When** the reader views the results, **Then**
@@ -152,9 +164,9 @@ only the plan, with weeks ordered by the reader's scores and the date and positi
    for it, ordered from lowest score to highest, and week 6 as integration and reflection.
 2. **Given** two shifts have the same score, **When** the plan is built, **Then** they keep the
    post's own order between them.
-3. **Given** the reader prints, **When** the print preview appears, **Then** it holds the plan,
-   the date and the five positions, and leaves out the site header, footer, share area and the
-   rest of the post.
+3. **Given** the reader prints, by the "Print my plan" button or the browser's own Print menu,
+   **When** the print preview appears, **Then** it holds the plan, the date and the five
+   positions, and leaves out the site header, footer, share area and the rest of the post.
 
 ---
 
@@ -173,12 +185,15 @@ the change per shift.
 
 **Acceptance Scenarios**:
 
-1. **Given** the reader opened the post through a results link, **When** they finish a retake, **Then**
+1. **Given** the reader opens the post through a results link, **When** the page loads,
+   **Then** the earlier result is shown at once (chart, text summary, low-band links and print
+   plan), marked "Earlier result from <date>", with an empty form below for the retake.
+2. **Given** the reader opened the post through a results link, **When** they finish a retake, **Then**
    the chart shows the earlier and the new position for each shift, told apart by more than
    colour, and the text summary states the change for each shift.
-2. **Given** the reader opened the post without a results link, **When** they finish the assessment,
+3. **Given** the reader opened the post without a results link, **When** they finish the assessment,
    **Then** only the new result is shown, with no error.
-3. **Given** the reader wants to start fresh, **When** they choose to clear their answers,
+4. **Given** the reader wants to start fresh, **When** they choose to clear their answers,
    **Then** every answer and the earlier result loaded from the link are removed from the page,
    and the results fragment is removed from the address bar.
 
@@ -199,7 +214,8 @@ the change per shift.
 - A results link whose fragment is malformed or altered: it is ignored and the reader is
   told it could not be read; nothing on the page breaks.
 - The post is printed without results (the normal browser print): the assessment prints as its
-  statements, not as an empty form with controls.
+  statements, not as an empty form with controls. Once results are on screen, any print
+  (button or browser menu) gives the plan only (FR-011).
 - Narrow phone screens: the five-point scales and the chart fit at 320 px wide without sideways
   scrolling.
 - Dark mode: the chart and scales are legible in both themes.
@@ -233,9 +249,11 @@ the change per shift.
   reader is told which statements remain and focus moves to the first unanswered one.
 - **FR-007**: Results MUST include a chart placing the reader on each of the five shifts between
   its "From" and "To", and a text summary giving the same five positions in words. The text
-  summary is the accessible equivalent of the chart.
+  summary is the accessible equivalent of the chart. Each line gives the shift name, the score
+  to one decimal ("2.3 of 5") and a band phrase quoting the nearer wording: "nearer 'From'
+  (<From wording>)" below 3, "in the middle" at exactly 3, "nearer 'To' (<To wording>)" above 3.
 - **FR-008**: Each shift in the low band MUST show a link to that shift's section heading in the
-  post and a one- or two-sentence reminder of its practical application. If no shift is in the
+  post and that shift's Practical Application paragraph, reused unchanged from the data file. If no shift is in the
   low band, the results MUST say so and name the lowest-scoring shift as the one to practise
   next.
 - **FR-009**: Results MUST be announced to assistive technology when they appear or change.
@@ -246,7 +264,8 @@ the change per shift.
   are the five shifts ordered from lowest score to highest (ties keep the post's order), each
   with the post's activities for that shift; week 6 is the post's integration and reflection
   week. The printout includes the date and the five positions.
-- **FR-011**: The printed plan MUST leave out the site header, footer, share area and the rest
+- **FR-011**: Once results are on screen, printing by the "Print my plan" button or by the
+  browser's own Print menu MUST give the plan only. The printed plan MUST leave out the site header, footer, share area and the rest
   of the post, and fit on A4 and US Letter paper.
 
 **Retake and growth**
@@ -254,7 +273,9 @@ the change per shift.
 - **FR-012**: The reader MUST be able to compare a retake with an earlier result through a
   results link. The results show a link to the post whose URL fragment holds the five scores, the
   date taken and the statement set version; the reader can copy it, and the printed plan
-  includes it. Opening the post through such a link loads that result as the earlier result.
+  includes it. Opening the post through such a link loads that result as the earlier result and
+  shows it at once (chart, text summary, low-band links and print plan), marked "Earlier result
+  from <date>", with an empty form below for the retake.
   Nothing is stored by the site or the browser (no cookies, local storage or other browser
   storage), and the fragment is never sent to the server.
 - **FR-013**: When an earlier result is available, the chart MUST show earlier and new positions
