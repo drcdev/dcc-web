@@ -200,7 +200,7 @@ branch preview shows nothing about this change beyond the site still serving.
 
 ### W5: Gate
 
-- [ ] W5 done
+- [x] W5 done (full `pnpm run verify` green locally, VERIFY_EXIT=0)
 - Merge `origin/main`, run the changed-paths tier locally (Local toolchain rules), then let CI run.
   Collect the three `[PREVIEW-CHECK]` items for the PR body.
 
