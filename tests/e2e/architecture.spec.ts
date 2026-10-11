@@ -237,6 +237,20 @@ test.describe("selecting a part", () => {
     await page.keyboard.press("Tab");
     expect(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.part ?? "left")).toBe("left");
   });
+
+  test("SC-002: Shift+Tab visits every part in reverse order and leaves the diagram", async ({ page }) => {
+    await open(page, "light", 1280, 900);
+    const order = layout.parts.map((p) => p.id);
+    await link(page, order[order.length - 1]!).focus();
+    const seen: string[] = [order[order.length - 1]!];
+    for (let i = 1; i < order.length; i++) {
+      await page.keyboard.press("Shift+Tab");
+      seen.push(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.part ?? "none"));
+    }
+    expect(seen).toEqual([...order].reverse());
+    await page.keyboard.press("Shift+Tab");
+    expect(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.part ?? "left")).toBe("left");
+  });
 });
 
 test.describe("accessibility with a part selected", () => {

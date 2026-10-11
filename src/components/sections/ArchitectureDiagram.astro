@@ -194,6 +194,7 @@ const area = (part: LayoutPart) => part.tab ?? part;
     entries.set(entry.dataset.entry!, entry);
   });
 
+  let activated = false;
   function select(id: string | null) {
     for (const [key, link] of links) {
       if (key === id) link.setAttribute("aria-current", "true");
@@ -217,6 +218,7 @@ const area = (part: LayoutPart) => part.tab ?? part;
 
   for (const [id, link] of links) {
     link.addEventListener("click", () => {
+      activated = true;
       select(id);
       // The browser jumps to the fragment itself; focus follows without a second scroll.
       entries.get(id)?.focus({ preventScroll: true });
@@ -232,14 +234,26 @@ const area = (part: LayoutPart) => part.tab ?? part;
     });
   });
 
-  window.addEventListener("hashchange", fromHash);
+  function decodeURIComponentSafe(raw: string) {
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return "";
+    }
+  }
+  window.addEventListener("hashchange", () => {
+    activated = true;
+    fromHash();
+  });
   fromHash();
 
   // Opening the page at a deep link must not move focus (J03), but browsers focus a
   // fragment target that has tabindex="-1". Let go of it once the page has settled.
+  const deepLinkedId = decodeURIComponentSafe(location.hash.slice(1));
   function releaseFocus() {
+    if (activated) return;
     const active = document.activeElement;
-    if (active instanceof HTMLElement && active.matches("article[data-entry]")) active.blur();
+    if (active instanceof HTMLElement && active.matches("article[data-entry]") && active.id === deepLinkedId) active.blur();
   }
   const settle = () => requestAnimationFrame(() => setTimeout(releaseFocus));
   if (document.readyState === "complete") settle();
