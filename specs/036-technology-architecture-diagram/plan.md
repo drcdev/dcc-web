@@ -119,19 +119,19 @@ helper instead.
 
 | Behaviour | Layer | File | Rows |
 |---|---|---|---|
-| Layout geometry, flow rules, order, sizes | unit | `tests/unit/site/architecture-layout.test.ts` | L01–L09 |
+| Layout geometry, flow rules, order, sizes; L01 pins the 12 anchors (FR-009) | unit | `tests/unit/site/architecture-layout.test.ts` | L01–L09 |
 | Part schema | unit | `tests/unit/content/architecture-schema.test.ts` | P01, P02 |
 | Source path rules and URL | unit (temp folder, neutral data) | `tests/unit/content/architecture-source.test.ts` | P03–P07 |
 | Layout vs files check (`checkParts`) | unit | same file as above | P08, P09 |
-| Real part files: tracked sources, browser-only exception, ids = layout ids | unit content test (reads helper) | `tests/unit/content/architecture-content.test.ts` | P10, P08 on real data |
+| Real part files: tracked sources, browser-only exception, ids = layout ids, explanation length (FR-013) | unit content test (reads helper) | `tests/unit/content/architecture-content.test.ts` | P10, P11, P08 on real data |
 | Static markup: links, entries, source link attributes, back links, no `style`, `aria-hidden` shapes | component | `tests/component/sections/ArchitectureDiagram.test.ts` | M02–M09 |
 | Section registered and allowed in page bodies | unit (existing body/section tests extended) | `tests/unit/content/…` existing section-name test | — |
 | `generateId` runs `assertPartSource` on real files | build (`sync` fixture) | `tests/build/architecture-validation.test.ts` + `tests/fixtures/architecture/broken/` | P04 wiring |
 | Built Technology page: diagram first, every part fragment resolves to an entry, unique ids, no `style` attributes, the kept sections present and the removed headings gone | build (content tier) | `tests/build/local-site.test.ts` | M01, M03, M06, M09, M10, FR-014 |
 | Click, keyboard, back-link focus, deep link, single selection, non-part fragment | E2E | `tests/e2e/architecture.spec.ts` | J01–J07 |
 | No-JS reading and fragment navigation | E2E (JS disabled) | same spec | N01, N02 |
-| Rendered label sizes at 320 px both themes, Inter, labels inside boxes | E2E | same spec | R01–R03 |
-| Selected state has no axe violations, both themes | a11y (second layer: the selected markup exists only after an activation, as with the questions panel) | same spec, axe | SC-003 |
+| Rendered label sizes at 320 px both themes, Inter, labels inside boxes, part target size | E2E | same spec | R01–R03, R05 |
+| Selected state has no axe violations, both themes, 320 px and desktop (SC-003) | a11y (second layer: the selected markup exists only after an activation, as with the questions panel) | same spec, axe | SC-003 |
 | Idle page a11y, both themes and widths | a11y (existing `technology` template) | `tests/e2e/a11y.spec.ts` unchanged | — |
 | No sideways scroll at 320/390/1280 | E2E (existing) | `tests/e2e/geometry.spec.ts` unchanged | R04 |
 | Budget | budget (existing template) | `tests/e2e/budget.spec.ts` unchanged | SC-005 |
@@ -192,7 +192,7 @@ tests/
 └── e2e/architecture.spec.ts
 
 docs/
-├── pages.md                          # how to edit a part (file + layout), the build errors
+├── pages.md                          # how to edit a part (file + layout), the build errors, the review trigger (FR-019)
 └── testing.md                        # "Architecture diagram (feature 036)" placement note
 ```
 
@@ -209,7 +209,8 @@ collection beside `pages`, `posts` and `projects`.
   (research R8). Every initial source path already exists on `main`.
 - **Diagram truth beyond links** stays a review responsibility (spec edge case); the flow-rule
   unit test (L06) pins the connections FR-003 names.
-- **FR-014 interpretation** (research R9): the closing note stays, its `## Questions` heading goes.
+- **FR-014 interpretation** (research R9, now written into FR-014): the closing note stays, its `## Questions` heading goes.
+- **Manual assistive-technology pass** (SC-007): keyboard, VoiceOver with Safari and forced colours are `[PREVIEW-CHECK]` items (quickstart §4), since automated checks cover only part of WCAG.
 
 ## Complexity Tracking
 

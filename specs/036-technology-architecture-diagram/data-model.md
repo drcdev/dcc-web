@@ -13,7 +13,7 @@ Two sources describe a part: a Markdown **part file** (content, Principle VI) an
 | id | string (from the file name) | lower-case kebab-case, unique; it is the entry's `id` and the page fragment (FR-009) |
 | `name` | non-empty string | the part's label in the diagram and its entry heading; plain language (FR-013) |
 | `source` | optional string | repository-relative path to a file or folder; no leading `/`, no `..`; must exist and be tracked by git (FR-006, FR-007) |
-| body | Markdown | the explanation: a few sentences (FR-004, FR-013); must not be empty |
+| body | Markdown | the explanation: two to five sentences, at most 100 words (FR-013, P11); must not be empty |
 
 Schema: `z.strictObject({ name, source })` in `src/content/schemas/architecture.ts`; unknown keys
 fail. The path rules run in the loader's `generateId` (`assertPartSource`), so the build error

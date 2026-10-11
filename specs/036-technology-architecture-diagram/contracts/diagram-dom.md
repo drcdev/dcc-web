@@ -63,3 +63,4 @@ like `RecentWriting`'s `posts` prop; without it, it reads the `architecture` col
 | R02 | Diagram text resolves to Inter. |
 | R03 | Every part label lies inside its box (bounding boxes) at 320 and 1280 px. |
 | R04 | No horizontal scroll at 320 px is already owned by `tests/e2e/geometry.spec.ts` (technology is a template); not repeated. |
+| R05 | At 320 px, every part link's clickable area (box, or a group's tab) is at least 24 × 24 CSS px (WCAG 2.5.8, FR-010). |

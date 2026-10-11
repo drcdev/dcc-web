@@ -56,6 +56,9 @@ On `pnpm run dev` locally, then on the PR preview:
 4. Follow each source link: it opens a new tab on GitHub `main` at the right file or folder (a file
    added by this PR only resolves after merge).
 5. Open `/technology/#worker-api` directly: the page opens at that entry with it highlighted.
-6. Windows High Contrast / forced colours (or Chromium's emulation): parts, lines and focus visible.
-7. Read every explanation against how the site works today (FR-013): nothing says the contact form
+6. Windows High Contrast / forced colours (or Chromium's emulation): parts, lines, focus and the
+   selected state visible.
+7. Screen reader (VoiceOver with Safari): each part's name is read on focus; Enter moves to the
+   entry and its heading and explanation are read (SC-007).
+8. Read every explanation against how the site works today (FR-013): nothing says the contact form
    stores messages; preview and production each have their own Worker and database.

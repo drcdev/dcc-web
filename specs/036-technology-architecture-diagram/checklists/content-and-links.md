@@ -8,40 +8,40 @@
 
 ## Content Accuracy
 
-- [ ] CHK001 Is "as they work today" tied to an authoritative source (Background, committed configuration) so each connection can be checked? [Measurability, Spec §FR-003]
-- [ ] CHK002 Is every connection in the diagram enumerated with direction and label, rather than described by example only? [Completeness, Spec §FR-003]
-- [ ] CHK003 Are the conditions on the AI model call (no saved set, budget allows) stated in a way that matches the Background description exactly? [Consistency, Spec §FR-003]
-- [ ] CHK004 Are the statements about the contact path (nothing stored, one fixed verified inbox, preview emails marked) consistent with the constitution's private-data rules? [Consistency, Spec §FR-013]
-- [ ] CHK005 Is the production/preview distinction (separate Worker, separate database, test keys, marked emails) specified for each point it affects? [Completeness, Spec §FR-002]
-- [ ] CHK006 Is a review responsibility and trigger defined for keeping explanations true after later architecture changes, given only links are auto-checked? [Gap, Spec §Edge Cases]
-- [ ] CHK007 Is "plain language, no hype or filler" defined by measurable limits (sentence count, jargon handling, terms defined on first use)? [Ambiguity, Spec §FR-013]
-- [ ] CHK008 Is "a few sentences" for an explanation quantified? [Ambiguity, Spec §US2]
-- [ ] CHK009 Are the 12 parts' names and the count consistent across the user story, FR-002, SC-001 and the Key Entities (for example, the inbox and email path as separate parts)? [Consistency, Spec §FR-002]
-- [ ] CHK010 Is the carry-over of still-true prose from removed sections into explanations mapped section by section, so nothing true is lost? [Traceability, Spec §FR-014]
-- [ ] CHK011 Is the "closing note" and "Questions section" wording in FR-014 unambiguous about what is kept and removed? [Ambiguity, Spec §FR-014]
+- [x] CHK001 Is "as they work today" tied to an authoritative source (Background, committed configuration) so each connection can be checked? [Measurability, Spec §FR-003]
+- [x] CHK002 Is every connection in the diagram enumerated with direction and label, rather than described by example only? [Completeness, Spec §FR-003]
+- [x] CHK003 Are the conditions on the AI model call (no saved set, budget allows) stated in a way that matches the Background description exactly? [Consistency, Spec §FR-003]
+- [x] CHK004 Are the statements about the contact path (nothing stored, one fixed verified inbox, preview emails marked) consistent with the constitution's private-data rules? [Consistency, Spec §FR-013]
+- [x] CHK005 Is the production/preview distinction (separate Worker, separate database, test keys, marked emails) specified for each point it affects? [Completeness, Spec §FR-002]
+- [x] CHK006 Is a review responsibility and trigger defined for keeping explanations true after later architecture changes, given only links are auto-checked? [Gap, Spec §Edge Cases]
+- [x] CHK007 Is "plain language, no hype or filler" defined by measurable limits (sentence count, jargon handling, terms defined on first use)? [Ambiguity, Spec §FR-013]
+- [x] CHK008 Is "a few sentences" for an explanation quantified? [Ambiguity, Spec §US2]
+- [x] CHK009 Are the 12 parts' names and the count consistent across the user story, FR-002, SC-001 and the Key Entities (for example, the inbox and email path as separate parts)? [Consistency, Spec §FR-002]
+- [x] CHK010 Is the carry-over of still-true prose from removed sections into explanations mapped section by section, so nothing true is lost? [Traceability, Spec §FR-014]
+- [x] CHK011 Is the "closing note" and "Questions section" wording in FR-014 unambiguous about what is kept and removed? [Ambiguity, Spec §FR-014]
 
 ## Source Links
 
-- [ ] CHK012 Is the source location for each of the 11 linked parts specified (or the rule for choosing it), including the "preview vs production" case? [Completeness, Spec §FR-006]
-- [ ] CHK013 Is the rule for choosing file versus folder links defined, and is the `main` branch choice's drift risk (links valid only after merge) acknowledged? [Assumption, Spec §Clarifications]
-- [ ] CHK014 Is the link check's scope defined: existence of path only, or also that the path implements the stated part? [Clarity, Spec §FR-007]
-- [ ] CHK015 Is the failure behaviour of the link check specified (which gate, message naming the part and path)? [Measurability, Spec §FR-007]
-- [ ] CHK016 Is the repository URL, public visibility and the consequence of a repository rename or move documented as an assumption or dependency? [Dependency, Spec §Assumptions]
-- [ ] CHK017 Are external-link security requirements for new-tab links (opener isolation, no referrer leakage expectations) stated? [Gap, Spec §FR-006]
-- [ ] CHK018 Is the visible label of the source link consistent across all entries and distinguishable from the "Back to diagram" link? [Consistency, Spec §FR-006]
-- [ ] CHK019 Is behaviour specified for the reader's browser entry (no source link) so its absence is deliberate and not a missing-link failure in SC-001? [Consistency, Spec §SC-001]
+- [x] CHK012 Is the source location for each of the 11 linked parts specified (or the rule for choosing it), including the "preview vs production" case? [Completeness, Spec §FR-006]
+- [x] CHK013 Is the rule for choosing file versus folder links defined, and is the `main` branch choice's drift risk (links valid only after merge) acknowledged? [Assumption, Spec §Clarifications]
+- [x] CHK014 Is the link check's scope defined: existence of path only, or also that the path implements the stated part? [Clarity, Spec §FR-007]
+- [x] CHK015 Is the failure behaviour of the link check specified (which gate, message naming the part and path)? [Measurability, Spec §FR-007]
+- [x] CHK016 Is the repository URL, public visibility and the consequence of a repository rename or move documented as an assumption or dependency? [Dependency, Spec §Assumptions]
+- [x] CHK017 Are external-link security requirements for new-tab links (opener isolation, no referrer leakage expectations) stated? [Gap, Spec §FR-006]
+- [x] CHK018 Is the visible label of the source link consistent across all entries and distinguishable from the "Back to diagram" link? [Consistency, Spec §FR-006]
+- [x] CHK019 Is behaviour specified for the reader's browser entry (no source link) so its absence is deliberate and not a missing-link failure in SC-001? [Consistency, Spec §SC-001]
 
 ## No-JavaScript and Fragment Access
 
-- [ ] CHK020 Are the no-JavaScript requirements stated for each part (name, explanation, link, back link) rather than in aggregate? [Completeness, Spec §FR-008]
-- [ ] CHK021 Is the fragment identifier scheme (stable, unique, safe for external links from posts) defined and protected from silent renames? [Clarity, Spec §FR-009]
-- [ ] CHK022 Is behaviour for an unknown or malformed fragment specified? [Edge Case, Gap, Spec §FR-009]
+- [x] CHK020 Are the no-JavaScript requirements stated for each part (name, explanation, link, back link) rather than in aggregate? [Completeness, Spec §FR-008]
+- [x] CHK021 Is the fragment identifier scheme (stable, unique, safe for external links from posts) defined and protected from silent renames? [Clarity, Spec §FR-009]
+- [x] CHK022 Is behaviour for an unknown or malformed fragment specified? [Edge Case, Gap, Spec §FR-009]
 
 ## CSP, Third Parties and Performance
 
-- [ ] CHK023 Is compatibility with the site's Content Security Policy (no inline styles, no unhashed inline scripts) a stated requirement rather than only a plan detail? [Gap, Spec §FR-011]
-- [ ] CHK024 Is "no third-party script or resource" defined to include fonts, images and the GitHub link previews (links open only on activation)? [Clarity, Spec §FR-011]
-- [ ] CHK025 Is "loaded no earlier than needed" for the script measurable? [Ambiguity, Spec §FR-011]
-- [ ] CHK026 Is "existing performance budget" identified by its figures or source so the requirement is verifiable? [Measurability, Spec §FR-012]
-- [ ] CHK027 Is the diagram's font approach ("site's existing approach to fonts in diagrams") specified precisely enough to avoid text-width drift between platforms? [Ambiguity, Spec §Assumptions]
-- [ ] CHK028 Is the cost impact (none) and the absence of new endpoints or data stores stated as a requirement, not only an assumption? [Assumption, Spec §Assumptions]
+- [x] CHK023 Is compatibility with the site's Content Security Policy (no inline styles, no unhashed inline scripts) a stated requirement rather than only a plan detail? [Gap, Spec §FR-011]
+- [x] CHK024 Is "no third-party script or resource" defined to include fonts, images and the GitHub link previews (links open only on activation)? [Clarity, Spec §FR-011]
+- [x] CHK025 Is "loaded no earlier than needed" for the script measurable? [Ambiguity, Spec §FR-011]
+- [x] CHK026 Is "existing performance budget" identified by its figures or source so the requirement is verifiable? [Measurability, Spec §FR-012]
+- [x] CHK027 Is the diagram's font approach ("site's existing approach to fonts in diagrams") specified precisely enough to avoid text-width drift between platforms? [Ambiguity, Spec §Assumptions]
+- [x] CHK028 Is the cost impact (none) and the absence of new endpoints or data stores stated as a requirement, not only an assumption? [Assumption, Spec §Assumptions]
