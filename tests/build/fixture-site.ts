@@ -21,6 +21,8 @@ const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
 const fixturesRoot = resolve(repoRoot, "tests/fixtures/pages");
 const postFixturesRoot = resolve(repoRoot, "tests/fixtures/posts");
 const projectFixturesRoot = resolve(repoRoot, "tests/fixtures/projects");
+const readingPathFixturesRoot = resolve(repoRoot, "tests/fixtures/reading-paths");
+const nowFixturesRoot = resolve(repoRoot, "tests/fixtures/now");
 
 /**
  * A fixture file: `from` is relative to tests/fixtures/pages/ (for the `posts` option, to
@@ -66,6 +68,15 @@ export interface FixtureSiteOptions {
    * unreferenced. Default false.
    */
   withoutRealProjects?: boolean;
+  /**
+   * Reading-path fixture files, relative to tests/fixtures/reading-paths/ (for example
+   * `harness/minimal-path.yaml`), copied into src/content/reading-paths/. The repository's real
+   * reading-path files are left out of the copy unless real posts are kept (`realPosts`) and real
+   * projects are not removed, because they point at real posts and projects.
+   */
+  readingPaths?: readonly (string | FixtureFile)[];
+  /** A Now fixture file, relative to tests/fixtures/now/, installed as src/content/now/now.md in place of the default. */
+  now?: string;
   /** Page files to delete from the copied site, relative to src/content/pages/ (for example a landing file). */
   removePages?: readonly string[];
   /** Extra files to write into the site, keyed by path relative to the site root (for example an oversized clip). */
@@ -170,6 +181,22 @@ export async function buildFixtureSite(
         if (/\.mdx?$/.test(name) && !name.startsWith("_")) rmSync(resolve(copiedProjects, name));
       }
     }
+  }
+
+  // The real reading paths name real posts and projects, so they follow them out of the copy.
+  const copiedPaths = resolve(root, "src/content/reading-paths");
+  if ((!options.realPosts || options.withoutRealProjects) && existsSync(copiedPaths)) {
+    for (const name of readdirSync(copiedPaths)) {
+      if (/\.ya?ml$/.test(name)) rmSync(resolve(copiedPaths, name));
+    }
+  }
+  if (options.readingPaths) {
+    mkdirSync(copiedPaths, { recursive: true });
+    copyFixtures(options.readingPaths, readingPathFixturesRoot, copiedPaths);
+  }
+  if (options.now) {
+    mkdirSync(resolve(root, "src/content/now"), { recursive: true });
+    copyFixtures([{ from: options.now, to: "now.md" }], nowFixturesRoot, resolve(root, "src/content/now"));
   }
 
   const pagesDir = resolve(root, "src/content/pages");

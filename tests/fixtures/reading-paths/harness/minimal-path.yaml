@@ -1,0 +1,6 @@
+title: Harness path
+description: A path for harness tests that names the minimal post and project.
+position: 1
+items:
+  - post: minimal
+  - project: minimal

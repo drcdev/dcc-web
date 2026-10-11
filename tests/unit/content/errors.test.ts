@@ -6,6 +6,8 @@ describe("contentError", () => {
     ["page", "Page"],
     ["post", "Post"],
     ["project", "Project"],
+    ["now", "Now"],
+    ["reading path", "Reading path"],
   ] as const)("names one %s file in the message", (kind, label) => {
     const error = contentError(kind, `src/content/${kind}s/a.mdx`, "problem.");
     expect(error).toBeInstanceOf(PageContentError);
@@ -16,6 +18,8 @@ describe("contentError", () => {
     ["page", "Page"],
     ["post", "Post"],
     ["project", "Project"],
+    ["now", "Now"],
+    ["reading path", "Reading path"],
   ] as const)("names two %s files in the message", (kind, label) => {
     const error = contentError(kind, ["a", "b"], "clash.");
     expect(error).toBeInstanceOf(PageContentError);

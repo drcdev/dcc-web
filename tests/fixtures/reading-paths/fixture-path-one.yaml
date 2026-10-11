@@ -1,0 +1,7 @@
+title: Fixture path one
+description: A fixture path that points at generated fixture posts.
+position: 1
+items:
+  - post: fixture-post-02
+  - post: text-only
+  - post: every-part
