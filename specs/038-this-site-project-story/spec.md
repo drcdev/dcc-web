@@ -34,6 +34,11 @@ public on 2026-10-11, so the story can link to it as its source.
 - Q: What should the story's title be? → A: "doncoleman.ca".
 - Q: What should the list picture show? → A: A screenshot of the doncoleman.ca home page in light mode, at the same size as the other stories' list pictures.
 - Q: Which themes and invitation should the story carry? → A: Themes [Agentic development, Web, Static sites], reusing existing theme names, with a Cadence-style invitation aimed at teams weighing agent-driven delivery with human review.
+- Q: Why did you rebuild doncoleman.ca instead of staying on Ghost with the Flux theme? → A: To own it in a repo, for cheaper and simpler hosting, and to make room for consulting work; not as an agent experiment.
+- Q: Which constraints decided the route? → A: Agents know the stack well, static by default, under $13 a month, keeps the Flux look.
+- Q: Which routes did you weigh, and why did the chosen one win? → A: Stay on Ghost/Flux, Astro on GitHub Pages or Vercel, or Astro on Cloudflare Workers; Workers won because one free plan serves the static pages and runs the contact and AI-question APIs.
+- Q: What was hardest? → A: Gate speed and parallel runs: CI took about 31 minutes, and parallel worktrees collided on ports and failed under machine load.
+- Q: What did you learn? → A: Tests should check what matters (#55, #97); the gate sets the pace (about 31 to about 6 minutes); and, in Don's words, "Agents will happily overcomplicate things and I had to work at keeping decisions pragmatic and testing focused on what is important."
 
 ## Story source material
 
@@ -42,11 +47,25 @@ and Lessons copy, and Don's reasons anywhere in Build, are written only from wha
 here; facts (dates, counts, timings, rules) are still checked against the repository record
 (FR-004).
 
-- **Why rebuild the site**: *(to be filled by the interview)*
-- **Constraints that mattered**: *(to be filled by the interview)*
-- **Routes weighed and why the chosen one won**: *(to be filled by the interview)*
-- **What was hardest**: *(to be filled by the interview)*
-- **What he learned**: *(to be filled by the interview)*
+- **Why rebuild the site**: Three reasons. (1) Own it in a repo: move off hosted Ghost on Magic
+  Pages so the content, theme and hosting all sit in one repository Don controls. (2) Cheaper,
+  simpler hosting: a static site on a free plan instead of paying for hosted Ghost plus a separate
+  Supabase backend. (3) Room for consulting work: the site needed project stories, a contact form
+  and work-with-me pages, which were awkward to build inside a Ghost theme. The rebuild is **not**
+  framed as an experiment in agent-driven development.
+- **Constraints that mattered**: Four, which become the Options table columns: agents know the
+  stack well; pages are static by default; it costs under $13 a month; it keeps the Flux look.
+- **Routes weighed and why the chosen one won**: Three routes: stay on Ghost with the Flux theme;
+  Astro on GitHub Pages or Vercel; Astro on Cloudflare Workers. Workers won because one free plan
+  serves the static pages and also runs the small contact and AI-question APIs.
+- **What was hardest**: The speed of the verification gate and parallel runs. CI took about 31
+  minutes, and parallel worktrees collided on the same ports and failed under machine load.
+- **What he learned**: (1) Tests should check what matters: tests that only restate
+  configuration cost time without catching anything, so they were pruned and replaced by tests
+  derived from the content (#55, #97). (2) The gate sets the pace: cutting verify from about 31
+  minutes to about 6 did more for throughput than any single feature. (3) In Don's words, to be
+  kept close to verbatim: "Agents will happily overcomplicate things and I had to work at keeping
+  decisions pragmatic and testing focused on what is important."
 
 ## User Scenarios & Testing *(mandatory)*
 
