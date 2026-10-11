@@ -22,3 +22,11 @@ describe("contentError", () => {
     expect(error.message).toBe(`${label} files a and b: clash.`);
   });
 });
+
+describe("contentError for architecture parts", () => {
+  it("names the architecture part file", () => {
+    expect(contentError("architecture part", "src/content/architecture/a.md", "problem.").message).toBe(
+      "Architecture part file src/content/architecture/a.md: problem.",
+    );
+  });
+});

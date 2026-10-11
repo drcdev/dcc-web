@@ -24,9 +24,9 @@ description: "Task list for the interactive architecture diagram on the Technolo
 
 **Purpose**: Shared scaffolding every story depends on.
 
-- [ ] T001 Add the "Architecture part file" kind to `contentError` in `src/lib/content/errors.ts` (alongside "Page file", "Post file", "Project file"), used by P03, P04, P07 errors.
-- [ ] T002 [P] Create the part schema `src/content/schemas/architecture.ts`: `z.strictObject({ name: non-empty string, source: optional string })` (data-model §1; P01, P02).
-- [ ] T003 [P] Add an `architecture` option to `buildFixtureSite` in `tests/build/fixture-site.ts` that copies fixture part files from a given folder into the fixture site's `src/content/architecture/` (used by T016).
+- [x] T001 Add the "Architecture part file" kind to `contentError` in `src/lib/content/errors.ts` (alongside "Page file", "Post file", "Project file"), used by P03, P04, P07 errors.
+- [x] T002 [P] Create the part schema `src/content/schemas/architecture.ts`: `z.strictObject({ name: non-empty string, source: optional string })` (data-model §1; P01, P02).
+- [x] T003 [P] Add an `architecture` option to `buildFixtureSite` in `tests/build/fixture-site.ts` that copies fixture part files from a given folder into the fixture site's `src/content/architecture/` (used by T016).
 
 ---
 
@@ -38,18 +38,18 @@ description: "Task list for the interactive architecture diagram on the Technolo
 
 ### Tests first
 
-- [ ] T004 [P] Unit test (layer: unit, pure data) for the layout module in `tests/unit/site/architecture-layout.test.ts`, rows L01-L09: 12 parts with the 12 pinned anchors (L01 / FR-009), shapes inside the viewBox, no overlaps except a group's `contains`, endpoints on edges, connections reference parts, FR-003 flow rules and the exact 9 connections of the Connections table (L06), label sizes 15 / 12.5 on a 240-wide viewBox (L07), top-to-bottom then left-to-right order (L08), coarse label-width fit (L09). Must fail (module missing).
-- [ ] T005 [P] Unit test (layer: unit) for the part schema in `tests/unit/content/architecture-schema.test.ts`, rows P01, P02 (blank or missing `name`, unknown key), using neutral example data. Must fail.
-- [ ] T006 [P] Unit test (layer: unit, temp folder with neutral data, because the logic is a pure file-system check and needs no build) for `assertPartSource` and `sourceUrl` in `tests/unit/content/architecture-source.test.ts`, rows P03 (absolute or `..` path), P04 (missing path), P05 (file gives `/blob/main/`), P06 (folder gives `/tree/main/`, no trailing slash), P07 (empty body). Must fail.
-- [ ] T007 Unit test (layer: unit) for `checkParts(layout, parts)` in `tests/unit/content/architecture-source.test.ts` (same file as T006, so not parallel with it), rows P08 (extra or missing ids) and P09 (label lines do not join to `name`). Must fail.
+- [x] T004 [P] Unit test (layer: unit, pure data) for the layout module in `tests/unit/site/architecture-layout.test.ts`, rows L01-L09: 12 parts with the 12 pinned anchors (L01 / FR-009), shapes inside the viewBox, no overlaps except a group's `contains`, endpoints on edges, connections reference parts, FR-003 flow rules and the exact 9 connections of the Connections table (L06), label sizes 15 / 12.5 on a 240-wide viewBox (L07), top-to-bottom then left-to-right order (L08), coarse label-width fit (L09). Must fail (module missing).
+- [x] T005 [P] Unit test (layer: unit) for the part schema in `tests/unit/content/architecture-schema.test.ts`, rows P01, P02 (blank or missing `name`, unknown key), using neutral example data. Must fail.
+- [x] T006 [P] Unit test (layer: unit, temp folder with neutral data, because the logic is a pure file-system check and needs no build) for `assertPartSource` and `sourceUrl` in `tests/unit/content/architecture-source.test.ts`, rows P03 (absolute or `..` path), P04 (missing path), P05 (file gives `/blob/main/`), P06 (folder gives `/tree/main/`, no trailing slash), P07 (empty body). Must fail.
+- [x] T007 Unit test (layer: unit) for `checkParts(layout, parts)` in `tests/unit/content/architecture-source.test.ts` (same file as T006, so not parallel with it), rows P08 (extra or missing ids) and P09 (label lines do not join to `name`). Must fail.
 
 ### Implementation
 
-- [ ] T008 Create `src/lib/architecture/layout.ts`: `Layout`, `LayoutPart`, `Connection` types and the 12-part, 9-connection layout in one vertical 240-unit-wide viewBox, per data-model §2-§4 (depends on T004). Box sizes and line breaks may be adjusted so labels fit (plan risk "Label fit at 240 units"); the size floors are fixed.
-- [ ] T009 [P] Create `src/lib/architecture/source.ts`: `REPOSITORY_URL` (github.com/drcdev/dcc-web), `assertPartSource(file, base, data)` (path inside the repository and existing, errors P03 / P04 naming the part file and path; git tracking is not checked here but by the P10 content test in T015, research R8) and `sourceUrl(root, path)` choosing blob vs tree from the file system (depends on T001, T006).
-- [ ] T010 [P] Create `src/lib/architecture/check.ts`: `checkParts(layout, parts)` returning or throwing the P08 / P09 errors via `contentError` (depends on T001, T007, T008).
-- [ ] T011 Register the `architecture` collection in `src/content.config.ts` (`glob()` loader on `src/content/architecture/*.md`, schema from T002, `generateId` calling `assertPartSource` and the empty-body check P07) (depends on T002, T009; cite the Astro content-collections docs page in a code comment as the plan does).
-- [ ] T012 Add the `architectureParts` reader to `tests/helpers/content.ts` (reads the real part files; returns id, name, source, body) for the content tests and the E2E spec.
+- [x] T008 Create `src/lib/architecture/layout.ts`: `Layout`, `LayoutPart`, `Connection` types and the 12-part, 9-connection layout in one vertical 240-unit-wide viewBox, per data-model §2-§4 (depends on T004). Box sizes and line breaks may be adjusted so labels fit (plan risk "Label fit at 240 units"); the size floors are fixed.
+- [x] T009 [P] Create `src/lib/architecture/source.ts`: `REPOSITORY_URL` (github.com/drcdev/dcc-web), `assertPartSource(file, base, data)` (path inside the repository and existing, errors P03 / P04 naming the part file and path; git tracking is not checked here but by the P10 content test in T015, research R8) and `sourceUrl(root, path)` choosing blob vs tree from the file system (depends on T001, T006).
+- [x] T010 [P] Create `src/lib/architecture/check.ts`: `checkParts(layout, parts)` returning or throwing the P08 / P09 errors via `contentError` (depends on T001, T007, T008).
+- [x] T011 Register the `architecture` collection in `src/content.config.ts` (`glob()` loader on `src/content/architecture/*.md`, schema from T002, `generateId` calling `assertPartSource` and the empty-body check P07) (depends on T002, T009; cite the Astro content-collections docs page in a code comment as the plan does).
+- [x] T012 Add the `architectureParts` reader to `tests/helpers/content.ts` (reads the real part files; returns id, name, source, body) for the content tests and the E2E spec.
 
 **Checkpoint**: T004-T007 green; layout, check and source helpers ready.
 

@@ -4,6 +4,9 @@
 // becomes its address (specs/003-standalone-pages/research.md R5).
 // `posts`: every file at the top of src/content/posts/ is one blog post; the file
 // name is its slug (specs/008-blog/research.md R1).
+// `architecture`: one Markdown file per part of the diagram on the Technology page; the file name is
+// the part's id (specs/036-technology-architecture-diagram/data-model.md). Built with the `glob()`
+// loader and a Zod schema, as in docs.astro.build/en/guides/content-collections/#defining-collections.
 // `projects`: one MDX file per project directly in src/content/projects/; the
 // file name is its slug (specs/009-portfolio/data-model.md).
 import { defineCollection } from "astro:content";
@@ -11,12 +14,14 @@ import { glob } from "astro/loaders";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { assertPartBody, assertPartSource } from "./lib/architecture/source.ts";
 import { assertNoTwin, idFromPath, slugFromPath, slugFromPostPath } from "./lib/content/addresses.ts";
 import { assertImagesExist } from "./lib/content/images.ts";
 import { assertHomeVisible, assertLandingBody, bodyAfterFrontMatter } from "./lib/content/page-flags.ts";
 import { assertPostDates } from "./lib/content/post-dates.ts";
 import { landingSchema, pageSchema } from "./content/schemas/page.ts";
 import { postSchema } from "./content/schemas/post.ts";
+import { architectureSchema } from "./content/schemas/architecture.ts";
 import { projectSchema } from "./content/schemas/project.ts";
 
 const pages = defineCollection({
@@ -89,4 +94,20 @@ const projects = defineCollection({
   schema: ({ image }) => projectSchema({ image }),
 });
 
-export const collections = { pages, landing, posts, projects };
+const architecture = defineCollection({
+  loader: glob({
+    pattern: "*.md",
+    base: "./src/content/architecture",
+    // Runs for every file before its content is bundled: the source path must exist in the
+    // repository and the part must have an explanation, both naming the part file.
+    generateId: ({ entry, base, data }) => {
+      const file = `src/content/architecture/${entry}`;
+      assertPartSource(file, fileURLToPath(new URL("../../../", base)), data);
+      assertPartBody(file, bodyAfterFrontMatter(readFileSync(resolve(fileURLToPath(base), entry), "utf-8")));
+      return entry.replace(/\.md$/, "");
+    },
+  }),
+  schema: architectureSchema,
+});
+
+export const collections = { pages, landing, posts, projects, architecture };

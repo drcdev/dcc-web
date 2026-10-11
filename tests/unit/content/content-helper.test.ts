@@ -8,6 +8,7 @@ import { describe, expect, it } from "vitest";
 import { filesUnder } from "../../helpers/files.ts";
 import { seriesIds, topicHref, topics } from "../../../src/config/topics.ts";
 import {
+  architectureParts,
   inBuild,
   isSample,
   landingPages,
@@ -153,5 +154,20 @@ describe("picked entries", () => {
     expect(tagged).toContain(seriesPost);
     const newest = Math.max(...tagged.map((post) => (post.data.date as Date).getTime()));
     expect((seriesPost.data.date as Date).getTime()).toBe(newest);
+  });
+});
+
+describe("architectureParts", () => {
+  const dir = join(root, "src/content/architecture");
+  const files = existsSync(dir) ? readdirSync(dir).filter((name) => name.endsWith(".md")) : [];
+
+  it("reads one part per Markdown file, with id, name, source and body", () => {
+    expect(architectureParts.map((part) => part.id).sort()).toEqual(files.map((name) => name.replace(/\.md$/, "")).sort());
+    for (const part of architectureParts) {
+      const text = readFileSync(join(dir, `${part.id}.md`), "utf-8");
+      expect(text).toContain(part.body.trim());
+      expect(text).toContain(part.name);
+      if (part.source !== undefined) expect(typeof part.source).toBe("string");
+    }
   });
 });

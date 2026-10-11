@@ -8,7 +8,7 @@
 // Astro's runtime. This reuses Astro's own front matter parser and the site's path rules, so the
 // tests and the site cannot disagree on a slug or an address.
 import { createRequire } from "node:module";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { seriesIds, topicHref, topics } from "../../src/config/topics.ts";
@@ -208,3 +208,32 @@ function pickHomeCtaHref(): string {
   return href;
 }
 export const homeCtaHref: string = pickHomeCtaHref();
+
+/** One part of the Technology page's architecture diagram (src/content/architecture/<id>.md). */
+export interface ArchitecturePart {
+  /** The file name without `.md`: the entry's id and the page fragment. */
+  id: string;
+  name: string;
+  /** Repository-relative path of the part's source, when it has one. */
+  source?: string;
+  /** The explanation below the settings. */
+  body: string;
+}
+
+function readArchitectureParts(): ArchitecturePart[] {
+  const dir = join(root, "src/content/architecture");
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((name) => name.endsWith(".md"))
+    .sort()
+    .map((name) => {
+      const { frontmatter, content } = parseFrontmatter(readFileSync(join(dir, name), "utf-8"));
+      return {
+        id: name.replace(/\.md$/, ""),
+        name: String(frontmatter.name ?? ""),
+        source: frontmatter.source === undefined ? undefined : String(frontmatter.source),
+        body: content,
+      };
+    });
+}
+export const architectureParts: ArchitecturePart[] = readArchitectureParts();

@@ -8,12 +8,15 @@ export class PageContentError extends Error {
 
 export type ContentKind = "page" | "post" | "project";
 
+/** The kinds `contentError` words: the three above plus an architecture part file (036). */
+export type ErrorKind = ContentKind | "architecture part";
+
 /**
  * A problem in one file (`Page file <path>: <problem>`) or between two files
- * (`Page files <a> and <b>: <problem>`). `kind` is page, post or project.
+ * (`Page files <a> and <b>: <problem>`). `kind` is page, post, project or architecture part.
  */
 export function contentError(
-  kind: ContentKind,
+  kind: ErrorKind,
   files: string | readonly [string, string],
   problem: string,
 ): PageContentError {

@@ -21,6 +21,7 @@ const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
 const fixturesRoot = resolve(repoRoot, "tests/fixtures/pages");
 const postFixturesRoot = resolve(repoRoot, "tests/fixtures/posts");
 const projectFixturesRoot = resolve(repoRoot, "tests/fixtures/projects");
+const architectureFixturesRoot = resolve(repoRoot, "tests/fixtures/architecture");
 
 /**
  * A fixture file: `from` is relative to tests/fixtures/pages/ (for the `posts` option, to
@@ -55,6 +56,11 @@ export interface FixtureSiteOptions {
   env?: Record<string, string>;
   /** Fixture project files from tests/fixtures/projects/, copied to src/content/projects/ with their images. */
   projects?: readonly (string | FixtureFile)[];
+  /**
+   * Fixture architecture part files from tests/fixtures/architecture/ (for example `broken/missing-source.md`),
+   * copied into the site's src/content/architecture/. The repository's real part files stay in the copy.
+   */
+  architecture?: readonly (string | FixtureFile)[];
   /**
    * Keep the repository's real posts (every src/content/posts/*.mdx not named `sample-*`) in the
    * copied site. Default false: they are removed, so the only posts are the sample and fixtures.
@@ -193,6 +199,12 @@ export async function buildFixtureSite(
     const projectImages = resolve(projectFixturesRoot, "images");
     if (existsSync(projectImages)) cpSync(projectImages, resolve(projectsDir, "images"), { recursive: true });
     copyFixtures(options.projects, projectFixturesRoot, projectsDir);
+  }
+
+  if (options.architecture) {
+    const architectureDir = resolve(root, "src/content/architecture");
+    mkdirSync(architectureDir, { recursive: true });
+    copyFixtures(options.architecture, architectureFixturesRoot, architectureDir);
   }
 
   for (const [path, value] of Object.entries(options.overrides ?? {})) {
