@@ -122,7 +122,7 @@ branch preview shows nothing about this change beyond the site still serving.
 
 ### W1: Config unit tests for production and preview routes (test first)
 
-- [ ] W1 done
+- [x] W1 done (red against 419d4b6: the routes and preview tests fail until W3; the bare-domain test passes vacuously; the Wrangler inherit-warning sub-assertion was dropped, the raw `routes: []` check covers the cause)
 - **Files:** `tests/unit/site/config-files.test.ts`.
 - **Test:** unit over config, new-first. **Layer: unit**, the cheapest layer that can observe the
   config and Wrangler's resolution of it.
