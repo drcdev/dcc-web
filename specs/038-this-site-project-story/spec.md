@@ -22,7 +22,8 @@ finds nothing.
 
 This feature adds one new project story about the site. It is a content change: a new story file,
 its pictures, and nothing else. Publishing a story needs no test edit, because the tests derive
-the published list from the content (#55). The repository, `drcdev/dcc-web`, was confirmed
+the published list from the content (#55). The one exception is a single test line that already
+quotes the new title as a host name (FR-012). The repository, `drcdev/dcc-web`, was confirmed
 public on 2026-10-11, so the story can link to it as its source.
 
 ## Clarifications
@@ -90,7 +91,7 @@ it end to end with JavaScript on and off.
 2. **Given** the story page, **When** a visitor reads it, **Then** it has exactly the four parts
    Problem, Options, Build and Lessons, in that order, like every other story.
 3. **Given** the Build part, **When** a visitor reads it, **Then** it covers: the agent pipelines
-   that take a change from spec to pull request; the constitution that governs them; the rule
+   that take a change to a pull request (FR-003); the constitution that governs them; the rule
    that every pull request needs one approving review from Don, with agents opening pull
    requests from a separate account so his approval counts; and the work that cut the
    verification gate from about 31 minutes to about 6.
@@ -166,7 +167,8 @@ and confirm it links back to Cadence where it mentions the pipelines' origin.
   well; static by default; under $13 a month; keeps the Flux look). A label may be shortened but
   must keep its meaning, and the list and table use identical wording.
 - **FR-003**: The Build part MUST cover the agent pipelines (feature, small-change, bug and
-  maintenance) that take a change from spec to pull request; the constitution that governs them;
+  maintenance) that take a change to a pull request (from a spec for the first three; `/chore`
+  has no spec phase and starts from a plan); the constitution that governs them;
   the single-approval review rule; and the verification-gate work that cut CI from about 31
   minutes to about 6 minutes. The pipelines are the four named in `CLAUDE.md` "Orchestration
   skills": `/deliver` (feature), `/tweak` (small change), `/squash` (bug) and `/chore`
@@ -182,8 +184,10 @@ and confirm it links back to Cadence where it mentions the pipelines' origin.
   `https://github.com/drcdev/dcc-web`.
 - **FR-006**: The story MUST have a list picture and exactly two story pictures, each with alt
   text: the list picture shown again beside Problem, and a pipeline diagram beside Build with a
-  text description, as Cadence and Flux have for their architecture. FR-014, FR-017 and FR-020
-  set the picture rules.
+  text description, as Cadence and Flux have for their architecture. The one allowed exception
+  is the budget fallback under Edge Cases: if the page is still over budget after the screenshot
+  is shrunk, the screenshot beside Problem is dropped and the story keeps the list picture and
+  the diagram only. FR-014, FR-017 and FR-020 set the picture rules.
 - **FR-007**: The story MUST give a status of `shipped` (the site has been live on doncoleman.ca
   since 2026-10-09) and a date of 2026-09-28, the day the constitution was ratified and the
   repository began.
@@ -208,6 +212,11 @@ and confirm it links back to Cadence where it mentions the pipelines' origin.
 - **FR-011**: The story MUST merge as a draft (`draft: true`). Don publishes it in a later,
   separate change; publishing is not part of this feature. Production builds leave the story
   and its pictures out entirely, so production pages and their budget are unchanged.
+- **FR-012**: No other story, page, schema, component or test changes in this feature, except
+  where adding the story requires it by design. The one such change is in
+  `tests/build/indexing.test.ts`: the real-content guard (#55) treats the title "doncoleman.ca"
+  as a needle, and that test quotes the same string as a host, so the host is read from
+  `setup/config.json` instead, with the rule it checks unchanged.
 - **FR-013**: The story's title MUST be "doncoleman.ca", its themes MUST be
   [Agentic development, Web, Static sites], and it MUST carry an invitation in the style of
   Cadence's: one first-person sentence ending "tell me about it", aimed at teams weighing
@@ -258,8 +267,6 @@ and confirm it links back to Cadence where it mentions the pipelines' origin.
   nothing shifts; the first picture on the page loads eagerly and the rest lazily, as the
   template does. The diagram file stays under 16 KB (`docs/projects.md`, enforced by
   `tests/unit/site/diagram-fonts.test.ts`) and makes no font request of its own.
-- **FR-012**: No other story, page, schema, component or test changes in this feature, except
-  where adding a published story requires it by design.
 
 ### Fact sources
 
@@ -324,8 +331,9 @@ that keeps changing (specs, chores, pull requests) is given with its date or lef
   a pipeline diagram; the plan decides how they are made, within the existing picture rules and size budget.
 - The single-approval rule is described as it stands on 2026-10-11 (constitution 4.0.0
   Principle III and `setup/github-ruleset.json`), not as it was in earlier versions.
-- Adding a published story needs no test edit (#55); any visual baseline that lists the projects
-  may change, and is refreshed by the normal baseline process.
+- Adding a published story needs no test edit (#55), apart from the one host literal in FR-012.
+  No visual baseline is expected to change, because the visual check shoots fixture content
+  only; if one does, it is refreshed by the normal baseline process.
 
 ## Out of Scope
 

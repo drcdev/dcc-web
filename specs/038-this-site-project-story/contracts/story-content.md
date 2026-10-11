@@ -13,11 +13,11 @@ that already runs over every project; "Preview" means Don checks it on the branc
 | C04 | Build part covers the four pipelines, the constitution, the single-approval rule with the separate agent account, and the gate cut from about 31 to about 6 minutes | FR-003, SC-002 | Preview |
 | C05 | Every figure traces to a record named in the notes comment (research R9) | FR-004, SC-003 | Review of the diff |
 | C06 | `source` is `https://github.com/drcdev/dcc-web`; the page shows a "Source code for doncoleman.ca" link | FR-005 | Existing test (`projects-no-js.spec.ts`, picked story); Preview for the signed-out open (SC-004) |
-| C07 | `visual` and at least one story picture have alt text; the Build diagram has a `description` | FR-006 | Build (schema) |
+| C07 | `visual` and both story pictures (the screenshot beside Problem, the diagram beside Build) have alt text; the diagram has a `description`; only the Edge Cases budget fallback may drop the Problem screenshot | FR-006 | Build (schema) for alt and description; review of the diff for the picture count |
 | C08 | `pipeline.svg` embeds the Inter glyphs it uses, asks for no system font, is under 16 KB, and its labels fit their boxes | FR-006 | Existing tests (`tests/unit/site/diagram-fonts.test.ts`, `tests/e2e/diagram-fonts.spec.ts`) |
 | C09 | `status: shipped`, `date: 2026-09-28` | FR-007 | Review of the diff |
 | C10 | Body links `/projects/cadence/` where it names the pipelines' origin | FR-008 | Existing test (`site-links.spec.ts` crawls every internal link) and Preview |
-| C11 | Copy is plain, first person, from the recorded interview answers only; Don's quote kept close to verbatim; no "Cloud Architect" | FR-009, FR-010 | Preview |
+| C11 | Copy is plain, first person, from the recorded interview answers only; Don's quote keeps every word in his order (only punctuation and capitalisation may change); no "Cloud Architect" | FR-009, FR-010 | Preview |
 | C12 | `draft: true` | FR-011, SC-001 | Existing build-mode tests (production leaves drafts out) |
 | C13 | Title `doncoleman.ca`, themes `[Agentic development, Web, Static sites]`, an invitation | FR-013 | Review of the diff |
 | C14 | List picture is a light-mode home page screenshot, 1600 x 1000, metadata stripped | FR-014 | Preview, `sips`/sharp on the file |

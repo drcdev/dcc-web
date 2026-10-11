@@ -51,17 +51,18 @@ choices the spec left to the plan.
 - **Decision**: One SVG, `images/doncoleman-ca/pipeline.svg`, 1200 x 480 like the other
   architecture diagrams, `font-family="Inter, sans-serif"`, `role="img"` with an `aria-label`.
   Content: an issue or request flows through one of four pipelines (feature, small change, bug,
-  maintenance), whose phases run in fresh subagents (spec and plan, tasks and tests, implement,
-  verify), to a pull request opened from a separate account, to Don's one approving review, to
+  maintenance), whose phases run in fresh subagents (plan, tests, implement, verify; the first
+  three pipelines start from a spec, `/chore` from a plan, so no label claims every pipeline
+  has a spec phase), to a pull request opened from a separate account, to Don's one approving review, to
   `main` and production. A band labels the constitution as governing every phase. Labels wrap
   rather than shrink, with 16 units of clear space plus 8 units of slack each side
   (`docs/projects.md` "Text in a diagram"). Then `pnpm run fonts:diagrams -- <file>` embeds the
   Inter subset. `alt`, `aria-label` and `description` say the same thing in words.
-- **Rationale**: FR-006 (SHOULD have a pipeline diagram with a text description), matching the
+- **Rationale**: FR-006 (MUST have a pipeline diagram with a text description), matching the
   Cadence and Flux convention. The exact box labels are settled in implementation from the
   repository record; the plan fixes only the shape and the rules.
 - **Alternatives**: A screenshot of a pull request (would show account names and change over
-  time) or no diagram (FR-006 prefers one).
+  time) or no diagram (FR-006 requires one).
 
 ## R5. The new story becomes the picked story
 
@@ -119,7 +120,7 @@ Each figure in the copy is traced before it is written, and the notes comment na
 | Claim | Record |
 |---|---|
 | Started 2026-09-28; constitution ratified the same day | `git log --reverse`; constitution footer |
-| Live on doncoleman.ca since 2026-10-09 | Launch stage 6 (PR #138), spec FR-007 |
+| Live on doncoleman.ca since 2026-10-09 | `specs/011-launch/tasks.md` (live checks passed, closed out 2026-10-09 in #101, PR #138), as in the spec's Fact sources |
 | Four pipelines: `/deliver`, `/tweak`, `/squash`, `/chore`; first three ported from Cadence | `.claude/skills/`, `CLAUDE.md` "Orchestration skills" |
 | Constitution: eleven principles, version 4.0.0 | `.specify/memory/constitution.md` |
 | One approving review from Don; agents open PRs from `drc-agents`; auto-merge armed | Constitution Principle III; `CLAUDE.md` "Merging"; PR #105, issue #143 |

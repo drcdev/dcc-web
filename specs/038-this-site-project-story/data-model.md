@@ -39,12 +39,13 @@ the repository, why there is no demo link), then exactly four `##` parts in orde
    - Options: stay on Ghost with the Flux theme; Astro on GitHub Pages or Vercel;
      **Astro on Cloudflare Workers** (chosen).
    - Cells: `Yes`, `Partly` or `No` only.
-3. **Build**: the four pipelines and their phases in fresh subagents, with a link to
+3. **Build**: the four pipelines and their phases in fresh subagents (`/chore` has no spec
+   phase, FR-003), with a link to
    `/projects/cadence/` where it says where they came from (FR-008); the constitution; the
    single-approval rule and the separate agent account; the gate work from about 31 minutes to
    about 6, and the port collisions and machine load of parallel worktrees (the hardest part).
 4. **Lessons**: tests should check what matters (#55, #97); the gate sets the pace; Don's quote
-   kept close to verbatim.
+   with every word in his order (only punctuation and capitalisation may change, FR-010).
 
 ## Validation (all existing)
 
