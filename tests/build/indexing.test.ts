@@ -26,8 +26,8 @@ const BUILD_TIMEOUT = 300_000;
 /** Hosts a build could use for its own address; any URL on these hosts must use the build's origin. */
 function isSiteHost(host: string): boolean {
   return (
-    host === "doncoleman.ca" ||
-    host.endsWith(".doncoleman.ca") ||
+    host === setupConfig.zone ||
+    host.endsWith(`.${setupConfig.zone}`) ||
     host.endsWith(".workers.dev")
   );
 }

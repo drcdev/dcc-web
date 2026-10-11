@@ -1,0 +1,74 @@
+---
+title: doncoleman.ca
+problem: I wanted to own my site in a repo, host it cheaply and simply, and make room for consulting work.
+description: Why I rebuilt my Ghost site as a static Astro site on Cloudflare Workers, and how its agent pipelines, constitution and one-approval rule keep the work moving.
+themes: [Agentic development, Web, Static sites]
+status: shipped
+visual:
+  kind: image
+  src: ./images/doncoleman-ca/index.png
+  alt: The doncoleman.ca home page in light mode, with the Don Coleman profile card, the What I do section and the start of Recent writing
+date: 2026-09-28
+source: https://github.com/drcdev/dcc-web
+visuals:
+  screenshot:
+    kind: image
+    src: ./images/doncoleman-ca/index.png
+    alt: The doncoleman.ca home page in light mode, with the Don Coleman profile card, the What I do section and the start of Recent writing
+    part: problem
+  pipeline:
+    kind: diagram
+    src: ./images/doncoleman-ca/pipeline.svg
+    alt: A change goes through one of four pipelines, then a pull request, Don's one approving review and main, with the constitution over every step
+    description: A change enters one of four pipelines, deliver, tweak, squash or chore. Each pipeline runs its phases in fresh subagents, and the phases end with a verify step. An agent opens a pull request from a separate account. Don gives the one approving review. The change then merges to main and goes to production. The constitution is drawn as a band over every one of those steps.
+    part: build
+invitation: "If you're weighing whether agents should deliver your team's changes with a person approving every merge, tell me about it."
+draft: true
+---
+
+{/* Written from Don's interview answers (2026-10-11). The reasons, options, constraints and lessons come from those answers. The facts come from the repository: the start date and the constitution's ratification date (2026-09-28, the first commit and the constitution footer), live on doncoleman.ca since 2026-10-09 (specs/011-launch/tasks.md, closed out in #101 by PR #138), the four pipelines and their origin (CLAUDE.md "Orchestration skills" and .claude/skills/), the eleven principles at version 4.0.0 (.specify/memory/constitution.md), the one approving review and the agent account (constitution Principle III, setup/github-ruleset.json and CLAUDE.md "Merging", as of 2026-10-11), the gate from 31 minutes (run 36814114154, 2026-10-01) to 6 minutes 15 seconds (run 37090465334) (.specify/chores/verify-gate-phase-6/report.md), and the pruned tests (#55 and #97). The repository drcdev/dcc-web was confirmed public on 2026-10-11, so the source link points to it. There is no demo link: the reader is already on the site, and the build rejects links to the site's own host. */}
+
+{/* DRAFT FOR REVIEW: written from Don's interview answers; Don reads it on the branch preview and flips draft to false in a later change. */}
+
+## Problem
+
+My site ran on hosted Ghost with a theme I built, [Flux](/projects/flux/). I wanted something I owned outright.
+
+I had three reasons. I wanted the content, the theme and the hosting all in one repository that I control. I wanted cheaper and simpler hosting than paying for hosted Ghost and a separate Supabase backend. And I wanted room for consulting work. The site needed project stories, a contact form and a page about working with me, and those were awkward to build inside a Ghost theme.
+
+## Options
+
+Four things mattered. I weighed three routes against them.
+
+- **Agents know the stack**: The AI should know the tools well, so I'm not correcting its work all day.
+- **Static by default**: Pages are built ahead of time and served as plain files.
+- **Under $13 a month**: The whole site, including the small APIs, stays inside that.
+- **Keeps the Flux look**: The site should still look like mine.
+
+| Option | Agents know the stack | Static by default | Under $13 a month | Keeps the Flux look |
+| --- | --- | --- | --- | --- |
+| Stay on Ghost with Flux | Partly | No | No | Yes |
+| Astro on GitHub Pages or Vercel | Yes | Yes | Partly | Yes |
+| **Astro on Cloudflare Workers** | Yes | Yes | Yes | Yes |
+
+Why Workers won: one free plan serves the static pages and also runs the small contact and AI-question APIs. The other Astro route would have meant a second service for those.
+
+## Build
+
+The work runs through four agent pipelines. `/deliver` builds a feature, `/tweak` handles a small change, `/squash` fixes a bug and `/chore` does maintenance. The first three start from a written spec. `/chore` has no spec phase and starts from a plan. Each phase runs in a fresh subagent, so no one conversation gets long. I ported the first three from [Cadence](/projects/cadence/), where I built them, and I added `/chore` for this site.
+
+A constitution governs every phase. It has eleven principles, now at version 4.0.0, and it overrides any plan or task that conflicts with it. Tests come first. Pages are static. Contact messages are emailed and never stored.
+
+Every pull request needs one approving review from me before it merges. GitHub does not count an author's approval on their own pull request, so the agents open pull requests from a separate account and mine is the approval that counts. Once an agent pushes its last commit it turns on auto-merge. The change lands after I approve and the gate is green.
+
+The gate was the hard part. CI took about 31 minutes, and I run several worktrees in parallel. They collided on the same ports, and runs failed when my machine was under load. I cut CI on `main` to about 6 minutes, 6 minutes 15 seconds in the run I measured. That took pruning tests that only restated configuration, running each behaviour at the cheapest test layer that can see it, and splitting the gate into jobs that run in parallel.
+
+The site is live at doncoleman.ca. It is built by Astro, served as static files from Cloudflare Workers, and its two small APIs run in the same Worker.
+
+## Lessons
+
+Tests should check what matters. Tests that only restated configuration cost time and caught nothing, so I pruned them and replaced them with tests derived from the content (#55, #97).
+
+The gate sets the pace. Cutting verify from about 31 minutes to about 6 did more for how much I could ship than any single feature.
+
+Agents will happily overcomplicate things and I had to work at keeping decisions pragmatic and testing focused on what is important.
