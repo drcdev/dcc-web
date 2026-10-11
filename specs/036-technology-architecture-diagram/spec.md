@@ -69,6 +69,15 @@ The source code is in a public GitHub repository (github.com/drcdev/dcc-web).
   A: Each entry has a "Back to diagram" link; with JavaScript it returns focus to the part just
   activated, without JavaScript it goes to the diagram.
 
+### Session 2026-10-11 (round 3)
+
+- Q: Is the contact form a clickable part of the diagram with its own entry, alongside the
+  questions panel? → A: Yes. The contact form is its own part with an entry and a source link;
+  the diagram has 12 parts.
+- Q: What is the smallest rendered size diagram label text may have at 320 px wide for it to
+  count as "readable"? → A: At least 14 CSS px for part labels and at least 12 CSS px for
+  connection labels.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See how the site fits together (Priority: P1)
@@ -88,15 +97,17 @@ with nothing cut off or scrolling sideways.
 **Acceptance Scenarios**:
 
 1. **Given** the Technology page, **When** it loads, **Then** a diagram appears before the
-   page's other sections and shows each of these parts with a visible label: static pages, the
-   Worker's API, the questions panel, the database, the AI model, the bot check, the email
-   path, the contact inbox, preview, and production.
+   page's other sections and shows each of these 12 parts with a visible label: the reader's
+   browser, static pages, the Worker's API, the questions panel, the contact form, the
+   database, the AI model, the bot check, the email path, the contact inbox, production, and
+   preview.
 2. **Given** the diagram, **When** a visitor follows the lines between parts, **Then** the
    connections match how a request actually flows (for example, the questions panel reaches the
    AI model only through the API, and the contact form reaches the inbox only after the bot
    check).
 3. **Given** a phone-width screen, **When** the page loads, **Then** the diagram fits the page
-   width with readable labels, and the page does not scroll sideways. The diagram uses the
+   width with readable labels (part labels at least 14 CSS px, connection labels at least
+  12 CSS px), and the page does not scroll sideways. The diagram uses the
    same vertical, top-to-bottom layout at every width.
 
 ---
@@ -186,8 +197,8 @@ and every part's explanation and source link (where it has one) can be read and 
   location. An external service (the AI model, Turnstile, the contact inbox) links to the code
   or committed configuration that uses it; the reader's browser has no source link.
 - Very narrow screens (320 px): the same vertical layout is used as on wider screens; labels
-  stay readable and the diagram does not shrink text below a readable size or require
-  sideways scrolling.
+  stay readable (part labels at least 14 CSS px, connection labels at least 12 CSS px) and the
+  diagram does not require sideways scrolling.
 - Dark theme and the high-contrast needs of WCAG 2.2 AA: parts, lines, labels and the selected
   and focus states keep at least AA contrast in both themes.
 - The site's architecture changes later (a part added, removed or moved in the repository):
@@ -202,11 +213,12 @@ and every part's explanation and source link (where it has one) can be read and 
   content sections.
 - **FR-002**: The diagram MUST include, as distinct labelled parts: the reader's browser; the
   static pages served from Cloudflare's network; the Worker's API; the questions panel; the
+  contact form; the
   database that caches questions and holds the usage budget; the Workers AI model; the bot
   check (Turnstile); the contact email path and the fixed inbox it delivers to; and the
   preview and production environments. The system is drawn once, as production; preview is a
   small separate group showing its own Worker and its own database. Every other part appears
-  once, with one entry and one anchor.
+  once, with one entry and one anchor. There are 12 parts in all.
 - **FR-003**: The diagram MUST show the connections between parts as they work today (as
   described in Background), including that only `/api/` requests run code, that the AI model is
   called only when no saved question set exists and the budget allows, that the contact
@@ -256,7 +268,7 @@ and every part's explanation and source link (where it has one) can be read and 
 ### Key Entities
 
 - **Diagram part**: one labelled element of the architecture. Has a name, a short explanation,
-  one source location in the repository, a stable identifier usable in a page link, and its
+  at most one source location in the repository, a stable identifier usable in a page link, and its
   connections to other parts.
 - **Connection**: a directed line between two parts showing that one calls, serves or sends to
   the other, with an optional short label (for example "on a cache miss").
@@ -277,8 +289,8 @@ and every part's explanation and source link (where it has one) can be read and 
   readable on the page.
 - **SC-005**: The page stays inside the site's existing performance budget and Core Web Vitals
   "good" thresholds on mobile.
-- **SC-006**: At 320 px wide the page has no horizontal scroll and every diagram label remains
-  readable.
+- **SC-006**: At 320 px wide the page has no horizontal scroll, every part label renders at
+  14 CSS px or larger, and every connection label renders at 12 CSS px or larger.
 
 ## Assumptions
 
