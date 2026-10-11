@@ -100,12 +100,12 @@ The full gate is not run by the implement subagent (ask Don first, see CLAUDE.md
 
 ### Tests for User Story 3 (write first, see them fail)
 
-- [ ] T016 [US3] Add to `tests/component/post/AuthorCard.test.ts` (rows A7, FR-008a): the list has exactly three links in order writing link, "More about me" to `/about/`, "Get in touch" to `/contact/`; no link has `aria-label`; the four possible link texts are all different; the heading and name are not links. Layer: Component (markup). Run and see them fail.
-- [ ] T017 [US3] Confirm row A13 is covered by the existing crawl in `tests/e2e/site-links.spec.ts` (the fixture post pages are crawled, so the new links are followed). Add a test only if the crawl does not visit post pages; otherwise write no new test and record that in the task notes. Layer: E2E (existing crawl, no second layer).
+- [X] T016 [US3] Add to `tests/component/post/AuthorCard.test.ts` (rows A7, FR-008a): the list has exactly three links in order writing link, "More about me" to `/about/`, "Get in touch" to `/contact/`; no link has `aria-label`; the four possible link texts are all different; the heading and name are not links. Layer: Component (markup). Run and see them fail.
+- [X] T017 [US3] Confirm row A13 is covered by the existing crawl in `tests/e2e/site-links.spec.ts` (the fixture post pages are crawled, so the new links are followed). Add a test only if the crawl does not visit post pages; otherwise write no new test and record that in the task notes. Layer: E2E (existing crawl, no second layer). Notes: the crawl follows the sitemap, which lists the post pages, so no new test was needed.
 
 ### Implementation for User Story 3
 
-- [ ] T018 [US3] In `src/components/post/AuthorCard.astro` add the "More about me" (`/about/`) and "Get in touch" (`/contact/`) links after the writing link, same classes, wrapping with `flex flex-wrap gap-x-4` and a vertical gap so targets stay at least 24 x 24 px when they wrap at 320 px; centred below `md`, left from `md`. T016 and T010's target-size check pass.
+- [X] T018 [US3] In `src/components/post/AuthorCard.astro` add the "More about me" (`/about/`) and "Get in touch" (`/contact/`) links after the writing link, same classes, wrapping with `flex flex-wrap gap-x-4` and a vertical gap so targets stay at least 24 x 24 px when they wrap at 320 px; centred below `md`, left from `md`. T016 and T010's target-size check pass.
 
 **Checkpoint**: All three stories work.
 

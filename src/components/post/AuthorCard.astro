@@ -21,6 +21,7 @@ const series = seriesOf(Astro.props.topics);
 const writing = series
   ? { href: topicHref(series), text: `More in ${findTopic(series)!.name}` }
   : { href: "/writing/", text: "More of my writing" };
+const links = [writing, { href: "/about/", text: "More about me" }, { href: "/contact/", text: "Get in touch" }];
 const linkClass =
   "inline-block px-1 py-1 font-medium text-dusk-900 underline underline-offset-4 hover:text-rust-700 dark:text-white dark:hover:text-rust-400";
 ---
@@ -33,7 +34,7 @@ const linkClass =
     <h2 class="m-0 mb-2 text-lg font-bold text-dusk-900 dark:text-white">Written by {author.name}</h2>
     {author.lines.map((line) => <p class="m-0 mb-2 text-dusk-700 dark:text-mist-300">{line}</p>)}
     <ul class="m-0 mt-3 flex list-none flex-wrap justify-center gap-x-4 gap-y-2 p-0 md:justify-start">
-      <li><a href={writing.href} class={linkClass}>{writing.text}</a></li>
+      {links.map((link) => <li><a href={link.href} class={linkClass}>{link.text}</a></li>)}
     </ul>
   </div>
   <Image

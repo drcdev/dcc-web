@@ -89,4 +89,25 @@ describe("AuthorCard links", () => {
     expect(found[0]).toEqual({ href: "/writing/", text: "More of my writing" });
     expect(found.some((l) => l.text.startsWith("More in "))).toBe(false);
   });
+
+  it("A7: the list has three links in order, none with aria-label, all texts different", async () => {
+    for (const topics of [["drift"], ["agentic-ai"]]) {
+      const html = await render(topics);
+      expect(byName(html, "ul")).toHaveLength(1);
+      const found = links(html);
+      expect(found).toHaveLength(3);
+      expect(found.slice(1)).toEqual([
+        { href: "/about/", text: "More about me" },
+        { href: "/contact/", text: "Get in touch" },
+      ]);
+      expect(byName(html, "a").filter((a) => "aria-label" in a.attrs)).toHaveLength(0);
+    }
+    const texts = ["More in Drift", "More in Convergence", "More of my writing", "More about me", "Get in touch"];
+    expect(new Set(texts).size).toBe(texts.length);
+  });
+
+  it("A4: the heading and name are not links", async () => {
+    const html = await render();
+    expect(/<h2\b[\s\S]*?<\/h2>/.exec(html)![0]).not.toContain("<a");
+  });
 });
