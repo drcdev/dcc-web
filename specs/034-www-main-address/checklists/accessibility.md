@@ -8,30 +8,30 @@
 
 ## Scope of Impact
 
-- [ ] CHK001 Does the spec state explicitly that no page markup, style or script changes, so Principle X (WCAG 2.2 AA) is satisfied by non-regression rather than new work? [Completeness, Plan §Constitution Check X]
-- [ ] CHK002 Is every user-visible string touched by the change listed (setup docs, error text, "try again from doncoleman.ca" prose, the not-found page reached via redirects)? [Coverage, Spec §FR-003]
-- [ ] CHK003 Are requirements defined for how the final not-found page on `www` is presented after an unmapped Ghost address, including its accessible name and heading structure? [Coverage, Spec §US2.3]
+- [x] CHK001 Does the spec state explicitly that no page markup, style or script changes, so Principle X (WCAG 2.2 AA) is satisfied by non-regression rather than new work? [Completeness, Plan §Constitution Check X]
+- [x] CHK002 Is every user-visible string touched by the change listed (setup docs, error text, "try again from doncoleman.ca" prose, the not-found page reached via redirects)? [Coverage, Spec §FR-003]
+- [x] CHK003 Are requirements defined for how the final not-found page on `www` is presented after an unmapped Ghost address, including its accessible name and heading structure? [Coverage, Spec §US2.3]
 
 ## Absolute Addresses in Accessible Content
 
-- [ ] CHK004 Are absolute-link requirements (skip link, in-page anchors, share links, feed link) specified so a host change cannot break same-page navigation targets? [Gap, Spec §FR-001]
-- [ ] CHK005 Is link text that spells out the domain (e.g. "doncoleman.ca") addressed for screen-reader and link-purpose (WCAG 2.4.4) consistency with the new main address? [Ambiguity, Spec §FR-003]
-- [ ] CHK006 Are social-card and image address changes accompanied by a requirement that alt text and image descriptions are unchanged? [Gap, Spec §FR-001]
+- [x] CHK004 Are absolute-link requirements (skip link, in-page anchors, share links, feed link) specified so a host change cannot break same-page navigation targets? [Gap, Spec §FR-001]
+- [x] CHK005 Is link text that spells out the domain (e.g. "doncoleman.ca") addressed for screen-reader and link-purpose (WCAG 2.4.4) consistency with the new main address? [Ambiguity, Spec §FR-003]
+- [x] CHK006 Are social-card and image address changes accompanied by a requirement that alt text and image descriptions are unchanged? [Gap, Spec §FR-001]
 
 ## Contact Form and Interaction on www
 
-- [ ] CHK007 Is the Turnstile widget's behaviour on `www` specified for keyboard and screen-reader users (challenge accessibility, focus, error announcement), as it is on the bare domain today? [Coverage, Spec §SC-005]
-- [ ] CHK008 Is the failure message shown if the widget rejects the hostname specified in plain language and as an accessible error (WCAG 3.3.1)? [Edge Case, Gap]
-- [ ] CHK009 Are requirements stated for the contact form's focus order and error identification being unchanged under the new origin? [Consistency, Gap]
+- [x] CHK007 Is the Turnstile widget's behaviour on `www` specified for keyboard and screen-reader users (challenge accessibility, focus, error announcement), as it is on the bare domain today? [Coverage, Spec §SC-005]
+- [x] CHK008 Is the failure message shown if the widget rejects the hostname specified in plain language and as an accessible error (WCAG 3.3.1)? [Edge Case, Gap]
+- [x] CHK009 Are requirements stated for the contact form's focus order and error identification being unchanged under the new origin? [Consistency, Gap]
 
 ## Redirect Experience
 
-- [ ] CHK010 Is a "no interstitial page" requirement extended to cover no timed or meta-refresh redirect (WCAG 2.2.1, 3.2.5) in favour of server redirects only? [Clarity, Spec §FR-006]
-- [ ] CHK011 Are requirements defined for the redirect behaviour of assistive-technology and text-only clients (no JavaScript dependence)? [Coverage, Gap]
-- [ ] CHK012 Is the transitional state (canonical pointing at a redirecting host) specified as not affecting readers' ability to use pages with JavaScript off? [Edge Case, Spec §Edge Cases]
+- [x] CHK010 Is a "no interstitial page" requirement extended to cover no timed or meta-refresh redirect (WCAG 2.2.1, 3.2.5) in favour of server redirects only? [Clarity, Spec §FR-006]
+- [x] CHK011 Are requirements defined for the redirect behaviour of assistive-technology and text-only clients (no JavaScript dependence)? [Coverage, Gap]
+- [x] CHK012 Is the transitional state (canonical pointing at a redirecting host) specified as not affecting readers' ability to use pages with JavaScript off? [Edge Case, Spec §Edge Cases]
 
 ## Documentation and Verification
 
-- [ ] CHK013 Are the swap and rollback documentation requirements specified with accessible structure (headings, ordered lists, code formatting, link names) consistent with the docs conventions? [Completeness, Spec §FR-015]
-- [ ] CHK014 Is the plan's claim that no visual baseline changes testable, and is the accessibility check scope (every page template on the `main` build) stated? [Measurability, Plan §Technical Context]
-- [ ] CHK015 Is it defined which accessibility checks must re-run on `www` content (automated per-template checks) versus remaining manual, and who confirms the manual ones? [Gap]
+- [x] CHK013 Are the swap and rollback documentation requirements specified with accessible structure (headings, ordered lists, code formatting, link names) consistent with the docs conventions? [Completeness, Spec §FR-015]
+- [x] CHK014 Is the plan's claim that no visual baseline changes testable, and is the accessibility check scope (every page template on the `main` build) stated? [Measurability, Plan §Technical Context]
+- [x] CHK015 Is it defined which accessibility checks must re-run on `www` content (automated per-template checks) versus remaining manual, and who confirms the manual ones? [Gap]

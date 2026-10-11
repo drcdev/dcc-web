@@ -8,27 +8,27 @@
 
 ## Address Coverage
 
-- [ ] CHK001 Is the list of "absolute addresses on the site's own host" exhaustive, or open-ended with "etc."-style gaps (e.g. hreflang, JSON-LD `@id`, RSS `<guid>`, `og:url`, `_headers` or `_redirects` absolute targets)? [Completeness, Spec §FR-001]
-- [ ] CHK002 Is "address on the site's own host" defined so that off-host links, email addresses and prose "doncoleman.ca" are unambiguously excluded? [Clarity, Spec §FR-003]
-- [ ] CHK003 Are requirements stated for absolute addresses stored in content files (Markdown/MDX links to the bare domain) as distinct from build-generated ones? [Gap, Spec §FR-001]
-- [ ] CHK004 Is the fallback origin requirement consistent between FR-002, the Edge Cases "Local and test builds" entry and the site-origin contract? [Consistency, Spec §FR-002]
-- [ ] CHK005 Is the boundary between production and branch-preview builds (what selects "main") specified, so a preview cannot name `www`? [Ambiguity, Spec §FR-002]
+- [x] CHK001 Is the list of "absolute addresses on the site's own host" exhaustive, or open-ended with "etc."-style gaps (e.g. hreflang, JSON-LD `@id`, RSS `<guid>`, `og:url`, `_headers` or `_redirects` absolute targets)? [Completeness, Spec §FR-001]
+- [x] CHK002 Is "address on the site's own host" defined so that off-host links, email addresses and prose "doncoleman.ca" are unambiguously excluded? [Clarity, Spec §FR-003]
+- [x] CHK003 Are requirements stated for absolute addresses stored in content files (Markdown/MDX links to the bare domain) as distinct from build-generated ones? [Gap, Spec §FR-001]
+- [x] CHK004 Is the fallback origin requirement consistent between FR-002, the Edge Cases "Local and test builds" entry and the site-origin contract? [Consistency, Spec §FR-002]
+- [x] CHK005 Is the boundary between production and branch-preview builds (what selects "main") specified, so a preview cannot name `www`? [Ambiguity, Spec §FR-002]
 
 ## Redirect Behaviour
 
-- [ ] CHK006 Are the redirect status code, preserved path, preserved query string and trailing-slash behaviour specified identically in US1, FR-006, SC-002 and the Edge Cases? [Consistency, Spec §FR-006]
-- [ ] CHK007 Is the hop limit stated in one place and used consistently across SC-002, SC-003, FR-006, FR-009 and US2 (HTTPS-only counting, http extra hop)? [Consistency, Spec §SC-003]
-- [ ] CHK008 Are requirements defined for non-GET methods (POST, HEAD) and for requests with fragments or encoded characters on the bare domain? [Coverage, Gap]
-- [ ] CHK009 Is the behaviour of `/api/*` on the bare domain specified for programs (redirect semantics for non-GET methods that drop the body)? [Edge Case, Spec §Edge Cases]
-- [ ] CHK010 Are requirements defined for `robots.txt`, `sitemap-index.xml`, feeds and `favicon.ico` requested on the bare domain? [Coverage, Gap]
-- [ ] CHK011 Is the unmapped-Ghost-address outcome specified for the bare domain and `www` with the same hop and status expectations? [Completeness, Spec §US2.3]
-- [ ] CHK012 Is the "fixed old Ghost address" used by the check named, and is its source in the spec 030 mapping stable if that mapping changes? [Assumption, Spec §FR-009]
-- [ ] CHK013 Is "no interstitial page" defined measurably (e.g. no 200 response before the final page)? [Measurability, Spec §FR-006]
+- [x] CHK006 Are the redirect status code, preserved path, preserved query string and trailing-slash behaviour specified identically in US1, FR-006, SC-002 and the Edge Cases? [Consistency, Spec §FR-006]
+- [x] CHK007 Is the hop limit stated in one place and used consistently across SC-002, SC-003, FR-006, FR-009 and US2 (HTTPS-only counting, http extra hop)? [Consistency, Spec §SC-003]
+- [x] CHK008 Are requirements defined for non-GET methods (POST, HEAD) and for requests with fragments or encoded characters on the bare domain? [Coverage, Gap]
+- [x] CHK009 Is the behaviour of `/api/*` on the bare domain specified for programs (redirect semantics for non-GET methods that drop the body)? [Edge Case, Spec §Edge Cases]
+- [x] CHK010 Are requirements defined for `robots.txt`, `sitemap-index.xml`, feeds and `favicon.ico` requested on the bare domain? [Coverage, Gap]
+- [x] CHK011 Is the unmapped-Ghost-address outcome specified for the bare domain and `www` with the same hop and status expectations? [Completeness, Spec §US2.3]
+- [x] CHK012 Is the "fixed old Ghost address" used by the check named, and is its source in the spec 030 mapping stable if that mapping changes? [Assumption, Spec §FR-009]
+- [x] CHK013 Is "no interstitial page" defined measurably (e.g. no 200 response before the final page)? [Measurability, Spec §FR-006]
 
 ## Search Engine Transition
 
-- [ ] CHK014 Is the acceptable merge-to-swap window quantified ("within the same day") with an owner and a consequence if exceeded? [Clarity, Spec §Edge Cases]
-- [ ] CHK015 Are Search Console requirements specific about which property (domain vs URL-prefix) and which action (sitemap resubmission only, no Change of Address)? [Ambiguity, Spec §FR-015]
-- [ ] CHK016 Is the assumption that a Search Console property already covers `www` validated or given a fallback if it does not? [Assumption, Spec §Assumptions]
-- [ ] CHK017 Are requirements stated for the canonical-to-redirecting-host window (canonicals pointing at a host that redirects) beyond "briefly"? [Gap, Spec §Edge Cases]
-- [ ] CHK018 Is SC-001's "100% of absolute addresses" defined over a stated crawl set (pages, feeds, sitemap, `robots.txt`, images)? [Measurability, Spec §SC-001]
+- [x] CHK014 Is the acceptable merge-to-swap window quantified ("within the same day") with an owner and a consequence if exceeded? [Clarity, Spec §Edge Cases]
+- [x] CHK015 Are Search Console requirements specific about which property (domain vs URL-prefix) and which action (sitemap resubmission only, no Change of Address)? [Ambiguity, Spec §FR-015]
+- [x] CHK016 Is the assumption that a Search Console property already covers `www` validated or given a fallback if it does not? [Assumption, Spec §Assumptions]
+- [x] CHK017 Are requirements stated for the canonical-to-redirecting-host window (canonicals pointing at a host that redirects) beyond "briefly"? [Gap, Spec §Edge Cases]
+- [x] CHK018 Is SC-001's "100% of absolute addresses" defined over a stated crawl set (pages, feeds, sitemap, `robots.txt`, images)? [Measurability, Spec §SC-001]
