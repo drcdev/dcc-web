@@ -251,4 +251,56 @@ describe("checks/dns-records-parity", () => {
       expect(result.details.join("\n")).toContain("MX doncoleman.ca mx01.mail.icloud.com");
     });
   });
+
+  describe("proxied baseline records (spec 034)", () => {
+    const placeholder = keepRecord({ type: "AAAA", content: "100::", ttl: 1, proxied: true });
+    const cfPlaceholder = (proxied: boolean, content = "100::"): CloudflareDnsRecord => ({
+      type: "AAAA",
+      name: "doncoleman.ca",
+      content,
+      priority: null,
+      ttl: 1,
+      proxied,
+    });
+
+    it("matches a proxied baseline record that is proxied in the zone", async () => {
+      const result = await check(contextWith(baseline([placeholder]), [cfPlaceholder(true)]));
+      expect(result.status).toBe("complete");
+    });
+
+    it("is missing when a proxied baseline record is DNS only in the zone", async () => {
+      const result = await check(contextWith(baseline([placeholder]), [cfPlaceholder(false)]));
+      expect(result.status).toBe("missing");
+      expect(result.details.join("\n")).toContain("proxied is off, expected proxied (orange cloud)");
+    });
+
+    it("is missing when a DNS only baseline record is proxied in the zone", async () => {
+      const result = await check(contextWith(baseline([keepRecord({ proxied: false })]), [{ ...cfPlaceholder(true), type: "A", content: "192.0.2.10" }]));
+      expect(result.status).toBe("missing");
+      expect(result.details.join("\n")).toContain("proxied is on, expected DNS only (grey cloud)");
+    });
+
+    it("is missing when the placeholder is absent", async () => {
+      const result = await check(contextWith(baseline([placeholder]), []));
+      expect(result.status).toBe("missing");
+      expect(result.details.join("\n")).toContain("not found in Cloudflare");
+    });
+
+    it("is missing when the placeholder has different content", async () => {
+      const result = await check(contextWith(baseline([placeholder]), [cfPlaceholder(true, "100::1")]));
+      expect(result.status).toBe("missing");
+      expect(result.details.join("\n")).toContain("no Cloudflare record with this content");
+    });
+
+    it("keeps unmatched apex and www records informational", async () => {
+      const extra: CloudflareDnsRecord[] = [
+        cfPlaceholder(true),
+        { type: "AAAA", name: "www.doncoleman.ca", content: "100::", priority: null, ttl: 1, proxied: true },
+        { type: "A", name: "doncoleman.ca", content: "192.0.2.77", priority: null, ttl: 1, proxied: true },
+      ];
+      const result = await check(contextWith(baseline([placeholder]), extra));
+      expect(result.status).toBe("complete");
+      expect(result.details.join("\n")).toContain("Cloudflare-only, not in baseline");
+    });
+  });
 });

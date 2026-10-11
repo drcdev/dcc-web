@@ -205,8 +205,8 @@ describe("a production build (Workers Builds, main)", () => {
   });
 
   // Moved from the fixture-site harness test: the build got WORKERS_CI and the main branch.
-  it("sets the site address from WORKERS_CI and the branch, so main serves doncoleman.ca", () => {
-    expect(build().read("sitemap-0.xml")).toContain("https://doncoleman.ca/");
+  it("sets the site address from WORKERS_CI and the branch, so main serves www.doncoleman.ca", () => {
+    expect(build().read("sitemap-0.xml")).toContain("https://www.doncoleman.ca/");
   });
 
   // Moved from the post summaries test; the "no branch variable" case is the unit tests' (FR-046).

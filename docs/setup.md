@@ -4,11 +4,11 @@ This is the plain-language record of every account-side setup item this reposito
 what each item is for, where Don does it, how it is confirmed, which constitution principle it
 serves, and the names (never values) of any secrets involved. It is the no-agent fallback for
 the `/setup-walkthrough` Claude Code skill, and the two must never disagree — both read the same
-17-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
+18-item registry in `scripts/setup-check/items.ts`, confirmed by `pnpm setup:check`.
 
-Run `pnpm setup:check` at any time to see which of the 17 items below are complete. Each item's
+Run `pnpm setup:check` at any time to see which of the 18 items below are complete. Each item's
 step number and anchor match the registry in `scripts/setup-check/items.ts`; items 16 and 17 are the
-"Contact form" part. The edge protections Don set up in the Cloudflare dashboard are recorded
+"Contact form" part and item 18 is the "Main address" part. The edge protections Don set up in the Cloudflare dashboard are recorded
 in the Edge protections part at the end; they are not setup items.
 
 A term used below: a **ruleset** is GitHub's mechanism for protecting a branch (blocking force-pushes, requiring
@@ -95,7 +95,8 @@ apex and `www`.
 
 **Where to do it**
 `setup/dns-baseline.json` is the list of records that must exist: `type`, `name`, `content`,
-`priority` and `ttl` for each. Keep each of them in the Cloudflare zone as DNS only (grey cloud).
+`priority` and `ttl` for each. Keep each of them in the Cloudflare zone as DNS only (grey cloud), except the bare-domain placeholder `AAAA doncoleman.ca 100::`, which is
+**proxied** (orange cloud) so the redirect rule in item 18 can answer for the bare domain.
 Leave each record's TTL on Cloudflare's "Auto" preset: the Cloudflare dashboard offers only TTL
 presets, not a custom value, so an exact TTL match isn't possible. The baseline records the TTL
 Cloudflare's API reports (`1` when the record is on Auto), and the check reports a difference
@@ -398,7 +399,8 @@ data collected.
 Cloudflare dashboard → Analytics & Logs → Web Analytics → Add a site → select `doncoleman.ca`
 → Enable (automatic setup). The dashboard offers the zone, not an individual hostname, and
 records the site against the zone. Automatic setup injects the beacon only into responses
-Cloudflare proxies for the zone, so it reaches `doncoleman.ca`. Branch previews live on the preview Worker's `workers.dev` host, outside the zone, and
+Cloudflare proxies for the zone, so it reaches `doncoleman.ca` and, once item 18 is done, `www.doncoleman.ca`, the host the site is
+served from. The beacon is read on `www`. Branch previews live on the preview Worker's `workers.dev` host, outside the zone, and
 never get the beacon. Injection starts up to half an hour after enabling, and only for requests
 that accept HTML (as every browser's page request does).
 
@@ -473,7 +475,8 @@ pnpm exec wrangler d1 delete dcc-web --env-file /dev/null
 
 A Cloudflare Turnstile widget keeps bots from filling the contact form, without a visible puzzle for
 real visitors. In the Cloudflare dashboard go to Turnstile → Add widget. Name it `dcc-web contact`;
-hostnames `doncoleman.ca` and `drc-dev.workers.dev` (this covers preview addresses); mode
+hostnames `doncoleman.ca`, `www.doncoleman.ca` and `drc-dev.workers.dev` (this covers preview
+addresses); mode
 **Managed**; no pre-clearance. Keep the page open, because the next two parts need the secret key
 and the site key. If the dashboard refuses `drc-dev.workers.dev`, use Turnstile's always-pass test
 keys for **preview only** (research R6 in `specs/007-contact-form/research.md`).
@@ -611,11 +614,98 @@ None are set in this step. The check uses `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE
 `.env` (names only). The retired Worker secrets `CONTACT_READ_TOKEN` and `IP_HASH_SALT` are
 deleted as above.
 
+# Main address
+
+The site's main address is `www.doncoleman.ca`. Item 18 moves the live site there from the bare
+domain. It is done by Don in the Cloudflare dashboard, in one sitting, after the pull request that
+makes `www` the site origin has merged and deployed. This part is the only place that describes the
+swap, and it replaces the earlier cutover notes.
+
+## 18. Live hosts {#live-hosts}
+
+**What it is for**
+The site's main address is `www.doncoleman.ca`. The `www` host serves the site, and the bare domain
+and plain `http` requests redirect to it permanently, keeping the path and query.
+
+**Where to do it**
+Cloudflare dashboard, in one sitting after the pull request merges and its production deploy has
+finished. Each step states what must be true before it, the signal that it is done, and how long it
+takes. Do the steps in order.
+
+### Live swap
+
+0. Confirm SSL/TLS → Edge Certificates → **Always Use HTTPS** is on. It is on today, so this is a
+   check, not a change. Precondition: the merge has deployed. Done when: the setting shows on. About
+   1 minute.
+1. Turnstile → widget "dcc-web contact" → add the hostname `www.doncoleman.ca`. Precondition: step 0.
+   Done when: the widget lists `www.doncoleman.ca`. About 2 minutes.
+2. Rules → Redirect Rules: delete the `www` to bare rule. DNS: delete `AAAA www 100::` and any other
+   record on `www`, because Cloudflare will not attach a Custom Domain to a name that has one.
+   Precondition: step 1. Done when: no rule matches `www` and no record is on `www`. About 3 minutes.
+   The `www` host only redirected before, and from here it does not answer until step 3.
+3. Workers & Pages → dcc-web → Settings → Domains & Routes → add the Custom Domain
+   `www.doncoleman.ca`. Precondition: no record on `www`. Done when: `https://www.doncoleman.ca/`
+   loads the site. About 2 minutes plus up to 10 minutes for the certificate. If `www` does not serve
+   within 10 minutes, stop and follow the rollback for "After step 3".
+4. Same page: remove the Custom Domain `doncoleman.ca`. Precondition: step 3 is done. Done when: the
+   bare domain is no longer listed under the Worker's domains. About 2 minutes. The bare domain does
+   not answer from here until step 5.
+5. DNS: add `AAAA doncoleman.ca 100::` with **Proxied** on. Rules → Redirect Rules → create a rule
+   with the custom filter `http.host eq "doncoleman.ca"`, type Dynamic, expression
+   `concat("https://www.doncoleman.ca", http.request.uri.path)`, status 301, and
+   Preserve query string on. Precondition: step 4. Done when: the record shows proxied and the rule is enabled.
+   About 5 minutes.
+6. Run `pnpm setup:check`. Precondition: step 5. Done when: all 18 items are complete. Item 18 may
+   show `pending` for a few minutes while the `www` certificate issues; run it again. About 3
+   minutes, including one rerun.
+7. Search Console → the domain property → Sitemaps → submit
+   `https://www.doncoleman.ca/sitemap-index.xml`. Precondition: step 6 is complete. Done when: the
+   sitemap shows as submitted. About 2 minutes, and it is not part of the downtime or sitting budget.
+
+Expected downtime: `www` between steps 2 and 3, at most 15 minutes; the bare domain between steps 4
+and 5, at most 5 minutes.
+
+Deadline: do the swap on the same day as the merge. If it is not complete 24 hours after the
+merge's production deploy, roll back as needed and open a revert pull request of the change.
+
+### Rollback
+
+Undo only what was done, from the last completed step back. Every step can be reversed, and there is
+no point of no return.
+
+- **After step 1**: nothing to undo. The `www` widget hostname is harmless and can stay.
+- **After step 2**: add `AAAA www.doncoleman.ca 100::` back (proxied), and add the `www` to bare rule
+  back: filter `http.host eq "www.doncoleman.ca"`, expression
+  `concat("https://doncoleman.ca", http.request.uri.path)`, status 301, Preserve query string on.
+- **After step 3**: remove the Custom Domain `www.doncoleman.ca`, then do what "After step 2" says.
+- **After step 4**: add the Custom Domain `doncoleman.ca` again (no record exists on it yet) and wait
+  until it serves, then do what "After step 3" says.
+- **After step 5**: delete the bare to `www` rule and `AAAA doncoleman.ca 100::` first, because
+  Cloudflare will not attach a Custom Domain to a name that has a record, then do what "After
+  step 4" says.
+
+Then retry the swap within 24 hours. If it still cannot be done, open a revert pull request of the
+change so the build names the bare domain again. The Search Console resubmission is not undone.
+
+**How it will be confirmed**
+`pnpm setup:check --item live-hosts` reports complete when `https://www.doncoleman.ca` serves `/`
+and `/writing/?page=2` directly, and `http://www.doncoleman.ca`, `https://doncoleman.ca` and
+`http://doncoleman.ca` redirect there with 301s within the hop limits, keeping the path and query.
+It also checks that the old Ghost address
+`/drift/2025/self-contained-development-for-ghost-themes/` reaches its new page on `www` from both
+hosts. It reports `pending` while the `www` certificate is still issuing.
+
+**Constitution principle**
+VIII (Cloudflare Best Practices) and X (Accessible, Fast and Private).
+
+**Secrets**
+None.
+
 # Edge protections
 
 These are dashboard settings Don made by hand on 2026-10-09, for
 issue #91. They are recorded here for reference. They are not setup items, they are not in the
-17-item registry, and `pnpm setup:check` does not check them.
+18-item registry, and `pnpm setup:check` does not check them.
 
 ### API rate-limiting rule
 

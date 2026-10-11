@@ -4,7 +4,7 @@
 //                     as missing) and each reports region WNAM. `running_in_region` is not in
 //                     Cloudflare's published schema, so an absent region is "could not be confirmed",
 //                     never a pass.
-//   Turnstile widget  "dcc-web contact" exists in managed mode and covers doncoleman.ca, and
+//   Turnstile widget  "dcc-web contact" exists in managed mode and covers www.doncoleman.ca (the main address), and
 //                     drc-dev.workers.dev unless the preview site-key fallback is in use.
 //   Worker secrets    the one secret NAME (TURNSTILE_SECRET_KEY) exists on both Workers. Values are never read.
 //   Site key          the PUBLIC_TURNSTILE_SITE_KEY build variable exists on every build trigger of
@@ -29,13 +29,15 @@ import {
   type ContactConfig,
   type ContactDatabaseConfig,
 } from "./contact-shared.ts";
+import { FALLBACK_ORIGIN } from "../../../src/lib/site-origin.ts";
 import { complete, fromProviderError, missing } from "./shared.ts";
 
 const ITEM = { id: "contact-bindings", order: 16 };
 const SUMMARY = "Could not read the contact bindings.";
 const DOCS = "docs/setup.md#contact-bindings";
 const WIDGET_NAME = "dcc-web contact";
-const PRODUCTION_HOST = "doncoleman.ca";
+// The main address is www (spec 034); the widget may list the bare domain too, but must list this host.
+const PRODUCTION_HOST = new URL(FALLBACK_ORIGIN).host;
 const PREVIEW_HOST = "drc-dev.workers.dev";
 
 interface PartResult {

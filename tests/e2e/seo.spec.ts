@@ -1,7 +1,7 @@
 // Search and sharing metadata, the sitemap and robots.txt as served by
 // `wrangler dev` from the production build (contracts/head-metadata.md;
 // research R9; FR-017, FR-017a, FR-017b, FR-017c, FR-018, FR-019, SC-006).
-// A local build resolves its origin to the fallback https://doncoleman.ca, so
+// A local build resolves its origin to the fallback https://www.doncoleman.ca, so
 // absolute addresses are checked against the origin robots.txt reports and
 // fetched from the local server by path.
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";

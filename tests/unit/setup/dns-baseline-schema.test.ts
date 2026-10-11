@@ -81,3 +81,29 @@ describe("setup/dns-baseline.json: must-exist records", () => {
     expect(records.some((r) => r.type === "CAA" && r.name === zone && /^\d+ issue "/.test(r.content))).toBe(true);
   });
 });
+
+describe("proxied flag and the bare-domain placeholder (spec 034)", () => {
+  type Rec = { type: string; name: string; content: string; proxied?: boolean };
+  const records = (readBaseline() as { records: Rec[] }).records;
+  const base = { type: "A", name: "doncoleman.ca", content: "192.0.2.1", priority: null, ttl: 1 };
+
+  it("accepts an optional boolean proxied and rejects other types", () => {
+    expect(dnsBaselineSchema.safeParse({ records: [{ ...base, proxied: true }] }).success).toBe(true);
+    expect(dnsBaselineSchema.safeParse({ records: [{ ...base, proxied: "yes" }] }).success).toBe(false);
+  });
+
+  it("still rejects unknown keys", () => {
+    expect(dnsBaselineSchema.safeParse({ records: [{ ...base, proxy: true }] }).success).toBe(false);
+  });
+
+  it("has the proxied AAAA placeholder on the bare domain", () => {
+    const placeholder = records.filter((r) => r.type === "AAAA" && r.name === "doncoleman.ca" && r.content === "100::");
+    expect(placeholder).toHaveLength(1);
+    expect(placeholder[0]?.proxied).toBe(true);
+  });
+
+  it("marks no other record proxied and lists no www record", () => {
+    expect(records.filter((r) => "proxied" in r)).toHaveLength(1);
+    expect(records.some((r) => r.name === "www.doncoleman.ca" || r.name === "www")).toBe(false);
+  });
+});
