@@ -125,7 +125,8 @@ helper instead.
 | Layout vs files check (`checkParts`) | unit | same file as above | P08, P09 |
 | Real part files: tracked sources, browser-only exception, ids = layout ids, explanation length (FR-013) | unit content test (reads helper) | `tests/unit/content/architecture-content.test.ts` | P10, P11, P08 on real data |
 | Static markup: links, entries, source link attributes, back links, no `style`, `aria-hidden` shapes | component | `tests/component/sections/ArchitectureDiagram.test.ts` | M02–M09 |
-| Section registered and allowed in page bodies | unit (existing body/section tests extended) | `tests/unit/content/…` existing section-name test | — |
+| Section registered and allowed in page bodies, documented in `docs/pages.md` | unit (existing registry tests extended) | `tests/unit/content/section-schemas.test.ts`, `tests/unit/content/body.test.ts`, `tests/unit/site/docs-content-structure.test.ts` | — |
+| Technology data-handling claims (existing block, rewritten to read the contact path's part files once `## Contact form` is gone) | unit content test | `tests/unit/content/site-pages.test.ts` | FR-013, FR-014 |
 | `generateId` runs `assertPartSource` on real files | build (`sync` fixture) | `tests/build/architecture-validation.test.ts` + `tests/fixtures/architecture/broken/` | P04 wiring |
 | Built Technology page: diagram first, every part fragment resolves to an entry, unique ids, no `style` attributes, the kept sections present and the removed headings gone | build (content tier) | `tests/build/local-site.test.ts` | M01, M03, M06, M09, M10, FR-014 |
 | Click, keyboard, back-link focus, deep link, single selection, non-part fragment | E2E | `tests/e2e/architecture.spec.ts` | J01–J07 |

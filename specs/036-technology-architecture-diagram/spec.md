@@ -282,9 +282,10 @@ and every part's explanation and source link (where it has one) can be read and 
 - **FR-007**: Every source link MUST be checked automatically against the repository's files,
   and a link to a path that does not exist MUST fail the release gate. The check covers that
   the path is inside the repository, exists and is tracked by git; whether the path is the
-  right one for the part is a review responsibility (FR-019), not an automated check. A failing
-  path stops the site build (and so the release gate) with an error that names the part file
-  and the path.
+  right one for the part is a review responsibility (FR-019), not an automated check. A path
+  outside the repository or missing from it stops the site build (and so the release gate) with
+  an error that names the part file and the path; a path that exists but is not tracked by git
+  fails the unit content test over the real part files, which is also part of the release gate.
 - **FR-008**: With JavaScript turned off, the diagram MUST still render and, for each of the 12
   parts, its diagram link, its entry's name, explanation, "Connects to" line (where it has
   outgoing connections), source link (where it has one) and "Back to diagram" link MUST be
@@ -436,7 +437,7 @@ Worker and database marks show that it is separate.
   at most one source location in the repository, a stable identifier usable in a page link, and its
   connections to other parts.
 - **Connection**: a directed line between two parts showing that one calls, serves or sends to
-  the other, with an optional short label (for example "on a cache miss").
+  the other, with an optional short label (for example "no saved set, budget left").
 - **Environment**: preview or production. The system is drawn once as production; preview is a
   small group holding its own Worker and database.
 

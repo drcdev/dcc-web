@@ -62,3 +62,6 @@ On `pnpm run dev` locally, then on the PR preview:
    entry and its heading and explanation are read (SC-007).
 8. Read every explanation against how the site works today (FR-013): nothing says the contact form
    stores messages; preview and production each have their own Worker and database.
+9. At 200% browser zoom, and with a WCAG 1.4.12 text-spacing override (bookmarklet), the
+   explanations lose no content and diagram labels are crowded at most, never clipped; a focused
+   part is never fully hidden by other page content (WCAG 2.4.11).
