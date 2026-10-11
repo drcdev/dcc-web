@@ -140,3 +140,7 @@ The full gate is not run by the implement subagent (ask Don first, see CLAUDE.md
 - Then US2 (writing link), US3 (About and Contact links), then Polish and baselines.
 - One implement subagent per phase: Phases 1 and 2 together, then 3, 4 with 5, and 6.
 - Run `pnpm run verify:quick` after each phase; do not weaken any existing test.
+
+## Phase 7: Convergence
+
+- [ ] T027 In `tests/e2e/blog-forced-colors.spec.ts`, extend the "author card at the end of a post (A15)" case so it also asserts that the card's three links (`[data-author-card] a`) are visible in forced colours, light and dark, as T010a states; the case today checks only the border, the heading and the first line. Layer: E2E (only a browser emulates forced colours). per FR-010g (partial)
