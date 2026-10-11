@@ -2,7 +2,9 @@
 // The share area at the end of a post (port of Flux ui-share.hbs; FR-028; research R10). The
 // LinkedIn and email links are plain links and always work, with or without scripts. The Share
 // button is `hidden` in the markup, at the end of the same row, and the script below shows it only
-// when the device offers `navigator.share`, so showing it moves no other content. The script is a
+// when the device offers `navigator.share`. Showing it moves nothing vertically; the links are
+// right-aligned (768 px and wider) or centred (narrower), so it shifts the other links sideways,
+// never the heading. The area spans the post's full width, like the title card. The script is a
 // bundled module, loaded after parse (docs.astro.build/en/guides/client-side-scripts/), so the
 // content security policy is unchanged.
 import { shareLinks } from "../../lib/share.ts";
@@ -25,10 +27,10 @@ const control =
   data-share
   data-share-title={title}
   data-share-url={url}
-  class="mx-auto mt-8 max-w-3xl rounded-lg border border-rust-200 bg-gradient-to-r from-rust-50 to-white p-4 dark:border-dusk-600 dark:from-rust-800 dark:to-dusk-700"
+  class="mt-8 rounded-lg text-center md:flex md:items-center md:justify-between md:gap-x-6 md:text-left border border-rust-200 bg-gradient-to-r from-rust-50 to-white p-4 dark:border-dusk-600 dark:from-rust-800 dark:to-dusk-700"
 >
-  <h2 class="m-0 mb-3 text-lg font-bold text-dusk-900 dark:text-white">Share this post</h2>
-  <div class="flex flex-wrap items-center gap-3">
+  <h2 class="m-0 mb-3 md:mb-0 md:shrink-0 text-lg font-bold text-dusk-900 dark:text-white">Share this post</h2>
+  <div class="flex flex-wrap items-center justify-center gap-3 md:justify-end">
     <a href={links.linkedin} class={control}>Share on LinkedIn</a>
     <a href={links.email} class={control}>Share by email</a>
     <button type="button" hidden data-share-button class:list={[control, "cursor-pointer bg-transparent"]}>Share</button>

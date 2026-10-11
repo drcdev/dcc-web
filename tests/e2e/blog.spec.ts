@@ -493,6 +493,66 @@ test.describe("share", () => {
     );
   });
 
+  for (const width of [375, 768, 1024, 1440]) {
+    test(`views note and share area match the title card's edges at ${width} px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(POST);
+      const card = (await page.locator("[data-title-card]").boundingBox())!;
+      for (const selector of ["[data-views-note]", "[data-share]"]) {
+        const box = (await page.locator(selector).boundingBox())!;
+        expect(Math.abs(box.x - card.x), `${selector} left`).toBeLessThanOrEqual(1);
+        expect(Math.abs(box.x + box.width - (card.x + card.width)), `${selector} right`).toBeLessThanOrEqual(1);
+      }
+    });
+  }
+
+  for (const width of [768, 1440]) {
+    test(`puts the heading left and the links right at ${width} px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(POST);
+      const share = page.locator("[data-share]");
+      const h2 = (await share.locator("h2").boundingBox())!;
+      const links = share.locator("a");
+      const first = (await links.first().boundingBox())!;
+      const last = (await links.last().boundingBox())!;
+      expect(h2.x).toBeLessThan(first.x);
+      expect(Math.abs(h2.y + h2.height / 2 - (first.y + first.height / 2))).toBeLessThanOrEqual(1);
+      const contentRight = await share.evaluate((el) => {
+        const s = getComputedStyle(el);
+        return el.getBoundingClientRect().right - parseFloat(s.paddingRight) - parseFloat(s.borderRightWidth);
+      });
+      expect(Math.abs(last.x + last.width - contentRight)).toBeLessThanOrEqual(1);
+      await expect(page.locator("[data-views-note]")).toHaveCSS("text-align", "left");
+    });
+  }
+
+  for (const width of [320, 375]) {
+    test(`stacks and centres the heading and links at ${width} px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(POST);
+      const share = page.locator("[data-share]");
+      const h2 = (await share.locator("h2").boundingBox())!;
+      const links = share.locator("a");
+      for (let i = 0; i < (await links.count()); i++) {
+        expect((await links.nth(i).boundingBox())!.y).toBeGreaterThanOrEqual(h2.y + h2.height);
+      }
+      await expect(share.locator("h2")).toHaveCSS("text-align", "center");
+      await expect(page.locator("[data-views-note]")).toHaveCSS("text-align", "center");
+      const { left, right } = await share.evaluate((el) => {
+        const s = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return {
+          left: r.left + parseFloat(s.paddingLeft) + parseFloat(s.borderLeftWidth),
+          right: r.right - parseFloat(s.paddingRight) - parseFloat(s.borderRightWidth),
+        };
+      });
+      const first = (await links.first().boundingBox())!;
+      const last = (await links.last().boundingBox())!;
+      const groupCentre = (Math.min(first.x, last.x) + Math.max(first.x + first.width, last.x + last.width)) / 2;
+      expect(Math.abs(groupCentre - (left + right) / 2)).toBeLessThanOrEqual(1);
+    });
+  }
+
   test.describe("without scripts", () => {
     test.use({ javaScriptEnabled: false });
 
