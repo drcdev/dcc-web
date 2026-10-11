@@ -234,6 +234,16 @@ const area = (part: LayoutPart) => part.tab ?? part;
 
   window.addEventListener("hashchange", fromHash);
   fromHash();
+
+  // Opening the page at a deep link must not move focus (J03), but browsers focus a
+  // fragment target that has tabindex="-1". Let go of it once the page has settled.
+  function releaseFocus() {
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && active.matches("article[data-entry]")) active.blur();
+  }
+  const settle = () => requestAnimationFrame(() => setTimeout(releaseFocus));
+  if (document.readyState === "complete") settle();
+  else window.addEventListener("load", settle, { once: true });
 </script>
 
 <style>

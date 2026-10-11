@@ -254,3 +254,29 @@ test.describe("accessibility with a part selected", () => {
     }
   }
 });
+
+// Source links (rows M07, M11, FR-011): they point at the public repository, open a new tab, and
+// nothing is fetched from another origin until a reader follows one.
+test.describe("source links", () => {
+  test("M07, M11: every source link is Source: <path>, opens a new tab safely, and loads no other origin", async ({ page, baseURL }) => {
+    const foreign: string[] = [];
+    page.on("request", (request) => {
+      if (new URL(request.url()).origin !== new URL(baseURL!).origin) {
+        foreign.push(request.url());
+      }
+    });
+    await page.goto(PAGE);
+    await page.evaluate(() => document.fonts.ready.then(() => undefined));
+    const withSource = architectureParts.filter((part) => part.source);
+    const links = page.locator("article[data-entry] a[target=_blank]");
+    await expect(links).toHaveCount(withSource.length);
+    for (const part of withSource) {
+      const link = page.locator(`article[id="${part.id}"] a[target=_blank]`);
+      await expect(link).toHaveAttribute("rel", "noopener");
+      await expect(link).toHaveAttribute("href", new RegExp(`^https://github\\.com/drcdev/dcc-web/(blob|tree)/main/${part.source!.replace(/\/+$/, "")}$`));
+      await expect(link).toContainText(`Source: ${part.source}`);
+      await expect(link).toContainText("(opens in a new tab)");
+    }
+    expect(foreign).toEqual([]);
+  });
+});

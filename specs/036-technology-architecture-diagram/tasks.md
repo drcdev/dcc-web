@@ -111,13 +111,13 @@ description: "Task list for the interactive architecture diagram on the Technolo
 
 ### Tests first
 
-- [ ] T029 [P] [US3] Component test (layer: component) extending `tests/component/sections/ArchitectureDiagram.test.ts`, row M07: source link `href` from `sourceUrl`, `target="_blank"`, `rel="noopener"`, visible text `Source: <path>` plus "(opens in a new tab)" inside the link, omitted when a part has no source. Must fail.
-- [ ] T030 [US3] E2E test (layer: E2E; second layer to the unit and build tests because it checks the rendered links on the real site, not the source rules) in `tests/e2e/architecture.spec.ts`: on the built page every source link in the entries has the `Source:` form, opens in a new tab with `rel="noopener"`, and no request goes to GitHub or another origin until a link is followed (FR-011, M11). Must fail.
+- [x] T029 [P] [US3] Component test (layer: component) extending `tests/component/sections/ArchitectureDiagram.test.ts`, row M07: source link `href` from `sourceUrl`, `target="_blank"`, `rel="noopener"`, visible text `Source: <path>` plus "(opens in a new tab)" inside the link, omitted when a part has no source. Must fail.
+- [x] T030 [US3] E2E test (layer: E2E; second layer to the unit and build tests because it checks the rendered links on the real site, not the source rules) in `tests/e2e/architecture.spec.ts`: on the built page every source link in the entries has the `Source:` form, opens in a new tab with `rel="noopener"`, and no request goes to GitHub or another origin until a link is followed (FR-011, M11). Must fail.
 
 ### Implementation
 
-- [ ] T031 [US3] Add the source link to each entry in `ArchitectureDiagram.astro` using `sourceUrl` (M07; depends on T026, T029). P04, P10 are already covered by T015 and T016; T018's `source` values must pass them.
-- [ ] T032 [US3] Confirm the real source paths in the 12 part files all exist on `main` and are tracked (T015 green); note in the PR body that links to files added by this PR resolve only after merge (research R8).
+- [x] T031 [US3] Add the source link to each entry in `ArchitectureDiagram.astro` using `sourceUrl` (M07; depends on T026, T029). P04, P10 are already covered by T015 and T016; T018's `source` values must pass them.
+- [x] T032 [US3] Confirm the real source paths in the 12 part files all exist on `main` and are tracked (T015 green); note in the PR body that links to files added by this PR resolve only after merge (research R8).
 
 **Checkpoint**: US3 works; stale links fail the gate.
 
@@ -135,7 +135,7 @@ description: "Task list for the interactive architecture diagram on the Technolo
 
 ### Implementation
 
-- [ ] T034 [US4] Fix any gap T033 finds in `ArchitectureDiagram.astro` so the page needs no script for any content or link (FR-008); the script stays enhancement only.
+- [x] T034 [US4] Fix any gap T033 finds in `ArchitectureDiagram.astro` so the page needs no script for any content or link (FR-008); the script stays enhancement only.
 
 **Checkpoint**: all four stories work independently.
 
