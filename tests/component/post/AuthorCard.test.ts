@@ -67,3 +67,26 @@ describe("AuthorCard markup", () => {
     expect(html).not.toContain("data-topic-pill");
   });
 });
+
+const links = (html: string) =>
+  [...html.matchAll(/<a\b[^>]*?href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g)].map((m) => ({
+    href: m[1],
+    text: decode(m[2]!.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim()),
+  }));
+
+describe("AuthorCard links", () => {
+  it.each([
+    ["drift", "More in Drift", "/writing/drift/"],
+    ["convergence", "More in Convergence", "/writing/convergence/"],
+  ])("A8: a %s post gets the series link first", async (id, text, href) => {
+    const [first, ...rest] = links(await render(["agentic-ai", id]));
+    expect(first).toEqual({ href, text });
+    expect(rest.map((l) => l.text)).not.toContain("More of my writing");
+  });
+
+  it("A8: a post in no series gets 'More of my writing' to /writing/, and no series link", async () => {
+    const found = links(await render(["agentic-ai", "healthcare-leadership"]));
+    expect(found[0]).toEqual({ href: "/writing/", text: "More of my writing" });
+    expect(found.some((l) => l.text.startsWith("More in "))).toBe(false);
+  });
+});

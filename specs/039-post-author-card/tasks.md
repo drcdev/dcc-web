@@ -81,12 +81,12 @@ The full gate is not run by the implement subagent (ask Don first, see CLAUDE.md
 
 ### Tests for User Story 2 (write first, see them fail)
 
-- [ ] T013 [US2] Add to `tests/component/post/AuthorCard.test.ts` (rows A7, A8): for topics holding Drift, the first link reads "More in Drift" and goes to `/writing/drift/`; Convergence likewise; for topics in no series (neutral inline topic ids) the first link reads "More of my writing" and goes to `/writing/`, with no series link; a post's other topics do not change the link; never both links. Layer: Component (the link choice is a pure render of props). Run and see them fail.
-- [ ] T014 [US2] In `tests/e2e/blog.spec.ts` add a one-click journey on the build the E2E server serves: from the existing `SERIES_POST` (read through `tests/helpers/content.ts`, no real post named), following the card's writing link lands on that series page (HTTP 200 and the series heading). Layer: E2E (a journey across pages). Second layer: the component test proves the href; this proves the target page exists and is visible, which only a built site shows. Keep to one series post to stay inside the E2E time budget. Run and see it fail.
+- [X] T013 [US2] Add to `tests/component/post/AuthorCard.test.ts` (rows A7, A8): for topics holding Drift, the first link reads "More in Drift" and goes to `/writing/drift/`; Convergence likewise; for topics in no series (neutral inline topic ids) the first link reads "More of my writing" and goes to `/writing/`, with no series link; a post's other topics do not change the link; never both links. Layer: Component (the link choice is a pure render of props). Run and see them fail.
+- [X] T014 [US2] In `tests/e2e/blog.spec.ts` add a one-click journey on the build the E2E server serves: from the existing `SERIES_POST` (read through `tests/helpers/content.ts`, no real post named), following the card's writing link lands on that series page (HTTP 200 and the series heading). Layer: E2E (a journey across pages). Second layer: the component test proves the href; this proves the target page exists and is visible, which only a built site shows. Keep to one series post to stay inside the E2E time budget. Run and see it fail.
 
 ### Implementation for User Story 2
 
-- [ ] T015 [US2] In `src/components/post/AuthorCard.astro` add the `ul` with the writing link first, using `seriesOf`, `findTopic` and `topicHref` from `src/config/topics.ts`; link style is the landing page's "All posts" link classes (underlined, same weight). T013 and T014 pass.
+- [X] T015 [US2] In `src/components/post/AuthorCard.astro` add the `ul` with the writing link first, using `seriesOf`, `findTopic` and `topicHref` from `src/config/topics.ts`; link style is the landing page's "All posts" link classes (underlined, same weight). T013 and T014 pass.
 
 **Checkpoint**: US1 and US2 both work.
 

@@ -504,6 +504,15 @@ test.describe("share", () => {
     });
   }
 
+  test("A8: the writing link on a series post lands on that series page", async ({ page }) => {
+    await page.goto(SERIES_POST.href);
+    const link = page.locator("[data-author-card] ul a").first();
+    await expect(link).toHaveText(`More in ${SERIES_POST_NAME}`);
+    await link.click();
+    await expect(page).toHaveURL(new RegExp(`${topicHref(seriesOf(SERIES_POST.topics)!)}$`));
+    await expect(page.locator("main h1")).toHaveText(SERIES_POST_NAME);
+  });
+
   test("A3: the author card matches the title card's edges at 1440 px with and without the questions panel", async ({
     page,
   }) => {

@@ -9,13 +9,20 @@
 import { Image } from "astro:assets";
 import portrait from "../../content/pages/images/don-coleman.jpg";
 import { blog } from "../../config/blog.ts";
+import { findTopic, seriesOf, topicHref } from "../../config/topics.ts";
 
 export interface Props {
-  /** The post's topic ids; the writing link in a later story reads the series from them. */
+  /** The post's topic ids; the writing link reads the series from them. */
   topics: readonly string[];
 }
 
 const { author } = blog;
+const series = seriesOf(Astro.props.topics);
+const writing = series
+  ? { href: topicHref(series), text: `More in ${findTopic(series)!.name}` }
+  : { href: "/writing/", text: "More of my writing" };
+const linkClass =
+  "inline-block px-1 py-1 font-medium text-dusk-900 underline underline-offset-4 hover:text-rust-700 dark:text-white dark:hover:text-rust-400";
 ---
 
 <section
@@ -25,6 +32,9 @@ const { author } = blog;
   <div class="min-w-0 flex-1">
     <h2 class="m-0 mb-2 text-lg font-bold text-dusk-900 dark:text-white">Written by {author.name}</h2>
     {author.lines.map((line) => <p class="m-0 mb-2 text-dusk-700 dark:text-mist-300">{line}</p>)}
+    <ul class="m-0 mt-3 flex list-none flex-wrap justify-center gap-x-4 gap-y-2 p-0 md:justify-start">
+      <li><a href={writing.href} class={linkClass}>{writing.text}</a></li>
+    </ul>
   </div>
   <Image
     src={portrait}
