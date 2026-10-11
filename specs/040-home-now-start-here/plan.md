@@ -94,7 +94,7 @@ specs/040-home-now-start-here/
 ├── contracts/
 │   ├── content-files.md # The two file formats Don edits
 │   ├── home-sections.md # Rendered markup contract for <Now /> and <StartHere />
-│   └── build-errors.md  # Build failures and their messages (N01–N08, R01–R10)
+│   └── build-errors.md  # Build failures and their messages (N01–N09, R01–R10)
 └── tasks.md             # Phase 2 (/speckit-tasks; not created here)
 ```
 
@@ -145,7 +145,7 @@ scripts/build-fixture-site.ts            # EDIT: swap in fixture Now + reading p
   unchanged. FR-016 is met by deleting the two paragraphs and "What I do".
 - **Now topics** render as a `<dl>` with labels "Working on", "Reading", "MBA research",
   "AI experiments". The date renders as "Updated <time datetime="2026-10-01">October 1, 2026</time>",
-  in the site's existing date style. The spec's "1 October 2026" is only an example; see R6.
+  in the site's existing date style, as spec FR-002 now requires (R6).
 - **Future date**: the build fails when `updated` is after the build's UTC date (R5).
 - **Reading paths order** comes from a required `position` (1–4, unique), like `nav.position` on
   pages. Items keep the order they have in the file.

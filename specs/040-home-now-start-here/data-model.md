@@ -7,11 +7,11 @@ File: `src/content/now/now.md`. There must be exactly one; zero or more than one
 | Field | Where | Type / rule | Shown as |
 |-------|-------|-------------|----------|
 | `updated` | front matter | `YYYY-MM-DD`, a real calendar day, not after the build date (UTC) | "Updated October 1, 2026" in `<time datetime>` |
-| `workingOn` | front matter | required trimmed text, one line, ≤ 200 characters | "Working on" |
+| `workingOn` | front matter | required plain text, trimmed, not blank, one line, ≤ 200 characters | "Working on" |
 | `reading` | front matter | same | "Reading" |
 | `mbaResearch` | front matter | same | "MBA research" |
 | `aiExperiments` | front matter | same | "AI experiments" |
-| open-to line | body | one Markdown paragraph that contains a link to `/contact/` | rendered by `render()` |
+| open-to line | body | exactly one Markdown paragraph that contains at least one link to `/contact/` (other links allowed) | rendered by `render()` |
 
 The schema is strict: an unknown or misspelled key fails the build and is named in the error. The
 front matter text is plain text, not Markdown. Only the body is rendered as Markdown.

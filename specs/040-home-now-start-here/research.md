@@ -79,9 +79,8 @@ page it rests on. The project runs Astro 7.3.5.
 
 - **Decision**: "Updated October 1, 2026", using the site's existing `formatDate()` (en-US, UTC)
   inside `<time datetime="2026-10-01">`.
-- **Rationale**: consistency with every post date on the site. The spec's "1 October 2026" is
-  introduced as "for example". FR-002 needs a readable date plus a machine-readable one, which this
-  meets. Listed as a `[PREVIEW-CHECK]` so Don can ask for the day-month form if he prefers it.
+- **Rationale**: consistency with every post date on the site. The checklist pass fixed spec FR-002
+  and US1-AS1 to this form (they first gave "1 October 2026" as an example). Listed as a `[PREVIEW-CHECK]` so Don can ask for the day-month form if he prefers it.
 
 ## R7. Composing the page: two new registered sections
 

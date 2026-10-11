@@ -6,7 +6,7 @@ Neither file needs a code change to edit (FR-005, FR-011). See data-model.md for
 
 ```markdown
 ---
-updated: 2026-10-01
+updated: 2026-10-11
 workingOn: Leading data warehousing, data modernization, and AI support and compliance at Island Health.
 reading: Wool by Hugh Howey
 mbaResearch: Researching the experienced value of the Certified Health Executive (CHE) designation for my MBA at Royal Roads University.
@@ -18,7 +18,7 @@ I'm open to speaking and to mentoring conversations with healthcare and technolo
 
 - To update it, change the text and `updated`, then commit. Nothing else changes.
 - Quote a value that contains `: ` (YAML), as `aiExperiments` does above.
-- The `updated` date to set at launch is the implementation date or earlier. It must not be later than the build date.
+- The launch `updated` date is 2026-10-11, the delivery date (spec FR-021). It must never be later than the build date (UTC).
 
 ## `src/content/reading-paths/<id>.yaml`
 

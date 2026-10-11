@@ -42,7 +42,7 @@ Recent writing (US3-AS1).
 ```html
 <section aria-labelledby="start-here-heading" data-start-here class="not-prose my-10">
   <h2 id="start-here-heading">Start here</h2>
-  <div class="grid gap-6 md:grid-cols-2">
+  <div class="grid items-start gap-6 md:grid-cols-2">
     <section aria-labelledby="path-building-with-ai-agents" data-reading-path="building-with-ai-agents">
       <h3 id="path-building-with-ai-agents">Building with AI agents</h3>
       <p>For people curious about letting AI do the build.</p>
@@ -60,3 +60,11 @@ Recent writing (US3-AS1).
 - The reading time is always "N min read", with N ≥ 1 (edge case).
 - When there are no visible paths, it renders nothing: no heading and no empty section (FR-007, FR-013).
 - On a phone the grid is one column, reading top to bottom, with no horizontal scroll at 320 px.
+  From the `md` breakpoint (768 px) it is two columns, filled row by row in position order; paths
+  are top-aligned and take their own height (spec FR-015b). No CSS `order` or reversed flow.
+- The Now `<dl>` is one column at every width: each `<dt>` above its `<dd>`.
+- Long titles and topic text wrap (`overflow-wrap: anywhere` or equivalent); nothing is clipped.
+- Links use the same link and focus classes as `RecentWriting.astro`; reading-path links are block
+  or padded enough to meet the 24 px target size (WCAG 2.5.8).
+- The Now "open to" link is an ordinary inline text link, not a button; the intro call to action
+  stays the page's one button (spec FR-016).
