@@ -26,6 +26,8 @@ const dnsBaselineRecordSchema = z
     content: z.string().min(1),
     priority: z.number().int().nullable(),
     ttl: z.number().int().positive(),
+    // Optional: true when the record must be proxied (orange cloud). Absent means DNS only.
+    proxied: z.boolean().optional(),
   })
   .strict()
   .check((ctx) => {

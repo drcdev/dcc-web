@@ -29,7 +29,7 @@ runbook and docs are repository tasks.
 
 ## Phase 1: Setup
 
-- [ ] T001 Run `node -v` (switch with `source ~/.nvm/nvm.sh && nvm use` in the same command if needed), `git merge origin/main` into the branch, and note the baseline test counts for `tests/unit/setup`, `tests/unit/setup-check` and `tests/unit/site` so later red runs can be told from pre-existing failures.
+- [X] T001 Run `node -v` (switch with `source ~/.nvm/nvm.sh && nvm use` in the same command if needed), `git merge origin/main` into the branch, and note the baseline test counts for `tests/unit/setup`, `tests/unit/setup-check` and `tests/unit/site` so later red runs can be told from pre-existing failures.
 
 ---
 
@@ -37,8 +37,8 @@ runbook and docs are repository tasks.
 
 **Purpose**: the baseline schema field and the shared host constants that items 4, 15, 16 and 18 use.
 
-- [ ] T002 [P] Unit test (layer: unit) in `tests/unit/setup/dns-baseline-schema.test.ts`: the strict schema accepts optional `proxied: boolean`, still rejects unknown keys, and the real `setup/dns-baseline.json` contains `AAAA doncoleman.ca 100::` with `proxied: true`, the eleven existing records without a `proxied` key, and no record named `www` (contracts/dns-baseline.md). Run and record red.
-- [ ] T003 Add optional `proxied` to the baseline record type and schema in `scripts/setup-check/types.ts` and `scripts/setup-check/schemas.ts`, and append the placeholder record to `setup/dns-baseline.json`. T002 goes green.
+- [X] T002 [P] Unit test (layer: unit) in `tests/unit/setup/dns-baseline-schema.test.ts`: the strict schema accepts optional `proxied: boolean`, still rejects unknown keys, and the real `setup/dns-baseline.json` contains `AAAA doncoleman.ca 100::` with `proxied: true`, the eleven existing records without a `proxied` key, and no record named `www` (contracts/dns-baseline.md). Run and record red.
+- [X] T003 Add optional `proxied` to the baseline record type and schema in `scripts/setup-check/types.ts` and `scripts/setup-check/schemas.ts`, and append the placeholder record to `setup/dns-baseline.json`. T002 goes green.
 
 **Checkpoint**: schema and baseline ready.
 

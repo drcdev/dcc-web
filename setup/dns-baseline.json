@@ -76,6 +76,14 @@
       "content": "sig1.dkim.doncoleman.ca.at.icloudmailadmin.com",
       "priority": null,
       "ttl": 1
+    },
+    {
+      "type": "AAAA",
+      "name": "doncoleman.ca",
+      "content": "100::",
+      "priority": null,
+      "ttl": 1,
+      "proxied": true
     }
   ]
 }

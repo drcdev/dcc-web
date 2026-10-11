@@ -111,6 +111,8 @@ export interface DnsBaselineRecord {
   content: string;
   priority: number | null;
   ttl: number;
+  /** True when the record must be proxied (orange cloud). Absent means DNS only. */
+  proxied?: boolean;
 }
 
 /** setup/dns-baseline.json shape: the records that must exist in the zone. */
