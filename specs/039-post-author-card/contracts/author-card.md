@@ -18,11 +18,11 @@ The card is part of the post page's HTML contract (`specs/008-blog/contracts/blo
 | Row | Rule |
 |-----|------|
 | A4 | One `h2` whose text is `Written by {blog.author.name}`; the `h2` contains no link (FR-002, FR-008). |
-| A5 | One `img` with `alt` = `blog.author.photoAlt`, `width`/`height` 96, a `srcset` with 1x and 2x WebP, `loading="lazy"` (FR-002, FR-012). |
+| A5 | One `img` with `alt` = `blog.author.photoAlt`, `width`/`height` 96, a `srcset` with 1x and 2x WebP, `loading="lazy"`; the 2x file is at most 20 KB (FR-010c, FR-014, FR-014a). |
 | A6 | Two `p` elements whose text is `blog.author.lines[0]` and `[1]`, in order (FR-002, FR-003). |
-| A7 | One `ul` with exactly three links, in order: the writing link, `More about me` (`/about/`), `Get in touch` (`/contact/`) (FR-007, FR-008). |
+| A7 | One `ul` with exactly three links, in order: the writing link, `More about me` (`/about/`), `Get in touch` (`/contact/`). No link has an `aria-label`; each accessible name is its visible text (FR-007, FR-008, FR-008a). |
 | A8 | Writing link: post in series `s` → text `More in {series name}`, `href` `/writing/{s}/`; post in no series → text `More of my writing`, `href` `/writing/`. Never both (FR-005, FR-006). |
-| A9 | The card contains no `script`, no `button` and no `hidden` element (FR-009). |
+| A9 | The card contains no `script`, no `button` and no `hidden` element. The `section` has no `aria-label`, `aria-labelledby` or `role` (FR-009, FR-010a). |
 
 ## Layout and accessibility
 

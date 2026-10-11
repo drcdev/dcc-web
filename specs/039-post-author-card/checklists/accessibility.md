@@ -8,34 +8,34 @@
 
 ## Structure and Semantics
 
-- [ ] CHK001 Is the heading level of "Written by Don Coleman" specified relative to the post's existing heading outline, rather than only "marked up as a heading"? [Clarity, Spec §FR-010]
-- [ ] CHK002 Is the card's landmark or grouping role (region, complementary, none) stated, and is a decision recorded on whether it needs an accessible name? [Gap, Spec §FR-001]
-- [ ] CHK003 Is the reading order of the card's parts (heading, photo, lines, links) specified for assistive technology, independent of the visual order that varies by width? [Gap, Spec Edge Cases]
-- [ ] CHK004 Is it specified that the card's links appear in a logical keyboard tab order relative to the Share area that follows? [Completeness, Spec §FR-001]
+- [x] CHK001 Is the heading level of "Written by Don Coleman" specified relative to the post's existing heading outline, rather than only "marked up as a heading"? [Clarity, Spec §FR-010]
+- [x] CHK002 Is the card's landmark or grouping role (region, complementary, none) stated, and is a decision recorded on whether it needs an accessible name? [Gap, Spec §FR-001]
+- [x] CHK003 Is the reading order of the card's parts (heading, photo, lines, links) specified for assistive technology, independent of the visual order that varies by width? [Gap, Spec Edge Cases]
+- [x] CHK004 Is it specified that the card's links appear in a logical keyboard tab order relative to the Share area that follows? [Completeness, Spec §FR-001]
 
 ## Images and Text Alternatives
 
-- [ ] CHK005 Is "alt text that identifies him" defined with criteria, or does it leave wording open? [Ambiguity, Spec §FR-002]
-- [ ] CHK006 Is it stated whether the alt text duplicates or complements the visible heading, so screen reader users do not hear the name twice? [Gap, Spec §US1-3]
-- [ ] CHK007 Are requirements defined for the photo failing to load beyond "the rest of the card still makes sense"? [Clarity, Spec Edge Cases]
+- [x] CHK005 Is "alt text that identifies him" defined with criteria, or does it leave wording open? [Ambiguity, Spec §FR-002]
+- [x] CHK006 Is it stated whether the alt text duplicates or complements the visible heading, so screen reader users do not hear the name twice? [Gap, Spec §US1-3]
+- [x] CHK007 Are requirements defined for the photo failing to load beyond "the rest of the card still makes sense"? [Clarity, Spec Edge Cases]
 
 ## Links
 
-- [ ] CHK008 Is the accessible name of each of the three links required to be understandable out of context, including the series link on a post in no series? [Completeness, Spec §FR-005, §FR-006, §FR-007, §FR-008]
-- [ ] CHK009 Are the example link texts ("such as ...") fixed enough to be testable, or can two links end up with identical names? [Ambiguity, Spec §FR-006, §FR-008]
-- [ ] CHK010 Is a minimum target size for the links stated (WCAG 2.2 target size), including when links wrap or sit side by side at 320 px? [Gap, Spec §FR-010]
-- [ ] CHK011 Are focus-visible requirements defined for the links in both themes, with the focus indicator contrast and non-obscured criteria of WCAG 2.2? [Gap, Spec §FR-010]
+- [x] CHK008 Is the accessible name of each of the three links required to be understandable out of context, including the series link on a post in no series? [Completeness, Spec §FR-005, §FR-006, §FR-007, §FR-008]
+- [x] CHK009 Are the example link texts ("such as ...") fixed enough to be testable, or can two links end up with identical names? [Ambiguity, Spec §FR-006, §FR-008]
+- [x] CHK010 Is a minimum target size for the links stated (WCAG 2.2 target size), including when links wrap or sit side by side at 320 px? [Gap, Spec §FR-010]
+- [x] CHK011 Are focus-visible requirements defined for the links in both themes, with the focus indicator contrast and non-obscured criteria of WCAG 2.2? [Gap, Spec §FR-010]
 
 ## Colour, Themes and Reflow
 
-- [ ] CHK012 Are contrast requirements stated per element (heading, role lines, links, link focus and hover states) in both light and dark themes, not only as "meet contrast requirements"? [Clarity, Spec Edge Cases]
-- [ ] CHK013 Is "every supported screen width" enumerated, including the 320 px reflow width and text zoom to 200%? [Ambiguity, Spec §FR-010]
-- [ ] CHK014 Is it specified that link purpose is not conveyed by colour alone? [Gap, Spec §FR-010]
-- [ ] CHK015 Are requirements for forced-colours or high-contrast modes, and for reduced motion, stated or explicitly excluded? [Gap]
+- [x] CHK012 Are contrast requirements stated per element (heading, role lines, links, link focus and hover states) in both light and dark themes, not only as "meet contrast requirements"? [Clarity, Spec Edge Cases]
+- [x] CHK013 Is "every supported screen width" enumerated, including the 320 px reflow width and text zoom to 200%? [Ambiguity, Spec §FR-010]
+- [x] CHK014 Is it specified that link purpose is not conveyed by colour alone? [Gap, Spec §FR-010]
+- [x] CHK015 Are requirements for forced-colours or high-contrast modes, and for reduced motion, stated or explicitly excluded? [Gap]
 
 ## Measurability and Consistency
 
-- [ ] CHK016 Can the claim "meets WCAG 2.2 AA" be objectively checked by the existing automated scan, and is the manual remainder (alt text quality, link names) identified? [Measurability, Spec §SC-005]
-- [ ] CHK017 Are the accessibility requirements for the card consistent with those already applied to the views note and Share area it sits between? [Consistency, Spec §FR-011]
-- [ ] CHK018 Are accessibility requirements for the draft-post preview rendering and the questions-panel layout stated, or confirmed identical to published posts? [Coverage, Spec Edge Cases]
-- [ ] CHK019 Is the no-JavaScript requirement phrased so it can be verified for assistive technology use as well as sighted use? [Measurability, Spec §FR-009]
+- [x] CHK016 Can the claim "meets WCAG 2.2 AA" be objectively checked by the existing automated scan, and is the manual remainder (alt text quality, link names) identified? [Measurability, Spec §SC-005]
+- [x] CHK017 Are the accessibility requirements for the card consistent with those already applied to the views note and Share area it sits between? [Consistency, Spec §FR-011]
+- [x] CHK018 Are accessibility requirements for the draft-post preview rendering and the questions-panel layout stated, or confirmed identical to published posts? [Coverage, Spec Edge Cases]
+- [x] CHK019 Is the no-JavaScript requirement phrased so it can be verified for assistive technology use as well as sighted use? [Measurability, Spec §FR-009]

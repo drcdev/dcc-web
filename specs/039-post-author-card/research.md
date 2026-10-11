@@ -79,8 +79,7 @@ reason and what was rejected.
 - **Writing landing page**: `/writing/` is the page the code and navigation call the writing
   landing page (`landingPages` in `src/config/navigation.ts`); it leads to both series and to
   "All posts" (`/writing/all/`). The spec's "(all posts)" is read as describing the landing
-  page's scope; if Don wants the flat list instead, the link changes to `/writing/all/` in one
-  place in the component (noted as an open question in the plan).
+  page's scope. Don confirmed the landing page (`/writing/`) during the checklist phase.
 - **Alternatives considered**: "Contact me" (fine, but the site already says "Get in touch");
   "Contact" (a label, not an action); "Read more" (forbidden by scenario 2.3).
 

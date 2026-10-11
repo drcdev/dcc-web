@@ -23,7 +23,8 @@ The site already has what a short introduction needs:
   Architecture at Island Health. Older wording that calls him a Cloud Architect is out of date and
   must not be used.
 - Two series, Drift and Convergence, each with its own page. A post belongs to at most one series;
-  some posts belong to none. The writing landing page lists every post.
+  some posts belong to none. The writing landing page (`/writing/`) introduces the writing and
+  leads to both series and to the list of all posts.
 - A Contact page with the contact form.
 
 ## Clarifications
@@ -35,6 +36,14 @@ The site already has what a short introduction needs:
 - Q: Should the card also link to the About page? → A: Yes, as its own plain link with text such as "More about me".
 - Q: What should the card's two lines say, and in what voice? → A: First person, kept in one blog-settings place: "I'm Director, Data Infrastructure and Architecture at Island Health." and "I write about systems thinking, practical AI and leading complex change." Don may revise the wording in review.
 - Q: What heading should the card have? → A: A visible heading "Written by Don Coleman".
+
+### Checklist resolution 2026-10-11
+
+The checklist phase pinned what the clarify answers left as examples, without changing any
+decision: the link texts are exactly "More in {series name}", "More of my writing", "More about
+me" and "Get in touch"; the heading is a level-2 heading; the no-series link goes to the writing
+landing page (`/writing/`), as Don confirmed. Layout, photo, accessibility and performance details
+the checklists asked for are recorded in the requirements below.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -82,12 +91,12 @@ card's writing link on each and confirm it leads to the right place.
 **Acceptance Scenarios**:
 
 1. **Given** a post in the Drift series, **When** the reader follows the card's series link,
-   **Then** they reach the Drift series. The same holds for Convergence.
-2. **Given** a post in no series, **When** the reader looks at the card, **Then** it offers a link
-   to the writing landing page (all posts), with link text such as "More of my writing", and no
-   series link.
-3. **Given** the card's series link, **When** the reader reads its link text, **Then** it names the
-   series (for example "More in Drift") rather than a generic "Read more".
+   **Then** they reach the Drift series page. The same holds for Convergence.
+2. **Given** a post in no series, **When** the reader looks at the card, **Then** it offers the
+   link "More of my writing" to the writing landing page (`/writing/`), and no series link.
+3. **Given** the card's series link, **When** the reader reads its link text, **Then** it is
+   "More in Drift" or "More in Convergence", naming the series rather than a generic "Read
+   more".
 
 ---
 
@@ -106,8 +115,8 @@ Contact page.
 
 1. **Given** any published post, **When** the reader follows the card's contact link, **Then**
    they reach the Contact page.
-2. **Given** the contact link, **When** the reader reads its text, **Then** it says plainly what it
-   does (for example "Get in touch") in the site's plain-language voice.
+2. **Given** the contact link, **When** the reader reads its text, **Then** it is "Get in touch",
+   which says plainly what it does in the site's plain-language voice.
 3. **Given** any published post, **When** the reader follows the card's "More about me" link,
    **Then** they reach the About page.
 
@@ -116,61 +125,161 @@ Contact page.
 ### Edge Cases
 
 - A post in no series: see User Story 2, scenario 2.
-- A draft post (seen only on previews): the card appears exactly as on a published post, so Don
-  sees the finished end of the post before publishing.
+- A draft post (seen only on previews): the card appears exactly as on a published post, with the
+  same content, layout and accessibility, so Don sees the finished end of the post before
+  publishing.
 - A post with the questions panel: the card sits in the end-of-post area and lines up with the
-  views note and Share area, not inside the panel's column.
-- Phone-width screens: the photo, text and links fit without sideways scrolling; the photo may sit
-  above or beside the text.
-- Light and dark themes: the card is readable, and its text and links meet contrast requirements,
-  in both.
-- The photo fails to load: the alt text and the rest of the card still make sense.
-- The About or Contact page is hidden or a draft: the card's About and Contact links are part of
-  every post, so both pages must stay visible while the card links to them (today both are
-  visible).
-- Don's role changes: the role text is changed in one place and every post's card updates.
+  views note and Share area, not inside the panel's column. Its content, order and accessibility
+  are the same as on a post without the panel.
+- A post with no Related posts: the end of the post is post text, views note, author card, Share
+  area; nothing else changes.
+- Phone-width screens: see FR-011 and FR-015. The photo sits above the text below 768 px and to
+  its left from 768 px; nothing scrolls sideways at 320 px.
+- Long text: a role line or link text that is longer than the space (including a future series
+  with a long name, giving a long "More in {series name}") wraps onto further lines. Nothing is
+  truncated, hidden or scrolled sideways, at any width down to 320 px.
+- Light and dark themes: see FR-016.
+- The photo fails to load: the browser shows the alt text in the photo's reserved square; the
+  heading, both lines and all three links are unaffected and the card does not collapse or shift.
+- A link destination is hidden, a draft or renamed: the card's links are on every post, so the
+  About page, the Contact page, the writing landing page and both series pages must stay visible
+  at their current addresses while the card links to them (today all are). If one is hidden,
+  made a draft or moved, the site's existing link check fails the release gate rather than
+  shipping a dead link, and the card's link is updated in the same change.
+- Don's role changes: the role text is changed in one place and every post's card updates; the
+  About page's role is changed in the same change (FR-004a).
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
+**Placement and content**
+
 - **FR-001**: Every post page MUST have exactly one author card, placed between the "views are my
   own" note and the Share area. The end-of-post order is: post text, views note, author card,
-  Share area, Related posts.
-- **FR-002**: The card MUST show the visible heading "Written by Don Coleman", Don's portrait photo
-  with alt text that identifies him, and two short lines in the first person on who he is in his
-  current role.
-- **FR-003**: The role lines MUST name his current role and MUST NOT use "Cloud Architect" or other
-  stale role wording. The draft lines are "I'm Director, Data Infrastructure and Architecture at
-  Island Health." and "I write about systems thinking, practical AI and leading complex change."
-  Don may revise the wording in review.
-- **FR-004**: The card's photo, name and role lines MUST be the same on every post and MUST be
-  maintained in one place, so a change of wording or photo updates every post at once.
-- **FR-005**: On a post in a series, the card MUST link to that series' page, with link text that
-  names the series.
-- **FR-006**: On a post in no series, the card MUST link to the writing landing page (all posts),
-  with link text such as "More of my writing", and MUST show no series link. A post in a series
-  shows only its series link, not this one.
-- **FR-007**: The card MUST link to the Contact page, with plain link text that says what the link
-  does.
-- **FR-008**: The card MUST link to the About page with its own plain link, with text such as
-  "More about me". The heading and Don's name are not links.
-- **FR-009**: The card MUST be part of the page as delivered, readable and usable with JavaScript
-  turned off, and MUST add no client-side script.
-- **FR-010**: The card MUST meet WCAG 2.2 AA in light and dark themes and at every supported
-  screen width, with its visible heading "Written by Don Coleman" marked up as a heading.
-- **FR-011**: The card MUST line up with the other end-of-post pieces (the views note and the Share
-  area): same left and right edges at every width.
-- **FR-012**: The card MUST use the site's existing visual language (its colours, type and card
-  style) and MUST NOT push the post page past the site's performance budget; the photo is sized
-  for the space it fills.
-- **FR-013**: The card appears only on post pages. Pages, project stories and listing pages are
-  unchanged.
+  Share area, Related posts (when the post has any). The order is the same on every post: with or
+  without the questions panel, with or without Related posts, published or draft.
+- **FR-002**: The card MUST show the visible heading "Written by Don Coleman", Don's portrait photo,
+  and two short lines in the first person on who he is in his current role. "Two lines" means two
+  sentences, each its own paragraph and each at most 100 characters; either may wrap onto more
+  than one rendered line on a narrow screen.
+- **FR-003**: The role lines MUST name his current role and MUST NOT use stale role wording. The
+  banned phrase is "Cloud Architect" in any letter case; any other out-of-date role is caught by
+  FR-004a. The draft lines are "I'm Director, Data Infrastructure and Architecture at Island
+  Health." and "I write about systems thinking, practical AI and leading complex change." Don may
+  revise the wording in review: the final text is whatever is in the one settings place when Don
+  approves the pull request. Tests check the rules in this requirement and FR-002 (two
+  sentences, length, banned phrase, role agreement) and read the text from the settings place;
+  no test repeats the exact wording.
+- **FR-004**: The card's name, photo, photo alt text and role lines MUST be the same on every post
+  and MUST be kept in one place (the blog's settings), so a change to any of them updates every
+  post at once. The link texts and destinations are fixed site wording that belongs to the card
+  itself, not to that place.
+- **FR-004a**: The role title in the card's first line MUST match the role title on the About page
+  ("Director, Data Infrastructure and Architecture" at Island Health). A test checks that the
+  About page's text contains the role title the card uses, so the two cannot drift apart
+  unnoticed; a change of role updates both in the same change.
+
+**Links**
+
+- **FR-005**: On a post in a series, the card MUST link to that series' page with the exact text
+  "More in {series name}": "More in Drift" to the Drift series page (`/writing/drift/`) and "More
+  in Convergence" to the Convergence series page (`/writing/convergence/`). A post's series is
+  the one series among its topics (a post belongs to at most one); its other topics do not
+  affect the link.
+- **FR-006**: On a post in no series, the card MUST link to the writing landing page
+  (`/writing/`) with the exact text "More of my writing", and MUST show no series link. A post in
+  a series shows only its series link, not this one.
+- **FR-007**: The card MUST link to the Contact page (`/contact/`) with the exact text "Get in
+  touch".
+- **FR-008**: The card MUST link to the About page (`/about/`) with its own plain link, with the
+  exact text "More about me". The heading and Don's name are not links.
+- **FR-008a**: The card MUST have exactly three links, in this order in both the reading order and
+  the visual order: the writing link (FR-005 or FR-006), "More about me", "Get in touch". All
+  three have the same visual weight; none is styled as a primary button. Each link's accessible
+  name is its visible text, with no override, and the four possible link texts are all different,
+  so each link makes sense on its own, out of context.
+
+**No script**
+
+- **FR-009**: The card MUST be part of the page as delivered and MUST add no client-side script.
+  With JavaScript turned off, the delivered page contains the heading, both lines, the photo with
+  its alt text and all three links, none of them hidden, so a sighted reader, a keyboard user and
+  a screen reader user all get the whole card.
+
+**Accessibility**
+
+- **FR-010**: The card MUST meet WCAG 2.2 AA in light and dark themes and at every supported width
+  (FR-015). Its visible heading "Written by Don Coleman" MUST be a level-2 heading, a sibling of
+  the "Share this post" and "Related posts" headings under the post title's level-1 heading.
+- **FR-010a**: The card is a plain section, not a landmark: it has no accessible name of its own
+  and no landmark role, the same as the Share area. Its heading is how assistive technology finds
+  it.
+- **FR-010b**: Reading order, whatever the visual order: heading, first line, second line, the
+  three links in FR-008a order, then the photo. Keyboard order: the three card links, in that
+  order, after any link in the post text and views note and before the Share area's links.
+- **FR-010c**: The photo's alt text MUST identify Don by his full name and nothing else: "Don
+  Coleman". It has no "photo of" or "image of" prefix and no role or description, because the
+  photo's purpose on the card is to show who wrote the post. The name is heard twice (in the
+  heading and as the last item, the photo) by design; the photo is not marked decorative because
+  it carries the author's likeness. The home page's longer alt text is written for its own
+  context and is not reused.
+- **FR-010d**: Each card link MUST have a target of at least 24 by 24 CSS px (WCAG 2.5.8), also
+  when the links wrap onto several lines or sit side by side at 320 px.
+- **FR-010e**: Each card link MUST show the site's visible focus indicator when focused by
+  keyboard, in both themes, with at least 3:1 contrast against the card's background, and the
+  focused link MUST NOT be entirely hidden by the site's sticky header or any other content
+  (WCAG 2.4.11).
+- **FR-010f**: Contrast, in both light and dark themes: the heading, both lines and the link text,
+  in their normal and hover states, MUST each have at least 4.5:1 contrast against the card's
+  background; the focus indicator at least 3:1 (FR-010e). The links are underlined, so their
+  purpose is not shown by colour alone.
+- **FR-010g**: In forced-colours (high-contrast) mode, the card's text, links, underlines, focus
+  indicator and its boundary MUST remain visible, using the system colours as the rest of the
+  site does. The card has no animation or motion, so reduced-motion settings need nothing from
+  it.
+
+**Layout and look**
+
+- **FR-011**: The card MUST line up with the other end-of-post pieces: its left and right edges
+  equal the post title card's (and so the views note's and Share area's) within 1 px at 320,
+  375, 768, 1024 and 1440 px, with and without the questions panel.
+- **FR-012**: The card MUST use the site's existing visual language: the post title card's box
+  (border, background, rounded corners, padding and shadow) in both themes, the Share area's
+  heading style and the site's existing plain underlined link style.
+- **FR-012a**: The card MUST be clearly distinct from the title card and the Related posts cards
+  that look similar: it has its own heading "Written by Don Coleman" and a round portrait, and it
+  carries no post title, summary, date, feature image or topic pill.
+- **FR-013**: The card appears only on post pages. No other page has it: the home page, other
+  Markdown pages (About, Contact, Work with me, Technology, Projects, the privacy and terms
+  pages), project stories, every writing listing (the writing landing page, series pages, the
+  all-posts list and its pages) and the not-found page. It is not added to the RSS feed's post
+  content.
+
+**Photo and performance**
+
+- **FR-014**: The photo MUST be shown as a circle 96 CSS px across, cropped from Don's existing
+  square portrait, served at one and two times that size in a modern compressed image format, and
+  loaded lazily (it is below the fold on every post). Its width and height MUST be reserved
+  before it loads, so the card causes no layout shift.
+- **FR-014a**: The post page MUST stay within the site's existing performance budget (on a 390 x
+  844 phone viewport: Largest Contentful Paint at most 2.5 s, Cumulative Layout Shift at most 0.1,
+  at most 10 KB of JavaScript and at most 150 KB transferred in total). The card's allowed share
+  of that budget is: 0 bytes of JavaScript, no layout shift, the photo outside the initial load
+  (lazy), and the photo file at most 20 KB at its larger size.
+- **FR-015**: Supported widths are 320 px to 1440 px and beyond, checked at 320, 375, 768, 1024
+  and 1440 px. Below 768 px the photo sits centred above the text, and the heading, lines and
+  links are centred, matching the views note and Share area. From 768 px the photo sits to the
+  left of the text, top-aligned, and the text and links are left-aligned. At 320 px and at 200%
+  text zoom nothing scrolls sideways and no content or link is lost or overlapped (WCAG 1.4.4,
+  1.4.10).
+- **FR-016**: The card is readable in both light and dark themes and meets FR-010f in both.
 
 ### Key Entities
 
 - **Author profile**: The one set of facts the card shows: name (in the heading "Written by Don
-  Coleman"), portrait photo with alt text, two first-person role lines. Kept in one place and shared by every post.
+  Coleman"), portrait photo, its alt text ("Don Coleman") and two first-person role lines. Kept
+  in one place and shared by every post. Link texts are not part of it (FR-004).
 - **Series**: Drift or Convergence. A post belongs to at most one; the card's series link depends
   on it.
 
@@ -183,17 +292,23 @@ Contact page.
 - **SC-002**: A reader landing on any post can name the author and his current role after
   scrolling to the end, without following a link.
 - **SC-003**: From any post, a reader reaches the post's series page (or, for a post in no series,
-  the writing landing page), the About page and the Contact page in one click each.
+  the writing landing page `/writing/`), the About page and the Contact page in one click each.
 - **SC-004**: The card's text contains no "Cloud Architect" wording, and its role matches the About
   page.
 - **SC-005**: Every post template passes the automated accessibility check in light and dark
-  themes, and the post page stays within the existing performance budget.
+  themes, every card link has a target of at least 24 x 24 px, and the post page stays within the
+  existing performance budget (FR-014a). The automated check covers contrast, heading markup,
+  alt text presence, link names and target size; the remainder is checked by Don on the preview
+  before approving: alt text and link wording make sense, keyboard focus moves through the three
+  card links in order and stays visible, and the card reflows at 320 px and at 200% text zoom.
 - **SC-006**: Changing the role wording in its one place changes it on every post's card with no
   per-post edit.
 
 ## Assumptions
 
-- The photo is the existing portrait already used on the home page; no new photo is needed.
+- The photo is the existing square portrait already used on the home page, shown as a circle;
+  no new photo is needed. Only the image file is shared: the card has its own alt text
+  (FR-010c), because the home page's is worded for that page.
 - The two role lines are the first-person drafts in FR-003, kept with the blog's other settings.
   Don revises the wording in review; the draft is plain language with no hype.
 - The site has a single author, so the card always describes Don and posts carry no author setting.
@@ -204,6 +319,9 @@ Contact page.
   among them.
 
 ## Out of Scope (follow-up work)
+
+Each item below is listed under a "Follow-up" heading in the pull request body, so Don can file
+it as an issue and it is not lost.
 
 - Author information in search-engine structured data or link previews.
 - An author card on project stories or pages.

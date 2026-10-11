@@ -47,7 +47,7 @@ fold
 |-----------|------------------------|
 | I. Test-First | Tests are written and seen to fail first, one primary layer each (table under Design, "Tests"): unit for `seriesOf()` and the author settings rules, component for the card's markup and its place in `PostLayout`, build test for "posts only", E2E for layout and edges, a11y scan and visual shot for the template. |
 | II. Automated Release Gate | No check is skipped or weakened. Existing tests that assert end-of-post order (`blog.spec.ts`) are extended to include the card, not loosened. The changed `post-template` baselines are refreshed on purpose for both platforms. |
-| III. Human Review of Every Change | Normal PR from `drc-agents`, Don approves, auto-merge armed. Don reviews the two draft lines and the link wording in the PR; the PR body lists a `[PREVIEW-CHECK]` to look at the card on a Drift post, a no-series post and at phone width. |
+| III. Human Review of Every Change | Normal PR from `drc-agents`, Don approves, auto-merge armed. Don reviews the two draft lines and the link wording in the PR; the PR body lists a `[PREVIEW-CHECK]` to look at the card on a Drift post, a no-series post and at phone width, and to check the manual accessibility remainder (SC-005: alt text and link wording, keyboard focus through the three links, 200% text zoom). The PR body lists the spec's out-of-scope items under "Follow-up". |
 | IV. First-Party Before Custom | Astro component, Astro `<Image />` (`astro:assets`), Tailwind theme, Cloudflare static assets. Each Astro choice cites its docs page in research.md (R2: Images guide and `densities` reference; testing via the Container API, docs.astro.build/en/guides/testing/#vitest-and-container-api). Astro Docs MCP was available and used. Cloudflare: nothing beyond the existing static-asset serving is needed; no Worker code. Fly.io: the site has no Fly.io component (retired in feature 004), so there is no Fly.io option to use. No custom code replaces a first-party feature; the only new logic is `seriesOf()`, a five-line helper over the existing topic config. Table in research.md R8. |
 | V. Static by Default | The card is prerendered HTML in every post page. No endpoint, no island, no client script (FR-009). Core content stays readable with JS off. |
 | VI. Content as Files | No CMS or database. The author facts are a typed constant in a committed config file; the photo is the committed home-page image. No post frontmatter changes. |
@@ -122,7 +122,9 @@ section[data-author-card]  (title-card box, mt-8, flex-col items-center text-cen
 | Behaviour | Contract row | Layer | File |
 |-----------|--------------|-------|------|
 | `seriesOf` returns the series or `undefined` | A8 | Unit | `tests/unit/content/topics.test.ts` |
-| Author lines: two, one line each, no "Cloud Architect"; name and alt non-empty | A6, FR-003 | Unit | `tests/unit/content/blog-config.test.ts` |
+| Author lines: two, one line each, at most 100 characters each, no "Cloud Architect" in any case; name and alt non-empty | A6, FR-002, FR-003 | Unit | `tests/unit/content/blog-config.test.ts` |
+| The About page's text contains the role title the card's first line uses | A6, FR-004a | Unit (reads the About page source file) | `tests/unit/content/blog-config.test.ts` |
+| Photo file at the 2x size is at most 20 KB | A5, FR-014a | Build (only the real build makes the file) | fixture-site build test |
 | Heading, image attributes, two lines, three links in order, series vs no-series link, no script | A4 to A9 | Component | `tests/component/post/AuthorCard.test.ts` |
 | Card sits after the views note and before Share in the article | A2 | Component | `tests/component/post/PostLayout.test.ts` |
 | Card on every built post page, on no other page | A1 | Build (output spanning pages) | fixture-site build test |
@@ -195,8 +197,6 @@ under `tests/component/post/`).
 - The two role lines are drafts (FR-003); he may revise them in `blog.ts`.
 - Photo alt text is "Don Coleman" (the heading already says "Written by Don Coleman"); the home
   page uses the longer "Don Coleman, smiling, in a portrait photo".
-- The no-series link goes to `/writing/` (landing page). If he meant the flat list, it becomes
-  `/writing/all/`.
 
 ## Complexity Tracking
 
