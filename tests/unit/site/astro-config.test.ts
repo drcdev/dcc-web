@@ -26,16 +26,16 @@ describe("astro.config.mjs site resolution", () => {
     process.env = { ...ORIGINAL_ENV };
   });
 
-  it("defaults to https://doncoleman.ca with no WORKERS_CI", async () => {
+  it("defaults to https://www.doncoleman.ca with no WORKERS_CI", async () => {
     const config = await importFreshConfig();
-    expect(config.site).toBe("https://doncoleman.ca");
+    expect(config.site).toBe("https://www.doncoleman.ca");
   });
 
-  it("resolves to https://doncoleman.ca when WORKERS_CI=1 and branch is main", async () => {
+  it("resolves to https://www.doncoleman.ca when WORKERS_CI=1 and branch is main", async () => {
     process.env.WORKERS_CI = "1";
     process.env.WORKERS_CI_BRANCH = "main";
     const config = await importFreshConfig();
-    expect(config.site).toBe("https://doncoleman.ca");
+    expect(config.site).toBe("https://www.doncoleman.ca");
   });
 
   it("resolves via resolveSiteOrigin for a non-main branch", async () => {

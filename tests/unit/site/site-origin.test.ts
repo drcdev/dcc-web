@@ -10,15 +10,15 @@ const baseConfig = {
 };
 
 describe("FALLBACK_ORIGIN", () => {
-  it("is https://doncoleman.ca", () => {
-    expect(FALLBACK_ORIGIN).toBe("https://doncoleman.ca");
+  it("is https://www.doncoleman.ca", () => {
+    expect(FALLBACK_ORIGIN).toBe("https://www.doncoleman.ca");
   });
 });
 
 describe("resolveSiteOrigin", () => {
-  it("resolves to https://doncoleman.ca when WORKERS_CI=1 and branch is main (FR-010a)", () => {
+  it("resolves to https://www.doncoleman.ca when WORKERS_CI=1 and branch is main (FR-010a)", () => {
     const origin = resolveSiteOrigin({ WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" }, baseConfig);
-    expect(origin).toBe("https://doncoleman.ca");
+    expect(origin).toBe("https://www.doncoleman.ca");
   });
 
   it("resolves to the aliased workers.dev origin for another branch when workersSubdomain is set", () => {
