@@ -42,7 +42,7 @@ The home page body becomes intro, **Now**, **Start here**, **Recent writing**. T
 
 **Constraints**: Readable without JavaScript; WCAG 2.2 AA; no horizontal scroll at 320 px; build fails with plain, file-naming messages on bad content.
 
-**Scale/Scope**: One Now file, 1–4 reading path files of 1–5 items each. Two new section components, two new collections, two small library modules.
+**Scale/Scope**: One Now file, 0–4 reading path files of 1–5 items each. Two new section components, two new collections, two small library modules.
 
 ## Constitution Check
 
@@ -50,10 +50,10 @@ The home page body becomes intro, **Now**, **Start here**, **Recent writing**. T
 
 | # | Principle | Status | How this plan meets it |
 |---|-----------|--------|------------------------|
-| I | Test-First | PASS | Every behaviour gets one primary layer, written and seen to fail first. **Unit**: the Now and reading-path schemas, the date checks (shape, real day, not in the future), the collection checks (missing item, duplicate item, more than four paths, duplicate position), and the resolver (draft filter, empty path dropped, order). **Component** (Container API): `Now` and `StartHere` markup, heading levels, `<time datetime>`, the "Project" label, the reading-time text. **Build** (fixture site): each build failure names the file and the item; a production build (`WORKERS_CI=1`, branch `main`) leaves out drafts; no reading-path files means no section. **E2E**: the home journey on the real site (section order, path links resolve, no JS, 320 px). **Accessibility and visual** run on the home template, not per story. |
+| I | Test-First | PASS | Every behaviour gets one primary layer, written and seen to fail first. **Unit**: the Now and reading-path schemas, the date checks (shape, real day, not in the future), the collection checks (missing item, duplicate item, more than four paths, duplicate position), and the resolver (draft filter, empty path dropped, order). **Component** (Container API): `Now` and `StartHere` markup, heading levels, `<time datetime>`, the "Project" label, the reading-time text. **Build** (fixture site): each build failure names the file and the item; a production build (`WORKERS_CI=1`, branch `main`) leaves out drafts; no reading-path files means no section. **E2E**: the home journey on the fixture site, whose home page is the real `index.mdx` with fixture Now and reading-path content (section order, removed copy gone, links navigate, tab order, no JS, 320 px and zoom, forced colours). The axe and budget checks on `/` run on the real site with the launch paths. **Accessibility and visual** run on the home template, not per story. |
 | II | Automated Release Gate | PASS | Nothing is skipped or loosened. `pnpm run verify` already exists and runs the whole gate. New baselines are added; none are weakened. |
 | III | Human Review of Every Change | PASS | One PR from `drc-agents`, auto-merge armed after the final push. The launch Now wording (FR-021) and the path descriptions (FR-022) are listed as `[PREVIEW-CHECK]` items for Don. |
-| IV | First-Party Before Custom | PASS | Every capability uses an Astro first-party feature (table below). The Astro Docs MCP was available and used; research.md cites each page. Custom code covers only what Astro does not do: cross-collection checks with file-naming errors (Astro's `reference()` is checked only when read, and its error does not name the file), the future-date check, and the resolver. |
+| IV | First-Party Before Custom | PASS | Every capability uses an Astro first-party feature (table below). The Astro Docs MCP was available and used; research.md cites each page. Custom code covers only what Astro does not do: cross-collection checks with file-naming errors (Astro's `reference()` is checked only when read, and its error does not name the file), the future-date check, the Now body check, and the resolver. |
 | V | Static by Default | PASS | Both sections are prerendered in the home page. No endpoint, no island, no client script. Content is readable with JS off (E2E no-JS check on `/`). |
 | VI | Content as Files | PASS | The Now entry and the reading paths are files under `src/content/`, validated by collection schemas. Bad content fails the build with a clear message (contracts/build-errors.md). Editing either needs no code change (FR-005, FR-011). |
 | VII | Private Data | PASS (n/a) | No personal data is collected. The "open to" link goes to the existing contact page. |
@@ -108,14 +108,14 @@ src/
 │   ├── reading-paths/
 │   │   ├── leading-change-in-healthcare.yaml   # NEW (FR-022)
 │   │   └── building-with-ai-agents.yaml        # NEW (FR-022)
-│   ├── schemas/now.ts                   # NEW: Now front matter schema
+│   ├── schemas/now.ts                   # NEW: Now front matter schema + pure checkNowBody() (N06, N08)
 │   ├── schemas/reading-path.ts          # NEW: reading path schema (reference())
 │   └── pages/index.mdx                  # EDIT: body becomes <Now /> <StartHere /> <RecentWriting />
 ├── lib/
 │   ├── content/dates.ts                 # NEW (or extend post-dates.ts): raw-date + not-in-future check, reused by Now
 │   ├── content/errors.ts                # EDIT: ContentKind gains "now" and "reading path"
 │   ├── content/reading-paths.ts         # NEW, pure: checkReadingPaths(), resolveReadingPaths()
-│   ├── now.ts                           # NEW: getNow() (exactly one entry, render body)
+│   ├── now.ts                           # NEW: getNow() (exactly one entry, runs checkNowBody(), render body)
 │   └── reading-paths.ts                 # NEW: getReadingPaths() (collections + summaries + project minutes)
 └── components/sections/
     ├── Now.astro                        # NEW
@@ -124,12 +124,13 @@ src/
     └── schemas.ts                       # EDIT: no-prop schemas for both
 
 tests/
-├── unit/content/now-schema.test.ts, reading-path-schema.test.ts, reading-paths.test.ts, dates.test.ts
+├── unit/content/now-schema.test.ts, now-body.test.ts, reading-path-schema.test.ts, reading-paths.test.ts, dates.test.ts, launch-paths.test.ts
+├── unit/markdown/reading-time.test.ts   # EDIT: one shared rule for posts and projects (FR-010a)
 ├── component/sections/Now.test.ts, StartHere.test.ts
 ├── build/home-sections.test.ts          # build failures, production draft filter, no-paths case
 ├── build/fixture-site.ts                # EDIT: drop real reading-path files when real posts/projects are removed; `readingPaths` option
 ├── fixtures/now/, fixtures/reading-paths/ (valid + broken)
-├── e2e/home.spec.ts                     # NEW: order, links, 320 px; existing no-JS/a11y/budget lists already include "/"
+├── e2e/home.spec.ts                     # NEW (fixture site): order, removed copy, links, tab order, 320 px, zoom, no JS, forced colours; existing a11y/budget lists already include "/"
 └── e2e/visual.spec.ts                   # EDIT: new home Now + Start here shots on the fixture site
 scripts/build-fixture-site.ts            # EDIT: swap in fixture Now + reading paths
 ```
