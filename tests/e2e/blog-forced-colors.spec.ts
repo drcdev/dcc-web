@@ -79,6 +79,9 @@ for (const scheme of ["light", "dark"] as const) {
       await expectEdge(page, card);
       await expect(card.locator("h2")).toBeVisible();
       await expect(card.locator("p").first()).toBeVisible();
+      const links = card.locator("a");
+      await expect(links).toHaveCount(3);
+      for (const link of await links.all()) await expect(link).toBeVisible();
     });
 
     test("joined series banner", async ({ page }) => {

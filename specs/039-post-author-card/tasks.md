@@ -143,4 +143,4 @@ The full gate is not run by the implement subagent (ask Don first, see CLAUDE.md
 
 ## Phase 7: Convergence
 
-- [ ] T027 In `tests/e2e/blog-forced-colors.spec.ts`, extend the "author card at the end of a post (A15)" case so it also asserts that the card's three links (`[data-author-card] a`) are visible in forced colours, light and dark, as T010a states; the case today checks only the border, the heading and the first line. Layer: E2E (only a browser emulates forced colours). per FR-010g (partial)
+- [X] T027 In `tests/e2e/blog-forced-colors.spec.ts`, extend the "author card at the end of a post (A15)" case so it also asserts that the card's three links (`[data-author-card] a`) are visible in forced colours, light and dark, as T010a states; the case today checks only the border, the heading and the first line. Layer: E2E (only a browser emulates forced colours). per FR-010g (partial)
