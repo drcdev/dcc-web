@@ -206,12 +206,12 @@ the change per shift.
    colour, and the text summary states the change for each shift.
 3. **Given** the reader opened the post without a results link, **When** they finish the assessment,
    **Then** only the new result is shown, with no error.
-5. **Given** the reader finishes the assessment or a retake, **When** the results appear,
-   **Then** the address-bar fragment is replaced by the new result's fragment without adding a
-   history entry, so reloading shows that result as the earlier result.
 4. **Given** the reader wants to start fresh, **When** they choose to clear their answers,
    **Then** every answer and the earlier result loaded from the link are removed from the page,
    and the results fragment is removed from the address bar.
+5. **Given** the reader finishes the assessment or a retake, **When** the results appear,
+   **Then** the address-bar fragment is replaced by the new result's fragment without adding a
+   history entry, so reloading shows that result as the earlier result.
 
 ---
 

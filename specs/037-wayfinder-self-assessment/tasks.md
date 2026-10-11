@@ -20,7 +20,7 @@ shared pure modules) blocks every story because all four render from, or read, t
 
 - **[P]**: Can run in parallel (different files, no dependency on an unfinished task)
 - **[Story]**: US1 to US4 from spec.md
-- **[PREVIEW-CHECK]**: cannot be verified by an agent locally (needs the preview deployment or
+- **[PREVIEW-CHECK]** (suffix at the end of the task line): cannot be verified by an agent locally (needs the preview deployment or
   Don's eyes). Left unticked by the subagent and listed in the PR body
   (`.claude/skills/_shared/preview-check.md`).
 - Toolchain: follow `CLAUDE.md` "Local toolchain" (`node -v`, nvm, no `timeout`) for every
@@ -66,7 +66,7 @@ that render the moved text, and the question-source expansion (FR-004, FR-014, F
 - [ ] T015 [P] Create `src/lib/assessment/result-link.ts` (encode, decode, URL per `contracts/results-link.md`).
 - [ ] T016 [P] Create `src/lib/assessment/checks.ts` (A9 and A10).
 - [ ] T017 [P] Create `src/lib/assessment/question-text.ts` (FR-021 expansion).
-- [ ] T018 Create `src/lib/assessment/lookup.ts` (`getEntry` wrapper raising A4/A5 through `contentError`, plus the A6/A7 heading checks the route uses).
+- [ ] T018 Create `src/lib/assessment/lookup.ts` (`getEntry` wrapper raising A4/A5 through `contentError`). The A6/A7 heading checks are added in T043, after their test T040.
 - [ ] T019 [P] Create `src/components/assessment/PracticalApplication.astro` and `DevelopmentPlan.astro` rendering the same markup the prose had.
 - [ ] T020 Create `src/components/assessment/index.ts` (the post-only component registry, names exported for `validatePageBody`) and update `src/lib/content/body.ts` so kind "post" accepts them (A8).
 - [ ] T021 Update `src/pages/writing/[slug].astro` to pass the registry as `components`, run the A9/A10 checks, and hash the expanded question source; update `src/pages/writing/[slug]/question-source.json.ts` to expand through `question-text.ts` before `prepareQuestionSource()`.
@@ -90,9 +90,11 @@ to the mean of its three answers (SC-002).
 - [ ] T025 [P] [US1] Write `tests/unit/assessment/score.test.ts` for `src/lib/assessment/score.ts`: mean per shift, low band below 3, band phrases ("nearer 'From' (...)", "in the middle" at exactly 3, "nearer 'To' (...)"), one-decimal formatting, change text ("up 0.7", "down 0.3", "no change") (FR-005, FR-007, SC-002). Layer: unit.
 - [ ] T026 [P] [US1] Write `tests/component/assessment/SelfAssessment.test.ts`: five fieldset groups named by shift, 15 statement fieldsets of five labelled radios, `type="button"` buttons, statement list for no-JS, one JSON data attribute carrying the version and no answers, h3 inside the h2 (U1 structure, U2, U18 markup, FR-001). Layer: component (markup from data).
 - [ ] T027 [P] [US1] Write `tests/build/assessment-scripts.test.ts`: only posts rendering the block carry the loader, the chunk reference, the styles and the title-card line; other pages' HTML has none and their shared scripts are unchanged (U16, SC-005). Layer: build (the check spans built output across pages).
-- [ ] T028 [US1] Write `tests/e2e/self-assessment.spec.ts` (US1 section): empty submit shows the error summary with the count, a link per unanswered statement, `aria-invalid` and "Choose an answer", focus on the first unanswered radio (U3); full answers show chart and summary matching the means (U4); status text and DOM order (U5); changing an answer and resubmitting updates both; keyboard-only completion; no CSP violation and no `style` attribute set by the module (U19). Layer: e2e (a journey in a real browser). Must fail before T033-T037.
+- [ ] T028 [US1] Write `tests/e2e/self-assessment.spec.ts` (US1 section): empty submit shows the error summary with the count, a link per unanswered statement, `aria-invalid` and "Choose an answer", focus on the first unanswered radio (U3); full answers show chart and summary matching the means (U4); status text and DOM order (U5); changing an answer and resubmitting updates both; keyboard-only completion; no CSP violation and no `style` attribute set by the module (U19); the module chunk is not requested at load while the block is more than one viewport below and is requested once the block comes within one viewport height (U16 second half, L4, FR-017); answering and showing results trigger zero network requests (U15 first half, FR-016); at 320 px, at 200% zoom and with the WCAG text-spacing overrides the form, chart rows and band phrases show no sideways scroll or clipping (U17 layout part, FR-018). Layer: e2e (a journey in a real browser). Must fail before T031-T036.
 - [ ] T029 [P] [US1] Extend `tests/e2e/no-js.spec.ts` for U18: post reads in full including the moved text, the block shows the JS note and the statement list, no form controls visible. Layer: e2e (JavaScript off needs a browser context).
-- [ ] T030 [P] [US1] Write `tests/e2e/self-assessment.a11y.spec.ts` (empty form, errors shown, results shown; light and dark). Layer: a11y (axe). Second layer beside the template a11y runs because these states exist only after interaction.
+- [ ] T030 [P] [US1] Write `tests/e2e/self-assessment.a11y.spec.ts` (empty form, errors shown, results shown; light and dark): axe with the WCAG 2.2 AA tags, plus the checks axe does not make: each answer choice with its label and each button is at least 24 x 24 CSS px (2.5.8); every control reached by Tab shows a focus indicator not fully hidden by the sticky header (2.4.7, 2.4.11); chart track, marker, focus indicator and radio boundary colours reach 3:1 against their background in each theme (1.4.11); forced colours keep the track and marker visible. Layer: a11y. Second layer beside the template a11y runs because these states exist only after interaction.
+
+- [ ] T062 [P] [US1] Extend `tests/e2e/budget.spec.ts` with the Wayfinder post measured at load and after scrolling to the block, answering all statements and showing results, under the existing slow-4G / 4x CPU conditions: LCP 2.5 s, CLS below 0.1, long tasks 200 ms, JavaScript 10 KB, total 150 KB (FR-018b, SC-005). Layer: budget (the only layer that measures transferred bytes and timing). Written here, before T031-T036, and seen to fail (the after-results case cannot answer a form that does not exist yet); it is re-run after US4 in T067. Tighten nothing; if it fails later, fix the code, never the limit. (ID kept from the first draft; position, not number, sets the order.)
 
 ### Implementation (US1)
 
@@ -100,11 +102,11 @@ to the mean of its three answers (SC-002).
 - [ ] T032 [US1] Create `src/components/assessment/SelfAssessment.astro`: h2 and intro, form, no-JS note and statement list, status region, empty result containers, bootstrap `<script>` using `IntersectionObserver` (one viewport height) to `import()` the module, scoped styles with 24 px targets, 320 px layout, dark and forced-colours support.
 - [ ] T033 [US1] Create `src/lib/assessment/client.ts` (US1 part): read answers, validate with the error summary and focus rule, compute scores, draw the SVG chart (one row per shift, From/To at the ends, marker at `(score-1)/4`, accessible name pointing at the summary), write the text summary and the polite status messages ("Your results are ready below.", "Your results are updated.").
 - [ ] T034 [P] [US1] Create `src/components/assessment/AssessmentLink.astro` (reserved one-line title-card link "Take the self-assessment" to the assessment heading) and add the optional empty `title-extra` slot to `src/layouts/PostLayout.astro`, rendering exactly today's markup when empty.
-- [ ] T035 [US1] In `src/pages/writing/[slug].astro` render `AssessmentLink` into the slot only for posts that render `SelfAssessment`, and add the A6 and A7 checks (T040 tests).
+- [ ] T035 [US1] In `src/pages/writing/[slug].astro` render `AssessmentLink` into the slot only for posts that render `SelfAssessment` (the A6 and A7 checks come in T043, after T040).
 - [ ] T036 [US1] Add `<SelfAssessment assessment="wayfinder" />` under its `##` heading in the Wayfinder post between Mindset Shift #5 and "The Systems Leadership Wayfinder" (FR-001).
-- [ ] T037 [US1] Run T025-T030 and confirm they pass.
-- [ ] T038 [P] [US1] [PREVIEW-CHECK] Don reviews the drafted statement wording in `src/content/assessments/wayfinder.yaml` on the preview and edits it (any later edit invalidates older results links by design).
-- [ ] T039 [P] [US1] [PREVIEW-CHECK] SC-001: on the preview Don takes the assessment once without hurrying and confirms it takes under 5 minutes.
+- [ ] T037 [US1] Run T025-T030 and T062 and confirm they pass.
+- [ ] T038 [P] [US1] Don reviews the drafted statement wording in `src/content/assessments/wayfinder.yaml` on the preview and edits it (any later edit invalidates older results links by design). [PREVIEW-CHECK]
+- [ ] T039 [P] [US1] SC-001: on the preview Don takes the assessment once without hurrying and confirms it takes under 5 minutes. [PREVIEW-CHECK]
 
 **Checkpoint**: US1 works alone and is the MVP.
 
@@ -124,7 +126,7 @@ to the mean of its three answers (SC-002).
 
 ### Implementation (US2)
 
-- [ ] T043 [US2] Add `selectLowBand` and `nextToPractise` to `src/lib/assessment/score.ts`.
+- [ ] T043 [US2] Add `selectLowBand` and `nextToPractise` to `src/lib/assessment/score.ts`, and add the A6 (shift anchor matches a rendered heading id) and A7 (one `SelfAssessment` per assessment) checks to `src/lib/assessment/lookup.ts`, called from `src/pages/writing/[slug].astro` (tests: T040).
 - [ ] T044 [US2] Extend `src/lib/assessment/client.ts`: render low-band links and paragraphs (from the data attribute), the none-low message, heading focus on follow, smooth scroll only without reduced motion; confirm the mindset-shift headings have enough `scroll-margin-top` for the header (adjust in `SelfAssessment.astro` global rules, not the shell).
 - [ ] T045 [US2] Run T040-T042 and confirm they pass.
 
@@ -147,7 +149,7 @@ to the mean of its three answers (SC-002).
 - [ ] T049 [US3] Extend `src/lib/assessment/client.ts`: "Print my plan" button calling `window.print()`, append the plan sheet to `<body>` and set `data-assessment-plan` on `<html>` while a result is shown, the sheet built from the same data fields as the post.
 - [ ] T050 [US3] Add the print styles to `src/components/assessment/SelfAssessment.astro` (plan-only when the root attribute is set, statement list without controls otherwise, A4 and Letter fit); shipped only on posts that render the block.
 - [ ] T051 [US3] Run T046-T047 and confirm they pass.
-- [ ] T052 [P] [US3] [PREVIEW-CHECK] Don opens the print preview on the preview deployment in his browser for A4 and US Letter and confirms the plan reads in the stated order on at most two pages.
+- [ ] T052 [P] [US3] Don opens the print preview on the preview deployment in his browser for A4 and US Letter and confirms the plan reads in the stated order on at most two pages. [PREVIEW-CHECK]
 
 ---
 
@@ -159,10 +161,10 @@ to the mean of its three answers (SC-002).
 
 ### Tests first (US4)
 
-- [ ] T053 [US4] Extend `tests/e2e/self-assessment.spec.ts` (US4 section): L1 earlier result shown at once with "Earlier result from <date>" and the title-card link text swapped without a layout shift; L2 older version shown on its own and a retake shown separately with no change; L3 malformed fragment gives "This results link could not be read." and the link keeps its wording; L5 `replaceState` leaves `history.length` unchanged; L6 clear removes answers, earlier result, plan and fragment; U10 link text and "Copy link" with the sharing sentence; U12/U13 hollow diamond and filled circle with a legend and change text; U14 focus on the first radio. Layer: e2e (journey, history and focus).
-- [ ] T054 [US4] Add a request-recording journey to `tests/e2e/self-assessment.spec.ts` opened through a results link: answering, showing, following a link, copying, printing and clearing trigger zero requests, and no request of any kind (fetch, XHR, beacon, image, script, style, font, navigation, prefetch, WebSocket) has the fragment, `result=` or an answer in its URL, headers or body; no cookies, local storage, session storage, IndexedDB or Cache Storage written (L7, U15, SC-004, FR-012, FR-016). Layer: e2e (only a browser records every request); it is the single place the privacy guarantee is observed.
-- [ ] T055 [US4] Add CLS cases to `tests/e2e/self-assessment.spec.ts`: opened through a results link at 320 and 390 px, layout-shift entries before first input sum to 0 (U21, FR-018a); and 320 px, 200% zoom and text-spacing overrides show no sideways scroll or clipping (U17). Layer: e2e (layout shift and zoom need a real browser).
-- [ ] T056 [US4] Extend `tests/e2e/self-assessment.a11y.spec.ts` with the comparison, two-separate-results and unreadable-link states in light and dark, and forced-colours checks of the markers and tracks (SC-006). Layer: a11y (axe); second layer reason as in T030.
+- [ ] T053 [US4] Extend `tests/e2e/self-assessment.spec.ts` (US4 section): L1 earlier result shown at once with "Earlier result from <date>" and the title-card link text swapped without a layout shift; L2 older version shown on its own and a retake shown separately with no change; L3 malformed fragment gives "This results link could not be read.", the link keeps its wording and the fragment stays as it is until results are shown or cleared; with a fragment the module chunk is requested at once (U16, FR-017); L5 `replaceState` leaves `history.length` unchanged; L6 clear removes answers, earlier result, plan and fragment; U10 link text and "Copy link" with the sharing sentence; U12/U13 hollow diamond and filled circle with a legend and change text; U14 status "Your answers have been cleared." and focus on the first radio (FR-009); U20 activating the title-card link (either wording) focuses its target heading and leaves the fragment unchanged. Layer: e2e (journey, history and focus).
+- [ ] T054 [US4] Add a request-recording journey to `tests/e2e/self-assessment.spec.ts` opened through a results link: answering, showing, following a link, copying, printing and clearing trigger zero requests, and no request of any kind (fetch, XHR, beacon, image, script, style, font, navigation, prefetch, WebSocket) has the fragment, `result=` or an answer in its URL, headers or body; no cookies, local storage, session storage, IndexedDB or Cache Storage written (L7, U15, SC-004, FR-012, FR-016). Layer: e2e (only a browser records every request); it extends the recorder T028 started for answering and showing, in the same file and layer, so the privacy guarantee is observed in one spec.
+- [ ] T055 [US4] Add CLS cases to `tests/e2e/self-assessment.spec.ts`: opened through a results link at 320 and 390 px, layout-shift entries before first input sum to 0 (U21, FR-018a); and with a comparison shown, at 320 px, 200% zoom and text-spacing overrides the two-marker chart rows, change text and results link (wrapping anywhere) show no sideways scroll or clipping (U17, US4 part; the US1 part is in T028). Layer: e2e (layout shift and zoom need a real browser).
+- [ ] T056 [US4] Extend `tests/e2e/self-assessment.a11y.spec.ts` with the comparison, two-separate-results and unreadable-link states in light and dark: axe, 3:1 non-text contrast for the hollow diamond, filled circle and legend markers, 24 x 24 targets for "Copy link", and forced-colours checks of both markers, the tracks and the legend (SC-006, FR-013, FR-018). Layer: a11y (axe); second layer reason as in T030.
 
 ### Implementation (US4)
 
@@ -175,13 +177,12 @@ to the mean of its three answers (SC-002).
 ## Phase 7: Polish and cross-cutting
 
 - [ ] T060 [P] Add the FR-016a paragraph to `src/content/pages/privacy-policy.mdx` (runs only in the browser, the site never receives or stores answers or scores, the results link holds the scores in the page address so anyone it is shared with can see them). Layer: none beyond the existing page checks (copy, not behaviour).
-- [ ] T061 [P] [PREVIEW-CHECK] Don reads the privacy paragraph in `src/content/pages/privacy-policy.mdx` on the preview for wording.
-- [ ] T062 Extend `tests/e2e/budget.spec.ts` with the Wayfinder post measured at load and after scrolling to the block, answering all statements and showing results, under the existing slow-4G / 4x CPU conditions: LCP 2.5 s, CLS below 0.1, long tasks 200 ms, JavaScript 10 KB, total 150 KB (FR-018b, SC-005). Layer: budget (the only layer that measures transferred bytes and timing). Write it before the client is finished and tighten nothing; if it fails, fix the code, never the limit.
-- [ ] T063 [P] [PREVIEW-CHECK] Don checks on the preview that the moved Practical Application paragraphs and the 6-Week Development Plan read word for word as before (quickstart step 1).
-- [ ] T064 [P] [PREVIEW-CHECK] Don does the screen-reader pass (errors, results, text summary says all the chart shows) and the no-JavaScript list reading order on the preview (SC-006 manual part).
-- [ ] T065 [P] [PREVIEW-CHECK] FR-016b, post-release: Don opens one production page view of the Wayfinder post through a results link and inspects the Web Analytics beacon payload. Pass: no field contains `#`, `result=` or any part of the fragment. Fail: add a Web Analytics exclude rule for the post's path the same day and open a follow-up issue.
+- [ ] T061 [P] Don reads the privacy paragraph in `src/content/pages/privacy-policy.mdx` on the preview for wording. [PREVIEW-CHECK]
+- [ ] T063 [P] Don checks on the preview that the moved Practical Application paragraphs and the 6-Week Development Plan read word for word as before (quickstart step 1). [PREVIEW-CHECK]
+- [ ] T064 [P] Don does the screen-reader pass (errors, results, text summary says all the chart shows) and the no-JavaScript list reading order on the preview (SC-006 manual part). [PREVIEW-CHECK]
+- [ ] T065 [P] FR-016b, post-release: Don opens one production page view of the Wayfinder post through a results link and inspects the Web Analytics beacon payload. Pass: no field contains `#`, `result=` or any part of the fragment. Fail: add a Web Analytics exclude rule for the post's path the same day and open a follow-up issue. [PREVIEW-CHECK]
 - [ ] T066 Visual baselines: no baseline update is needed (see "Baseline conclusion" below). Run `pnpm run test:visual` and confirm it passes with no diff; any diff is a regression to fix in `PostLayout.astro` (empty slot must render today's markup), not a reason to refresh baselines. Only if a diff is intended after review, run `pnpm run test:visual:update` then `pnpm run test:visual:update:linux` (needs Docker Desktop) per `.claude/skills/_shared/visual-baselines.md`.
-- [ ] T067 Run the quickstart walk-through steps 2-13 and 16 locally and the local gate: `changed-paths.ts --base origin/main` tier only; ask Don before a full `pnpm run verify` (CLAUDE.md, memory: parallel gates crash his machine).
+- [ ] T067 Re-run `tests/e2e/budget.spec.ts` (T062) against the finished module, run the quickstart walk-through steps 2-13 and 16 locally and the local gate: `changed-paths.ts --base origin/main` tier only; ask Don before a full `pnpm run verify` (CLAUDE.md, memory: parallel gates crash his machine).
 
 ---
 
@@ -199,14 +200,14 @@ shell, token or Tailwind theme change; print rules apply to print media only.
 - Phase 1, then Phase 2 (blocks all stories). Within Phase 2: tests T002-T011 before T012-T023, T024 last.
 - US1 (Phase 3) after Phase 2. US2 and US3 each depend on US1's `client.ts` and `SelfAssessment.astro`; US3 also uses `result-link.ts` and `version.ts` from Phase 2. US4 depends on US1 and the print sheet from US3 (the link is printed).
 - US2 and US3 can proceed in parallel after US1 only if their `client.ts` and `SelfAssessment.astro` edits are merged carefully; default is sequential.
-- Polish after the stories; T062's budget test is written once the client exists and run last.
+- Polish after the stories. T062's budget test is written with the US1 tests, before any client code, and re-run in T067 once US2-US4 have added to the module.
 - Edits to `[slug].astro`, `PostLayout.astro`, `body.ts`, `content.config.ts`, `privacy-policy.mdx`, `docs/posts.md`, `budget.spec.ts` and `tests/helpers/content.ts` are small and additive; on a sibling-worktree conflict, merge `origin/main` and keep both sides.
 
 ## Parallel examples
 
 - Phase 2 tests: T002-T010 touch different files and run together.
 - Phase 2 modules: T014-T017 and T019, T023 are independent files.
-- US1 tests: T025, T026, T027, T029, T030 together; T028 shares `self-assessment.spec.ts` so goes alone.
+- US1 tests: T025, T026, T027, T029, T030, T062 together; T028 shares `self-assessment.spec.ts` so goes alone.
 
 ## Implementation strategy
 
