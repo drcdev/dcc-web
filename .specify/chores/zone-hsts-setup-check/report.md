@@ -53,3 +53,28 @@ None.
 
 - **Deferred decision: HSTS preload.** Decide on HSTS preload once zone HSTS has run a few weeks without problems: raise max-age to ≥ 12 months, turn Preload on, submit to the preload list. Removing a domain from the list is slow, and the list covers every subdomain.
 - The LOW items above (observed-behaviour wording, anchored max-age parse, `nextAction` wording, sharper test regexes). Optional, and not blocking.
+
+## Round 2
+
+Reviewed 2026-10-11 against `git diff origin/main...HEAD`. One new work commit since round 1: bba1cd5 `fix(setup-check): close review findings on zone HSTS check`.
+
+### CRITICAL
+
+None.
+
+### HIGH
+
+None.
+
+### LOW
+
+1. `docs/setup.md:647`: the reworded line is 128 characters where the text around it wraps at about 100. Cosmetic; no lint covers Markdown line length.
+2. `scripts/setup-check/checks/live-hosts.ts:201-202`: the anchored parse `/^max-age="?(\d+)"?$/` rejects optional whitespace around `=` (`max-age = 15552000`), which RFC 6797 allows. Cloudflare and both fallbacks send `max-age=N`, so it is harmless, and it can only report a problem more often, never less.
+
+### Checks made
+
+- Round-1 HIGH fixed (copy then `delete`), `eslint .` clean; LOW 1–4 fixed as described; LOW 5 informational.
+- Fix commit touches 3 files (+13/-6), each hunk mapped to a round-1 finding, plus one new test case (`x-max-age=5`) that was red before the fix.
+- W1–W5 still match the plan; the branch touches only the files the plan names.
+- `vitest run tests/unit/setup-check tests/unit/setup tests/unit/site/headers.test.ts`: 36 files, 457 tests passed; `worker/` `test/router.test.ts`: 4 passed.
+- No check weakened; the max-age parse is stricter than before.
