@@ -9,6 +9,7 @@ import Lead from "./Lead.astro";
 import Now from "./Now.astro";
 import RecentWriting from "./RecentWriting.astro";
 import SideImage from "./SideImage.astro";
+import StartHere from "./StartHere.astro";
 import WideImage from "./WideImage.astro";
 
 export const sectionNames = [
@@ -21,6 +22,7 @@ export const sectionNames = [
   "ContactForm",
   "RecentWriting",
   "Now",
+  "StartHere",
 ] as const;
 
 export type SectionName = (typeof sectionNames)[number];
@@ -40,4 +42,5 @@ export const sectionComponents = {
   ContactForm,
   RecentWriting,
   Now,
+  StartHere,
 } satisfies Record<SectionName, unknown>;

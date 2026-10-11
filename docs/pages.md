@@ -187,6 +187,17 @@ the page.
 <Now />
 ```
 
+`StartHere` shows the home page's "Start here" reading paths: up to four named paths of posts and
+project stories, each item with its reading time. It takes no props and no content. Its paths come
+from the files in `src/content/reading-paths/` (one file per path, at most four, each with a
+`position`, a one-sentence `description` and one to five `items`, each `post: <file name>` or
+`project: <file name>`), so you edit those files and not the page. With no path files the section
+is hidden, and in the live site a draft item is left out.
+
+```mdx
+<StartHere />
+```
+
 ## Build errors you may see
 
 The build stops at the first problem and names the file. Messages start with `Page file` or

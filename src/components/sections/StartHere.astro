@@ -1,0 +1,56 @@
+---
+// The home page's "Start here" section (spec 040 US2; contracts/home-sections.md): named reading
+// paths of ordered posts and project stories. The paths come from src/content/reading-paths/. A
+// `paths` prop replaces the lookup, which is how the component tests feed it. Renders nothing when
+// there are no visible paths. One column below 768 px and two from it, filled row by row in position
+// order, so source order is visual order. It matches RecentWriting's heading, spacing, colours,
+// links and focus styles, and ships no script.
+import type { ResolvedPath } from "../../lib/content/reading-paths.ts";
+import { getReadingPaths } from "../../lib/reading-paths.ts";
+
+export interface Props {
+  paths?: readonly ResolvedPath[];
+}
+
+const paths = Astro.props.paths ?? (await getReadingPaths());
+---
+
+{
+  paths.length > 0 && (
+    <section aria-labelledby="start-here-heading" data-start-here class="not-prose my-10">
+      <h2 id="start-here-heading" class="mb-4 mt-0 text-2xl font-bold text-dusk-900 dark:text-white">
+        Start here
+      </h2>
+      <div class="grid items-start gap-6 md:grid-cols-2">
+        {paths.map((path) => (
+          <section aria-labelledby={`path-${path.id}`} data-reading-path={path.id} class="min-w-0">
+            <h3 id={`path-${path.id}`} class="mb-1 mt-0 text-lg font-bold text-dusk-900 dark:text-white">
+              {path.title}
+            </h3>
+            <p class="mb-3 mt-0 text-dusk-600 dark:text-dusk-300">{path.description}</p>
+            <ol class="m-0 list-none p-0">
+              {path.items.map((item) => (
+                <li data-kind={item.kind} class="m-0 [overflow-wrap:anywhere]">
+                  <a
+                    href={item.href}
+                    class="inline-block py-1 font-medium text-dusk-900 underline underline-offset-4 hover:text-rust-700 dark:text-white dark:hover:text-rust-400"
+                  >
+                    {item.title}
+                  </a>{" "}
+                  <span class="text-sm text-dusk-600 dark:text-dusk-300">
+                    {item.kind === "project" && (
+                      <>
+                        <span>Project</span> ·{" "}
+                      </>
+                    )}
+                    {item.minutesRead} min read
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ))}
+      </div>
+    </section>
+  )
+}

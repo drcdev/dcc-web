@@ -18,6 +18,7 @@ import { assertNowDate } from "./lib/content/now-file.ts";
 import { assertPostDates } from "./lib/content/post-dates.ts";
 import { landingSchema, pageSchema } from "./content/schemas/page.ts";
 import { nowSchema } from "./content/schemas/now.ts";
+import { readingPathSchema } from "./content/schemas/reading-path.ts";
 import { postSchema } from "./content/schemas/post.ts";
 import { projectSchema } from "./content/schemas/project.ts";
 
@@ -105,4 +106,12 @@ const now = defineCollection({
   schema: nowSchema(),
 });
 
-export const collections = { pages, landing, posts, projects, now };
+// `readingPaths`: one YAML file per "Start here" path in src/content/reading-paths/. The id is the file
+// name. Rules that span files (missing items, duplicates, the four-path limit) run in
+// src/lib/reading-paths.ts when the home page is built (contracts/build-errors.md R04 to R07).
+const readingPaths = defineCollection({
+  loader: glob({ pattern: "*.{yaml,yml}", base: "./src/content/reading-paths" }),
+  schema: readingPathSchema(),
+});
+
+export const collections = { pages, landing, posts, projects, now, readingPaths };

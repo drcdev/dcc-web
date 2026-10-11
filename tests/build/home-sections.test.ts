@@ -47,3 +47,73 @@ describe("Now wiring", () => {
     expect(result.message).toContain("there must be exactly one Now file, now.md.");
   });
 });
+
+const POSTS = ["valid/minimal.mdx", "valid/draft.mdx"];
+const PROJECTS = ["minimal.mdx", "draft.mdx"];
+const base = { mode: "build", posts: POSTS, projects: PROJECTS, withoutRealProjects: true } as const;
+
+describe("Start here wiring", () => {
+  it("R04: the build fails on a path item that does not exist, naming the file and item", async () => {
+    result = await buildFixtureSite([], { ...base, readingPaths: ["broken/missing-item/path.yaml"] });
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("path.yaml");
+    expect(result.message).toContain("item 1 (post: no-such-post) does not exist");
+  });
+
+  it("R09: the build fails on YAML that does not parse, naming the file", async () => {
+    result = await buildFixtureSite([], { ...base, readingPaths: ["broken/bad-yaml/path.yaml"] });
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("path.yaml");
+  });
+
+  it("shows paths in position order, items in file order, with reading times and the Project label", async () => {
+    result = await buildFixtureSite([], {
+      ...base,
+      // The second path is copied first so file order is not position order.
+      readingPaths: ["harness/second-position.yaml", "harness/draft-mixed.yaml"],
+    });
+    expect(result.ok, result.message).toBe(true);
+    const home = result.read("index.html");
+    const start = home.slice(home.indexOf("data-start-here"));
+    expect(start.indexOf("Mixed path")).toBeGreaterThan(-1);
+    expect(start.indexOf("Mixed path")).toBeLessThan(start.indexOf("Second path"));
+    const second = start.slice(start.indexOf("Second path"));
+    expect(second.indexOf("Minimal project")).toBeLessThan(second.indexOf("A test post"));
+    expect(start).toMatch(/\d+ min read/);
+    expect(start).toContain("Project");
+    expect(home.indexOf("data-now")).toBeLessThan(home.indexOf("data-start-here"));
+    expect(home.indexOf("data-start-here")).toBeLessThan(home.indexOf("data-recent-writing"));
+  });
+
+  it("a non-production build keeps draft items and a path of only drafts", async () => {
+    result = await buildFixtureSite([], { ...base, readingPaths: ["harness/draft-mixed.yaml", "harness/draft-only.yaml"] });
+    expect(result.ok, result.message).toBe(true);
+    const home = result.read("index.html");
+    expect(home).toContain("A draft post");
+    expect(home).toContain("Draft project");
+    expect(home).toContain("Draft only path");
+  });
+
+  it("the production build drops a draft item and a path left empty", async () => {
+    result = await buildFixtureSite([], {
+      ...base,
+      readingPaths: ["harness/draft-mixed.yaml", "harness/draft-only.yaml"],
+      env: { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" },
+    });
+    expect(result.ok, result.message).toBe(true);
+    const home = result.read("index.html");
+    expect(home).toContain("Mixed path");
+    expect(home).toContain("A test post");
+    expect(home).not.toContain("A draft post");
+    expect(home).not.toContain("Draft project");
+    expect(home).not.toContain("Draft only path");
+  });
+
+  it("with no reading paths the section is hidden: no heading and no empty section", async () => {
+    result = await buildFixtureSite([], base);
+    expect(result.ok, result.message).toBe(true);
+    const home = result.read("index.html");
+    expect(home).not.toContain("data-start-here");
+    expect(home).not.toContain("Start here");
+  });
+});

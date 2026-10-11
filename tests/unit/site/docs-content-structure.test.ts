@@ -65,7 +65,7 @@ describe("docs/pages.md", () => {
     positions.forEach((at, n) => expect(at, `${sectionNames[n]} is documented`).toBeGreaterThanOrEqual(0));
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
   });
-  it.each(["Lead", "CallToAction", "Figure", "WideImage", "FullImage", "SideImage", "ContactForm", "RecentWriting", "Now"])(
+  it.each(["Lead", "CallToAction", "Figure", "WideImage", "FullImage", "SideImage", "ContactForm", "RecentWriting", "Now", "StartHere"])(
     "has an example of %s",
     (name) => {
       expect(guide()).toContain(`<${name}`);
