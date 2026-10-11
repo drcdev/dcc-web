@@ -13,6 +13,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { pages } from "../helpers/content.ts";
 import { filesUnder } from "../helpers/files.ts";
 import { buildFixtureSite, type FixtureSiteOptions, type FixtureSiteResult } from "./fixture-site.ts";
 
@@ -510,5 +511,51 @@ describe("self-hosted fonts in the build", () => {
     for (const source of sources) expect(outputs.some((o) => o.equals(source))).toBe(true);
     const stray = filesUnder(l1.dist).filter((f) => /\.(woff2?|ttf|otf|eot)$/i.test(f) && !f.startsWith(fontsDir));
     expect(stray).toEqual([]);
+  });
+});
+
+// The Technology page's architecture diagram (specs/036-technology-architecture-diagram; rows M01,
+// M03, M06, M09, M10, FR-014). Only the real build shows the built page, so this reads it from L1.
+describe("the Technology page's architecture diagram", () => {
+  const html = () => l1.read("technology/index.html");
+  const content = () => html().slice(html().indexOf('id="content-section"'));
+  const explanations = "How each part works";
+  const headings = () => [...content().matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>/g)].map((m) => m[1]!.replace(/<[^>]+>/g, "").trim());
+
+  it("M01: puts the diagram before every other section of the body", () => {
+    const diagram = content().indexOf('id="architecture-diagram"');
+    expect(diagram).toBeGreaterThan(-1);
+    const firstHeading = content().search(/<h2[\s>]/);
+    expect(diagram).toBeLessThan(firstHeading);
+  });
+
+  it("M03, M06: every part link resolves to an entry with the same id", () => {
+    const links = [...html().matchAll(/<a [^>]*data-part="([^"]+)"/g)].map((m) => m[1]!);
+    expect(links).toHaveLength(12);
+    for (const id of links) {
+      expect(html(), `entry for ${id}`).toMatch(new RegExp(`<article[^>]*\\sid="${id}"`));
+      expect(html()).toContain(`href="#${id}"`);
+    }
+  });
+
+  it("M10: every id on the page is unique", () => {
+    const ids = [...html().matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]!);
+    expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([]);
+  });
+
+  it("M09: the diagram carries no style attribute", () => {
+    const start = html().indexOf('id="architecture-diagram"');
+    const end = html().indexOf('id="how-each-part-works"');
+    expect(start).toBeGreaterThan(-1);
+    expect(html().slice(start, end)).not.toMatch(/\sstyle="/);
+  });
+
+  it("FR-014: keeps the page's own sections, in order, after the explanations and drops the old ones", () => {
+    const technology = pages.find((page) => page.slug === "technology");
+    const kept = [...(technology?.body ?? "").matchAll(/^## (.+)$/gm)].map((m) => m[1]!.trim());
+    // Design, Analytics and Data locations are all that is left of the page's own headings.
+    expect(kept).toHaveLength(3);
+    expect(headings()).toEqual([explanations, ...kept]);
+    expect(content()).toContain("Curious about how something works?");
   });
 });

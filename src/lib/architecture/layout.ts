@@ -47,14 +47,14 @@ export const layout: Layout = {
   parts: [
     {
       id: "browser", kind: "group", x: 10, y: 10, width: 220, height: 78,
-      tab: { x: 10, y: 10, width: 120, height: 22 },
+      tab: { x: 10, y: 10, width: 120, height: 26 },
       lines: ["Your browser"], contains: ["questions-panel", "contact-form"],
     },
     { id: "questions-panel", kind: "box", x: 20, y: 40, width: 96, height: 40, lines: ["Questions", "panel"] },
     { id: "contact-form", kind: "box", x: 124, y: 40, width: 96, height: 40, lines: ["Contact", "form"] },
     {
       id: "production", kind: "group", x: 10, y: 124, width: 220, height: 140,
-      tab: { x: 10, y: 124, width: 98, height: 22 },
+      tab: { x: 10, y: 124, width: 98, height: 26 },
       lines: ["Production"], contains: ["database", "static-pages", "worker-api"],
     },
     { id: "database", kind: "box", x: 20, y: 154, width: 80, height: 40, lines: ["D1", "database"] },
@@ -66,7 +66,7 @@ export const layout: Layout = {
     { id: "inbox", kind: "box", x: 77, y: 490, width: 90, height: 40, lines: ["Contact", "inbox"] },
     {
       id: "preview", kind: "group", x: 10, y: 570, width: 220, height: 60,
-      tab: { x: 10, y: 570, width: 100, height: 22 },
+      tab: { x: 10, y: 570, width: 100, height: 26 },
       lines: ["Preview"], glyphs: ["worker", "database"],
     },
   ],
@@ -87,7 +87,7 @@ export const layout: Layout = {
       points: [[128, 80], [128, 210]],
     },
     {
-      from: "contact-form", to: "bot-check", label: "widget token",
+      from: "contact-form", to: "bot-check", label: "token",
       labelAt: { x: 233, y: 316, anchor: "end" },
       points: [[220, 60], [235, 60], [235, 350], [224, 350]],
     },
@@ -97,12 +97,12 @@ export const layout: Layout = {
       points: [[60, 210], [60, 194]],
     },
     {
-      from: "worker-api", to: "ai-model", label: "no saved set",
+      from: "worker-api", to: "ai-model", label: "new set",
       labelAt: { x: 69, y: 282, anchor: "start" },
       points: [[65, 250], [65, 330]],
     },
     {
-      from: "worker-api", to: "bot-check", label: "verify token",
+      from: "worker-api", to: "bot-check", label: "verify",
       labelAt: { x: 170, y: 298, anchor: "end" },
       points: [[174, 250], [174, 330]],
     },

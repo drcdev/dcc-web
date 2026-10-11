@@ -7,25 +7,11 @@ nav:
   position: 3
 ---
 
-This page explains the technology behind this site.
-
-## Site
-
-The site is built with [Astro](https://astro.build/), a framework that turns the pages into plain static files ahead of time. Pages are readable with JavaScript turned off, and the small amount of script the site uses is limited to features that need it, such as the light and dark theme switch.
-
-All public content is written as Markdown and MDX files that live in the site's source repository. Content is checked against a schema when the site is built, so a page with missing or invalid details fails the build instead of publishing incorrectly.
-
-## Hosting
-
-[Cloudflare](https://www.cloudflare.com/) serves the static pages. Every change to the site gets its own preview version, so it can be reviewed before it goes live.
+<ArchitectureDiagram />
 
 ## Design
 
 The design is a custom theme, ported from the previous version of this site and styled with [Tailwind CSS](https://tailwindcss.com/), a utility-first CSS framework. It supports light and dark themes and is checked against WCAG 2.2 AA accessibility guidelines.
-
-## Contact form
-
-The contact form sends each message to a small API that runs in the same Cloudflare Worker as the site. Cloudflare Turnstile checks that a person, not a script, is sending it. The API then emails the message to me through Cloudflare Email Routing. The site stores nothing and does not keep your IP address. The [privacy policy](/privacy-policy/) has the details.
 
 ## Analytics
 
@@ -38,7 +24,5 @@ The main site uses Cloudflare Web Analytics, which sets no cookies and does not 
 | Cloudflare | Serves the pages and visitor statistics | Global network |
 | Cloudflare D1 | Saves the questions shown on posts | Cloudflare network |
 | Cloudflare Turnstile | Spam check on the contact form | Global network |
-
-## Questions
 
 Curious about how something works? Get in touch through the [contact page](/contact/) and I am happy to explain.

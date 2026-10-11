@@ -1,0 +1,217 @@
+---
+// The architecture diagram on the Technology page (specs/036-technology-architecture-diagram;
+// contracts/diagram-dom.md rows M01-M10). One inline SVG drawn from src/lib/architecture/layout.ts,
+// then one entry per part below it, written in the `architecture` collection
+// (docs.astro.build/en/guides/content-collections/). Every part is a plain link to its entry, so
+// the page reads and works with JavaScript off. A `parts` prop replaces the collection, which is how
+// the component tests feed it neutral text (like RecentWriting's `posts`).
+import { getCollection, render } from "astro:content";
+import { checkParts } from "../../lib/architecture/check.ts";
+import { layout, type LayoutPart } from "../../lib/architecture/layout.ts";
+import { sourceUrl } from "../../lib/architecture/source.ts";
+
+export interface Props {
+  parts?: readonly { id: string; name: string; source?: string; html: string }[];
+}
+
+const entries = Astro.props.parts
+  ? Astro.props.parts.map((part) => ({ ...part, Content: undefined }))
+  : await Promise.all(
+      (await getCollection("architecture")).map(async (entry) => ({
+        id: entry.id,
+        name: entry.data.name,
+        source: entry.data.source,
+        html: undefined,
+        Content: (await render(entry)).Content,
+      })),
+    );
+
+checkParts(layout, entries);
+
+const byId = new Map(entries.map((entry) => [entry.id, entry]));
+const ordered = layout.parts.map((part) => ({ layout: part, entry: byId.get(part.id)! }));
+
+const LINE_HEIGHT = 16;
+
+/** Baselines for a label of `lines` centred on `cy`. */
+const lineYs = (lines: string[], cy: number) => lines.map((_, i) => cy + (i - (lines.length - 1) / 2) * LINE_HEIGHT);
+
+const connectsTo = (id: string) =>
+  layout.connections
+    .filter((c) => c.from === id)
+    .map((c) => `${byId.get(c.to)!.name}${c.label ? ` (${c.label})` : ""}`);
+
+const sourceHref = (path: string) => sourceUrl(process.cwd(), path);
+
+const frame = "fill-transparent stroke-sand-700 dark:stroke-sand-300 forced-colors:stroke-[CanvasText]";
+const box = "arch-box fill-dusk-50 stroke-dusk-700 dark:fill-dusk-700 dark:stroke-mist-300 forced-colors:fill-[Canvas] forced-colors:stroke-[CanvasText]";
+const tab = "arch-box fill-sand-100 stroke-sand-700 dark:fill-dusk-900 dark:stroke-sand-300 forced-colors:fill-[Canvas] forced-colors:stroke-[CanvasText]";
+const line = "fill-none stroke-dusk-700 dark:stroke-mist-300 forced-colors:stroke-[CanvasText]";
+const label = "fill-dusk-900 dark:fill-white forced-colors:fill-[CanvasText]";
+const halo = "stroke-white dark:stroke-dusk-800 forced-colors:stroke-[Canvas]";
+const glyph = "fill-none stroke-dusk-700 dark:stroke-mist-300 forced-colors:stroke-[CanvasText]";
+const arrow = "fill-dusk-700 dark:fill-mist-300 forced-colors:fill-[CanvasText]";
+
+const points = (list: [number, number][]) => list.map(([x, y]) => `${x},${y}`).join(" ");
+const area = (part: LayoutPart) => part.tab ?? part;
+---
+
+<figure id="architecture-diagram" class="not-prose my-8 text-rust-800 dark:text-rust-300">
+  <figcaption id="architecture-caption" class="mb-4 text-base text-dusk-800 dark:text-mist-200">
+    How the pieces of this site fit together. Select a part to read how it works, or read them all below.
+  </figcaption>
+  <svg
+    viewBox={`0 0 ${layout.viewBox.width} ${layout.viewBox.height}`}
+    role="group"
+    aria-labelledby="architecture-caption"
+    class="architecture-diagram mx-auto block h-auto w-full max-w-[30rem]"
+  >
+    <defs>
+      <marker id="architecture-arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0 0 L10 5 L0 10 z" class={arrow} aria-hidden="true"></path>
+      </marker>
+    </defs>
+
+    {
+      layout.parts
+        .filter((part) => part.kind === "group")
+        .map((part) => (
+          <rect x={part.x} y={part.y} width={part.width} height={part.height} rx="6" class={`arch-frame ${frame}`} aria-hidden="true" />
+        ))
+    }
+
+    {
+      layout.parts
+        .filter((part) => part.glyphs)
+        .map((part) =>
+          part.glyphs!.map((kind, i) => {
+            const x = part.x + part.width - 80 + i * 40;
+            const y = part.y + 20;
+            return kind === "worker" ? (
+              <path d={`M${x + 16} ${y} l14 8 v16 l-14 8 l-14 -8 v-16 z`} class={`arch-glyph ${glyph}`} aria-hidden="true" />
+            ) : (
+              <path
+                d={`M${x} ${y + 6} a14 6 0 0 1 28 0 v22 a14 6 0 0 1 -28 0 z M${x} ${y + 6} a14 6 0 0 0 28 0`}
+                class={`arch-glyph ${glyph}`}
+                aria-hidden="true"
+              />
+            );
+          })
+        )
+    }
+
+    {
+      layout.connections.map((c) => (
+        <polyline points={points(c.points)} marker-end="url(#architecture-arrowhead)" class={`arch-line ${line}`} aria-hidden="true" />
+      ))
+    }
+
+    {
+      layout.connections.map(
+        (c) =>
+          c.label &&
+          c.labelAt && (
+            <text
+              x={c.labelAt.x}
+              y={c.labelAt.y}
+              text-anchor={c.labelAt.anchor}
+              class={`arch-connection-label ${label} ${halo}`}
+              aria-hidden="true"
+            >
+              {c.label}
+            </text>
+          )
+      )
+    }
+
+    {
+      ordered.map(({ layout: part }) => {
+        const r = area(part);
+        const ys = lineYs(part.lines, r.y + r.height / 2);
+        const grouped = part.kind === "group";
+        return (
+          <a href={`#${part.id}`} data-part={part.id}>
+            <rect x={r.x} y={r.y} width={r.width} height={r.height} rx="4" class={grouped ? tab : box} aria-hidden="true" />
+            <text
+              class={`arch-part-label ${label}`}
+              text-anchor={grouped ? "start" : "middle"}
+              dominant-baseline="central"
+            >
+              {part.lines.map((text, i) => (
+                <tspan x={grouped ? r.x + 8 : r.x + r.width / 2} y={ys[i]}>
+                  {text}
+                </tspan>
+              ))}
+            </text>
+          </a>
+        );
+      })
+    }
+  </svg>
+</figure>
+
+<h2 id="how-each-part-works">How each part works</h2>
+{
+  ordered.map(({ entry }) => {
+    const outgoing = connectsTo(entry.id);
+    return (
+      <article id={entry.id} tabindex="-1" data-entry={entry.id} class="scroll-mt-24">
+        <h3>{entry.name}</h3>
+        {entry.Content ? <entry.Content /> : <Fragment set:html={entry.html} />}
+        {outgoing.length > 0 && (
+          <p data-connects>
+            Connects to: {outgoing.join(", ")}.
+          </p>
+        )}
+        {entry.source && (
+          <p>
+            <a href={sourceHref(entry.source)} target="_blank" rel="noopener">
+              Source: {entry.source}
+              <span class="sr-only"> (opens in a new tab)</span>
+            </a>
+          </p>
+        )}
+        <p>
+          <a href="#architecture-diagram" data-back={entry.id}>
+            Back to diagram
+          </a>
+        </p>
+      </article>
+    );
+  })
+}
+
+<style>
+  .architecture-diagram text {
+    font-family: inherit;
+  }
+  .arch-part-label {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .arch-connection-label {
+    font-size: 12.5px;
+    paint-order: stroke;
+    stroke-width: 3px;
+    stroke-linejoin: round;
+  }
+  .arch-box,
+  .arch-frame,
+  .arch-line,
+  .arch-glyph {
+    stroke-width: 1.5px;
+  }
+  .arch-frame {
+    stroke-dasharray: 4 3;
+  }
+  a[data-part] {
+    cursor: pointer;
+  }
+  a[data-part]:focus-visible {
+    outline: none;
+  }
+  a[data-part]:focus-visible .arch-box {
+    stroke: currentColor;
+    stroke-width: 3.5px;
+  }
+</style>

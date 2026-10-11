@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { z } from "astro/zod";
 import { landingSchema, pageSchema } from "../../../src/content/schemas/page.ts";
-import { landingPages, pages } from "../../helpers/content";
+import { architectureParts, landingPages, pages } from "../../helpers/content";
 
 const dir = fileURLToPath(new URL("../../../src/content/pages/", import.meta.url));
 
@@ -138,16 +138,28 @@ describe("Contact note (FR-015)", () => {
 });
 
 describe("Technology", () => {
+  // The contact path's explanations now live in the architecture part files (feature 036).
+  const contactPath = () =>
+    ["contact-form", "bot-check", "email-path", "inbox"].map((id) => {
+      const part = architectureParts.find((p) => p.id === id);
+      if (!part) throw new Error(`no architecture part file ${id}`);
+      return part;
+    });
+
   it("names email delivery and no longer names D1 storage or the cron for contact data", () => {
-    const { text } = load("technology.mdx");
-    const contact = text.slice(text.indexOf("## contact form"), text.indexOf("## analytics"));
+    const contact = contactPath()
+      .map((p) => p.body)
+      .join("\n")
+      .toLowerCase();
     expect(contact).toContain("email");
     for (const old of ["d1", "12 months", "salted", "fingerprint", "deleted automatically"]) expect(contact).not.toContain(old);
-    expect(text).not.toContain("stores contact submissions");
+    const all = [load("technology.mdx").text, ...architectureParts.map((p) => p.body.toLowerCase())].join("\n");
+    expect(all).not.toContain("stores contact submissions");
   });
 
   it("does not assert a storage location", () => {
-    expect(load("technology.mdx").text).not.toMatch(/canada|toronto/);
+    const all = [load("technology.mdx").text, ...architectureParts.map((p) => p.body.toLowerCase())].join("\n");
+    expect(all).not.toMatch(/canada|toronto/);
   });
 });
 

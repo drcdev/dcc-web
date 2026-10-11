@@ -13,6 +13,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { deflateSync, crc32 } from "node:zlib";
 import { build } from "astro";
+import { linkPartSources } from "./link-part-sources.ts";
 
 /** A generated post: its file text and its small feature image. */
 export interface GeneratedPost {
@@ -156,6 +157,9 @@ export function prepareFixtureSite(siteRoot: string): void {
   }
   // Dependencies resolve through the repository's node_modules.
   symlinkSync(resolve(repoRoot, "node_modules"), resolve(siteRoot, "node_modules"), "dir");
+
+  // The real architecture part files name repository paths that this copy lacks.
+  linkPartSources(repoRoot, siteRoot);
 
   // The contact form imports the shared limits from the Worker package.
   mkdirSync(resolve(siteRoot, "worker/src/contact"), { recursive: true });

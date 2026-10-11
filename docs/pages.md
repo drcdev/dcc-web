@@ -179,6 +179,13 @@ Speaker at the 2025 health leadership conference.
 <RecentWriting />
 ```
 
+`ArchitectureDiagram` draws the architecture diagram of the Technology page, with an explanation of
+each part below it. It takes no props and no content. The Technology page uses it once, first.
+
+```mdx
+<ArchitectureDiagram />
+```
+
 ## Build errors you may see
 
 The build stops at the first problem and names the file. Messages start with `Page file` or

@@ -106,15 +106,15 @@ describe("validatePageBody for a post file (P12, P18 to P20)", () => {
   });
 
   describe("removed sections", () => {
-    const eight = ["Lead", "CallToAction", "Figure", "WideImage", "FullImage", "SideImage", "ContactForm", "RecentWriting"];
+    const nine = ["Lead", "CallToAction", "Figure", "WideImage", "FullImage", "SideImage", "ContactForm", "RecentWriting", "ArchitectureDiagram"];
     const removed = ['<TextBlock title="x">\n\nText\n\n</TextBlock>', "<Offerings>\n\nText\n\n</Offerings>", '<Offering title="x">\n\nText\n\n</Offering>'];
 
-    it.each(removed)("rejects %j in a page, naming the file, the tag and the eight sections in order", (body) => {
+    it.each(removed)("rejects %j in a page, naming the file, the tag and the nine sections in order", (body) => {
       const run = () => check(body);
       expect(run).toThrow("is not a section");
       expect(run).toThrow(FILE);
       expect(run).toThrow(/Offerings?|TextBlock/);
-      expect(run).toThrow(eight.join(", "));
+      expect(run).toThrow(nine.join(", "));
     });
 
     it.each(removed)("rejects %j in a post", (body) => {

@@ -1,6 +1,7 @@
 // The closed set of reusable sections available in page files without an
 // import (contracts/sections.md; research R3). The registry maps each name to
 // its component; anything else fails the build (src/lib/content/body.ts).
+import ArchitectureDiagram from "./ArchitectureDiagram.astro";
 import CallToAction from "./CallToAction.astro";
 import ContactForm from "./ContactForm.astro";
 import Figure from "./Figure.astro";
@@ -19,6 +20,7 @@ export const sectionNames = [
   "SideImage",
   "ContactForm",
   "RecentWriting",
+  "ArchitectureDiagram",
 ] as const;
 
 export type SectionName = (typeof sectionNames)[number];
@@ -37,4 +39,5 @@ export const sectionComponents = {
   SideImage,
   ContactForm,
   RecentWriting,
+  ArchitectureDiagram,
 } satisfies Record<SectionName, unknown>;

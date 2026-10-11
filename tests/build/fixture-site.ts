@@ -15,6 +15,7 @@ import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symli
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import { linkPartSources } from "../../scripts/link-part-sources.ts";
 import { filesUnder } from "../helpers/files.ts";
 
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -200,6 +201,9 @@ export async function buildFixtureSite(
     if (existsSync(projectImages)) cpSync(projectImages, resolve(projectsDir, "images"), { recursive: true });
     copyFixtures(options.projects, projectFixturesRoot, projectsDir);
   }
+
+  // The real part files name repository paths that a fixture site does not copy.
+  linkPartSources(repoRoot, root);
 
   if (options.architecture) {
     const architectureDir = resolve(root, "src/content/architecture");

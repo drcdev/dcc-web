@@ -497,3 +497,8 @@ Worker and database marks show that it is separate.
 - Animating request flows step by step.
 - Diagrams of CI, the visual test setup or the content pipeline.
 - Changing the privacy policy or the facts on the page beyond what the diagram needs.
+- Fixture sites (`buildFixtureSite` and `scripts/build-fixture-site.ts`) copy the real part files, so
+  each part's `source` path is symlinked into the copy (`scripts/link-part-sources.ts`). A future
+  change that moves part sources into a separate fixture folder would make this unnecessary.
+- The Technology page's smooth scrolling (`motion-safe:scroll-smooth` on `html`) is site-wide; the
+  J07 rule (no smooth scroll on selection) is for the selection script to honour, not to change here.
