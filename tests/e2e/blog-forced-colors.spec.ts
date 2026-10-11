@@ -73,6 +73,14 @@ for (const scheme of ["light", "dark"] as const) {
       await expect(page.locator("[data-series-image]").first()).toBeVisible();
     });
 
+    test("author card at the end of a post (A15)", async ({ page }) => {
+      await page.goto(POST);
+      const card = page.locator("[data-author-card]");
+      await expectEdge(page, card);
+      await expect(card.locator("h2")).toBeVisible();
+      await expect(card.locator("p").first()).toBeVisible();
+    });
+
     test("joined series banner", async ({ page }) => {
       await page.goto("/writing/drift/");
       await expectEdge(page, page.locator("[data-series-banner]"));

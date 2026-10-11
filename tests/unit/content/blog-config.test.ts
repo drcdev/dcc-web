@@ -42,9 +42,8 @@ describe("blog settings", () => {
 });
 
 describe("author settings (A4, A6; FR-002, FR-003, FR-004a)", () => {
-  it("has a name, a photo and alt text", () => {
+  it("has a name and alt text", () => {
     expect(blog.author.name.trim()).not.toBe("");
-    expect(blog.author.photo).toBeTruthy();
     expect(blog.author.photoAlt.trim()).not.toBe("");
   });
 

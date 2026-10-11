@@ -1,8 +1,7 @@
 // Blog settings in one place (data-model.md "Blog settings"; research R5;
 // FR-027). Every page, the feed and the views note read these values, and so does the author
-// card at the end of every post (specs/039-post-author-card/data-model.md).
-import portrait from "../content/pages/images/don-coleman.jpg";
-
+// card at the end of every post (specs/039-post-author-card/data-model.md). The card imports the
+// portrait itself: Playwright loads this module in plain Node, which cannot import a JPEG.
 export const blog = {
   /** The blog's name, shown as the eyebrow above every blog page title. */
   sectionName: "Drift & Convergence",
@@ -29,7 +28,6 @@ export const blog = {
   /** The author card at the end of every post. The two lines are draft wording for Don to revise. */
   author: {
     name: "Don Coleman",
-    photo: portrait,
     photoAlt: "Don Coleman",
     lines: [
       "I'm Director, Data Infrastructure and Architecture at Island Health.",
