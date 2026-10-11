@@ -25,4 +25,12 @@ describe("docs/setup.md DNS content", () => {
     expect(section.toLowerCase()).toMatch(/informational/);
     expect(section.toLowerCase()).toMatch(/auto/);
   });
+
+  it("says every record is DNS only except the proxied bare-domain placeholder", () => {
+    const section = extractSection(readDocs(), "dns-records-parity");
+    expect(section).toMatch(/DNS only/);
+    expect(section).toMatch(/AAAA doncoleman\.ca 100::/);
+    expect(section.toLowerCase()).toMatch(/proxied/);
+    expect(section.toLowerCase()).toMatch(/except/);
+  });
 });

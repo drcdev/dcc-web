@@ -105,6 +105,16 @@ describe(".claude/skills/setup-walkthrough/SKILL.md", () => {
     expect(section).toContain("--env-file /dev/null");
   });
 
+  it("has a live hosts step that points to the docs, shows dashboard actions for Don and runs only the item check", () => {
+    const start = contents.indexOf("## Live hosts (item 18)");
+    expect(start).toBeGreaterThan(-1);
+    const section = contents.slice(start);
+    expect(section).toContain("docs/setup.md#live-hosts");
+    expect(section).toMatch(/shown for Don to do himself|Don does (these|each|every)[^.]*himself/i);
+    expect(section).toContain("pnpm setup:check --json --item live-hosts");
+    expect(section).not.toMatch(/\bwrangler\b/);
+  });
+
   it("never signs in, changes DNS or handles credentials", () => {
     const lower = contents.toLowerCase();
     expect(lower).toMatch(/never signs in/);

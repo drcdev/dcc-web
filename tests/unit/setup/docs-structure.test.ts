@@ -25,6 +25,7 @@ const ITEM_IDS = [
   "web-analytics",
   "contact-bindings",
   "contact-email",
+  "live-hosts",
 ];
 
 // Single-section extractor (distinct from extractSections below), matching
@@ -51,7 +52,7 @@ function extractSections(markdown: string): { id: string; body: string }[] {
 }
 
 describe("docs/setup.md structure", () => {
-  it("has exactly 17 item sections whose anchors are the spec's fixed item IDs in step order", () => {
+  it("has exactly 18 item sections whose anchors are the spec's fixed item IDs in step order", () => {
     const sections = extractSections(contents);
     expect(sections.map((s) => s.id)).toEqual(ITEM_IDS);
   });
@@ -105,11 +106,10 @@ describe("docs/setup.md edge-case content", () => {
 describe("docs/setup.md contact-form part", () => {
   const registryLength = ITEM_IDS.length;
 
-  it("the intro counts items from the registry length and no longer says 18", () => {
+  it("the intro counts items from the registry length", () => {
     const intro = contents.slice(0, contents.indexOf("## 1."));
     expect(intro).toContain(`${registryLength}-item registry`);
     expect(intro).toContain(`of the ${registryLength} items`);
-    expect(intro).not.toMatch(/\b18-item|\b18 items/);
   });
 
   it("has a Contact form part heading before the first contact section", () => {
@@ -181,5 +181,84 @@ describe("docs/setup.md contact-form part", () => {
     expect(s).toContain("PUBLIC_TURNSTILE_SITE_KEY");
     expect(s).toContain("pnpm run deploy:production");
     expect(s.toLowerCase()).toContain("after");
+  });
+});
+
+// spec 034 FR-014 to FR-015b, contracts/live-swap-runbook.md.
+describe("docs/setup.md main address part and live hosts runbook", () => {
+  const section = extractSection(contents, "live-hosts");
+
+  function inOrder(text: string, phrases: (string | RegExp)[]): void {
+    let from = 0;
+    for (const phrase of phrases) {
+      const rest = text.slice(from);
+      const idx = typeof phrase === "string" ? rest.indexOf(phrase) : rest.search(phrase);
+      expect(idx, `missing or out of order: ${String(phrase)}`).toBeGreaterThanOrEqual(0);
+      const len = typeof phrase === "string" ? phrase.length : (rest.match(phrase)![0].length);
+      from += idx + len;
+    }
+  }
+
+  it("has a Main address part after the Contact form part and before Edge protections", () => {
+    const part = contents.indexOf("\n# Main address\n");
+    expect(part).toBeGreaterThan(contents.indexOf("{#contact-email}"));
+    expect(part).toBeLessThan(contents.indexOf("{#live-hosts}"));
+    expect(contents.indexOf("{#live-hosts}")).toBeLessThan(contents.indexOf("\n# Edge protections\n"));
+  });
+
+  it("item 18 has the five standard headings in order", () => {
+    inOrder(section, ["What it is for", "Where to do it", "How it will be confirmed", "Constitution principle", "Secrets"]);
+  });
+
+  it("the live swap lists steps 0 to 7 with the key phrases in order", () => {
+    const swap = section.slice(section.indexOf("### Live swap"), section.indexOf("### Rollback"));
+    expect(swap.length).toBeGreaterThan(0);
+    inOrder(swap, [
+      /\n0\. /,
+      "Always Use HTTPS",
+      /\n1\. /,
+      "Turnstile",
+      "www.doncoleman.ca",
+      /\n2\. /,
+      "AAAA www",
+      /\n3\. /,
+      "Custom Domain",
+      "10 minutes",
+      /\n4\. /,
+      "remove the Custom Domain",
+      /\n5\. /,
+      "AAAA doncoleman.ca 100::",
+      "301",
+      "Preserve query string",
+      /\n6\. /,
+      "pnpm setup:check",
+      /\n7\. /,
+      "Search Console",
+      "sitemap-index.xml",
+    ]);
+    expect(swap).toMatch(/Precondition/);
+    expect(swap).toMatch(/Done when/);
+    expect(swap).toMatch(/15 minutes/);
+    expect(swap).toMatch(/5 minutes/);
+    expect(swap).toMatch(/24 hours/);
+    expect(swap).toMatch(/revert pull request/);
+  });
+
+  it("the rollback covers each partial state from after step 1 to after step 5", () => {
+    const rollback = section.slice(section.indexOf("### Rollback"));
+    inOrder(rollback, ["After step 1", "After step 2", "After step 3", "After step 4", "After step 5"]);
+    expect(rollback).toMatch(/24 hours/);
+    expect(rollback).toMatch(/revert pull request/);
+  });
+
+  it("shows no secret-shaped values in examples", () => {
+    expect(section).not.toMatch(/\b(?=[A-Za-z0-9]*\d)[A-Za-z0-9]{32,}\b/);
+    expect(section).not.toMatch(/\b0x[0-9A-Za-z]{10,}/);
+    expect(section).not.toMatch(/\bsk-|Bearer\s/i);
+  });
+
+  it("items 15 and 16 name the www host", () => {
+    expect(extractSection(contents, "web-analytics")).toMatch(/www\.doncoleman\.ca/);
+    expect(extractSection(contents, "contact-bindings")).toMatch(/hostnames[\s\S]{0,60}www\.doncoleman\.ca/);
   });
 });
