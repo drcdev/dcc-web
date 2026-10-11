@@ -94,7 +94,7 @@
 ### Implementation
 
 - [X] T039 [US3] Verify `src/components/sections/RecentWriting.astro` is untouched and the new sections share its heading, spacing, link and focus tokens (FR-015a); fix any drift in `Now.astro` or `StartHere.astro` rather than in RecentWriting.
-- [ ] T040 [US3] Run the local checks for this tier only: `pnpm exec tsx scripts/ci/changed-paths.ts --base origin/main` and the tier it reports (type check, lint, unit, component, build tests), with `ASTRO_PREVIEW_BACKGROUND=1` where needed. Ask Don before any full `pnpm run verify`.
+- [X] T040 [US3] Run the local checks for this tier only: `pnpm exec tsx scripts/ci/changed-paths.ts --base origin/main` and the tier it reports (type check, lint, unit, component, build tests), with `ASTRO_PREVIEW_BACKGROUND=1` where needed. Ask Don before any full `pnpm run verify`.
 
 ## Phase 6: Polish and cross-cutting
 
