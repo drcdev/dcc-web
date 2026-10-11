@@ -180,6 +180,18 @@ The "Think before you read" panel and its API are covered once each, at the chea
 
 These files are not content-only: a change to any of them runs the full gate.
 
+### Architecture diagram (feature 036)
+
+- **Unit** (`tests/unit/content/architecture-*.test.ts` and `tests/unit/site/architecture-layout.test.ts`): layout geometry, source path and URL rules, the part and
+  layout cross-check, and the schema; a content test reads the real part files (tracked sources,
+  explanation length).
+- **Component** (`tests/component/sections/ArchitectureDiagram.test.ts`): the rendered markup.
+- **Build** (`tests/build/architecture-validation.test.ts`): proves the build stops on a broken
+  source; fragments and unique ids are covered by the local-site build test.
+- **E2E** (`tests/e2e/architecture.spec.ts`): select, back link, deep link and focus journeys.
+- **Existing checks** cover the page without edits: `a11y.spec.ts` (technology template),
+  `geometry.spec.ts`, `budget.spec.ts` and `site-links.spec.ts`. No visual baseline is added.
+
 ### Visual coverage
 
 The `visual` project snapshots the design system only: the shell (header, footer and the open

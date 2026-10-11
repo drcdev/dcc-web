@@ -186,6 +186,27 @@ each part below it. It takes no props and no content. The Technology page uses i
 <ArchitectureDiagram />
 ```
 
+## Editing the architecture diagram
+
+The diagram on the Technology page has one file per part in `src/content/architecture/`. Each file
+has a `name` (the label shown on the page), an optional `source` (a file or folder in the
+repository, like `worker/src/index.ts` or `migrations`; the `browser` part has none) and a short
+explanation below the settings, two to five sentences. The boxes, lines and labels live in the
+layout in `src/lib/architecture/layout.ts`. A new part needs both a file and a layout entry with
+the same id, and a label whose lines join to the file's `name`.
+
+The build stops, naming the file, when:
+
+- `name` is missing or blank, or the settings have an unknown key.
+- `source` is absolute, contains `..`, or names a path that does not exist.
+- The explanation is empty.
+- A part file has no layout entry, or a layout entry has no file (the message lists the ids).
+- A layout label does not join to the part's `name`.
+
+Review trigger: any pull request that changes `worker/src/`, `wrangler.jsonc`, the database
+migrations, or a file or folder a part links to is checked against the diagram and its
+explanations in the same pull request.
+
 ## Build errors you may see
 
 The build stops at the first problem and names the file. Messages start with `Page file` or
