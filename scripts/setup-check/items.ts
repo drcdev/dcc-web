@@ -20,6 +20,7 @@ import { check as checkPreviewNoindex } from "./checks/preview-noindex.ts";
 import { check as checkWebAnalytics } from "./checks/web-analytics.ts";
 import { check as checkContactBindings } from "./checks/contact-bindings.ts";
 import { check as checkContactEmail } from "./checks/contact-email.ts";
+import { check as checkLiveHosts } from "./checks/live-hosts.ts";
 import { check as checkMailRecords } from "./checks/mail-records.ts";
 
 const checksById: Record<string, (ctx: ProviderContext) => ReturnType<SetupItem["check"]>> = {
@@ -40,6 +41,7 @@ const checksById: Record<string, (ctx: ProviderContext) => ReturnType<SetupItem[
   "contact-bindings": checkContactBindings,
   "contact-email": checkContactEmail,
   "mail-records": checkMailRecords,
+  "live-hosts": checkLiveHosts,
 };
 
 interface ItemSeed {
@@ -109,9 +111,9 @@ const seeds: ItemSeed[] = [
     purpose:
       "Every DNS record the baseline lists (mail, verification, DMARC and CAA records) must exist in the Cloudflare zone with identical values, and the zone must hold nothing else off the apex and www.",
     where:
-      "Cloudflare dashboard -> the zone -> DNS: keep each record in setup/dns-baseline.json present as DNS only, leaving TTL on Cloudflare's Auto preset (the dashboard has no custom TTL option).",
+      "Cloudflare dashboard -> the zone -> DNS: keep each record in setup/dns-baseline.json present as DNS only, except the bare-domain placeholder AAAA 100:: which must be proxied (orange cloud), leaving TTL on Cloudflare's Auto preset (the dashboard has no custom TTL option).",
     confirmedBy:
-      "Every record in setup/dns-baseline.json exists in the Cloudflare zone with identical type/name/content/priority and proxied: false (TTL is informational only); an empty baseline keeps the item missing; any record outside the apex and www that is not in the baseline is a problem",
+      "Every record in setup/dns-baseline.json exists in the Cloudflare zone with identical type/name/content/priority and the proxy state the baseline names (DNS only unless it says proxied: true, as the bare-domain placeholder does) (TTL is informational only); an empty baseline keeps the item missing; any record outside the apex and www that is not in the baseline is a problem",
     needsDon: true,
     principles: ["VI", "X"],
     requirements: ["FR-019", "FR-034", "FR-035", "FR-036", "FR-037"],
@@ -273,7 +275,7 @@ const seeds: ItemSeed[] = [
     title: "Web Analytics",
     purpose: "Gives Don basic, privacy-focused visitor statistics for the site, with no cookies and no personal data.",
     where: "Cloudflare dashboard -> Analytics & Logs -> Web Analytics -> Add a site -> select doncoleman.ca (the dashboard offers the zone, not a hostname) -> Enable (automatic setup).",
-    confirmedBy: "Web Analytics site for the doncoleman.ca zone exists with automatic setup on; the served HTML of doncoleman.ca references the Cloudflare beacon",
+    confirmedBy: "Web Analytics site for the doncoleman.ca zone exists with automatic setup on; the served HTML of https://www.doncoleman.ca/ references the Cloudflare beacon",
     needsDon: true,
     principles: ["X"],
     requirements: ["FR-022"],
@@ -290,7 +292,7 @@ const seeds: ItemSeed[] = [
     where:
       "Five parts, each described in docs/setup.md: the D1 databases (created in Western North America, wnam), the Turnstile widget, the Turnstile secret on each Worker, the PUBLIC_TURNSTILE_SITE_KEY build variable, and the production deploy command pnpm run deploy:production.",
     confirmedBy:
-      "Both databases exist in WNAM and match wrangler.jsonc; the dcc-web contact widget is managed and covers the site hostnames; the TURNSTILE_SECRET_KEY name exists on both Workers (names only); PUBLIC_TURNSTILE_SITE_KEY exists on every build trigger; dcc-web deploys with pnpm run deploy:production, has every migration applied and has no Cron Trigger registered",
+      "Both databases exist in WNAM and match wrangler.jsonc; the dcc-web contact widget is managed and covers www.doncoleman.ca (the main address) and the preview hostname; the TURNSTILE_SECRET_KEY name exists on both Workers (names only); PUBLIC_TURNSTILE_SITE_KEY exists on every build trigger; dcc-web deploys with pnpm run deploy:production, has every migration applied and has no Cron Trigger registered",
     needsDon: true,
     principles: ["VII", "VIII", "IX"],
     requirements: ["FR-012", "FR-017", "FR-018", "FR-023", "FR-024", "FR-027a", "FR-028"],
@@ -314,6 +316,23 @@ const seeds: ItemSeed[] = [
     secrets: ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID"],
     dependsOn: ["local-credentials"],
     phase: "before-merge",
+  },
+  {
+    id: "live-hosts",
+    order: 18,
+    title: "Live hosts",
+    purpose:
+      "The site's main address is www.doncoleman.ca: www serves the site, and the bare domain and http requests redirect to it permanently.",
+    where:
+      "Cloudflare dashboard, in one sitting after the pull request merges: the live swap steps in docs/setup.md#live-hosts.",
+    confirmedBy:
+      "https://www.doncoleman.ca serves / and /writing/?page=2 directly; http://www, https://doncoleman.ca and http://doncoleman.ca redirect there with 301s within the hop limits, keeping the path and query; the old Ghost address /drift/2025/self-contained-development-for-ghost-themes/ reaches its new page on www from both hosts",
+    needsDon: true,
+    principles: ["VIII", "X"],
+    requirements: ["FR-005", "FR-006", "FR-007", "FR-009", "SC-002", "SC-003"],
+    secrets: [],
+    dependsOn: [],
+    phase: "after-merge",
   },
 ];
 

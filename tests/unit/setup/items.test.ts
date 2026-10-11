@@ -12,8 +12,9 @@ const docsAnchors = new Set(
 const secretNames = new Set(secretManifest.map((s) => s.name));
 
 describe("setupItems registry invariants", () => {
-  it("has exactly 17 items, mail-records at 5, contact-bindings at 16 and contact-email last", () => {
-    expect(setupItems).toHaveLength(17);
+  it("has exactly 18 items, mail-records at 5, contact-bindings at 16, contact-email at 17 and live-hosts last", () => {
+    expect(setupItems).toHaveLength(18);
+    expect(setupItems[17]!.id).toBe("live-hosts");
     expect(setupItems[4]!.id).toBe("mail-records");
     expect(setupItems[15]!.id).toBe("contact-bindings");
     expect(setupItems[16]!.id).toBe("contact-email");
@@ -23,6 +24,18 @@ describe("setupItems registry invariants", () => {
     for (const id of ["preview-noindex", "web-analytics"]) {
       expect(setupItems.find((i) => i.id === id)!.dependsOn).toEqual([]);
     }
+  });
+
+  it("item 18 is the live hosts item the contract describes", () => {
+    const item = setupItems.find((i) => i.id === "live-hosts")!;
+    expect(item.order).toBe(18);
+    expect(item.phase).toBe("after-merge");
+    expect(item.needsDon).toBe(true);
+    expect(item.principles).toEqual(["VIII", "X"]);
+    expect(item.requirements).toEqual(["FR-005", "FR-006", "FR-007", "FR-009", "SC-002", "SC-003"]);
+    expect(item.secrets).toEqual([]);
+    expect(item.dependsOn).toEqual([]);
+    for (const text of [item.purpose, item.where, item.confirmedBy]) expect(text.trim()).not.toBe("");
   });
 
   it("items 1 to 8 and 17 are before-merge and 9 to 16 are after-merge", () => {

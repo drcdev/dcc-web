@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { pages, realPosts } from "../../helpers/content";
+import { GHOST_PROBE } from "../../../scripts/setup-check/checks/live-hosts.ts";
 
 const redirectsPath = fileURLToPath(new URL("../../../public/_redirects", import.meta.url));
 
@@ -169,5 +170,12 @@ describe("public/_redirects", () => {
     expect(all.filter((r) => !r.from.includes("*")).length).toBeLessThanOrEqual(100);
     expect(all.filter((r) => r.from.includes("*")).length).toBeLessThanOrEqual(100);
     for (const line of readFileSync(redirectsPath, "utf-8").split("\n")) expect(line.length).toBeLessThan(1000);
+  });
+
+  // Spec 034 FR-004, FR-009: the setup check's Ghost probe relies on this mapping staying as it is.
+  it("keeps the Ghost address the setup check probes as a 301 to its mapped page, with and without the trailing slash", () => {
+    for (const request of [withSlash(GHOST_PROBE.from), withoutSlash(GHOST_PROBE.from)]) {
+      expect(resolve(request), request).toEqual({ status: 301, location: GHOST_PROBE.to });
+    }
   });
 });

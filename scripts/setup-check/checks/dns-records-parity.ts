@@ -1,6 +1,6 @@
 // checks/dns-records-parity.ts (setup item 4, data-model.md "dns-records-parity"):
 // every record in setup/dns-baseline.json (the must-exist list) matches the Cloudflare zone
-// (type, name, content and — for MX/SRV — priority, with the proxy off). TTL is not
+// (type, name, content and — for MX/SRV — priority, with the proxy state the baseline names; DNS only when it names none). TTL is not
 // part of the match: Cloudflare's dashboard only offers TTL presets (no
 // custom value), so Cloudflare records stay on "Auto" and a TTL difference
 // is reported as an informational detail only, never a mismatch. Stays
@@ -49,7 +49,10 @@ function describeNonContentMismatch(baseline: DnsBaselineRecord, cf: CloudflareD
   if ((baseline.type === "MX" || baseline.type === "SRV") && (baseline.priority ?? null) !== (cf.priority ?? null)) {
     problems.push(`priority is ${cf.priority ?? "none"}, expected ${baseline.priority ?? "none"}`);
   }
-  if (cf.proxied !== false) {
+  const wantProxied = baseline.proxied === true;
+  if (wantProxied && !cf.proxied) {
+    problems.push("proxied is off, expected proxied (orange cloud)");
+  } else if (!wantProxied && cf.proxied) {
     problems.push("proxied is on, expected DNS only (grey cloud)");
   }
   return problems.length > 0 ? problems.join("; ") : null;
