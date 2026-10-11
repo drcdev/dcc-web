@@ -212,7 +212,7 @@ header change is overridden by the zone setting on production, and preview respo
   list as routing problems, not as a new status or a new item. One item keeps the 18-item registry
   and its tests unchanged (acceptance 7).
 
-### W4 — Worker fallback value
+### [x] W4 — Worker fallback value
 
 - **Files:** `worker/src/http.ts`.
 - **Test:** existing W2 cases go green.
