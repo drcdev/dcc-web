@@ -37,7 +37,24 @@ The source code is in a public GitHub repository (github.com/drcdev/dcc-web).
 
 ## Clarifications
 
-_None yet; see the [NEEDS CLARIFICATION] markers below._
+### Session 2026-10-11
+
+- Q: When a visitor activates a part, what happens with the source link, and does the
+  repository open in the same tab or a new one? → A: The explanation shows a clearly labelled
+  source link; the link opens in a new tab and is marked as opening in a new tab. Activating a
+  part never opens the repository by itself.
+- Q: Should source links point at the main branch or at the exact build commit? → A: The main
+  branch (`/blob/main/...` for files, `/tree/main/...` for folders); the automated link check
+  catches files that move or disappear.
+- Q: What happens to the Technology page's existing prose sections? → A: Keep only what the
+  diagram does not cover (Design, Analytics, the Data locations table and the closing note);
+  the content of the other sections (Site, Hosting, Contact form, Questions) moves into the
+  part explanations.
+- Q: On a phone-width screen, is the diagram scaled down or a separate layout? → A: One
+  vertical, top-to-bottom layout used at every width.
+- Q: Where do the explanations live on the page? → A: Every part's explanation is listed below
+  the diagram, each entry with its own anchor; each diagram part links to its entry. With
+  JavaScript, the selected part and its entry are highlighted.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -66,15 +83,17 @@ with nothing cut off or scrolling sideways.
    AI model only through the API, and the contact form reaches the inbox only after the bot
    check).
 3. **Given** a phone-width screen, **When** the page loads, **Then** the diagram fits the page
-   width with readable labels, and the page does not scroll sideways.
+   width with readable labels, and the page does not scroll sideways. The diagram uses the
+   same vertical, top-to-bottom layout at every width.
 
 ---
 
 ### User Story 2 - Click a part to learn what it does (Priority: P1)
 
-A visitor clicks (or taps, or selects with the keyboard) a part of the diagram. A short
-explanation of that part appears, saying what it does and why, in plain language. The visitor
-can move to another part and its explanation replaces the first.
+A visitor clicks (or taps, or selects with the keyboard) a part of the diagram. The page takes
+them to that part's short explanation in the list of explanations below the diagram, saying
+what it does and why, in plain language, and highlights both the part and its entry. The
+visitor can move to another part and the highlight moves with them.
 
 **Why this priority**: This is the interactive half of the issue and the reason the diagram is
 more than a picture.
@@ -84,11 +103,12 @@ confirm each shows its own explanation and that focus and the selected state are
 
 **Acceptance Scenarios**:
 
-1. **Given** the diagram, **When** a visitor activates a part, **Then** a short explanation of
-   that part (no more than a few sentences) is shown, and the part is visibly marked as
-   selected.
+1. **Given** the diagram, **When** a visitor activates a part, **Then** the page moves to that
+   part's entry in the list of explanations below the diagram (a short explanation of no more
+   than a few sentences), and both the part and its entry are visibly marked as selected.
 2. **Given** one part is selected, **When** the visitor activates a different part, **Then**
-   the new part's explanation replaces the old one and only the new part is marked as selected.
+   the page moves to the new part's entry and only the new part and its entry are marked as
+   selected.
 3. **Given** a keyboard-only visitor, **When** they tab through the page, **Then** every
    interactive part can be reached and activated, in a sensible order, with a visible focus
    indicator; a screen reader announces each part's name and, on activation, its explanation.
@@ -109,10 +129,10 @@ file or folder in the public repository that implements that part.
 **Acceptance Scenarios**:
 
 1. **Given** a part's explanation, **When** the visitor follows its source link, **Then** the
-   public repository opens at the file or folder that implements that part. [NEEDS
-   CLARIFICATION: does activating a part both show the explanation and immediately open the
-   repository, or does it show the explanation with a clearly labelled source link the visitor
-   follows if they want to? And should the repository open in the same tab or a new one?]
+   public repository opens in a new tab at the file or folder that implements that part on
+   the main branch. The link is clearly labelled as a source link and marked, in its visible
+   text or accessible name, as opening in a new tab. Activating a diagram part never opens the
+   repository by itself.
 2. **Given** the site's build, **When** a source link points at a file or folder that does not
    exist in the repository, **Then** the build or test suite fails rather than publishing a
    broken link.
@@ -135,19 +155,22 @@ and every part's explanation and source link can be read and followed.
 1. **Given** JavaScript is off, **When** the page loads, **Then** the diagram is visible and
    every part's name, explanation and source link is present on the page in a readable form.
 2. **Given** JavaScript is off, **When** a visitor activates a part of the diagram, **Then**
-   they reach that part's explanation on the same page.
+   they reach that part's entry in the list of explanations on the same page (each part is a
+   link to its entry's anchor).
 
 ---
 
 ### Edge Cases
 
 - A visitor lands on the page with a link to a specific part (for example from a post): the
-  page opens with that part selected and its explanation shown.
+  page opens at that part's entry in the list of explanations, with the part and its entry
+  highlighted when JavaScript is on.
 - A part in the diagram has no single source file (for example "preview vs production" is
   configuration plus CI): its link goes to the configuration that defines it, not to a made-up
   location.
-- Very narrow screens (320 px): labels stay readable; the diagram may change layout but must
-  not shrink text below a readable size or require sideways scrolling.
+- Very narrow screens (320 px): the same vertical layout is used as on wider screens; labels
+  stay readable and the diagram does not shrink text below a readable size or require
+  sideways scrolling.
 - Dark theme and the high-contrast needs of WCAG 2.2 AA: parts, lines, labels and the selected
   and focus states keep at least AA contrast in both themes.
 - The site's architecture changes later (a part added, removed or moved in the repository):
@@ -170,21 +193,24 @@ and every part's explanation and source link can be read and followed.
   called only when no saved question set exists and the budget allows, that the contact
   message is checked before it is emailed, and that preview and production each have their
   own Worker and database.
-- **FR-004**: Each part MUST be activatable by mouse, touch and keyboard, and activating it MUST
-  show a short plain-language explanation of what the part does.
-- **FR-005**: Only one part's explanation MUST be shown as the current selection at a time, and
-  the selected part MUST be visually distinguished from the others.
+- **FR-004**: Every part's short plain-language explanation MUST be listed below the diagram,
+  one entry per part, each entry with its own anchor. Each diagram part MUST be a link to its
+  entry, activatable by mouse, touch and keyboard.
+- **FR-005**: With JavaScript on, activating a part MUST mark that part and its entry as the
+  current selection; only one part and entry are selected at a time, and both MUST be visually
+  distinguished from the others. Without JavaScript, the link to the entry is the whole
+  behaviour.
 - **FR-006**: Each part's explanation MUST include a link to the file or folder in the public
-  repository (github.com/drcdev/dcc-web) that implements it. [NEEDS CLARIFICATION: should
-  source links point at the default branch (always current, but can break if a file moves) or
-  at the exact commit the page was built from (never breaks, but shows the code as of that
-  build)?]
+  repository (github.com/drcdev/dcc-web) that implements it, on the main branch
+  (`/blob/main/...` for a file, `/tree/main/...` for a folder). The link is clearly labelled as
+  a source link, opens in a new tab, and is marked in its visible text or accessible name as
+  opening in a new tab.
 - **FR-007**: Every source link MUST be checked automatically against the repository's files,
   and a link to a path that does not exist MUST fail the release gate.
 - **FR-008**: With JavaScript turned off, the diagram MUST still render and every part's name,
   explanation and source link MUST be readable on the page.
 - **FR-009**: Each part MUST be addressable by a link to the page (a fragment), so a visitor
-  can be sent straight to a part's explanation.
+  can be sent straight to a part's entry; the fragment is the entry's anchor.
 - **FR-010**: The diagram and its explanations MUST meet WCAG 2.2 AA in light and dark themes
   at all supported widths, including visible focus, sufficient contrast and accessible names
   for every part.
@@ -195,13 +221,14 @@ and every part's explanation and source link can be read and followed.
 - **FR-013**: The explanations and labels MUST be plain language with no hype or filler, and
   MUST NOT state anything about the site's behaviour that is not true today (for example, they
   must not say the contact form stores messages).
-- **FR-014**: The existing prose on the Technology page MUST be handled as follows: [NEEDS
-  CLARIFICATION: does the diagram replace the existing sections (Site, Hosting, Design,
-  Contact form, Analytics, Data locations, Questions), keep them unchanged below the diagram,
-  or keep only the sections the diagram does not cover (for example Design, Analytics and the
-  Data locations table)?]
+- **FR-014**: The page MUST keep only the existing sections the diagram does not cover:
+  Design, Analytics, the Data locations table and the closing note, after the diagram and its
+  explanations. The Site, Hosting, Contact form and Questions sections MUST be removed, with
+  their still-true content carried into the relevant part explanations.
 - **FR-015**: The page's visibility and place in the navigation MUST stay as they are today
   (published, linked from the footer).
+- **FR-016**: The diagram MUST use one vertical, top-to-bottom layout at every screen width;
+  there is no separate wide or phone layout.
 
 ### Key Entities
 
@@ -219,7 +246,7 @@ and every part's explanation and source link can be read and followed.
 - **SC-001**: All parts listed in FR-002 appear in the diagram, each with an explanation and a
   source link; 100% of source links resolve to an existing path in the public repository.
 - **SC-002**: A keyboard-only visitor can reach and open every part's explanation using only
-  Tab and Enter or Space, with no keyboard trap.
+  Tab and Enter, with no keyboard trap.
 - **SC-003**: The page passes the site's automated accessibility checks with zero violations in
   both themes, with and without a part selected.
 - **SC-004**: With JavaScript disabled, 100% of the parts' explanations and source links are
@@ -237,7 +264,7 @@ and every part's explanation and source link can be read and followed.
 - Explanations are authored content kept in the repository with the page, in plain language,
   a few sentences each.
 - The diagram covers only the parts the issue names. Analytics, CI and the design system are
-  not diagram parts; whether their existing prose stays is FR-014's question.
+  not diagram parts; their existing prose stays on the page (FR-014).
 - "Preview vs production" is shown as two environments with their own Worker and database,
   not as a deployment pipeline walkthrough.
 - No new API endpoint, data store, service or recurring cost is introduced; the page stays
