@@ -224,3 +224,20 @@ test.describe("Start here", () => {
     });
   });
 });
+
+test.describe("Recent writing", () => {
+  test("is the last section, below Start here, with the three newest posts and the All writing link", async ({ page }) => {
+    await page.goto("/");
+    const sections = await page.evaluate(() =>
+      [...document.querySelectorAll("main [data-now], main [data-start-here], main [data-recent-writing]")].map((el) => Object.keys((el as HTMLElement).dataset)[0]),
+    );
+    expect(sections.at(-1)).toBe("recentWriting");
+    const recent = page.locator("[data-recent-writing]");
+    await expect(recent.getByRole("heading", { level: 2, name: "Recent writing" })).toBeVisible();
+    await expect(recent.locator("[data-post-card]")).toHaveCount(3);
+    await expect(recent.getByRole("link", { name: "All writing" })).toHaveAttribute("href", "/writing/");
+    const startBottom = await page.locator("[data-start-here]").evaluate((el) => el.getBoundingClientRect().bottom + window.scrollY);
+    const recentTop = await recent.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+    expect(recentTop).toBeGreaterThanOrEqual(startBottom);
+  });
+});

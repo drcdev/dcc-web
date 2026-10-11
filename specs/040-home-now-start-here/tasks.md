@@ -87,13 +87,13 @@
 
 ### Tests
 
-- [ ] T036 [US3] Test (layer: e2e, real browser): extend `tests/e2e/home.spec.ts`: Recent writing is the last section, below Start here, and still shows the three newest visible posts and the "All writing" link. This is a regression guard on existing behaviour (US3 adds no new behaviour, so it passes when written); the order part is already seen failing in T014 and T027. Reason for e2e layer: the rendered section order alongside the other home checks in one journey.
-- [ ] T037 [US3] Confirm `/` is in the existing axe list (`tests/e2e/templates.ts`, used by `tests/e2e/a11y.spec.ts` at phone and desktop widths, both themes and with JavaScript off, with the `wcag22aa` tag that includes target size) and the `tests/e2e/budget.spec.ts` list, so the existing template-level checks cover the new sections on the real site with the launch paths shown (SC-004). No new test if already covered; add `/` there if not. Layer: accessibility/budget (template level).
-- [ ] T038 [US3] Test (layer: visual): add `home-now-start-here-{phone,desktop}-{light,dark}` shots of the fixture home page to `tests/e2e/visual.spec.ts`, loading lazy images first as the other shots do. Reason for visual layer: spacing, columns and theme tokens in both themes are only judged by pixels.
+- [X] T036 [US3] Test (layer: e2e, real browser): extend `tests/e2e/home.spec.ts`: Recent writing is the last section, below Start here, and still shows the three newest visible posts and the "All writing" link. This is a regression guard on existing behaviour (US3 adds no new behaviour, so it passes when written); the order part is already seen failing in T014 and T027. Reason for e2e layer: the rendered section order alongside the other home checks in one journey.
+- [X] T037 [US3] Confirm `/` is in the existing axe list (`tests/e2e/templates.ts`, used by `tests/e2e/a11y.spec.ts` at phone and desktop widths, both themes and with JavaScript off, with the `wcag22aa` tag that includes target size) and the `tests/e2e/budget.spec.ts` list, so the existing template-level checks cover the new sections on the real site with the launch paths shown (SC-004). No new test if already covered; add `/` there if not. Layer: accessibility/budget (template level).
+- [X] T038 [US3] Test (layer: visual): add `home-now-start-here-{phone,desktop}-{light,dark}` shots of the fixture home page to `tests/e2e/visual.spec.ts`, loading lazy images first as the other shots do. Reason for visual layer: spacing, columns and theme tokens in both themes are only judged by pixels.
 
 ### Implementation
 
-- [ ] T039 [US3] Verify `src/components/sections/RecentWriting.astro` is untouched and the new sections share its heading, spacing, link and focus tokens (FR-015a); fix any drift in `Now.astro` or `StartHere.astro` rather than in RecentWriting.
+- [X] T039 [US3] Verify `src/components/sections/RecentWriting.astro` is untouched and the new sections share its heading, spacing, link and focus tokens (FR-015a); fix any drift in `Now.astro` or `StartHere.astro` rather than in RecentWriting.
 - [ ] T040 [US3] Run the local checks for this tier only: `pnpm exec tsx scripts/ci/changed-paths.ts --base origin/main` and the tier it reports (type check, lint, unit, component, build tests), with `ASTRO_PREVIEW_BACKGROUND=1` where needed. Ask Don before any full `pnpm run verify`.
 
 ## Phase 6: Polish and cross-cutting
