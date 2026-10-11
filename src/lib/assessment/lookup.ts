@@ -1,7 +1,6 @@
 // Finds an assessment and its shifts for the post components and the post route (contracts/
 // assessment-data.md rows A4 and A5). The finders are pure; `loadAssessments()` reads the
 // collection and is the only part that needs Astro's content runtime, so it is imported lazily.
-// The A6 and A7 heading checks join this file in US2.
 import type { Assessment, AssessmentShift } from "../../content/schemas/assessment.ts";
 import { contentError } from "../content/errors.ts";
 
@@ -49,4 +48,31 @@ export function headingId(title: string): string {
     .toLowerCase()
     .replace(/[^\p{L}\p{N}\p{M}\s_-]/gu, "")
     .replace(/\s/g, "-");
+}
+
+/**
+ * A6: every shift's `anchor` is the id of a heading the post renders. A7: the post renders the
+ * block for an assessment once. Both name the post file; A6 names the shift and the anchor.
+ */
+export function checkBlockTargets({
+  file,
+  assessment,
+  id,
+  headings,
+  blockCount,
+}: {
+  file: string;
+  assessment: Assessment;
+  id: string;
+  headings: readonly { slug: string }[];
+  blockCount: number;
+}): void {
+  if (blockCount > 1) {
+    throw contentError("post", file, `the self-assessment "${id}" is rendered ${blockCount} times. Render <SelfAssessment assessment="${id}" /> once.`);
+  }
+  for (const shift of assessment.shifts) {
+    if (!headings.some((heading) => heading.slug === shift.anchor)) {
+      throw contentError("post", file, `the anchor "${shift.anchor}" of "${shift.name}" matches no heading in the post. Fix the anchor in the data file or the heading in the post.`);
+    }
+  }
 }

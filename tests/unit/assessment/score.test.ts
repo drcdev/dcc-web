@@ -1,6 +1,6 @@
 // Unit tests for the scoring rules (FR-005, FR-007, SC-002; data-model.md "Result").
 import { describe, expect, it } from "vitest";
-import { band, bandPhrase, changeText, formatScore, markerPosition, scoreOf, summaryLine, sumOf } from "../../../src/lib/assessment/score.ts";
+import { band, bandPhrase, changeText, formatScore, markerPosition, nextToPractise, selectLowBand, scoreOf, summaryLine, sumOf } from "../../../src/lib/assessment/score.ts";
 
 const shift = { name: "Alpha", from: "the old way", to: "the new way" };
 
@@ -62,5 +62,19 @@ describe("changeText", () => {
     expect(changeText(7, 9)).toBe("up 0.7");
     expect(changeText(9, 8)).toBe("down 0.3");
     expect(changeText(9, 9)).toBe("no change");
+  });
+});
+
+describe("selectLowBand", () => {
+  it("returns the positions of the shifts below a mean of 3 only, in the post's order", () => {
+    expect(selectLowBand([6, 9, 12, 7, 15])).toEqual([0, 3]);
+    expect(selectLowBand([9, 10, 11])).toEqual([]);
+  });
+});
+
+describe("nextToPractise", () => {
+  it("names the lowest-scoring shift, the first in the post's order on a tie", () => {
+    expect(nextToPractise([11, 9, 12, 9, 15])).toBe(1);
+    expect(nextToPractise([15, 10, 9, 14, 9])).toBe(2);
   });
 });

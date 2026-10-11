@@ -114,6 +114,14 @@ const radio =
     <div hidden data-assessment-results class="mt-8"></div>
   </div>
 
+  <style is:global>
+    /* Headings the block links to clear the top of the page when they are scrolled to. */
+    h2[id],
+    h3[id] {
+      scroll-margin-top: 6rem;
+    }
+  </style>
+
   <script>
     // Load the module when the block is within one viewport height of the visible area, or at
     // once when the address already holds a result (research R3, FR-017).

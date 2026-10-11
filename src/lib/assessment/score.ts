@@ -41,3 +41,9 @@ export function changeText(earlierSum: number, newSum: number): string {
   if (change === 0) return "no change";
   return `${change > 0 ? "up" : "down"} ${Math.abs(change).toFixed(1)}`;
 }
+
+/** The positions of the shifts in the low band (a mean below 3), in the post's order (FR-008). */
+export const selectLowBand = (sums: readonly number[]): number[] => sums.flatMap((sum, i) => (band(sum) === "low" ? [i] : []));
+
+/** The position of the lowest-scoring shift; the first in the post's order on a tie (FR-008). */
+export const nextToPractise = (sums: readonly number[]): number => sums.reduce((lowest, sum, i) => (sum < sums[lowest]! ? i : lowest), 0);

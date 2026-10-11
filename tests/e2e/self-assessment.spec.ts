@@ -258,3 +258,65 @@ test.describe("self-assessment: layout (U17, FR-018)", () => {
     });
   }
 });
+
+test.describe("self-assessment: from a low score to what to practise (US2)", () => {
+  const show = (page: Page) => page.locator("[data-assessment-show]").click();
+
+  test("two low shifts show exactly two Read links and their Practical Application text (U6)", async ({ page }) => {
+    await open(page);
+    await answer(page, MIXED);
+    await show(page);
+    const links = page.locator("[data-assessment-results] [data-low-link]");
+    await expect(links).toHaveCount(2);
+    for (const [n, s] of [[0, 0], [1, 3]] as const) {
+      await expect(links.nth(n)).toHaveText(`Read ${SHIFTS[s]!.name}`);
+      await expect(links.nth(n)).toHaveAttribute("href", `#${SHIFTS[s]!.anchor}`);
+      const item = page.locator("[data-assessment-results] [data-low-shift]").nth(n);
+      await expect(item).toContainText(SHIFTS[s]!.practicalApplication.replace(/\s+/g, " "));
+    }
+    await expect(page.locator("[data-assessment-results]")).not.toContainText("None of your scores is below the middle.");
+  });
+
+  test("following a link shows the heading below the top, focuses it and leaves the fragment alone (U7)", async ({ page }) => {
+    await open(page);
+    await answer(page, MIXED);
+    await show(page);
+    await page.locator("[data-assessment-results] [data-low-link]").first().click();
+    const heading = page.locator(`[id="${SHIFTS[0]!.anchor}"]`);
+    await expect(heading).toBeFocused();
+    await expect.poll(() => heading.evaluate((node) => Math.round(node.getBoundingClientRect().top))).toBeGreaterThanOrEqual(48);
+    await expect(heading).toBeInViewport();
+    expect(new URL(page.url()).hash).toBe("");
+  });
+
+  test("with no low shift the message and the next shift to practise show", async ({ page }) => {
+    await open(page);
+    const values = ALL(4);
+    values[2] = [3, 3, 3];
+    values[4] = [3, 3, 3];
+    values[1] = [3, 3, 4];
+    await answer(page, values);
+    await show(page);
+    const results = page.locator("[data-assessment-results]");
+    await expect(results).toContainText("None of your scores is below the middle.");
+    await expect(results).toContainText(`Next to practise: ${SHIFTS[2]!.name}`);
+    await expect(results.locator("[data-low-link]")).toHaveCount(1);
+    await expect(results).toContainText(SHIFTS[2]!.practicalApplication.replace(/\s+/g, " "));
+  });
+
+  test("with reduced motion the page scrolls instantly (U20)", async ({ browser }) => {
+    const context = await browser.newContext({ reducedMotion: "reduce" });
+    const page = await context.newPage();
+    await open(page);
+    await answer(page, MIXED);
+    await show(page);
+    await page.locator("[data-assessment-results] [data-low-link]").first().click();
+    const heading = page.locator(`[id="${SHIFTS[0]!.anchor}"]`);
+    await expect(heading).toBeFocused();
+    // Instant scrolling: the heading is in place on the next frame, without waiting for an animation.
+    const top = await heading.evaluate((node) => new Promise<number>((resolve) => requestAnimationFrame(() => resolve(node.getBoundingClientRect().top))));
+    expect(top).toBeGreaterThanOrEqual(0);
+    expect(top).toBeLessThan(400);
+    await context.close();
+  });
+});

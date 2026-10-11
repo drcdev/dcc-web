@@ -2,11 +2,11 @@
 // by the bootstrap script in SelfAssessment.astro. It reads the form, checks it, scores it and
 // draws the chart and the text summary. Nothing leaves the page: no request, no storage. It sets
 // no `style` attribute (the page policy forbids it); the chart's geometry is SVG attributes.
-import { band, formatScore, markerPosition, summaryLine, sumOf } from "./score.ts";
+import { band, formatScore, markerPosition, nextToPractise, selectLowBand, summaryLine, sumOf } from "./score.ts";
 
 interface Data {
   scale: string[];
-  shifts: { name: string; from: string; to: string; anchor: string }[];
+  shifts: { name: string; from: string; to: string; anchor: string; practicalApplication: string }[];
 }
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -52,6 +52,17 @@ function chartRow(shift: Data["shifts"][number], sum: number): HTMLElement {
   );
   row.append(ends, svg);
   return row;
+}
+
+/** A shift to practise: a link to its section in the post and its Practical Application paragraph. */
+function practiseItem(shift: Data["shifts"][number]): HTMLElement {
+  const item = element("div", "mt-4");
+  item.dataset.lowShift = "";
+  const link = element("a", "font-semibold text-rust-800 underline underline-offset-2 dark:text-rust-300", `Read ${shift.name}`);
+  link.href = `#${shift.anchor}`;
+  link.dataset.lowLink = shift.anchor;
+  item.append(link, element("p", "m-0 mt-1 [overflow-wrap:anywhere]", shift.practicalApplication));
+  return item;
 }
 
 const countText = (count: number): string => (count === 1 ? "1 statement needs an answer." : `${count} statements need an answer.`);
@@ -114,7 +125,20 @@ export function init(root: HTMLElement): void {
       item.dataset.score = formatScore(sum);
       summary.append(item);
     });
-    results.replaceChildren(element("h3", "m-0 text-lg font-bold text-dusk-900 dark:text-white", "Your results"), chart, summary);
+    const practise = element("div", "mt-6");
+    practise.append(element("h3", "m-0 text-lg font-bold text-dusk-900 dark:text-white", "What to practise"));
+    const low = selectLowBand(sums);
+    if (low.length > 0) {
+      for (const s of low) practise.append(practiseItem(data.shifts[s]!));
+    } else {
+      const next = nextToPractise(sums);
+      practise.append(
+        element("p", "m-0 mt-2", "None of your scores is below the middle."),
+        element("p", "m-0 mt-2 font-semibold", `Next to practise: ${data.shifts[next]!.name}`),
+        practiseItem(data.shifts[next]!),
+      );
+    }
+    results.replaceChildren(element("h3", "m-0 text-lg font-bold text-dusk-900 dark:text-white", "Your results"), chart, summary, practise);
     results.hidden = false;
     status.textContent = shown ? "Your results are updated." : "Your results are ready below.";
     shown = true;
@@ -146,6 +170,19 @@ export function init(root: HTMLElement): void {
     if (!link) return;
     event.preventDefault();
     document.getElementById(link.dataset.errorLink!)?.querySelector<HTMLInputElement>("input")?.focus();
+  });
+
+  // A section link scrolls the heading into view and focuses it, leaving the address unchanged.
+  // Smooth scrolling only when the reader has not asked for reduced motion.
+  results.addEventListener("click", (event) => {
+    const link = (event.target as HTMLElement).closest<HTMLAnchorElement>("[data-low-link]");
+    if (!link) return;
+    const heading = document.getElementById(link.dataset.lowLink!);
+    if (!heading) return;
+    event.preventDefault();
+    heading.tabIndex = -1;
+    heading.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+    heading.focus({ preventScroll: true });
   });
 
   root.dataset.assessmentReady = "true";

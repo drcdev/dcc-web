@@ -17,7 +17,7 @@ import AssessmentLink from "../../components/assessment/AssessmentLink.astro";
 import { postComponents } from "../../components/assessment/index";
 import { sectionComponents } from "../../components/sections/index";
 import { assessmentsNamedIn, checkFromToLines, checkNoMovedText } from "../../lib/assessment/checks";
-import { findAssessment, headingId, loadAssessments } from "../../lib/assessment/lookup";
+import { checkBlockTargets, findAssessment, headingId, loadAssessments } from "../../lib/assessment/lookup";
 import { expandForQuestions } from "../../lib/assessment/question-text";
 import { selectRelated } from "../../lib/content/post-order";
 import { contentError } from "../../lib/content/errors";
@@ -56,6 +56,13 @@ let assessmentHeading: string | undefined;
 for (const id of named.withBlock.slice(0, 1)) {
   const title = findAssessment(file, id, assessments).title;
   assessmentHeading = headingId(title);
+  checkBlockTargets({
+    file,
+    assessment: findAssessment(file, id, assessments),
+    id,
+    headings,
+    blockCount: body.match(new RegExp(`<SelfAssessment\\b[^>]*\\bassessment="${id}"`, "g"))?.length ?? 0,
+  });
   if (!headings.some((heading) => heading.slug === assessmentHeading)) {
     throw contentError("post", file, `the self-assessment needs a heading "## ${title}" just above it, so the block and the title-card link have a target.`);
   }

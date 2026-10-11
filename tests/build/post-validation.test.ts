@@ -113,3 +113,18 @@ describe("assessment data and components (sync and build)", () => {
   it("A10: a moved text left in the prose fails, naming the post and the field", () =>
     withSample("a10-moved-text-left.mdx", "Post file", "a10-moved-text-left", "practicalApplication", "Alpha"));
 });
+
+// Rows A6 and A7 (US2): the shift anchors must be rendered heading ids, and one block per assessment.
+describe("assessment block checks (build)", () => {
+  const run = async (post: string, ...contains: string[]) => {
+    result = await buildFixtureSite([], { mode: "build", assessments: ["valid/sample.yaml"], posts: [broken(post)] });
+    expect(result.ok, "the build should fail").toBe(false);
+    for (const text of contains) expect(result.message).toContain(text);
+  };
+
+  it("A6: a shift anchor that matches no heading fails, naming the post, the shift and the anchor", () =>
+    run("a06-anchor-missing.mdx", "Post file", "a06-anchor-missing", "Charlie", "shift-3-charlie"));
+
+  it("A7: two blocks for the same assessment fail, naming the post", () =>
+    run("a07-block-twice.mdx", "Post file", "a07-block-twice", "sample", "once"));
+});

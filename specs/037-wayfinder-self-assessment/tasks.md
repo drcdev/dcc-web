@@ -120,15 +120,15 @@ to the mean of its three answers (SC-002).
 
 ### Tests first (US2)
 
-- [ ] T040 [P] [US2] Extend `tests/build/post-validation.test.ts` with `tests/fixtures/posts/broken/a06-*.mdx` and `a07-*.mdx`: a shift anchor not matching a rendered heading id, and two `SelfAssessment` tags for the same assessment, each failing the build naming the post file and the shift. Layer: build (checks run against the real rendered headings).
-- [ ] T041 [P] [US2] Extend `tests/unit/assessment/score.test.ts`: low-band selection (below 3 only), none-low case naming the lowest-scoring shift (ties keep the post's order) as "Next to practise" (FR-008). Layer: unit.
-- [ ] T042 [US2] Extend `tests/e2e/self-assessment.spec.ts` (US2 section): two low shifts show exactly two "Read <name>" links and the unchanged Practical Application text; following one puts the heading in view below the sticky header, focuses it, leaves the fragment unchanged (U6, U7); all-middle answers show "None of your scores is below the middle." plus the next shift; reduced-motion scrolls instantly (U20). Layer: e2e (scroll position and focus need a browser).
+- [X] T040 [P] [US2] Extend `tests/build/post-validation.test.ts` with `tests/fixtures/posts/broken/a06-*.mdx` and `a07-*.mdx`: a shift anchor not matching a rendered heading id, and two `SelfAssessment` tags for the same assessment, each failing the build naming the post file and the shift. Layer: build (checks run against the real rendered headings).
+- [X] T041 [P] [US2] Extend `tests/unit/assessment/score.test.ts`: low-band selection (below 3 only), none-low case naming the lowest-scoring shift (ties keep the post's order) as "Next to practise" (FR-008). Layer: unit.
+- [X] T042 [US2] Extend `tests/e2e/self-assessment.spec.ts` (US2 section): two low shifts show exactly two "Read <name>" links and the unchanged Practical Application text; following one puts the heading in view below the sticky header, focuses it, leaves the fragment unchanged (U6, U7); all-middle answers show "None of your scores is below the middle." plus the next shift; reduced-motion scrolls instantly (U20). Layer: e2e (scroll position and focus need a browser).
 
 ### Implementation (US2)
 
-- [ ] T043 [US2] Add `selectLowBand` and `nextToPractise` to `src/lib/assessment/score.ts`, and add the A6 (shift anchor matches a rendered heading id) and A7 (one `SelfAssessment` per assessment) checks to `src/lib/assessment/lookup.ts`, called from `src/pages/writing/[slug].astro` (tests: T040).
-- [ ] T044 [US2] Extend `src/lib/assessment/client.ts`: render low-band links and paragraphs (from the data attribute), the none-low message, heading focus on follow, smooth scroll only without reduced motion; confirm the mindset-shift headings have enough `scroll-margin-top` for the header (adjust in `SelfAssessment.astro` global rules, not the shell).
-- [ ] T045 [US2] Run T040-T042 and confirm they pass.
+- [X] T043 [US2] Add `selectLowBand` and `nextToPractise` to `src/lib/assessment/score.ts`, and add the A6 (shift anchor matches a rendered heading id) and A7 (one `SelfAssessment` per assessment) checks to `src/lib/assessment/lookup.ts`, called from `src/pages/writing/[slug].astro` (tests: T040).
+- [X] T044 [US2] Extend `src/lib/assessment/client.ts`: render low-band links and paragraphs (from the data attribute), the none-low message, heading focus on follow, smooth scroll only without reduced motion; confirm the mindset-shift headings have enough `scroll-margin-top` for the header (adjust in `SelfAssessment.astro` global rules, not the shell).
+- [X] T045 [US2] Run T040-T042 and confirm they pass.
 
 ---
 
