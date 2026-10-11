@@ -38,3 +38,15 @@ export async function loadAssessments(): Promise<Assessments> {
 export async function resolveAssessment(file: string, id: string, data?: Assessment): Promise<Assessment> {
   return data ?? findAssessment(file, id, await loadAssessments());
 }
+
+/**
+ * The id Astro gives the Markdown heading `## <title>` (github-slugger: lower-case, punctuation
+ * dropped, spaces to hyphens). The block names itself by that heading and the title-card link
+ * points at it, so the data file's title and the post's heading must read the same.
+ */
+export function headingId(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\p{M}\s_-]/gu, "")
+    .replace(/\s/g, "-");
+}

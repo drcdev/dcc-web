@@ -5,6 +5,7 @@
 import { test, expect } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { postsWithAssessment } from "../helpers/content.ts";
 import { MENU_BUTTON, NAV_LIST, NOT_FOUND_PENDING, PRIMARY, TEMPLATES } from "./templates.ts";
 
 const THEME_INIT = readFileSync(
@@ -118,4 +119,20 @@ test("a writing post shows no questions panel without JavaScript and reads norma
   await expect(page.getByRole("button", { name: "Get questions" })).toHaveCount(0);
   await expect(page.locator("main h1")).toBeVisible();
   await expect(page.locator("[data-post-body]")).toBeVisible();
+});
+
+// specs/037 U18: without JavaScript the post reads in full, the self-assessment shows a note and its
+// statements as a list, and no form control is visible.
+test("the self-assessment post reads without JavaScript and lists the statements without controls", async ({ page }) => {
+  const { post, assessment } = postsWithAssessment()[0]!;
+  await page.goto(post.address);
+  const block = page.locator("[data-assessment]");
+  await expect(block).toContainText("needs JavaScript");
+  for (const shift of assessment.shifts) {
+    await expect(block.getByRole("heading", { name: shift.name })).toBeVisible();
+    await expect(block.locator("[data-assessment-nojs] li", { hasText: shift.statements[0]! }).first()).toBeVisible();
+    // The moved text is in the HTML.
+    await expect(page.locator("[data-post-body]")).toContainText(shift.practicalApplication.slice(0, 25));
+  }
+  await expect(block.locator("input:visible, button:visible, form:visible")).toHaveCount(0);
 });

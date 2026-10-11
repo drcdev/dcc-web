@@ -1,0 +1,152 @@
+// The browser module of the self-assessment (specs/037 contracts/assessment-ui.md). Loaded lazily
+// by the bootstrap script in SelfAssessment.astro. It reads the form, checks it, scores it and
+// draws the chart and the text summary. Nothing leaves the page: no request, no storage. It sets
+// no `style` attribute (the page policy forbids it); the chart's geometry is SVG attributes.
+import { band, formatScore, markerPosition, summaryLine, sumOf } from "./score.ts";
+
+interface Data {
+  scale: string[];
+  shifts: { name: string; from: string; to: string; anchor: string }[];
+}
+
+const SVG = "http://www.w3.org/2000/svg";
+
+function element<K extends keyof HTMLElementTagNameMap>(tag: K, className = "", text?: string): HTMLElementTagNameMap[K] {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function svgNode<K extends keyof SVGElementTagNameMap>(tag: K, attributes: Record<string, string>): SVGElementTagNameMap[K] {
+  const node = document.createElementNS(SVG, tag);
+  for (const [name, value] of Object.entries(attributes)) node.setAttribute(name, value);
+  return node;
+}
+
+/** One chart row: the shift's name, its From and To wording, and a track with a marker at the mean. */
+function chartRow(shift: Data["shifts"][number], sum: number): HTMLElement {
+  const row = element("div", "mt-4 first:mt-0");
+  row.dataset.chartRow = "";
+  row.append(element("p", "m-0 font-semibold text-dusk-900 dark:text-white", shift.name));
+  const ends = element("div", "mt-1 flex justify-between gap-4 text-sm [overflow-wrap:anywhere]");
+  ends.append(element("span", "", shift.from), element("span", "text-right", shift.to));
+  const svg = svgNode("svg", { viewBox: "-6 0 112 12", "aria-hidden": "true", focusable: "false", class: "mt-1 block h-auto w-full max-w-xl" });
+  svg.append(
+    svgNode("line", {
+      "data-chart-track": "",
+      x1: "0",
+      x2: "100",
+      y1: "6",
+      y2: "6",
+      "stroke-width": "2",
+      "stroke-linecap": "round",
+      class: "stroke-dusk-600 dark:stroke-dusk-300 forced-colors:stroke-[CanvasText]",
+    }),
+    svgNode("circle", {
+      cx: String(markerPosition(sum) * 100),
+      cy: "6",
+      r: "5",
+      class: "fill-rust-700 dark:fill-rust-300 forced-colors:fill-[Highlight]",
+    }),
+  );
+  row.append(ends, svg);
+  return row;
+}
+
+const countText = (count: number): string => (count === 1 ? "1 statement needs an answer." : `${count} statements need an answer.`);
+
+export function init(root: HTMLElement): void {
+  const data = JSON.parse(root.dataset.assessmentData ?? "{}") as Data;
+  const form = root.querySelector<HTMLFormElement>("[data-assessment-form]")!;
+  const status = root.querySelector<HTMLElement>("[data-assessment-status]")!;
+  const errors = root.querySelector<HTMLElement>("[data-assessment-errors]")!;
+  const results = root.querySelector<HTMLElement>("[data-assessment-results]")!;
+  const show = root.querySelector<HTMLButtonElement>("[data-assessment-show]")!;
+  const fieldsets = [...form.querySelectorAll<HTMLFieldSetElement>("fieldset[data-statement]")];
+  let shown = false;
+
+  const answerOf = (fieldset: HTMLFieldSetElement): number => Number(fieldset.querySelector<HTMLInputElement>("input:checked")?.value ?? 0);
+  const clearError = (fieldset: HTMLFieldSetElement) => {
+    fieldset.removeAttribute("aria-invalid");
+    fieldset.removeAttribute("aria-describedby");
+    fieldset.querySelector<HTMLElement>("[data-statement-error]")!.hidden = true;
+  };
+
+  function showErrors(missing: HTMLFieldSetElement[]) {
+    for (const fieldset of fieldsets) clearError(fieldset);
+    const heading = element("p", "m-0 font-semibold", countText(missing.length));
+    heading.dataset.errorCount = "";
+    const list = element("ul", "m-0 mt-2 list-disc pl-6");
+    for (const fieldset of missing) {
+      fieldset.setAttribute("aria-invalid", "true");
+      const message = fieldset.querySelector<HTMLElement>("[data-statement-error]")!;
+      message.hidden = false;
+      fieldset.setAttribute("aria-describedby", message.id);
+      const item = element("li");
+      const link = element("a", "text-rust-800 underline underline-offset-2 dark:text-rust-300", fieldset.querySelector("legend")!.textContent ?? "");
+      link.href = `#${fieldset.id}`;
+      link.dataset.errorLink = fieldset.id;
+      item.append(link);
+      list.append(item);
+    }
+    errors.replaceChildren(heading, list);
+    errors.hidden = false;
+    results.hidden = true;
+    status.textContent = heading.textContent;
+    missing[0]!.querySelector<HTMLInputElement>("input")!.focus();
+  }
+
+  function showResults() {
+    errors.hidden = true;
+    const sums = data.shifts.map((_, s) => sumOf([0, 1, 2].map((i) => answerOf(fieldsets[s * 3 + i]!))));
+    const chart = element("div", "mt-4");
+    chart.setAttribute("role", "img");
+    chart.setAttribute("aria-label", "Chart of where you sit between From and To for each shift. The list below gives the same information in words.");
+    chart.dataset.assessmentChart = "";
+    const summary = element("ul", "m-0 mt-4 list-none p-0");
+    sums.forEach((sum, s) => {
+      const shift = data.shifts[s]!;
+      chart.append(chartRow(shift, sum));
+      const item = element("li", "mt-2 first:mt-0 [overflow-wrap:anywhere]", summaryLine(shift, sum));
+      item.dataset.summaryLine = "";
+      item.dataset.band = band(sum);
+      item.dataset.score = formatScore(sum);
+      summary.append(item);
+    });
+    results.replaceChildren(element("h3", "m-0 text-lg font-bold text-dusk-900 dark:text-white", "Your results"), chart, summary);
+    results.hidden = false;
+    status.textContent = shown ? "Your results are updated." : "Your results are ready below.";
+    shown = true;
+  }
+
+  show.addEventListener("click", () => {
+    const missing = fieldsets.filter((fieldset) => answerOf(fieldset) === 0);
+    if (missing.length > 0) showErrors(missing);
+    else {
+      showResults();
+      show.focus();
+    }
+  });
+
+  // Answering a statement clears its own error at once.
+  form.addEventListener("change", (event) => {
+    const fieldset = (event.target as HTMLElement).closest<HTMLFieldSetElement>("fieldset[data-statement]");
+    if (!fieldset || !fieldset.hasAttribute("aria-invalid")) return;
+    clearError(fieldset);
+    errors.querySelector(`[data-error-link="${fieldset.id}"]`)?.closest("li")?.remove();
+    const left = errors.querySelectorAll("li").length;
+    if (left === 0) errors.hidden = true;
+    else errors.querySelector("[data-error-count]")!.textContent = countText(left);
+  });
+
+  // An error link moves focus to the statement without changing the address.
+  errors.addEventListener("click", (event) => {
+    const link = (event.target as HTMLElement).closest<HTMLElement>("[data-error-link]");
+    if (!link) return;
+    event.preventDefault();
+    document.getElementById(link.dataset.errorLink!)?.querySelector<HTMLInputElement>("input")?.focus();
+  });
+
+  root.dataset.assessmentReady = "true";
+}

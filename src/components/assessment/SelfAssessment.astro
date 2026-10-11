@@ -1,0 +1,139 @@
+---
+// <SelfAssessment assessment="...">: the self-assessment block in a post (specs/037
+// contracts/assessment-ui.md). The page carries the form (native radios in fieldsets), the
+// no-JavaScript statement list and empty containers for the errors and the results. A small
+// bootstrap script below loads src/lib/assessment/client.ts when the reader gets near the block
+// (research R3). The heading is written in the post as `## <title>`; the block is named by it.
+// The optional `data` prop replaces the collection lookup and exists for component tests only.
+import type { Assessment } from "../../content/schemas/assessment.ts";
+import { headingId, resolveAssessment } from "../../lib/assessment/lookup.ts";
+import { statementSetVersion } from "../../lib/assessment/version.ts";
+
+export interface Props {
+  assessment: string;
+  data?: Assessment;
+}
+
+const { assessment: id, data } = Astro.props;
+const file = Astro.locals.pageFile ?? "this post";
+const assessment = await resolveAssessment(file, id, data);
+
+// Only what the browser needs: no statements (the form holds them) and, of course, no answers.
+const payload = JSON.stringify({
+  title: assessment.title,
+  scale: assessment.scale,
+  shifts: assessment.shifts.map(({ name, from, to, anchor, practicalApplication, week }) => ({
+    name,
+    from,
+    to,
+    anchor,
+    practicalApplication,
+    week,
+  })),
+  integrationWeek: assessment.integrationWeek,
+});
+
+const control =
+  "inline-flex min-h-11 cursor-pointer items-center rounded-full border border-rust-700 bg-transparent px-5 py-2 text-base font-medium text-rust-800 hover:bg-rust-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rust-700 dark:border-rust-300 dark:text-rust-300 dark:hover:bg-rust-950 dark:focus-visible:outline-rust-300 forced-colors:border-[ButtonText] forced-colors:text-[ButtonText]";
+const radio =
+  "m-0 size-6 shrink-0 cursor-pointer appearance-none rounded-full border-2 border-dusk-600 bg-white checked:border-rust-700 checked:bg-rust-700 checked:shadow-[inset_0_0_0_3px_white] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rust-700 dark:border-dusk-300 dark:bg-dusk-900 dark:checked:border-rust-300 dark:checked:bg-rust-300 dark:checked:shadow-[inset_0_0_0_3px_var(--color-dusk-900)] dark:focus-visible:outline-rust-300 forced-colors:border-[ButtonText] forced-colors:checked:bg-[Highlight]";
+---
+
+<section
+  data-assessment={id}
+  data-version={statementSetVersion(assessment.shifts)}
+  data-assessment-data={payload}
+  aria-labelledby={headingId(assessment.title)}
+  class="not-prose my-8 rounded-xl border border-dusk-200 bg-white p-4 text-dusk-700 dark:border-dusk-700 dark:bg-dusk-800 dark:text-mist-300 sm:p-6 forced-colors:border-[CanvasText]"
+>
+  <div data-assessment-nojs class="[.js_&]:hidden">
+    <p class="m-0">The self-assessment needs JavaScript. The statements are listed below for reflection.</p>
+    {
+      assessment.shifts.map((shift) => (
+        <>
+          <h3 class="mb-1 mt-4 text-lg font-bold text-dusk-900 dark:text-white">{shift.name}</h3>
+          <ul class="m-0 list-disc pl-6">
+            {shift.statements.map((statement) => (
+              <li>{statement}</li>
+            ))}
+          </ul>
+        </>
+      ))
+    }
+  </div>
+
+  <div data-assessment-app class="hidden [.js_&]:block">
+    <p class="m-0 [overflow-wrap:anywhere]">{assessment.intro}</p>
+    <p role="status" aria-live="polite" data-assessment-status class="m-0 mt-3 font-medium text-dusk-900 dark:text-white"></p>
+    <form data-assessment-form novalidate class="m-0">
+      {
+        assessment.shifts.map((shift, s) => (
+          <div role="group" aria-labelledby={`shift-${s}-name`} class="mt-6">
+            <h3 id={`shift-${s}-name`} class="m-0 text-lg font-bold text-dusk-900 dark:text-white">
+              {shift.name}
+            </h3>
+            {shift.statements.map((statement, i) => (
+              <fieldset
+                id={`statement-${s}-${i}`}
+                data-statement={`${s}.${i}`}
+                role="radiogroup"
+                class="m-0 mt-3 min-w-0 border-0 p-0"
+              >
+                <legend class="p-0 font-medium text-dusk-900 [overflow-wrap:anywhere] dark:text-white">{statement}</legend>
+                <div class="flex flex-wrap gap-x-3">
+                  {assessment.scale.map((label, n) => (
+                    <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 py-1 text-base">
+                      <input type="radio" name={`s-${s}-${i}`} value={String(n + 1)} class={radio} />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+                <p
+                  hidden
+                  id={`statement-${s}-${i}-error`}
+                  data-statement-error
+                  class="m-0 font-medium text-rust-800 dark:text-rust-300"
+                >
+                  Choose an answer.
+                </p>
+              </fieldset>
+            ))}
+          </div>
+        ))
+      }
+      <div
+        hidden
+        data-assessment-errors
+        class="mt-6 border-l-4 border-rust-700 bg-rust-50 p-4 text-dusk-900 dark:border-rust-300 dark:bg-rust-950 dark:text-white"
+      >
+      </div>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <button type="button" data-assessment-show class={control}>Show my results</button>
+      </div>
+    </form>
+    <div hidden data-assessment-results class="mt-8"></div>
+  </div>
+
+  <script>
+    // Load the module when the block is within one viewport height of the visible area, or at
+    // once when the address already holds a result (research R3, FR-017).
+    const root = document.querySelector<HTMLElement>("[data-assessment]");
+    if (root) {
+      const load = () => void import("../../lib/assessment/client.ts").then((module) => module.init(root));
+      if (location.hash.startsWith("#result=") || !("IntersectionObserver" in window)) {
+        load();
+      } else {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            if (entries.some((entry) => entry.isIntersecting)) {
+              observer.disconnect();
+              load();
+            }
+          },
+          { rootMargin: "0px 0px 100% 0px" },
+        );
+        observer.observe(root);
+      }
+    }
+  </script>
+</section>

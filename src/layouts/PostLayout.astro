@@ -68,6 +68,8 @@ const seo: Partial<ComponentProps<typeof BaseLayout>> = {
         {post.title}
       </h1>
       <p class="m-0 mb-4 text-lg text-dusk-700 [overflow-wrap:anywhere] dark:text-mist-300">{post.summary}</p>
+      {/* Optional: a post that renders the self-assessment puts its one-line link here (specs/037). Empty renders nothing. */}
+      <slot name="title-extra" />
       {post.featured && <p class="m-0 mb-3"><span data-featured-mark class={featuredMark}>Featured</span></p>}
       <PostMeta post={post} />
     </div>

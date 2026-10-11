@@ -13,12 +13,14 @@ import type { ImageMetadata } from "astro";
 import PostLayout from "../../layouts/PostLayout.astro";
 import CodeBlock from "../../components/post/CodeBlock.astro";
 import ScrollTable from "../../components/post/ScrollTable.astro";
+import AssessmentLink from "../../components/assessment/AssessmentLink.astro";
 import { postComponents } from "../../components/assessment/index";
 import { sectionComponents } from "../../components/sections/index";
 import { assessmentsNamedIn, checkFromToLines, checkNoMovedText } from "../../lib/assessment/checks";
-import { findAssessment, loadAssessments } from "../../lib/assessment/lookup";
+import { findAssessment, headingId, loadAssessments } from "../../lib/assessment/lookup";
 import { expandForQuestions } from "../../lib/assessment/question-text";
 import { selectRelated } from "../../lib/content/post-order";
+import { contentError } from "../../lib/content/errors";
 import { getNavigation } from "../../lib/pages";
 import { prepareQuestionSource } from "../../lib/questions/source";
 import { getPostSummaries, getPosts, postFileOf } from "../../lib/posts";
@@ -49,6 +51,15 @@ for (const id of named.used) {
   checkNoMovedText({ file, body, assessment });
   if (named.withBlock.includes(id)) checkFromToLines({ file, body, headings, assessment });
 }
+// The block is named by the `## <title>` heading written above it, and the title-card link points there.
+let assessmentHeading: string | undefined;
+for (const id of named.withBlock.slice(0, 1)) {
+  const title = findAssessment(file, id, assessments).title;
+  assessmentHeading = headingId(title);
+  if (!headings.some((heading) => heading.slug === assessmentHeading)) {
+    throw contentError("post", file, `the self-assessment needs a heading "## ${title}" just above it, so the block and the title-card link have a target.`);
+  }
+}
 
 // The hash of this version of the post, which the questions panel sends back so the Worker can
 // tell a changed post (specs/022).
@@ -67,5 +78,6 @@ const share = post.featureImage
 ---
 
 <PostLayout post={post} navigation={navigation} image={share?.src} related={related} questionHash={questionHash}>
+  <Fragment slot="title-extra">{assessmentHeading && <AssessmentLink target={assessmentHeading} />}</Fragment>
   <Content components={{ ...sectionComponents, ...postComponents, pre: CodeBlock, table: ScrollTable }} />
 </PostLayout>

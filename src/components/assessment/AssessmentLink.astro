@@ -1,0 +1,22 @@
+---
+// The reserved one-line link in a post's title card: "Take the self-assessment" (specs/037
+// contracts/assessment-ui.md, title-card line). The post route renders it into PostLayout's
+// `title-extra` slot only for a post that renders the block. The height of one line is reserved
+// in the built page, so the lazily loaded module can swap the text for "Your earlier result is
+// below" without moving anything (FR-018a).
+export interface Props {
+  /** The id of the assessment heading in the post. */
+  target: string;
+}
+
+const { target } = Astro.props;
+---
+
+<p data-assessment-link-line class="m-0 mb-4 min-h-lh">
+  <a
+    data-assessment-link
+    href={`#${target}`}
+    class="font-medium text-rust-800 underline underline-offset-2 hover:text-rust-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rust-700 dark:text-rust-300 dark:hover:text-rust-200 dark:focus-visible:outline-rust-300"
+    >Take the self-assessment</a
+  >
+</p>
