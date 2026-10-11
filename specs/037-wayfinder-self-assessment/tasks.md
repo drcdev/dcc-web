@@ -36,7 +36,7 @@ expectations from the YAML; they never name the post (docs/testing.md "Real cont
 
 ## Phase 1: Setup
 
-- [ ] T001 Confirm the toolchain (`node -v` against `.nvmrc`) and run the existing `tests/build/question-source.test.ts` and `tests/unit/content/body.test.ts` once to record a green starting point on this branch; no file changes.
+- [X] T001 Confirm the toolchain (`node -v` against `.nvmrc`) and run the existing `tests/build/question-source.test.ts` and `tests/unit/content/body.test.ts` once to record a green starting point on this branch; no file changes.
 
 ---
 
