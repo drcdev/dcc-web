@@ -25,6 +25,29 @@ its pictures, and nothing else. Publishing a story needs no test edit, because t
 the published list from the content (#55). The repository, `drcdev/dcc-web`, was confirmed
 public on 2026-10-11, so the story can link to it as its source.
 
+## Clarifications
+
+### Session 2026-10-11
+
+- Q: How should the story's copy be written? → A: From an interview with Don. The interview runs inside the clarify phase, and its answers are recorded in this spec under "Story source material"; the copy is written from those answers and checked against the repository record.
+- Q: Should the story go live when the pull request merges, or merge as a draft? → A: Merge as a draft (`draft: true`); Don publishes it in a later, separate change.
+- Q: What should the story's title be? → A: "doncoleman.ca".
+- Q: What should the list picture show? → A: A screenshot of the doncoleman.ca home page in light mode, at the same size as the other stories' list pictures.
+- Q: Which themes and invitation should the story carry? → A: Themes [Agentic development, Web, Static sites], reusing existing theme names, with a Cadence-style invitation aimed at teams weighing agent-driven delivery with human review.
+
+## Story source material
+
+Filled by the story interview with Don during the clarify phase. The story's Problem, Options
+and Lessons copy, and Don's reasons anywhere in Build, are written only from what is recorded
+here; facts (dates, counts, timings, rules) are still checked against the repository record
+(FR-004).
+
+- **Why rebuild the site**: *(to be filled by the interview)*
+- **Constraints that mattered**: *(to be filled by the interview)*
+- **Routes weighed and why the chosen one won**: *(to be filled by the interview)*
+- **What was hardest**: *(to be filled by the interview)*
+- **What he learned**: *(to be filled by the interview)*
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Read how the site is built (Priority: P1)
@@ -42,8 +65,8 @@ it end to end with JavaScript on and off.
 
 **Acceptance Scenarios**:
 
-1. **Given** the projects list, **When** a visitor views it, **Then** the site's story appears
-   alongside the other published stories, with its title, one-line problem, themes, status and
+1. **Given** the projects list, once Don has published the story (FR-011), **When** a visitor
+   views it, **Then** the site's story appears alongside the other published stories, with its title, one-line problem, themes, status and
    list picture.
 2. **Given** the story page, **When** a visitor reads it, **Then** it has exactly the four parts
    Problem, Options, Build and Lessons, in that order, like every other story.
@@ -137,13 +160,16 @@ and confirm it links back to Cadence where it mentions the pipelines' origin.
   from.
 - **FR-009**: The story's copy MUST be plain language with no hype or filler (constitution,
   Development Workflow), in Don's first-person voice like the other stories.
-- **FR-010**: The story's copy MUST be written [NEEDS CLARIFICATION: from an interview with Don,
-  as every published story has been, or as an agent draft from the repository record that Don
-  edits on the preview? An interview means the clarify phase asks Don the story questions
-  (why rebuild, which routes he weighed, what was hardest, what he learned); a draft means the
-  Problem, Options and Lessons parts guess at his reasons.]
-- **FR-011**: The story MUST be [NEEDS CLARIFICATION: published when the pull request merges, or
-  merged as a draft and published by Don in a later change?]
+- **FR-010**: The story's copy MUST be written from Don's interview answers recorded under
+  "Story source material", as every published story has been; no reason, option or lesson is
+  invented beyond them.
+- **FR-011**: The story MUST merge as a draft (`draft: true`). Don publishes it in a later,
+  separate change; publishing is not part of this feature.
+- **FR-013**: The story's title MUST be "doncoleman.ca", its themes MUST be
+  [Agentic development, Web, Static sites], and it MUST carry an invitation in the style of
+  Cadence's, aimed at teams weighing agent-driven delivery with human review.
+- **FR-014**: The list picture MUST be a screenshot of the doncoleman.ca home page in light
+  mode, at the same size as the other stories' list pictures.
 - **FR-012**: No other story, page, schema, component or test changes in this feature, except
   where adding a published story requires it by design.
 
@@ -159,8 +185,10 @@ and confirm it links back to Cadence where it mentions the pipelines' origin.
 
 ### Measurable Outcomes
 
-- **SC-001**: The projects list shows six published stories, one of them about this site (if
-  published at merge; see FR-011).
+- **SC-001**: After merge the projects list on production still shows the five existing
+  published stories and leaves the new draft story out, while preview builds (which include
+  drafts) show it for Don to read; once Don publishes it in a later
+  change, the list shows six.
 - **SC-002**: A reader can find each of the four required topics (pipelines, constitution,
   single-approval rule, gate from about 31 to about 6 minutes) in the Build part in one read.
 - **SC-003**: 100% of the figures in the story can be traced to a named record in the repository.
@@ -181,8 +209,8 @@ and confirm it links back to Cadence where it mentions the pipelines' origin.
 - The date is the first commit and constitution ratification, 2026-09-28.
 - There is no demo or stand-in link: the reader is already on the site, and the build rejects
   links to the site's own host.
-- The list picture is a screenshot of the site, and the Build picture is a pipeline diagram; the
-  plan decides how they are made, within the existing picture rules and size budget.
+- The list picture is a light-mode screenshot of the home page (FR-014), and the Build picture is
+  a pipeline diagram; the plan decides how they are made, within the existing picture rules and size budget.
 - The single-approval rule is described as it now stands (constitution 4.0.0 Principle III and
   the `main` ruleset), not as it was in earlier versions.
 - Adding a published story needs no test edit (#55); any visual baseline that lists the projects
