@@ -139,7 +139,7 @@ header change is overridden by the zone setting on production, and preview respo
 
 ## Work items
 
-### W1 — live-hosts test: HSTS on HTTPS responses (new-first)
+### [x] W1 — live-hosts test: HSTS on HTTPS responses (new-first)
 
 - **Files:** `tests/unit/setup-check/checks/live-hosts.test.ts`.
 - **Test:** new-first. **Layer: unit** (recorded responses through `fakeProviderContext`). This is

@@ -11,8 +11,18 @@ const CANONICAL = `<link rel="canonical" href="${WWW}/">`;
 const CONFIG = { owner: "drcdev", repo: "dcc-web", zone: "doncoleman.ca", workerName: "dcc-web" };
 
 type Reply = HttpResponseSummary | Error;
-const page = (body = `<html><head>${CANONICAL}</head></html>`): Reply => ({ status: 200, headers: {}, body });
-const redirect = (location: string, status = 301): Reply => ({ status, headers: { location }, body: "" });
+const HSTS = "max-age=15552000; includeSubDomains";
+const HSTS_HEADER = "strict-transport-security";
+// HTTPS replies carry the zone HSTS header by default; `bare()` strips it for a case that must lack it.
+const page = (body = `<html><head>${CANONICAL}</head></html>`): Reply => ({ status: 200, headers: { [HSTS_HEADER]: HSTS }, body });
+const redirect = (location: string, status = 301): Reply => ({ status, headers: { location, [HSTS_HEADER]: HSTS }, body: "" });
+const withHsts = (reply: Reply, value: string): Reply =>
+  reply instanceof Error ? reply : { ...reply, headers: { ...reply.headers, [HSTS_HEADER]: value } };
+const bare = (reply: Reply): Reply => {
+  if (reply instanceof Error) return reply;
+  const { [HSTS_HEADER]: _drop, ...headers } = reply.headers;
+  return { ...reply, headers };
+};
 
 const PATHS = ["/", "/writing/?page=2"];
 const ghostEnd = `${WWW}${GHOST_PROBE.to}`;
@@ -29,6 +39,8 @@ function newArrangement(): Map<string, Reply> {
   r.set(`${WWW}${GHOST_PROBE.from}`, redirect(ghostEnd));
   r.set(`${BARE}${GHOST_PROBE.from}`, redirect(`${WWW}${GHOST_PROBE.from}`));
   r.set(ghostEnd, page());
+  // Cloudflare sends HSTS on HTTPS only; plain http replies carry none.
+  for (const [url, reply] of r) if (url.startsWith("http://")) r.set(url, bare(reply));
   return r;
 }
 
@@ -76,6 +88,20 @@ describe("checks/live-hosts", () => {
         r.set(`${BARE}${GHOST_PROBE.from}`, redirect(`${BARE}${GHOST_PROBE.to}`));
         r.set(`${BARE}${GHOST_PROBE.to}`, redirect(ghostEnd));
       }),
+    );
+    expect(result.status).toBe("complete");
+  });
+
+  it("accepts any positive max-age and a lower-case includeSubDomains", async () => {
+    for (const value of ["max-age=31536000; includeSubDomains", "max-age=15552000; includesubdomains"]) {
+      const { result } = await run(with_((r) => r.set(`${WWW}/`, withHsts(page(), value))));
+      expect(result.status).toBe("complete");
+    }
+  });
+
+  it("neither requires nor rejects HSTS on a plain http reply", async () => {
+    const { result } = await run(
+      with_((r) => r.set("http://www.doncoleman.ca/", withHsts(redirect(`${WWW}/`), HSTS))),
     );
     expect(result.status).toBe("complete");
   });
@@ -161,6 +187,27 @@ describe("checks/live-hosts", () => {
         "a redirect to a foreign host (not followed)",
         (r) => r.set(`${BARE}/`, redirect("https://example.com/")),
         /example\.com/,
+      ],
+      ["www final 200 without HSTS", (r) => r.set(`${WWW}/`, bare(page())), /Strict-Transport-Security|HSTS/i],
+      [
+        "www final 200 with HSTS but no includeSubDomains",
+        (r) => r.set(`${WWW}/`, withHsts(page(), "max-age=15552000")),
+        /Strict-Transport-Security|HSTS/i,
+      ],
+      [
+        "bare https 301 without HSTS",
+        (r) => r.set(`${BARE}/`, bare(redirect(`${WWW}/`))),
+        /Strict-Transport-Security|HSTS/i,
+      ],
+      [
+        "www Ghost 301 without HSTS",
+        (r) => r.set(`${WWW}${GHOST_PROBE.from}`, bare(redirect(ghostEnd))),
+        /Strict-Transport-Security|HSTS/i,
+      ],
+      [
+        "HSTS with max-age=0",
+        (r) => r.set(`${WWW}/`, withHsts(page(), "max-age=0; includeSubDomains")),
+        /Strict-Transport-Security|HSTS/i,
       ],
     ];
     it.each(cases)("%s", async (_name, edit, rule) => {
