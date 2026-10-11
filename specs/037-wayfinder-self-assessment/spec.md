@@ -74,6 +74,16 @@ constitution amendment.
 - Q: When results are on screen and the reader prints from the browser's own Print menu, what
   prints? → A: Once results exist, any print gives the plan only; without results, the post
   prints with the statements as a list.
+- Q: When a reader finishes the assessment, should the address bar change to their results
+  link? → A: Yes. Showing results replaces the address-bar fragment with the new result's
+  fragment, adding no history entry; a retake replaces it again, so the newest result is the one
+  compared next time.
+- Q: When the post is opened through a results link, where does the page open? → A: At the top
+  as usual, with a short "Your earlier result is below" link near the title that leads to the
+  earlier result.
+- Q: If a results link was made with an older version of the statements, is that earlier result
+  still shown? → A: Yes, on its own (chart, summary, date), marked "made with an earlier set of
+  questions"; after a retake the two are shown separately with no change per shift.
 
 ## Scope of this slice
 
@@ -186,13 +196,17 @@ the change per shift.
 **Acceptance Scenarios**:
 
 1. **Given** the reader opens the post through a results link, **When** the page loads,
-   **Then** the earlier result is shown at once (chart, text summary, low-band links and print
+   **Then** the page opens at the top as usual with a short "Your earlier result is below" link
+   near the title that leads to the assessment, and the earlier result is shown at once (chart, text summary, low-band links and print
    plan), marked "Earlier result from <date>", with an empty form below for the retake.
 2. **Given** the reader opened the post through a results link, **When** they finish a retake, **Then**
    the chart shows the earlier and the new position for each shift, told apart by more than
    colour, and the text summary states the change for each shift.
 3. **Given** the reader opened the post without a results link, **When** they finish the assessment,
    **Then** only the new result is shown, with no error.
+5. **Given** the reader finishes the assessment or a retake, **When** the results appear,
+   **Then** the address-bar fragment is replaced by the new result's fragment without adding a
+   history entry, so reloading shows that result as the earlier result.
 4. **Given** the reader wants to start fresh, **When** they choose to clear their answers,
    **Then** every answer and the earlier result loaded from the link are removed from the page,
    and the results fragment is removed from the address bar.
@@ -209,8 +223,9 @@ the change per shift.
   shift is in the low band, and Story 2 scenario 3 applies.
 - The reader answers every statement at the low end: all five shifts are low and all five show
   links; the plan keeps the post's own order (all tied).
-- An earlier result (Story 4) was made against a different version of the statements: it is not
-  compared, and the reader is told that the questions have changed since then.
+- An earlier result (Story 4) was made against a different version of the statements: it is
+  still shown on its own (chart, summary, date), marked "made with an earlier set of
+  questions"; after a retake the two results are shown separately, with no change per shift.
 - A results link whose fragment is malformed or altered: it is ignored and the reader is
   told it could not be read; nothing on the page breaks.
 - The post is printed without results (the normal browser print): the assessment prints as its
@@ -275,13 +290,19 @@ the change per shift.
   date taken and the statement set version; the reader can copy it, and the printed plan
   includes it. Opening the post through such a link loads that result as the earlier result and
   shows it at once (chart, text summary, low-band links and print plan), marked "Earlier result
-  from <date>", with an empty form below for the retake.
+  from <date>", with an empty form below for the retake. The page opens at the top as usual,
+  with a short "Your earlier result is below" link near the post title that leads to it.
+  Whenever results are shown, the address-bar fragment is replaced with the new result's
+  fragment without adding a history entry; a retake replaces it again, so the newest result is
+  the one compared next time.
   Nothing is stored by the site or the browser (no cookies, local storage or other browser
   storage), and the fragment is never sent to the server.
 - **FR-013**: When an earlier result is available, the chart MUST show earlier and new positions
   told apart by more than colour, and the text summary MUST state the change per shift.
 - **FR-014**: Each result MUST record which version of the statements it was made with, and a
-  result from a different version MUST NOT be compared.
+  result from a different version MUST NOT be compared. Such an earlier result is still shown
+  on its own (chart, text summary, date), marked "made with an earlier set of questions"; after
+  a retake the two results are shown separately, with no change per shift.
 - **FR-015**: The reader MUST be able to clear their answers and the earlier result loaded from
   a results link; clearing also removes the results fragment from the address bar.
 
