@@ -644,7 +644,7 @@ Strict Transport Security (HSTS)**, with Cloudflare's defaults: Max Age 6 months
 policy to subdomains** on, Preload off, and No-Sniff left as it was.
 
 Cloudflare then adds the header to every HTTPS response on both hosts, including the 301 from the
-bare domain, and the zone value replaces the header the site sends. Plain HTTP responses carry none,
+bare domain, and, as observed on 2026-10-11, the zone value replaces the header the site sends. Plain HTTP responses carry none,
 as Cloudflare documents. Two fallbacks cover the case where the zone setting is off: `public/_headers`
 for site responses and `worker/src/http.ts` for Worker responses. Both send `max-age=31536000;
 includeSubDomains`, and the two values must stay identical.

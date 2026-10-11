@@ -20,7 +20,8 @@ const withHsts = (reply: Reply, value: string): Reply =>
   reply instanceof Error ? reply : { ...reply, headers: { ...reply.headers, [HSTS_HEADER]: value } };
 const bare = (reply: Reply): Reply => {
   if (reply instanceof Error) return reply;
-  const { [HSTS_HEADER]: _drop, ...headers } = reply.headers;
+  const headers = { ...reply.headers };
+  delete headers[HSTS_HEADER];
   return { ...reply, headers };
 };
 
@@ -192,7 +193,7 @@ describe("checks/live-hosts", () => {
       [
         "www final 200 with HSTS but no includeSubDomains",
         (r) => r.set(`${WWW}/`, withHsts(page(), "max-age=15552000")),
-        /Strict-Transport-Security|HSTS/i,
+        /includeSubDomains/,
       ],
       [
         "bare https 301 without HSTS",
@@ -207,7 +208,12 @@ describe("checks/live-hosts", () => {
       [
         "HSTS with max-age=0",
         (r) => r.set(`${WWW}/`, withHsts(page(), "max-age=0; includeSubDomains")),
-        /Strict-Transport-Security|HSTS/i,
+        /max-age/,
+      ],
+      [
+        "HSTS whose only max-age is inside another directive name",
+        (r) => r.set(`${WWW}/`, withHsts(page(), "x-max-age=5; includeSubDomains")),
+        /max-age/,
       ],
     ];
     it.each(cases)("%s", async (_name, edit, rule) => {

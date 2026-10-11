@@ -128,7 +128,7 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
     return missing(
       ITEM,
       "Problem: the live hosts do not match the main-address arrangement.",
-      "Finish the live swap in docs/setup.md#live-hosts (or roll back as described there), or turn zone HSTS back on as described in its Zone HSTS section, then run the check again.",
+      "Finish the live swap in docs/setup.md#live-hosts (or roll back as described there), or turn zone HSTS back on as described in the Zone HSTS section of docs/setup.md#live-hosts, then run the check again.",
       problems,
     );
   }
@@ -198,7 +198,8 @@ function hstsProblem(value: string | null): string | null {
   if (value === null) return "no Strict-Transport-Security header";
   const directives = value.split(";").map((d) => d.trim().toLowerCase());
   if (!directives.includes("includesubdomains")) return "Strict-Transport-Security without includeSubDomains";
-  const maxAge = /max-age=\s*"?(\d+)/.exec(value.toLowerCase());
+  const maxAgeDirective = directives.find((d) => d.startsWith("max-age="));
+  const maxAge = maxAgeDirective ? /^max-age="?(\d+)"?$/.exec(maxAgeDirective) : null;
   if (!maxAge || Number(maxAge[1]) <= 0) return "Strict-Transport-Security without a positive max-age";
   return null;
 }
