@@ -181,6 +181,61 @@ const area = (part: LayoutPart) => part.tab ?? part;
   })
 }
 
+<script>
+  // Enhancement only (contracts/diagram-dom.md J01-J07): the page already works through plain
+  // fragment links. This marks the part and entry named by the fragment and moves focus.
+  // Astro bundles and defers this module (docs.astro.build/en/guides/client-side-scripts/).
+  const links = new Map<string, SVGAElement>();
+  const entries = new Map<string, HTMLElement>();
+  document.querySelectorAll<SVGAElement>("#architecture-diagram a[data-part]").forEach((link) => {
+    links.set(link.dataset.part!, link);
+  });
+  document.querySelectorAll<HTMLElement>("article[data-entry]").forEach((entry) => {
+    entries.set(entry.dataset.entry!, entry);
+  });
+
+  function select(id: string | null) {
+    for (const [key, link] of links) {
+      if (key === id) link.setAttribute("aria-current", "true");
+      else link.removeAttribute("aria-current");
+    }
+    for (const [key, entry] of entries) {
+      if (key === id) entry.setAttribute("data-selected", "");
+      else entry.removeAttribute("data-selected");
+    }
+  }
+
+  function fromHash() {
+    let id = "";
+    try {
+      id = decodeURIComponent(location.hash.slice(1));
+    } catch {
+      // A malformed fragment names no part.
+    }
+    select(links.has(id) ? id : null);
+  }
+
+  for (const [id, link] of links) {
+    link.addEventListener("click", () => {
+      select(id);
+      // The browser jumps to the fragment itself; focus follows without a second scroll.
+      entries.get(id)?.focus({ preventScroll: true });
+    });
+  }
+
+  document.querySelectorAll<HTMLAnchorElement>("article[data-entry] a[data-back]").forEach((back) => {
+    back.addEventListener("click", (event) => {
+      const link = links.get(back.dataset.back!);
+      if (!link) return;
+      event.preventDefault();
+      link.focus();
+    });
+  });
+
+  window.addEventListener("hashchange", fromHash);
+  fromHash();
+</script>
+
 <style>
   .architecture-diagram text {
     font-family: inherit;
@@ -210,8 +265,19 @@ const area = (part: LayoutPart) => part.tab ?? part;
   a[data-part]:focus-visible {
     outline: none;
   }
-  a[data-part]:focus-visible .arch-box {
+  a[data-part]:focus-visible .arch-box,
+  a[data-part][aria-current="true"] .arch-box {
     stroke: currentColor;
     stroke-width: 3.5px;
+  }
+  /* The selected entry: a thick bar beside it, a cue that needs no colour (J06). It reads as
+     CanvasText in forced colours because it takes currentColor. */
+  article[data-entry][data-selected] {
+    border-left: 4px solid currentColor;
+    padding-left: 1rem;
+  }
+  article[data-entry]:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
   }
 </style>
