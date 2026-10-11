@@ -122,7 +122,7 @@ The full gate is not run by the implement subagent (ask Don first, see CLAUDE.md
 - [X] T023 Refresh the Linux baselines with `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, ask Don to start it with an `AskUserQuestion` whose question text carries the instruction, per `CLAUDE.md`). Only the four `post-template-*-visual-linux.png` files may change. Run T023 after T022 and not at the same time (Docker builds `dist`).
 - [X] T024 Commit the eight refreshed `post-template-*` PNGs under `tests/e2e/visual.spec.ts-snapshots/` and run the visual project once more on macOS to confirm it is green.
 - [ ] T025 [PREVIEW-CHECK] Don looks at the card on the preview (rules in `.claude/skills/_shared/preview-check.md`; leave unticked, list in the PR body): on a Drift post, a Convergence post, a post in no series and at phone width; he reads and may revise the two role lines and the link wording; keyboard focus moves through the three card links in order with a visible indicator not hidden by the sticky header; the card reflows at 320 px and at 200% text zoom; the alt text and link wording make sense to a screen reader (SC-005 manual remainder).
-- [ ] T026 Note in the PR body, under their own "Follow-up" heading, the spec's out-of-scope items (structured data and link previews, project story cards, multiple authors, other stale "Cloud Architect" wording), and the added monthly cost of $0.
+- [x] T026 Note in the PR body, under their own "Follow-up" heading, the spec's out-of-scope items (structured data and link previews, project story cards, multiple authors, other stale "Cloud Architect" wording), and the added monthly cost of $0.
 
 ---
 
