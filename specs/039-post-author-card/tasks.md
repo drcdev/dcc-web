@@ -32,7 +32,7 @@ The full gate is not run by the implement subagent (ask Don first, see CLAUDE.md
 
 **Purpose**: Confirm the starting point. Nothing to install (no new dependency, no new file type).
 
-- [ ] T001 Run `node -v` per `CLAUDE.md`, then read `src/layouts/PostLayout.astro`, `src/config/blog.ts`, `src/config/topics.ts`, `tests/component/post/PostLayout.test.ts`, `tests/e2e/blog.spec.ts` (feature 035's `[data-views-note]` / `[data-share]` edge loop) and `docs/testing.md` "Where a test goes", so later tasks match the existing patterns. No edit.
+- [X] T001 Run `node -v` per `CLAUDE.md`, then read `src/layouts/PostLayout.astro`, `src/config/blog.ts`, `src/config/topics.ts`, `tests/component/post/PostLayout.test.ts`, `tests/e2e/blog.spec.ts` (feature 035's `[data-views-note]` / `[data-share]` edge loop) and `docs/testing.md` "Where a test goes", so later tasks match the existing patterns. No edit.
 
 ---
 
@@ -40,10 +40,10 @@ The full gate is not run by the implement subagent (ask Don first, see CLAUDE.md
 
 **Purpose**: The shared author facts and the series helper that every story's card reads.
 
-- [ ] T002 [P] Write unit tests for `seriesOf(topics)` in `tests/unit/content/topics.test.ts` (row A8): returns the series id for a topic list holding one series, `undefined` for none, ignores non-series topics. Layer: Unit (pure logic over the topic config). Run and see them fail.
-- [ ] T003 [P] Write unit tests for the author settings in `tests/unit/content/blog-config.test.ts` (rows A6, A4; FR-002, FR-003, FR-004a): `blog.author` has non-empty `name`, `photo` and `photoAlt`; `lines` has exactly two entries, each one sentence, each at most 100 characters; no line matches `/cloud architect/i`; the About page source (read the file under `src/content/pages/` through `tests/helpers/content.ts`) contains the role title that line 1 uses. Compute the title from `blog.author.lines[0]` (the text between the leading "I'm " and " at "); the test file must not contain the role title or either line as a literal, so a revision of the wording needs no test edit. Layer: Unit (reads a settings constant and one source file; no render needed). Run and see them fail.
-- [ ] T004 Add `seriesOf(topics)` to `src/config/topics.ts` (five-line helper over the existing topic config, per plan Design "Files") so T002 passes.
-- [ ] T005 Add `author: { name, photo, photoAlt, lines }` to `src/config/blog.ts` per `data-model.md`: `photo` is `import portrait from "../content/pages/images/don-coleman.jpg"`, `photoAlt` is "Don Coleman" (FR-010c), `lines` are the two first-person drafts in FR-003. Update the file's header comment. T003 passes.
+- [X] T002 [P] Write unit tests for `seriesOf(topics)` in `tests/unit/content/topics.test.ts` (row A8): returns the series id for a topic list holding one series, `undefined` for none, ignores non-series topics. Layer: Unit (pure logic over the topic config). Run and see them fail.
+- [X] T003 [P] Write unit tests for the author settings in `tests/unit/content/blog-config.test.ts` (rows A6, A4; FR-002, FR-003, FR-004a): `blog.author` has non-empty `name`, `photo` and `photoAlt`; `lines` has exactly two entries, each one sentence, each at most 100 characters; no line matches `/cloud architect/i`; the About page source (read the file under `src/content/pages/` through `tests/helpers/content.ts`) contains the role title that line 1 uses. Compute the title from `blog.author.lines[0]` (the text between the leading "I'm " and " at "); the test file must not contain the role title or either line as a literal, so a revision of the wording needs no test edit. Layer: Unit (reads a settings constant and one source file; no render needed). Run and see them fail.
+- [X] T004 Add `seriesOf(topics)` to `src/config/topics.ts` (five-line helper over the existing topic config, per plan Design "Files") so T002 passes.
+- [X] T005 Add `author: { name, photo, photoAlt, lines }` to `src/config/blog.ts` per `data-model.md`: `photo` is `import portrait from "../content/pages/images/don-coleman.jpg"`, `photoAlt` is "Don Coleman" (FR-010c), `lines` are the two first-person drafts in FR-003. Update the file's header comment. T003 passes.
 
 **Checkpoint**: `pnpm run test:unit` passes for the two files.
 

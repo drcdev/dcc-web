@@ -1,5 +1,7 @@
 // Blog settings in one place (data-model.md "Blog settings"; research R5;
-// FR-027). Every page, the feed and the views note read these values.
+// FR-027). Every page, the feed and the views note read these values, and so does the author
+// card at the end of every post (specs/039-post-author-card/data-model.md).
+import portrait from "../content/pages/images/don-coleman.jpg";
 
 export const blog = {
   /** The blog's name, shown as the eyebrow above every blog page title. */
@@ -24,4 +26,14 @@ export const blog = {
   relatedMax: 3,
   /** Shown under every post. Placeholder wording until Don supplies his own. */
   viewsNote: "The views in this post are my own and do not represent any employer or client.",
+  /** The author card at the end of every post. The two lines are draft wording for Don to revise. */
+  author: {
+    name: "Don Coleman",
+    photo: portrait,
+    photoAlt: "Don Coleman",
+    lines: [
+      "I'm Director, Data Infrastructure and Architecture at Island Health.",
+      "I write about systems thinking, practical AI and leading complex change.",
+    ],
+  },
 } as const;
