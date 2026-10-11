@@ -26,12 +26,23 @@ The site already has what a short introduction needs:
   some posts belong to none. The writing landing page lists every post.
 - A Contact page with the contact form.
 
+## Clarifications
+
+### Session 2026-10-11
+
+- Q: Where at the end of a post should the author card go? → A: Between the "views are my own" note and the Share area (order: post text, views note, author card, Share area, Related posts).
+- Q: For a post in no series, where should the card's writing link go? → A: To the writing landing page (all posts), with link text such as "More of my writing"; a post in a series links to its series page instead.
+- Q: Should the card also link to the About page? → A: Yes, as its own plain link with text such as "More about me".
+- Q: What should the card's two lines say, and in what voice? → A: First person, kept in one blog-settings place: "I'm Director, Data Infrastructure and Architecture at Island Health." and "I write about systems thinking, practical AI and leading complex change." Don may revise the wording in review.
+- Q: What heading should the card have? → A: A visible heading "Written by Don Coleman".
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - A reader learns who wrote the post (Priority: P1)
 
 A reader arrives on a post from a LinkedIn link and reads to the end. Below the post text they
-find a short card with Don's photo, his name and two lines saying who he is in his current role.
+find a short card headed "Written by Don Coleman", with Don's photo and two first-person lines
+saying who he is in his current role.
 They know who wrote the post without leaving the page.
 
 **Why this priority**: This is the problem the issue names. On its own it answers "who wrote
@@ -43,12 +54,15 @@ photo, Don's name and the two lines on his current role, and that the role match
 **Acceptance Scenarios**:
 
 1. **Given** any published post, **When** the reader scrolls past the post text, **Then** they see
-   one author card with Don's photo, his name and two short lines on who he is in his current role.
+   one author card, between the "views are my own" note and the Share area, with the visible
+   heading "Written by Don Coleman", Don's photo and two short first-person lines on who he is in
+   his current role.
 2. **Given** the author card, **When** the reader reads its role text, **Then** it names his
    current role (Director, Data Infrastructure and Architecture at Island Health) and contains no
    "Cloud Architect" wording.
 3. **Given** a reader using a screen reader, **When** they reach the card, **Then** the photo is
-   announced with meaningful alt text and the card is announced as information about the author.
+   announced with meaningful alt text and the card's heading, "Written by Don Coleman", is
+   announced as a heading.
 4. **Given** a reader with JavaScript turned off, **When** they open a post, **Then** the card and
    all of its links are present and work.
 
@@ -70,8 +84,8 @@ card's writing link on each and confirm it leads to the right place.
 1. **Given** a post in the Drift series, **When** the reader follows the card's series link,
    **Then** they reach the Drift series. The same holds for Convergence.
 2. **Given** a post in no series, **When** the reader looks at the card, **Then** it offers a link
-   to more of Don's writing [NEEDS CLARIFICATION: For a post in no series, should the card link
-   to the writing landing page (all posts), to both series pages, or show no writing link at all?]
+   to the writing landing page (all posts), with link text such as "More of my writing", and no
+   series link.
 3. **Given** the card's series link, **When** the reader reads its link text, **Then** it names the
    series (for example "More in Drift") rather than a generic "Read more".
 
@@ -94,6 +108,8 @@ Contact page.
    they reach the Contact page.
 2. **Given** the contact link, **When** the reader reads its text, **Then** it says plainly what it
    does (for example "Get in touch") in the site's plain-language voice.
+3. **Given** any published post, **When** the reader follows the card's "More about me" link,
+   **Then** they reach the About page.
 
 ---
 
@@ -109,36 +125,40 @@ Contact page.
 - Light and dark themes: the card is readable, and its text and links meet contrast requirements,
   in both.
 - The photo fails to load: the alt text and the rest of the card still make sense.
-- The About or Contact page is hidden or a draft: the card's Contact link is part of every post, so
-  the Contact page must stay visible while the card links to it (today it is visible).
+- The About or Contact page is hidden or a draft: the card's About and Contact links are part of
+  every post, so both pages must stay visible while the card links to them (today both are
+  visible).
 - Don's role changes: the role text is changed in one place and every post's card updates.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: Every post page MUST end with exactly one author card, placed after the post text
-  [NEEDS CLARIFICATION: Where in the end-of-post order should the card sit: directly after the
-  post text (before the "views are my own" note), between the views note and the Share area, or
-  after the Share area and before Related posts?]
-- **FR-002**: The card MUST show Don's portrait photo with alt text that identifies him, his name,
-  and two short lines on who he is in his current role.
-- **FR-003**: The role lines MUST name his current role, Director, Data Infrastructure and
-  Architecture at Island Health, and MUST NOT use "Cloud Architect" or other stale role wording.
+- **FR-001**: Every post page MUST have exactly one author card, placed between the "views are my
+  own" note and the Share area. The end-of-post order is: post text, views note, author card,
+  Share area, Related posts.
+- **FR-002**: The card MUST show the visible heading "Written by Don Coleman", Don's portrait photo
+  with alt text that identifies him, and two short lines in the first person on who he is in his
+  current role.
+- **FR-003**: The role lines MUST name his current role and MUST NOT use "Cloud Architect" or other
+  stale role wording. The draft lines are "I'm Director, Data Infrastructure and Architecture at
+  Island Health." and "I write about systems thinking, practical AI and leading complex change."
+  Don may revise the wording in review.
 - **FR-004**: The card's photo, name and role lines MUST be the same on every post and MUST be
   maintained in one place, so a change of wording or photo updates every post at once.
 - **FR-005**: On a post in a series, the card MUST link to that series' page, with link text that
   names the series.
-- **FR-006**: On a post in no series, the card MUST follow the answer to the User Story 2
-  clarification.
+- **FR-006**: On a post in no series, the card MUST link to the writing landing page (all posts),
+  with link text such as "More of my writing", and MUST show no series link. A post in a series
+  shows only its series link, not this one.
 - **FR-007**: The card MUST link to the Contact page, with plain link text that says what the link
   does.
-- **FR-008**: [NEEDS CLARIFICATION: Should the card also link to the About page (for example from
-  Don's name or a "More about me" link), or keep to the series and Contact links the issue names?]
+- **FR-008**: The card MUST link to the About page with its own plain link, with text such as
+  "More about me". The heading and Don's name are not links.
 - **FR-009**: The card MUST be part of the page as delivered, readable and usable with JavaScript
   turned off, and MUST add no client-side script.
 - **FR-010**: The card MUST meet WCAG 2.2 AA in light and dark themes and at every supported
-  screen width, including a heading or label that identifies it as information about the author.
+  screen width, with its visible heading "Written by Don Coleman" marked up as a heading.
 - **FR-011**: The card MUST line up with the other end-of-post pieces (the views note and the Share
   area): same left and right edges at every width.
 - **FR-012**: The card MUST use the site's existing visual language (its colours, type and card
@@ -149,8 +169,8 @@ Contact page.
 
 ### Key Entities
 
-- **Author profile**: The one set of facts the card shows: name, portrait photo with alt text, two
-  role lines. Kept in one place and shared by every post.
+- **Author profile**: The one set of facts the card shows: name (in the heading "Written by Don
+  Coleman"), portrait photo with alt text, two first-person role lines. Kept in one place and shared by every post.
 - **Series**: Drift or Convergence. A post belongs to at most one; the card's series link depends
   on it.
 
@@ -162,8 +182,8 @@ Contact page.
   pages show it.
 - **SC-002**: A reader landing on any post can name the author and his current role after
   scrolling to the end, without following a link.
-- **SC-003**: From any post, a reader reaches the post's series page (or the no-series target) and
-  the Contact page in one click each.
+- **SC-003**: From any post, a reader reaches the post's series page (or, for a post in no series,
+  the writing landing page), the About page and the Contact page in one click each.
 - **SC-004**: The card's text contains no "Cloud Architect" wording, and its role matches the About
   page.
 - **SC-005**: Every post template passes the automated accessibility check in light and dark
@@ -174,9 +194,8 @@ Contact page.
 ## Assumptions
 
 - The photo is the existing portrait already used on the home page; no new photo is needed.
-- The two role lines are drafted from the About page and the home page bio, for example "Director,
-  Data Infrastructure and Architecture at Island Health." followed by one line on what he writes
-  about. Don revises the wording in review; the draft is plain language with no hype.
+- The two role lines are the first-person drafts in FR-003, kept with the blog's other settings.
+  Don revises the wording in review; the draft is plain language with no hype.
 - The site has a single author, so the card always describes Don and posts carry no author setting.
 - "The rest of the series" means a link to the series page, not a list of the other posts in the
   series; the existing Related posts section already lists individual posts.
