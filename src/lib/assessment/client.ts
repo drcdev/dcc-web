@@ -3,7 +3,8 @@
 // draws the chart and the text summary. Nothing leaves the page: no request, no storage. It sets
 // no `style` attribute (the page policy forbids it); the chart's geometry is SVG attributes.
 import { planOrder } from "./plan.ts";
-import { band, formatScore, markerPosition, nextToPractise, selectLowBand, summaryLine, sumOf } from "./score.ts";
+import { decodeResult, encodeResult, resultUrl, type AssessmentResult } from "./result-link.ts";
+import { band, changeText, formatScore, markerPosition, nextToPractise, selectLowBand, summaryLine, sumOf } from "./score.ts";
 
 interface Data {
   scale: string[];
@@ -27,14 +28,38 @@ function svgNode<K extends keyof SVGElementTagNameMap>(tag: K, attributes: Recor
   return node;
 }
 
-/** One chart row: the shift's name, its From and To wording, and a track with a marker at the mean. */
-function chartRow(shift: Data["shifts"][number], sum: number): HTMLElement {
+const MARK_NOW = "fill-rust-700 dark:fill-rust-300 forced-colors:fill-[Highlight]";
+const MARK_EARLIER = "stroke-dusk-900 dark:stroke-white forced-colors:stroke-[CanvasText]";
+
+/** The new result: a filled circle centred on the track position `x` (0 to 100). */
+const circleMark = (x: number, radius = 4.5, cy = 6) =>
+  svgNode("circle", { cx: String(x), cy: String(cy), r: String(radius), "data-marker": "new", class: MARK_NOW });
+
+/** The earlier result: a hollow diamond, told apart from the circle by shape, not by colour alone. */
+const diamondMark = (x: number, half = 6.5, cy = 6) =>
+  svgNode("polygon", {
+    points: `${x},${cy - half} ${x + half},${cy} ${x},${cy + half} ${x - half},${cy}`,
+    fill: "none",
+    "stroke-width": "2",
+    "stroke-linejoin": "round",
+    "data-marker": "earlier",
+    class: MARK_EARLIER,
+  });
+
+/** What a chart row draws: the new mean, the earlier mean, or both (a comparison). */
+interface Marks {
+  now?: number;
+  earlier?: number;
+}
+
+/** One chart row: the shift's name, its From and To wording, and a track with a marker at each mean. */
+function chartRow(shift: Data["shifts"][number], marks: Marks): HTMLElement {
   const row = element("div", "mt-4 first:mt-0");
   row.dataset.chartRow = "";
   row.append(element("p", "m-0 font-semibold text-dusk-900 dark:text-white", shift.name));
   const ends = element("div", "mt-1 flex justify-between gap-4 text-sm [overflow-wrap:anywhere]");
   ends.append(element("span", "", shift.from), element("span", "text-right", shift.to));
-  const svg = svgNode("svg", { viewBox: "-6 0 112 12", "aria-hidden": "true", focusable: "false", class: "mt-1 block h-auto w-full max-w-xl" });
+  const svg = svgNode("svg", { viewBox: "-8 -2 116 16", "aria-hidden": "true", focusable: "false", class: "mt-1 block h-auto w-full max-w-xl" });
   svg.append(
     svgNode("line", {
       "data-chart-track": "",
@@ -46,15 +71,58 @@ function chartRow(shift: Data["shifts"][number], sum: number): HTMLElement {
       "stroke-linecap": "round",
       class: "stroke-dusk-600 dark:stroke-dusk-300 forced-colors:stroke-[CanvasText]",
     }),
-    svgNode("circle", {
-      cx: String(markerPosition(sum) * 100),
-      cy: "6",
-      r: "5",
-      class: "fill-rust-700 dark:fill-rust-300 forced-colors:fill-[Highlight]",
-    }),
   );
+  if (marks.earlier !== undefined) svg.append(diamondMark(markerPosition(marks.earlier) * 100));
+  if (marks.now !== undefined) svg.append(circleMark(markerPosition(marks.now) * 100));
   row.append(ends, svg);
   return row;
+}
+
+/** The legend of a comparison: a text label next to each marker. */
+function legend(earlierDate: string): HTMLElement {
+  const box = element("p", "m-0 mt-4 flex flex-wrap gap-x-6 gap-y-1 text-sm");
+  box.dataset.chartLegend = "";
+  const entry = (mark: SVGElement, text: string) => {
+    const item = element("span", "inline-flex items-center gap-2");
+    const icon = svgNode("svg", { viewBox: "0 0 16 16", "aria-hidden": "true", focusable: "false", class: "size-4 shrink-0" });
+    icon.append(mark);
+    item.append(icon, text);
+    return item;
+  };
+  box.append(entry(circleMark(8, 5, 8), "Now (filled circle)"), entry(diamondMark(8, 6.5, 8), `Earlier, ${formatDate(earlierDate)} (hollow diamond)`));
+  return box;
+}
+
+/** A date such as `2026-09-01` shown in words; the date is displayed, never used for arithmetic. */
+const formatDate = (iso: string): string => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-CA", { dateStyle: "long", timeZone: "UTC" });
+
+const pad = (n: number): string => String(n).padStart(2, "0");
+const today = (): string => {
+  const now = new Date();
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+};
+
+/**
+ * The chart and the text summary for one set of sums. `earlier` is the other result drawn on the
+ * same rows (a comparison, which adds the change per shift); `as` says which marker the sums use.
+ */
+function chartAndSummary(data: Data, sums: number[], as: "now" | "earlier", compareWith?: number[]) {
+  const chart = element("div", "mt-4");
+  chart.setAttribute("role", "img");
+  chart.setAttribute("aria-label", "Chart of where you sit between From and To for each shift. The list below gives the same information in words.");
+  chart.dataset.assessmentChart = "";
+  const summary = element("ul", "m-0 mt-4 list-none p-0");
+  sums.forEach((sum, s) => {
+    const shift = data.shifts[s]!;
+    chart.append(chartRow(shift, as === "now" ? { now: sum, earlier: compareWith?.[s] } : { earlier: sum }));
+    const change = compareWith ? `; ${changeText(compareWith[s]!, sum)} since your earlier result` : "";
+    const item = element("li", "mt-2 first:mt-0 [overflow-wrap:anywhere]", summaryLine(shift, sum) + change);
+    item.dataset.summaryLine = "";
+    item.dataset.band = band(sum);
+    item.dataset.score = formatScore(sum);
+    summary.append(item);
+  });
+  return { chart, summary };
 }
 
 /** A shift to practise: a link to its section in the post and its Practical Application paragraph. */
@@ -69,13 +137,15 @@ function practiseItem(shift: Data["shifts"][number]): HTMLElement {
 }
 
 /** The printable plan sheet: title, date, the five positions, then weeks 1 to 6 (FR-010). */
-function planSheet(data: Data, sums: number[]): HTMLElement {
+function planSheet(data: Data, sums: number[], date: string, url: string): HTMLElement {
   const sheet = element("section");
   sheet.dataset.assessmentPlanSheet = "";
-  sheet.append(element("h2", "", data.title), element("p", "", new Date().toLocaleDateString("en-CA", { dateStyle: "long" })));
+  sheet.append(element("h2", "", data.title), element("p", "", formatDate(date)));
   const positions = element("ul");
   sums.forEach((sum, s) => positions.append(element("li", "", summaryLine(data.shifts[s]!, sum))));
-  sheet.append(positions);
+  const link = element("p", "", `Results link: ${url}`);
+  link.dataset.planLink = "";
+  sheet.append(positions, link);
   const weeks = [...planOrder(sums).map((s) => ({ name: data.shifts[s]!.name, text: data.shifts[s]!.week })), { name: data.integrationWeek.name, text: data.integrationWeek.week }];
   weeks.forEach((week, n) => {
     const section = element("div");
@@ -95,8 +165,15 @@ export function init(root: HTMLElement): void {
   const errors = root.querySelector<HTMLElement>("[data-assessment-errors]")!;
   const results = root.querySelector<HTMLElement>("[data-assessment-results]")!;
   const show = root.querySelector<HTMLButtonElement>("[data-assessment-show]")!;
+  const clear = root.querySelector<HTMLButtonElement>("[data-assessment-clear]")!;
+  const earlierPanel = root.querySelector<HTMLElement>("[data-assessment-earlier]")!;
+  const titleLink = document.querySelector<HTMLAnchorElement>("[data-assessment-link]");
+  const titleWording = { text: titleLink?.textContent ?? "", href: titleLink?.getAttribute("href") ?? "" };
+  const version = root.dataset.version ?? "";
   const fieldsets = [...form.querySelectorAll<HTMLFieldSetElement>("fieldset[data-statement]")];
   let shown = false;
+  // The result the reader arrived with, from the results link (US4). Kept until cleared.
+  let earlier: AssessmentResult | null = null;
   const printButton = element("button", "inline-flex min-h-11 cursor-pointer items-center rounded-full border border-rust-700 bg-transparent px-5 py-2 text-base font-medium text-rust-800 hover:bg-rust-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rust-700 dark:border-rust-300 dark:text-rust-300 dark:hover:bg-rust-950 dark:focus-visible:outline-rust-300 forced-colors:border-[ButtonText] forced-colors:text-[ButtonText]", "Print my plan");
   printButton.type = "button";
   printButton.dataset.assessmentPrint = "";
@@ -108,6 +185,32 @@ export function init(root: HTMLElement): void {
     fieldset.removeAttribute("aria-describedby");
     fieldset.querySelector<HTMLElement>("[data-statement-error]")!.hidden = true;
   };
+
+  /** Scrolls a heading into view and focuses it, leaving the address unchanged (research R6). */
+  function goTo(heading: HTMLElement) {
+    heading.tabIndex = -1;
+    heading.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+    heading.focus({ preventScroll: true });
+  }
+
+  /** The earlier result from the results link, shown on its own above the form (L1, L2). */
+  function showEarlier(result: AssessmentResult) {
+    const sums = result.sums;
+    const heading = element("h3", "m-0 text-lg font-bold text-dusk-900 dark:text-white", `Earlier result from ${formatDate(result.date)}`);
+    heading.id = "assessment-earlier";
+    heading.dataset.earlierHeading = "";
+    const { chart, summary } = chartAndSummary(data, sums, "earlier");
+    earlierPanel.replaceChildren(heading);
+    if (result.version !== version) {
+      earlierPanel.append(element("p", "m-0 mt-2 font-medium", "This result was made with an earlier set of questions, so it cannot be compared with a new one."));
+    }
+    earlierPanel.append(chart, summary);
+    earlierPanel.hidden = false;
+    if (titleLink) {
+      titleLink.textContent = "Your earlier result is below";
+      titleLink.setAttribute("href", "#assessment-earlier");
+    }
+  }
 
   function showErrors(missing: HTMLFieldSetElement[]) {
     for (const fieldset of fieldsets) clearError(fieldset);
@@ -136,20 +239,10 @@ export function init(root: HTMLElement): void {
   function showResults() {
     errors.hidden = true;
     const sums = data.shifts.map((_, s) => sumOf([0, 1, 2].map((i) => answerOf(fieldsets[s * 3 + i]!))));
-    const chart = element("div", "mt-4");
-    chart.setAttribute("role", "img");
-    chart.setAttribute("aria-label", "Chart of where you sit between From and To for each shift. The list below gives the same information in words.");
-    chart.dataset.assessmentChart = "";
-    const summary = element("ul", "m-0 mt-4 list-none p-0");
-    sums.forEach((sum, s) => {
-      const shift = data.shifts[s]!;
-      chart.append(chartRow(shift, sum));
-      const item = element("li", "mt-2 first:mt-0 [overflow-wrap:anywhere]", summaryLine(shift, sum));
-      item.dataset.summaryLine = "";
-      item.dataset.band = band(sum);
-      item.dataset.score = formatScore(sum);
-      summary.append(item);
-    });
+    const comparable = earlier !== null && earlier.version === version;
+    const { chart, summary } = chartAndSummary(data, sums, "now", comparable ? earlier!.sums : undefined);
+    const result: AssessmentResult = { version, date: today(), sums };
+    const url = resultUrl(location, result);
     const practise = element("div", "mt-6");
     practise.append(element("h3", "m-0 text-lg font-bold text-dusk-900 dark:text-white", "What to practise"));
     const low = selectLowBand(sums);
@@ -163,10 +256,26 @@ export function init(root: HTMLElement): void {
         practiseItem(data.shifts[next]!),
       );
     }
-    results.replaceChildren(element("h3", "m-0 text-lg font-bold text-dusk-900 dark:text-white", "Your results"), chart, summary, practise, element("p", "mt-6 mb-0"));
+    const link = element("div", "mt-6");
+    link.append(element("h3", "m-0 text-lg font-bold text-dusk-900 dark:text-white", "Your results link"));
+    const text = element("p", "m-0 mt-2 [overflow-wrap:anywhere]", url);
+    text.dataset.resultsLink = "";
+    const copy = element("button", `${printButton.className} mt-3`, "Copy link");
+    copy.type = "button";
+    copy.dataset.assessmentCopy = "";
+    const note = element(
+      "p",
+      "m-0 mt-2 text-sm",
+      "Anyone with the link can see these scores. The site keeps no copy, and clearing your answers does not undo a link you have already shared.",
+    );
+    note.dataset.resultsLinkNote = "";
+    link.append(text, copy, note);
+    const heading = element("h3", "m-0 text-lg font-bold text-dusk-900 dark:text-white", "Your results");
+    results.replaceChildren(heading, chart, ...(comparable ? [legend(earlier!.date)] : []), summary, practise, link, element("p", "mt-6 mb-0"));
     results.lastElementChild!.append(printButton);
     document.body.querySelector(":scope > [data-assessment-plan-sheet]")?.remove();
-    document.body.append(planSheet(data, sums));
+    document.body.append(planSheet(data, sums, result.date, url));
+    history.replaceState(history.state, "", `#${encodeResult(result)}`);
     document.documentElement.setAttribute("data-assessment-plan", "");
     results.hidden = false;
     status.textContent = shown ? "Your results are updated." : "Your results are ready below.";
@@ -209,10 +318,57 @@ export function init(root: HTMLElement): void {
     const heading = document.getElementById(link.dataset.lowLink!);
     if (!heading) return;
     event.preventDefault();
-    heading.tabIndex = -1;
-    heading.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
-    heading.focus({ preventScroll: true });
+    goTo(heading);
   });
+
+  // Copy the results link. When the Clipboard API refuses, the link stays on the page to select.
+  results.addEventListener("click", (event) => {
+    if (!(event.target as HTMLElement).closest("[data-assessment-copy]")) return;
+    const url = results.querySelector<HTMLElement>("[data-results-link]")!.textContent ?? "";
+    const done = () => (status.textContent = "Link copied.");
+    const failed = () => (status.textContent = "The link could not be copied. Select the link text and copy it.");
+    if (navigator.clipboard) navigator.clipboard.writeText(url).then(done, failed);
+    else failed();
+  });
+
+  // The title-card link goes to its target heading without changing the address.
+  titleLink?.addEventListener("click", (event) => {
+    const heading = document.getElementById(titleLink.getAttribute("href")!.slice(1));
+    if (!heading) return;
+    event.preventDefault();
+    goTo(heading);
+  });
+
+  // Clear: every trace of the answers, the results, the plan and the address fragment goes (L6, U14).
+  clear.addEventListener("click", () => {
+    form.reset();
+    for (const fieldset of fieldsets) clearError(fieldset);
+    errors.hidden = true;
+    results.replaceChildren();
+    results.hidden = true;
+    earlierPanel.replaceChildren();
+    earlierPanel.hidden = true;
+    document.body.querySelector(":scope > [data-assessment-plan-sheet]")?.remove();
+    document.documentElement.removeAttribute("data-assessment-plan");
+    if (titleLink) {
+      titleLink.textContent = titleWording.text;
+      titleLink.setAttribute("href", titleWording.href);
+    }
+    earlier = null;
+    shown = false;
+    history.replaceState(history.state, "", location.pathname + location.search);
+    status.textContent = "Your answers have been cleared.";
+    fieldsets[0]!.querySelector<HTMLInputElement>("input")!.focus();
+  });
+
+  // Arriving through a results link (L1, L2, L3). A fragment that is not a result is left alone.
+  const arrived = decodeResult(location.hash);
+  if (arrived.kind === "malformed" || (arrived.kind === "result" && arrived.result.sums.length !== data.shifts.length)) {
+    status.textContent = "This results link could not be read.";
+  } else if (arrived.kind === "result") {
+    earlier = arrived.result;
+    showEarlier(earlier);
+  }
 
   root.dataset.assessmentReady = "true";
 }

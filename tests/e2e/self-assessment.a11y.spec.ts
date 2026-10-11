@@ -7,6 +7,8 @@ import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { postsWithAssessment } from "../helpers/content.ts";
 import { setTheme } from "./color-theme.ts";
+import { encodeResult } from "../../src/lib/assessment/result-link.ts";
+import { statementSetVersion } from "../../src/lib/assessment/version.ts";
 
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"];
 const THEMES = ["dark", "light"] as const;
@@ -39,6 +41,40 @@ const states = {
     await expect(page.locator("[data-assessment-results]")).toBeVisible();
   },
 } as const;
+
+// Results-link states (US4): a comparison, two separate results and an unreadable link.
+const VERSION = statementSetVersion(assessment.shifts);
+const linkTo = (version: string, sums = [6, 9, 12, 7, 15]) => `${post.address}#${encodeResult({ version, date: "2026-09-01", sums })}`;
+const linked = {
+  comparison: {
+    url: linkTo(VERSION),
+    enter: async (page: Page) => {
+      await answerAll(page);
+      await page.locator("[data-assessment-show]").click();
+      await expect(page.locator("[data-chart-legend]")).toBeVisible();
+    },
+  },
+  "separate results": {
+    url: linkTo(VERSION === "ffffffff" ? "eeeeeeee" : "ffffffff"),
+    enter: async (page: Page) => {
+      await answerAll(page);
+      await page.locator("[data-assessment-show]").click();
+      await expect(page.locator("[data-assessment-results]")).toBeVisible();
+      await expect(page.locator("[data-assessment-earlier]")).toBeVisible();
+    },
+  },
+  "unreadable link": {
+    url: `${post.address}#result=${VERSION}.20260901.6-9-12-7-16`,
+    enter: async (page: Page) => {
+      await expect(page.locator("[data-assessment-status]")).toHaveText("This results link could not be read.");
+    },
+  },
+} as const;
+
+async function openLinked(page: Page, url: string) {
+  await page.goto(url);
+  await expect(root(page)).toHaveAttribute("data-assessment-ready", "true");
+}
 
 /** WCAG relative luminance of an `rgb()`/`rgba()` colour. */
 function luminance(color: string): number {
@@ -79,6 +115,32 @@ for (const theme of THEMES) {
         expect(results.violations).toEqual([]);
       });
     }
+
+    for (const [name, state] of Object.entries(linked)) {
+      test(`has no axe violations in the ${name} state`, async ({ page }) => {
+        await openLinked(page, state.url);
+        await state.enter(page);
+        const results = await new AxeBuilder({ page }).withTags(TAGS).include("[data-assessment]").analyze();
+        expect(results.violations).toEqual([]);
+      });
+    }
+
+    test("the diamond, the circle and the legend markers reach 3:1 and Copy link is at least 24 x 24 (1.4.11, 2.5.8)", async ({ page }) => {
+      await openLinked(page, linked.comparison.url);
+      await linked.comparison.enter(page);
+      const background = await backgroundOf(page.locator("[data-chart-row] svg").first());
+      const diamond = page.locator('[data-chart-row] polygon[data-marker="earlier"]').first();
+      const circle = page.locator('[data-chart-row] circle[data-marker="new"]').first();
+      expect(contrast(await diamond.evaluate((e) => getComputedStyle(e).stroke), background), "diamond").toBeGreaterThanOrEqual(3);
+      expect(contrast(await circle.evaluate((e) => getComputedStyle(e).fill), background), "circle").toBeGreaterThanOrEqual(3);
+      const legend = page.locator("[data-chart-legend]");
+      const legendBackground = await backgroundOf(legend);
+      expect(contrast(await legend.locator("polygon").evaluate((e) => getComputedStyle(e).stroke), legendBackground), "legend diamond").toBeGreaterThanOrEqual(3);
+      expect(contrast(await legend.locator("circle").evaluate((e) => getComputedStyle(e).fill), legendBackground), "legend circle").toBeGreaterThanOrEqual(3);
+      const box = await page.getByRole("button", { name: "Copy link" }).boundingBox();
+      expect(box!.width).toBeGreaterThanOrEqual(24);
+      expect(box!.height).toBeGreaterThanOrEqual(24);
+    });
 
     test("every answer choice and button is at least 24 x 24 CSS px (2.5.8)", async ({ page }) => {
       await open(page);
@@ -149,4 +211,25 @@ test("forced colours keep the track and the marker visible", async ({ page }) =>
   expect(contrast(await marker.evaluate((e) => getComputedStyle(e).fill), background)).toBeGreaterThanOrEqual(3);
   const radio = page.locator('[data-statement="0.0"] input[type=radio]').first();
   expect(contrast(await radio.evaluate((e) => getComputedStyle(e).borderTopColor), await backgroundOf(radio.locator("..")))).toBeGreaterThanOrEqual(3);
+});
+
+test("forced colours keep both markers, the tracks and the legend visible", async ({ page }) => {
+  await page.emulateMedia({ forcedColors: "active" });
+  await openLinked(page, linked.comparison.url);
+  await linked.comparison.enter(page);
+  const background = await backgroundOf(page.locator("[data-chart-row] svg").first());
+  const legend = page.locator("[data-chart-legend]");
+  const checks = [
+    [page.locator("[data-chart-row] [data-chart-track]").first(), "stroke"],
+    [page.locator('[data-chart-row] polygon[data-marker="earlier"]').first(), "stroke"],
+    [page.locator('[data-chart-row] circle[data-marker="new"]').first(), "fill"],
+    [legend.locator("polygon"), "stroke"],
+    [legend.locator("circle"), "fill"],
+  ] as const;
+  for (const [locator, property] of checks) {
+    const color = await locator.evaluate((e, p) => getComputedStyle(e).getPropertyValue(p), property);
+    expect(color, property).not.toBe("none");
+    expect(contrast(color, background)).toBeGreaterThanOrEqual(3);
+  }
+  await expect(legend).toBeVisible();
 });

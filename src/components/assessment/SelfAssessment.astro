@@ -65,6 +65,7 @@ const radio =
   <div data-assessment-app class="hidden [.js_&]:block">
     <p class="m-0 [overflow-wrap:anywhere]">{assessment.intro}</p>
     <p role="status" aria-live="polite" data-assessment-status class="m-0 mt-3 font-medium text-dusk-900 dark:text-white"></p>
+    <div hidden data-assessment-earlier class="mt-6 rounded-lg border border-dusk-200 p-4 dark:border-dusk-700 forced-colors:border-[CanvasText]"></div>
     <form data-assessment-form novalidate class="m-0">
       {
         assessment.shifts.map((shift, s) => (
@@ -109,6 +110,7 @@ const radio =
       </div>
       <div class="mt-6 flex flex-wrap gap-3">
         <button type="button" data-assessment-show class={control}>Show my results</button>
+        <button type="button" data-assessment-clear class={control}>Clear my answers</button>
       </div>
     </form>
     <div hidden data-assessment-results class="mt-8"></div>
