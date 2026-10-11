@@ -31,8 +31,8 @@ is not the `.nvmrc` version, run `source ~/.nvm/nvm.sh && nvm use` in the same B
 
 ## Phase 1: Setup
 
-- [ ] T001 Sync the worktree with `origin/main` (`git fetch origin`, merge if behind), copy `.reference/flux` into the worktree if missing, and confirm `node -v` matches `.nvmrc` in `/Users/doncoleman/orca/workspaces/dcc-web/this-site-as-a-project-story`
-- [ ] T002 Create the directory `src/content/projects/images/doncoleman-ca/` and read `docs/projects.md`, `src/content/projects/cadence.mdx` and `src/content/projects/flux.mdx` as the pattern for frontmatter, Options table, notes comment, invitation and diagram labels
+- [X] T001 Sync the worktree with `origin/main` (`git fetch origin`, merge if behind), copy `.reference/flux` into the worktree if missing, and confirm `node -v` matches `.nvmrc` in `/Users/doncoleman/orca/workspaces/dcc-web/this-site-as-a-project-story`
+- [X] T002 Create the directory `src/content/projects/images/doncoleman-ca/` and read `docs/projects.md`, `src/content/projects/cadence.mdx` and `src/content/projects/flux.mdx` as the pattern for frontmatter, Options table, notes comment, invitation and diagram labels
 
 ---
 
