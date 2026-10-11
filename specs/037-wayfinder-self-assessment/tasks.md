@@ -217,3 +217,13 @@ assessment and see results. Then US2 (links), US3 (print), US4 (retake), then Po
 ## PREVIEW-CHECK items (for the PR body)
 
 T038 statement wording, T039 SC-001 usability, T052 print preview A4 and Letter, T061 privacy paragraph, T063 moved text reads unchanged, T064 screen-reader and no-JS reading order, T065 production beacon (FR-016b, post-release).
+
+---
+
+## Phase 8: Convergence
+
+- [ ] T068 [P] Add a `headingId` case block to `tests/unit/assessment/` (new `lookup.test.ts` or beside `checks.test.ts`): for the real data file's title and for titles with `?`, `#`, `:`, an apostrophe, curly quotes and repeated spaces, `headingId(title)` equals the id Astro's Markdown renderer gives `## <title>` (github-slugger), so the block's `aria-labelledby` and the title-card link always name a rendered heading. Layer: unit. per Constitution I, U20 (partial)
+- [ ] T069 [P] Add `tests/fixtures/posts/broken/a11-block-without-heading.mdx` (renders `<SelfAssessment assessment="sample" />` with no `## <title>` heading above it) and a case in `tests/build/post-validation.test.ts` asserting the real build fails naming the post file and the needed heading, covering the existing check in `src/pages/writing/[slug].astro` that no test exercises. Layer: build (the check runs against rendered headings). per Constitution I, plan: title-card link target (partial)
+- [ ] T070 [P] Extend `tests/unit/assessment/schema.test.ts`: a scale with two equal labels is rejected with a message on `scale` (the distinct-labels refinement in `src/content/schemas/assessment.ts` has no test). Layer: unit. per Constitution I, A1 (partial)
+- [ ] T071 [P] Extend `tests/unit/assessment/checks.test.ts`: `checkFromToLines` does not throw for a shift whose anchor matches no heading (that case is left to A6), so A9 and A6 never report the same fault twice. Layer: unit. per Constitution I, A9 (partial)
+- [ ] T072 [P] Extend `tests/e2e/no-js.spec.ts`: with JavaScript off and print media emulated, the Wayfinder post (found through `postsWithAssessment()`) prints the statement list with all fifteen statements and no visible form controls (quickstart step 11 second half; the existing FR-011 print test runs with JavaScript on). Layer: e2e (JavaScript off and print media need a browser). per FR-011 (partial)
