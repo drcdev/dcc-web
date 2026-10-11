@@ -143,7 +143,7 @@ branch preview shows nothing about this change beyond the site still serving.
 
 ### W2: E2E Wrangler config drops `routes` (test first)
 
-- [ ] W2 done
+- [x] W2 done (red: stub helper returned config unchanged, new test failed on the ai key; green with the helper; the generator-source test now reads both files)
 - **Why:** `wrangler dev` infers its origin host from the first route (`getInferredHost` in
   wrangler 4.149.0, `dev.inferOriginFromRoutes` defaults to true) and passes it to Miniflare as the
   upstream, which rewrites `request.url` to `https://www.doncoleman.ca/...`. The contact API's
