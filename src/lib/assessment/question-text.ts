@@ -3,11 +3,14 @@
 // the same text it had when the Practical Application paragraphs and the six-week plan were prose,
 // and the hash covers the expanded text, so a change to the data file regenerates the questions.
 import type { Assessment } from "../../content/schemas/assessment.ts";
+import { countWords } from "../markdown/reading-time.ts";
 import { contentError } from "../content/errors.ts";
 
 const attr = (tag: string, name: string): string | undefined => new RegExp(`\\b${name}="([^"]*)"`).exec(tag)?.[1];
 
-export function expandForQuestions(body: string, assessments: Readonly<Record<string, Assessment>>, file = "this post"): string {
+type Assessments = Readonly<Record<string, Assessment>>;
+
+export function expandForQuestions(body: string, assessments: Assessments, file = "this post"): string {
   const find = (tag: string): Assessment => {
     const id = attr(tag, "assessment") ?? "";
     const found = assessments[id];
@@ -33,4 +36,14 @@ export function expandForQuestions(body: string, assessments: Readonly<Record<st
     })
     .replace(/[ \t]*<SelfAssessment\b[^>]*\/>[ \t]*\n?/g, "")
     .replace(/\n{3,}/g, "\n\n");
+}
+
+/**
+ * The number of words the post's components render from the data file (Practical Application and
+ * week text). The reading-time plugin counts only the Markdown, so the post adds these (FR-021).
+ */
+export function componentWords(body: string, assessments: Assessments, file = "this post"): number {
+  const expanded = expandForQuestions(body, assessments, file);
+  const bare = expandForQuestions(body.replace(/<(?:PracticalApplication|DevelopmentPlan)\b[^>]*\/>/g, ""), assessments, file);
+  return countWords(expanded) - countWords(bare);
 }

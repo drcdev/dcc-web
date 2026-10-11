@@ -1,6 +1,6 @@
 // Unit tests for the question source expansion (FR-021; contracts/assessment-data.md "Question source").
 import { describe, expect, it } from "vitest";
-import { expandForQuestions } from "../../../src/lib/assessment/question-text.ts";
+import { componentWords, expandForQuestions } from "../../../src/lib/assessment/question-text.ts";
 import { sampleAssessment } from "../../helpers/assessment.ts";
 
 const assessment = sampleAssessment();
@@ -38,5 +38,18 @@ describe("expandForQuestions", () => {
   it("throws for an unknown assessment or shift, naming the file when given", () => {
     expect(() => expandForQuestions('<DevelopmentPlan assessment="nope" />', all, "src/content/posts/x.mdx")).toThrow("x.mdx");
     expect(() => expandForQuestions('<PracticalApplication assessment="sample" shift="nope" />', all)).toThrow("nope");
+  });
+});
+
+describe("componentWords", () => {
+  it("counts the words the components render, and nothing for a post without them", () => {
+    const count = (text: string) => text.split(/\s+/).filter(Boolean).length;
+    const shift = assessment.shifts[1]!;
+    expect(componentWords("Plain text only.", all)).toBe(0);
+    expect(componentWords('<SelfAssessment assessment="sample" />', all)).toBe(0);
+    expect(componentWords('Before.\n\n<PracticalApplication assessment="sample" shift="bravo" />', all)).toBe(
+      count(`**Practical Application**: ${shift.practicalApplication}`),
+    );
+    expect(componentWords('<DevelopmentPlan assessment="sample" />', all)).toBe(count(expandForQuestions('<DevelopmentPlan assessment="sample" />', all)));
   });
 });

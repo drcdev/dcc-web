@@ -176,13 +176,13 @@ to the mean of its three answers (SC-002).
 
 ## Phase 7: Polish and cross-cutting
 
-- [ ] T060 [P] Add the FR-016a paragraph to `src/content/pages/privacy-policy.mdx` (runs only in the browser, the site never receives or stores answers or scores, the results link holds the scores in the page address so anyone it is shared with can see them). Layer: none beyond the existing page checks (copy, not behaviour).
+- [x] T060 [P] Add the FR-016a paragraph to `src/content/pages/privacy-policy.mdx` (runs only in the browser, the site never receives or stores answers or scores, the results link holds the scores in the page address so anyone it is shared with can see them). Layer: none beyond the existing page checks (copy, not behaviour).
 - [ ] T061 [P] Don reads the privacy paragraph in `src/content/pages/privacy-policy.mdx` on the preview for wording. [PREVIEW-CHECK]
 - [ ] T063 [P] Don checks on the preview that the moved Practical Application paragraphs and the 6-Week Development Plan read word for word as before (quickstart step 1). [PREVIEW-CHECK]
 - [ ] T064 [P] Don does the screen-reader pass (errors, results, text summary says all the chart shows) and the no-JavaScript list reading order on the preview (SC-006 manual part). [PREVIEW-CHECK]
 - [ ] T065 [P] FR-016b, post-release: Don opens one production page view of the Wayfinder post through a results link and inspects the Web Analytics beacon payload. Pass: no field contains `#`, `result=` or any part of the fragment. Fail: add a Web Analytics exclude rule for the post's path the same day and open a follow-up issue. [PREVIEW-CHECK]
-- [ ] T066 Visual baselines: no baseline update is needed (see "Baseline conclusion" below). Run `pnpm run test:visual` and confirm it passes with no diff; any diff is a regression to fix in `PostLayout.astro` (empty slot must render today's markup), not a reason to refresh baselines. Only if a diff is intended after review, run `pnpm run test:visual:update` then `pnpm run test:visual:update:linux` (needs Docker Desktop) per `.claude/skills/_shared/visual-baselines.md`.
-- [ ] T067 Re-run `tests/e2e/budget.spec.ts` (T062) against the finished module, run the quickstart walk-through steps 2-13 and 16 locally and the local gate: `changed-paths.ts --base origin/main` tier only; ask Don before a full `pnpm run verify` (CLAUDE.md, memory: parallel gates crash his machine).
+- [x] T066 Visual baselines: no baseline update is needed (see "Baseline conclusion" below). Run `pnpm run test:visual` and confirm it passes with no diff; any diff is a regression to fix in `PostLayout.astro` (empty slot must render today's markup), not a reason to refresh baselines. Only if a diff is intended after review, run `pnpm run test:visual:update` then `pnpm run test:visual:update:linux` (needs Docker Desktop) per `.claude/skills/_shared/visual-baselines.md`.
+- [x] T067 Re-run `tests/e2e/budget.spec.ts` (T062) against the finished module, run the quickstart walk-through steps 2-13 and 16 locally and the local gate: `changed-paths.ts --base origin/main` tier only; ask Don before a full `pnpm run verify` (CLAUDE.md, memory: parallel gates crash his machine).
 
 ---
 

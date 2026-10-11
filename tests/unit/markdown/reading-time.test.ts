@@ -98,4 +98,9 @@ describe("readingTimePlugin", () => {
     expect(await minutes(`${words(223)} **two** *words*`)).toBe(1);
     expect(await minutes(`${words(224)} [one](https://example.com/a/long/address)`)).toBe(1);
   });
+
+  it("also stores the word count, so a post can add text its components render", async () => {
+    const result = mdxToJs(words(300), { mdastPlugins: [readingTimePlugin], data: { astro: { frontmatter: {} } } } as never);
+    expect((result.data as { astro: { frontmatter: { wordsRead?: number } } }).astro.frontmatter.wordsRead).toBe(300);
+  });
 });

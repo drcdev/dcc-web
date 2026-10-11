@@ -560,7 +560,3 @@ the change per shift.
   since reader-supplied text would reach the AI binding.
 - A self-assessment for the later posts in the systems leadership series.
 - Updating the downloadable Wayfinder PDFs to point to the online self-assessment.
-- Reading time of the Wayfinder post: the reading-time plugin counts the post's Markdown, so the
-  Practical Application and week text now rendered by components is no longer counted and the
-  time shown drops from 12 to 11 minutes. Make the plugin count the data file's text for posts
-  that use the components (found in Phase 2).
