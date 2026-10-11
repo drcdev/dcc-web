@@ -92,7 +92,7 @@ with JavaScript on and off; the Playwright content-derived specs pass on it as t
 
 **Independent Test**: The link `/projects/cadence/` resolves and its sentence agrees with the Cadence story.
 
-- [ ] T016 [US3] Test (layer: E2E, existing `tests/e2e/site-links.spec.ts`, which crawls every internal link): no new test; T018 runs it. Second layer: none, because only a browser crawl follows the rendered link. Confirm by reading `src/content/projects/cadence.mdx` that the sentence in T007 agrees with Cadence's own statement.
+- [X] T016 [US3] Test (layer: E2E, existing `tests/e2e/site-links.spec.ts`, which crawls every internal link): no new test; T018 runs it. Second layer: none, because only a browser crawl follows the rendered link. Confirm by reading `src/content/projects/cadence.mdx` that the sentence in T007 agrees with Cadence's own statement.
 
 ---
 
