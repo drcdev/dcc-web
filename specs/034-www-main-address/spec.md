@@ -48,6 +48,9 @@ live hosts still serve the old arrangement. That window is expected and short (s
 - Q: Should the live-hosts confirmation be a new setup-check item or folded into an existing one? → A: A new after-merge item, "Live hosts", making 18 items.
 - Q: Should the live-hosts check also confirm `http://www` and which paths should it probe? → A: Yes, check `http://www` too, and probe both `/` and a fixed path with a query string (for example `/writing/?page=2`) on every host and scheme.
 - Q: Should the `www` Custom Domain be a dashboard setting or declared in the Worker configuration? → A: Dashboard only, as now; no Worker configuration change.
+- Q: Should `http://doncoleman.ca` be allowed to reach `www` in two permanent redirects (via `https://doncoleman.ca` through "Always Use HTTPS"), or must it always be one? → A: Either is accepted for `http://doncoleman.ca`: one hop to `https://www`, or two permanent hops through `https://doncoleman.ca`, with path and query kept. `https://doncoleman.ca` must be exactly one hop. SC-003's hop limit counts HTTPS requests only.
+- Q: If the live swap is rolled back and cannot be retried soon, should the repository change also be reverted? → A: Roll back in the dashboard and retry within 24 hours; if the swap still cannot be done by then, open a revert pull request of this change.
+- Q: How should SC-003 (old Ghost addresses reach their new pages on `www`) be confirmed? → A: The "Live hosts" item also checks one fixed old Ghost address on `www` and on the bare domain, each ending on its mapped page through permanent redirects within the hop limits.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -72,10 +75,13 @@ both hosts and confirm `www` serves them and the bare domain redirects.
    `https://www.doncoleman.ca`.
 2. **Given** a production build, **When** the sitemap and `robots.txt` are read, **Then** every
    sitemap entry and the `robots.txt` sitemap line use `https://www.doncoleman.ca`.
-3. **Given** the live swap is done, **When** a reader requests `https://doncoleman.ca/<path>?<query>`
-   or `http://doncoleman.ca/<path>?<query>`, **Then** the response is a single permanent (301)
-   redirect to `https://www.doncoleman.ca/<path>?<query>`, with the path and query string
-   unchanged (no trailing slash added or removed).
+3. **Given** the live swap is done, **When** a reader requests `https://doncoleman.ca/<path>?<query>`,
+   **Then** the response is a single permanent (301) redirect to
+   `https://www.doncoleman.ca/<path>?<query>`, with the path and query string unchanged (no
+   trailing slash added or removed). **When** a reader requests
+   `http://doncoleman.ca/<path>?<query>`, **Then** they reach the same address either in one
+   permanent redirect or in two permanent redirects through `https://doncoleman.ca/<path>?<query>`,
+   with the path and query string unchanged at every hop.
 4. **Given** the live swap is done, **When** a reader requests `https://www.doncoleman.ca/<path>`,
    **Then** the site serves the page directly over HTTPS, with no redirect to another host.
 5. **Given** the live swap is done, **When** a reader requests `http://www.doncoleman.ca/<path>`,
@@ -101,9 +107,11 @@ both hosts and confirm it ends, through permanent redirects only, on the mapped 
 1. **Given** the live swap is done, **When** a reader requests an old Ghost address on
    `https://www.doncoleman.ca`, **Then** one permanent redirect sends them to the mapped new
    address on `https://www.doncoleman.ca`, which loads.
-2. **Given** the live swap is done, **When** a reader requests an old Ghost address on the bare
-   domain, **Then** they reach the mapped new address on `https://www.doncoleman.ca` through at
-   most two permanent redirects (bare to `www`, then old to new path), and it loads.
+2. **Given** the live swap is done, **When** a reader requests an old Ghost address on
+   `https://doncoleman.ca`, **Then** they reach the mapped new address on
+   `https://www.doncoleman.ca` through at most two permanent redirects (bare to `www`, then old to
+   new path), and it loads. Over `http://doncoleman.ca`, one extra permanent hop to
+   `https://doncoleman.ca` is allowed.
 3. **Given** an unmapped Ghost address on either host, **When** it is requested, **Then** the
    reader ends on the site's not-found page on `www` (unchanged from spec 030).
 
@@ -131,7 +139,7 @@ and next action for each.
    the setup check, **Then** that item reports a problem naming what is wrong and the next step.
 3. **Given** only half the swap is done (for example `www` serves the site but the bare domain
    has no redirect, or the bare domain redirects to a different path, drops the query string,
-   uses a temporary redirect, or redirects in more than one hop), **When** Don runs the setup
+   uses a temporary redirect, or takes more hops than FR-009 allows), **When** Don runs the setup
    check, **Then** the item reports a problem naming the half that is missing.
 4. **Given** the zone holds the bare-domain placeholder record exactly as the baseline lists it,
    proxied, **When** the DNS parity item runs, **Then** it reports complete; **Given** the
@@ -168,7 +176,9 @@ resubmission and a rollback.
    (7) resubmit the sitemap in Search Console. The bare domain keeps serving the site until step 4,
    so only `www` (which until then only redirects) is briefly unavailable.
 2. **Given** the swap cannot be completed in the sitting, **When** Don follows the rollback steps,
-   **Then** the bare domain serves the site again and `www` redirects to it, as before the swap.
+   **Then** the bare domain serves the site again and `www` redirects to it, as before the swap,
+   and the steps tell him to retry the swap within 24 hours; if it still cannot be done by then,
+   he opens a revert pull request of this change so the build names the bare domain again.
 
 ### Edge Cases
 
@@ -225,9 +235,12 @@ resubmission and a rollback.
 - **FR-005**: `https://www.doncoleman.ca` MUST serve the site directly over HTTPS with a valid
   certificate, as the Worker's Custom Domain. The Custom Domain stays a dashboard setting, as the
   bare-domain one is today; the Worker configuration in the repository does not change.
-- **FR-006**: `https://doncoleman.ca` and `http://doncoleman.ca` MUST answer every request with
-  a single permanent (301) redirect to `https://www.doncoleman.ca` with the same path and query
-  string, unchanged. There MUST be no redirect loop and no interstitial page.
+- **FR-006**: `https://doncoleman.ca` MUST answer every request with a single permanent (301)
+  redirect to `https://www.doncoleman.ca` with the same path and query string, unchanged.
+  `http://doncoleman.ca` MUST reach the same address either in one permanent redirect or in two
+  permanent redirects through `https://doncoleman.ca` (Cloudflare's "Always Use HTTPS" may run
+  first), with the path and query string unchanged at every hop. There MUST be no redirect loop
+  and no interstitial page.
 - **FR-007**: The bare domain MUST have the proxied placeholder record `AAAA doncoleman.ca 100::`
   so that its redirect rule applies. The old `www` to bare redirect rule and its placeholder record MUST be removed.
 - **FR-008**: Every other DNS record (mail, verification, DMARC, CAA) MUST stay unchanged.
@@ -239,11 +252,16 @@ resubmission and a rollback.
   path with a query string (for example `/writing/?page=2`), on every host and scheme:
   `https://www.doncoleman.ca` returns the site's page over HTTPS without redirecting to another
   host; `http://www.doncoleman.ca` answers a single permanent redirect to the same path and query
-  on `https://www.doncoleman.ca`; and the bare domain (over both `https://` and `http://`) answers
-  a single permanent redirect to the same path and query string on `https://www.doncoleman.ca`. It MUST
-  report a problem, naming the failing host and the next step, for the old arrangement, a
-  half-switched arrangement, a temporary redirect, a changed path or dropped query string, a
-  multi-hop or looping redirect, or a host that does not answer over HTTPS.
+  on `https://www.doncoleman.ca`; `https://doncoleman.ca` answers a single permanent redirect to
+  the same path and query string on `https://www.doncoleman.ca`; and `http://doncoleman.ca`
+  reaches that address in one permanent redirect or in two through `https://doncoleman.ca`
+  (FR-006). It also requests one fixed old Ghost address from the spec 030 mapping on
+  `https://www.doncoleman.ca` and on `https://doncoleman.ca`, and confirms each ends on its mapped
+  page on `www` through permanent redirects only, in one hop from `www` and at most two from the
+  bare domain. It MUST report a problem, naming the failing host and the next step, for the old
+  arrangement, a half-switched arrangement, a temporary redirect, a changed path or dropped query
+  string, more hops than allowed here, a looping redirect, or a host that does not answer over
+  HTTPS.
 - **FR-010**: The committed DNS baseline MUST list the bare-domain placeholder record
   (`AAAA doncoleman.ca 100::`), and the
   DNS parity item MUST accept it only when it is proxied (all other baseline records stay DNS
@@ -265,7 +283,8 @@ resubmission and a rollback.
   confirmed" text.
 - **FR-015**: The setup documentation MUST give the ordered live-swap steps (User Story 4,
   scenario 1) and the rollback steps (User Story 4, scenario 2), including the Search Console
-  sitemap resubmission.
+  sitemap resubmission and, after a rollback, the 24-hour retry window followed by a revert pull
+  request if the swap still cannot be done.
 - **FR-016**: Spec 011's statement that the bare domain is the main address (FR-010a) is
   superseded by this spec; per-issue history under `specs/` is not rewritten.
 
@@ -288,10 +307,14 @@ resubmission and a rollback.
 - **SC-001**: In a production build, 100% of absolute addresses on the site's own host use
   `https://www.doncoleman.ca`, and 0 use the bare domain.
 - **SC-002**: After the swap, 100% of addresses in the live sitemap load on `www`, and 100% of
-  the same paths requested on the bare domain reach them through exactly one permanent redirect
-  with the path and query string unchanged.
+  the same paths requested on `https://doncoleman.ca` reach them through exactly one permanent
+  redirect with the path and query string unchanged (over `http://doncoleman.ca`, one or two
+  permanent redirects, per FR-006).
 - **SC-003**: After the swap, 100% of the old Ghost addresses in the spec 030 mapping reach their
-  new page on `www`: in one redirect from `www`, in at most two from the bare domain.
+  new page on `www`: in one redirect from `https://www.doncoleman.ca`, in at most two from
+  `https://doncoleman.ca` (the hop limit counts HTTPS requests only; a request over `http://`
+  may take one extra permanent hop to HTTPS). The "Live hosts" item confirms this for one fixed
+  old address on each host.
 - **SC-004**: After the swap, the setup check reports every item complete on its first run once
   certificates are issued, and the sitting from first dashboard change to a complete setup check
   takes under 30 minutes.
