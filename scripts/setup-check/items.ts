@@ -326,7 +326,7 @@ const seeds: ItemSeed[] = [
     where:
       "Cloudflare dashboard, in one sitting after the pull request merges: the live swap steps in docs/setup.md#live-hosts.",
     confirmedBy:
-      "https://www.doncoleman.ca serves / and /writing/?page=2 directly; http://www, https://doncoleman.ca and http://doncoleman.ca redirect there with 301s within the hop limits, keeping the path and query; the old Ghost address /drift/2025/self-contained-development-for-ghost-themes/ reaches its new page on www from both hosts",
+      "https://www.doncoleman.ca serves / and /writing/?page=2 directly; http://www, https://doncoleman.ca and http://doncoleman.ca redirect there with 301s within the hop limits, keeping the path and query; the old Ghost address /drift/2025/self-contained-development-for-ghost-themes/ reaches its new page on www from both hosts; every HTTPS response from both hosts carries HSTS with includeSubDomains",
     needsDon: true,
     principles: ["VIII", "X"],
     requirements: ["FR-005", "FR-006", "FR-007", "FR-009", "SC-002", "SC-003"],

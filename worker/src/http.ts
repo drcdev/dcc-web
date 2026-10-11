@@ -8,7 +8,9 @@ export const SECURITY_HEADERS: Readonly<Record<string, string>> = {
   "X-Content-Type-Options": "nosniff",
   "X-Robots-Tag": "noindex",
   "Referrer-Policy": "no-referrer",
-  "Strict-Transport-Security": "max-age=31536000",
+  // The zone HSTS setting replaces this on production. Keep it identical to the `/*` rule in
+  // `public/_headers` (#155).
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
 };
 
 export function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {

@@ -26,7 +26,12 @@ describe("router", () => {
     expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
     expect(response.headers.get("X-Robots-Tag")).toBe("noindex");
     expect(response.headers.get("Referrer-Policy")).toBe("no-referrer");
-    expect(response.headers.get("Strict-Transport-Security")).toBe("max-age=31536000");
+    // #155: the fallback covers subdomains. max-age is kept equal to the site's by the
+    // headers.test.ts agreement case, so it is not pinned here.
+    const hsts = (response.headers.get("Strict-Transport-Security") ?? "")
+      .split(";")
+      .map((d) => d.trim().toLowerCase());
+    expect(hsts).toContain("includesubdomains");
     for (const [name] of response.headers) {
       expect(name.toLowerCase().startsWith("access-control-")).toBe(false);
     }

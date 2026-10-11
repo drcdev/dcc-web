@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { headerRules as rules, headersPath } from "../../helpers/headers";
+import { SECURITY_HEADERS } from "../../../worker/src/http";
 
 const robotsPath = fileURLToPath(new URL("../../../public/robots.txt", import.meta.url));
 
@@ -82,6 +83,16 @@ describe("public/_headers", () => {
       .split(";")
       .map((d) => d.trim().toLowerCase());
     expect(directives).toContain("includesubdomains");
+  });
+
+  // #155: the Worker's own header applies where the zone HSTS setting is off, so it must be the
+  // same policy as the site's. Compared as a directive set; the value itself is reviewed config.
+  it("the Worker's HSTS fallback matches the site's (#155)", () => {
+    const directives = (value: string | undefined) =>
+      (value ?? "").split(";").map((d) => d.trim().toLowerCase()).filter(Boolean).sort();
+    const site = directives(starRule().get("strict-transport-security"));
+    expect(site.length).toBeGreaterThan(0);
+    expect(directives(SECURITY_HEADERS["Strict-Transport-Security"])).toEqual(site);
   });
 
   it("never sets a cookie", () => {
