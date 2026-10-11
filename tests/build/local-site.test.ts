@@ -111,7 +111,7 @@ describe("the local site", () => {
 
   it("does not leak WORKERS_CI from the test runner's own environment into a build", () => {
     expect(l1.message).toBe("");
-    expect(l1.read("sitemap-0.xml")).toContain("https://doncoleman.ca/");
+    expect(l1.read("sitemap-0.xml")).toContain("https://www.doncoleman.ca/");
   });
 });
 

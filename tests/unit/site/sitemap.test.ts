@@ -70,8 +70,8 @@ describe("astro.config.mjs sitemap", () => {
   });
 
   it.each([
-    ["local build", {}, "https://doncoleman.ca"],
-    ["main branch build", { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" }, "https://doncoleman.ca"],
+    ["local build", {}, "https://www.doncoleman.ca"],
+    ["main branch build", { WORKERS_CI: "1", WORKERS_CI_BRANCH: "main" }, "https://www.doncoleman.ca"],
   ])("uses the configured site for every entry (%s)", async (_label, env, origin) => {
     const { site, entries, index } = await buildSitemap(env, ["contact/", "404/"]);
     expect(site).toBe(origin);

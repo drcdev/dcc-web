@@ -6,9 +6,11 @@
 // covering the apex; a JS-snippet site records the hostname instead.
 // The item does not depend on any other item.
 import type { CheckResult, ProviderContext, SetupConfig } from "../types.ts";
+import { FALLBACK_ORIGIN } from "../../../src/lib/site-origin.ts";
 import { complete, couldNotCheck, fromProviderError, missing } from "./shared.ts";
 
 const ITEM = { id: "web-analytics", order: 15 };
+// The served page is the main address, www.doncoleman.ca (spec 034).
 const BEACON_MARKER = "static.cloudflareinsights.com/beacon";
 
 export async function check(ctx: ProviderContext): Promise<CheckResult> {
@@ -55,18 +57,18 @@ export async function check(ctx: ProviderContext): Promise<CheckResult> {
       );
     }
 
-    const response = await ctx.http.get(`https://${host}/`);
+    const response = await ctx.http.get(`${FALLBACK_ORIGIN}/`);
     if (!response.body.includes(BEACON_MARKER)) {
       return missing(
         ITEM,
-        `Web Analytics is on for ${host}, but the served page does not reference the Cloudflare beacon yet.`,
+        `Web Analytics is on for ${host}, but the served page at ${new URL(FALLBACK_ORIGIN).host} does not reference the Cloudflare beacon yet.`,
         "Wait a few minutes for Cloudflare to inject the beacon automatically, then run the check again.",
       );
     }
 
     return complete(
       ITEM,
-      `Web Analytics is set up for ${host} with automatic setup on, and the served page references the beacon.`,
+      `Web Analytics is set up for ${host} with automatic setup on, and ${new URL(FALLBACK_ORIGIN).host} references the beacon.`,
     );
   } catch (err) {
     return fromProviderError(

@@ -20,7 +20,7 @@ import {
 const KEY = "PUBLIC_TURNSTILE_SITE_KEY";
 const ALL_SECRETS = ["TURNSTILE_SECRET_KEY"];
 const production = trigger({ deployCommand: "pnpm run deploy:production" });
-const widget = { name: "dcc-web contact", domains: ["doncoleman.ca", "drc-dev.workers.dev"], mode: "managed" };
+const widget = { name: "dcc-web contact", domains: ["www.doncoleman.ca", "doncoleman.ca", "drc-dev.workers.dev"], mode: "managed" };
 const databases = [
   { uuid: PROD_ID, name: "dcc-web", runningInRegion: "WNAM" },
   { uuid: PREVIEW_ID, name: "dcc-web-preview", runningInRegion: "WNAM" },
@@ -179,25 +179,32 @@ describe("checks/contact-bindings", () => {
       expect(result.details.join("\n")).toMatch(/managed/);
     });
 
-    it("is missing when doncoleman.ca is not a hostname", async () => {
+    it("is missing when www.doncoleman.ca is not a hostname", async () => {
       const result = await run({
         listTurnstileWidgets: async () => [{ ...widget, domains: ["drc-dev.workers.dev"] }],
       });
       expect(result.status).toBe("missing");
-      expect(result.details.join("\n")).toMatch(/doncoleman\.ca/);
+      expect(result.details.join("\n")).toContain("www.doncoleman.ca");
     });
 
-    it("stays missing when the hostnames only list subdomains of the bare domain", async () => {
+    it("accepts www.doncoleman.ca with or without the bare domain", async () => {
+      for (const domains of [["www.doncoleman.ca", "drc-dev.workers.dev"], ["doncoleman.ca", "www.doncoleman.ca", "drc-dev.workers.dev"]]) {
+        const result = await run({ listTurnstileWidgets: async () => [{ ...widget, domains }] });
+        expect(result.status).toBe("complete");
+      }
+    });
+
+    it("stays missing, naming www, when the hostnames list only the bare domain", async () => {
       const result = await run({
-        listTurnstileWidgets: async () => [{ ...widget, domains: ["www.doncoleman.ca", "drc-dev.workers.dev"] }],
+        listTurnstileWidgets: async () => [{ ...widget, domains: ["doncoleman.ca", "drc-dev.workers.dev"] }],
       });
       expect(result.status).toBe("missing");
-      expect(result.details.join("\n")).toContain("do not include doncoleman.ca");
+      expect(result.details.join("\n")).toContain("www.doncoleman.ca");
     });
 
     it("is missing when drc-dev.workers.dev is absent and no preview fallback is in use", async () => {
       const result = await run({
-        listTurnstileWidgets: async () => [{ ...widget, domains: ["doncoleman.ca"] }],
+        listTurnstileWidgets: async () => [{ ...widget, domains: ["www.doncoleman.ca"] }],
         listBuildVariableNames: async () => [],
       });
       expect(result.status).toBe("missing");
@@ -206,7 +213,7 @@ describe("checks/contact-bindings", () => {
     });
 
     it("is complete with a note when the workers.dev hostname is refused and the preview fallback is in use", async () => {
-      const result = await run({ listTurnstileWidgets: async () => [{ ...widget, domains: ["doncoleman.ca"] }] });
+      const result = await run({ listTurnstileWidgets: async () => [{ ...widget, domains: ["www.doncoleman.ca"] }] });
       expect(result.status).toBe("complete");
       expect(result.details.join("\n")).toMatch(/fallback/i);
     });

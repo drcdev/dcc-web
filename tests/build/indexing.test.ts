@@ -1,7 +1,7 @@
 // Builds the site twice, once with the main-branch Workers Builds environment
 // and once with a preview-branch environment, and checks the output: a main build
 // has no robots meta on public pages (the not-found page stays noindex) and names
-// https://doncoleman.ca everywhere; a branch build is noindex everywhere and names
+// https://www.doncoleman.ca everywhere; a branch build is noindex everywhere and names
 // its alias origin; _headers holds the host rules, not a site-wide noindex
 // (FR-010a, FR-010d, FR-017a, FR-019; contracts/indexing-and-origin.md).
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -67,7 +67,7 @@ describe.each(environments)("astro build with the $label environment", ({ env })
   it("resolves to an https origin distinct per environment", () => {
     expect(expectedOrigin).toMatch(/^https:\/\/[^/]+$/);
     if (env.WORKERS_CI_BRANCH === "main") {
-      expect(expectedOrigin).toBe("https://doncoleman.ca");
+      expect(expectedOrigin).toBe("https://www.doncoleman.ca");
     } else {
       expect(expectedOrigin).toMatch(/\.workers\.dev$/);
     }
@@ -124,6 +124,15 @@ describe.each(environments)("astro build with the $label environment", ({ env })
       }
     }
     expect(checked).toBeGreaterThan(0);
+  });
+
+  it("names no bare-domain address in any text file of the build (spec 034 FR-003, SC-001)", () => {
+    const binary = /\.(png|jpe?g|webp|avif|gif|ico|woff2?|ttf|otf|eot|mp4|webm|pdf)$/i;
+    const offenders = files
+      .filter((f) => !binary.test(f))
+      .filter((f) => readFileSync(f, "utf-8").includes("//doncoleman.ca"))
+      .map((f) => relative(outDir, f));
+    expect(offenders).toEqual([]);
   });
 
   it("points robots.txt's Sitemap line at the resolved origin (FR-018)", () => {

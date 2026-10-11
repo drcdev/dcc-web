@@ -7,8 +7,11 @@
 
 import type { BuildEnv } from "./build-mode.ts";
 
-/** Used whenever the served address cannot be determined (spec Assumptions). */
-export const FALLBACK_ORIGIN = "https://doncoleman.ca";
+/**
+ * Used whenever the served address cannot be determined (spec Assumptions), and the production
+ * address. It is the www host since spec 034, which supersedes 011 FR-010a (the bare domain).
+ */
+export const FALLBACK_ORIGIN = "https://www.doncoleman.ca";
 
 export type SiteOriginEnv = BuildEnv;
 

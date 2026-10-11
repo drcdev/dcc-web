@@ -182,3 +182,20 @@ pnpm exec wrangler secret delete CONTACT_READ_TOKEN --env "" --env-file /dev/nul
 pnpm exec wrangler secret delete IP_HASH_SALT --env "" --env-file /dev/null
 pnpm exec wrangler secret delete CONTACT_READ_TOKEN --env preview --env-file /dev/null
 pnpm exec wrangler secret delete IP_HASH_SALT --env preview --env-file /dev/null
+
+## Live hosts (item 18)
+
+`live-hosts` is `phase: after-merge`: it is done in one sitting after the pull request merges and its
+production deploy has finished. Use `docs/setup.md#live-hosts` for the ordered live swap steps and the
+rollback. These are dashboard actions shown for Don to do himself; the skill never signs in, never
+changes DNS or Cloudflare rules and never runs a Wrangler command for this item.
+
+1. Show the steps. Read the Live swap steps 0 to 7 from `docs/setup.md#live-hosts` one at a time, with
+   each step's precondition, done signal and time bound. Pause with the usual three answers after
+   each step. If `www` does not serve within 10 minutes of step 3, point Don to the Rollback for
+   "After step 3".
+2. Check. After step 6, run `pnpm setup:check --json --item live-hosts`. `pending` means the `www`
+   certificate is still issuing: say so and rerun after a few minutes. Any other result shows its
+   `summary` and `nextAction` and stays on this item.
+3. Deadline. If the swap is not complete 24 hours after the production deploy, point Don to the
+   Rollback and the revert pull request in `docs/setup.md#live-hosts`.

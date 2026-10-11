@@ -79,7 +79,7 @@ describe("checks/web-analytics", () => {
     expect(setupItems.find((i) => i.id === "web-analytics")!.dependsOn).toEqual([]);
   });
 
-  it("checks https://doncoleman.ca/ without reading the Worker's Custom Domains", async () => {
+  it("checks https://www.doncoleman.ca/ without reading the Worker's Custom Domains", async () => {
     const urls: string[] = [];
     const get = async (url: string) => {
       urls.push(url);
@@ -97,7 +97,7 @@ describe("checks/web-analytics", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("complete");
-    expect(urls).toEqual(["https://doncoleman.ca/"]);
+    expect(urls).toEqual(["https://www.doncoleman.ca/"]);
   });
 
   it("is missing when no Web Analytics site exists for doncoleman.ca", async () => {
@@ -183,5 +183,11 @@ describe("checks/web-analytics", () => {
     const result = await check(ctx);
 
     expect(result.status).toBe("could-not-check");
+  });
+
+  it("names the www host in the summary when the served page has the beacon", async () => {
+    const result = await check(await siteCompleteContext());
+    expect(result.status).toBe("complete");
+    expect(result.summary).toContain("www.doncoleman.ca");
   });
 });
