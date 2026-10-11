@@ -140,15 +140,15 @@ to the mean of its three answers (SC-002).
 
 ### Tests first (US3)
 
-- [ ] T046 [P] [US3] Write `tests/unit/assessment/plan.test.ts` for `src/lib/assessment/plan.ts`: weeks 1-5 ordered lowest to highest, ties keep the post's order, all-tied keeps the post's order, week 6 integration (FR-010). Layer: unit.
-- [ ] T047 [US3] Extend `tests/e2e/self-assessment.spec.ts` (US3 section): with print media emulated and results shown, only the plan sheet is visible in the stated reading order (title, date, five positions, results link, weeks 1-6); header, footer, share area and post are hidden (U8); `page.pdf` on A4 and Letter gives at most two pages (U9, SC-003); the browser-menu path gives the same plan; without results the print holds the statement list and no form controls (FR-011). Layer: e2e (print media and PDF need a browser).
+- [X] T046 [P] [US3] Write `tests/unit/assessment/plan.test.ts` for `src/lib/assessment/plan.ts`: weeks 1-5 ordered lowest to highest, ties keep the post's order, all-tied keeps the post's order, week 6 integration (FR-010). Layer: unit.
+- [X] T047 [US3] Extend `tests/e2e/self-assessment.spec.ts` (US3 section): with print media emulated and results shown, only the plan sheet is visible in the stated reading order (title, date, five positions, results link, weeks 1-6); header, footer, share area and post are hidden (U8); `page.pdf` on A4 and Letter gives at most two pages (U9, SC-003); the browser-menu path gives the same plan; without results the print holds the statement list and no form controls (FR-011). Layer: e2e (print media and PDF need a browser).
 
 ### Implementation (US3)
 
-- [ ] T048 [US3] Create `src/lib/assessment/plan.ts` (stable order by sum).
-- [ ] T049 [US3] Extend `src/lib/assessment/client.ts`: "Print my plan" button calling `window.print()`, append the plan sheet to `<body>` and set `data-assessment-plan` on `<html>` while a result is shown, the sheet built from the same data fields as the post.
-- [ ] T050 [US3] Add the print styles to `src/components/assessment/SelfAssessment.astro` (plan-only when the root attribute is set, statement list without controls otherwise, A4 and Letter fit); shipped only on posts that render the block.
-- [ ] T051 [US3] Run T046-T047 and confirm they pass.
+- [X] T048 [US3] Create `src/lib/assessment/plan.ts` (stable order by sum).
+- [X] T049 [US3] Extend `src/lib/assessment/client.ts`: "Print my plan" button calling `window.print()`, append the plan sheet to `<body>` and set `data-assessment-plan` on `<html>` while a result is shown, the sheet built from the same data fields as the post.
+- [X] T050 [US3] Add the print styles to `src/components/assessment/SelfAssessment.astro` (plan-only when the root attribute is set, statement list without controls otherwise, A4 and Letter fit); shipped only on posts that render the block.
+- [X] T051 [US3] Run T046-T047 and confirm they pass.
 - [ ] T052 [P] [US3] Don opens the print preview on the preview deployment in his browser for A4 and US Letter and confirms the plan reads in the stated order on at most two pages. [PREVIEW-CHECK]
 
 ---

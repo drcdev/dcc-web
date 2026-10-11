@@ -122,6 +122,57 @@ const radio =
     }
   </style>
 
+  <style is:global>
+    /* Print (research R7). With a result shown, only the plan sheet prints. Without one, the post
+       prints with the statement list and no form controls. */
+    [data-assessment-plan-sheet] {
+      display: none;
+    }
+    @media print {
+      [data-assessment] [data-assessment-app] {
+        display: none !important;
+      }
+      [data-assessment] [data-assessment-nojs] {
+        display: block !important;
+      }
+      html[data-assessment-plan] body > :not([data-assessment-plan-sheet]) {
+        display: none !important;
+      }
+      html[data-assessment-plan] body > [data-assessment-plan-sheet] {
+        display: block;
+        margin: 0;
+        padding: 0;
+        color: #000;
+        background: #fff;
+        font-size: 10pt;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+      }
+      [data-assessment-plan-sheet] h2 {
+        margin: 0 0 0.25rem;
+        font-size: 15pt;
+      }
+      [data-assessment-plan-sheet] h3 {
+        margin: 0.6rem 0 0.1rem;
+        font-size: 11pt;
+        break-after: avoid;
+      }
+      [data-assessment-plan-sheet] p,
+      [data-assessment-plan-sheet] ul {
+        margin: 0.1rem 0;
+      }
+      [data-assessment-plan-sheet] ul {
+        padding-left: 1.2rem;
+      }
+      [data-assessment-plan-sheet] [data-plan-week] {
+        break-inside: avoid;
+      }
+    }
+    @page {
+      margin: 15mm;
+    }
+  </style>
+
   <script>
     // Load the module when the block is within one viewport height of the visible area, or at
     // once when the address already holds a result (research R3, FR-017).

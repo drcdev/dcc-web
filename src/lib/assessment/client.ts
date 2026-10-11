@@ -2,11 +2,14 @@
 // by the bootstrap script in SelfAssessment.astro. It reads the form, checks it, scores it and
 // draws the chart and the text summary. Nothing leaves the page: no request, no storage. It sets
 // no `style` attribute (the page policy forbids it); the chart's geometry is SVG attributes.
+import { planOrder } from "./plan.ts";
 import { band, formatScore, markerPosition, nextToPractise, selectLowBand, summaryLine, sumOf } from "./score.ts";
 
 interface Data {
   scale: string[];
-  shifts: { name: string; from: string; to: string; anchor: string; practicalApplication: string }[];
+  title: string;
+  shifts: { name: string; from: string; to: string; anchor: string; practicalApplication: string; week: string }[];
+  integrationWeek: { name: string; week: string };
 }
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -65,6 +68,24 @@ function practiseItem(shift: Data["shifts"][number]): HTMLElement {
   return item;
 }
 
+/** The printable plan sheet: title, date, the five positions, then weeks 1 to 6 (FR-010). */
+function planSheet(data: Data, sums: number[]): HTMLElement {
+  const sheet = element("section");
+  sheet.dataset.assessmentPlanSheet = "";
+  sheet.append(element("h2", "", data.title), element("p", "", new Date().toLocaleDateString("en-CA", { dateStyle: "long" })));
+  const positions = element("ul");
+  sums.forEach((sum, s) => positions.append(element("li", "", summaryLine(data.shifts[s]!, sum))));
+  sheet.append(positions);
+  const weeks = [...planOrder(sums).map((s) => ({ name: data.shifts[s]!.name, text: data.shifts[s]!.week })), { name: data.integrationWeek.name, text: data.integrationWeek.week }];
+  weeks.forEach((week, n) => {
+    const section = element("div");
+    section.dataset.planWeek = "";
+    section.append(element("h3", "", `Week ${n + 1}: ${week.name}`), element("p", "", week.text));
+    sheet.append(section);
+  });
+  return sheet;
+}
+
 const countText = (count: number): string => (count === 1 ? "1 statement needs an answer." : `${count} statements need an answer.`);
 
 export function init(root: HTMLElement): void {
@@ -76,6 +97,10 @@ export function init(root: HTMLElement): void {
   const show = root.querySelector<HTMLButtonElement>("[data-assessment-show]")!;
   const fieldsets = [...form.querySelectorAll<HTMLFieldSetElement>("fieldset[data-statement]")];
   let shown = false;
+  const printButton = element("button", "inline-flex min-h-11 cursor-pointer items-center rounded-full border border-rust-700 bg-transparent px-5 py-2 text-base font-medium text-rust-800 hover:bg-rust-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rust-700 dark:border-rust-300 dark:text-rust-300 dark:hover:bg-rust-950 dark:focus-visible:outline-rust-300 forced-colors:border-[ButtonText] forced-colors:text-[ButtonText]", "Print my plan");
+  printButton.type = "button";
+  printButton.dataset.assessmentPrint = "";
+  printButton.addEventListener("click", () => window.print());
 
   const answerOf = (fieldset: HTMLFieldSetElement): number => Number(fieldset.querySelector<HTMLInputElement>("input:checked")?.value ?? 0);
   const clearError = (fieldset: HTMLFieldSetElement) => {
@@ -138,7 +163,11 @@ export function init(root: HTMLElement): void {
         practiseItem(data.shifts[next]!),
       );
     }
-    results.replaceChildren(element("h3", "m-0 text-lg font-bold text-dusk-900 dark:text-white", "Your results"), chart, summary, practise);
+    results.replaceChildren(element("h3", "m-0 text-lg font-bold text-dusk-900 dark:text-white", "Your results"), chart, summary, practise, element("p", "mt-6 mb-0"));
+    results.lastElementChild!.append(printButton);
+    document.body.querySelector(":scope > [data-assessment-plan-sheet]")?.remove();
+    document.body.append(planSheet(data, sums));
+    document.documentElement.setAttribute("data-assessment-plan", "");
     results.hidden = false;
     status.textContent = shown ? "Your results are updated." : "Your results are ready below.";
     shown = true;

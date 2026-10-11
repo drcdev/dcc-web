@@ -320,3 +320,97 @@ test.describe("self-assessment: from a low score to what to practise (US2)", () 
     await context.close();
   });
 });
+
+test.describe("self-assessment: print a six-week plan (US3)", () => {
+  const show = (page: Page) => page.locator("[data-assessment-show]").click();
+  const sheet = (page: Page) => page.locator("body > [data-assessment-plan-sheet]");
+  // MIXED sums: 6, 9, 12, 7, 15 -> plan order by score: shifts 0, 3, 1, 2, 4.
+  const PLAN_ORDER = [0, 3, 1, 2, 4];
+
+  test("Print my plan calls window.print and adds the plan sheet and root attribute", async ({ page }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { printed: number }).printed = 0;
+      window.print = () => {
+        (window as unknown as { printed: number }).printed++;
+      };
+    });
+    await open(page);
+    await expect(page.locator("[data-assessment-print]")).toHaveCount(0);
+    await answer(page, MIXED);
+    await show(page);
+    await expect(sheet(page)).toHaveCount(1);
+    await expect(page.locator("html")).toHaveAttribute("data-assessment-plan", "");
+    await page.getByRole("button", { name: "Print my plan" }).click();
+    expect(await page.evaluate(() => (window as unknown as { printed: number }).printed)).toBe(1);
+  });
+
+  test("in print media only the plan sheet shows, in the stated order, weeks by score (U8)", async ({ page }) => {
+    await open(page);
+    await answer(page, MIXED);
+    await show(page);
+    await page.emulateMedia({ media: "print" });
+    await expect(sheet(page)).toBeVisible();
+    for (const hidden of ["header", "footer", "main", "article"]) {
+      for (const node of await page.locator(hidden).all()) await expect(node).toBeHidden();
+    }
+    const text = (await sheet(page).innerText()).replace(/\s+/g, " ");
+    const marks = [
+      assessment.title,
+      ...SHIFTS.map((s) => s.name + ": "),
+      "Week 1",
+      "Week 2",
+      "Week 3",
+      "Week 4",
+      "Week 5",
+      "Week 6",
+    ];
+    let at = -1;
+    for (const mark of marks) {
+      const next = text.indexOf(mark, at + 1);
+      expect(next, `${mark} after position ${at}`).toBeGreaterThan(at);
+      at = next;
+    }
+    const weeks = sheet(page).locator("[data-plan-week]");
+    await expect(weeks).toHaveCount(6);
+    for (let n = 0; n < 5; n++) {
+      const shift = SHIFTS[PLAN_ORDER[n]!]!;
+      await expect(weeks.nth(n)).toContainText(`Week ${n + 1}`);
+      await expect(weeks.nth(n)).toContainText(shift.name);
+      await expect(weeks.nth(n)).toContainText(shift.week.replace(/\s+/g, " "));
+    }
+    await expect(weeks.nth(5)).toContainText("Week 6");
+    await expect(weeks.nth(5)).toContainText(assessment.integrationWeek.name);
+    await expect(weeks.nth(5)).toContainText(assessment.integrationWeek.week.replace(/\s+/g, " "));
+  });
+
+  test("tied scores keep the post's order in the plan", async ({ page }) => {
+    await open(page);
+    await answer(page, ALL(3));
+    await show(page);
+    const weeks = sheet(page).locator("[data-plan-week]");
+    for (let n = 0; n < 5; n++) await expect(weeks.nth(n)).toContainText(SHIFTS[n]!.name);
+  });
+
+  for (const format of ["A4", "Letter"] as const) {
+    test(`the plan prints on at most two pages on ${format} (U9, SC-003)`, async ({ page, browserName }) => {
+      test.skip(browserName !== "chromium", "page.pdf is Chromium only");
+      await open(page);
+      await answer(page, MIXED);
+      await show(page);
+      const pdf = await page.pdf({ format });
+      const pages = (pdf.toString("latin1").match(/\/Type\s*\/Page[^s]/g) ?? []).length;
+      expect(pages).toBeGreaterThan(0);
+      expect(pages).toBeLessThanOrEqual(2);
+    });
+  }
+
+  test("without results the print holds the statement list and no form controls (FR-011)", async ({ page }) => {
+    await open(page);
+    await page.emulateMedia({ media: "print" });
+    await expect(page.locator("[data-assessment-nojs]")).toBeVisible();
+    await expect(page.locator("[data-assessment-app]")).toBeHidden();
+    await expect(page.locator("[data-assessment-nojs] li")).toHaveCount(STATEMENT_COUNT);
+    await expect(page.locator("[data-assessment] input:visible, [data-assessment] button:visible")).toHaveCount(0);
+    await expect(page.locator("body > [data-assessment-plan-sheet]")).toHaveCount(0);
+  });
+});
