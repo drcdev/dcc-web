@@ -129,7 +129,7 @@ runbook and docs are repository tasks.
 ## Phase 7: Polish and gate
 
 - [ ] T027 Run the local gate tier only: `pnpm exec tsx scripts/changed-paths.ts --base origin/main` (or the repository's documented equivalent) with node from `.nvmrc`; fix lint, type and test failures. Ask Don before a full `pnpm run verify` (see Local toolchain and memory notes); do not run parallel gates.
-- [ ] T028 Walk `specs/034-www-main-address/quickstart.md` against the finished work and confirm no visual baseline drift; do not refresh baselines (none expected).
+- [X] T028 Walk `specs/034-www-main-address/quickstart.md` against the finished work and confirm no visual baseline drift; do not refresh baselines (none expected).
 - [ ] T029 PR body: open from `drc-agents`; include expected cost change $0/month (R12), the Turnstile decision (R8, FR-012: the root entry may already cover `www`, but the explicit `www.doncoleman.ca` entry is required anyway), the merge-to-swap window risk, and a separate heading "Post-merge (Don, PREVIEW-CHECK)" listing T030 to T034. Arm auto-merge after the final push.
 
 ### Post-merge items (Don; not verifiable by a subagent)
