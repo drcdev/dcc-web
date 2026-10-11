@@ -167,7 +167,7 @@ branch preview shows nothing about this change beyond the site still serving.
 
 ### W3: Declare the Custom Domain in `wrangler.jsonc`
 
-- [ ] W3 done
+- [x] W3 done (W1 red before: 2 failed; green after, 37 pass; verify:quick green; dry-run deploy for both envs shows no inherited-domain warning)
 - **Files:** `wrangler.jsonc`.
 - **Edit:** after `preview_urls` at the top level add
   `"routes": [{ "pattern": "www.doncoleman.ca", "custom_domain": true }]`; in `env.preview` after
