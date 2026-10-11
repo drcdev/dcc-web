@@ -41,7 +41,7 @@ is not the `.nvmrc` version, run `source ~/.nvm/nvm.sh && nvm use` in the same B
 **Purpose**: Show the two guarding tests are green before the story exists, so the red in US1 is
 caused by the story and nothing else.
 
-- [ ] T003 Test (layer: unit, Vitest `unit` project): run `pnpm exec vitest run --project unit tests/unit/site/diagram-fonts.test.ts tests/unit/content/no-real-content-in-tests.test.ts` and record that both pass on the current content
+- [X] T003 Test (layer: unit, Vitest `unit` project): run `pnpm exec vitest run --project unit tests/unit/site/diagram-fonts.test.ts tests/unit/content/no-real-content-in-tests.test.ts` and record that both pass on the current content
 
 **Checkpoint**: Baseline green.
 
