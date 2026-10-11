@@ -1,0 +1,218 @@
+---
+
+description: "Task list for the Wayfinder self-assessment"
+---
+
+# Tasks: Wayfinder self-assessment
+
+**Input**: Design documents from `/specs/037-wayfinder-self-assessment/`
+
+**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/ (assessment-data.md rows A1-A10, assessment-ui.md rows U1-U21, results-link.md rows L1-L7), quickstart.md
+
+**Tests**: Mandatory (constitution Principle I). Every test task is written first, seen to fail, and
+names its one primary layer from "Where a test goes" in `docs/testing.md`. A second layer carries a
+written reason in the task. Tests come before the implementation they cover.
+
+**Organization**: Grouped by user story. Foundational work (the data file, the moved text, the
+shared pure modules) blocks every story because all four render from, or read, the one data file.
+
+## Format: `[ID] [P?] [Story] Description`
+
+- **[P]**: Can run in parallel (different files, no dependency on an unfinished task)
+- **[Story]**: US1 to US4 from spec.md
+- **[PREVIEW-CHECK]**: cannot be verified by an agent locally (needs the preview deployment or
+  Don's eyes). Left unticked by the subagent and listed in the PR body
+  (`.claude/skills/_shared/preview-check.md`).
+- Toolchain: follow `CLAUDE.md` "Local toolchain" (`node -v`, nvm, no `timeout`) for every
+  `pnpm`/`astro`/`playwright` call. Ask Don before a full `pnpm run verify`.
+
+## Paths
+
+Single Astro project: `src/`, `tests/`, `docs/` at the repository root; paths as in plan.md
+"Project Structure". E2E and a11y specs find the post through `postsWithAssessment()` and read
+expectations from the YAML; they never name the post (docs/testing.md "Real content in tests").
+
+---
+
+## Phase 1: Setup
+
+- [ ] T001 Confirm the toolchain (`node -v` against `.nvmrc`) and run the existing `tests/build/question-source.test.ts` and `tests/unit/content/body.test.ts` once to record a green starting point on this branch; no file changes.
+
+---
+
+## Phase 2: Foundational (blocks all stories)
+
+**Purpose**: the single data file, the schema, the build-time checks, the three post components
+that render the moved text, and the question-source expansion (FR-004, FR-014, FR-021, rows A1-A10).
+
+### Tests first
+
+- [ ] T002 [P] Write `tests/unit/assessment/schema.test.ts` for the Zod schema in `src/content/schemas/assessment.ts`: rows A1 (missing or empty field, unknown key, other than five shifts or three statements, scale not five labels), A2 (repeated shift id or anchor), A3 (scale ends not "Rarely"/"Almost always"). Layer: unit (pure schema logic).
+- [ ] T003 [P] Write `tests/unit/assessment/version.test.ts` for `src/lib/assessment/version.ts`: the version changes on any statement text edit (even a typo) and on reordering shifts or statements, and does not change when reminders, week text, shift names, From/To, labels, title or intro change (FR-014). Layer: unit.
+- [ ] T004 [P] Write `tests/unit/assessment/result-link.test.ts` for `src/lib/assessment/result-link.ts`: encode/decode round trip, the grammar in `contracts/results-link.md`, rejection of malformed, out-of-range, wrong-count and altered fragments, date handling, `kind` of none/result/malformed. Layer: unit.
+- [ ] T005 [P] Write `tests/unit/assessment/checks.test.ts` for `src/lib/assessment/checks.ts`: A9 (post From/To line differs from the data file) and A10 (a moved practical application or week text still verbatim in the post prose). Layer: unit.
+- [ ] T006 [P] Write `tests/unit/assessment/question-text.test.ts` for `src/lib/assessment/question-text.ts`: `PracticalApplication` and `DevelopmentPlan` tags expand to "Practical Application: ..." and the six "Week N: <name>" paragraphs in place, `SelfAssessment` is dropped, no component tag remains (FR-021). Layer: unit.
+- [ ] T007 [P] Extend `tests/unit/content/body.test.ts` for row A8: `validatePageBody` for kind "post" accepts the three post components and rejects any other tag with the extended allowed-names list. Layer: unit.
+- [ ] T008 [P] Write `tests/component/assessment/PracticalApplication.test.ts` and `tests/component/assessment/DevelopmentPlan.test.ts` using the Astro container API with a `data` prop: same markup as the old prose, text equal to the data file field; A4 and A5 errors name the post file, the id and the known ids. Layer: component (Astro components render from data).
+- [ ] T009 [P] Add `tests/fixtures/assessments/` fixture data files and `tests/fixtures/posts/broken/a01-*.mdx`, `a04-*.mdx`, `a05-*.mdx`, `a09-*.mdx`, `a10-*.mdx` and extend `tests/build/post-validation.test.ts` so each broken fixture fails the real `astro build` with a message naming the file and the field (rows A1, A4, A5, A9, A10). Layer: build (only the real build shows the error reaching output). Rows A6 and A7 are added in T040.
+- [ ] T010 [P] Extend `tests/build/question-source.test.ts`: every built `question-source.json` for a post using the components holds each data-file practical application and week text and no component tag; the hash covers the expanded text (FR-021). Layer: build (needs the real built route output).
+- [ ] T011 Add `postsWithAssessment()` to `tests/helpers/content.ts`, returning the posts that render `SelfAssessment` with their parsed YAML, and extend the content-literal guard if needed. Layer: n/a (test helper used by later e2e and a11y tasks).
+
+### Implementation
+
+- [ ] T012 Create `src/content/schemas/assessment.ts` (Zod from `astro/zod`, refinements A2 and A3) and register the `assessments` collection with the `glob()` loader in `src/content.config.ts`.
+- [ ] T013 Create `src/content/assessments/wayfinder.yaml`: move the five Practical Application paragraphs and the six-week plan texts out of the post unchanged, add shift names, From/To, anchors, the five scale labels, title and intro, and draft three statements per shift worded so agreeing places the reader nearer "To" (from the post text and Common Pitfalls). Statement wording is reviewed by Don in T038.
+- [ ] T014 [P] Create `src/lib/assessment/version.ts` (statement set version, `node:crypto`, research R5).
+- [ ] T015 [P] Create `src/lib/assessment/result-link.ts` (encode, decode, URL per `contracts/results-link.md`).
+- [ ] T016 [P] Create `src/lib/assessment/checks.ts` (A9 and A10).
+- [ ] T017 [P] Create `src/lib/assessment/question-text.ts` (FR-021 expansion).
+- [ ] T018 Create `src/lib/assessment/lookup.ts` (`getEntry` wrapper raising A4/A5 through `contentError`, plus the A6/A7 heading checks the route uses).
+- [ ] T019 [P] Create `src/components/assessment/PracticalApplication.astro` and `DevelopmentPlan.astro` rendering the same markup the prose had.
+- [ ] T020 Create `src/components/assessment/index.ts` (the post-only component registry, names exported for `validatePageBody`) and update `src/lib/content/body.ts` so kind "post" accepts them (A8).
+- [ ] T021 Update `src/pages/writing/[slug].astro` to pass the registry as `components`, run the A9/A10 checks, and hash the expanded question source; update `src/pages/writing/[slug]/question-source.json.ts` to expand through `question-text.ts` before `prepareQuestionSource()`.
+- [ ] T022 Edit the Wayfinder post in `src/content/posts/` (the-systems-leadership-wayfinder MDX): replace the five Practical Application paragraphs with `<PracticalApplication assessment="wayfinder" shift="..." />` and the six week paragraphs with `<DevelopmentPlan assessment="wayfinder" />`; leave shift names and From/To lines in the prose.
+- [ ] T023 [P] Document the three components and rows A1-A10 in `docs/posts.md`.
+- [ ] T024 Run T002-T010 and confirm they pass; run `pnpm run test:build` on the post-validation and question-source tests.
+
+**Checkpoint**: the post renders its moved text from the data file, the question source is unchanged in content, bad data fails the build with the file named.
+
+---
+
+## Phase 3: User Story 1 - Take the self-assessment and see where I sit (P1) - MVP
+
+**Goal**: one form of fifteen statements, validation, chart and text summary.
+
+**Independent Test**: answer all fifteen; the chart and summary show one position per shift equal
+to the mean of its three answers (SC-002).
+
+### Tests first (US1)
+
+- [ ] T025 [P] [US1] Write `tests/unit/assessment/score.test.ts` for `src/lib/assessment/score.ts`: mean per shift, low band below 3, band phrases ("nearer 'From' (...)", "in the middle" at exactly 3, "nearer 'To' (...)"), one-decimal formatting, change text ("up 0.7", "down 0.3", "no change") (FR-005, FR-007, SC-002). Layer: unit.
+- [ ] T026 [P] [US1] Write `tests/component/assessment/SelfAssessment.test.ts`: five fieldset groups named by shift, 15 statement fieldsets of five labelled radios, `type="button"` buttons, statement list for no-JS, one JSON data attribute carrying the version and no answers, h3 inside the h2 (U1 structure, U2, U18 markup, FR-001). Layer: component (markup from data).
+- [ ] T027 [P] [US1] Write `tests/build/assessment-scripts.test.ts`: only posts rendering the block carry the loader, the chunk reference, the styles and the title-card line; other pages' HTML has none and their shared scripts are unchanged (U16, SC-005). Layer: build (the check spans built output across pages).
+- [ ] T028 [US1] Write `tests/e2e/self-assessment.spec.ts` (US1 section): empty submit shows the error summary with the count, a link per unanswered statement, `aria-invalid` and "Choose an answer", focus on the first unanswered radio (U3); full answers show chart and summary matching the means (U4); status text and DOM order (U5); changing an answer and resubmitting updates both; keyboard-only completion; no CSP violation and no `style` attribute set by the module (U19). Layer: e2e (a journey in a real browser). Must fail before T033-T037.
+- [ ] T029 [P] [US1] Extend `tests/e2e/no-js.spec.ts` for U18: post reads in full including the moved text, the block shows the JS note and the statement list, no form controls visible. Layer: e2e (JavaScript off needs a browser context).
+- [ ] T030 [P] [US1] Write `tests/e2e/self-assessment.a11y.spec.ts` (empty form, errors shown, results shown; light and dark). Layer: a11y (axe). Second layer beside the template a11y runs because these states exist only after interaction.
+
+### Implementation (US1)
+
+- [ ] T031 [US1] Create `src/lib/assessment/score.ts` (shared pure scoring, bands, phrases, change text).
+- [ ] T032 [US1] Create `src/components/assessment/SelfAssessment.astro`: h2 and intro, form, no-JS note and statement list, status region, empty result containers, bootstrap `<script>` using `IntersectionObserver` (one viewport height) to `import()` the module, scoped styles with 24 px targets, 320 px layout, dark and forced-colours support.
+- [ ] T033 [US1] Create `src/lib/assessment/client.ts` (US1 part): read answers, validate with the error summary and focus rule, compute scores, draw the SVG chart (one row per shift, From/To at the ends, marker at `(score-1)/4`, accessible name pointing at the summary), write the text summary and the polite status messages ("Your results are ready below.", "Your results are updated.").
+- [ ] T034 [P] [US1] Create `src/components/assessment/AssessmentLink.astro` (reserved one-line title-card link "Take the self-assessment" to the assessment heading) and add the optional empty `title-extra` slot to `src/layouts/PostLayout.astro`, rendering exactly today's markup when empty.
+- [ ] T035 [US1] In `src/pages/writing/[slug].astro` render `AssessmentLink` into the slot only for posts that render `SelfAssessment`, and add the A6 and A7 checks (T040 tests).
+- [ ] T036 [US1] Add `<SelfAssessment assessment="wayfinder" />` under its `##` heading in the Wayfinder post between Mindset Shift #5 and "The Systems Leadership Wayfinder" (FR-001).
+- [ ] T037 [US1] Run T025-T030 and confirm they pass.
+- [ ] T038 [P] [US1] [PREVIEW-CHECK] Don reviews the drafted statement wording in `src/content/assessments/wayfinder.yaml` on the preview and edits it (any later edit invalidates older results links by design).
+- [ ] T039 [P] [US1] [PREVIEW-CHECK] SC-001: on the preview Don takes the assessment once without hurrying and confirms it takes under 5 minutes.
+
+**Checkpoint**: US1 works alone and is the MVP.
+
+---
+
+## Phase 4: User Story 2 - From a low score to what to practise (P2)
+
+**Goal**: low-band shifts link to their section and show the Practical Application paragraph.
+
+**Independent Test**: answer so two shifts score low; exactly those two show links that land on the matching heading, not hidden under the header.
+
+### Tests first (US2)
+
+- [ ] T040 [P] [US2] Extend `tests/build/post-validation.test.ts` with `tests/fixtures/posts/broken/a06-*.mdx` and `a07-*.mdx`: a shift anchor not matching a rendered heading id, and two `SelfAssessment` tags for the same assessment, each failing the build naming the post file and the shift. Layer: build (checks run against the real rendered headings).
+- [ ] T041 [P] [US2] Extend `tests/unit/assessment/score.test.ts`: low-band selection (below 3 only), none-low case naming the lowest-scoring shift (ties keep the post's order) as "Next to practise" (FR-008). Layer: unit.
+- [ ] T042 [US2] Extend `tests/e2e/self-assessment.spec.ts` (US2 section): two low shifts show exactly two "Read <name>" links and the unchanged Practical Application text; following one puts the heading in view below the sticky header, focuses it, leaves the fragment unchanged (U6, U7); all-middle answers show "None of your scores is below the middle." plus the next shift; reduced-motion scrolls instantly (U20). Layer: e2e (scroll position and focus need a browser).
+
+### Implementation (US2)
+
+- [ ] T043 [US2] Add `selectLowBand` and `nextToPractise` to `src/lib/assessment/score.ts`.
+- [ ] T044 [US2] Extend `src/lib/assessment/client.ts`: render low-band links and paragraphs (from the data attribute), the none-low message, heading focus on follow, smooth scroll only without reduced motion; confirm the mindset-shift headings have enough `scroll-margin-top` for the header (adjust in `SelfAssessment.astro` global rules, not the shell).
+- [ ] T045 [US2] Run T040-T042 and confirm they pass.
+
+---
+
+## Phase 5: User Story 3 - Print a six-week plan shaped by my results (P2)
+
+**Goal**: the print gives only the plan, ordered by score; without results the post prints the statement list.
+
+**Independent Test**: after results, print preview shows only the plan on at most two pages, weeks ordered by score.
+
+### Tests first (US3)
+
+- [ ] T046 [P] [US3] Write `tests/unit/assessment/plan.test.ts` for `src/lib/assessment/plan.ts`: weeks 1-5 ordered lowest to highest, ties keep the post's order, all-tied keeps the post's order, week 6 integration (FR-010). Layer: unit.
+- [ ] T047 [US3] Extend `tests/e2e/self-assessment.spec.ts` (US3 section): with print media emulated and results shown, only the plan sheet is visible in the stated reading order (title, date, five positions, results link, weeks 1-6); header, footer, share area and post are hidden (U8); `page.pdf` on A4 and Letter gives at most two pages (U9, SC-003); the browser-menu path gives the same plan; without results the print holds the statement list and no form controls (FR-011). Layer: e2e (print media and PDF need a browser).
+
+### Implementation (US3)
+
+- [ ] T048 [US3] Create `src/lib/assessment/plan.ts` (stable order by sum).
+- [ ] T049 [US3] Extend `src/lib/assessment/client.ts`: "Print my plan" button calling `window.print()`, append the plan sheet to `<body>` and set `data-assessment-plan` on `<html>` while a result is shown, the sheet built from the same data fields as the post.
+- [ ] T050 [US3] Add the print styles to `src/components/assessment/SelfAssessment.astro` (plan-only when the root attribute is set, statement list without controls otherwise, A4 and Letter fit); shipped only on posts that render the block.
+- [ ] T051 [US3] Run T046-T047 and confirm they pass.
+- [ ] T052 [P] [US3] [PREVIEW-CHECK] Don opens the print preview on the preview deployment in his browser for A4 and US Letter and confirms the plan reads in the stated order on at most two pages.
+
+---
+
+## Phase 6: User Story 4 - Retake later and see how I have grown (P3)
+
+**Goal**: results link, earlier result on load, comparison chart, clear, and no network traffic.
+
+**Independent Test**: take the assessment, copy the link, open it fresh, retake with different answers, see both results with the change per shift.
+
+### Tests first (US4)
+
+- [ ] T053 [US4] Extend `tests/e2e/self-assessment.spec.ts` (US4 section): L1 earlier result shown at once with "Earlier result from <date>" and the title-card link text swapped without a layout shift; L2 older version shown on its own and a retake shown separately with no change; L3 malformed fragment gives "This results link could not be read." and the link keeps its wording; L5 `replaceState` leaves `history.length` unchanged; L6 clear removes answers, earlier result, plan and fragment; U10 link text and "Copy link" with the sharing sentence; U12/U13 hollow diamond and filled circle with a legend and change text; U14 focus on the first radio. Layer: e2e (journey, history and focus).
+- [ ] T054 [US4] Add a request-recording journey to `tests/e2e/self-assessment.spec.ts` opened through a results link: answering, showing, following a link, copying, printing and clearing trigger zero requests, and no request of any kind (fetch, XHR, beacon, image, script, style, font, navigation, prefetch, WebSocket) has the fragment, `result=` or an answer in its URL, headers or body; no cookies, local storage, session storage, IndexedDB or Cache Storage written (L7, U15, SC-004, FR-012, FR-016). Layer: e2e (only a browser records every request); it is the single place the privacy guarantee is observed.
+- [ ] T055 [US4] Add CLS cases to `tests/e2e/self-assessment.spec.ts`: opened through a results link at 320 and 390 px, layout-shift entries before first input sum to 0 (U21, FR-018a); and 320 px, 200% zoom and text-spacing overrides show no sideways scroll or clipping (U17). Layer: e2e (layout shift and zoom need a real browser).
+- [ ] T056 [US4] Extend `tests/e2e/self-assessment.a11y.spec.ts` with the comparison, two-separate-results and unreadable-link states in light and dark, and forced-colours checks of the markers and tracks (SC-006). Layer: a11y (axe); second layer reason as in T030.
+
+### Implementation (US4)
+
+- [ ] T057 [US4] Extend `src/lib/assessment/client.ts`: decode the fragment on load (eager `import()` when a fragment is present), render the earlier result with date and the older-version mark, retake comparison chart (circle/diamond, legend) and change text, separate panels for non-comparable results, results link text with "Copy link" and the sharing sentence, `history.replaceState` on results and clear, "Clear my answers", title-card link text swap to "Your earlier result is below" with focus on its target, unreadable-link status.
+- [ ] T058 [US4] Add the matching styles (diamond and circle markers, legend, link wrapping anywhere, forced-colours) to `src/components/assessment/SelfAssessment.astro`, keeping `client.ts` near the 6 KB compressed target.
+- [ ] T059 [US4] Run T053-T056 and confirm they pass.
+
+---
+
+## Phase 7: Polish and cross-cutting
+
+- [ ] T060 [P] Add the FR-016a paragraph to `src/content/pages/privacy-policy.mdx` (runs only in the browser, the site never receives or stores answers or scores, the results link holds the scores in the page address so anyone it is shared with can see them). Layer: none beyond the existing page checks (copy, not behaviour).
+- [ ] T061 [P] [PREVIEW-CHECK] Don reads the privacy paragraph in `src/content/pages/privacy-policy.mdx` on the preview for wording.
+- [ ] T062 Extend `tests/e2e/budget.spec.ts` with the Wayfinder post measured at load and after scrolling to the block, answering all statements and showing results, under the existing slow-4G / 4x CPU conditions: LCP 2.5 s, CLS below 0.1, long tasks 200 ms, JavaScript 10 KB, total 150 KB (FR-018b, SC-005). Layer: budget (the only layer that measures transferred bytes and timing). Write it before the client is finished and tighten nothing; if it fails, fix the code, never the limit.
+- [ ] T063 [P] [PREVIEW-CHECK] Don checks on the preview that the moved Practical Application paragraphs and the 6-Week Development Plan read word for word as before (quickstart step 1).
+- [ ] T064 [P] [PREVIEW-CHECK] Don does the screen-reader pass (errors, results, text summary says all the chart shows) and the no-JavaScript list reading order on the preview (SC-006 manual part).
+- [ ] T065 [P] [PREVIEW-CHECK] FR-016b, post-release: Don opens one production page view of the Wayfinder post through a results link and inspects the Web Analytics beacon payload. Pass: no field contains `#`, `result=` or any part of the fragment. Fail: add a Web Analytics exclude rule for the post's path the same day and open a follow-up issue.
+- [ ] T066 Visual baselines: no baseline update is needed (see "Baseline conclusion" below). Run `pnpm run test:visual` and confirm it passes with no diff; any diff is a regression to fix in `PostLayout.astro` (empty slot must render today's markup), not a reason to refresh baselines. Only if a diff is intended after review, run `pnpm run test:visual:update` then `pnpm run test:visual:update:linux` (needs Docker Desktop) per `.claude/skills/_shared/visual-baselines.md`.
+- [ ] T067 Run the quickstart walk-through steps 2-13 and 16 locally and the local gate: `changed-paths.ts --base origin/main` tier only; ask Don before a full `pnpm run verify` (CLAUDE.md, memory: parallel gates crash his machine).
+
+---
+
+## Baseline conclusion
+
+No visual-baseline update tasks beyond the no-diff check in T066. `tests/e2e/visual.spec.ts` snapshots the
+design system and the templates against the fixture site (listing, `/writing/every-part/`,
+`/writing/drift/`, projects, contact form, header, footer, mobile menu) and never the real Wayfinder
+post. The only shared surface this slice touches is `PostLayout.astro`, which gains an optional named
+slot that renders nothing when empty, so every snapshotted post keeps exactly today's markup. No
+shell, token or Tailwind theme change; print rules apply to print media only.
+
+## Dependencies and order
+
+- Phase 1, then Phase 2 (blocks all stories). Within Phase 2: tests T002-T011 before T012-T023, T024 last.
+- US1 (Phase 3) after Phase 2. US2 and US3 each depend on US1's `client.ts` and `SelfAssessment.astro`; US3 also uses `result-link.ts` and `version.ts` from Phase 2. US4 depends on US1 and the print sheet from US3 (the link is printed).
+- US2 and US3 can proceed in parallel after US1 only if their `client.ts` and `SelfAssessment.astro` edits are merged carefully; default is sequential.
+- Polish after the stories; T062's budget test is written once the client exists and run last.
+- Edits to `[slug].astro`, `PostLayout.astro`, `body.ts`, `content.config.ts`, `privacy-policy.mdx`, `docs/posts.md`, `budget.spec.ts` and `tests/helpers/content.ts` are small and additive; on a sibling-worktree conflict, merge `origin/main` and keep both sides.
+
+## Parallel examples
+
+- Phase 2 tests: T002-T010 touch different files and run together.
+- Phase 2 modules: T014-T017 and T019, T023 are independent files.
+- US1 tests: T025, T026, T027, T029, T030 together; T028 shares `self-assessment.spec.ts` so goes alone.
+
+## Implementation strategy
+
+MVP is Phase 1, Phase 2 and US1: the post renders from the data file and a reader can take the
+assessment and see results. Then US2 (links), US3 (print), US4 (retake), then Polish. Each story ends with its tests green before the next starts.
+
+## PREVIEW-CHECK items (for the PR body)
+
+T038 statement wording, T039 SC-001 usability, T052 print preview A4 and Letter, T061 privacy paragraph, T063 moved text reads unchanged, T064 screen-reader and no-JS reading order, T065 production beacon (FR-016b, post-release).
