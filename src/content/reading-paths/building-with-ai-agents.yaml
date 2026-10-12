@@ -1,0 +1,8 @@
+title: Building with AI agents
+description: For people curious about letting AI do the build.
+position: 2
+items:
+  - post: building-focus-pocus-what-i-learned-about-ai-coding-and-integration
+  - project: cadence
+  - project: drcdev-github-io
+  - project: flux

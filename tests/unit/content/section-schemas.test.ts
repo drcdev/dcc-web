@@ -14,7 +14,7 @@ const withContent = (props: object, content: Partial<{ text: boolean; images: nu
 const ok = (name: keyof typeof sectionSchemas, value: unknown) => sectionSchemas[name].safeParse(value).success;
 
 describe("section registry", () => {
-  it("lists the eight sections", () => {
+  it("lists the ten sections", () => {
     expect([...sectionNames].sort()).toEqual(
       [
         "CallToAction",
@@ -22,8 +22,10 @@ describe("section registry", () => {
         "Figure",
         "FullImage",
         "Lead",
+        "Now",
         "RecentWriting",
         "SideImage",
+        "StartHere",
         "WideImage",
       ].sort(),
     );

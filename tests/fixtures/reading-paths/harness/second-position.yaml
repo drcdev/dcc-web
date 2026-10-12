@@ -1,0 +1,6 @@
+title: Second path
+description: A path at position two that names a project and a post.
+position: 2
+items:
+  - project: minimal
+  - post: minimal

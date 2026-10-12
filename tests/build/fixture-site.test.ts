@@ -5,9 +5,10 @@
 // asserted in page-validation, post-validation and project-validation (their first sync). The
 // `env` option runs in drafts.test.ts (WORKERS_CI sets the site address) and local-site.test.ts
 // (the variable stays out of a default build).
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { prepareFixtureSite } from "../../scripts/build-fixture-site.ts";
 import { buildFixtureSite, type FixtureSiteResult } from "./fixture-site.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -26,6 +27,8 @@ beforeAll(async () => {
       { from: "valid/untagged.mdx", to: "renamed-post.mdx", replace: ["A post in no series", "A renamed post"] },
     ],
     projects: ["minimal.mdx", "every-setting.mdx", "draft.mdx"],
+    readingPaths: [{ from: "harness/minimal-path.yaml", to: "renamed-path.yaml" }],
+    now: "now.md",
   });
   s1Root = s1.root;
   s2 = await buildFixtureSite([], { mode: "sync", realPosts: true });
@@ -78,6 +81,16 @@ describe("fixture-site harness, S1 (every kind of file, default options)", () =>
     expect(text).not.toContain("A post in no series");
   });
 
+  it("installs the reading-path files a test asks for, at the `to` name, and no real reading path", () => {
+    expect(s1.message).toBe("");
+    expect(yamlNames(`${s1.root}/src/content/reading-paths`)).toEqual(["renamed-path.yaml"]);
+  });
+
+  it("installs the fixture Now file in place of the default one", () => {
+    expect(readFileSync(`${s1.root}/src/content/now/now.md`, "utf-8")).toBe(readFileSync(`${root}tests/fixtures/now/now.md`, "utf-8"));
+    expect(readdirSync(`${s1.root}/src/content/now`)).toEqual(["now.md"]);
+  });
+
   it("removes the temporary site on cleanup", () => {
     s1.cleanup();
     expect(existsSync(s1Root)).toBe(false);
@@ -90,5 +103,37 @@ describe("fixture-site harness, S2 (realPosts)", () => {
     expect(s2.ok).toBe(true);
     expect(realPostNames.length).toBeGreaterThan(0);
     for (const name of realPostNames) expect(existsSync(`${s2.root}/src/content/posts/${name}`), name).toBe(true);
+  });
+});
+
+// Contract rows N and R need the reading-path and Now files to follow the posts and projects a
+// fixture build holds. Reason for build layer: only the real harness copies show which files a
+// fixture site is made of (specs/040-home-now-start-here, plan "Fixture builds").
+const yamlNames = (dir: string) => (existsSync(dir) ? readdirSync(dir).filter((name) => name.endsWith(".yaml")).sort() : []);
+const realPathNames = yamlNames(`${root}src/content/reading-paths`);
+
+describe("fixture-site harness, reading paths and Now", () => {
+  it("keeps the real reading paths when real posts are kept", () => {
+    expect(yamlNames(`${s2.root}/src/content/reading-paths`)).toEqual(realPathNames);
+  });
+});
+
+describe("Playwright fixture site copy", () => {
+  const siteRoot = `${root}.cache/fixture-site-copy-test`;
+  beforeAll(() => {
+    mkdirSync(`${root}.cache`, { recursive: true });
+    prepareFixtureSite(siteRoot);
+  });
+  afterAll(() => rmSync(siteRoot, { recursive: true, force: true }));
+
+  it("holds exactly the fixture reading-path files and none from the real folder", () => {
+    const fixtureNames = yamlNames(`${root}tests/fixtures/reading-paths`);
+    expect(fixtureNames.length).toBeGreaterThan(0);
+    expect(yamlNames(`${siteRoot}/src/content/reading-paths`)).toEqual(fixtureNames);
+  });
+
+  it("holds exactly the fixture Now file", () => {
+    expect(readdirSync(`${siteRoot}/src/content/now`)).toEqual(["now.md"]);
+    expect(readFileSync(`${siteRoot}/src/content/now/now.md`, "utf-8")).toBe(readFileSync(`${root}tests/fixtures/now/now.md`, "utf-8"));
   });
 });
