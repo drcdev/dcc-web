@@ -2,6 +2,7 @@
 // FR-027): the section name, feed wording, page and list sizes and the views note.
 import { describe, expect, it } from "vitest";
 import { blog } from "../../../src/config/blog.ts";
+import { pages } from "../../helpers/content.ts";
 
 describe("blog settings", () => {
   it("names the section Drift & Convergence", () => {
@@ -37,5 +38,33 @@ describe("blog settings", () => {
 
   it("has a non-empty views note", () => {
     expect(blog.viewsNote.trim()).not.toBe("");
+  });
+});
+
+describe("author settings (A4, A6; FR-002, FR-003, FR-004a)", () => {
+  it("has a name and alt text", () => {
+    expect(blog.author.name.trim()).not.toBe("");
+    expect(blog.author.photoAlt.trim()).not.toBe("");
+  });
+
+  it("has exactly two one-sentence lines of at most 100 characters", () => {
+    expect(blog.author.lines).toHaveLength(2);
+    for (const line of blog.author.lines) {
+      expect(line.trim()).not.toBe("");
+      expect(line).not.toContain("\n");
+      expect(line.length).toBeLessThanOrEqual(100);
+      expect(line.match(/[.!?](\s|$)/g)).toHaveLength(1);
+    }
+  });
+
+  it("does not use the stale role wording", () => {
+    for (const line of blog.author.lines) expect(line).not.toMatch(/cloud architect/i);
+  });
+
+  it("leaves the job title to the About page", () => {
+    const about = pages.find((page) => page.slug === "about");
+    const title = /\*\*Current role:\*\* (.+?) @ /.exec(about?.body ?? "")?.[1];
+    expect(title).toBeTruthy();
+    for (const line of blog.author.lines) expect(line).not.toContain(title);
   });
 });

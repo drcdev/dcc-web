@@ -8,7 +8,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { cspViolations, recordCspViolations } from "./csp-violations.ts";
 import { blog } from "../../src/config/blog.ts";
-import { topics, topicHref, seriesIds, otherSeries, findTopic } from "../../src/config/topics.ts";
+import { topics, topicHref, seriesIds, otherSeries, findTopic, seriesOf } from "../../src/config/topics.ts";
 import { selectLanding, selectRecent, selectRelated, sortNewestFirst } from "../../src/lib/content/post-order.ts";
 import { inBuild, posts, postSummary, seriesPost } from "../helpers/content.ts";
 
@@ -21,12 +21,10 @@ const PLAIN_POST = (() => {
   if (!plain) throw new Error("tests/e2e/blog.spec.ts: no post lacks an update date.");
   return plain.href;
 })();
-/** The series id a post is tagged with, if any. */
-const seriesOf = (post: { topics: readonly string[] }) => post.topics.find((id) => (seriesIds as readonly string[]).includes(id));
 const SAMPLE = BUILT_POSTS.find((post) => post.href === POST)!;
-const TAGGED_HREFS = BUILT_POSTS.filter((post) => seriesOf(post)).map((post) => post.href);
+const TAGGED_HREFS = BUILT_POSTS.filter((post) => seriesOf(post.topics)).map((post) => post.href);
 const SERIES_POST = postSummary(seriesPost);
-const SERIES_POST_NAME = findTopic(seriesOf(SERIES_POST)!)!.name;
+const SERIES_POST_NAME = findTopic(seriesOf(SERIES_POST.topics)!)!.name;
 const CAPTIONED_CODE = "const { title, summary } = entry.data;\nconsole.log(`${title}: ${summary}`);";
 
 const noSidewaysScroll = async (page: Page) => {
@@ -493,16 +491,68 @@ test.describe("share", () => {
     );
   });
 
-  for (const width of [375, 768, 1024, 1440]) {
-    test(`views note and share area match the title card's edges at ${width} px`, async ({ page }) => {
+  for (const width of [320, 375, 768, 1024, 1440]) {
+    test(`views note, author card and share area match the title card's edges at ${width} px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(POST);
       const card = (await page.locator("[data-title-card]").boundingBox())!;
-      for (const selector of ["[data-views-note]", "[data-share]"]) {
+      for (const selector of ["[data-views-note]", "[data-author-card]", "[data-share]"]) {
         const box = (await page.locator(selector).boundingBox())!;
         expect(Math.abs(box.x - card.x), `${selector} left`).toBeLessThanOrEqual(1);
         expect(Math.abs(box.x + box.width - (card.x + card.width)), `${selector} right`).toBeLessThanOrEqual(1);
       }
+    });
+  }
+
+  test("A8: the writing link on a series post lands on that series page", async ({ page }) => {
+    await page.goto(SERIES_POST.href);
+    const link = page.locator("[data-author-card] ul a").first();
+    await expect(link).toHaveText(`More in ${SERIES_POST_NAME}`);
+    await link.click();
+    await expect(page).toHaveURL(new RegExp(`${topicHref(seriesOf(SERIES_POST.topics)!)}$`));
+    await expect(page.locator("main h1")).toHaveText(SERIES_POST_NAME);
+  });
+
+  test("A3: the author card matches the title card's edges at 1440 px with and without the questions panel", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const kinds = new Set<boolean>();
+    for (const href of [POST, SERIES_POST.href, PLAIN_POST]) {
+      await page.goto(href);
+      kinds.add((await page.locator("[data-questions]").count()) > 0);
+      const title = (await page.locator("[data-title-card]").boundingBox())!;
+      const box = (await page.locator("[data-author-card]").boundingBox())!;
+      expect(Math.abs(box.x - title.x), `${href} left`).toBeLessThanOrEqual(1);
+      expect(Math.abs(box.x + box.width - (title.x + title.width)), `${href} right`).toBeLessThanOrEqual(1);
+    }
+    // When the build offers only one kind, PostLayout.test.ts carries the other placement (T007).
+    expect(kinds.size).toBeGreaterThan(0);
+  });
+
+  for (const width of [320, 375, 767]) {
+    test(`A10: stacks the photo above centred text at ${width} px, with no sideways scroll`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(POST);
+      const card = page.locator("[data-author-card]");
+      const img = (await card.locator("img").boundingBox())!;
+      const h2 = (await card.locator("h2").boundingBox())!;
+      expect(img.y + img.height).toBeLessThanOrEqual(h2.y + 1);
+      await expect(card).toHaveCSS("text-align", "center");
+      await expect(card.locator("h2")).toHaveCSS("text-align", "center");
+      await noSidewaysScroll(page);
+    });
+  }
+
+  for (const width of [768, 1440]) {
+    test(`A11: puts the photo left of left-aligned text at ${width} px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(POST);
+      const card = page.locator("[data-author-card]");
+      const img = (await card.locator("img").boundingBox())!;
+      const h2 = (await card.locator("h2").boundingBox())!;
+      expect(img.x + img.width).toBeLessThanOrEqual(h2.x + 1);
+      await expect(card).toHaveCSS("text-align", "left");
     });
   }
 
@@ -576,12 +626,14 @@ test.describe("related posts", () => {
     expect(hrefs).not.toContain(POST);
   });
 
-  test("puts the share area and then the related posts after the views note", async ({ page }) => {
+  test("puts the author card, the share area and then the related posts after the views note", async ({ page }) => {
     await page.goto(POST);
     const views = await page.locator("[data-views-note]").boundingBox();
+    const author = await page.locator("[data-author-card]").boundingBox();
     const share = await page.locator("[data-share]").boundingBox();
     const related = await page.locator("[data-related]").boundingBox();
-    expect(share!.y).toBeGreaterThan(views!.y);
+    expect(author!.y).toBeGreaterThan(views!.y);
+    expect(share!.y).toBeGreaterThan(author!.y);
     expect(related!.y).toBeGreaterThan(share!.y);
   });
 });
@@ -729,7 +781,7 @@ test.describe("series markers", () => {
   const seriesNames = seriesIds.map((id) => findTopic(id)!.name);
   // A topic page shows markers only when one of its posts is in a series.
   const markerTopic = topics.find(
-    (topic) => !("series" in topic) && BUILT_POSTS.some((post) => seriesOf(post) && post.topics.includes(topic.id)),
+    (topic) => !("series" in topic) && BUILT_POSTS.some((post) => seriesOf(post.topics) && post.topics.includes(topic.id)),
   );
   if (!markerTopic) throw new Error("tests/e2e/blog.spec.ts: no non-series topic is shared with a series post.");
   const listings = [
@@ -753,7 +805,7 @@ test.describe("series markers", () => {
   }
 
   test("the marker comes first in a card's topic list", async ({ page }) => {
-    await page.goto(topicHref(seriesOf(SERIES_POST)!));
+    await page.goto(topicHref(seriesOf(SERIES_POST.topics)!));
     const card = page.locator("[data-post-card]").filter({ has: page.locator(`a[href="${SERIES_POST.href}"]`) });
     await expect(card.locator('ul[aria-label="Topics"] a').first()).toHaveText(`Series: ${SERIES_POST_NAME}`);
   });
@@ -763,7 +815,7 @@ test.describe("series markers", () => {
     const link = page.locator("[data-series-marker]", { hasText: `Series: ${SERIES_POST_NAME}` }).first();
     await expect(link).toBeVisible();
     await link.click();
-    await expect(page).toHaveURL(new RegExp(`${topicHref(seriesOf(SERIES_POST)!)}$`));
+    await expect(page).toHaveURL(new RegExp(`${topicHref(seriesOf(SERIES_POST.topics)!)}$`));
   });
 
   test("an untagged post header has no marker", async ({ page }) => {

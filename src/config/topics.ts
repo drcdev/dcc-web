@@ -100,3 +100,8 @@ export function otherSeries(id: string): TopicId {
 export function findTopic(id: string): (typeof topics)[number] | undefined {
   return topics.find((topic) => topic.id === id);
 }
+
+/** The series id among a post's topics, or undefined when the post is in no series. */
+export function seriesOf(postTopics: readonly string[]): TopicId | undefined {
+  return seriesIds.find((id) => postTopics.includes(id));
+}
