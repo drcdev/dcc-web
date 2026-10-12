@@ -38,7 +38,7 @@ Derived at build (not authored):
 | `to` | text | The "To" wording. |
 | `anchor` | slug | The id of the shift's heading in the post. Checked at build against the rendered headings of every post that renders `<SelfAssessment assessment="<id>">` (contract row A6). |
 | `practicalApplication` | text | The Practical Application paragraph, moved unchanged from the post. Plain text (no Markdown). |
-| `week` | text | The week activities for this shift, moved unchanged from the 6-Week Development Plan. |
+| `week` | text | The week activities for this shift, moved unchanged from the post's former 6-Week Development Plan; shown only in the printed plan. |
 | `statements` | 3 × text | Exactly three; each worded so agreeing places the reader nearer `to` (FR-002). |
 
 ### IntegrationWeek
@@ -50,11 +50,11 @@ Derived at build (not authored):
 
 ### Relationships
 
-- A **post** uses an assessment by naming its id in one or more of the three components
-  (`PracticalApplication`, `DevelopmentPlan`, `SelfAssessment`). An unknown id or shift id fails
+- A **post** uses an assessment by naming its id in one or more of the two components
+  (`PracticalApplication`, `SelfAssessment`). An unknown id or shift id fails
   the build naming the post file (contract rows A4, A5).
-- The **six-week plan in the post** (DevelopmentPlan) uses the data file order; the **printed
-  plan** reorders weeks 1–5 by the reader's scores.
+- The week texts appear only in the **printed plan**, which reorders weeks 1–5 by the reader's
+  scores. The post has no six-week plan section (removed 2026-10-11, spec Clarifications).
 
 ## 2. Reader state (browser only)
 

@@ -182,13 +182,13 @@ very long title, are test fixtures in `tests/fixtures/posts/`, not posts on the 
 A post can show text that lives in an assessment data file, so the text is written once. The data
 file is `src/content/assessments/<id>.yaml` (the file name is the id). It holds the shifts (name,
 From, To, the heading anchor, the Practical Application paragraph, the week text and three
-statements each), the integration week, the five answer labels, the title and the intro. Three
+statements each), the integration week, the five answer labels, the title and the intro. The week
+texts and the integration week appear only in the reader's printed plan, not in the post. Two
 components, available in a post with no import:
 
 | Component | Renders |
 | --- | --- |
 | `<PracticalApplication assessment="id" shift="shift-id" />` | One shift's Practical Application paragraph, in place of the prose paragraph. |
-| `<DevelopmentPlan assessment="id" />` | The six week paragraphs of the 6-Week Development Plan, in data order. The heading and the intro paragraph stay in the post. |
 | `<SelfAssessment assessment="id" />` | The self-assessment block. Write its `##` heading in the post just above the tag. |
 
 Keep each shift's **From** and **To** lines in the post; they must match the data file. The moved
@@ -204,9 +204,9 @@ components stand.
 | A5 | `<PracticalApplication>` names a shift the assessment does not have | The message lists the shift ids; fix `shift`. |
 | A6 | A shift's `anchor` is not the id of a heading in the post (added with the block) | Fix the anchor or the heading. |
 | A7 | The post renders the same assessment block twice (added with the block) | Keep one. |
-| A8 | A tag that is neither a section nor one of the three assessment components | Use one the message lists. |
+| A8 | A tag that is neither a section nor one of the two assessment components | Use one the message lists. |
 | A9 | A **From** or **To** line in the post differs from the data file | Make them the same. |
-| A10 | A moved Practical Application or week text is still in the post prose | Remove it and use the component. |
+| A10 | A moved Practical Application paragraph is still in the post prose | Remove it and use the component. |
 
 ## Build errors you may see
 

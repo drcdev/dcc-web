@@ -1,7 +1,6 @@
 // Component-layer tests for the A4 lookup used by every assessment component (a unit of
 // build-time wiring: no browser, no build). Both components share it, so it is covered once here.
 import { describe, expect, it } from "vitest";
-import DevelopmentPlan from "../../../src/components/assessment/DevelopmentPlan.astro";
 import PracticalApplication from "../../../src/components/assessment/PracticalApplication.astro";
 import { findAssessment, findShift } from "../../../src/lib/assessment/lookup.ts";
 import { sampleAssessment } from "../../helpers/assessment.ts";
@@ -25,9 +24,6 @@ describe("assessment lookup (A4, A5)", () => {
 
   it("A4: a component given an unknown assessment through its props fails with that message", async () => {
     // With no `data` prop the component reads the collection; an unknown id there raises A4.
-    await expect(render(DevelopmentPlan, { assessment: "nope" }, undefined, { pageFile: FILE })).rejects.toThrow(
-      'assessment="nope"',
-    );
     await expect(
       render(PracticalApplication, { assessment: "nope", shift: "alpha" }, undefined, { pageFile: FILE }),
     ).rejects.toThrow('assessment="nope"');

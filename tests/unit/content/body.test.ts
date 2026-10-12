@@ -143,7 +143,7 @@ describe("validatePageBody for a post file (P12, P18 to P20)", () => {
 
 describe("validatePageBody for a post (A8)", () => {
   const POST = "src/content/posts/example.mdx";
-  const postComponentNames = ["PracticalApplication", "DevelopmentPlan", "SelfAssessment"];
+  const postComponentNames = ["PracticalApplication", "SelfAssessment"];
 
   it.each(postComponentNames)("accepts <%s> in a post", (name) => {
     expect(() => validatePageBody(POST, `Text.\n\n<${name} assessment="a" />`, "post")).not.toThrow();

@@ -26,8 +26,8 @@
 ## Manual walk-through (dev server or preview)
 
 1. Open the Wayfinder post. Confirm each shift section still ends with its Practical
-   Application paragraph and the 6-Week Development Plan still lists six weeks, word for word
-   as before.
+   Application paragraph, word for word as before, and that the post ends with its "Printable
+   Resources" section.
 2. Scroll to the assessment. Press "Show my results" with nothing answered: an error summary
    appears and focus lands on the first statement.
 3. Answer all fifteen so two shifts are below the middle. Confirm the chart, the text summary

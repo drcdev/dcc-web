@@ -56,8 +56,8 @@ export function checkFromToLines({
 }
 
 /**
- * A10: a Practical Application or week text that moved to the data file must not stay in the post's
- * prose (FR-004), so the text lives in one place.
+ * A10: a Practical Application text that moved to the data file must not stay in the post's prose
+ * (FR-004), so the text lives in one place.
  */
 export function checkNoMovedText({ file, body, assessment }: { file: string; body: string; assessment: Assessment }): void {
   const stillThere = (text: string) => body.includes(text);
@@ -69,23 +69,17 @@ export function checkNoMovedText({ file, body, assessment }: { file: string; bod
         `the practicalApplication text of "${shift.name}" is still in the post. Replace it with <PracticalApplication shift="${shift.id}" />.`,
       );
     }
-    if (stillThere(shift.week)) {
-      throw contentError("post", file, `the week text of "${shift.name}" is still in the post. Use <DevelopmentPlan /> instead.`);
-    }
-  }
-  if (stillThere(assessment.integrationWeek.week)) {
-    throw contentError("post", file, "the week text of the integration week is still in the post. Use <DevelopmentPlan /> instead.");
   }
 }
 
 /**
- * The assessment ids a post body names: `used` for any of the three components, `withBlock` for
+ * The assessment ids a post body names: `used` for either component, `withBlock` for
  * those it renders a `SelfAssessment` block for (the A9 check applies to those only).
  */
 export function assessmentsNamedIn(body: string): { used: string[]; withBlock: string[] } {
   const ids = (pattern: RegExp) => [...new Set([...body.matchAll(pattern)].map((match) => match[1]!))];
   return {
-    used: ids(/<(?:PracticalApplication|DevelopmentPlan|SelfAssessment)\b[^>]*\bassessment="([^"]*)"/g),
+    used: ids(/<(?:PracticalApplication|SelfAssessment)\b[^>]*\bassessment="([^"]*)"/g),
     withBlock: ids(/<SelfAssessment\b[^>]*\bassessment="([^"]*)"/g),
   };
 }

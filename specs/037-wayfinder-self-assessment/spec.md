@@ -37,7 +37,8 @@ describes five shifts, each written as a **From** and a **To**:
 
 Each shift's section ends with a **Practical Application** paragraph. The post closes with a
 **6-Week Development Plan**: weeks 1 to 5 each practise one shift in the order above, and week 6
-is integration and reflection. The post says the downloadable Wayfinder includes
+is integration and reflection (this section was removed from the post on 2026-10-11; see
+Clarifications). The post says the downloadable Wayfinder includes
 "self-assessment frameworks for continued development", but the site offers no way to
 assess yourself today.
 
@@ -60,8 +61,9 @@ constitution amendment.
   form: five labelled groups of three five-point scales, then a "Show my results" button.
 - Q: Where should the practical-application reminders and six-week plan activities live? → A:
   A single source. A validated data file holds the shifts, statements, reminders and week
-  activities, and the post's "Practical Application" paragraphs and 6-Week Development Plan are
-  rendered from it through MDX components.
+  activities, and the post's "Practical Application" paragraphs are rendered from it through MDX
+  components. (The post's 6-Week Development Plan was later removed; see the PR #176 decision
+  below.)
 - Q: When a reader opens the post through a results link, what should they see before
   retaking? → A: The earlier result right away (chart, summary, low-band links, print plan),
   marked "Earlier result from <date>", with an empty form below for the retake.
@@ -84,12 +86,17 @@ constitution amendment.
 - Q: If a results link was made with an older version of the statements, is that earlier result
   still shown? → A: Yes, on its own (chart, summary, date), marked "made with an earlier set of
   questions"; after a retake the two are shown separately with no change per shift.
+- Decision 2026-10-11 (Don, review of PR #176): the article was too long. The post now ends
+  with its "Printable Resources" section; the "Practical First Steps" section, its "Immediate Actions (This Week)"
+  and "6-Week Development Plan" subsections and the `DevelopmentPlan` component are removed. The
+  week activities and the integration week stay in the data file and appear only in the reader's
+  printed plan (User Story 3, FR-010). The post's reading time drops accordingly.
 
 ## Scope of this slice
 
 In scope: the individual self-assessment inside the Wayfinder post (User Stories 1 to 4),
-moving the post's "Practical Application" paragraphs and 6-Week Development Plan into the
-assessment's data file so both are rendered from one source, keeping the critical-thinking
+moving the post's "Practical Application" paragraphs and the six-week plan activities into the
+assessment's data file so they live in one source, keeping the critical-thinking
 questions' source for the post complete after that move (FR-021), and one paragraph in the
 privacy policy about the assessment (FR-016a).
 
@@ -164,7 +171,7 @@ highest, and keeps week 6 as integration and reflection. The printout also recor
 the reader's five positions.
 
 **Why this priority**: It gives the reader something to keep and act on, which the post already
-promises in its 6-Week Development Plan.
+promises in its self-assessment frameworks for continued development.
 
 **Independent Test**: Complete the assessment, choose print, and confirm the print preview shows
 only the plan, with weeks ordered by the reader's scores and the date and positions listed.
@@ -172,7 +179,7 @@ only the plan, with weeks ordered by the reader's scores and the date and positi
 **Acceptance Scenarios**:
 
 1. **Given** the reader has results, **When** they choose to print their plan, **Then** the
-   printed page shows six weeks, weeks 1 to 5 each naming one shift with the post's activities
+   printed page shows six weeks, weeks 1 to 5 each naming one shift with the data file's activities
    for it, ordered from lowest score to highest, and week 6 as integration and reflection.
 2. **Given** two shifts have the same score, **When** the plan is built, **Then** they keep the
    post's own order between them.
@@ -218,7 +225,7 @@ the change per shift.
 ### Edge Cases
 
 - JavaScript is off or fails to load: the post still reads in full (including the Practical
-  Application paragraphs and the 6-Week Development Plan, which are rendered at build time), and in place of the
+  Application paragraphs, which are rendered at build time), and in place of the
   assessment the reader sees a short note that the self-assessment needs JavaScript, with the
   statements still readable as a list so the reader can reflect on them unaided.
 - The reader answers every statement with the middle value: every shift sits in the middle, no
@@ -270,10 +277,12 @@ the change per shift.
   five shifts or three statements per shift, a repeated shift id or anchor, scale ends other
   than "Rarely" and "Almost always") MUST fail the build with a clear error naming the file and
   the field. This file is the single source: the post's five "Practical Application" paragraphs
-  and its 6-Week Development Plan MUST be rendered from it through MDX components at build time,
-  and that text MUST NOT also be written out in the post's prose; the build MUST fail, naming
-  the post file, if any of the data file's practical application or week texts also appears
-  verbatim in the post's prose. The shift names (in the post's mindset-shift headings) and the
+  MUST be rendered from it through MDX components at build time, and that text MUST NOT also be
+  written out in the post's prose; the build MUST fail, naming the post file, if any of the data
+  file's practical application texts also appears verbatim in the post's prose. The week texts
+  and the integration week appear only in the printed plan (FR-010); the post has no six-week
+  plan section (Clarifications, PR #176 decision). The shift names (in the post's mindset-shift
+  headings) and the
   "From" and "To" lines stay in the post's prose, where they belong to the argument; the build
   MUST fail, naming the post file and the shift, if a shift's "From" or "To" wording in the
   data file does not match the post's "From" or "To" line for that shift, so the two cannot
@@ -323,12 +332,12 @@ the change per shift.
 
 - **FR-010**: From the results the reader MUST be able to print a six-week plan: weeks 1 to 5
   are the five shifts ordered from lowest score to highest (ties keep the post's order), each
-  with the post's activities for that shift; week 6 is the post's integration and reflection
-  week. The printout includes the date and the five positions. The printed plan reads in this
+  with the data file's activities for that shift; week 6 is the data file's integration and
+  reflection week. The printout includes the date and the five positions. The printed plan reads in this
   order: the assessment title, the date, the five positions (the same lines as the text
   summary, in the data file's shift order), the results link, then weeks 1 to 6 in plan order,
-  each with its week number, shift name and activities. The week texts and positions come from
-  the same data file fields as the post (FR-004).
+  each with its week number, shift name and activities. The week texts come from the data file
+  (FR-004); the post itself does not show them.
 - **FR-011**: Once results are on screen, printing by the "Print my plan" button or by the
   browser's own Print menu MUST give the plan only. The printed plan MUST leave out the site header, footer, share area and the rest
   of the post, and fit on A4 and US Letter paper. Without results, the printed post shows the
@@ -459,14 +468,14 @@ the change per shift.
 
 - **FR-021**: Moving text into the data file MUST NOT shrink what the existing critical-thinking
   questions feature reads for this post. The post's question source MUST be built from the post
-  with each `PracticalApplication` and `DevelopmentPlan` component expanded back into the text
-  it renders ("Practical Application: …" and the six "Week N: <name>" paragraphs), in place, so
-  it holds the same post text as before the move, and questions about the practical
-  applications and the plan activities stay possible as they are today. The assessment block
+  with each `PracticalApplication` component expanded back into the text it renders
+  ("Practical Application: …"), in place, so it holds the same post text the reader sees, and
+  questions about the practical applications stay possible as they are today. The 6-Week
+  Development Plan was removed from the post (Clarifications, PR #176 decision), so its week
+  texts are no longer part of the question source. The assessment block
   (its title, introduction and statements) is not part of the post's argument and is left out,
   as other component tags are today. Acceptance: the question source for every post that uses
-  these components contains each of the data file's practical application and week texts, and
-  no component tag. The source is still only the site's own committed content (the data file is
+  these components contains each practical application text it renders, and no component tag. The source is still only the site's own committed content (the data file is
   site content under Principle VI), so the questions API rule that it reads only the site's own
   posts holds. The question source's version hash covers the expanded text, so an edit to the
   data file also counts as a changed post.
@@ -484,9 +493,9 @@ the change per shift.
 - **Mindset shift**: one of the five shifts, held in the single assessment data file. Has a
   name, a "From" and a "To" wording, the anchor of its section in the post, its practical
   application text (rendered in the post and reused as the results reminder) and its six-week
-  plan activities. Order matches the post.
+  plan activities (shown only in the printed plan). Order matches the post.
 - **Integration week**: the week 6 integration and reflection activities, held in the same data
-  file and rendered in the post's 6-Week Development Plan.
+  file and shown only in the printed plan.
 - **Statement**: one of three per shift. Has the text the reader rates and the shift it belongs
   to.
 - **Statement set version**: identifies the current wording of all fifteen statements, so
@@ -536,8 +545,10 @@ the change per shift.
 - A five-point frequency scale and a low band below 3 are reasonable defaults for a
   self-reflection tool; this is not a validated psychometric instrument, and the introduction
   says so in plain language.
-- The six-week plan reuses the post's existing week activities and practical-application text,
-  moved unchanged into the data file; no new activity copy is written.
+- The six-week plan reuses the post's former week activities and practical-application text,
+  moved unchanged into the data file; no new activity copy is written. The post's own 6-Week
+  Development Plan section was removed on 2026-10-11, so the week activities now appear only in
+  the printed plan.
 - Only the Wayfinder post gets the assessment. Reuse on other posts in the series is follow-up
   work.
 - The chart is drawn by the site itself; no third-party script is added (constitution Principle

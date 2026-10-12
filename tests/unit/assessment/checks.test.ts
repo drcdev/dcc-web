@@ -69,20 +69,15 @@ describe("A10 checkNoMovedText", () => {
     expect(run).toThrow("practicalApplication");
     expect(run).toThrow(shift.name);
   });
-
-  it("rejects a week text still in the prose, and the integration week", () => {
-    expect(() => checkNoMovedText({ file: FILE, body: assessment.shifts[0]!.week, assessment })).toThrow("week");
-    expect(() => checkNoMovedText({ file: FILE, body: assessment.integrationWeek.week, assessment })).toThrow("integration");
-  });
 });
 
 describe("assessmentsNamedIn", () => {
   it("lists the assessment ids used by any component, and those with a block", () => {
     const body =
-      'Text.\n\n<PracticalApplication assessment="one" shift="a" />\n\n<DevelopmentPlan assessment="one" />\n\n<SelfAssessment assessment="two" />\n\n<PracticalApplication assessment="three" shift="a" />';
+      'Text.\n\n<PracticalApplication assessment="one" shift="a" />\n\n<SelfAssessment assessment="one" />\n\n<SelfAssessment assessment="two" />\n\n<PracticalApplication assessment="three" shift="a" />';
     const named = assessmentsNamedIn(body);
     expect([...named.used].sort()).toEqual(["one", "three", "two"]);
-    expect(named.withBlock).toEqual(["two"]);
+    expect([...named.withBlock].sort()).toEqual(["one", "two"]);
   });
 
   it("finds nothing in a plain post", () => {

@@ -32,7 +32,8 @@ record the design choices that the spec left to the plan.
 
 - **Decision**: Three Astro components in `src/components/assessment/`:
   `PracticalApplication` (`assessment`, `shift` props), `DevelopmentPlan` (`assessment`) and
-  `SelfAssessment` (`assessment`). Each reads its entry with `getEntry("assessments", id)`; an
+  `SelfAssessment` (`assessment`). (`DevelopmentPlan` and the post's 6-Week Development Plan were
+  removed on 2026-10-11; see spec Clarifications.) Each reads its entry with `getEntry("assessments", id)`; an
   optional `data` prop replaces the lookup for component tests (the `RecentWriting` pattern).
   They are passed to the post body through the post route's existing
   `<Content components={...} />`, so the MDX file needs no import.
@@ -222,6 +223,8 @@ record the design choices that the spec left to the plan.
   and `question-source.json.ts` pass the expanded body to `prepareQuestionSource()` unchanged, so
   the source text matches the pre-move text apart from the new assessment heading line, and the
   hash covers the YAML text too. `prepareQuestionSource()` and the Worker are untouched.
+  (Since 2026-10-11 the post has no 6-Week Development Plan and no `DevelopmentPlan` tag, so only
+  the Practical Application paragraphs are expanded.)
 - **Rationale**: Cheap (one pure function, two call sites), and it avoids a silent regression in
   an existing feature. The data file is committed site content, so the source is still only the
   site's own post (Principle V's questions API rule, Principle VI).

@@ -72,14 +72,11 @@ describe("question-source.json", () => {
 describe("question-source.json for a post that uses the assessment components (FR-021)", () => {
   const assessment = sampleAssessment();
 
-  it("holds each practical application and week text from the data file, and no component tag", () => {
+  it("holds each practical application from the data file, and no component tag", () => {
     for (const build of Object.values(builds)) {
       const { text } = source(build, "with-assessment-text");
-      expect(text).not.toMatch(/<(PracticalApplication|DevelopmentPlan|SelfAssessment)|assessment="/);
+      expect(text).not.toMatch(/<(PracticalApplication|SelfAssessment)|assessment="/);
       for (const shift of assessment.shifts.slice(0, 2)) expect(text).toContain(shift.practicalApplication);
-      for (const shift of assessment.shifts) expect(text).toContain(`Week ${assessment.shifts.indexOf(shift) + 1}: ${shift.name}`);
-      for (const shift of assessment.shifts) expect(text).toContain(shift.week);
-      expect(text).toContain(assessment.integrationWeek.week);
     }
   });
 
@@ -93,7 +90,6 @@ describe("question-source.json for a post that uses the assessment components (F
   it("renders the moved text into the page", () => {
     const html = builds.production.read("writing/with-assessment-text/index.html");
     expect(html).toContain("<strong>Practical Application</strong>");
-    expect(html).toContain(`Week 6: ${assessment.integrationWeek.name}`);
   });
 });
 
