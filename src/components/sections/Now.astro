@@ -19,7 +19,7 @@ const { updated, topics, OpenTo } = Astro.props.now ?? (await getNow());
   <p data-now-updated class="mb-4 mt-0 text-sm text-dusk-600 dark:text-dusk-300">
     Updated <time datetime={updated}>{formatDate(new Date(`${updated}T00:00:00Z`))}</time>
   </p>
-  <dl class="m-0 grid gap-4">
+  <dl class="m-0 grid items-start gap-x-6 gap-y-4 md:grid-cols-2">
     {
       nowTopics.map(({ key, label }) => (
         <div class="min-w-0">

@@ -56,6 +56,27 @@ test.describe("Now", () => {
     await expect(now.locator("dt")).toHaveText(["Working on", "Reading", "MBA research", "AI experiments"]);
   });
 
+  test("topics are one column below 768 px and a 2x2 grid from it, filled row by row", async ({ page }) => {
+    const boxes = async () =>
+      page.locator("[data-now] dl > div").evaluateAll((els) =>
+        els.map((e) => {
+          const r = e.getBoundingClientRect();
+          return { left: Math.round(r.left), top: Math.round(r.top) };
+        }),
+      );
+    await page.setViewportSize({ width: 600, height: 800 });
+    await page.goto("/");
+    expect(new Set((await boxes()).map((b) => b.left)).size).toBe(1);
+    await page.setViewportSize({ width: 1024, height: 800 });
+    const [a, b, c, d] = await boxes();
+    expect(a.top).toBe(b.top);
+    expect(c.top).toBe(d.top);
+    expect(c.top).toBeGreaterThan(a.top);
+    expect(a.left).toBe(c.left);
+    expect(b.left).toBe(d.left);
+    expect(b.left).toBeGreaterThan(a.left);
+  });
+
   test("the contact link is an inline text link that goes to /contact/", async ({ page }) => {
     await page.goto("/");
     const link = page.locator("[data-now-open-to] a[href='/contact/']");

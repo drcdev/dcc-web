@@ -62,7 +62,7 @@ Recent writing (US3-AS1).
 - On a phone the grid is one column, reading top to bottom, with no horizontal scroll at 320 px.
   From the `md` breakpoint (768 px) it is two columns, filled row by row in position order; paths
   are top-aligned and take their own height (spec FR-015b). No CSS `order` or reversed flow.
-- The Now `<dl>` is one column at every width: each `<dt>` above its `<dd>`.
+- The Now `<dl>` is one column below `md` and a 2x2 grid from it, filled row by row in topic order; each `<dt>` above its `<dd>` (spec FR-015b).
 - Long titles and topic text wrap (`overflow-wrap: anywhere` or equivalent); nothing is clipped.
 - Links use the same link and focus classes as `RecentWriting.astro`; reading-path links are block
   or padded enough to meet the 24 px target size (WCAG 2.5.8).
