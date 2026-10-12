@@ -1,0 +1,77 @@
+# A1: the scale has three labels, not five.
+{
+  "title": "Sample assessment",
+  "intro": "Three statements for each shift.",
+  "scale": [
+    "Rarely",
+    "Sometimes",
+    "Almost always"
+  ],
+  "shifts": [
+    {
+      "id": "alpha",
+      "name": "Alpha",
+      "from": "Alpha from wording",
+      "to": "Alpha to wording",
+      "anchor": "shift-1-alpha",
+      "practicalApplication": "Practise Alpha by doing the first thing. Ask: \"What next?\"",
+      "statements": [
+        "Alpha statement 1.",
+        "Alpha statement 2.",
+        "Alpha statement 3."
+      ]
+    },
+    {
+      "id": "bravo",
+      "name": "Bravo",
+      "from": "Bravo from wording",
+      "to": "Bravo to wording",
+      "anchor": "shift-2-bravo",
+      "practicalApplication": "Practise Bravo by doing the first thing. Ask: \"What next?\"",
+      "statements": [
+        "Bravo statement 1.",
+        "Bravo statement 2.",
+        "Bravo statement 3."
+      ]
+    },
+    {
+      "id": "charlie",
+      "name": "Charlie",
+      "from": "Charlie from wording",
+      "to": "Charlie to wording",
+      "anchor": "shift-3-charlie",
+      "practicalApplication": "Practise Charlie by doing the first thing. Ask: \"What next?\"",
+      "statements": [
+        "Charlie statement 1.",
+        "Charlie statement 2.",
+        "Charlie statement 3."
+      ]
+    },
+    {
+      "id": "delta",
+      "name": "Delta",
+      "from": "Delta from wording",
+      "to": "Delta to wording",
+      "anchor": "shift-4-delta",
+      "practicalApplication": "Practise Delta by doing the first thing. Ask: \"What next?\"",
+      "statements": [
+        "Delta statement 1.",
+        "Delta statement 2.",
+        "Delta statement 3."
+      ]
+    },
+    {
+      "id": "echo",
+      "name": "Echo",
+      "from": "Echo from wording",
+      "to": "Echo to wording",
+      "anchor": "shift-5-echo",
+      "practicalApplication": "Practise Echo by doing the first thing. Ask: \"What next?\"",
+      "statements": [
+        "Echo statement 1.",
+        "Echo statement 2.",
+        "Echo statement 3."
+      ]
+    }
+  ]
+}

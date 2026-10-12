@@ -78,3 +78,56 @@ describe("post route and Astro wiring (build)", () => {
   it("P20: getCheckedPosts runs validatePageBody with the post wording", () =>
     expectRejected("build", [broken("p20-empty-body.mdx")], "Post file", "p20-empty-body", "no content"));
 });
+
+// Rows A1, A4, A5, A9 and A10 of specs/037-wayfinder-self-assessment/contracts/assessment-data.md. The logic
+// of each row is a unit or component test; these runs prove the real build runs it and the message
+// reaches the output naming the file. The fixture assessment is `sample`.
+describe("assessment data and components (sync and build)", () => {
+  const sample = "valid/sample.yaml";
+
+  it("A1: the collection schema is wired and Astro names the data file and the field", async () => {
+    result = await buildFixtureSite([], {
+      mode: "sync",
+      assessments: [sample, { from: "broken/a01-short-scale.yaml", to: "bad-scale.yaml" }],
+    });
+    expect(result.ok, "the sync should fail").toBe(false);
+    expect(result.message).toContain("bad-scale");
+    expect(result.message).toContain("scale");
+  });
+
+  const withSample = async (post: string, ...contains: string[]) => {
+    result = await buildFixtureSite([], { mode: "build", assessments: [sample], posts: [broken(post)] });
+    expect(result.ok, "the build should fail").toBe(false);
+    for (const text of contains) expect(result.message).toContain(text);
+  };
+
+  it("A4: a component naming an assessment with no data file fails, naming the post and the known ids", () =>
+    withSample("a04-assessment-missing.mdx", "Post file", "a04-assessment-missing", 'assessment="nope"', "sample"));
+
+  it("A5: a component naming a shift the assessment lacks fails, naming the post and the known shifts", () =>
+    withSample("a05-shift-missing.mdx", "Post file", "a05-shift-missing", 'shift="nope"', "alpha"));
+
+  it("A9: a From line that differs from the data file fails, naming the post, shift and both texts", () =>
+    withSample("a09-from-line-differs.mdx", "Post file", "a09-from-line-differs", "Bravo", "Something else entirely", "Bravo from wording"));
+
+  it("A10: a moved text left in the prose fails, naming the post and the field", () =>
+    withSample("a10-moved-text-left.mdx", "Post file", "a10-moved-text-left", "practicalApplication", "Alpha"));
+});
+
+// Rows A6 and A7 (US2): the shift anchors must be rendered heading ids, and one block per assessment.
+describe("assessment block checks (build)", () => {
+  const run = async (post: string, ...contains: string[]) => {
+    result = await buildFixtureSite([], { mode: "build", assessments: ["valid/sample.yaml"], posts: [broken(post)] });
+    expect(result.ok, "the build should fail").toBe(false);
+    for (const text of contains) expect(result.message).toContain(text);
+  };
+
+  it("A6: a shift anchor that matches no heading fails, naming the post, the shift and the anchor", () =>
+    run("a06-anchor-missing.mdx", "Post file", "a06-anchor-missing", "Charlie", "shift-3-charlie"));
+
+  it("A11: a block with no heading above it fails, naming the post and the needed heading", () =>
+    run("a11-block-without-heading.mdx", "Post file", "a11-block-without-heading", "## Sample assessment"));
+
+  it("A7: two blocks for the same assessment fail, naming the post", () =>
+    run("a07-block-twice.mdx", "Post file", "a07-block-twice", "sample", "once"));
+});

@@ -1,0 +1,21 @@
+---
+// <PracticalApplication assessment="..." shift="...">: one shift's Practical Application paragraph,
+// rendered from the assessment data file in the markup the Markdown produced before it moved
+// (specs/037 contracts/assessment-data.md; FR-004). The optional `data` prop replaces the
+// collection lookup and exists for component tests only.
+import type { Assessment } from "../../content/schemas/assessment.ts";
+import { findShift, resolveAssessment } from "../../lib/assessment/lookup.ts";
+import { typographic } from "../../lib/assessment/typography.ts";
+
+export interface Props {
+  assessment: string;
+  shift: string;
+  data?: Assessment;
+}
+
+const { assessment: id, shift: shiftId, data } = Astro.props;
+const file = Astro.locals.pageFile ?? "this post";
+const shift = findShift(file, await resolveAssessment(file, id, data), shiftId);
+---
+
+<p><strong>Practical Application</strong>: {typographic(shift.practicalApplication)}</p>

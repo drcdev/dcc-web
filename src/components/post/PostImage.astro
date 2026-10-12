@@ -1,0 +1,36 @@
+---
+// What a Markdown image in a post body renders as. The post route passes this component to MDX as
+// `img`, which Astro's MDX integration supports for `![alt](src)` images: a local image arrives as
+// its ImageMetadata (docs.astro.build/en/guides/integrations-guide/mdx/#passing-components-to-mdx-content).
+// It adds `widths` and `sizes`, so a phone downloads a file near its own width instead of the
+// original (docs.astro.build/en/reference/modules/astro-assets/#widths). No `layout` is set, so no
+// responsive data attributes or styles are added; the sections' own classes size the image.
+// The text column is the page width less its 1rem gutters on a phone; from 1280 px `sizes` covers
+// the widest section (FullImage), so a narrower one only downloads a little more. Quality 75 keeps
+// the phone file of a tall infographic small enough for the post's page budget.
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+export interface Props {
+  src: ImageMetadata | string;
+  alt: string;
+  title?: string;
+}
+
+const { src, alt, title } = Astro.props;
+---
+
+{
+  typeof src === "string" ? (
+    <img src={src} alt={alt} title={title} loading="lazy" decoding="async" />
+  ) : (
+    <Image
+      src={src}
+      alt={alt}
+      title={title}
+      widths={[360, 720, 1080, 1536]}
+      sizes="(min-width: 1280px) 1280px, calc(100vw - 2rem)"
+      quality={75}
+    />
+  )
+}

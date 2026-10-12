@@ -70,7 +70,10 @@ export const readingTimePlugin = defineMdastPlugin({
   },
   after(_root: Readonly<MdastNode>, context) {
     if (context.data.astro !== undefined) {
-      context.data.astro.frontmatter.minutesRead = minutesForWords(counted.get(context.data) ?? 0);
+      const words = counted.get(context.data) ?? 0;
+      context.data.astro.frontmatter.minutesRead = minutesForWords(words);
+      // Kept so a post whose components render more text from a data file can add it (FR-021).
+      context.data.astro.frontmatter.wordsRead = words;
     }
   },
 });

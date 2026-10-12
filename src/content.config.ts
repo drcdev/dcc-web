@@ -16,6 +16,7 @@ import { assertImagesExist } from "./lib/content/images.ts";
 import { assertHomeVisible, assertLandingBody, bodyAfterFrontMatter } from "./lib/content/page-flags.ts";
 import { assertNowDate } from "./lib/content/now-file.ts";
 import { assertPostDates } from "./lib/content/post-dates.ts";
+import { assessmentSchema } from "./content/schemas/assessment.ts";
 import { landingSchema, pageSchema } from "./content/schemas/page.ts";
 import { nowSchema } from "./content/schemas/now.ts";
 import { readingPathSchema } from "./content/schemas/reading-path.ts";
@@ -92,6 +93,13 @@ const projects = defineCollection({
   schema: ({ image }) => projectSchema({ image }),
 });
 
+// `assessments`: one YAML file per self-assessment in src/content/assessments/; the file name is
+// the id a post names in its components (specs/037-wayfinder-self-assessment/data-model.md).
+const assessments = defineCollection({
+  loader: glob({ pattern: "*.yaml", base: "./src/content/assessments" }),
+  schema: assessmentSchema,
+});
+
 // `now`: the one Now file, src/content/now/now.md: the date and four topics in its front matter and
 // the "open to" line as its body. The date check reads the raw text (specs/040-home-now-start-here).
 const now = defineCollection({
@@ -114,4 +122,4 @@ const readingPaths = defineCollection({
   schema: readingPathSchema(),
 });
 
-export const collections = { pages, landing, posts, projects, now, readingPaths };
+export const collections = { pages, landing, posts, projects, assessments, now, readingPaths };

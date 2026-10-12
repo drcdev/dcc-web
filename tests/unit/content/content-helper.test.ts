@@ -17,6 +17,7 @@ import {
   projects,
   readEntries,
   realPosts,
+  postsWithAssessment,
   seriesPost,
   sitemapPaths,
 } from "../../helpers/content.ts";
@@ -153,5 +154,17 @@ describe("picked entries", () => {
     expect(tagged).toContain(seriesPost);
     const newest = Math.max(...tagged.map((post) => (post.data.date as Date).getTime()));
     expect((seriesPost.data.date as Date).getTime()).toBe(newest);
+  });
+});
+
+describe("postsWithAssessment", () => {
+  it("returns exactly the real posts whose body renders the block, each with its parsed data file", () => {
+    const expected = realPosts.filter((post) => /<SelfAssessment\b/.test(post.body)).map((post) => post.slug);
+    const found = postsWithAssessment();
+    expect(found.map(({ post }) => post.slug)).toEqual(expected);
+    for (const { id, assessment } of found) {
+      expect(id.length).toBeGreaterThan(0);
+      expect(assessment.shifts).toHaveLength(5);
+    }
   });
 });
