@@ -61,10 +61,10 @@ describe("author settings (A4, A6; FR-002, FR-003, FR-004a)", () => {
     for (const line of blog.author.lines) expect(line).not.toMatch(/cloud architect/i);
   });
 
-  it("uses a role title that the About page also states", () => {
-    const title = /^I'm (.+?) at /.exec(blog.author.lines[0])?.[1];
-    expect(title).toBeTruthy();
+  it("leaves the job title to the About page", () => {
     const about = pages.find((page) => page.slug === "about");
-    expect(about?.body).toContain(title);
+    const title = /\*\*Current role:\*\* (.+?) @ /.exec(about?.body ?? "")?.[1];
+    expect(title).toBeTruthy();
+    for (const line of blog.author.lines) expect(line).not.toContain(title);
   });
 });

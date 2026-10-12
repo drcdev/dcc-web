@@ -30,7 +30,7 @@ export const blog = {
     name: "Don Coleman",
     photoAlt: "Don Coleman",
     lines: [
-      "I'm Director, Data Infrastructure and Architecture at Island Health.",
+      "I lead teams in data infrastructure and architecture, and in AI support and compliance.",
       "I write about systems thinking, practical AI and leading complex change.",
     ],
   },

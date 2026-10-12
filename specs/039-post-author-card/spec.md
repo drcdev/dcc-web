@@ -20,8 +20,8 @@ The site already has what a short introduction needs:
 
 - A portrait photo of Don with alt text, shown on the home page.
 - Don's current role, which the About page gives as Director, Data Infrastructure and
-  Architecture at Island Health. Older wording that calls him a Cloud Architect is out of date and
-  must not be used.
+  Architecture at Island Health. That page is the only place on the site that states his job
+  title. Older wording that calls him a Cloud Architect is out of date and must not be used.
 - Two series, Drift and Convergence, each with its own page. A post belongs to at most one series;
   some posts belong to none. The writing landing page (`/writing/`) introduces the writing and
   leads to both series and to the list of all posts.
@@ -35,6 +35,7 @@ The site already has what a short introduction needs:
 - Q: For a post in no series, where should the card's writing link go? → A: To the writing landing page (all posts), with link text such as "More of my writing"; a post in a series links to its series page instead.
 - Q: Should the card also link to the About page? → A: Yes, as its own plain link with text such as "More about me".
 - Q: What should the card's two lines say, and in what voice? → A: First person, kept in one blog-settings place: "I'm Director, Data Infrastructure and Architecture at Island Health." and "I write about systems thinking, practical AI and leading complex change." Don may revise the wording in review.
+- 2026-10-11 (Don, in review): The site states his job title only on the About page. The card's first line no longer gives the title and now reads "I lead teams in data infrastructure and architecture, and in AI support and compliance." (what he does, not his title); the second line is unchanged. FR-004a changed to match.
 - Q: What heading should the card have? → A: A visible heading "Written by Don Coleman".
 
 ### Checklist resolution 2026-10-11
@@ -58,16 +59,16 @@ They know who wrote the post without leaving the page.
 this?" for every reader who lands on a post.
 
 **Independent Test**: Open any published post, scroll to the end and confirm the card shows the
-photo, Don's name and the two lines on his current role, and that the role matches the About page.
+photo, Don's name and the two lines on who he is and what he does, and that the card states no job title (the About page is the only place that does).
 
 **Acceptance Scenarios**:
 
 1. **Given** any published post, **When** the reader scrolls past the post text, **Then** they see
    one author card, between the "views are my own" note and the Share area, with the visible
    heading "Written by Don Coleman", Don's photo and two short first-person lines on who he is in
-   his current role.
-2. **Given** the author card, **When** the reader reads its role text, **Then** it names his
-   current role (Director, Data Infrastructure and Architecture at Island Health) and contains no
+   who he is and what he does.
+2. **Given** the author card, **When** the reader reads its text, **Then** it describes what he
+   does without stating his job title (that is on the About page only) and contains no
    "Cloud Architect" wording.
 3. **Given** a reader using a screen reader, **When** they reach the card, **Then** the photo is
    announced with meaningful alt text and the card's heading, "Written by Don Coleman", is
@@ -146,8 +147,8 @@ Contact page.
   at their current addresses while the card links to them (today all are). If one is hidden,
   made a draft or moved, the site's existing link check fails the release gate rather than
   shipping a dead link, and the card's link is updated in the same change.
-- Don's role changes: the role text is changed in one place and every post's card updates; the
-  About page's role is changed in the same change (FR-004a).
+- Don's role changes: the About page's title is changed; the card states no title, so it needs
+  no change unless its description of what he does is out of date (FR-004a).
 
 ## Requirements *(mandatory)*
 
@@ -160,25 +161,23 @@ Contact page.
   Share area, Related posts (when the post has any). The order is the same on every post: with or
   without the questions panel, with or without Related posts, published or draft.
 - **FR-002**: The card MUST show the visible heading "Written by Don Coleman", Don's portrait photo,
-  and two short lines in the first person on who he is in his current role. "Two lines" means two
+  and two short lines in the first person on who he is and what he does. "Two lines" means two
   sentences, each its own paragraph and each at most 100 characters; either may wrap onto more
   than one rendered line on a narrow screen.
-- **FR-003**: The role lines MUST name his current role and MUST NOT use stale role wording. The
+- **FR-003**: The lines MUST describe what he does now and MUST NOT use stale role wording. The
   banned phrase is "Cloud Architect" in any letter case; any other out-of-date role is caught by
-  FR-004a. The draft lines are "I'm Director, Data Infrastructure and Architecture at Island
-  Health." and "I write about systems thinking, practical AI and leading complex change." Don may
+  FR-004a. The lines are "I lead teams in data infrastructure and architecture, and in AI support and compliance." and "I write about systems thinking, practical AI and leading complex change." Don may
   revise the wording in review: the final text is whatever is in the one settings place when Don
   approves the pull request. Tests check the rules in this requirement and FR-002 (two
-  sentences, length, banned phrase, role agreement) and read the text from the settings place;
+  sentences, length, banned phrase, no job title) and read the text from the settings place;
   no test repeats the exact wording.
 - **FR-004**: The card's name, photo, photo alt text and role lines MUST be the same on every post
   and MUST be kept in one place (the blog's settings), so a change to any of them updates every
   post at once. The link texts and destinations are fixed site wording that belongs to the card
   itself, not to that place.
-- **FR-004a**: The role title in the card's first line MUST match the role title on the About page
-  ("Director, Data Infrastructure and Architecture" at Island Health). A test checks that the
-  About page's text contains the role title the card uses, so the two cannot drift apart
-  unnoticed; a change of role updates both in the same change.
+- **FR-004a**: The card MUST NOT state a job title. The About page is the only place on the site
+  that does ("Director, Data Infrastructure and Architecture" at Island Health). A test reads the
+  title from the About page and checks that no card line contains it.
 
 **Links**
 
@@ -293,8 +292,8 @@ Contact page.
   scrolling to the end, without following a link.
 - **SC-003**: From any post, a reader reaches the post's series page (or, for a post in no series,
   the writing landing page `/writing/`), the About page and the Contact page in one click each.
-- **SC-004**: The card's text contains no "Cloud Architect" wording, and its role matches the About
-  page.
+- **SC-004**: The card's text contains no "Cloud Architect" wording, and it states no job title (the
+  About page is the only place that does).
 - **SC-005**: Every post template passes the automated accessibility check in light and dark
   themes, every card link has a target of at least 24 x 24 px, and the post page stays within the
   existing performance budget (FR-014a). The automated check covers contrast, heading markup,
@@ -309,7 +308,7 @@ Contact page.
 - The photo is the existing square portrait already used on the home page, shown as a circle;
   no new photo is needed. Only the image file is shared: the card has its own alt text
   (FR-010c), because the home page's is worded for that page.
-- The two role lines are the first-person drafts in FR-003, kept with the blog's other settings.
+- The two lines are the first-person wording in FR-003, kept with the blog's other settings.
   Don revises the wording in review; the draft is plain language with no hype.
 - The site has a single author, so the card always describes Don and posts carry no author setting.
 - "The rest of the series" means a link to the series page, not a list of the other posts in the

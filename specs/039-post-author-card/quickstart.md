@@ -29,8 +29,8 @@ Open a Drift post, a Convergence post and a post in no series. On each, at the e
 
 - Order is views note, then the card "Written by Don Coleman", then "Share this post", then
   Related posts.
-- The photo is a small circle; the two lines read in the first person and name the Island
-  Health role.
+- The photo is a small circle; the two lines read in the first person and describe his work
+  without naming his job title.
 - Links: "More in Drift" / "More in Convergence" / "More of my writing" (no-series post),
   "More about me", "Get in touch"; each opens the right page.
 - Resize to 320 px: photo on top, everything centred, no sideways scroll. At 768 px and wider:

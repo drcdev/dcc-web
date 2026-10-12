@@ -123,7 +123,7 @@ section[data-author-card]  (title-card box, mt-8, flex-col items-center text-cen
 |-----------|--------------|-------|------|
 | `seriesOf` returns the series or `undefined` | A8 | Unit | `tests/unit/content/topics.test.ts` |
 | Author lines: two, one line each, at most 100 characters each, no "Cloud Architect" in any case; name and alt non-empty | A6, FR-002, FR-003 | Unit | `tests/unit/content/blog-config.test.ts` |
-| The About page's text contains the role title the card's first line uses | A6, FR-004a | Unit (reads the About page source file) | `tests/unit/content/blog-config.test.ts` |
+| No card line contains the job title the About page states | A6, FR-004a | Unit (reads the About page source file) | `tests/unit/content/blog-config.test.ts` |
 | Photo file at the 2x size is at most 20 KB | A5, FR-014a | Build (only the real build makes the file) | fixture-site build test |
 | Heading, image attributes, two lines, three links in order, series vs no-series link, no script; DOM order heading, lines, links, photo; no post title, date or topic pill | A4 to A9, A14 | Component | `tests/component/post/AuthorCard.test.ts` |
 | Card sits after the views note and before Share in the article | A2 | Component | `tests/component/post/PostLayout.test.ts` |
@@ -195,7 +195,7 @@ under `tests/component/post/`).
 
 ## Open questions for Don (review, not blockers)
 
-- The two role lines are drafts (FR-003); he may revise them in `blog.ts`.
+- The two lines are Don's wording (FR-003); he may revise them in `blog.ts`.
 - Photo alt text is "Don Coleman" (the heading already says "Written by Don Coleman"); the home
   page uses the longer "Don Coleman, smiling, in a portrait photo".
 
