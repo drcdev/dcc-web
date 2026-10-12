@@ -51,6 +51,15 @@ export function headingId(title: string): string {
 }
 
 /**
+ * The id of the block's content inside its collapsed `<details>` (FR-001a). The title-card link
+ * points here, not at the heading: following a link to something inside a closed `<details>`
+ * opens it, so the link reveals the block with JavaScript off too.
+ */
+export function assessmentContentId(title: string): string {
+  return `${headingId(title)}-content`;
+}
+
+/**
  * A6: every shift's `anchor` is the id of a heading the post renders. A7: the post renders the
  * block for an assessment once. Both name the post file; A6 names the shift and the anchor.
  */

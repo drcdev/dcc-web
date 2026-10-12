@@ -15,6 +15,9 @@ const SHIFTS = assessment.shifts;
 const STATEMENT_COUNT = SHIFTS.length * 3;
 
 const root = (page: Page) => page.locator("[data-assessment]");
+const details = (page: Page) => page.locator("[data-assessment] details[data-assessment-details]");
+const summary = (page: Page) => details(page).locator("> summary");
+const isOpen = (page: Page) => details(page).evaluate((node) => (node as HTMLDetailsElement).open);
 const statement = (page: Page, shift: number, index: number) => page.locator(`[data-statement="${shift}.${index}"]`);
 
 /** Scrolls the block near the viewport and waits until the lazily loaded module has started. */
@@ -23,9 +26,16 @@ async function ready(page: Page) {
   await expect(root(page)).toHaveAttribute("data-assessment-ready", "true");
 }
 
+/** Opens the collapsed block with its "Take the self-assessment" button (FR-001a). */
+async function expand(page: Page) {
+  if (!(await isOpen(page))) await summary(page).click();
+  await expect(details(page)).toHaveAttribute("open", "");
+}
+
 async function open(page: Page, path = PATH) {
   await page.goto(path);
   await ready(page);
+  await expand(page);
 }
 
 /** Answers every statement; `values[shift][index]` is 1 to 5. */
@@ -175,6 +185,84 @@ test.describe("self-assessment: answering and results", () => {
     expect(await page.locator("[data-assessment] [style]").count()).toBe(0);
     expect(await page.locator("[data-assessment] [onclick], [data-assessment] [onchange]").count()).toBe(0);
     expect(await cspViolations(page)).toEqual([]);
+  });
+});
+
+test.describe("self-assessment: collapsed behind a button (FR-001a, U22)", () => {
+  test("the block is collapsed by default, with its heading and a Take the self-assessment button visible", async ({ page }) => {
+    await page.goto(PATH);
+    await ready(page);
+    expect(await isOpen(page)).toBe(false);
+    const headingId = (await root(page).getAttribute("aria-labelledby"))!;
+    await expect(page.locator(`[id="${headingId}"]`)).toBeVisible();
+    // The heading sits outside the disclosure, so it stays in the outline while collapsed.
+    expect(await details(page).locator(`[id="${headingId}"]`).count()).toBe(0);
+    await expect(summary(page)).toBeVisible();
+    await expect(summary(page)).toHaveText("Take the self-assessment");
+    await expect(page.locator("[data-assessment-form]")).toBeHidden();
+    await expect(page.locator("[data-assessment-show]")).toBeHidden();
+  });
+
+  test("the button expands the block and shows the introduction and the form", async ({ page }) => {
+    await page.goto(PATH);
+    await ready(page);
+    await summary(page).click();
+    expect(await isOpen(page)).toBe(true);
+    await expect(page.locator("[data-assessment-form]")).toBeVisible();
+    await expect(page.locator("[data-assessment-show]")).toBeVisible();
+    await expect(statement(page, 0, 0)).toBeVisible();
+  });
+
+  test("Enter and Space on the focused button open and close the block", async ({ page }) => {
+    await page.goto(PATH);
+    await ready(page);
+    await summary(page).focus();
+    await page.keyboard.press("Enter");
+    await expect.poll(() => isOpen(page)).toBe(true);
+    await page.keyboard.press("Space");
+    await expect.poll(() => isOpen(page)).toBe(false);
+    await page.keyboard.press("Space");
+    await expect.poll(() => isOpen(page)).toBe(true);
+    await expect(page.locator("[data-assessment-form]")).toBeVisible();
+  });
+
+  test("opening the block loads the module when it has not loaded yet", async ({ page }) => {
+    await page.goto(PATH);
+    await expect(root(page)).not.toHaveAttribute("data-assessment-ready", "true");
+    await details(page).evaluate((node) => {
+      (node as HTMLDetailsElement).open = true;
+    });
+    await expect(root(page)).toHaveAttribute("data-assessment-ready", "true");
+  });
+
+  test("the title-card link opens the block before the module has loaded", async ({ page }) => {
+    await page.goto(PATH);
+    await expect(root(page)).not.toHaveAttribute("data-assessment-ready", "true");
+    await page.locator("[data-assessment-link]").click();
+    await expect.poll(() => isOpen(page)).toBe(true);
+    await expect(root(page)).toHaveAttribute("data-assessment-ready", "true");
+    await expect(page.locator("[data-assessment-form]")).toBeVisible();
+  });
+
+  test("the title-card link opens the block and focuses the assessment heading once the module has loaded", async ({ page }) => {
+    await page.goto(PATH);
+    await ready(page);
+    expect(await isOpen(page)).toBe(false);
+    await page.locator("[data-assessment-link]").click();
+    await expect.poll(() => isOpen(page)).toBe(true);
+    await expect(page.locator(`[id="${(await root(page).getAttribute("aria-labelledby"))!}"]`)).toBeFocused();
+    expect(new URL(page.url()).hash).toBe("");
+  });
+
+  test("an in-page link to something inside the block opens it", async ({ page }) => {
+    await page.goto(PATH);
+    await ready(page);
+    const target = (await page.locator("[data-assessment-link]").getAttribute("href"))!;
+    expect(await details(page).locator(`[id="${target.slice(1)}"]`).count(), "the title-card link targets the inside of the block").toBe(1);
+    await page.evaluate((hash) => {
+      location.hash = hash;
+    }, target);
+    await expect.poll(() => isOpen(page)).toBe(true);
   });
 });
 
@@ -410,13 +498,15 @@ test.describe("self-assessment: print a six-week plan (US3)", () => {
     });
   }
 
-  test("without results the print holds the statement list and no form controls (FR-011)", async ({ page }) => {
-    await open(page);
+  test("without results the print holds the statement list and no form controls, even while collapsed (FR-011)", async ({ page }) => {
+    await page.goto(PATH);
+    await ready(page);
+    expect(await isOpen(page)).toBe(false);
     await page.emulateMedia({ media: "print" });
     await expect(page.locator("[data-assessment-nojs]")).toBeVisible();
     await expect(page.locator("[data-assessment-app]")).toBeHidden();
     await expect(page.locator("[data-assessment-nojs] li")).toHaveCount(STATEMENT_COUNT);
-    await expect(page.locator("[data-assessment] input:visible, [data-assessment] button:visible")).toHaveCount(0);
+    await expect(page.locator("[data-assessment] input:visible, [data-assessment] button:visible, [data-assessment] summary:visible")).toHaveCount(0);
     await expect(page.locator("body > [data-assessment-plan-sheet]")).toHaveCount(0);
   });
 });
@@ -443,6 +533,7 @@ test.describe("self-assessment: retake later and see how I have grown (US4)", ()
     const before = await titleLink(page).evaluate((node) => node.parentElement!.getBoundingClientRect().toJSON());
     await expect(titleLink(page)).toHaveText(originalLinkText);
     await openLink(page);
+    expect(await isOpen(page), "a results link opens the block").toBe(true);
     await expect(earlier(page)).toBeVisible();
     await expect(earlier(page)).toContainText("Earlier result from");
     await expect(earlier(page)).toContainText("2026");
@@ -465,7 +556,7 @@ test.describe("self-assessment: retake later and see how I have grown (US4)", ()
     await page.goto("about:blank");
     await open(page);
     await titleLink(page).click();
-    await expect(page.locator(`[id="${(await titleLink(page).getAttribute("href"))!.slice(1)}"]`)).toBeFocused();
+    await expect(page.locator(`[id="${(await root(page).getAttribute("aria-labelledby"))!}"]`)).toBeFocused();
     expect(new URL(page.url()).hash).toBe("");
   });
 
@@ -670,6 +761,7 @@ test.describe("self-assessment: no layout shift or overflow from a results link 
       await page.goto(url);
       await expect(root(page)).toHaveAttribute("data-assessment-ready", "true");
       await expect(page.locator("[data-assessment-earlier]")).toBeVisible();
+      expect(await isOpen(page), "a results link opens the block").toBe(true);
       await page.waitForLoadState("networkidle");
       await page.waitForTimeout(300);
       expect(await page.evaluate(() => (window as unknown as { __shift: number }).__shift)).toBe(0);

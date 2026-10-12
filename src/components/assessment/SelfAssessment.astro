@@ -1,12 +1,15 @@
 ---
 // <SelfAssessment assessment="...">: the self-assessment block in a post (specs/037
 // contracts/assessment-ui.md). The page carries the form (native radios in fieldsets), the
-// no-JavaScript statement list and empty containers for the errors and the results. A small
-// bootstrap script below loads src/lib/assessment/client.ts when the reader gets near the block
-// (research R3). The heading is written in the post as `## <title>`; the block is named by it.
+// no-JavaScript statement list and empty containers for the errors and the results, all inside a
+// native <details> whose summary is the "Take the self-assessment" button (FR-001a), collapsed by
+// default and opened without JavaScript too. A small bootstrap script below opens it for a results
+// link or a link to its content, and loads src/lib/assessment/client.ts when the reader gets near
+// the block or opens it (research R3). The heading is written in the post as `## <title>`, outside
+// the details; the block is named by it.
 // The optional `data` prop replaces the collection lookup and exists for component tests only.
 import type { Assessment } from "../../content/schemas/assessment.ts";
-import { headingId, resolveAssessment } from "../../lib/assessment/lookup.ts";
+import { assessmentContentId, headingId, resolveAssessment } from "../../lib/assessment/lookup.ts";
 import { statementSetVersion } from "../../lib/assessment/version.ts";
 
 export interface Props {
@@ -44,84 +47,118 @@ const radio =
   data-version={statementSetVersion(assessment.shifts)}
   data-assessment-data={payload}
   aria-labelledby={headingId(assessment.title)}
-  class="not-prose my-8 rounded-xl border border-dusk-200 bg-white p-4 text-dusk-700 dark:border-dusk-700 dark:bg-dusk-800 dark:text-mist-300 sm:p-6 forced-colors:border-[CanvasText]"
+  class="not-prose my-8 text-dusk-700 dark:text-mist-300"
 >
-  <div data-assessment-nojs class="[.js_&]:hidden print:block!">
-    <p class="m-0">The self-assessment needs JavaScript. The statements are listed below for reflection.</p>
-    {
-      assessment.shifts.map((shift) => (
-        <>
-          <h3 class="mb-1 mt-4 text-lg font-bold text-dusk-900 dark:text-white">{shift.name}</h3>
-          <ul class="m-0 list-disc pl-6">
-            {shift.statements.map((statement) => (
-              <li>{statement}</li>
-            ))}
-          </ul>
-        </>
-      ))
-    }
-  </div>
-
-  <div data-assessment-app class="hidden [.js_&]:block print:hidden!">
-    <p class="m-0 [overflow-wrap:anywhere]">{assessment.intro}</p>
-    <p role="status" aria-live="polite" data-assessment-status class="m-0 mt-3 font-medium text-dusk-900 dark:text-white"></p>
-    <div hidden data-assessment-earlier class="mt-6 rounded-lg border border-dusk-200 p-4 dark:border-dusk-700 forced-colors:border-[CanvasText]"></div>
-    <form data-assessment-form novalidate class="m-0">
-      {
-        assessment.shifts.map((shift, s) => (
-          <div role="group" aria-labelledby={`shift-${s}-name`} class="mt-6">
-            <h3 id={`shift-${s}-name`} class="m-0 text-lg font-bold text-dusk-900 dark:text-white">
-              {shift.name}
-            </h3>
-            {shift.statements.map((statement, i) => (
-              <fieldset
-                id={`statement-${s}-${i}`}
-                data-statement={`${s}.${i}`}
-                role="radiogroup"
-                class="m-0 mt-3 min-w-0 border-0 p-0"
-              >
-                <legend class="p-0 font-medium text-dusk-900 [overflow-wrap:anywhere] dark:text-white">{statement}</legend>
-                <div class="flex flex-wrap gap-x-3">
-                  {assessment.scale.map((label, n) => (
-                    <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 py-1 text-base">
-                      <input type="radio" name={`s-${s}-${i}`} value={String(n + 1)} class={radio} />
-                      {label}
-                    </label>
-                  ))}
-                </div>
-                <p
-                  hidden
-                  id={`statement-${s}-${i}-error`}
-                  data-statement-error
-                  class="m-0 font-medium text-rust-800 dark:text-rust-300"
-                >
-                  Choose an answer.
-                </p>
-              </fieldset>
-            ))}
-          </div>
-        ))
-      }
-      <div
-        hidden
-        data-assessment-errors
-        class="mt-6 border-l-4 border-rust-700 bg-rust-50 p-4 text-dusk-900 dark:border-rust-300 dark:bg-rust-950 dark:text-white"
+  {/* Print shows the content even while collapsed: the statement list without a result (FR-011). */}
+  <details data-assessment-details class="group print:details-content:block print:details-content:[content-visibility:visible]">
+    <summary class={`${control} list-none gap-2 [&::-webkit-details-marker]:hidden print:hidden`}>
+      Take the self-assessment
+      <svg
+        data-disclosure-indicator
+        viewBox="0 0 16 16"
+        aria-hidden="true"
+        focusable="false"
+        class="size-4 shrink-0 fill-none stroke-current transition-transform group-open:rotate-180 motion-reduce:transition-none"
+        ><path d="M3 6l5 5 5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg
       >
+    </summary>
+    <div
+      id={assessmentContentId(assessment.title)}
+      data-assessment-content
+      class="mt-4 scroll-mt-24 rounded-xl border border-dusk-200 bg-white p-4 dark:border-dusk-700 dark:bg-dusk-800 sm:p-6 forced-colors:border-[CanvasText] print:mt-0"
+    >
+      <div data-assessment-nojs class="[.js_&]:hidden print:block!">
+        <p class="m-0">The self-assessment needs JavaScript. The statements are listed below for reflection.</p>
+        {
+          assessment.shifts.map((shift) => (
+            <>
+              <h3 class="mb-1 mt-4 text-lg font-bold text-dusk-900 dark:text-white">{shift.name}</h3>
+              <ul class="m-0 list-disc pl-6">
+                {shift.statements.map((statement) => (
+                  <li>{statement}</li>
+                ))}
+              </ul>
+            </>
+          ))
+        }
       </div>
-      <div class="mt-6 flex flex-wrap gap-3">
-        <button type="button" data-assessment-show class={control}>Show my results</button>
-        <button type="button" data-assessment-clear class={control}>Clear my answers</button>
+
+      <div data-assessment-app class="hidden [.js_&]:block print:hidden!">
+        <p class="m-0 [overflow-wrap:anywhere]">{assessment.intro}</p>
+        <p role="status" aria-live="polite" data-assessment-status class="m-0 mt-3 font-medium text-dusk-900 dark:text-white"></p>
+        <div hidden data-assessment-earlier class="mt-6 rounded-lg border border-dusk-200 p-4 dark:border-dusk-700 forced-colors:border-[CanvasText]"></div>
+        <form data-assessment-form novalidate class="m-0">
+          {
+            assessment.shifts.map((shift, s) => (
+              <div role="group" aria-labelledby={`shift-${s}-name`} class="mt-6">
+                <h3 id={`shift-${s}-name`} class="m-0 text-lg font-bold text-dusk-900 dark:text-white">
+                  {shift.name}
+                </h3>
+                {shift.statements.map((statement, i) => (
+                  <fieldset
+                    id={`statement-${s}-${i}`}
+                    data-statement={`${s}.${i}`}
+                    role="radiogroup"
+                    class="m-0 mt-3 min-w-0 border-0 p-0"
+                  >
+                    <legend class="p-0 font-medium text-dusk-900 [overflow-wrap:anywhere] dark:text-white">{statement}</legend>
+                    <div class="flex flex-wrap gap-x-3">
+                      {assessment.scale.map((label, n) => (
+                        <label class="inline-flex min-h-11 cursor-pointer items-center gap-2 py-1 text-base">
+                          <input type="radio" name={`s-${s}-${i}`} value={String(n + 1)} class={radio} />
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                    <p
+                      hidden
+                      id={`statement-${s}-${i}-error`}
+                      data-statement-error
+                      class="m-0 font-medium text-rust-800 dark:text-rust-300"
+                    >
+                      Choose an answer.
+                    </p>
+                  </fieldset>
+                ))}
+              </div>
+            ))
+          }
+          <div
+            hidden
+            data-assessment-errors
+            class="mt-6 border-l-4 border-rust-700 bg-rust-50 p-4 text-dusk-900 dark:border-rust-300 dark:bg-rust-950 dark:text-white"
+          >
+          </div>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <button type="button" data-assessment-show class={control}>Show my results</button>
+            <button type="button" data-assessment-clear class={control}>Clear my answers</button>
+          </div>
+        </form>
+        <div hidden data-assessment-results class="mt-8"></div>
       </div>
-    </form>
-    <div hidden data-assessment-results class="mt-8"></div>
-  </div>
+    </div>
+  </details>
 
   <script>
-    // Load the module when the block is within one viewport height of the visible area, or at
-    // once when the address already holds a result (research R3, FR-017).
+    // Load the module when the block is within one viewport height of the visible area, when the
+    // reader opens it, or at once when the address already holds a result (research R3, FR-017).
+    // Open the block for a results fragment or a fragment naming something inside it (FR-001a).
     const root = document.querySelector<HTMLElement>("[data-assessment]");
     if (root) {
-      const load = () => void import("../../lib/assessment/client.ts").then((module) => module.init(root));
+      const details = root.querySelector("details")!;
+      let started = false;
+      const load = () => {
+        if (started) return;
+        started = true;
+        void import("../../lib/assessment/client.ts").then((module) => module.init(root));
+      };
+      const reveal = () => {
+        const id = location.hash.slice(1);
+        if (id.startsWith("result=") || (id && details.contains(document.getElementById(id)))) details.open = true;
+      };
+      reveal();
+      addEventListener("hashchange", reveal);
+      details.addEventListener("toggle", () => details.open && load());
       if (location.hash.startsWith("#result=") || !("IntersectionObserver" in window)) {
         load();
       } else {

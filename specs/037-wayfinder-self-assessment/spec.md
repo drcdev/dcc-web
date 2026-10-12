@@ -91,6 +91,13 @@ constitution amendment.
   and "6-Week Development Plan" subsections and the `DevelopmentPlan` component are removed. The
   week activities and the integration week stay in the data file and appear only in the reader's
   printed plan (User Story 3, FR-010). The post's reading time drops accordingly.
+- Decision 2026-10-11 (Don, review of PR #176): "turn the self assessment into an accordian with
+  a "Take self-assessment" button that expands it." The block below the assessment heading is
+  collapsed by default behind a "Take the self-assessment" button (a native disclosure, so it
+  works with JavaScript off). It opens when the reader activates the button, follows the
+  title-card link, opens the post through a results link, or follows any link to something
+  inside it. Printing without results still shows the statement list while it is collapsed
+  (FR-001a).
 
 ## Scope of this slice
 
@@ -123,9 +130,11 @@ chart and the text summary show one position per shift that matches the answers 
 **Acceptance Scenarios**:
 
 1. **Given** the Wayfinder post is open with JavaScript on, **When** the reader reaches the
-   self-assessment, **Then** they see a short introduction and one form with five labelled
+   self-assessment, **Then** they see its heading and a "Take the self-assessment" button with
+   the rest collapsed; **When** they activate the button (by pointer, Enter or Space), **Then**
+   they see a short introduction and one form with five labelled
    groups, one per shift by name, each holding three statements with a five-point answer scale,
-   followed by a "Show my results" button.
+   followed by a "Show my results" button (FR-001a).
 2. **Given** the reader has answered every statement, **When** they ask to see their results,
    **Then** a chart shows one position per shift on a line from that shift's "From" wording to
    its "To" wording, and a text summary lists the same five positions in words.
@@ -227,7 +236,9 @@ the change per shift.
 - JavaScript is off or fails to load: the post still reads in full (including the Practical
   Application paragraphs, which are rendered at build time), and in place of the
   assessment the reader sees a short note that the self-assessment needs JavaScript, with the
-  statements still readable as a list so the reader can reflect on them unaided.
+  statements still readable as a list so the reader can reflect on them unaided. The note and
+  the list sit in the collapsed section, which the "Take the self-assessment" button and the
+  title-card link open without JavaScript (FR-001a).
 - The reader answers every statement with the middle value: every shift sits in the middle, no
   shift is in the low band, and Story 2 scenario 3 applies.
 - The reader answers every statement at the low end: all five shifts are low and all five show
@@ -242,7 +253,7 @@ the change per shift.
   self-assessment" wording, and the fragment stays as it is until results are shown or
   cleared.
 - The post is printed without results (the normal browser print): the assessment prints as its
-  statements, not as an empty form with controls. Once results are on screen, any print
+  statements, not as an empty form with controls, whether its section is open or collapsed. Once results are on screen, any print
   (button or browser menu) gives the plan only (FR-011).
 - Narrow phone screens: the five-point scales and the chart fit at 320 px wide without sideways
   scrolling.
@@ -261,6 +272,20 @@ the change per shift.
   shift group (in the form, and in the statement list shown without JavaScript), the results
   ("Your results") and the earlier result each have a third-level heading, and nothing inside
   the block goes deeper than a fourth level.
+- **FR-001a**: Everything below the assessment heading (the introduction, the form, the
+  results, the earlier result and, without JavaScript, the statement list) MUST sit in one
+  collapsed section that a "Take the self-assessment" button opens and closes (a native
+  disclosure: it works with JavaScript off, by pointer, and by Enter or Space on the focused
+  button). The heading stays outside it and always visible. It is collapsed when the page
+  loads, except that it opens by itself when the page address holds a results fragment
+  (readable or not, so the earlier result or the "could not be read" message is visible), and
+  whenever the reader follows a link to something inside it, including the title-card link
+  (which leads to the section's content, so the browser opens it with JavaScript off too).
+  Opening it also loads the assessment code if it has not loaded yet (FR-017). The button is a
+  target at least 24 by 24 CSS pixels, shows a visible focus indicator, and carries an
+  open-and-close indicator drawn in the text colour, so it stays visible in forced colours.
+  The button does not print; printing without results shows the statement list even while the
+  section is collapsed (FR-011).
 - **FR-002**: The assessment MUST have three statements per shift, fifteen in all. Each
   statement describes an everyday behaviour, worded so that agreeing places the reader nearer
   that shift's "To".
@@ -359,13 +384,16 @@ the change per shift.
   post title that leads to it.
   The earlier-result link: the post's title card holds one short link line, just after the post
   summary, on every post that renders the assessment, built into the page. It reads "Take the
-  self-assessment" and leads to the assessment heading (this also works with JavaScript off).
+  self-assessment" and leads to the assessment, opening its collapsed section (FR-001a; this also
+  works with JavaScript off).
   When the page was opened through a readable results link, the assessment code changes its
   text to "Your earlier result is below" and makes it lead to the earlier result's heading. The
   line's height is reserved in the built page for one line at every width from 320 px, and both
   wordings fit on one line, so changing the text moves nothing on the page (FR-018a). Its
   accessible name is its visible text; it is in the normal tab order after the post summary;
-  activating it moves focus to its target heading and leaves the address-bar fragment unchanged.
+  activating it opens the assessment's collapsed section, moves focus to its target heading (the
+  assessment heading, or the earlier result's heading) and leaves the address-bar fragment
+  unchanged.
   Whenever results are shown, the address-bar fragment is replaced with the new result's
   fragment without adding a history entry; a retake replaces it again, so the newest result is
   the one compared next time.
@@ -426,7 +454,8 @@ the change per shift.
   Wayfinder post and no earlier than the reader is likely to reach it; other pages ship no
   extra script. "Likely to reach it" means the assessment block comes within one viewport
   height of the visible area; the code also loads at once when the page address holds a
-  results fragment, because the earlier result is shown at once (FR-012). The post MUST stay
+  results fragment, because the earlier result is shown at once (FR-012), and when the reader
+  opens the collapsed section (FR-001a). The post MUST stay
   readable in full with JavaScript off (see Edge Cases).
 - **FR-018**: The assessment and results MUST meet WCAG 2.2 AA in both light and dark themes
   and keep the post within the site's performance budget. In particular:

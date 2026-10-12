@@ -132,7 +132,7 @@ just the sheet. Without a result, print shows the post with the statement list (
 | `src/lib/assessment/checks.ts` | pure, build | A9 (From/To lines match) and A10 (no moved text left in the prose) checks on a post body, used by the post route |
 | `src/components/assessment/AssessmentLink.astro` | component | The reserved one-line title-card link, rendered into `PostLayout`'s new optional `title-extra` slot by the post route for posts that render `SelfAssessment` |
 | `src/components/assessment/PracticalApplication.astro` | component | One paragraph |
-| `src/components/assessment/SelfAssessment.astro` | component | Block markup, bootstrap script, print style |
+| `src/components/assessment/SelfAssessment.astro` | component | Block markup inside a native `<details>` collapsed behind a "Take the self-assessment" summary (FR-001a, Don's PR #176 review; native HTML, no script needed to open it), bootstrap script (opens it for a results or in-block fragment, loads the module on approach or on open), print style |
 | `src/components/assessment/index.ts` | registry | `postComponents` and their names, used by the route and `validatePageBody` |
 
 ## Visual baselines

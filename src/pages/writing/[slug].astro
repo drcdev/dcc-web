@@ -17,7 +17,7 @@ import AssessmentLink from "../../components/assessment/AssessmentLink.astro";
 import { postComponents } from "../../components/assessment/index";
 import { sectionComponents } from "../../components/sections/index";
 import { assessmentsNamedIn, checkFromToLines, checkNoMovedText } from "../../lib/assessment/checks";
-import { checkBlockTargets, findAssessment, headingId, loadAssessments } from "../../lib/assessment/lookup";
+import { assessmentContentId, checkBlockTargets, findAssessment, headingId, loadAssessments } from "../../lib/assessment/lookup";
 import { expandForQuestions } from "../../lib/assessment/question-text";
 import { selectRelated } from "../../lib/content/post-order";
 import { contentError } from "../../lib/content/errors";
@@ -51,11 +51,14 @@ for (const id of named.used) {
   checkNoMovedText({ file, body, assessment });
   if (named.withBlock.includes(id)) checkFromToLines({ file, body, headings, assessment });
 }
-// The block is named by the `## <title>` heading written above it, and the title-card link points there.
+// The block is named by the `## <title>` heading written above it. The title-card link points at
+// the block's content inside its collapsed details, so following it opens the block (FR-001a).
 let assessmentHeading: string | undefined;
+let assessmentTarget: string | undefined;
 for (const id of named.withBlock.slice(0, 1)) {
   const title = findAssessment(file, id, assessments).title;
   assessmentHeading = headingId(title);
+  assessmentTarget = assessmentContentId(title);
   checkBlockTargets({
     file,
     assessment: findAssessment(file, id, assessments),
@@ -85,6 +88,6 @@ const share = post.featureImage
 ---
 
 <PostLayout post={post} navigation={navigation} image={share?.src} related={related} questionHash={questionHash}>
-  <Fragment slot="title-extra">{assessmentHeading && <AssessmentLink target={assessmentHeading} />}</Fragment>
+  <Fragment slot="title-extra">{assessmentTarget && <AssessmentLink target={assessmentTarget} />}</Fragment>
   <Content components={{ ...sectionComponents, ...postComponents, pre: CodeBlock, table: ScrollTable }} />
 </PostLayout>

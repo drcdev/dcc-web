@@ -14,13 +14,19 @@ directly after the post summary):
 
 ```text
 <p data-assessment-link-line class="... min-h-lh">   ; height reserved for one line at >= 320 px
-  <a href="#<assessment heading id>" data-assessment-link>Take the self-assessment</a>
+  <a href="#<assessment heading id>-content" data-assessment-link>Take the self-assessment</a>
+                                                     ; targets the content inside <details>, so the
+                                                     ; browser opens it with JavaScript off (FR-001a)
 </p>
 ```
 
 ```text
 <section data-assessment="wayfinder" data-version="3fa9c2d0" data-assessment-data="{json}"
          aria-labelledby="<heading id from the Markdown ## above>" class="not-prose ...">
+  <details data-assessment-details>                 ; collapsed by default (FR-001a); print: content shown
+  <summary class="button styles">Take the self-assessment <svg data-disclosure-indicator></svg></summary>
+                                                    ; print: hidden
+  <div id="<heading id>-content" data-assessment-content class="bordered box">
   <div data-assessment-nojs>                       ; shown when root lacks .js, and in print without a result
     <p>The self-assessment needs JavaScript. The statements are listed below for reflection.</p>
     <h3>See the Whole System</h3> <ul><li>statement</li> x3</ul>   ; x5 shifts
@@ -43,7 +49,10 @@ directly after the post summary):
     </form>
     <div data-assessment-results hidden></div>
   </div>
-  <script> bootstrap (research R3) </script>
+  </div>                                            ; data-assessment-content
+  </details>
+  <script> bootstrap (research R3): opens <details> for a #result= fragment or a fragment naming
+           something inside it (on load and on hashchange); loads the module on approach or on open </script>
 </section>
 <style is:global> print rules (research R7) </style>
 ```
@@ -76,4 +85,5 @@ in an attribute (escaped by Astro); no inline script holds data.
 | U18 | Edge: JS off | The post reads in full; the Practical Application paragraphs and the development plan are in the HTML; the block shows the note and the statement list; no form controls are visible. |
 | U19 | CSP | The module sets no `style` attribute and no inline event handler; the page records no CSP violation through the whole journey. |
 | U20 | FR-008, FR-009, FR-012 | Focus: after results show or update, focus stays on "Show my results"; after clear, focus is on the first statement's first radio; after a low-band link or the title-card link, the target heading (`tabindex="-1"`) has focus and the fragment is unchanged. Scrolling uses the page's scroll behaviour, which is smooth only under `prefers-reduced-motion: no-preference`. With a readable results link the title-card link reads "Your earlier result is below" and targets the earlier result's heading; otherwise it keeps "Take the self-assessment" and targets the assessment heading. |
+| U22 | FR-001a | The block below the heading is one `<details>`, collapsed at load, whose `<summary>` reads "Take the self-assessment" (button styles, at least 24 x 24, visible focus ring, an indicator drawn in `currentColor` that stays visible in forced colours). Pointer, Enter and Space open and close it; it works with JavaScript off. It opens by itself for any `#result=` fragment (before the module runs, so the results-link visit keeps U21), and for a fragment or followed link naming an element inside it (the title-card link targets `#<heading id>-content`). Opening it loads the module if not yet loaded. With the module loaded, the title-card link opens it and focuses the assessment heading (or the earlier result's heading), fragment unchanged. Axe finds nothing in the collapsed state in either theme. In print without a result the statement list shows while collapsed and the summary does not print. |
 | U21 | FR-018a | Opened through a results link at 320 px and 390 px wide, the layout-shift entries recorded before the first input (`hadRecentInput` false) sum to 0. |

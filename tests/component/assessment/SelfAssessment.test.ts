@@ -1,6 +1,7 @@
 // Component tests for <SelfAssessment> (contracts/assessment-ui.md U1, U2, U18; FR-001 to FR-003).
 import { describe, expect, it } from "vitest";
 import SelfAssessment from "../../../src/components/assessment/SelfAssessment.astro";
+import { assessmentContentId, headingId } from "../../../src/lib/assessment/lookup.ts";
 import { statementSetVersion } from "../../../src/lib/assessment/version.ts";
 import { sampleAssessment } from "../../helpers/assessment.ts";
 import { byName, tags } from "../html.ts";
@@ -32,6 +33,30 @@ describe("SelfAssessment markup", () => {
     expect(sections[0]!.attrs["data-assessment"]).toBe("sample");
     expect(sections[0]!.attrs["data-version"]).toBe(statementSetVersion(data.shifts));
     expect(sections[0]!.attrs["aria-labelledby"]).toMatch(/\S/);
+  });
+
+  it("puts everything in one details element, collapsed, opened by a summary reading Take the self-assessment (FR-001a)", () => {
+    const details = byName(html, "details");
+    expect(details).toHaveLength(1);
+    expect(details[0]!.attrs.open).toBeUndefined();
+    expect("data-assessment-details" in details[0]!.attrs).toBe(true);
+    const summary = /<details\b[^>]*>\s*<summary\b[^>]*>([\s\S]*?)<\/summary>/.exec(html);
+    expect(summary, "the summary is the first child of details").not.toBeNull();
+    expect(textOfHtml(summary![1]!)).toBe("Take the self-assessment");
+    // Every control, the statement list and the containers sit inside the details element.
+    const inside = html.slice(html.indexOf("<details"), html.indexOf("</details>"));
+    for (const marker of ["data-assessment-nojs", "data-assessment-app", "data-assessment-form", "data-assessment-results", "data-assessment-earlier"]) {
+      expect(inside).toContain(marker);
+    }
+  });
+
+  it("gives the content inside the details the title-card link's target id (FR-001a)", () => {
+    const content = tags(html).filter((t) => "data-assessment-content" in t.attrs);
+    expect(content).toHaveLength(1);
+    expect(content[0]!.attrs.id).toBe(assessmentContentId(data.title));
+    expect(assessmentContentId(data.title)).not.toBe(headingId(data.title));
+    const inside = html.slice(html.indexOf("<details"), html.indexOf("</details>"));
+    expect(inside).toContain(`id="${assessmentContentId(data.title)}"`);
   });
 
   it("has five shift groups of three statement fieldsets of five labelled radios (U2)", () => {

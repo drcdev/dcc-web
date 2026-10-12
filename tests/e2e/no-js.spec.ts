@@ -127,6 +127,9 @@ test("the self-assessment post reads without JavaScript and lists the statements
   const { post, assessment } = postsWithAssessment()[0]!;
   await page.goto(post.address);
   const block = page.locator("[data-assessment]");
+  // Collapsed behind its button (FR-001a); native disclosure opens it without JavaScript.
+  await expect(block.locator("[data-assessment-nojs]")).toBeHidden();
+  await block.locator("details[data-assessment-details] > summary").click();
   await expect(block).toContainText("needs JavaScript");
   for (const shift of assessment.shifts) {
     await expect(block.getByRole("heading", { name: shift.name })).toBeVisible();
@@ -135,6 +138,18 @@ test("the self-assessment post reads without JavaScript and lists the statements
     await expect(page.locator("[data-post-body]")).toContainText(shift.practicalApplication.slice(0, 25));
   }
   await expect(block.locator("input:visible, button:visible, form:visible")).toHaveCount(0);
+});
+
+// specs/037 FR-001a: the title-card link opens the collapsed block without JavaScript.
+test("the self-assessment title-card link reveals the statement list without JavaScript", async ({ page }) => {
+  const { post } = postsWithAssessment()[0]!;
+  await page.goto(post.address);
+  const block = page.locator("[data-assessment]");
+  await expect(block.locator("[data-assessment-nojs]")).toBeHidden();
+  await page.locator("[data-assessment-link]").click();
+  await expect(block.locator("details[data-assessment-details]")).toHaveAttribute("open", "");
+  await expect(block.locator("[data-assessment-nojs] li").first()).toBeVisible();
+  await expect(block.locator("[data-assessment-nojs] li").first()).toBeInViewport();
 });
 
 // specs/037 FR-011 (quickstart step 11): with JavaScript off and print media, the statement list

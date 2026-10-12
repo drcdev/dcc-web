@@ -14,11 +14,19 @@ const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"]
 const THEMES = ["dark", "light"] as const;
 const { post, assessment } = postsWithAssessment()[0]!;
 const root = (page: Page) => page.locator("[data-assessment]");
+const summary = (page: Page) => page.locator("[data-assessment] details[data-assessment-details] > summary");
 
-async function open(page: Page) {
+/** Loads the post with the block in view, still collapsed (FR-001a). */
+async function reach(page: Page) {
   await page.goto(post.address);
   await root(page).scrollIntoViewIfNeeded();
   await expect(root(page)).toHaveAttribute("data-assessment-ready", "true");
+}
+
+async function open(page: Page) {
+  await reach(page);
+  await summary(page).click();
+  await expect(page.locator("[data-assessment-form]")).toBeVisible();
 }
 
 async function answerAll(page: Page) {
@@ -105,6 +113,26 @@ for (const theme of THEMES) {
   test.describe(`${theme} theme`, () => {
     test.beforeEach(async ({ page }) => {
       await setTheme(page, theme);
+    });
+
+    test("has no axe violations while collapsed, and the button is at least 24 x 24 with a visible focus ring (FR-001a)", async ({ page }) => {
+      await reach(page);
+      const results = await new AxeBuilder({ page }).withTags(TAGS).include("[data-assessment]").analyze();
+      expect(results.violations).toEqual([]);
+      const box = await summary(page).boundingBox();
+      expect(box!.width).toBeGreaterThanOrEqual(24);
+      expect(box!.height).toBeGreaterThanOrEqual(24);
+      await summary(page).focus();
+      await page.keyboard.press("Shift+Tab");
+      await page.keyboard.press("Tab");
+      await expect(summary(page)).toBeFocused();
+      const ring = await summary(page).evaluate((element) => {
+        const style = getComputedStyle(element);
+        return { style: style.outlineStyle, width: parseFloat(style.outlineWidth), color: style.outlineColor };
+      });
+      expect(ring.style).not.toBe("none");
+      expect(ring.width).toBeGreaterThanOrEqual(2);
+      expect(contrast(ring.color, await backgroundOf(summary(page)))).toBeGreaterThanOrEqual(3);
     });
 
     for (const [name, enter] of Object.entries(states)) {
@@ -199,6 +227,16 @@ for (const theme of THEMES) {
     });
   });
 }
+
+test("forced colours keep the button's border and its open-and-close indicator visible (FR-001a)", async ({ page }) => {
+  await page.emulateMedia({ forcedColors: "active" });
+  await reach(page);
+  const background = await backgroundOf(summary(page));
+  expect(contrast(await summary(page).evaluate((e) => getComputedStyle(e).borderTopColor), background), "border").toBeGreaterThanOrEqual(3);
+  const indicator = summary(page).locator("svg[data-disclosure-indicator]");
+  await expect(indicator).toBeVisible();
+  expect(contrast(await indicator.evaluate((e) => getComputedStyle(e).stroke), background), "indicator").toBeGreaterThanOrEqual(3);
+});
 
 test("forced colours keep the track and the marker visible", async ({ page }) => {
   await page.emulateMedia({ forcedColors: "active" });

@@ -164,6 +164,7 @@ for (const { post, assessment } of postsWithAssessment()) {
         const block = page.locator("[data-assessment]");
         await block.scrollIntoViewIfNeeded();
         await expect(block).toHaveAttribute("data-assessment-ready", "true", { timeout: 30_000 });
+        await block.locator("details[data-assessment-details] > summary").click();
         for (let s = 0; s < assessment.shifts.length; s++) {
           for (let i = 0; i < 3; i++) {
             await page.locator(`[data-statement="${s}.${i}"]`).getByLabel(assessment.scale[2]!, { exact: true }).check();

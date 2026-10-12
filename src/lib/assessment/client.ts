@@ -184,6 +184,7 @@ export function init(root: HTMLElement): void {
   const show = root.querySelector<HTMLButtonElement>("[data-assessment-show]")!;
   const clear = root.querySelector<HTMLButtonElement>("[data-assessment-clear]")!;
   const earlierPanel = root.querySelector<HTMLElement>("[data-assessment-earlier]")!;
+  const details = root.querySelector("details")!;
   const titleLink = document.querySelector<HTMLAnchorElement>("[data-assessment-link]");
   const titleWording = { text: titleLink?.textContent ?? "", href: titleLink?.getAttribute("href") ?? "" };
   const version = root.dataset.version ?? "";
@@ -348,12 +349,15 @@ export function init(root: HTMLElement): void {
     else failed();
   });
 
-  // The title-card link goes to its target heading without changing the address.
+  // The title-card link opens the block and goes to its heading (or to the earlier result's
+  // heading) without changing the address (FR-001a). Its href names the block's content, so that
+  // without JavaScript the browser opens the block itself.
   titleLink?.addEventListener("click", (event) => {
-    const heading = document.getElementById(titleLink.getAttribute("href")!.slice(1));
-    if (!heading) return;
+    const target = document.getElementById(titleLink.getAttribute("href")!.slice(1));
+    if (!target) return;
     event.preventDefault();
-    goTo(heading);
+    details.open = true;
+    goTo(target.hasAttribute("data-assessment-content") ? document.getElementById(root.getAttribute("aria-labelledby")!)! : target);
   });
 
   // Clear: every trace of the answers, the results, the plan and the address fragment goes (L6, U14).
