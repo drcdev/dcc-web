@@ -8,7 +8,7 @@
 // Astro's runtime. This reuses Astro's own front matter parser and the site's path rules, so the
 // tests and the site cannot disagree on a slug or an address.
 import { createRequire } from "node:module";
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Assessment } from "../../src/content/schemas/assessment.ts";
@@ -24,11 +24,12 @@ const { parseFrontmatter } = fromAstro("@astrojs/internal-helpers/frontmatter") 
   parseFrontmatter: (code: string) => { frontmatter: Record<string, unknown>; content: string };
 };
 
+// Reading paths and assessments are YAML; the glob loader reads them with js-yaml, which is Astro's own dependency.
 const { load: parseYaml } = fromAstro("js-yaml") as { load: (text: string) => unknown };
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 
-export type Collection = "pages" | "posts" | "projects";
+export type Collection = "pages" | "posts" | "projects" | "now";
 
 export interface Entry<D = Record<string, unknown>> {
   collection: Collection;
@@ -105,6 +106,49 @@ export const pages: Entry[] = allPageFiles.filter((entry) => !isLanding(entry));
 export const landingPages: Entry[] = allPageFiles.filter(isLanding);
 export const posts: Entry[] = readEntries("posts");
 export const projects: Entry[] = readEntries("projects");
+
+/** One reading path file in src/content/reading-paths/ (YAML, one path per file). */
+export interface ReadingPathFile {
+  /** The file name without extension, the path's id. */
+  id: string;
+  file: string;
+  data: { title?: string; description?: string; position?: number; items?: { post?: string; project?: string }[] };
+}
+
+/** The reading paths in src/content/reading-paths/, read as the site reads them. Empty when there are none. */
+function readReadingPaths(): ReadingPathFile[] {
+  const dir = join(root, "src/content/reading-paths");
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((name) => /\.ya?ml$/.test(name))
+    .sort()
+    .map((name) => ({
+      id: name.replace(/\.ya?ml$/, ""),
+      file: `src/content/reading-paths/${name}`,
+      data: (parseYaml(readFileSync(join(dir, name), "utf-8")) ?? {}) as ReadingPathFile["data"],
+    }));
+}
+export const readingPaths: ReadingPathFile[] = readReadingPaths();
+
+/** The Now file (src/content/now/now.md): its parsed front matter and its body (the "open to" line). */
+function readNow(): Entry | undefined {
+  const file = join(root, "src/content/now/now.md");
+  if (!existsSync(file)) return undefined;
+  const { frontmatter, content } = parseFrontmatter(readFileSync(file, "utf-8"));
+  return {
+    collection: "now",
+    slug: "now",
+    address: "/",
+    draft: false,
+    visible: true,
+    title: "Now",
+    data: frontmatter,
+    body: content,
+    file: relative(root, file),
+  };
+}
+/** The Now entry, or undefined before the file exists. The home page shows it at `/`. */
+export const now: Entry | undefined = readNow();
 
 /** The one kitchen-sink draft the tests own (FR-035). */
 export const isSample = (post: Entry): boolean => post.slug.startsWith("sample-");

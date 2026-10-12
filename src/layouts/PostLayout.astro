@@ -4,10 +4,11 @@
 // (only when the post has one), the title card that overlaps it visually, the
 // body in the site's reading column, and the "views are my own" note. A draft
 // starts its title card with the Draft notice and is always noindex (FR-032,
-// FR-045). After the note come the Share area (inside the article) and the
-// Related posts (FR-028, FR-029).
+// FR-045). After the note come the author card (specs/039) and the Share area (inside the
+// article), then the Related posts (FR-028, FR-029).
 import type { ComponentProps } from "astro/types";
 import BaseLayout from "./BaseLayout.astro";
+import AuthorCard from "../components/post/AuthorCard.astro";
 import DraftNotice from "../components/page/DraftNotice.astro";
 import PostHero from "../components/post/PostHero.astro";
 import PostMeta from "../components/post/PostMeta.astro";
@@ -87,6 +88,7 @@ const seo: Partial<ComponentProps<typeof BaseLayout>> = {
     <div class="mt-8">
       <ViewsNote />
     </div>
+    <AuthorCard topics={post.topics} />
     <Share title={post.title} href={post.href} />
   </article>
   <RelatedPosts posts={related} />

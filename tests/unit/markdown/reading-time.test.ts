@@ -104,3 +104,18 @@ describe("readingTimePlugin", () => {
     expect((result.data as { astro: { frontmatter: { wordsRead?: number } } }).astro.frontmatter.wordsRead).toBe(300);
   });
 });
+
+describe("one reading time rule for posts and project stories (spec 040 FR-010a)", () => {
+  it("counts a project story body exactly as it counts a post body, front matter and links aside", async () => {
+    const post = `---\ntitle: A post\n---\n\n${words(226)}`;
+    const project = `---\ntitle: A project\ncta: ${words(500)}\nsource: https://example.com/a/very/long/address\n---\n\n${words(226)}`;
+    expect(await minutes(post)).toBe(2);
+    expect(await minutes(project)).toBe(2);
+  });
+
+  it("is registered once, on the one Markdown processor that renders posts and projects", async () => {
+    const { readFileSync } = await import("node:fs");
+    const config = readFileSync(new URL("../../../astro.config.mjs", import.meta.url), "utf-8");
+    expect(config.match(/readingTimePlugin/g)?.length).toBe(2); // import + one registration
+  });
+});

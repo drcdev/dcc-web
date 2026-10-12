@@ -1,0 +1,7 @@
+title: Mixed path
+description: A path with a published post, a draft post and a draft project.
+position: 1
+items:
+  - post: minimal
+  - post: draft
+  - project: draft

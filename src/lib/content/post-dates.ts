@@ -4,23 +4,14 @@
 // date such as 2026-02-30 into 2 March and lets a timestamp through as a Date.
 // So `date:` and `updated:` must be written exactly YYYY-MM-DD and name a real
 // calendar day.
+import { isRealDate } from "./dates.ts";
 import { contentError } from "./errors.ts";
 
 const DATE_KEYS = ["date", "updated"] as const;
-const SHAPE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 /** The top-level front matter block of a file's source text, or "" when there is none. */
 function frontMatterOf(source: string): string {
   return /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(source)?.[1] ?? "";
-}
-
-/** True for a real calendar date written YYYY-MM-DD. */
-function isRealDate(value: string): boolean {
-  const match = SHAPE.exec(value);
-  if (!match) return false;
-  const [, year, month, day] = match.map(Number) as [number, number, number, number];
-  const date = new Date(Date.UTC(year, month - 1, day));
-  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
 /**

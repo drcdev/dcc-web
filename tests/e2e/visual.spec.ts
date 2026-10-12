@@ -152,6 +152,18 @@ for (const size of WIDTHS) {
   }
 }
 
+// The fixture home page: intro, Now, Start here and Recent writing (spec 040), full page.
+for (const size of WIDTHS) {
+  for (const theme of THEMES) {
+    test(`home now and start here — ${size.name} — ${theme}`, async ({ page }) => {
+      await open(page, "http://localhost:4322/", size.width, size.height, theme);
+      await expect(page.locator("[data-now]")).toBeVisible();
+      await expect(page.locator("[data-start-here]")).toBeVisible();
+      await expect(page).toHaveScreenshot(`home-now-start-here-${size.name}-${theme}.png`, { fullPage: true });
+    });
+  }
+}
+
 // The fixture-site template subjects (V3). Layer: visual, because pixel identity
 // of a template on frozen content is what only a snapshot shows. What these
 // pages do is asserted elsewhere (blog-fixtures, projects-fixtures, contact,
