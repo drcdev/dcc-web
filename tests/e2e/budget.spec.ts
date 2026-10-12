@@ -8,8 +8,9 @@
 // Deliberately dropped (superseded by the spec's budget; listed for the PR
 // description, T097): "zero <script> elements", "CLS exactly 0" and
 // "total under 30 KB". The total-transfer limit is 150 KB since feature 018 (self-hosted type).
-import { test, expect, type Browser } from "@playwright/test";
+import { test, expect, type Browser, type Page } from "@playwright/test";
 import { TEMPLATES } from "./templates.ts";
+import { postsWithAssessment } from "../helpers/content.ts";
 
 const BUDGET = {
   lcpMs: 2500,
@@ -29,7 +30,7 @@ interface Measurement {
   totalBytes: number;
 }
 
-async function measure(browser: Browser, path: string): Promise<Measurement> {
+async function measure(browser: Browser, path: string, interact?: (page: Page) => Promise<void>): Promise<Measurement> {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
 
@@ -74,6 +75,7 @@ async function measure(browser: Browser, path: string): Promise<Measurement> {
 
   await page.goto(path, { waitUntil: "load" });
   await page.waitForLoadState("networkidle");
+  await interact?.(page);
   // LCP is finalised on the first input; a click on empty space ends LCP recording.
   await page.mouse.click(1, 1);
   await page.waitForTimeout(500);
@@ -133,6 +135,46 @@ for (const template of TEMPLATES) {
     test('has lang="en" on <html>', async ({ page }) => {
       await page.goto(template.path);
       await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    });
+  });
+}
+
+// specs/037 FR-018b, SC-005: the post that renders the self-assessment keeps the same budget at load
+// and after the lazily loaded module has run (scroll to the block, answer, show the results).
+// Written before the assessment code existed; the limits are not changed.
+for (const { post, assessment } of postsWithAssessment()) {
+  test.describe(`${post.address} with the self-assessment — page budget`, () => {
+    const check = (m: Measurement) => {
+      expect(m.lcp, "LCP was recorded").not.toBeNull();
+      expect(m.lcp!, "LCP (ms)").toBeLessThanOrEqual(BUDGET.lcpMs);
+      expect(m.cls, "CLS").toBeLessThan(BUDGET.cls);
+      expect(m.longTaskMs, "long-task time (ms)").toBeLessThanOrEqual(BUDGET.longTaskMs);
+      expect(m.jsBytes, "JavaScript transferred (bytes)").toBeLessThanOrEqual(BUDGET.jsBytes);
+      expect(m.totalBytes, "total transferred (bytes)").toBeLessThanOrEqual(BUDGET.totalBytes);
+    };
+
+    test("meets the budgets at load", async ({ browser }) => {
+      const m = await measure(browser, post.address);
+      test.info().annotations.push({ type: "budget", description: JSON.stringify(m) });
+      check(m);
+    });
+
+    test("meets the budgets after scrolling to the block, answering and showing the results", async ({ browser }) => {
+      const m = await measure(browser, post.address, async (page) => {
+        const block = page.locator("[data-assessment]");
+        await block.scrollIntoViewIfNeeded();
+        await expect(block).toHaveAttribute("data-assessment-ready", "true", { timeout: 30_000 });
+        await block.locator("details[data-assessment-details] > summary").click();
+        for (let s = 0; s < assessment.shifts.length; s++) {
+          for (let i = 0; i < 3; i++) {
+            await page.locator(`[data-statement="${s}.${i}"]`).getByLabel(assessment.scale[2]!, { exact: true }).check();
+          }
+        }
+        await page.locator("[data-assessment-show]").click();
+        await expect(page.locator("[data-assessment-results]")).toBeVisible();
+      });
+      test.info().annotations.push({ type: "budget", description: JSON.stringify(m) });
+      check(m);
     });
   });
 }

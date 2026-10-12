@@ -120,9 +120,10 @@ screens. `FullImage` runs the full page width. `caption` is optional on all thre
 </FullImage>
 ```
 
-A plain `![description](./images/name.png)` also works and sits in the text column. Two other
-components from `docs/pages.md` work in posts: `Lead` and `CallToAction`. That guide also
-states the Markdown rule.
+A plain `![description](./images/name.png)` also works and sits in the text column. Every image
+in a post body is served in several widths (360 to 1536 px, quality 75), so a phone downloads a
+file near its own width rather than the original. Two other components from `docs/pages.md` work
+in posts: `Lead` and `CallToAction`. That guide also states the Markdown rule.
 
 ## Tables
 
@@ -176,6 +177,37 @@ repository as a draft next to the real posts, because the end-to-end and visual 
 it. Do not edit or remove it unless you update the tests and their visual baselines in the same
 change. The other cases the tests need, such as a post with no feature image and a post with a
 very long title, are test fixtures in `tests/fixtures/posts/`, not posts on the site.
+
+## Assessment components
+
+A post can show text that lives in an assessment data file, so the text is written once. The data
+file is `src/content/assessments/<id>.yaml` (the file name is the id). It holds the shifts (name,
+From, To, the heading anchor, the Practical Application paragraph and three statements each), the
+five answer labels, the title and the intro. A reader's results and printed focus areas reuse the
+name, From, To and Practical Application of each shift scoring below the middle. Two components,
+available in a post with no import:
+
+| Component | Renders |
+| --- | --- |
+| `<PracticalApplication assessment="id" shift="shift-id" />` | One shift's Practical Application paragraph, in place of the prose paragraph. |
+| `<SelfAssessment assessment="id" />` | The self-assessment block. Write its `##` heading in the post just above the tag. |
+
+Keep each shift's **From** and **To** lines in the post; they must match the data file. The moved
+text must not also stay in the prose. The questions panel reads the data file's text where the
+components stand.
+
+| # | What went wrong | How to fix it |
+| --- | --- | --- |
+| A1 | The data file breaks its schema: a missing or empty text, an unknown key, other than five shifts or three statements each, or a scale that is not five labels | Astro names the file and the field; fix it. |
+| A2 | Two shifts share an `id` or an `anchor` | Give each shift its own. |
+| A3 | The scale does not start with "Rarely" and end with "Almost always" | Fix the first and last label. |
+| A4 | A component names an assessment with no data file | The message lists the known ids; fix `assessment`. |
+| A5 | `<PracticalApplication>` names a shift the assessment does not have | The message lists the shift ids; fix `shift`. |
+| A6 | A shift's `anchor` is not the id of a heading in the post (added with the block) | Fix the anchor or the heading. |
+| A7 | The post renders the same assessment block twice (added with the block) | Keep one. |
+| A8 | A tag that is neither a section nor one of the two assessment components | Use one the message lists. |
+| A9 | A **From** or **To** line in the post differs from the data file | Make them the same. |
+| A10 | A moved Practical Application paragraph is still in the post prose | Remove it and use the component. |
 
 ## Build errors you may see
 

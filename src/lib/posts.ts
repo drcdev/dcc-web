@@ -9,6 +9,9 @@ import { includeDrafts } from "./build-mode.ts";
 import { validatePageBody } from "./content/body.ts";
 import { assertPostFiles, postHref } from "./content/addresses.ts";
 import { sortNewestFirst } from "./content/post-order.ts";
+import { componentWords } from "./assessment/question-text.ts";
+import { loadAssessments } from "./assessment/lookup.ts";
+import { minutesForWords } from "./markdown/reading-time.ts";
 import type { PostSummary } from "./content/post-summary.ts";
 
 export type PostEntry = CollectionEntry<"posts">;
@@ -90,7 +93,10 @@ export function getPostSummaries(): Promise<PostSummary[]> {
             `Post file ${postFileOf(entry)}: no reading time was calculated. Check that the reading-time plugin is registered in astro.config.mjs.`,
           );
         }
-        return summaryOf(entry, minutes);
+        // Text the post's components render from a data file is not in the Markdown the plugin counts.
+        const words = remarkPluginFrontmatter.wordsRead;
+        const extra = typeof words === "number" ? componentWords(entry.body ?? "", await loadAssessments(), postFileOf(entry)) : 0;
+        return summaryOf(entry, extra > 0 ? minutesForWords(words + extra) : minutes);
       }),
     );
   })();

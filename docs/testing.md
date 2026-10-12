@@ -431,6 +431,22 @@ A page file under `/projects/...` fails through the page address check:
 "row 14: page addresses against the real route files (/projects/ prefix)", with the call site
 proven by the page build run for row 14.
 
+### Now and reading paths: `specs/040-home-now-start-here/contracts/build-errors.md`
+
+| Rows (contract ids) | Rule | Primary assertion | Call-site run |
+|---|---|---|---|
+| N01, N04, N05, N09 | Now `updated` missing, a topic missing or blank, unknown key, topic over 200 characters or on more than one line | `unit/content/now-schema.test.ts` "N01", "N04", "N05", "N09" | schema sync |
+| N02, N03 | `updated` is not a real day; `updated` is after the build date (UTC) | `unit/content/dates.test.ts` (N02, N03) and `unit/content/now-schema.test.ts` "N02", "N03" | build, `build/home-sections.test.ts` "N03" |
+| N06, N08 | The body links to `/contact/`; it is one paragraph with no heading | `unit/content/now-body.test.ts` "N06", "N08" | build, "N06" |
+| N07 | Exactly one Now file | `build/home-sections.test.ts` "N07" (two files, no file) | build |
+| R01, R02, R03, R08, R10 | Path settings, one-sentence description, 1 to 5 items, item shape, position 1 to 4 | `unit/content/reading-path-schema.test.ts` "R01" to "R10" | schema sync |
+| R04 to R07 | Missing target, duplicate item, more than four paths, shared position | `unit/content/reading-paths.test.ts` "R04" to "R07" | build, "R04" |
+| R09 | YAML that does not parse | `build/home-sections.test.ts` "R09" | build |
+
+The section markup is asserted in `component/sections/Now.test.ts` and
+`component/sections/StartHere.test.ts`, the home journey in `e2e/home.spec.ts`, and the
+`home-now-start-here-*` shots in `e2e/visual.spec.ts`.
+
 ### Writing series: `specs/013-writing-series/contracts/build-errors.md`
 
 | Row | Rule | Primary assertion | Call-site run |

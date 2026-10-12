@@ -141,3 +141,21 @@ describe("validatePageBody for a post file (P12, P18 to P20)", () => {
   });
 });
 
+describe("validatePageBody for a post (A8)", () => {
+  const POST = "src/content/posts/example.mdx";
+  const postComponentNames = ["PracticalApplication", "SelfAssessment"];
+
+  it.each(postComponentNames)("accepts <%s> in a post", (name) => {
+    expect(() => validatePageBody(POST, `Text.\n\n<${name} assessment="a" />`, "post")).not.toThrow();
+  });
+
+  it.each(postComponentNames)("rejects <%s> in a page", (name) => {
+    expect(() => validatePageBody(FILE, `Text.\n\n<${name} assessment="a" />`)).toThrow(name);
+  });
+
+  it("rejects any other tag in a post and lists the allowed names, post components included", () => {
+    const run = () => validatePageBody(POST, "Text.\n\n<Callout />", "post");
+    expect(run).toThrow("Callout");
+    for (const name of [...sectionNames, ...postComponentNames]) expect(run).toThrow(name);
+  });
+});

@@ -1,0 +1,7 @@
+title: Fixture path two
+description: A fixture path that mixes a project with posts.
+position: 2
+items:
+  - post: fixture-post-03
+  - project: minimal
+  - post: long-title

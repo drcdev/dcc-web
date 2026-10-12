@@ -1,0 +1,5 @@
+title: Draft only path
+description: A path whose only item is a draft post.
+position: 2
+items:
+  - post: draft

@@ -14,8 +14,12 @@ import { fileURLToPath } from "node:url";
 import { assertNoTwin, idFromPath, slugFromPath, slugFromPostPath } from "./lib/content/addresses.ts";
 import { assertImagesExist } from "./lib/content/images.ts";
 import { assertHomeVisible, assertLandingBody, bodyAfterFrontMatter } from "./lib/content/page-flags.ts";
+import { assertNowDate } from "./lib/content/now-file.ts";
 import { assertPostDates } from "./lib/content/post-dates.ts";
+import { assessmentSchema } from "./content/schemas/assessment.ts";
 import { landingSchema, pageSchema } from "./content/schemas/page.ts";
+import { nowSchema } from "./content/schemas/now.ts";
+import { readingPathSchema } from "./content/schemas/reading-path.ts";
 import { postSchema } from "./content/schemas/post.ts";
 import { projectSchema } from "./content/schemas/project.ts";
 
@@ -89,4 +93,33 @@ const projects = defineCollection({
   schema: ({ image }) => projectSchema({ image }),
 });
 
-export const collections = { pages, landing, posts, projects };
+// `assessments`: one YAML file per self-assessment in src/content/assessments/; the file name is
+// the id a post names in its components (specs/037-wayfinder-self-assessment/data-model.md).
+const assessments = defineCollection({
+  loader: glob({ pattern: "*.yaml", base: "./src/content/assessments" }),
+  schema: assessmentSchema,
+});
+
+// `now`: the one Now file, src/content/now/now.md: the date and four topics in its front matter and
+// the "open to" line as its body. The date check reads the raw text (specs/040-home-now-start-here).
+const now = defineCollection({
+  loader: glob({
+    pattern: "*.md",
+    base: "./src/content/now",
+    generateId: ({ entry, base }) => {
+      assertNowDate(`src/content/now/${entry}`, readFileSync(resolve(fileURLToPath(base), entry), "utf-8"));
+      return entry.replace(/\.md$/, "");
+    },
+  }),
+  schema: nowSchema(),
+});
+
+// `readingPaths`: one YAML file per "Start here" path in src/content/reading-paths/. The id is the file
+// name. Rules that span files (missing items, duplicates, the four-path limit) run in
+// src/lib/reading-paths.ts when the home page is built (contracts/build-errors.md R04 to R07).
+const readingPaths = defineCollection({
+  loader: glob({ pattern: "*.{yaml,yml}", base: "./src/content/reading-paths" }),
+  schema: readingPathSchema(),
+});
+
+export const collections = { pages, landing, posts, projects, assessments, now, readingPaths };

@@ -59,13 +59,13 @@ describe("docs/pages.md", () => {
     expect(guide()).toMatch(/50 to 160 characters/);
     expect(guide()).toMatch(/not enforced/i);
   });
-  it("documents the eight components in the registry order", () => {
+  it("documents the nine components in the registry order", () => {
     const g = guide();
     const positions = sectionNames.map((name) => g.indexOf(`\`${name}\``));
     positions.forEach((at, n) => expect(at, `${sectionNames[n]} is documented`).toBeGreaterThanOrEqual(0));
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
   });
-  it.each(["Lead", "CallToAction", "Figure", "WideImage", "FullImage", "SideImage", "ContactForm", "RecentWriting"])(
+  it.each(["Lead", "CallToAction", "Figure", "WideImage", "FullImage", "SideImage", "ContactForm", "RecentWriting", "Now", "StartHere"])(
     "has an example of %s",
     (name) => {
       expect(guide()).toContain(`<${name}`);

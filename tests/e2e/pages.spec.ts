@@ -67,10 +67,11 @@ for (const [path, title, draft] of PAGES) {
       await expect(page.getByRole("navigation", { name: "Main" })).toHaveCount(1);
       await expect(page.getByRole("main")).toHaveCount(1);
       await expect(page.getByRole("contentinfo")).toHaveCount(1);
-      // The home page's "Recent writing" section (spec 008 US7) is a labelled region by design.
+      // The home page's "Recent writing" (spec 008 US7), "Now" and "Start here" sections and each
+      // reading path (spec 040 FR-018) are regions labelled by their own heading, by design.
       await expect(
         page.locator(
-          "main [role=region], main section[aria-label], main section[aria-labelledby]:not([data-recent-writing])",
+          "main [role=region], main section[aria-label], main section[aria-labelledby]:not([data-recent-writing], [data-now], [data-start-here], [data-reading-path])",
         ),
       ).toHaveCount(0);
       await expect(page.locator("aside, [role=complementary], [role=search]")).toHaveCount(0);
@@ -210,12 +211,15 @@ test.describe("home recent writing keeps the introduction intact (US7)", () => {
     await page.goto("/");
     await expect(page.locator("h1")).toHaveCount(1);
     const recentFollowsBody = await page.evaluate(() => {
-      const recent = document.querySelector("[data-recent-writing]");
-      const paragraphs = [...document.querySelectorAll("#content-section > p")];
+      // Spec 040 FR-016: the order is intro, Now, Start here, Recent writing.
+      const order = ["h1", "[data-now]", "[data-start-here]", "[data-recent-writing]"].map((selector) =>
+        document.querySelector(selector),
+      );
       return (
-        !!recent &&
-        paragraphs.length > 0 &&
-        paragraphs.every((p) => !!(p.compareDocumentPosition(recent) & Node.DOCUMENT_POSITION_FOLLOWING))
+        order.every((el) => !!el) &&
+        order.every(
+          (el, i) => i === 0 || !!(order[i - 1]!.compareDocumentPosition(el!) & Node.DOCUMENT_POSITION_FOLLOWING),
+        )
       );
     });
     expect(recentFollowsBody).toBe(true);

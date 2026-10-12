@@ -4,7 +4,8 @@
 // getPosts(), the only reader of the collection, so drafts are left out of a
 // production build (docs.astro.build/en/guides/content-collections/#generating-routes-from-content).
 // The post body is rendered with render(); `pre` and `table` are replaced by the
-// code block and the scrolling table, and the section components (Figure,
+// code block and the scrolling table, `img` by PostImage (a srcset and sizes for every Markdown
+// image, specs/037 T075), and the section components (Figure,
 // WideImage, FullImage) are passed so MDX needs no imports
 // (docs.astro.build/en/guides/integrations-guide/mdx/#passing-components-to-mdx-content).
 import { render } from "astro:content";
@@ -13,8 +14,15 @@ import type { ImageMetadata } from "astro";
 import PostLayout from "../../layouts/PostLayout.astro";
 import CodeBlock from "../../components/post/CodeBlock.astro";
 import ScrollTable from "../../components/post/ScrollTable.astro";
+import PostImage from "../../components/post/PostImage.astro";
+import AssessmentLink from "../../components/assessment/AssessmentLink.astro";
+import { postComponents } from "../../components/assessment/index";
 import { sectionComponents } from "../../components/sections/index";
+import { assessmentsNamedIn, checkFromToLines, checkNoMovedText } from "../../lib/assessment/checks";
+import { assessmentContentId, checkBlockTargets, findAssessment, headingId, loadAssessments } from "../../lib/assessment/lookup";
+import { expandForQuestions } from "../../lib/assessment/question-text";
 import { selectRelated } from "../../lib/content/post-order";
+import { contentError } from "../../lib/content/errors";
 import { getNavigation } from "../../lib/pages";
 import { prepareQuestionSource } from "../../lib/questions/source";
 import { getPostSummaries, getPosts, postFileOf } from "../../lib/posts";
@@ -30,8 +38,40 @@ export async function getStaticPaths() {
 const { entry, post, related } = Astro.props;
 // Section components name this file in their errors (src/components/sections/validate.ts).
 Astro.locals.pageFile = postFileOf(entry);
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 const navigation = await getNavigation();
+
+// A post that uses the assessment components: its moved text must not also stay in the prose
+// (A10), and a post that renders the block must repeat the data file's From and To lines (A9).
+// The question source then reads the data file's text where the components stand (FR-021).
+const file = postFileOf(entry);
+const body = entry.body ?? "";
+const named = assessmentsNamedIn(body);
+const assessments = named.used.length > 0 ? await loadAssessments() : {};
+for (const id of named.used) {
+  const assessment = findAssessment(file, id, assessments);
+  checkNoMovedText({ file, body, assessment });
+  if (named.withBlock.includes(id)) checkFromToLines({ file, body, headings, assessment });
+}
+// The block is named by the `## <title>` heading written above it. The title-card link points at
+// the block's content inside its collapsed details, so following it opens the block (FR-001a).
+let assessmentHeading: string | undefined;
+let assessmentTarget: string | undefined;
+for (const id of named.withBlock.slice(0, 1)) {
+  const title = findAssessment(file, id, assessments).title;
+  assessmentHeading = headingId(title);
+  assessmentTarget = assessmentContentId(title);
+  checkBlockTargets({
+    file,
+    assessment: findAssessment(file, id, assessments),
+    id,
+    headings,
+    blockCount: body.match(new RegExp(`<SelfAssessment\\b[^>]*\\bassessment="${id}"`, "g"))?.length ?? 0,
+  });
+  if (!headings.some((heading) => heading.slug === assessmentHeading)) {
+    throw contentError("post", file, `the self-assessment needs a heading "## ${title}" just above it, so the block and the title-card link have a target.`);
+  }
+}
 
 // The hash of this version of the post, which the questions panel sends back so the Worker can
 // tell a changed post (specs/022).
@@ -39,7 +79,7 @@ const { hash: questionHash } = prepareQuestionSource({
   slug: entry.id,
   title: entry.data.title,
   summary: entry.data.summary,
-  body: entry.body ?? "",
+  body: named.used.length > 0 ? expandForQuestions(body, assessments, file) : body,
 });
 
 // The feature image, resized to the Open Graph size, is the sharing image;
@@ -50,5 +90,6 @@ const share = post.featureImage
 ---
 
 <PostLayout post={post} navigation={navigation} image={share?.src} related={related} questionHash={questionHash}>
-  <Content components={{ ...sectionComponents, pre: CodeBlock, table: ScrollTable }} />
+  <Fragment slot="title-extra">{assessmentTarget && <AssessmentLink target={assessmentTarget} />}</Fragment>
+  <Content components={{ ...sectionComponents, ...postComponents, pre: CodeBlock, table: ScrollTable, img: PostImage }} />
 </PostLayout>

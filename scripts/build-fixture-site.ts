@@ -8,7 +8,7 @@
 // too: a post with no feature image and a post with a very long title, the cases the removed
 // sample posts used to cover, and a post that shows every part of the post template, the lead
 // story and the subject of the post-template snapshot (FIXTURE_POSTS). Written to .cache/fixture-site/dist.
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { deflateSync, crc32 } from "node:zlib";
@@ -154,6 +154,20 @@ export function prepareFixtureSite(siteRoot: string): void {
     rmSync(dir, { recursive: true, force: true });
     mkdirSync(dir, { recursive: true });
   }
+  // The real reading paths name real posts and projects, which are gone, so they go too. The
+  // fixture Now file and the fixture reading paths (naming the fixture posts and projects below)
+  // take their place.
+  const pathsDir = resolve(siteRoot, "src/content/reading-paths");
+  rmSync(pathsDir, { recursive: true, force: true });
+  mkdirSync(pathsDir, { recursive: true });
+  const pathFixtures = resolve(repoRoot, "tests/fixtures/reading-paths");
+  for (const name of readdirSync(pathFixtures).filter((file) => file.endsWith(".yaml"))) {
+    cpSync(resolve(pathFixtures, name), resolve(pathsDir, name));
+  }
+  const nowDir = resolve(siteRoot, "src/content/now");
+  rmSync(nowDir, { recursive: true, force: true });
+  mkdirSync(nowDir, { recursive: true });
+  cpSync(resolve(repoRoot, "tests/fixtures/now/now.md"), resolve(nowDir, "now.md"));
   // Dependencies resolve through the repository's node_modules.
   symlinkSync(resolve(repoRoot, "node_modules"), resolve(siteRoot, "node_modules"), "dir");
 

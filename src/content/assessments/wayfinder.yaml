@@ -1,0 +1,72 @@
+title: Where do you sit?
+intro: >-
+  Fifteen short statements, three for each of the five shifts. Choose how often each one
+  describes what you actually do, not what you would like to do. This is a way to reflect,
+  not a validated test. Nothing you choose leaves your browser.
+scale: [Rarely, Sometimes, Often, Usually, Almost always]
+shifts:
+  - id: see-the-whole-system
+    name: See the Whole System
+    from: "Fixing individual problems in isolation"
+    to: "Understanding interconnections and root causes"
+    anchor: mindset-shift-1-see-the-whole-system
+    practicalApplication: >-
+      Before proposing solutions, create a simple systems map showing stakeholder
+      relationships, information flows, and decision points. Ask: "Who else is affected by
+      this challenge? What connections are we missing?"
+    statements:
+      - "Before I propose a fix, I ask who else the problem affects."
+      - "I map how people, information and decisions connect before I act on a problem."
+      - "When a problem keeps coming back, I look for its root cause rather than patching the symptom."
+  - id: embrace-uncertainty
+    name: Embrace Uncertainty
+    from: "Controlling outcomes through detailed planning"
+    to: "Experimenting and adapting through iterative learning"
+    anchor: mindset-shift-2-embrace-uncertainty
+    practicalApplication: >-
+      For your next progress-resistant initiative, design "safe-to-fail" experiments that
+      generate learning while minimizing risk. Replace 12-month plans with 90-day or even
+      30-day learning cycles. Ask: "What assumptions can we test quickly and cheaply?"
+    statements:
+      - "I test an idea with a small, low-risk experiment before I commit to a large plan."
+      - "I plan in short learning cycles and change course when I learn something new."
+      - "When a result surprises me, I treat it as information rather than as a failure of the plan."
+  - id: listen-deeply
+    name: Listen Deeply
+    from: "Persuading others to accept your solution"
+    to: "Creating space for diverse perspectives and genuine understanding"
+    anchor: mindset-shift-3-listen-deeply
+    practicalApplication: >-
+      Replace presentation meetings with listening sessions. Before your next major
+      decision, ask stakeholders: "What's your experience of this challenge?" Listen for
+      patterns, concerns, and assets that weren't part of your initial analysis.
+    statements:
+      - "Before I decide, I ask people about their experience of the challenge."
+      - "In meetings I make room for views that differ from mine and ask about them."
+      - "I change my approach when what I hear shows that I was wrong."
+  - id: lead-without-authority
+    name: Lead Without Authority
+    from: "Using position power to drive compliance"
+    to: "Building alignment and shared purpose across organizational boundaries"
+    anchor: mindset-shift-4-lead-without-authority
+    practicalApplication: >-
+      Replace directive language ("You need to...") with collaborative language ("How might
+      we...?"). Instead of presentations explaining what others should do, facilitate
+      conversations about what the group can accomplish together.
+    statements:
+      - "I build shared purpose across teams instead of relying on my position to get things moving."
+      - "I invite people in with questions such as \"How might we...?\" more often than I instruct them."
+      - "I build working relationships with people outside my reporting line before I need their help."
+  - id: balance-creative-tension
+    name: Balance Creative Tension
+    from: "Eliminating problems and resistance"
+    to: "Using the gap between current reality and future vision as fuel for change"
+    anchor: mindset-shift-5-balance-creative-tension
+    practicalApplication: >-
+      When facing resistance or persistent problems, ask: "What is this tension telling us
+      about what needs to change?" Use resistance as diagnostic information rather than
+      trying to eliminate it.
+    statements:
+      - "When I meet resistance, I treat it as a sign of something I need to understand."
+      - "I keep the gap between where we are and where we want to be in view, without rushing to close it."
+      - "When a problem persists, I ask what it is telling us about what needs to change."
