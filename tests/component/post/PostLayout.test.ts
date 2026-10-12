@@ -62,7 +62,8 @@ describe("PostLayout structure", () => {
 
   it("has no image and no empty hero box without a feature image", async () => {
     const html = await render(summary("plain"));
-    expect(byName(html, "img")).toHaveLength(0);
+    // The only image is the author card's photo, which comes last in the article.
+    expect(byName(html, "img").filter((img) => img.index < html.indexOf("data-author-card"))).toHaveLength(0);
     expect(html).not.toContain("data-post-hero");
   });
 
@@ -95,6 +96,31 @@ describe("PostLayout share and related (FR-028, FR-029)", () => {
     expect(html).toContain("data-share");
     expect(html).not.toContain("data-related");
   });
+});
+
+describe("PostLayout author card (specs/039 row A2, FR-001)", () => {
+  const cardIndexes = (html: string) => [...html.matchAll(/<section\b[^>]*data-author-card/g)].map((m) => m.index!);
+  const cases: [string, ReturnType<typeof summary>, Record<string, unknown>][] = [
+    ["a post without related posts or questions", summary("one"), {}],
+    ["a post with related posts", summary("one"), { related: [summary("two")] }],
+    ["a post with the questions panel", summary("one"), { questionHash: "ab".repeat(32) }],
+    ["a draft post", summary("one", { draft: true }), { related: [summary("two")], questionHash: "ab".repeat(32) }],
+  ];
+  for (const [name, post, extra] of cases) {
+    it(`A2: puts one card inside the article, after the views note and before the share area, for ${name}`, async () => {
+      const html = await render(post, extra);
+      const [card, ...others] = cardIndexes(html);
+      expect(card).toBeDefined();
+      expect(others).toHaveLength(0);
+      expect(card!).toBeGreaterThan(html.indexOf("<article"));
+      expect(card!).toBeGreaterThan(html.indexOf("data-views-note"));
+      expect(card!).toBeLessThan(html.indexOf("data-share"));
+      expect(card!).toBeLessThan(html.indexOf("</article>"));
+      // A direct child of the article: nothing opened since the article is still open at the card.
+      const between = html.slice(html.indexOf("data-views-note"), card!);
+      expect(between.split("</div>").length - 1).toBeGreaterThanOrEqual(between.split("<div").length - 1);
+    });
+  }
 });
 
 describe("PostLayout draft (FR-032, FR-045)", () => {

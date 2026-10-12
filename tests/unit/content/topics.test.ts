@@ -11,6 +11,7 @@ import {
   otherSeries,
   pillRowTopics,
   seriesIds,
+  seriesOf,
   topicHref,
   topicIds,
   topics,
@@ -293,5 +294,22 @@ describe("neutral (dusk) pill edge in dark mode (issue #46)", () => {
     expect(edge).toBeDefined();
     expect(contrast(edge!, "dusk-800"), "card surface").toBeGreaterThanOrEqual(3);
     expect(contrast(edge!, "dusk-BASE"), "page surface").toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe("seriesOf (A8)", () => {
+  it("returns the series id when the list holds one series", () => {
+    expect(seriesOf([pillRowTopics[0]!.id, seriesIds[0]!])).toBe(seriesIds[0]);
+    expect(seriesOf([seriesIds[1]!])).toBe(seriesIds[1]);
+  });
+
+  it("returns undefined when the list holds no series", () => {
+    expect(seriesOf([])).toBeUndefined();
+    expect(seriesOf([pillRowTopics[0]!.id])).toBeUndefined();
+  });
+
+  it("ignores free-form topic ids", () => {
+    expect(seriesOf(["some-free-form-topic"])).toBeUndefined();
+    expect(seriesOf(["some-free-form-topic", seriesIds[0]!])).toBe(seriesIds[0]);
   });
 });

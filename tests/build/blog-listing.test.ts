@@ -361,3 +361,28 @@ describe("the series strip images on series pages (FR-003, FR-007, SC-005; resea
     expect(stripCandidates(site.read("writing/convergence/index.html")).tag).not.toBe("");
   });
 });
+
+describe("the author card (specs/039 rows A1 and A5; FR-001, FR-013, FR-014)", () => {
+  const cards = (html: string) => html.match(/<section\b[^>]*data-author-card/g)?.length ?? 0;
+
+  it("A1: is on every post page exactly once", () => {
+    const postPages = [...site.htmlFiles()].filter(([path]) => /^writing\/(?:listing-post-\d+|tie-b|free-form-post)\/index\.html$/.test(path));
+    expect(postPages.length).toBeGreaterThan(10);
+    for (const [path, html] of postPages) expect(cards(html), path).toBe(1);
+  });
+
+  it("A1: is on no other page, and not in the feed", () => {
+    const others = [...site.htmlFiles()].filter(([path]) => !/^writing\/(?:listing-post-\d+|tie-b|free-form-post)\/index\.html$/.test(path));
+    expect(others.length).toBeGreaterThan(5);
+    for (const [path, html] of others) expect(cards(html), path).toBe(0);
+    expect(site.read("writing/rss.xml")).not.toContain("data-author-card");
+  });
+
+  it("A5: builds the 2x portrait at or below 20 KB", () => {
+    const html = site.read("writing/listing-post-01/index.html");
+    const tag = /<img\b[^>]*>/.exec(/<section\b[^>]*data-author-card[\s\S]*?<\/section>/.exec(html)?.[0] ?? "")?.[0] ?? "";
+    const twoX = /([^\s,"]+)\s+2x/.exec(/\ssrcset="([^"]*)"/.exec(tag)?.[1] ?? "")?.[1];
+    expect(twoX, "2x candidate").toBeDefined();
+    expect(statSync(join(site.dist, twoX!.replace(/^\//, ""))).size).toBeLessThanOrEqual(20_480);
+  });
+});
