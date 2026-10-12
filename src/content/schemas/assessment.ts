@@ -16,11 +16,8 @@ const shift = z.strictObject({
   to: text,
   anchor: slug,
   practicalApplication: text,
-  week: text,
   statements: z.array(text).length(3, "Each shift needs exactly three statements."),
 });
-
-const integrationWeek = z.strictObject({ name: text, week: text });
 
 export const assessmentSchema = z
   .strictObject({
@@ -28,7 +25,6 @@ export const assessmentSchema = z
     intro: text,
     scale: z.array(text).length(5, "The scale needs exactly five labels, low to high."),
     shifts: z.array(shift).length(5, "An assessment needs exactly five shifts."),
-    integrationWeek,
   })
   .superRefine((value, context) => {
     if (value.scale[0] !== "Rarely" || value.scale[4] !== "Almost always") {

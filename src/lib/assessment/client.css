@@ -3,7 +3,7 @@
    there). They are not a <style> in SelfAssessment.astro because Astro bundles a component's
    styles with every page that calls render() on a post using it, and the listings do that for the
    reading time. Every rule
-   here applies only once the module has run: the results link to headings, and the plan sheet is
+   here applies only once the module has run: the results link to headings, and the focus sheet is
    added by the module. Hiding the form in print, which must work before the module loads, is the
    block's own print: classes. */
 
@@ -13,15 +13,15 @@ h3[id] {
   scroll-margin-top: 6rem;
 }
 
-/* Print (research R7). With a result shown, only the plan sheet prints. */
-[data-assessment-plan-sheet] {
+/* Print (research R7). With a result shown, only the focus sheet prints: the mindsets to develop. */
+[data-assessment-focus-sheet] {
   display: none;
 }
 @media print {
-  html[data-assessment-plan] body > :not([data-assessment-plan-sheet]) {
+  html[data-assessment-focus] body > :not([data-assessment-focus-sheet]) {
     display: none !important;
   }
-  html[data-assessment-plan] body > [data-assessment-plan-sheet] {
+  html[data-assessment-focus] body > [data-assessment-focus-sheet] {
     display: block;
     margin: 0;
     padding: 0;
@@ -31,24 +31,25 @@ h3[id] {
     line-height: 1.35;
     overflow-wrap: anywhere;
   }
-  [data-assessment-plan-sheet] h2 {
+  [data-assessment-focus-sheet] h2 {
     margin: 0 0 0.25rem;
     font-size: 15pt;
   }
-  [data-assessment-plan-sheet] h3 {
+  [data-assessment-focus-sheet] h3 {
     margin: 0.6rem 0 0.1rem;
     font-size: 11pt;
     break-after: avoid;
   }
-  [data-assessment-plan-sheet] p,
-  [data-assessment-plan-sheet] ul {
+  [data-assessment-focus-sheet] p {
     margin: 0.1rem 0;
   }
-  [data-assessment-plan-sheet] ul {
-    padding-left: 1.2rem;
-  }
-  [data-assessment-plan-sheet] [data-plan-week] {
+  [data-assessment-focus-sheet] [data-focus-item] {
+    margin-top: 0.6rem;
     break-inside: avoid;
+  }
+  [data-assessment-focus-sheet] [data-focus-item] > :first-child {
+    font-weight: 700;
+    break-after: avoid;
   }
 }
 @page {

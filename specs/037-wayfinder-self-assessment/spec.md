@@ -36,9 +36,9 @@ describes five shifts, each written as a **From** and a **To**:
    between current reality and future vision as fuel for change.
 
 Each shift's section ends with a **Practical Application** paragraph. The post closes with a
-**6-Week Development Plan**: weeks 1 to 5 each practise one shift in the order above, and week 6
-is integration and reflection (this section was removed from the post on 2026-10-11; see
-Clarifications). The post says the downloadable Wayfinder includes
+**6-Week Development Plan** (this section was removed from the post on 2026-10-11, and the
+six-week plan was dropped from the feature the same day; see Clarifications). The post says
+the downloadable Wayfinder includes
 "self-assessment frameworks for continued development", but the site offers no way to
 assess yourself today.
 
@@ -53,19 +53,18 @@ constitution amendment.
 
 - Q: How should an earlier result be kept so a reader can compare a retake? → A: A results link.
   The versioned scores go in the URL fragment (never sent to the server) and are printed on the
-  plan; nothing is stored by the site or the browser.
+  focus-areas sheet; nothing is stored by the site or the browser.
 - Q: Is the live poll for talks part of this slice? → A: No, follow-up work as its own feature.
 - Q: Are the "What would you do?" branching scenarios part of this slice? → A: No, follow-up
   work as their own feature, including any Workers AI feedback.
 - Q: Should the fifteen statements be shown all on one page, or one shift at a time? → A: One
   form: five labelled groups of three five-point scales, then a "Show my results" button.
 - Q: Where should the practical-application reminders and six-week plan activities live? → A:
-  A single source. A validated data file holds the shifts, statements, reminders and week
-  activities, and the post's "Practical Application" paragraphs are rendered from it through MDX
-  components. (The post's 6-Week Development Plan was later removed; see the PR #176 decision
-  below.)
+  A single source. A validated data file holds the shifts, statements and reminders, and the
+  post's "Practical Application" paragraphs are rendered from it through MDX components. (The
+  week activities were later removed with the six-week plan; see the PR #176 decisions below.)
 - Q: When a reader opens the post through a results link, what should they see before
-  retaking? → A: The earlier result right away (chart, summary, low-band links, print plan),
+  retaking? → A: The earlier result right away (chart and summary),
   marked "Earlier result from <date>", with an empty form below for the retake.
 - Q: How should the text summary state each shift's position "in words"? → A: The score to one
   decimal plus a band phrase, e.g. "See the Whole System: 2.3 of 5, nearer 'From' (fixing
@@ -74,8 +73,9 @@ constitution amendment.
 - Q: For a low-scoring shift, is the results reminder the full Practical Application paragraph
   or a separate short line? → A: The full Practical Application paragraph, reused unchanged.
 - Q: When results are on screen and the reader prints from the browser's own Print menu, what
-  prints? → A: Once results exist, any print gives the plan only; without results, the post
-  prints with the statements as a list.
+  prints? → A: Once results exist, any print gives the focus-areas sheet only (originally the
+  plan; see the last decision below); without results, the post prints with the statements as a
+  list.
 - Q: When a reader finishes the assessment, should the address bar change to their results
   link? → A: Yes. Showing results replaces the address-bar fragment with the new result's
   fragment, adding no history entry; a retake replaces it again, so the newest result is the one
@@ -89,8 +89,8 @@ constitution amendment.
 - Decision 2026-10-11 (Don, review of PR #176): the article was too long. The post now ends
   with its "Printable Resources" section; the "Practical First Steps" section, its "Immediate Actions (This Week)"
   and "6-Week Development Plan" subsections and the `DevelopmentPlan` component are removed. The
-  week activities and the integration week stay in the data file and appear only in the reader's
-  printed plan (User Story 3, FR-010). The post's reading time drops accordingly.
+  post's reading time drops accordingly. (The week activities first stayed in the data file for
+  the printed plan; the last decision below removed them.)
 - Decision 2026-10-11 (Don, review of PR #176): "turn the self assessment into an accordian with
   a "Take self-assessment" button that expands it." The block below the assessment heading is
   collapsed by default behind a "Take the self-assessment" button (a native disclosure, so it
@@ -98,12 +98,23 @@ constitution amendment.
   title-card link, opens the post through a results link, or follows any link to something
   inside it. Printing without results still shows the statement list while it is collapsed
   (FR-001a).
+- Decision 2026-10-11 (Don, review of PR #176): "remove the 6 week plan entirely and just focus
+  on the mindsets in need of development in the widget and print". The six-week plan is gone:
+  no week activities, no integration week and no plan ordering, in the data file, the page or
+  the print. The results' "Mindsets to develop" list shows each shift scoring below 3, weakest
+  first, with its name, score, From → To, Practical Application and a "Read <name>" link
+  (FR-008); with none below 3 it shows the "none below the middle" message and the
+  lowest-scoring shift. The print button becomes "Print my focus areas", and any print once
+  results exist gives a sheet with the title, the date, the same mindsets (each with its
+  section's full address) and the results link, and nothing else (User Story 3, FR-010, FR-011).
+  The chart and the five-line summary are unchanged. The statement set version covers only the
+  shift ids and statements, so removing the weeks does not change it.
 
 ## Scope of this slice
 
 In scope: the individual self-assessment inside the Wayfinder post (User Stories 1 to 4),
-moving the post's "Practical Application" paragraphs and the six-week plan activities into the
-assessment's data file so they live in one source, keeping the critical-thinking
+moving the post's "Practical Application" paragraphs into the assessment's data file so they
+live in one source, keeping the critical-thinking
 questions' source for the post complete after that move (FR-021), and one paragraph in the
 privacy policy about the assessment (FR-016a).
 
@@ -151,8 +162,9 @@ chart and the text summary show one position per shift that matches the answers 
 
 ### User Story 2 - Go from a low score to what to practise (Priority: P2)
 
-For each shift where the reader scores low, the results point them to the part of the post that
-covers that shift and to its practical application, so they know what to read and try next.
+The results list the mindsets that need development: each shift where the reader scores low,
+weakest first, with its score, its From and To, its practical application and a link to the part
+of the post that covers it, so they know what to read and try next.
 
 **Why this priority**: It connects the score to the post's own advice. It needs Story 1's
 results but adds the step from "where am I" to "what do I do".
@@ -162,39 +174,44 @@ two low shifts show links, and that each link lands on the matching section of t
 
 **Acceptance Scenarios**:
 
-1. **Given** a result where a shift scores in the low band, **When** the reader views the
-   results, **Then** that shift shows a link to its section in the post and its Practical
-   Application paragraph.
+1. **Given** a result where one or more shifts score in the low band, **When** the reader views
+   the results, **Then** under "Mindsets to develop" each of those shifts shows, weakest first
+   (ties in the post's order), its name and score, its From → To, its Practical Application
+   paragraph and a "Read <name>" link to its section in the post.
 2. **Given** the reader follows a shift's link, **When** the page moves, **Then** the matching
    mindset-shift heading is in view and not hidden under the site header.
 3. **Given** no shift scores in the low band, **When** the reader views the results, **Then**
-   the results say so and suggest the shift with the lowest score as the next one to practise.
+   the results say so and suggest the shift with the lowest score as the next one to practise,
+   shown the same way (name, score, From → To, Practical Application and link).
 
 ---
 
-### User Story 3 - Print a six-week plan shaped by my results (Priority: P2)
+### User Story 3 - Print my focus areas (Priority: P2)
 
-From the results, the reader prints a six-week development plan. The plan uses the post's
-weekly activities but orders weeks 1 to 5 from the reader's lowest-scoring shift to their
-highest, and keeps week 6 as integration and reflection. The printout also records the date and
-the reader's five positions.
+From the results, the reader prints the mindsets they need to develop: a short sheet with the
+assessment title, the date, each shift scoring below 3 (weakest first) with its score, From and
+To, Practical Application and the full address of its section in the post, and their results
+link.
 
 **Why this priority**: It gives the reader something to keep and act on, which the post already
 promises in its self-assessment frameworks for continued development.
 
-**Independent Test**: Complete the assessment, choose print, and confirm the print preview shows
-only the plan, with weeks ordered by the reader's scores and the date and positions listed.
+**Independent Test**: Complete the assessment with two shifts below 3, choose print, and confirm
+the print preview shows only the focus-areas sheet: the title, the date, those two shifts weakest
+first and the results link.
 
 **Acceptance Scenarios**:
 
-1. **Given** the reader has results, **When** they choose to print their plan, **Then** the
-   printed page shows six weeks, weeks 1 to 5 each naming one shift with the data file's activities
-   for it, ordered from lowest score to highest, and week 6 as integration and reflection.
-2. **Given** two shifts have the same score, **When** the plan is built, **Then** they keep the
-   post's own order between them.
-3. **Given** the reader prints, by the "Print my plan" button or the browser's own Print menu,
-   **When** the print preview appears, **Then** it holds the plan, the date and the five
-   positions, and leaves out the site header, footer, share area and the rest of the post.
+1. **Given** the reader has results, **When** they choose "Print my focus areas", **Then** the
+   printed page shows the title, the date, the shifts scoring below 3 weakest first (each with
+   its name and score, From → To, Practical Application and its section's full address) and the
+   results link, and nothing else.
+2. **Given** no shift scores below 3, **When** the reader prints, **Then** the sheet says none of
+   their scores is below the middle and shows the lowest-scoring shift as the one to practise
+   next, in the same form.
+3. **Given** the reader prints, by the "Print my focus areas" button or the browser's own Print
+   menu, **When** the print preview appears, **Then** it holds only the focus-areas sheet and
+   leaves out the site header, footer, share area and the rest of the post.
 
 ---
 
@@ -215,8 +232,8 @@ the change per shift.
 
 1. **Given** the reader opens the post through a results link, **When** the page loads,
    **Then** the page opens at the top as usual with a short "Your earlier result is below" link
-   near the title that leads to the earlier result (FR-012), and the earlier result is shown at once (chart, text summary, low-band links and print
-   plan), marked "Earlier result from <date>", with an empty form below for the retake.
+   near the title that leads to the earlier result (FR-012), and the earlier result is shown at once (chart and text summary),
+   marked "Earlier result from <date>", with an empty form below for the retake.
 2. **Given** the reader opened the post through a results link, **When** they finish a retake, **Then**
    the chart shows the earlier and the new position for each shift, told apart by more than
    colour, and the text summary states the change for each shift.
@@ -241,8 +258,9 @@ the change per shift.
   title-card link open without JavaScript (FR-001a).
 - The reader answers every statement with the middle value: every shift sits in the middle, no
   shift is in the low band, and Story 2 scenario 3 applies.
-- The reader answers every statement at the low end: all five shifts are low and all five show
-  links; the plan keeps the post's own order (all tied).
+- The reader answers every statement at the low end: all five shifts are low and all five are
+  listed as mindsets to develop, in the post's own order (all tied); the printed sheet still
+  fits on at most two pages (SC-003).
 - An earlier result (Story 4) was made against a different version of the statements: it is
   still shown on its own (chart, summary, date), marked "made with an earlier set of
   questions"; after a retake the two results are shown separately, with no change per shift.
@@ -254,7 +272,7 @@ the change per shift.
   cleared.
 - The post is printed without results (the normal browser print): the assessment prints as its
   statements, not as an empty form with controls, whether its section is open or collapsed. Once results are on screen, any print
-  (button or browser menu) gives the plan only (FR-011).
+  (button or browser menu) gives the focus-areas sheet only (FR-011).
 - Narrow phone screens: the five-point scales and the chart fit at 320 px wide without sideways
   scrolling.
 - Dark mode: the chart and scales are legible in both themes.
@@ -295,24 +313,23 @@ the change per shift.
   each choice's accessible name is its visible label, and the label text is part of the
   choice's click target. Only one choice per statement can be selected.
 - **FR-004**: The statements, the shift names, their "From" and "To" wording, the anchors of the
-  shift headings, the five answer labels, the assessment's title and introduction, the practical
-  application text, the week 1 to 5 activities and the week 6 integration name and activities
-  MUST live in one validated data file in the site's content, so Don can edit them without
+  shift headings, the five answer labels, the assessment's title and introduction and the
+  practical application text MUST live in one validated data file in the site's content, so Don can edit them without
   changing code, and invalid content (a missing or empty field, an unknown field, other than
   five shifts or three statements per shift, a repeated shift id or anchor, scale ends other
   than "Rarely" and "Almost always") MUST fail the build with a clear error naming the file and
   the field. This file is the single source: the post's five "Practical Application" paragraphs
   MUST be rendered from it through MDX components at build time, and that text MUST NOT also be
   written out in the post's prose; the build MUST fail, naming the post file, if any of the data
-  file's practical application texts also appears verbatim in the post's prose. The week texts
-  and the integration week appear only in the printed plan (FR-010); the post has no six-week
-  plan section (Clarifications, PR #176 decision). The shift names (in the post's mindset-shift
+  file's practical application texts also appears verbatim in the post's prose. The data file
+  holds no week activities: the six-week plan was removed (Clarifications, PR #176 decisions).
+  The shift names (in the post's mindset-shift
   headings) and the
   "From" and "To" lines stay in the post's prose, where they belong to the argument; the build
   MUST fail, naming the post file and the shift, if a shift's "From" or "To" wording in the
   data file does not match the post's "From" or "To" line for that shift, so the two cannot
-  drift apart. The statement list shown without JavaScript, the results reminders and the
-  printed plan are all built from the same data file fields, so every rendering of a text
+  drift apart. The statement list shown without JavaScript, the results' mindsets to develop and
+  the printed focus-areas sheet are all built from the same data file fields, so every rendering of a text
   matches the file exactly.
 - **FR-005**: A shift's score MUST be the mean of its three answers, shown on a scale from 1
   ("From") to 5 ("To"). A shift is in the **low band** when its score is below 3.
@@ -335,10 +352,13 @@ the change per shift.
   the score to one decimal ("2.3 of 5") and a band phrase quoting the nearer wording: "nearer
   'From' (<From wording>)" below 3, "in the middle" at exactly 3, "nearer 'To' (<To wording>)"
   above 3. Low-band shifts are marked in the summary by the band phrase, not by colour alone.
-- **FR-008**: Each shift in the low band MUST show a link to that shift's section heading in the
-  post and that shift's Practical Application paragraph, reused unchanged from the data file. If no shift is in the
-  low band, the results MUST say so and name the lowest-scoring shift as the one to practise
-  next. Each shift's heading anchor in the data file MUST be checked at build against the ids of
+- **FR-008**: The results MUST list the mindsets that need development under "Mindsets to
+  develop": every shift in the low band, weakest first (ties keep the post's order), each with
+  its name and score ("2.0 of 5"), its "From" → "To" wording, its Practical Application
+  paragraph, reused unchanged from the data file, and a "Read <name>" link to that shift's
+  section heading in the post. If no shift is in the low band, the results MUST say so and name
+  the lowest-scoring shift as the one to practise next, shown the same way. The chart and the
+  text summary of all five shifts are unchanged. Each shift's heading anchor in the data file MUST be checked at build against the ids of
   the post's rendered headings; renaming a mindset-shift heading without updating its anchor
   MUST fail the build, naming the post file and the shift. Following the link moves focus to
   the heading and leaves the address-bar fragment unchanged (FR-012).
@@ -353,21 +373,21 @@ the change per shift.
   earlier result is below" link, focus moves to the target heading. Any scrolling these cause
   is smooth only when the reader has not asked for reduced motion, and instant otherwise.
 
-**Printable plan**
+**Printable focus areas**
 
-- **FR-010**: From the results the reader MUST be able to print a six-week plan: weeks 1 to 5
-  are the five shifts ordered from lowest score to highest (ties keep the post's order), each
-  with the data file's activities for that shift; week 6 is the data file's integration and
-  reflection week. The printout includes the date and the five positions. The printed plan reads in this
-  order: the assessment title, the date, the five positions (the same lines as the text
-  summary, in the data file's shift order), the results link, then weeks 1 to 6 in plan order,
-  each with its week number, shift name and activities. The week texts come from the data file
-  (FR-004); the post itself does not show them.
-- **FR-011**: Once results are on screen, printing by the "Print my plan" button or by the
-  browser's own Print menu MUST give the plan only. The printed plan MUST leave out the site header, footer, share area and the rest
-  of the post, and fit on A4 and US Letter paper. Without results, the printed post shows the
-  assessment as its statement list (each shift name followed by its three statements, in the
-  data file's order), the same list shown without JavaScript, and no form controls.
+- **FR-010**: From the results the reader MUST be able to print their focus areas with a "Print
+  my focus areas" button. The sheet reads in this order: the assessment title, the date, the
+  heading "Mindsets to develop", the same shifts as FR-008 in the same order (each with its name
+  and score, "From" → "To", Practical Application paragraph and the full address of its
+  section in the post; with no shift in the low band, the "none below the middle" message and
+  the lowest-scoring shift), then the results link. It holds nothing else: no chart, no
+  five-line summary, no plan.
+- **FR-011**: Once results are on screen, printing by the "Print my focus areas" button or by the
+  browser's own Print menu MUST give the focus-areas sheet only. It MUST leave out the site
+  header, footer, share area and the rest of the post, and fit on A4 and US Letter paper.
+  Without results, the printed post shows the assessment as its statement list (each shift name
+  followed by its three statements, in the data file's order), the same list shown without
+  JavaScript, and no form controls, even while the section is collapsed.
 
 **Retake and growth**
 
@@ -375,11 +395,10 @@ the change per shift.
   results link. The results show a link to the post whose URL fragment holds the five scores, the
   date taken and the statement set version, and nothing else: no individual answers, no
   identifier, no other reader data. The reader can copy it ("Copy link"; if copying fails the
-  link stays visible and selectable), and the printed plan includes it. Beside the link, one
+  link stays visible and selectable), and the printed focus-areas sheet includes it. Beside the link, one
   plain sentence tells the reader that anyone they share the link with can see these scores,
   and that the site does not keep a copy. Opening the post through such a link loads that
-  result as the earlier result and shows it at once (chart, text summary, low-band links and
-  print plan), marked "Earlier result from <date>", with an empty form below for the retake.
+  result as the earlier result and shows it at once (chart and text summary), marked "Earlier result from <date>", with an empty form below for the retake.
   The page opens at the top as usual, with a short "Your earlier result is below" link near the
   post title that leads to it.
   The earlier-result link: the post's title card holds one short link line, just after the post
@@ -416,11 +435,11 @@ the change per shift.
   summary, with no change per shift. The version is computed at build from the shift order and
   the fifteen statement texts, so it changes automatically whenever Don edits any statement's
   wording (even a typo) or reorders shifts or statements, and only then; editing the reminders,
-  week activities, shift names, "From" and "To" wording, labels, title or introduction does not
+  shift names, "From" and "To" wording, labels, title or introduction does not
   change it. Don does not set it by hand.
 - **FR-015**: The reader MUST be able to clear their answers and the earlier result loaded from
   a results link; clearing also removes the results fragment from the address bar without
-  adding a history entry, and removes the plan from print. Clearing acts on the page and its
+  adding a history entry, and removes the focus-areas sheet from print. Clearing acts on the page and its
   address only: a link the reader has already copied, shared or printed keeps working, because
   the site holds no copy it could revoke. The results area says so in the same sentence that
   explains sharing (FR-012).
@@ -459,7 +478,7 @@ the change per shift.
   readable in full with JavaScript off (see Edge Cases).
 - **FR-018**: The assessment and results MUST meet WCAG 2.2 AA in both light and dark themes
   and keep the post within the site's performance budget. In particular:
-  - every control (each answer choice, "Show my results", "Clear my answers", "Print my plan",
+  - every control (each answer choice, "Show my results", "Clear my answers", "Print my focus areas",
     "Copy link", the low-band links, the error-summary links and the title-card link) can be
     reached and operated by keyboard alone, with a visible focus indicator that is never fully
     hidden by other content (2.4.7, 2.4.11);
@@ -500,8 +519,8 @@ the change per shift.
   with each `PracticalApplication` component expanded back into the text it renders
   ("Practical Application: …"), in place, so it holds the same post text the reader sees, and
   questions about the practical applications stay possible as they are today. The 6-Week
-  Development Plan was removed from the post (Clarifications, PR #176 decision), so its week
-  texts are no longer part of the question source. The assessment block
+  Development Plan was removed from the post and the feature (Clarifications, PR #176
+  decisions), so it is not part of the question source. The assessment block
   (its title, introduction and statements) is not part of the post's argument and is left out,
   as other component tags are today. Acceptance: the question source for every post that uses
   these components contains each practical application text it renders, and no component tag. The source is still only the site's own committed content (the data file is
@@ -521,10 +540,8 @@ the change per shift.
 
 - **Mindset shift**: one of the five shifts, held in the single assessment data file. Has a
   name, a "From" and a "To" wording, the anchor of its section in the post, its practical
-  application text (rendered in the post and reused as the results reminder) and its six-week
-  plan activities (shown only in the printed plan). Order matches the post.
-- **Integration week**: the week 6 integration and reflection activities, held in the same data
-  file and shown only in the printed plan.
+  application text (rendered in the post and reused in the mindsets to develop). Order matches
+  the post.
 - **Statement**: one of three per shift. Has the text the reader rates and the shift it belongs
   to.
 - **Statement set version**: identifies the current wording of all fifteen statements, so
@@ -532,8 +549,8 @@ the change per shift.
 - **Answer**: the reader's 1–5 rating of one statement. Exists only in the reader's browser.
 - **Result**: the five shift scores, the date taken and the statement set version. Exists only
   in the page and in the results link's URL fragment (FR-012).
-- **Six-week plan**: the five shifts ordered by score plus the integration week, with the date,
-  positions and results link, built from a result for printing.
+- **Focus areas**: the shifts scoring below 3, weakest first (or, with none, the lowest-scoring
+  shift), with the date and results link, built from a result for the results and for printing.
 
 ## Success Criteria *(mandatory)*
 
@@ -546,7 +563,7 @@ the change per shift.
 - **SC-002**: For any set of answers, the five positions shown in the chart and in the text
   summary match the mean of each shift's three answers, and the low-band links appear for
   exactly the shifts scoring below 3.
-- **SC-003**: The printed plan fits on at most two pages of A4 or US Letter and contains no
+- **SC-003**: The printed focus-areas sheet, even with all five shifts below 3, fits on at most two pages of A4 or US Letter and contains no
   site navigation, footer or share area.
 - **SC-004**: No request leaves the browser carrying answers or results: zero network requests
   are triggered by answering, viewing results, following a low-band link, copying the link,
@@ -565,7 +582,7 @@ the change per shift.
   (different statement versions), and the unreadable-link message; and can be completed by
   keyboard alone. Manual review on the preview (PREVIEW-CHECK) covers what automated checks
   cannot: that the text summary says everything the chart shows, the reading order of the
-  printed plan and the no-JavaScript list, and a screen reader pass through errors and results.
+  printed focus-areas sheet and the no-JavaScript list, and a screen reader pass through errors and results.
 
 ## Assumptions
 
@@ -574,10 +591,9 @@ the change per shift.
 - A five-point frequency scale and a low band below 3 are reasonable defaults for a
   self-reflection tool; this is not a validated psychometric instrument, and the introduction
   says so in plain language.
-- The six-week plan reuses the post's former week activities and practical-application text,
-  moved unchanged into the data file; no new activity copy is written. The post's own 6-Week
-  Development Plan section was removed on 2026-10-11, so the week activities now appear only in
-  the printed plan.
+- The mindsets to develop and the printed sheet reuse the post's practical-application text,
+  moved unchanged into the data file; no new copy is written. The post's 6-Week Development Plan
+  section and the six-week plan feature were both removed on 2026-10-11.
 - Only the Wayfinder post gets the assessment. Reuse on other posts in the series is follow-up
   work.
 - The chart is drawn by the site itself; no third-party script is added (constitution Principle

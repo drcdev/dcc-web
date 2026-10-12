@@ -25,15 +25,7 @@ const assessment = await resolveAssessment(file, id, data);
 const payload = JSON.stringify({
   title: assessment.title,
   scale: assessment.scale,
-  shifts: assessment.shifts.map(({ name, from, to, anchor, practicalApplication, week }) => ({
-    name,
-    from,
-    to,
-    anchor,
-    practicalApplication,
-    week,
-  })),
-  integrationWeek: assessment.integrationWeek,
+  shifts: assessment.shifts.map(({ name, from, to, anchor, practicalApplication }) => ({ name, from, to, anchor, practicalApplication })),
 });
 
 const control =

@@ -34,13 +34,11 @@ describe("statementSetVersion", () => {
     edited.title = "Another title";
     edited.intro = "Another intro.";
     edited.scale = ["Rarely", "A", "B", "C", "Almost always"];
-    edited.integrationWeek = { name: "Other", week: "Other text." };
     for (const shift of edited.shifts) {
       shift.name += " renamed";
       shift.from += " changed";
       shift.to += " changed";
       shift.practicalApplication += " More.";
-      shift.week += " More.";
       shift.anchor += "-x";
     }
     expect(version(edited)).toBe(version());

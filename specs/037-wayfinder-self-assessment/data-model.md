@@ -20,7 +20,6 @@ build). Full field rules and error rows: [contracts/assessment-data.md](./contra
 | `intro` | text | One or two plain sentences, including that this is a reflection aid, not a validated instrument (spec Assumptions). Required. |
 | `scale` | 5 texts | The five answer labels, low to high. First is "Rarely", last "Almost always" (FR-003). Exactly five, distinct. |
 | `shifts` | 5 × Shift | Exactly five, in the post's order. Ids distinct. Anchors distinct. |
-| `integrationWeek` | IntegrationWeek | Week 6. Required. |
 
 Derived at build (not authored):
 
@@ -33,28 +32,22 @@ Derived at build (not authored):
 | Field | Type | Rule |
 |-------|------|------|
 | `id` | slug | `^[a-z0-9]+(-[a-z0-9]+)*$`, used in `<PracticalApplication shift="...">`. |
-| `name` | text | e.g. "See the Whole System". Week title for weeks 1–5. |
+| `name` | text | e.g. "See the Whole System". |
 | `from` | text | The "From" wording, e.g. "Fixing individual problems in isolation". |
 | `to` | text | The "To" wording. |
 | `anchor` | slug | The id of the shift's heading in the post. Checked at build against the rendered headings of every post that renders `<SelfAssessment assessment="<id>">` (contract row A6). |
 | `practicalApplication` | text | The Practical Application paragraph, moved unchanged from the post. Plain text (no Markdown). |
-| `week` | text | The week activities for this shift, moved unchanged from the post's former 6-Week Development Plan; shown only in the printed plan. |
 | `statements` | 3 × text | Exactly three; each worded so agreeing places the reader nearer `to` (FR-002). |
-
-### IntegrationWeek
-
-| Field | Type | Rule |
-|-------|------|------|
-| `name` | text | "Integration and Reflection". |
-| `week` | text | The week 6 activities, moved unchanged. |
 
 ### Relationships
 
 - A **post** uses an assessment by naming its id in one or more of the two components
   (`PracticalApplication`, `SelfAssessment`). An unknown id or shift id fails
   the build naming the post file (contract rows A4, A5).
-- The week texts appear only in the **printed plan**, which reorders weeks 1–5 by the reader's
-  scores. The post has no six-week plan section (removed 2026-10-11, spec Clarifications).
+- The **mindsets to develop** in the results and the **printed focus areas** reuse each listed
+  shift's `name`, `from`, `to`, `practicalApplication` and `anchor`. The data file has no week
+  activities and no integration week: the six-week plan was removed on 2026-10-11 (spec
+  Clarifications, PR #176 decisions); the strict schema now rejects those keys as unknown.
 
 ## 2. Reader state (browser only)
 
@@ -103,15 +96,15 @@ result from <date>". Replaced as "the result in the address bar" by the newest r
 results are shown; the on-page "earlier" result stays the one loaded from the link until the
 reader clears or reloads.
 
-### Six-week plan (print)
+### Focus areas (results and print)
 
-Built from one Result (the newest on screen; the earlier result when no retake has been made):
+Built from the newest Result shown (FR-008, FR-010):
 
 | Part | Rule |
 |------|------|
-| Weeks 1–5 | The five shifts sorted by `sum` ascending; ties keep data order (stable sort) (FR-010, Story 3 scenario 2). Each week: "Week N: <name>" and that shift's `week` text. |
-| Week 6 | `integrationWeek.name` and `integrationWeek.week`. |
-| Header | Assessment title, the result date, the five positions (same lines as the text summary), and the results link URL. |
+| Shifts | The shifts with `sum < 9` (mean below 3), sorted by `sum` ascending; ties keep data order (stable sort). With none, the single lowest-scoring shift (first in data order on a tie), after the lines "None of your scores is below the middle." and "Next to practise: <name>". |
+| Each shift | "<name>: <score> of 5", "<from> → <to>", the `practicalApplication` text, and a link: in the results "Read <name>" to `#<anchor>`; on the sheet "Read <name>: <page address>#<anchor>". |
+| Sheet only | Before the shifts: assessment title, the result date, the heading "Mindsets to develop". After them: "Results link: <url>". Nothing else. |
 
 ## 3. State transitions (the assessment block)
 
@@ -127,10 +120,10 @@ Built from one Result (the newest on screen; the earlier result when no retake h
                   │                            │     (same version)   (other version)
                   └────────────────────────────┘
    any state ──clear──▶ [Empty]   (answers reset, earlier result dropped, fragment removed,
-                                   plan sheet and root print attribute removed)
+                                   focus sheet and root print attribute removed)
    load (#result=… malformed) ──▶ [Empty] + "This results link could not be read."
 ```
 
 Every transition into a shown state: replaces the fragment with the newest result's
-(`replaceState`), rebuilds the chart, summary, low-band links and plan sheet, sets the root
+(`replaceState`), rebuilds the chart, summary, mindsets to develop and focus sheet, sets the root
 print attribute, and updates the live region.

@@ -14,9 +14,6 @@ shifts:
       Before proposing solutions, create a simple systems map showing stakeholder
       relationships, information flows, and decision points. Ask: "Who else is affected by
       this challenge? What connections are we missing?"
-    week: >-
-      Create systems maps for 2-3 current challenges. Identify stakeholder connections you
-      hadn't considered. Schedule one conversation outside your usual network.
     statements:
       - "Before I propose a fix, I ask who else the problem affects."
       - "I map how people, information and decisions connect before I act on a problem."
@@ -30,9 +27,6 @@ shifts:
       For your next progress-resistant initiative, design "safe-to-fail" experiments that
       generate learning while minimizing risk. Replace 12-month plans with 90-day or even
       30-day learning cycles. Ask: "What assumptions can we test quickly and cheaply?"
-    week: >-
-      Design one "safe-to-fail" experiment with clear learning objectives. Replace one
-      long-term plan with a 30-day learning cycle. Document weekly learnings.
     statements:
       - "I test an idea with a small, low-risk experiment before I commit to a large plan."
       - "I plan in short learning cycles and change course when I learn something new."
@@ -46,10 +40,6 @@ shifts:
       Replace presentation meetings with listening sessions. Before your next major
       decision, ask stakeholders: "What's your experience of this challenge?" Listen for
       patterns, concerns, and assets that weren't part of your initial analysis.
-    week: >-
-      Conduct 3 listening sessions with different stakeholder groups about the same
-      challenge. Focus on understanding their experience rather than validating assumptions.
-      Look for patterns across conversations.
     statements:
       - "Before I decide, I ask people about their experience of the challenge."
       - "In meetings I make room for views that differ from mine and ask about them."
@@ -63,10 +53,6 @@ shifts:
       Replace directive language ("You need to...") with collaborative language ("How might
       we...?"). Instead of presentations explaining what others should do, facilitate
       conversations about what the group can accomplish together.
-    week: >-
-      Practice collaborative language—replace "you need to" with "how might we." Facilitate
-      one cross-functional conversation where you have no formal authority. Document what
-      alignment strategies work best.
     statements:
       - "I build shared purpose across teams instead of relying on my position to get things moving."
       - "I invite people in with questions such as \"How might we...?\" more often than I instruct them."
@@ -80,17 +66,7 @@ shifts:
       When facing resistance or persistent problems, ask: "What is this tension telling us
       about what needs to change?" Use resistance as diagnostic information rather than
       trying to eliminate it.
-    week: >-
-      Explore what one source of resistance reveals about needed changes. Instead of
-      eliminating a persistent problem, use it as diagnostic information. Create solutions
-      that work with the tension rather than against it.
     statements:
       - "When I meet resistance, I treat it as a sign of something I need to understand."
       - "I keep the gap between where we are and where we want to be in view, without rushing to close it."
       - "When a problem persists, I ask what it is telling us about what needs to change."
-integrationWeek:
-  name: Integration and Reflection
-  week: >-
-    Assess which mindset shifts feel natural and which need attention. Create an action plan
-    combining insights from weeks 1-5. Choose one mindset for continued focus and identify
-    colleagues to practice with going forward.

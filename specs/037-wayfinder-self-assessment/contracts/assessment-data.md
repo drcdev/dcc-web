@@ -21,20 +21,16 @@ shifts:
     anchor: mindset-shift-1-see-the-whole-system
     practicalApplication: >-
       Before proposing solutions, create a simple systems map ...
-    week: >-
-      Create systems maps for 2-3 current challenges. ...
     statements:
       - Before I propose a fix, I ask who else the problem affects.
       - ...
       - ...
   # four more shifts, in the post's order
-integrationWeek:
-  name: Integration and Reflection
-  week: >-
-    Assess which mindset shifts feel natural ...
 ```
 
-The `practicalApplication` and `week` texts are the post's current text, moved unchanged. The
+The `practicalApplication` texts are the post's text, moved unchanged. There are no week texts
+and no integration week: the six-week plan was removed on 2026-10-11 (spec Clarifications), and
+the strict schema rejects `week` or `integrationWeek` as unknown keys (row A1). The
 statement wording is drafted during implementation from the post (spec Assumptions) and Don
 edits it in review.
 
@@ -58,7 +54,7 @@ collection lookup; only component tests use it.
   `<PracticalApplication ... />` tag, in place.
 - The "Practical First Steps" section (with "Immediate Actions" and the 6-Week Development Plan)
   is removed; the post ends with "Printable Resources" (spec Clarifications, PR #176 decision,
-  2026-10-11). The week texts and the integration week appear only in the printed plan.
+  2026-10-11).
 - `## <assessment heading>` and `<SelfAssessment ... />` go after the Mindset Shift #5 section's
   closing paragraph ("Putting these mindsets into practice...") and before
   `## The Systems Leadership Wayfinder` (FR-001).

@@ -16,9 +16,7 @@ export function sampleAssessment(): Assessment {
       to: `${name} to wording`,
       anchor: `shift-${i + 1}-${name.toLowerCase()}`,
       practicalApplication: `Practise ${name} by doing the first thing. Ask: "What next?"`,
-      week: `Spend this week on ${name} with one small task.`,
       statements: [0, 1, 2].map((n) => `${name} statement ${n + 1}.`),
     })),
-    integrationWeek: { name: "Bring it together", week: "Look back over weeks 1-5 and choose one focus." },
   };
 }

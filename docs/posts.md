@@ -120,9 +120,10 @@ screens. `FullImage` runs the full page width. `caption` is optional on all thre
 </FullImage>
 ```
 
-A plain `![description](./images/name.png)` also works and sits in the text column. Two other
-components from `docs/pages.md` work in posts: `Lead` and `CallToAction`. That guide also
-states the Markdown rule.
+A plain `![description](./images/name.png)` also works and sits in the text column. Every image
+in a post body is served in several widths (360 to 1536 px, quality 75), so a phone downloads a
+file near its own width rather than the original. Two other components from `docs/pages.md` work
+in posts: `Lead` and `CallToAction`. That guide also states the Markdown rule.
 
 ## Tables
 
@@ -181,10 +182,10 @@ very long title, are test fixtures in `tests/fixtures/posts/`, not posts on the 
 
 A post can show text that lives in an assessment data file, so the text is written once. The data
 file is `src/content/assessments/<id>.yaml` (the file name is the id). It holds the shifts (name,
-From, To, the heading anchor, the Practical Application paragraph, the week text and three
-statements each), the integration week, the five answer labels, the title and the intro. The week
-texts and the integration week appear only in the reader's printed plan, not in the post. Two
-components, available in a post with no import:
+From, To, the heading anchor, the Practical Application paragraph and three statements each), the
+five answer labels, the title and the intro. A reader's results and printed focus areas reuse the
+name, From, To and Practical Application of each shift scoring below the middle. Two components,
+available in a post with no import:
 
 | Component | Renders |
 | --- | --- |

@@ -14,7 +14,7 @@ describe("assessment schema", () => {
     expect(parse(sampleAssessment()).success).toBe(true);
   });
 
-  it.each(["title", "intro", "integrationWeek"])("A1: rejects a missing %s", (field) => {
+  it.each(["title", "intro"])("A1: rejects a missing %s", (field) => {
     const data: Record<string, unknown> = { ...sampleAssessment() };
     delete data[field];
     expect(parse(data).success).toBe(false);

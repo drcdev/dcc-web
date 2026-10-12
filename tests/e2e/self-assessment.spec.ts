@@ -51,6 +51,11 @@ const mean = (values: number[]) => values.reduce((a, b) => a + b, 0) / values.le
 const ALL = (value: number) => SHIFTS.map(() => [value, value, value]);
 // Shift 0 low (2.0), shift 1 middle (3.0), shift 2 high (4.0), shift 3 low (2.3), shift 4 high (5.0).
 const MIXED = [[1, 2, 3], [3, 3, 3], [4, 4, 4], [2, 2, 3], [5, 5, 5]];
+// Shift 3 lowest (1.3), shift 0 low (2.0), the rest at 3 or above: weakest first is shifts 3 then 0,
+// which is not the post's order.
+const WEAKEST = [[1, 2, 3], [3, 3, 3], [4, 4, 4], [1, 1, 2], [5, 5, 5]];
+const WEAKEST_ORDER = [3, 0];
+const oneLine = (text: string) => text.replace(/\s+/g, " ");
 
 test.describe("self-assessment: answering and results", () => {
   test("the post that renders the assessment exists", () => {
@@ -355,19 +360,25 @@ test.describe("self-assessment: layout (U17, FR-018)", () => {
 test.describe("self-assessment: from a low score to what to practise (US2)", () => {
   const show = (page: Page) => page.locator("[data-assessment-show]").click();
 
-  test("two low shifts show exactly two Read links and their Practical Application text (U6)", async ({ page }) => {
+  test("the mindsets that need development show weakest first with name, score, From and To, Practical Application and a Read link (U6)", async ({ page }) => {
     await open(page);
-    await answer(page, MIXED);
+    await answer(page, WEAKEST);
     await show(page);
-    const links = page.locator("[data-assessment-results] [data-low-link]");
-    await expect(links).toHaveCount(2);
-    for (const [n, s] of [[0, 0], [1, 3]] as const) {
-      await expect(links.nth(n)).toHaveText(`Read ${SHIFTS[s]!.name}`);
-      await expect(links.nth(n)).toHaveAttribute("href", `#${SHIFTS[s]!.anchor}`);
-      const item = page.locator("[data-assessment-results] [data-low-shift]").nth(n);
-      await expect(item).toContainText(SHIFTS[s]!.practicalApplication.replace(/\s+/g, " "));
+    const results = page.locator("[data-assessment-results]");
+    await expect(results).toContainText("Mindsets to develop");
+    const items = results.locator("[data-low-shift]");
+    await expect(items).toHaveCount(WEAKEST_ORDER.length);
+    const links = results.locator("[data-low-link]");
+    for (const [n, s] of WEAKEST_ORDER.entries()) {
+      const shift = SHIFTS[s]!;
+      const item = items.nth(n);
+      await expect(item).toContainText(`${shift.name}: ${mean(WEAKEST[s]!).toFixed(1)} of 5`);
+      await expect(item).toContainText(`${oneLine(shift.from)} → ${oneLine(shift.to)}`);
+      await expect(item).toContainText(oneLine(shift.practicalApplication));
+      await expect(links.nth(n)).toHaveText(`Read ${shift.name}`);
+      await expect(links.nth(n)).toHaveAttribute("href", `#${shift.anchor}`);
     }
-    await expect(page.locator("[data-assessment-results]")).not.toContainText("None of your scores is below the middle.");
+    await expect(results).not.toContainText("None of your scores is below the middle.");
   });
 
   test("following a link shows the heading below the top, focuses it and leaves the fragment alone (U7)", async ({ page }) => {
@@ -394,7 +405,9 @@ test.describe("self-assessment: from a low score to what to practise (US2)", () 
     const results = page.locator("[data-assessment-results]");
     await expect(results).toContainText("None of your scores is below the middle.");
     await expect(results).toContainText(`Next to practise: ${SHIFTS[2]!.name}`);
+    await expect(results.locator("[data-low-shift]")).toHaveCount(1);
     await expect(results.locator("[data-low-link]")).toHaveCount(1);
+    await expect(results.locator("[data-low-shift]")).toContainText(`${SHIFTS[2]!.name}: 3.0 of 5`);
     await expect(results).toContainText(SHIFTS[2]!.practicalApplication.replace(/\s+/g, " "));
   });
 
@@ -415,13 +428,11 @@ test.describe("self-assessment: from a low score to what to practise (US2)", () 
   });
 });
 
-test.describe("self-assessment: print a six-week plan (US3)", () => {
+test.describe("self-assessment: print my focus areas (US3)", () => {
   const show = (page: Page) => page.locator("[data-assessment-show]").click();
-  const sheet = (page: Page) => page.locator("body > [data-assessment-plan-sheet]");
-  // MIXED sums: 6, 9, 12, 7, 15 -> plan order by score: shifts 0, 3, 1, 2, 4.
-  const PLAN_ORDER = [0, 3, 1, 2, 4];
+  const sheet = (page: Page) => page.locator("body > [data-assessment-focus-sheet]");
 
-  test("Print my plan calls window.print and adds the plan sheet and root attribute", async ({ page }) => {
+  test("Print my focus areas calls window.print and adds the focus sheet and root attribute", async ({ page }) => {
     await page.addInitScript(() => {
       (window as unknown as { printed: number }).printed = 0;
       window.print = () => {
@@ -430,66 +441,68 @@ test.describe("self-assessment: print a six-week plan (US3)", () => {
     });
     await open(page);
     await expect(page.locator("[data-assessment-print]")).toHaveCount(0);
-    await answer(page, MIXED);
+    await answer(page, WEAKEST);
     await show(page);
     await expect(sheet(page)).toHaveCount(1);
-    await expect(page.locator("html")).toHaveAttribute("data-assessment-plan", "");
-    await page.getByRole("button", { name: "Print my plan" }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-assessment-focus", "");
+    await page.getByRole("button", { name: "Print my focus areas" }).click();
     expect(await page.evaluate(() => (window as unknown as { printed: number }).printed)).toBe(1);
   });
 
-  test("in print media only the plan sheet shows, in the stated order, weeks by score (U8)", async ({ page }) => {
+  test("in print media only the focus sheet shows: title, date, the mindsets to develop weakest first with full section addresses, and the results link (U8)", async ({ page }) => {
     await open(page);
-    await answer(page, MIXED);
+    await answer(page, WEAKEST);
     await show(page);
+    const resultsUrl = page.url();
     await page.emulateMedia({ media: "print" });
     await expect(sheet(page)).toBeVisible();
     for (const hidden of ["header", "footer", "main", "article"]) {
       for (const node of await page.locator(hidden).all()) await expect(node).toBeHidden();
     }
-    const text = (await sheet(page).innerText()).replace(/\s+/g, " ");
-    const marks = [
-      assessment.title,
-      ...SHIFTS.map((s) => s.name + ": "),
-      "Week 1",
-      "Week 2",
-      "Week 3",
-      "Week 4",
-      "Week 5",
-      "Week 6",
-    ];
+    const text = oneLine(await sheet(page).innerText());
+    const marks = [assessment.title, "Mindsets to develop", ...WEAKEST_ORDER.map((s) => `${SHIFTS[s]!.name}: `), "Results link"];
     let at = -1;
     for (const mark of marks) {
       const next = text.indexOf(mark, at + 1);
       expect(next, `${mark} after position ${at}`).toBeGreaterThan(at);
       at = next;
     }
-    const weeks = sheet(page).locator("[data-plan-week]");
-    await expect(weeks).toHaveCount(6);
-    for (let n = 0; n < 5; n++) {
-      const shift = SHIFTS[PLAN_ORDER[n]!]!;
-      await expect(weeks.nth(n)).toContainText(`Week ${n + 1}`);
-      await expect(weeks.nth(n)).toContainText(shift.name);
-      await expect(weeks.nth(n)).toContainText(shift.week.replace(/\s+/g, " "));
+    expect(text).toMatch(/\b20\d\d\b/);
+    const items = sheet(page).locator("[data-focus-item]");
+    await expect(items).toHaveCount(WEAKEST_ORDER.length);
+    const base = new URL(resultsUrl);
+    for (const [n, s] of WEAKEST_ORDER.entries()) {
+      const shift = SHIFTS[s]!;
+      await expect(items.nth(n)).toContainText(`${shift.name}: ${mean(WEAKEST[s]!).toFixed(1)} of 5`);
+      await expect(items.nth(n)).toContainText(`${oneLine(shift.from)} → ${oneLine(shift.to)}`);
+      await expect(items.nth(n)).toContainText(oneLine(shift.practicalApplication));
+      await expect(items.nth(n)).toContainText(`${base.origin}${base.pathname}#${shift.anchor}`);
     }
-    await expect(weeks.nth(5)).toContainText("Week 6");
-    await expect(weeks.nth(5)).toContainText(assessment.integrationWeek.name);
-    await expect(weeks.nth(5)).toContainText(assessment.integrationWeek.week.replace(/\s+/g, " "));
+    // Nothing else: no shift that is not a focus area, no plan, no form.
+    for (const [s, shift] of SHIFTS.entries()) if (!WEAKEST_ORDER.includes(s)) expect(text).not.toContain(`${shift.name}:`);
+    expect(text).not.toMatch(/week/i);
+    await expect(sheet(page).locator("[data-focus-link]")).toHaveText(`Results link: ${resultsUrl}`);
   });
 
-  test("tied scores keep the post's order in the plan", async ({ page }) => {
+  test("with no mindset below the middle the sheet names the lowest-scoring shift to practise next", async ({ page }) => {
     await open(page);
-    await answer(page, ALL(3));
+    const values = ALL(4);
+    values[2] = [3, 3, 3];
+    values[4] = [3, 3, 3];
+    await answer(page, values);
     await show(page);
-    const weeks = sheet(page).locator("[data-plan-week]");
-    for (let n = 0; n < 5; n++) await expect(weeks.nth(n)).toContainText(SHIFTS[n]!.name);
+    const text = oneLine(await sheet(page).innerText());
+    expect(text).toContain("None of your scores is below the middle.");
+    expect(text).toContain(`Next to practise: ${SHIFTS[2]!.name}`);
+    await expect(sheet(page).locator("[data-focus-item]")).toHaveCount(1);
+    await expect(sheet(page).locator("[data-focus-item]")).toContainText(oneLine(SHIFTS[2]!.practicalApplication));
   });
 
   for (const format of ["A4", "Letter"] as const) {
-    test(`the plan prints on at most two pages on ${format} (U9, SC-003)`, async ({ page, browserName }) => {
+    test(`the focus areas print on at most two pages on ${format} with every mindset low (U9, SC-003)`, async ({ page, browserName }) => {
       test.skip(browserName !== "chromium", "page.pdf is Chromium only");
       await open(page);
-      await answer(page, MIXED);
+      await answer(page, ALL(1));
       await show(page);
       const pdf = await page.pdf({ format });
       const pages = (pdf.toString("latin1").match(/\/Type\s*\/Page[^s]/g) ?? []).length;
@@ -507,7 +520,7 @@ test.describe("self-assessment: print a six-week plan (US3)", () => {
     await expect(page.locator("[data-assessment-app]")).toBeHidden();
     await expect(page.locator("[data-assessment-nojs] li")).toHaveCount(STATEMENT_COUNT);
     await expect(page.locator("[data-assessment] input:visible, [data-assessment] button:visible, [data-assessment] summary:visible")).toHaveCount(0);
-    await expect(page.locator("body > [data-assessment-plan-sheet]")).toHaveCount(0);
+    await expect(page.locator("body > [data-assessment-focus-sheet]")).toHaveCount(0);
   });
 });
 
@@ -647,19 +660,19 @@ test.describe("self-assessment: retake later and see how I have grown (US4)", ()
     if (browserName === "chromium") expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(page.url());
   });
 
-  test("Clear my answers removes answers, results, the earlier result, the plan and the fragment, and focuses the first radio (L6, U14)", async ({ page }) => {
+  test("Clear my answers removes answers, results, the earlier result, the focus sheet and the fragment, and focuses the first radio (L6, U14)", async ({ page }) => {
     await openLink(page);
     await answer(page, MIXED);
     await show(page);
-    await expect(page.locator("body > [data-assessment-plan-sheet]")).toHaveCount(1);
+    await expect(page.locator("body > [data-assessment-focus-sheet]")).toHaveCount(1);
     await page.getByRole("button", { name: "Clear my answers" }).click();
     await expect(page.locator("[data-assessment-status]")).toHaveText("Your answers have been cleared.");
     await expect(statement(page, 0, 0).getByRole("radio").first()).toBeFocused();
     await expect(page.locator("[data-statement] input:checked")).toHaveCount(0);
     await expect(page.locator("[data-assessment-results]")).toBeHidden();
     await expect(earlier(page)).toBeHidden();
-    await expect(page.locator("body > [data-assessment-plan-sheet]")).toHaveCount(0);
-    await expect(page.locator("html")).not.toHaveAttribute("data-assessment-plan", "");
+    await expect(page.locator("body > [data-assessment-focus-sheet]")).toHaveCount(0);
+    await expect(page.locator("html")).not.toHaveAttribute("data-assessment-focus", "");
     expect(new URL(page.url()).hash).toBe("");
     await expect(titleLink(page)).toHaveText(originalLinkText);
   });
@@ -719,7 +732,7 @@ test.describe("self-assessment: nothing leaves the page (L7, U15, SC-004, FR-012
     await page.locator("[data-assessment-show]").click();
     await page.locator("[data-assessment-results] [data-low-link]").first().click();
     await page.getByRole("button", { name: "Copy link" }).click();
-    await page.getByRole("button", { name: "Print my plan" }).click();
+    await page.getByRole("button", { name: "Print my focus areas" }).click();
     await titleLinkClick(page);
     await page.getByRole("button", { name: "Clear my answers" }).click();
     await page.waitForTimeout(500);

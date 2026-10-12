@@ -17,7 +17,6 @@
       "to": "Alpha to wording",
       "anchor": "shift-1-alpha",
       "practicalApplication": "Practise Alpha by doing the first thing. Ask: \"What next?\"",
-      "week": "Spend this week on Alpha with one small task.",
       "statements": [
         "Alpha statement 1.",
         "Alpha statement 2.",
@@ -31,7 +30,6 @@
       "to": "Bravo to wording",
       "anchor": "shift-2-bravo",
       "practicalApplication": "Practise Bravo by doing the first thing. Ask: \"What next?\"",
-      "week": "Spend this week on Bravo with one small task.",
       "statements": [
         "Bravo statement 1.",
         "Bravo statement 2.",
@@ -45,7 +43,6 @@
       "to": "Charlie to wording",
       "anchor": "shift-3-charlie",
       "practicalApplication": "Practise Charlie by doing the first thing. Ask: \"What next?\"",
-      "week": "Spend this week on Charlie with one small task.",
       "statements": [
         "Charlie statement 1.",
         "Charlie statement 2.",
@@ -59,7 +56,6 @@
       "to": "Delta to wording",
       "anchor": "shift-4-delta",
       "practicalApplication": "Practise Delta by doing the first thing. Ask: \"What next?\"",
-      "week": "Spend this week on Delta with one small task.",
       "statements": [
         "Delta statement 1.",
         "Delta statement 2.",
@@ -73,16 +69,11 @@
       "to": "Echo to wording",
       "anchor": "shift-5-echo",
       "practicalApplication": "Practise Echo by doing the first thing. Ask: \"What next?\"",
-      "week": "Spend this week on Echo with one small task.",
       "statements": [
         "Echo statement 1.",
         "Echo statement 2.",
         "Echo statement 3."
       ]
     }
-  ],
-  "integrationWeek": {
-    "name": "Bring it together",
-    "week": "Look back over weeks 1-5 and choose one focus."
-  }
+  ]
 }

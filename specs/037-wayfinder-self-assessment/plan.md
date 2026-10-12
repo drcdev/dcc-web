@@ -9,18 +9,19 @@
 Add a self-assessment to the Systems Leadership Wayfinder post: fifteen statements (three per
 mindset shift) on one form, a chart and text summary placing the reader between each shift's
 "From" and "To", links from low scores to the matching section and its Practical Application,
-a printable six-week plan ordered by the reader's scores, and a results link (scores in the URL
+a printable sheet of the reader's focus areas (the mindsets scoring below 3, weakest first), and
+a results link (scores in the URL
 fragment) for comparing a later retake. Everything runs in the reader's browser and stores
 nothing. The post's critical-thinking question source stays complete after the move (FR-021),
 and the privacy policy gains one paragraph (FR-016a).
 
 Approach: a new `assessments` content collection holds one YAML file that is the single source
-for the shifts, statements, Practical Application paragraphs and week activities. Two MDX
+for the shifts, statements and Practical Application paragraphs. Two MDX
 components passed through the post route (`PracticalApplication`, `SelfAssessment`) render that
 text into the post at build time, so the post's existing prose for those parts moves into the
-data file unchanged. The week activities appear only in the printed plan: the post's 6-Week
-Development Plan section and its `DevelopmentPlan` component were removed on 2026-10-11 (spec
-Clarifications, PR #176 decision). The interactive part is a server-rendered form
+data file unchanged. The post's 6-Week Development Plan section and its `DevelopmentPlan`
+component were removed on 2026-10-11, and the six-week plan was then dropped from the feature in
+favour of the focus areas (spec Clarifications, PR #176 decisions). The interactive part is a server-rendered form
 plus a tiny processed `<script>` that lazy-imports one small module when the reader nears the
 block (or at once when the address holds a result). Pure scoring, link and plan logic lives in
 `src/lib/assessment/` and is unit-tested. No server code, no new dependency, no new service.
@@ -59,7 +60,7 @@ targets 6 KB compressed or less; the bootstrap script is a few hundred bytes
 inline handlers); no third-party script; WCAG 2.2 AA light and dark; 320 px without sideways
 scroll; nothing sent over the network (SC-004); the fragment is the only persistence
 
-**Scale/Scope**: One post, one assessment of 5 shifts x 3 statements, 6-week plan; 4 new
+**Scale/Scope**: One post, one assessment of 5 shifts x 3 statements, a focus-areas print; 4 new
 components (3 used in the post body, 1 in the title card), 1 new collection, about 7 small pure
 modules, 1 client module
 
@@ -69,11 +70,11 @@ modules, 1 client module
 
 | Principle | Status | How this plan meets it |
 |-----------|--------|------------------------|
-| **I. Test-First** | PASS | Every task writes its tests first and sees them fail. Layers: unit (scoring, bands, plan order, link grammar, schema, version), component (the two components from a `data` prop), build (error rows A1, A4–A7, A9, A10 on fixture files; script present only on the assessment post; A8 is a unit row), E2E (journeys and print, on the real post found through the content helper), a11y (block with results and with errors, light and dark), budget. No API endpoint changes, so no Worker integration test. |
+| **I. Test-First** | PASS | Every task writes its tests first and sees them fail. Layers: unit (scoring, bands, weakest-first low band, link grammar, schema, version), component (the two components from a `data` prop), build (error rows A1, A4–A7, A9, A10 on fixture files; script present only on the assessment post; A8 is a unit row), E2E (journeys and print, on the real post found through the content helper), a11y (block with results and with errors, light and dark), budget. No API endpoint changes, so no Worker integration test. |
 | **II. Automated Release Gate** | PASS | No check is skipped, weakened or re-thresholded. The budget limits are unchanged; the post gains a budget case. Preview deployment per branch as usual. |
 | **III. Human Review of Every Change** | PASS | Normal flow: PR from `drc-agents`, Don's approval, auto-merge armed after the final push. PREVIEW-CHECK items for Don (tasks.md lists them for the PR body): statement wording, SC-001 timing, print preview on A4 and Letter in his browser, the privacy paragraph, the moved text reading unchanged, the screen-reader and no-JavaScript reading-order pass, and the post-release beacon check (FR-016b). |
 | **IV. First-Party Before Custom** | PASS | Astro Docs MCP was used for every Astro choice (research names each page). Data: Astro content collections with a Zod schema (first-party). Rendering text from data: MDX `components` prop (first-party). Interactivity: Astro processed `<script>` with `data-*` attributes (first-party). Lazy loading: Astro's `client:visible` was considered and falls short (not supported on MDX-passed components, needs a UI framework and its runtime that would break the 10 KB budget, cannot also load at once for a results link) — the custom part is one `IntersectionObserver` and one `import()` (research R3). Chart: no Astro or Cloudflare chart feature exists; drawn as inline SVG by site code, no library (spec Assumptions). Print: CSS `@media print` in an `is:global` style (first-party Astro directive). Cloudflare: no platform capability is needed — static assets already serve the page; no Worker, D1, KV, Durable Object or Workers AI is used, because nothing is stored or computed on the server. Fly.io: not used by this project; no server is needed. |
-| **V. Static by Default** | PASS | The post stays prerendered; no endpoint is added (the live poll, which would need one, is out of scope, FR-019). The interactive block is an isolated island loaded late (FR-017). Core content (the post, including the moved Practical Application paragraphs and the plan) is in the HTML and reads with JavaScript off. |
+| **V. Static by Default** | PASS | The post stays prerendered; no endpoint is added (the live poll, which would need one, is out of scope, FR-019). The interactive block is an isolated island loaded late (FR-017). Core content (the post, including the moved Practical Application paragraphs) is in the HTML and reads with JavaScript off. |
 | **VI. Content as Files** | PASS | The statements and moved text live in a YAML file in the repository under a collection schema; invalid content fails the build with a clear error naming the file (contract rows A1–A10). No CMS, no database. |
 | **VII. Private Data: Minimal and Protected** | PASS | Answers are not collected by the site: they never leave the browser, are not logged, stored or sent (FR-016). The URL fragment is never sent in a request; an E2E test records every request on a results-link journey (SC-004), and the production-only analytics beacon, which strips the fragment today (research R14), has a release check with a pass/fail rule and a same-day fallback (FR-016b). No IP, fingerprint, cookie or storage. Principle VII stays as written (spec Scope); the privacy policy says how the assessment handles answers (FR-016a). No secrets involved. |
 | **VIII. Cloudflare Best Practices** | PASS | No Worker, binding, migration or Cron Trigger changes. Only `/api/*` invokes Worker code; this feature is static assets only. |
@@ -91,11 +92,10 @@ No exceptions; Complexity Tracking is empty.
 ### Single source of text (FR-004)
 
 `src/content/assessments/wayfinder.yaml` holds the shifts (name, From, To, heading anchor,
-Practical Application text, week text, three statements), the integration week, the five scale
-labels, the block's title and intro. The schema (`src/content/schemas/assessment.ts`) fixes five
+Practical Application text, three statements), the five scale labels, the block's title and intro. The schema (`src/content/schemas/assessment.ts`) fixes five
 shifts of three statements. The post replaces its five `**Practical Application**` paragraphs
 with `<PracticalApplication assessment="wayfinder" shift="..." />`, rendering the same markup as
-before. The post ends with its "Printable Resources" section; it has no six-week plan section. Details:
+before. The post ends with its "Printable Resources" section. Details:
 [contracts/assessment-data.md](./contracts/assessment-data.md).
 
 ### The assessment block
@@ -114,8 +114,26 @@ results show and removed on clear; decoded on load. Grammar and rows L1–L7:
 
 ### Printing
 
-The module appends a plan sheet to `<body>` and marks `<html>`; a print-only global style shows
-just the sheet. Without a result, print shows the post with the statement list (research R7).
+The module appends a focus-areas sheet to `<body>` (title, date, the mindsets to develop with
+each section's full address, the results link) and marks `<html>`; a print-only style in
+`client.css` shows just the sheet. Without a result, print shows the post with the statement
+list (research R7, as amended 2026-10-11).
+
+### Post images and the budget (2026-10-11)
+
+Collapsing the block (FR-001a) shortened it, so the budget journey's scroll to it brings the two
+Wayfinder infographics in "The Systems Leadership Wayfinder" (1536 px Markdown images inside
+`<Figure>`) into lazy-load range. Served at full size they took the journey to 348 KB against the
+150 KB limit; the limit is not changed. The post route now passes `img: PostImage` to MDX
+(docs.astro.build/en/guides/integrations-guide/mdx/#passing-components-to-mdx-content: a local
+Markdown image reaches the component as its `ImageMetadata`). `PostImage` renders Astro's
+`<Image>` with `widths` 360/720/1080/1536, `sizes="(min-width: 1280px) 1280px, calc(100vw -
+2rem)"` and quality 75 (docs.astro.build/en/reference/modules/astro-assets/#widths), so a 390 px
+phone downloads the 360 px file (about 33 KB) and the journey measures about 143 KB. It applies
+to every Markdown image in a post body, which keeps posts import-free; pages are unchanged.
+Considered: the global `image.layout: "constrained"` (docs.astro.build/en/reference/configuration-reference/#imagelayout)
+changes every image on the site, adds data attributes everywhere and starts at 640 px, still over
+the limit; an `<Image>` import in the post is refused by the posts' section rule.
 
 ### Modules
 
@@ -123,13 +141,13 @@ just the sheet. Without a result, print shows the post with the statement list (
 |------|------|------|
 | `src/content/schemas/assessment.ts` | build | Zod schema and refinements (A1–A3) |
 | `src/lib/assessment/version.ts` | build (node:crypto) | Statement set version (R5) |
-| `src/lib/assessment/score.ts` | pure, shared | Scores, bands, band phrases, change text, low-band and "next to practise" selection |
-| `src/lib/assessment/plan.ts` | pure, shared | Six-week order (stable by sum) |
+| `src/lib/assessment/score.ts` | pure, shared | Scores, bands, band phrases, change text, low-band selection (weakest first, stable) and "next to practise" |
 | `src/lib/assessment/result-link.ts` | pure, shared | Encode, decode, URL |
 | `src/lib/assessment/lookup.ts` | build | `getEntry` wrapper with A4/A5 errors through `contentError`, and the A6/A7 heading checks used by the post route |
-| `src/lib/assessment/client.ts` | browser | Form handling, validation, chart, summary, links, plan sheet, print, copy, clear, history, title-card link text |
+| `src/lib/assessment/client.ts` | browser | Form handling, validation, chart, summary, mindsets to develop, focus-areas sheet, print, copy, clear, history, title-card link text |
 | `src/lib/assessment/question-text.ts` | pure, build | Expands `PracticalApplication` tags in a post body back into their Markdown text, and drops `SelfAssessment` (FR-021); used by the post route and `question-source.json.ts` before `prepareQuestionSource()` |
 | `src/lib/assessment/checks.ts` | pure, build | A9 (From/To lines match) and A10 (no moved text left in the prose) checks on a post body, used by the post route |
+| `src/components/post/PostImage.astro` | component | Every Markdown image in a post body: `<Image>` with `widths`, `sizes` and quality 75 (budget, 2026-10-11) |
 | `src/components/assessment/AssessmentLink.astro` | component | The reserved one-line title-card link, rendered into `PostLayout`'s new optional `title-extra` slot by the post route for posts that render `SelfAssessment` |
 | `src/components/assessment/PracticalApplication.astro` | component | One paragraph |
 | `src/components/assessment/SelfAssessment.astro` | component | Block markup inside a native `<details>` collapsed behind a "Take the self-assessment" summary (FR-001a, Don's PR #176 review; native HTML, no script needed to open it), bootstrap script (opens it for a results or in-block fragment, loads the module on approach or on open), print style |

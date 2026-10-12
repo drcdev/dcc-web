@@ -66,9 +66,20 @@ describe("changeText", () => {
 });
 
 describe("selectLowBand", () => {
-  it("returns the positions of the shifts below a mean of 3 only, in the post's order", () => {
+  it("returns the positions of the shifts below a mean of 3 only, weakest first (FR-008)", () => {
     expect(selectLowBand([6, 9, 12, 7, 15])).toEqual([0, 3]);
+    expect(selectLowBand([8, 5, 12, 3, 15])).toEqual([3, 1, 0]);
     expect(selectLowBand([9, 10, 11])).toEqual([]);
+  });
+
+  it("keeps the post's order for tied low scores", () => {
+    expect(selectLowBand([7, 12, 7, 5, 7])).toEqual([3, 0, 2, 4]);
+  });
+
+  it("does not change its input", () => {
+    const sums = [8, 5, 12, 3, 15];
+    selectLowBand(sums);
+    expect(sums).toEqual([8, 5, 12, 3, 15]);
   });
 });
 

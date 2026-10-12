@@ -14,7 +14,7 @@
 
 | What | Command | Proves |
 |------|---------|--------|
-| Scoring, bands, plan order, link encode/decode, schema, version | `pnpm run test:unit` | data-model rules, [results-link.md](./contracts/results-link.md) grammar, contract rows A1–A3 |
+| Scoring, bands, weakest-first low band, link encode/decode, schema, version | `pnpm run test:unit` | data-model rules, [results-link.md](./contracts/results-link.md) grammar, contract rows A1–A3 |
 | Components render from data | `pnpm run test:unit` (tests/component/assessment/) | [assessment-data.md](./contracts/assessment-data.md) component table, U2, U18 markup |
 | Build errors reach the output with the file name | `pnpm run test:build` | rows A1, A4–A8 on fixture files |
 | Script only on the assessment post | `pnpm run test:build` | U16 (output spanning pages) |
@@ -31,13 +31,14 @@
 2. Scroll to the assessment. Press "Show my results" with nothing answered: an error summary
    appears and focus lands on the first statement.
 3. Answer all fifteen so two shifts are below the middle. Confirm the chart, the text summary
-   (`2.3 of 5, nearer 'From' (...)`), and links for exactly those two shifts. Follow one: the
+   (`2.3 of 5, nearer 'From' (...)`), and "Mindsets to develop" listing exactly those two shifts,
+   weakest first, each with its score, From → To, Practical Application and link. Follow one: the
    heading is in view and the address bar still shows `#result=...`.
 4. Note that the address bar changed to `#result=...` and the Back button does not step
    through results.
-5. Press "Print my plan": the preview shows only the plan (six weeks, lowest score first, date,
-   positions, link) on at most two pages. Cancel, then use the browser's own Print menu: the
-   same plan.
+5. Press "Print my focus areas": the preview shows only the focus-areas sheet (title, date, the
+   two shifts weakest first with their section addresses, the results link) on at most two
+   pages of A4 or Letter. Cancel, then use the browser's own Print menu: the same sheet.
 6. Copy the results link, open it in a private window: the page opens at the top with "Your
    earlier result is below"; following it shows the earlier result marked with its date and an
    empty form.
@@ -56,7 +57,7 @@
 14. PREVIEW-CHECK (SC-001): take the assessment once without hurrying; it takes under 5 minutes.
 15. PREVIEW-CHECK (SC-006 manual part): with a screen reader, trigger the errors, then show
     results; the count, each error and the results are announced, and the text summary says
-    everything the chart shows. Print preview reads title, date, positions, link, weeks 1–6.
+    everything the chart shows. Print preview reads title, date, mindsets to develop, results link.
 16. Open the post without a fragment: the title card shows "Take the self-assessment"; with a
     results link it reads "Your earlier result is below" and nothing on the page jumps.
 17. The privacy policy has the paragraph about the self-assessment (FR-016a).

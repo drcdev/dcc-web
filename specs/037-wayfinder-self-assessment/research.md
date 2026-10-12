@@ -124,6 +124,13 @@ record the design choices that the spec left to the plan.
 
 ## R7. Printing only the plan
 
+- **Amended 2026-10-11 (PR #176, Don)**: the six-week plan was removed. The same mechanism now
+  prints the focus-areas sheet: `<section data-assessment-focus-sheet>` appended to `<body>`,
+  `data-assessment-focus` on `<html>`, the "Print my focus areas" button, and the print rules in
+  `src/lib/assessment/client.css` (linked by the module, FR-018b). The sheet holds the title,
+  the date, the mindsets to develop and the results link (spec FR-010). The rest of this entry
+  records the original decision.
+
 - **Decision**: When a result is shown, the module builds the plan sheet and appends it as a
   direct child of `<body>` (`<section data-assessment-plan-sheet hidden>`), and sets
   `data-assessment-plan` on `<html>`. A `<style is:global>` block in `SelfAssessment.astro`

@@ -109,6 +109,7 @@ describe("SelfAssessment markup", () => {
       data.shifts.map((shift) => [shift.name, shift.from, shift.to, shift.anchor]),
     );
     expect(parsed.scale).toEqual(data.scale);
+    expect(Object.keys(parsed).sort()).toEqual(["scale", "shifts", "title"]);
     expect(tags(html).filter((t) => t.name === "input" && "checked" in t.attrs)).toHaveLength(0);
   });
 });

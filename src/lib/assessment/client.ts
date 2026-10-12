@@ -3,15 +3,13 @@
 // draws the chart and the text summary. Nothing leaves the page: no request, no storage. It sets
 // no `style` attribute (the page policy forbids it); the chart's geometry is SVG attributes.
 import stylesheet from "./client.css?url";
-import { planOrder } from "./plan.ts";
 import { decodeResult, encodeResult, resultUrl, type AssessmentResult } from "./result-link.ts";
 import { band, changeText, formatScore, markerPosition, nextToPractise, selectLowBand, summaryLine, sumOf } from "./score.ts";
 
 interface Data {
   scale: string[];
   title: string;
-  shifts: { name: string; from: string; to: string; anchor: string; practicalApplication: string; week: string }[];
-  integrationWeek: { name: string; week: string };
+  shifts: { name: string; from: string; to: string; anchor: string; practicalApplication: string }[];
 }
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -126,34 +124,55 @@ function chartAndSummary(data: Data, sums: number[], as: "now" | "earlier", comp
   return { chart, summary };
 }
 
-/** A shift to practise: a link to its section in the post and its Practical Application paragraph. */
-function practiseItem(shift: Data["shifts"][number]): HTMLElement {
-  const item = element("div", "mt-4");
-  item.dataset.lowShift = "";
-  const link = element("a", "font-semibold text-rust-800 underline underline-offset-2 dark:text-rust-300", `Read ${shift.name}`);
-  link.href = `#${shift.anchor}`;
-  link.dataset.lowLink = shift.anchor;
-  item.append(link, element("p", "m-0 mt-1 [overflow-wrap:anywhere]", shift.practicalApplication));
+/**
+ * The mindsets to develop (FR-008, FR-010): the shifts below the middle, weakest first, or, when
+ * none is, the lowest-scoring shift to practise next. The results and the printed sheet share it.
+ */
+function focusAreas(data: Data, sums: number[]): { intro: string[]; shifts: number[] } {
+  const low = selectLowBand(sums);
+  if (low.length > 0) return { intro: [], shifts: low };
+  const next = nextToPractise(sums);
+  return { intro: ["None of your scores is below the middle.", `Next to practise: ${data.shifts[next]!.name}`], shifts: [next] };
+}
+
+/** One mindset to develop: name and score, From → To, its Practical Application and a link to its section. */
+function focusItem(shift: Data["shifts"][number], sum: number, link: HTMLElement, className = ""): HTMLElement {
+  const item = element("div", className);
+  item.append(
+    element("p", className && "m-0 font-semibold text-dusk-900 dark:text-white", `${shift.name}: ${formatScore(sum)} of 5`),
+    element("p", className && "m-0 mt-1 text-sm [overflow-wrap:anywhere]", `${shift.from} → ${shift.to}`),
+    element("p", className && "m-0 mt-1 [overflow-wrap:anywhere]", shift.practicalApplication),
+    link,
+  );
   return item;
 }
 
-/** The printable plan sheet: title, date, the five positions, then weeks 1 to 6 (FR-010). */
-function planSheet(data: Data, sums: number[], date: string, url: string): HTMLElement {
+/** The section in the results: each mindset with a Read link that moves to its section in the post. */
+function practiseItem(shift: Data["shifts"][number], sum: number): HTMLElement {
+  const link = element("a", "mt-1 inline-block font-semibold text-rust-800 underline underline-offset-2 dark:text-rust-300", `Read ${shift.name}`);
+  link.href = `#${shift.anchor}`;
+  link.dataset.lowLink = shift.anchor;
+  const item = focusItem(shift, sum, link, "mt-4");
+  item.dataset.lowShift = "";
+  return item;
+}
+
+/** The printable sheet: title, date, the mindsets to develop with each section's full address, and the results link (FR-010). */
+function focusSheet(data: Data, sums: number[], date: string, url: string): HTMLElement {
   const sheet = element("section");
-  sheet.dataset.assessmentPlanSheet = "";
-  sheet.append(element("h2", "", data.title), element("p", "", formatDate(date)));
-  const positions = element("ul");
-  sums.forEach((sum, s) => positions.append(element("li", "", summaryLine(data.shifts[s]!, sum))));
+  sheet.dataset.assessmentFocusSheet = "";
+  const { intro, shifts } = focusAreas(data, sums);
+  const page = location.origin + location.pathname;
+  sheet.append(element("h2", "", data.title), element("p", "", formatDate(date)), element("h3", "", "Mindsets to develop"), ...intro.map((text) => element("p", "", text)));
+  for (const s of shifts) {
+    const shift = data.shifts[s]!;
+    const item = focusItem(shift, sums[s]!, element("p", "", `Read ${shift.name}: ${page}#${shift.anchor}`));
+    item.dataset.focusItem = "";
+    sheet.append(item);
+  }
   const link = element("p", "", `Results link: ${url}`);
-  link.dataset.planLink = "";
-  sheet.append(positions, link);
-  const weeks = [...planOrder(sums).map((s) => ({ name: data.shifts[s]!.name, text: data.shifts[s]!.week })), { name: data.integrationWeek.name, text: data.integrationWeek.week }];
-  weeks.forEach((week, n) => {
-    const section = element("div");
-    section.dataset.planWeek = "";
-    section.append(element("h3", "", `Week ${n + 1}: ${week.name}`), element("p", "", week.text));
-    sheet.append(section);
-  });
+  link.dataset.focusLink = "";
+  sheet.append(link);
   return sheet;
 }
 
@@ -192,7 +211,7 @@ export function init(root: HTMLElement): void {
   let shown = false;
   // The result the reader arrived with, from the results link (US4). Kept until cleared.
   let earlier: AssessmentResult | null = null;
-  const printButton = element("button", "inline-flex min-h-11 cursor-pointer items-center rounded-full border border-rust-700 bg-transparent px-5 py-2 text-base font-medium text-rust-800 hover:bg-rust-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rust-700 dark:border-rust-300 dark:text-rust-300 dark:hover:bg-rust-950 dark:focus-visible:outline-rust-300 forced-colors:border-[ButtonText] forced-colors:text-[ButtonText]", "Print my plan");
+  const printButton = element("button", "inline-flex min-h-11 cursor-pointer items-center rounded-full border border-rust-700 bg-transparent px-5 py-2 text-base font-medium text-rust-800 hover:bg-rust-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rust-700 dark:border-rust-300 dark:text-rust-300 dark:hover:bg-rust-950 dark:focus-visible:outline-rust-300 forced-colors:border-[ButtonText] forced-colors:text-[ButtonText]", "Print my focus areas");
   printButton.type = "button";
   printButton.dataset.assessmentPrint = "";
   printButton.addEventListener("click", () => window.print());
@@ -262,18 +281,10 @@ export function init(root: HTMLElement): void {
     const result: AssessmentResult = { version, date: today(), sums };
     const url = resultUrl(location, result);
     const practise = element("div", "mt-6");
-    practise.append(element("h3", "m-0 text-lg font-bold text-dusk-900 dark:text-white", "What to practise"));
-    const low = selectLowBand(sums);
-    if (low.length > 0) {
-      for (const s of low) practise.append(practiseItem(data.shifts[s]!));
-    } else {
-      const next = nextToPractise(sums);
-      practise.append(
-        element("p", "m-0 mt-2", "None of your scores is below the middle."),
-        element("p", "m-0 mt-2 font-semibold", `Next to practise: ${data.shifts[next]!.name}`),
-        practiseItem(data.shifts[next]!),
-      );
-    }
+    practise.append(element("h3", "m-0 text-lg font-bold text-dusk-900 dark:text-white", "Mindsets to develop"));
+    const focus = focusAreas(data, sums);
+    focus.intro.forEach((text, n) => practise.append(element("p", n ? "m-0 mt-2 font-semibold" : "m-0 mt-2", text)));
+    for (const s of focus.shifts) practise.append(practiseItem(data.shifts[s]!, sums[s]!));
     const link = element("div", "mt-6");
     link.append(element("h3", "m-0 text-lg font-bold text-dusk-900 dark:text-white", "Your results link"));
     const text = element("p", "m-0 mt-2 [overflow-wrap:anywhere]", url);
@@ -291,10 +302,10 @@ export function init(root: HTMLElement): void {
     const heading = element("h3", "m-0 text-lg font-bold text-dusk-900 dark:text-white", "Your results");
     results.replaceChildren(heading, chart, ...(comparable ? [legend(earlier!.date)] : []), summary, practise, link, element("p", "mt-6 mb-0"));
     results.lastElementChild!.append(printButton);
-    document.body.querySelector(":scope > [data-assessment-plan-sheet]")?.remove();
-    document.body.append(planSheet(data, sums, result.date, url));
+    document.body.querySelector(":scope > [data-assessment-focus-sheet]")?.remove();
+    document.body.append(focusSheet(data, sums, result.date, url));
     history.replaceState(history.state, "", `#${encodeResult(result)}`);
-    document.documentElement.setAttribute("data-assessment-plan", "");
+    document.documentElement.setAttribute("data-assessment-focus", "");
     results.hidden = false;
     status.textContent = shown ? "Your results are updated." : "Your results are ready below.";
     shown = true;
@@ -360,7 +371,7 @@ export function init(root: HTMLElement): void {
     goTo(target.hasAttribute("data-assessment-content") ? document.getElementById(root.getAttribute("aria-labelledby")!)! : target);
   });
 
-  // Clear: every trace of the answers, the results, the plan and the address fragment goes (L6, U14).
+  // Clear: every trace of the answers, the results, the focus sheet and the address fragment goes (L6, U14).
   clear.addEventListener("click", () => {
     form.reset();
     for (const fieldset of fieldsets) clearError(fieldset);
@@ -369,8 +380,8 @@ export function init(root: HTMLElement): void {
     results.hidden = true;
     earlierPanel.replaceChildren();
     earlierPanel.hidden = true;
-    document.body.querySelector(":scope > [data-assessment-plan-sheet]")?.remove();
-    document.documentElement.removeAttribute("data-assessment-plan");
+    document.body.querySelector(":scope > [data-assessment-focus-sheet]")?.remove();
+    document.documentElement.removeAttribute("data-assessment-focus");
     if (titleLink) {
       titleLink.textContent = titleWording.text;
       titleLink.setAttribute("href", titleWording.href);
