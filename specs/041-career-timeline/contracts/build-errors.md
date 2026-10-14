@@ -2,7 +2,8 @@
 
 Every message starts `Career step file src/content/career/<id>.yaml:` (the `contentError` helper in
 `src/lib/content/errors.ts`, with `ErrorKind` gaining `"career step"`), or is Astro's own schema
-error, which names the file and the field path. Messages are plain and say what to change. The
+error, which names the file and the field path. Every message carries the file, the field and,
+where there is one, the offending value (spec FR-005a). Messages are plain and say what to change. The
 phrases below are the asserted part; exact wording is settled in implement.
 
 | Row | Cause | Where it is decided | Message phrase |
@@ -18,11 +19,15 @@ phrases below are the asserted part; exact wording is settled in implement.
 | T09 | Current role does not end `present` | `checkCareer()` | `this is the latest role, so end must be present` |
 | T10 | A `posts` entry names no post file | `checkCareer()` | `post "<slug>" does not exist in src/content/posts/` |
 | T11 | A `posts` entry names a draft post | `checkCareer()` | `post "<slug>" is a draft; publish it or remove it from posts` |
+| T12 | A text field over its limit (role, organization 120; scope and detail parts 300; items and award names 200) | schema | `<field>: keep this under <limit> characters` |
+| T13 | A step file that cannot be parsed | Astro's YAML loader | Astro's parse error naming the file |
 
 ## Where each row is proven (docs/testing.md "Check functions and call sites")
 
-- **Logic**: T01–T07 in `tests/unit/content/career-schema.test.ts`; T08–T11 in
+- **Logic**: T01–T07 and T12 in `tests/unit/content/career-schema.test.ts`; T08–T11 in
   `tests/unit/content/career.test.ts`. One case per row; the test title carries the row id.
+- **T13** is decided by Astro's own YAML loader; no custom code decides it, so it has no test of
+  its own.
 - **Wiring**: one `sync` run proves the collection schema is wired and Astro names the file (T01
   as the representative row). One `build` run proves `checkCareer()` runs from the About page and
   its message reaches the build output (T10 as the representative row). Both in

@@ -105,8 +105,8 @@ was used for every Astro choice below; each decision names the page it rests on.
 ## R8. Dither: CSS dot pattern behind a solid text backing
 
 - **Decision**: A dithered step's summary row gets a `radial-gradient` dot pattern
-  (`background-image`, about 1 px dots on a 6 px grid, in a `dusk` token at low strength, a lighter
-  token in dark mode). The summary text sits in an inline box with the page's own solid background
+  (`background-image`, about 1 px dots on a 6 px grid, in a token with at least 3:1 contrast
+  against the page background in each theme, spec FR-011). The summary text sits in an inline box with the page's own solid background
   colour, so the dots never sit directly behind a glyph and text contrast is the same as an
   undithered step (FR-011). A dithered step also loses its top-level emphasis (for example its
   period stays, its role weight drops from bold to medium), so the state does not rely on colour.
@@ -126,9 +126,11 @@ was used for every Astro choice below; each decision names the page it rests on.
   bold weight and a light tint, so the highlight is not colour alone. Each highlighted item sits
   inside its opened step, directly under that step's summary line (role, organization, period), so
   the item's role and organization are shown with it (FR-010, SC-003) without repeating them on
-  each item.
-- **Open point**: if review reads FR-010 as "each item repeats its role and organization", a short
-  context line per item can be added in implement; the markup contract leaves room for it.
+  each item. For assistive technology the list heading names the chosen category and the item
+  sits inside the disclosure named by its role and organization, so no hidden text is added
+  (spec FR-010).
+- **Settled**: spec FR-010 (checklist pass) confirms the summary line is the item's role and
+  organization context; no per-item line is added.
 
 ## R10. Labels and headings
 

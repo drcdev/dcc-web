@@ -60,7 +60,7 @@ The About page gains a **Career** timeline directly after the "About me" list, w
 | XI | Spec Kit Workflow | PASS | Branch and directory from Spec Kit. Files shared with sibling worktrees are listed below with how conflicts are handled. |
 | — | Technology Constraints | PASS | Astro, strict TypeScript, Tailwind; one package manager; nothing new outside the list. |
 | — | Security Baseline | PASS | `public/_headers` unchanged. The page CSP comes from Astro's `security.csp` (astro.config.mjs), which hashes every processed script, so the new script needs no policy change ([security.csp](https://docs.astro.build/en/reference/configuration-reference/#securitycsp)). The script reads only `data-*` it owns and writes `textContent` only. Ruleset, Dependabot and abuse controls unchanged. |
-| — | Development Workflow | PASS | Astro choices cite docs (research.md). Every test task will name its layer. Copy is plain (FR-020). Don's job title appears only on the About page and in the career step file that feeds it (FR-019); a unit guard keeps it there. Out-of-scope items stay in the spec. |
+| — | Development Workflow | PASS | Astro choices cite docs (research.md). Every test task will name its layer. Copy is plain (FR-020). Don's job title appears only on the About page and in the career step file that feeds it, which spec FR-019 counts as part of the About page; a unit guard keeps it there. Out-of-scope items stay in the spec. |
 
 ### First-party options by capability (Principle IV)
 
@@ -88,15 +88,15 @@ written reason shown.
 |---|---|---|
 | Schema rows T01–T07 | Unit | `tests/unit/content/career-schema.test.ts` |
 | Cross-file rows T08–T11, ordering, period text | Unit | `tests/unit/content/career.test.ts` |
-| Used categories, matching steps, status sentence | Unit | `tests/unit/content/career-filter.test.ts` |
+| Used categories, matching steps, status sentence (singular for 1, plural otherwise), fresh re-application, same-choice no-op | Unit | `tests/unit/content/career-filter.test.ts` |
 | Job title appears in no `src/` file but `about.mdx` and `src/content/career/` (FR-019) | Unit | `tests/unit/content/job-title-only-on-about.test.ts` (reads the current role through `tests/helpers/content.ts`; names no literal) |
 | Launch content: six steps, last is current and ends `present`, no `nextMove` on it, every post published | Unit | `tests/unit/content/career-launch.test.ts` (rules over the real files via the helper, no literals) |
 | Markup: order, closed by default, labels only for present parts, FR-008 order, no empty headings, plain award without link, filter and status `hidden`, only used categories offered, no next-move label on the last step, nothing rendered with no steps | Component | `tests/component/sections/CareerTimeline.test.ts` (Container API, `timeline` prop) |
 | Schema wired and Astro names the file (sync); `checkCareer()` runs from `/about/` and names the file (build) | Build | `tests/build/career-timeline.test.ts` (2 runs) |
 | About page placement: timeline after "About me", before "Recognition"; Leadership line gone | Build (real content) | added to an existing `test:build:content` file reading `dist/about/index.html` |
-| Open/close by mouse, touch-size target and keyboard; filter journey; All resets; dithered step still visible and openable; status text; no-JS; 320 px; print emulation; reduced motion; forced colours | E2E | `tests/e2e/career-timeline.spec.ts` on the fixture site `/about/` |
+| Open/close by mouse, touch-size target and keyboard; filter journey; All resets hand-opened steps; dithered step still visible and openable; status text; focus stays on the button and moves to the summary when its step closes; no-JS; 320 px; print emulation; reduced motion; forced colours | E2E | `tests/e2e/career-timeline.spec.ts` on the fixture site `/about/` |
 | Contrast and roles, idle | Accessibility | existing `a11y.spec.ts` entry for `/about/` (no change) |
-| Contrast and roles with a category chosen | Accessibility (second layer) | `tests/e2e/career-timeline.a11y.spec.ts`. Reason: the filtered markup and dither exist only after a press, as with the questions panel states. |
+| Contrast and roles with each offered category chosen, and with a dithered step opened by hand, light and dark (SC-004) | Accessibility (second layer) | `tests/e2e/career-timeline.a11y.spec.ts`. Reason: the filtered markup and dither exist only after a press, as with the questions panel states. |
 | Budget | Budget | existing `/about/` entry (no change) |
 | Template pixels incl. dither | Visual | `visual.spec.ts`: one element shot of the fixture timeline with a category chosen and one step dithered, phone and desktop, light and dark |
 
@@ -169,9 +169,12 @@ component in the section registry.
   drops too, so the state is not colour alone. Forced colours get a dashed border; print gets none
   (R8).
 - **Matching items** show their role and organization through the opened step's summary line
-  directly above them (R9). If review wants it repeated per item, that is a small markup addition.
+  directly above them (R9); spec FR-010 settles this, so nothing is repeated per item.
 - **Current role** is the step with the latest start; it must end `present` and has no next move
-  (R5).
+  (R5, spec FR-001a).
+- **Filter state**: every change is applied fresh to every step; "All" closes hand-opened steps
+  too (spec FR-012, FR-012a). Focus stays on the pressed button, or moves to the summary of a
+  step that closes around it (FR-013a, FR-013b).
 - **Job title**: it appears in `about.mdx` (already) and in the current step's `role`. Both render
   only on `/about/`. The unit guard fails if the title string appears in any other `src/` file.
 
