@@ -116,14 +116,56 @@ describe("CareerTimeline", () => {
     expect(html).toContain("*stars* and a break.");
   });
 
-  it("sets no inline style attribute and ships no script", async () => {
+  it("sets no inline style attribute and no inline script (the filter script is a bundled module)", async () => {
     const html = await render(CareerTimeline, { timeline });
     expect(tags(html).filter((t) => "style" in t.attrs)).toEqual([]);
-    expect(html).not.toContain("<script");
+    expect(tags(html).filter((t) => t.name === "script" && !t.attrs.src)).toEqual([]);
+  });
+
+  it("serves the filter and status line hidden, offering only used categories with All first and selected", async () => {
+    const html = await render(CareerTimeline, { timeline });
+    const group = tags(html).find((t) => "data-career-filter" in t.attrs)!;
+    expect(group.attrs.role).toBe("group");
+    expect("hidden" in group.attrs).toBe(true);
+    expect(group.attrs["aria-labelledby"]).toBe("career-filter-label");
+    expect(textOf(html, "p")).toContain("Show");
+    const buttons = tags(html).filter((t) => t.name === "button");
+    expect(buttons.map((b) => b.attrs["data-category"] ?? "all")).toEqual(["all", "achievements", "leadership", "awards"]);
+    expect(buttons.map((b) => b.attrs["aria-pressed"])).toEqual(["true", "false", "false", "false"]);
+    expect("data-category-all" in buttons[0]!.attrs).toBe(true);
+    for (const b of buttons) expect(b.attrs.type).toBe("button");
+    const status = tags(html).find((t) => "data-career-status" in t.attrs)!;
+    expect(status.attrs.role).toBe("status");
+    expect(status.attrs["aria-live"]).toBe("polite");
+    expect("hidden" in status.attrs).toBe(true);
+    expect(/<p[^>]*data-career-status[^>]*>\s*<\/p>/.test(html)).toBe(true);
+  });
+
+  it("offers a category only when a step uses it", async () => {
+    const only = buildTimeline([file("x", "2010-01", "present", { awards: [{ name: "A", year: 2020 }] })]);
+    const html = await render(CareerTimeline, { timeline: only });
+    expect(tags(html).filter((t) => t.name === "button").map((b) => b.attrs["data-category"] ?? "all")).toEqual(["all", "awards"]);
+  });
+
+  it("wraps the steps in the custom element with the total and gives each step its categories", async () => {
+    const html = await render(CareerTimeline, { timeline });
+    const el = tags(html).find((t) => t.name === "career-timeline")!;
+    expect(el.attrs["data-total"]).toBe("2");
+    const items = tags(html).filter((t) => t.name === "li" && t.attrs["data-step"]);
+    expect(items.map((i) => i.attrs["data-categories"])).toEqual(["achievements|leadership|awards", "achievements"]);
+  });
+
+  it("renders no filter and no status line when no category is used", async () => {
+    const none = buildTimeline([file("x", "2010-01", "present")]);
+    const html = await render(CareerTimeline, { timeline: none });
+    expect(html).not.toContain("data-career-filter");
+    expect(html).not.toContain("data-career-status");
+    expect(byName(html, "button")).toHaveLength(0);
   });
 
   it("renders nothing with no steps", async () => {
     const html = await render(CareerTimeline, { timeline: { steps: [], categories: [] } });
-    expect(html.trim()).toBe("");
+    expect(html).not.toContain("<section");
+    expect(html).not.toContain("<career-timeline");
   });
 });

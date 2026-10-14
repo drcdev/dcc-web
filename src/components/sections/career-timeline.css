@@ -1,0 +1,102 @@
+@reference "../../styles/global.css";
+
+/* The career timeline's filter, dither and highlight (specs/041-career-timeline US3;
+   contracts/timeline-markup.md "Styling contract"). Nothing animates (FR-015), and every effect
+   is plain CSS so the CSP needs no inline style. The no-script page never sees any of it. */
+
+/* The hidden attribute must win over the display values set below. */
+[data-career-filter][hidden],
+[data-career-status][hidden] {
+  display: none;
+}
+/* While script is running, the controls take their space, unseen, until the element is ready, so
+   revealing them moves nothing (FR-014a). Without script they stay display: none and take no
+   space (FR-014). */
+@layer base {
+  :root.js career-timeline:not([data-ready]) :is([data-career-filter], [data-career-status])[hidden] {
+    display: block !important;
+    visibility: hidden;
+  }
+}
+[data-career-filter] {
+  @apply mb-4;
+}
+[data-career-filter-label] {
+  @apply m-0 mb-2 text-sm font-semibold tracking-wide text-dusk-800 uppercase dark:text-mist-200;
+}
+[data-career-filter-buttons] {
+  @apply flex flex-wrap gap-2;
+}
+[data-career-filter-buttons] button {
+  @apply inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center border-2 border-dusk-900 bg-white px-4 py-1 text-base font-semibold text-dusk-900 dark:border-mist-200 dark:bg-dusk-900 dark:text-white;
+}
+[data-career-filter-buttons] button[aria-pressed="true"] {
+  @apply border-accent-700 bg-accent-700 text-white dark:border-accent-300 dark:bg-accent-300 dark:text-dusk-900;
+}
+[data-career-status] {
+  @apply mb-4 min-h-6 text-base text-dusk-800 dark:text-mist-200;
+}
+
+/* Dither: a CSS-only dot pattern over the summary row. The text sits on a solid backing of the
+   page colour, so no dot is ever behind a glyph and text keeps full contrast (FR-011). The dots
+   are at least 3:1 against the page (dusk-400 on white, dusk-500 on the dark page). The cue is
+   the pattern plus a lighter role weight, never colour alone. */
+[data-career] li[data-dithered] > details > summary {
+  background-image: radial-gradient(circle at center, var(--career-dot) 1px, transparent 1.5px);
+  background-size: 6px 6px;
+  --career-dot: var(--color-dusk-400);
+}
+:is(.dark) [data-career] li[data-dithered] > details > summary {
+  --career-dot: var(--color-dusk-500);
+}
+[data-career] li[data-dithered] > details > summary > span {
+  @apply w-fit bg-white pr-2 dark:bg-dusk-BASE;
+}
+[data-career] li[data-dithered] [data-step-role] {
+  @apply font-medium;
+}
+
+/* Highlight: left border, bold and a light tint, so it is not colour alone (FR-010). */
+[data-career] ul[data-list] > li[data-match] {
+  @apply border-l-4 border-rust-700 bg-rust-50 pl-2 font-bold text-dusk-900 dark:border-rust-300 dark:bg-dusk-800 dark:text-white;
+}
+
+@media (forced-colors: active) {
+  [data-career-filter-buttons] button {
+    border-color: CanvasText;
+  }
+  [data-career-filter-buttons] button[aria-pressed="true"] {
+    border-color: Highlight;
+    outline: 2px solid Highlight;
+  }
+  [data-career-filter-buttons] button:focus-visible {
+    outline-color: CanvasText;
+  }
+  /* The pattern is dropped; a dashed border carries the cue. */
+  [data-career] li[data-dithered] > details > summary {
+    background-image: none;
+    border: 2px dashed CanvasText;
+  }
+  [data-career] ul[data-list] > li[data-match] {
+    border-left-color: Highlight;
+  }
+}
+
+/* Print shows the plain timeline whatever the filter state (FR-018). */
+@media print {
+  [data-career-filter],
+  [data-career-status],
+  :root.js career-timeline:not([data-ready]) :is([data-career-filter], [data-career-status])[hidden] {
+    display: none !important;
+  }
+  [data-career] li[data-dithered] > details > summary {
+    background-image: none;
+    border: 0;
+  }
+  [data-career] li[data-dithered] [data-step-role] {
+    @apply font-bold;
+  }
+  [data-career] ul[data-list] > li[data-match] {
+    @apply border-l-0 bg-transparent pl-0 font-normal;
+  }
+}
