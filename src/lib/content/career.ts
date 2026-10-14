@@ -1,6 +1,7 @@
 // The pure part of the career timeline (specs/041-career-timeline: data-model.md C1 and C2,
 // contracts/build-errors.md rows T08 and T09). src/lib/career.ts reads the collection and passes
 // the steps in, so these functions need no Astro runtime.
+import { postHref } from "./addresses.ts";
 import { contentError } from "./errors.ts";
 
 export type CategoryId = "achievements" | "leadership" | "awards";
@@ -35,6 +36,9 @@ export interface StepFile {
     posts?: string[];
   };
 }
+
+/** What the post lookup knows about each post file, drafts included, keyed by slug. */
+export type PostLookup = ReadonlyMap<string, { title: string; draft: boolean }>;
 
 export interface Part {
   label: string;
@@ -81,8 +85,20 @@ export function orderSteps<T extends { id: string; data: { start: string } }>(fi
   return [...files].sort((a, b) => a.data.start.localeCompare(b.data.start) || a.id.localeCompare(b.id));
 }
 
-/** C2: the current role ends present and has no next move. Throws a PageContentError naming the file. */
-export function checkCareer(files: readonly StepFile[]): void {
+/**
+ * C2: the current role ends present and has no next move. C3 and C4: every listed post exists and is
+ * published (a draft is rejected in every build mode). Throws a PageContentError naming the file.
+ */
+export function checkCareer(files: readonly StepFile[], posts?: PostLookup): void {
+  if (posts) {
+    for (const { file, data } of orderSteps(files)) {
+      for (const slug of data.posts ?? []) {
+        const post = posts.get(slug);
+        if (!post) throw contentError("career step", file, `posts: post "${slug}" does not exist in src/content/posts/.`);
+        if (post.draft) throw contentError("career step", file, `posts: post "${slug}" is a draft; publish it or remove it from posts.`);
+      }
+    }
+  }
   const current = orderSteps(files).at(-1);
   if (!current) return;
   if (current.data.end !== "present") {
@@ -104,8 +120,8 @@ const partFields = [
   ["nextMove", "The skill that led to the next move"],
 ] as const;
 
-/** The view the component renders: steps in order with only the parts present, and the used categories. */
-export function buildTimeline(files: readonly StepFile[]): Timeline {
+/** The view the component renders (posts resolved through `posts`): steps in order with only the parts present, and the used categories. */
+export function buildTimeline(files: readonly StepFile[], posts?: PostLookup): Timeline {
   const steps = orderSteps(files).map(({ id, data }): TimelineStep => ({
     id,
     role: oneLine(data.role),
@@ -117,7 +133,10 @@ export function buildTimeline(files: readonly StepFile[]): Timeline {
     achievements: (data.achievements ?? []).map(oneLine),
     leadership: (data.leadership ?? []).map(oneLine),
     awards: (data.awards ?? []).map((award) => ({ ...award, name: oneLine(award.name) })),
-    posts: [],
+    posts: (data.posts ?? []).flatMap((slug) => {
+      const post = posts?.get(slug);
+      return post ? [{ title: oneLine(post.title), href: postHref(slug) }] : [];
+    }),
   }));
   const categories = categoryIds.filter((id) => steps.some((step) => step[id].length > 0));
   return { steps, categories };

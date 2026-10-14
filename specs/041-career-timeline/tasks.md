@@ -89,16 +89,16 @@ description: "Task list for the interactive career timeline (feature 041)"
 
 ### Tests for User Story 2 (write first)
 
-- [ ] T025 [P] [US2] Unit test, primary layer **Unit**, in `tests/unit/content/career.test.ts`: C3 row T10 and C4 row T11 from `checkCareer()` (post missing; post draft in any build mode), messages carry file, field and value.
-- [ ] T026 [P] [US2] Component test, primary layer **Component**, in `tests/component/sections/CareerTimeline.test.ts`: a "Writing" list of links to each post's own title and href, an "Awards" list showing "Name (Year)", an award without `href` is plain text, an award with `href` is a link, lists absent when empty.
-- [ ] T027 [US2] No new Astro run: confirm `tests/build/career-timeline.test.ts` still holds exactly the T006 `sync` run and the T015 `build` run. Rows T10 and T11 reach the build through the call site T015 proves, and their messages (file, field, post) are proven by T025 at the unit layer (US2 scenario 4, SC-006; contracts/build-errors.md "Wiring"; build budget stays at two career runs).
-- [ ] T028 [US2] E2E test, primary layer **E2E**, in `tests/e2e/career-timeline.spec.ts`: on the fixture `/about/`, a post link and an award link in an opened step navigate to the right targets (a journey; link markup itself is covered at the component layer, so this only checks the journey).
+- [X] T025 [P] [US2] Unit test, primary layer **Unit**, in `tests/unit/content/career.test.ts`: C3 row T10 and C4 row T11 from `checkCareer()` (post missing; post draft in any build mode), messages carry file, field and value.
+- [X] T026 [P] [US2] Component test, primary layer **Component**, in `tests/component/sections/CareerTimeline.test.ts`: a "Writing" list of links to each post's own title and href, an "Awards" list showing "Name (Year)", an award without `href` is plain text, an award with `href` is a link, lists absent when empty.
+- [X] T027 [US2] No new Astro run: confirm `tests/build/career-timeline.test.ts` still holds exactly the T006 `sync` run and the T015 `build` run. Rows T10 and T11 reach the build through the call site T015 proves, and their messages (file, field, post) are proven by T025 at the unit layer (US2 scenario 4, SC-006; contracts/build-errors.md "Wiring"; build budget stays at two career runs).
+- [X] T028 [US2] E2E test, primary layer **E2E**, in `tests/e2e/career-timeline.spec.ts`: on the fixture `/about/`, a post link and an award link in an opened step navigate to the right targets (a journey; link markup itself is covered at the component layer, so this only checks the journey).
 
 ### Implementation for User Story 2
 
-- [ ] T029 [US2] Extend `src/lib/content/career.ts` `checkCareer()` for C3 and C4; resolve posts to `{ title, href }` in `src/lib/career.ts` via `getPostSummaries()` and `postHref()`. Makes T025 pass.
-- [ ] T030 [US2] Render the Writing and Awards lists in `src/components/sections/CareerTimeline.astro`; add the awards (step 4 linked to the same CCHL articles the Recognition section uses; step 5 unlinked) and step 5's four related posts to the launch files in `src/content/career/` per spec FR-006a. Makes T026 and T028 pass.
-- [ ] T031 [US2] Run `pnpm run verify:quick`.
+- [X] T029 [US2] Extend `src/lib/content/career.ts` `checkCareer()` for C3 and C4; resolve posts to `{ title, href }` in `src/lib/career.ts` via `getPostSummaries()` and `postHref()`. Makes T025 pass.
+- [X] T030 [US2] Render the Writing and Awards lists in `src/components/sections/CareerTimeline.astro`; add the awards (step 4 linked to the same CCHL articles the Recognition section uses; step 5 unlinked) and step 5's four related posts to the launch files in `src/content/career/` per spec FR-006a. Makes T026 and T028 pass.
+- [X] T031 [US2] Run `pnpm run verify:quick`.
 
 **Checkpoint**: US1 and US2 both work.
 

@@ -72,3 +72,29 @@ describe("buildTimeline", () => {
     expect(buildTimeline([])).toEqual({ steps: [], categories: [] });
   });
 });
+
+describe("C3 and C4 related posts", () => {
+  const posts = new Map([
+    ["live", { title: "A live post", draft: false }],
+    ["wip", { title: "A draft post", draft: true }],
+  ]);
+  const last = step("now", "2020-01", "present");
+
+  it("T10: rejects a post that has no file, naming the file, field and post", () => {
+    const files = [step("old", "2010-01", "2012-01", { posts: ["gone"] }), last];
+    expect(() => checkCareer(files, posts)).toThrow(
+      /Career step file src\/content\/career\/old\.yaml: .*posts.*post "gone" does not exist in src\/content\/posts\//,
+    );
+  });
+  it("T11: rejects a draft post, naming the file, field and post", () => {
+    const files = [step("old", "2010-01", "2012-01", { posts: ["wip"] }), last];
+    expect(() => checkCareer(files, posts)).toThrow(
+      /Career step file src\/content\/career\/old\.yaml: .*posts.*post "wip" is a draft; publish it or remove it from posts/,
+    );
+  });
+  it("accepts live posts and resolves them to title and address in step order", () => {
+    const files = [step("old", "2010-01", "2012-01", { posts: ["live"] }), last];
+    expect(() => checkCareer(files, posts)).not.toThrow();
+    expect(buildTimeline(files, posts).steps[0]!.posts).toEqual([{ title: "A live post", href: "/writing/live/" }]);
+  });
+});

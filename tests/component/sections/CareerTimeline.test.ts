@@ -11,6 +11,11 @@ const file = (id: string, start: string, end: string, extra: Partial<StepFile["d
   data: { role: `Role ${id}`, organization: `Org ${id}`, start, end, scope: `Scope of ${id}.`, ...extra },
 });
 
+const known = new Map([
+  ["p1", { title: "First <post>", draft: false }],
+  ["p2", { title: "Second post", draft: false }],
+]);
+
 const timeline = buildTimeline([
   file("one", "2010-03", "2013-08", {
     decision: "A decision.",
@@ -18,10 +23,11 @@ const timeline = buildTimeline([
     nextMove: "A next move.",
     achievements: ["Did a thing."],
     leadership: ["Led a thing."],
+    posts: ["p1", "p2"],
     awards: [{ name: "Linked Award", year: 2012, href: "https://example.com/a" }, { name: "Plain Award", year: 2013 }],
   }),
   file("two", "2018-01", "present", { achievements: ["Another thing."] }),
-]);
+], known);
 
 describe("CareerTimeline", () => {
   it("heads the section 'Career' (h3) and renders an ordered list of steps in order, all closed", async () => {
@@ -66,12 +72,13 @@ describe("CareerTimeline", () => {
   it("shows Achievements, Leadership and Awards lists with h4 headings, only when they have items", async () => {
     const html = await render(CareerTimeline, { timeline });
     const first = html.split('data-step="one"')[1]!.split('data-step="two"')[0]!;
-    expect([...first.matchAll(/<h4[^>]*>([\s\S]*?)<\/h4>/g)].map((m) => m[1]!.trim())).toEqual(["Achievements", "Leadership", "Awards"]);
+    expect([...first.matchAll(/<h4[^>]*>([\s\S]*?)<\/h4>/g)].map((m) => m[1]!.trim())).toEqual(["Achievements", "Leadership", "Writing", "Awards"]);
     const second = html.split('data-step="two"')[1]!;
     expect([...second.matchAll(/<h4[^>]*>([\s\S]*?)<\/h4>/g)].map((m) => m[1]!.trim())).toEqual(["Achievements"]);
     expect(tags(first).filter((t) => t.name === "ul" && t.attrs["data-list"]).map((t) => t.attrs["data-list"])).toEqual([
       "achievements",
       "leadership",
+      "posts",
       "awards",
     ]);
   });
@@ -80,7 +87,25 @@ describe("CareerTimeline", () => {
     const html = await render(CareerTimeline, { timeline });
     expect(html).toMatch(/<a [^>]*href="https:\/\/example\.com\/a"[^>]*>Linked Award<\/a>\s*\(2012\)/);
     expect(html).toMatch(/<li[^>]*>\s*Plain Award \(2013\)\s*<\/li>/);
-    expect(tags(html).filter((t) => t.name === "a")).toHaveLength(1);
+    expect(tags(html).filter((t) => t.name === "a" && t.attrs.href?.startsWith("https://"))).toHaveLength(1);
+  });
+
+  it("lists related posts as links to each post's own title and address, in the listed order", async () => {
+    const html = await render(CareerTimeline, { timeline });
+    const first = html.split('data-step="one"')[1]!.split('data-step="two"')[0]!;
+    const list = /<ul[^>]*data-list="posts"[^>]*>([\s\S]*?)<\/ul>/.exec(first)![1]!;
+    const links = tags(list).filter((t) => t.name === "a");
+    expect(links.map((l) => l.attrs.href)).toEqual(["/writing/p1/", "/writing/p2/"]);
+    expect(list).toContain("First &lt;post&gt;");
+    expect(list).toContain("Second post");
+  });
+
+  it("leaves out the Writing and Awards lists when a step has none", async () => {
+    const html = await render(CareerTimeline, { timeline });
+    const second = html.split('data-step="two"')[1]!;
+    expect(second).not.toContain('data-list="posts"');
+    expect(second).not.toContain('data-list="awards"');
+    expect(second).not.toContain("Writing");
   });
 
   it("renders field text as text: no markup, no line break kept", async () => {

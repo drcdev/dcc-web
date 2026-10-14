@@ -108,6 +108,26 @@ test("keeps a visible disclosure state in forced colours", async ({ page }) => {
   await expect(first.locator("[data-step-detail]")).toBeVisible();
 });
 
+test("a post link and an award link in an opened step go to the right targets", async ({ page }) => {
+  await page.goto(ABOUT);
+  const step = page.locator(steps).filter({ has: page.locator("[data-list=posts]") }).first();
+  await step.locator("summary").click();
+  const post = step.locator("[data-list=posts] a").first();
+  const href = (await post.getAttribute("href"))!;
+  const title = (await post.textContent())!.trim();
+  await post.click();
+  await expect(page).toHaveURL(new RegExp(`${href}$`));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
+
+  await page.goto(ABOUT);
+  const awarded = page.locator(steps).filter({ has: page.locator("[data-list=awards] a") }).first();
+  await awarded.locator("summary").click();
+  const award = awarded.locator("[data-list=awards] a").first();
+  const target = (await award.getAttribute("href"))!;
+  expect(target).toMatch(/^https:\/\//);
+  await expect(award).toBeVisible();
+});
+
 test.describe("without JavaScript", () => {
   test.use({ javaScriptEnabled: false });
 
