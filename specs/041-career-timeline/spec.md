@@ -46,6 +46,22 @@ island. Public content lives in the repository as files validated by a schema (P
 - Q: How do non-matching steps look when a category is chosen? → A: A dot (halftone) pattern
   over the collapsed step's background, made with CSS only; the text stays at full contrast and
   the treatment does not rely on colour alone.
+- Q: Which roles appear as steps? → A: Six: the four Island Health roles on the CV, the CCHL
+  Vancouver Island Chapter board role (volunteer), and the current Director role. Education and
+  pre-2014 work are not steps.
+- Q: What does the current step show? → A: The scope line from the About page ("Leads data
+  warehousing, data modernization, and AI support and compliance for a regional health
+  authority."); no key decision.
+- Q: When did the Cloud Architect / IT Project Manager role end, and where do the awards link
+  from? → A: It ended May 2026. The 2026 Celebration of Excellence links from Cloud Architect /
+  IT Project Manager; the 2024 CCHL Chapter Award for Distinguished Service and the 2024 CCHL
+  Member Profile link from the CCHL board step.
+- Q: What is the key decision for Manager, Enterprise Systems Development? → A: "Organized
+  database, web, integration and collaboration services into five cross-functional teams, each
+  owning its 24/7 commitments."
+- Q: How are the reflection parts filled in? → A: They are not, for now. The timeline ships with
+  scope, the one key decision above, categorized items, awards and links; Don adds reflection
+  parts to the content file later in small changes. No drafted reflection text.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -189,10 +205,36 @@ filter restores the timeline.
   category not in the allowed list MUST fail the build with an error naming the step.
 - **FR-006**: The career content (which roles, organizations, periods, the text of each detail
   part, related posts, awards and categorized items) MUST come from Don and MUST NOT be
-  invented. Its source is Don's CV, pasted in as a draft content source, completed by a later
-  clarify round that interviews Don on the gaps and on his current role, Director, Data
-  Infrastructure and Architecture at Island Health since 2026, which the CV does not yet
-  include. Planning waits for that round.
+  invented. Its source is Don's CV and his clarify-round answers (Clarifications, session
+  2026-10-14). The launch content is exactly the six steps in FR-006a; nothing else is added
+  without Don.
+- **FR-006a**: The timeline MUST launch with these six steps, in this order (start date). Each
+  step's scope is the text given. Only the Manager, Enterprise Systems Development step has a
+  key decision; no step has "what changed", "wish I'd known" or "skill to the next move" at
+  launch (Don adds them later).
+
+  | # | Role | Organization | Period | Scope |
+  |---|------|--------------|--------|-------|
+  | 1 | Leader, Systems Engineer | Island Health | Oct 2014 – Sep 2016 | Led integration projects that redeveloped 70+ HL7 interfaces and Oracle database integrations, and built proactive monitoring and analytics tools. |
+  | 2 | Manager, Enterprise Systems Development | Island Health | Sep 2016 – Jan 2022 | Led five cross-functional teams (20+ direct reports) running database, web, integration and collaboration services under 24/7 service commitments, and managed real-time and batch clinical data integration pipelines. |
+  | 3 | Project Director, Enabling Technologies | Island Health | Jan 2022 – Mar 2023 | Coordinated technology for the pandemic response and aligned technology investment with executive committees, clinical leads and provincial stakeholders. |
+  | 4 | Treasurer and Director at Large (volunteer) | Canadian College of Health Leaders – Vancouver Island Chapter | Sep 2022 – present | Chapter finances (budget, reporting, taxation, investment plan), executive governance and the mentorship program. |
+  | 5 | Cloud Architect / IT Project Manager | Island Health | Apr 2023 – May 2026 | Architected the Microsoft 365 governance framework for 36,000 users, led cloud migrations with disaster recovery planning, and managed vendors and cloud budgets using FinOps practices. |
+  | 6 | Director, Data Infrastructure and Architecture | Island Health | Jun 2026 – present | Leads data warehousing, data modernization, and AI support and compliance for a regional health authority. |
+
+  Key decision (step 2 only): "Organized database, web, integration and collaboration services
+  into five cross-functional teams, each owning its 24/7 commitments."
+
+  Categorized items, awards and related posts per step:
+
+  | # | Achievements | Leadership | Awards | Related posts |
+  |---|--------------|------------|--------|---------------|
+  | 1 | 70+ HL7 interfaces redeveloped; proactive monitoring reduced reactive troubleshooting | – | – | – |
+  | 2 | On-call incidents cut by 40% through ITIL-based incident management; COVID-19 vaccine rollout integration delivered with zero deployment delays | Built and led five teams, 20+ direct reports | – | – |
+  | 3 | Surge-response plan and rapid deployment of 9 immunization clinics; access to COVID-19 data for clinical and operational reporting; business case approved for a permanent patient-facing Contact Centre | Coordinated executive committees, clinical leads and provincial stakeholders | – | – |
+  | 4 | Mentorship program supporting 102 health leaders (2023); chapter social media engagement up 62% | – | 2024 CCHL Chapter Award for Distinguished Service (link: the CCHL article used on the About page); 2024 CCHL Member Profile (link: the CCHL profile article used on the About page) | – |
+  | 5 | Governance framework for 36,000 users; adoption program starting with 80 teams and 50+ enablement proposals; adoption and usage dashboards | Led the ADKAR-based change program from pilot to governed operation | 2026 Celebration of Excellence, "Leading our C.A.R.E. Values" (no link) | Starting something new; Self-contained development for Ghost themes; Building Focus Pocus: What I Learned About AI Coding and Integration; The Systems Leadership Wayfinder: Five Mindset Shifts for Leading Complex Change |
+  | 6 | – | – | – | – |
 
 **Opening and closing**
 
@@ -254,8 +296,8 @@ filter restores the timeline.
 
 ### Measurable Outcomes
 
-- **SC-001**: A visitor can find what Don did in any listed role and why he moved on in two
-  actions or fewer from arriving at the About page (scroll to the step, open it).
+- **SC-001**: A visitor can find what Don did in any listed role (and, once Don adds it, why he
+  moved on) in two actions or fewer from arriving at the About page (scroll to the step, open it).
 - **SC-002**: 100% of steps are readable, with every detail part they have, with JavaScript
   turned off.
 - **SC-003**: Choosing a category leaves 100% of steps on screen, with every non-matching step
@@ -277,14 +319,15 @@ filter restores the timeline.
 - Only one category can be chosen at a time; the filter is a single choice with "All" as the
   default. Multi-select is out of scope.
 - The filter choice is not kept in the address or between visits.
-- Awards already on the About page (2026 Celebration of Excellence, 2024 CCHL Chapter Award for
-  Distinguished Service, 2024 CCHL Member Profile) are candidates for the matching steps' award
-  links; they stay in "Recognition" and are also linked from their matching steps (FR-016).
+- The three items in "Recognition" (2026 Celebration of Excellence, 2024 CCHL Chapter Award for
+  Distinguished Service, 2024 CCHL Member Profile) stay there and are also linked from the
+  steps named in FR-006a (FR-016).
 - Writing links point to posts on this site; links to outside writing are treated like award
   links (name, year, link).
 - The timeline needs no server code, stores nothing and collects no personal data.
-- The current role is a single step; education and volunteer roles are included only if Don
-  lists them as steps in FR-006.
+- The current role is a single step. The CCHL board role is the only volunteer step; education
+  is not a step (FR-006a). The board role overlaps the Island Health steps from Sep 2022 and is
+  ordered by its start date.
 
 ## Out of scope
 
