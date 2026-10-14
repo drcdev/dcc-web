@@ -62,6 +62,10 @@ island. Public content lives in the repository as files validated by a schema (P
 - Q: How are the reflection parts filled in? → A: They are not, for now. The timeline ships with
   scope, the one key decision above, categorized items, awards and links; Don adds reflection
   parts to the content file later in small changes. No drafted reflection text.
+- Q: With no filter chosen, does an opened step show its Achievements and Leadership items? →
+  A: Yes, as labelled lists: scope and any reflection parts, then an "Achievements" list and a
+  "Leadership" list (each only when the step has items), then writing and awards. A chosen
+  category highlights its matching items inside these lists.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -87,8 +91,9 @@ the current role, open one step and read its detail parts, then close it.
    last step is Director, Data Infrastructure and Architecture at Island Health.
 2. **Given** a closed step, **When** the visitor opens it, **Then** it shows its scope and each
    other detail part the step has (key decision, what changed in how he worked, what he wishes
-   he had known, the skill that led to the next move), each under its own label; a part the
-   step does not have shows no label.
+   he had known, the skill that led to the next move), each under its own label, followed by
+   its "Achievements" and "Leadership" lists; a part or list the step does not have shows no
+   label.
 3. **Given** an open step, **When** the visitor closes it, **Then** only its summary line
    (role, organization, period) remains.
 4. **Given** the current role (the last step), **When** it is opened, **Then** the "skill that
@@ -241,8 +246,10 @@ filter restores the timeline.
 - **FR-007**: Every step MUST start closed, showing only its summary line, and MUST be openable
   and closable by mouse, touch and keyboard, with its state exposed to assistive technology. This
   MUST work with JavaScript turned off.
-- **FR-008**: An opened step MUST show each detail part under its own visible label, then its
-  related writing and awards (when present), each as a link. Sections with no items MUST NOT
+- **FR-008**: An opened step MUST show, in this order: each detail part under its own visible
+  label; an "Achievements" list and a "Leadership" list of its categorized items; then its
+  related writing and awards, each as a link (an award without a link shows as plain text).
+  This holds with no filter chosen and without JavaScript. Sections with no items MUST NOT
   appear.
 
 **Filter**
@@ -251,7 +258,7 @@ filter restores the timeline.
   by at least one item. The categories MUST come from one fixed list of exactly three:
   Achievements, Leadership, Awards. Leadership is one category, not a set of named themes.
 - **FR-010**: Choosing a category MUST open each step that holds a matching item, highlight the
-  matching items, and show the role and organization each matching item belongs to.
+  matching items inside the step's Achievements, Leadership or awards list (FR-008), and show the role and organization each matching item belongs to.
 - **FR-011**: Choosing a category MUST collapse every step that holds no matching item to its
   summary line and dither it, while keeping it visible in its place in the timeline. Dithering
   is a dot (halftone) pattern over the step's background, made with CSS only; it MUST NOT lower
