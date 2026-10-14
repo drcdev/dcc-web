@@ -131,10 +131,10 @@ description: "Task list for the interactive career timeline (feature 041)"
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T041 [P] Update `docs/testing.md`: feature 041 section, contract-row to test mapping (T01-T13), build budget plus two runs, new visual subjects in "Visual coverage".
-- [ ] T042 Run `pnpm run lint`, `pnpm run typecheck` and `pnpm run test:unit`; fix findings. Confirm `no-real-content-in-tests` and `content-tier` guards are green.
-- [ ] T043 Validate `specs/041-career-timeline/quickstart.md` by hand against `pnpm run build` and the preview server.
-- [ ] T044 Update the macOS visual baselines with `pnpm run test:visual:update` (nvm + shim wrapper in the background, see `.claude/skills/_shared/visual-baselines.md`); commit only the new `career-timeline-*-darwin.png`. Any other image that moves is a regression to fix, not accept.
+- [X] T041 [P] Update `docs/testing.md`: feature 041 section, contract-row to test mapping (T01-T13), build budget plus two runs, new visual subjects in "Visual coverage".
+- [X] T042 Run `pnpm run lint`, `pnpm run typecheck` and `pnpm run test:unit`; fix findings. Confirm `no-real-content-in-tests` and `content-tier` guards are green.
+- [X] T043 Validate `specs/041-career-timeline/quickstart.md` by hand against `pnpm run build` and the preview server.
+- [X] T044 Update the macOS visual baselines with `pnpm run test:visual:update` (nvm + shim wrapper in the background, see `.claude/skills/_shared/visual-baselines.md`); commit only the new `career-timeline-*-darwin.png`. Any other image that moves is a regression to fix, not accept.
 - [ ] T045 Update the Linux visual baselines with `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, ask Don to start it with an `AskUserQuestion` whose question text carries the instruction); commit only the new `*-linux.png`. Run after T044, not alongside Docker builds.
 - [ ] T046 Run `node scripts/ci/changed-paths.ts --base origin/main` and the checks for the tier it prints; ask Don before a full `pnpm run verify`.
 - [ ] T047 [PREVIEW-CHECK] Don reads the real `/about/` on the preview in light and dark, phone and desktop: wording of the six steps, dither legibility, highlight clarity, that the Leadership line is gone and "Recognition" is unchanged word for word, 3:1 contrast of the disclosure marker and filter button edges, and no clipped or overlapping text at 200% text zoom (FR-017).
