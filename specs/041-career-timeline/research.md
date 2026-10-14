@@ -154,7 +154,8 @@ was used for every Astro choice below; each decision names the page it rests on.
 
 - **Decision**: The real step files name real posts, which every fixture build removes. So both
   harnesses (`tests/build/fixture-site.ts` and `scripts/build-fixture-site.ts`) delete the copied
-  `src/content/career/` files. The Playwright fixture site installs fixture step files from
+  `src/content/career/` files (`tests/build/fixture-site.ts` keeps them only with `realPosts`, as
+  it does for reading paths). The Playwright fixture site installs fixture step files from
   `tests/fixtures/career/` that name fixture posts (`every-part`, `text-only`). Its `/about/` page is
   the real `about.mdx` with that fixture timeline. With no step files the section renders nothing.
 - **Rationale**: Same approach as 040 R8 (reading paths). This is the main implementation risk;

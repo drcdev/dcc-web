@@ -187,9 +187,11 @@ filter restores the timeline.
 - A related post is later made a draft, renamed or deleted: the next build fails, naming the step
   file and the post (FR-005a).
 - No career step files at all: the About page renders no timeline section (no heading, no
-  filter). A step file that cannot be parsed fails the build, naming the file. The real site's
-  six launch steps are guarded by a content test in the gate, so an empty timeline cannot reach
-  the live page unnoticed.
+  filter). A step file that cannot be parsed fails the build, naming the file. A content test in
+  the gate fails when the real site has no step files, so an empty timeline cannot reach the live
+  page unnoticed. That test checks rules over whatever files exist (at least one step, the
+  current-role rules, every listed post published), never the launch count or which parts are
+  filled, so adding a step or a reflection part needs no test change (FR-005b).
 - The visitor opens a step, then chooses a filter that does not match it: the step collapses
   and is dithered like any other non-matching step.
 - Filter changes and focus: see FR-013b.

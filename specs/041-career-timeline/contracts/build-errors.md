@@ -30,5 +30,7 @@ phrases below are the asserted part; exact wording is settled in implement.
   its own.
 - **Wiring**: one `sync` run proves the collection schema is wired and Astro names the file (T01
   as the representative row). One `build` run proves `checkCareer()` runs from the About page and
-  its message reaches the build output (T10 as the representative row). Both in
+  its message reaches the build output (T09 as the representative row: it needs no post
+  resolution, so it is available from User Story 1; T10 and T11 use the same call site and are
+  proven at the unit layer). Both in
   `tests/build/career-timeline.test.ts`. That is two Astro runs added to the build budget.

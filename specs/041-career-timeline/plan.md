@@ -88,12 +88,12 @@ written reason shown.
 |---|---|---|
 | Schema rows T01–T07 | Unit | `tests/unit/content/career-schema.test.ts` |
 | Cross-file rows T08–T11, ordering, period text | Unit | `tests/unit/content/career.test.ts` |
-| Used categories, matching steps, status sentence (singular for 1, plural otherwise), fresh re-application, same-choice no-op | Unit | `tests/unit/content/career-filter.test.ts` |
+| Used categories, matching steps, status sentence (singular for 1, plural otherwise), fresh re-application (`applyChoice()`), same-choice no-op | Unit | `tests/unit/content/career-filter.test.ts` |
 | Job title appears in no `src/` file but `about.mdx` and `src/content/career/` (FR-019) | Unit | `tests/unit/content/job-title-only-on-about.test.ts` (reads the current role through `tests/helpers/content.ts`; names no literal) |
-| Launch content: six steps, last is current and ends `present`, no `nextMove` on it, every post published | Unit | `tests/unit/content/career-launch.test.ts` (rules over the real files via the helper, no literals) |
+| Real content: at least one step, last is current and ends `present`, no `nextMove` on it, every post published (no launch count, no check on which parts are filled, so FR-005b edits need no test change) | Unit | `tests/unit/content/career-launch.test.ts` (rules over the real files via the helper, no literals) |
 | Markup: order, closed by default, labels only for present parts, FR-008 order, no empty headings, plain award without link, filter and status `hidden`, only used categories offered, no next-move label on the last step, nothing rendered with no steps | Component | `tests/component/sections/CareerTimeline.test.ts` (Container API, `timeline` prop) |
-| Schema wired and Astro names the file (sync); `checkCareer()` runs from `/about/` and names the file (build) | Build | `tests/build/career-timeline.test.ts` (2 runs) |
-| About page placement: timeline after "About me", before "Recognition"; Leadership line gone | Build (real content) | added to an existing `test:build:content` file reading `dist/about/index.html` |
+| Schema wired and Astro names the file (sync, row T01); `checkCareer()` runs from `/about/` and names the file (build, row T09) | Build | `tests/build/career-timeline.test.ts` (2 runs; T10 and T11 reach the build through the same call site, so they are proven at the unit layer only) |
+| About page placement: `<CareerTimeline />` after the "About me" list, before "### Recognition"; Leadership line gone | Unit | `tests/unit/content/career-launch.test.ts`, reading `src/content/pages/about.mdx` through `tests/helpers/content.ts`. Reason it is not a build test: every fixture build drops the real career files (R12) and no `test:build:content` build keeps real posts, so a built `/about/` would show no timeline; the MDX order decides placement. |
 | Open/close by mouse, touch-size target and keyboard; filter journey; All resets hand-opened steps; dithered step still visible and openable; status text; focus stays on the button and moves to the summary when its step closes; no-JS; 320 px; print emulation; reduced motion; forced colours | E2E | `tests/e2e/career-timeline.spec.ts` on the fixture site `/about/` |
 | Contrast and roles, idle | Accessibility | existing `a11y.spec.ts` entry for `/about/` (no change) |
 | Contrast and roles with each offered category chosen, and with a dithered step opened by hand, light and dark (SC-004) | Accessibility (second layer) | `tests/e2e/career-timeline.a11y.spec.ts`. Reason: the filtered markup and dither exist only after a press, as with the questions panel states. |
@@ -134,7 +134,7 @@ src/
 ├── lib/
 │   ├── content/errors.ts                 # EDIT: ErrorKind gains "career step"
 │   ├── content/career.ts                 # NEW, pure: checkCareer(), orderSteps(), formatPeriod(), buildTimeline()
-│   ├── content/career-filter.ts          # NEW, pure: usedCategories(), matchingSteps(), statusText()
+│   ├── content/career-filter.ts          # NEW, pure: usedCategories(), matchingSteps(), statusText(), applyChoice()
 │   └── career.ts                         # NEW: getCareerTimeline() (collection + posts + checks)
 └── components/sections/
     ├── CareerTimeline.astro              # NEW: markup, styles, <career-timeline> script
@@ -145,7 +145,7 @@ tests/
 ├── unit/content/career-schema.test.ts, career.test.ts, career-filter.test.ts, career-launch.test.ts, job-title-only-on-about.test.ts
 ├── component/sections/CareerTimeline.test.ts
 ├── build/career-timeline.test.ts
-├── build/fixture-site.ts                 # EDIT: drop real career files by default; `career` option for fixtures
+├── build/fixture-site.ts                 # EDIT: drop real career files unless `realPosts` (as reading paths do); `career` option for fixtures
 ├── helpers/content.ts                    # EDIT: read src/content/career/
 ├── fixtures/career/                      # NEW: valid + broken step files
 ├── e2e/career-timeline.spec.ts, career-timeline.a11y.spec.ts

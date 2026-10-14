@@ -24,7 +24,7 @@ description: "Task list for the interactive career timeline (feature 041)"
 
 - [ ] T001 Add `"career step"` to `ErrorKind` in `src/lib/content/errors.ts` so `contentError` can prefix `Career step file src/content/career/<id>.yaml:` (contracts/build-errors.md)
 - [ ] T002 [P] Create valid fixture step files in `tests/fixtures/career/valid/*.yaml`: neutral roles and organizations, posts naming fixture posts `every-part` and `text-only`, all three categories, one award without a link, one step with every detail part, last step `end: present` with no `nextMove`. Name no real role, post or award (`no-real-content-in-tests` guard).
-- [ ] T003 [P] Create broken fixture step files in `tests/fixtures/career/broken/` (one file per build run: missing `scope` for the T01 sync run; a `posts` entry naming no post for the T10 build run)
+- [ ] T003 [P] Create broken fixture step files in `tests/fixtures/career/broken/` (one file per build run: missing `scope` for the T01 sync run; a latest step that does not end `present` for the T09 build run, contracts/build-errors.md "Wiring")
 
 ---
 
@@ -37,7 +37,7 @@ description: "Task list for the interactive career timeline (feature 041)"
 ### Tests first (unit layer)
 
 - [ ] T004 [P] Unit test, primary layer **Unit**, for schema rows T01-T07 and T12 in `tests/unit/content/career-schema.test.ts` (one case per row, row id in the title; strict keys, `YYYY-MM` and `present`, end not before start, empty lists, award shape and https `href`, duplicate post, text limits 120/300/200). Run it and see it fail.
-- [ ] T005 [P] Unit test, primary layer **Unit**, for the harness in `tests/helpers/content.ts`: the helper reads `src/content/career/` and returns the current role by rule (latest start), naming no literal. Put it in `tests/unit/content/career-launch.test.ts` as the "reads the real files" skeleton (launch rules are added in T041). See it fail.
+- [ ] T005 [P] Unit test, primary layer **Unit**, for the harness in `tests/helpers/content.ts`: the helper reads `src/content/career/` and returns the current role by rule (latest start), naming no literal. Put it in `tests/unit/content/career-launch.test.ts` as the "reads the real files" skeleton (real-content rules are added in T018). See it fail.
 - [ ] T006 Build test, primary layer **Build (`sync`)**, in `tests/build/career-timeline.test.ts`: `buildFixtureSite(..., { mode: "sync" })` with the T01 broken fixture from T003 fails and the error names the step file and field (proves the schema is wired in `src/content.config.ts`; a unit test cannot see the call site). Depends on T008. See it fail.
 
 ### Implementation
@@ -45,7 +45,7 @@ description: "Task list for the interactive career timeline (feature 041)"
 - [ ] T007 Create the strict step schema in `src/content/schemas/career.ts` per data-model.md (trimmed non-empty text, limits, `YYYY-MM`, `present`, end-not-before-start refine, list-not-empty, awards object with https `href`, `reference("posts")[]` with duplicate refine). Makes T004 pass.
 - [ ] T008 Register the `career` collection (`glob()` loader, `src/content/career/*.yaml`) in `src/content.config.ts`; add an empty-safe path so no files means no steps. Makes T006 pass.
 - [ ] T009 Extend `tests/helpers/content.ts` to read `src/content/career/`. Makes T005 pass.
-- [ ] T010 Update the fixture-site harness: `tests/build/fixture-site.ts` drops real career files by default and gains a `career` option for fixture files; `scripts/build-fixture-site.ts` swaps in `tests/fixtures/career/valid/` for the Playwright fixture site (port 4322).
+- [ ] T010 Update the fixture-site harness: `tests/build/fixture-site.ts` drops real career files unless `realPosts` is set (the reading-path rule) and gains a `career` option for fixture files; `scripts/build-fixture-site.ts` swaps in `tests/fixtures/career/valid/` for the Playwright fixture site (port 4322).
 - [ ] T011 Run `pnpm run verify:quick`; confirm no existing test moved because of the harness change (fixture builds still pass with no career files).
 
 **Checkpoint**: collection, schema and harness ready.
@@ -60,13 +60,13 @@ description: "Task list for the interactive career timeline (feature 041)"
 
 ### Tests for User Story 1 (write first, see them fail)
 
-- [ ] T012 [P] [US1] Unit test, primary layer **Unit**, in `tests/unit/content/career.test.ts`: `orderSteps()` sorts by start then id (C1), `formatPeriod()` gives "Oct 2014 - Sep 2016" and "present" forms, the last step is the current role, C2 rows T08 and T09 from `checkCareer()` (row ids in titles).
-- [ ] T013 [P] [US1] Component test, primary layer **Component**, in `tests/component/sections/CareerTimeline.test.ts` (Container API, `timeline` prop): ordered list in order, every step closed, summary shows role, organization and period, summary accessible name (FR-007a), detail labels only for present parts in FR-008 order, no empty headings, no next-move label on the last step, Achievements and Leadership as labelled lists, text rendered as text (no markup from a field), nothing rendered with no steps, h3 "Career" with h4 list headings.
-- [ ] T014 [P] [US1] E2E test, primary layer **E2E**, in `tests/e2e/career-timeline.spec.ts` on fixture `/about/`: open and close by mouse and by keyboard (Enter, Space), target size, open state announced, JavaScript-off project shows every step openable, 320 px has no sideways scroll, print emulation shows every step open, reduced motion has no animation, forced colours keep a visible state. Only a real browser can show these.
-- [ ] T015 [US1] Build test, primary layer **Build (`build`)**, in `tests/build/career-timeline.test.ts`: the T09 broken fixture (latest step not `present`) fails the About page build and the message names the step file, proving `checkCareer()` runs from the page. Reason a build test: only the real build shows that the call site runs. One shared fixture build serves this and T027.
-- [ ] T016 [US1] Build test, primary layer **Build (real content)**, in an existing `test:build:content` file that reads `dist/about/index.html` (for example `tests/build/navigation.test.ts` or the file that already reads the About page): timeline sits after the "About me" list and before "Recognition", and the "Leadership" line is gone from the list. Reads real content through `tests/helpers/content.ts`.
-- [ ] T017 [US1] Unit test, primary layer **Unit**, in `tests/unit/content/job-title-only-on-about.test.ts` (FR-019): the current role's title, read through `tests/helpers/content.ts`, appears in no `src/` file except `src/content/pages/about.mdx` and `src/content/career/`. Names no literal.
-- [ ] T018 [US1] Unit test, primary layer **Unit**, in `tests/unit/content/career-launch.test.ts` (rules over the real files via the helper): six steps, last is the current role and ends `present`, no `nextMove` on it, every listed post is published, only `decision` among reflection parts. Names no literal. Fails until T023.
+- [ ] T012 [P] [US1] Unit test, primary layer **Unit**, in `tests/unit/content/career.test.ts`: `orderSteps()` sorts by start then id (C1), `formatPeriod()` gives "Oct 2014 – Sep 2016" (en dash) and "present" forms, the last step is the current role, C2 rows T08 and T09 from `checkCareer()` (row ids in titles).
+- [ ] T013 [P] [US1] Component test, primary layer **Component**, in `tests/component/sections/CareerTimeline.test.ts` (Container API, `timeline` prop): ordered list in order, every step closed, summary shows role, organization and period, summary accessible name (FR-007a), detail labels only for present parts in FR-008 order, no empty headings, no next-move label on the last step, Achievements and Leadership as labelled lists, text rendered as text (no markup from a field, a line break in a field not kept, FR-003b), no inline `style` attribute anywhere (FR-017a), nothing rendered with no steps, h3 "Career" with h4 list headings.
+- [ ] T014 [P] [US1] E2E test, primary layer **E2E**, in `tests/e2e/career-timeline.spec.ts` on fixture `/about/`: open and close by mouse and by keyboard (Enter, Space), target size, open state announced, JavaScript-off project shows every step openable, 320 px has no sideways scroll, a keyboard-focused summary shows the site's focus outline (FR-017), print emulation shows every step open, reduced motion has no animation, forced colours keep a visible state. Only a real browser can show these.
+- [ ] T015 [US1] Build test, primary layer **Build (`build`)**, in `tests/build/career-timeline.test.ts`: the T09 broken fixture from T003 (latest step not `present`) fails the About page build and the message names the step file, proving `checkCareer()` runs from the page. Reason a build test: only the real build shows that the call site runs. This is the feature's only `build` run (contracts/build-errors.md "Wiring").
+- [ ] T016 [US1] Unit test, primary layer **Unit**, in `tests/unit/content/career-launch.test.ts`: `src/content/pages/about.mdx`, read through `tests/helpers/content.ts`, places `<CareerTimeline />` after the "About me" list and before `### Recognition`, and the list has no "Leadership" line (FR-016). Reason it is not a build test: fixture builds drop the real career files (T010) and no `test:build:content` build keeps real posts, so a built `/about/` shows no timeline; the MDX order decides placement.
+- [ ] T017 [US1] Unit test, primary layer **Unit**, in `tests/unit/content/job-title-only-on-about.test.ts` (FR-019): the current role's title, read through `tests/helpers/content.ts`, appears in no `src/` file except `src/content/pages/about.mdx` and `src/content/career/`; and `getCollection("career")` is called only from `src/lib/career.ts`, whose `getCareerTimeline()` is imported only by `CareerTimeline.astro` ("nothing else on the site may read the career files"). Names no literal.
+- [ ] T018 [US1] Unit test, primary layer **Unit**, in `tests/unit/content/career-launch.test.ts` (rules over the real files via the helper): at least one step, last is the current role and ends `present`, no `nextMove` on it, every listed post is published. No launch count and no check on which parts are filled, so adding a step or a reflection part needs no test change (FR-005b; launch text is checked by Don in T047). Names no literal. Fails until T023.
 
 ### Implementation for User Story 1
 
@@ -74,7 +74,7 @@ description: "Task list for the interactive career timeline (feature 041)"
 - [ ] T020 [US1] Implement `src/lib/career.ts`: `getCareerTimeline()` reads the collection, runs `checkCareer()` and returns the timeline view (data-model.md); post resolution is stubbed until US2.
 - [ ] T021 [US1] Implement `src/components/sections/CareerTimeline.astro`: ordered list of `<details>`/`<summary>`, closed by default, labelled detail parts, Achievements and Leadership lists, `timeline` prop override, Tailwind theme tokens, `motion-safe:` only, print shows all open, forced-colours rules. Register in `src/components/sections/index.ts` and `src/components/sections/schemas.ts` (no-prop schema). Makes T013 and T014 pass. Consult the Astro docs MCP for component and script patterns (Principle IV).
 - [ ] T022 [US1] Edit `src/content/pages/about.mdx`: remove the "Leadership" line from the "About me" list and add `<CareerTimeline />` after it, before `### Recognition` (FR-016).
-- [ ] T023 [US1] Create the six launch step files in `src/content/career/` named in data-model.md, content exactly as spec FR-006a (no reflection text except the one `decision`; step 5 lists no posts yet if US2 is not done, else add them in T029). Makes T016, T017 and T018 pass.
+- [ ] T023 [US1] Create the six launch step files in `src/content/career/` named in data-model.md, content exactly as spec FR-006a (no reflection text except the one `decision`; step 5 lists no posts and steps 4 and 5 no awards until T030 adds them). Makes T016, T017 and T018 pass.
 - [ ] T024 [US1] Run `pnpm run verify:quick`; fix anything it reports.
 
 **Checkpoint**: US1 works alone and is demonstrable.
@@ -91,7 +91,7 @@ description: "Task list for the interactive career timeline (feature 041)"
 
 - [ ] T025 [P] [US2] Unit test, primary layer **Unit**, in `tests/unit/content/career.test.ts`: C3 row T10 and C4 row T11 from `checkCareer()` (post missing; post draft in any build mode), messages carry file, field and value.
 - [ ] T026 [P] [US2] Component test, primary layer **Component**, in `tests/component/sections/CareerTimeline.test.ts`: a "Writing" list of links to each post's own title and href, an "Awards" list showing "Name (Year)", an award without `href` is plain text, an award with `href` is a link, lists absent when empty.
-- [ ] T027 [US2] Build test, primary layer **Build (`build`)**, in `tests/build/career-timeline.test.ts`: the T10 broken fixture fails the About build and the output names the step file and the post (shares the build run planned in T015 where possible; the budget in `docs/testing.md` counts two career runs in total).
+- [ ] T027 [US2] No new Astro run: confirm `tests/build/career-timeline.test.ts` still holds exactly the T006 `sync` run and the T015 `build` run. Rows T10 and T11 reach the build through the call site T015 proves, and their messages (file, field, post) are proven by T025 at the unit layer (US2 scenario 4, SC-006; contracts/build-errors.md "Wiring"; build budget stays at two career runs).
 - [ ] T028 [US2] E2E test, primary layer **E2E**, in `tests/e2e/career-timeline.spec.ts`: on the fixture `/about/`, a post link and an award link in an opened step navigate to the right targets (a journey; link markup itself is covered at the component layer, so this only checks the journey).
 
 ### Implementation for User Story 2
@@ -112,17 +112,17 @@ description: "Task list for the interactive career timeline (feature 041)"
 
 ### Tests for User Story 3 (write first)
 
-- [ ] T032 [P] [US3] Unit test, primary layer **Unit**, in `tests/unit/content/career-filter.test.ts`: `usedCategories()` (only used, fixed order), `matchingSteps()`, `statusText()` (singular for 1, plural otherwise, "Showing all N roles."), fresh re-application on every change, same-choice no-op.
+- [ ] T032 [P] [US3] Unit test, primary layer **Unit**, in `tests/unit/content/career-filter.test.ts`: `usedCategories()` (only used, fixed order), `matchingSteps()`, `statusText()` (singular for 1, plural otherwise, "Showing all N roles."), `applyChoice(current, next, steps)` (fresh open/dither/match plan for every step whatever was opened by hand; `null` for the already-selected choice, so nothing changes and nothing is announced).
 - [ ] T033 [P] [US3] Component test, primary layer **Component**, in `tests/component/sections/CareerTimeline.test.ts`: filter group and status line are `hidden` in served HTML, only used categories offered, All first and selected, no filter or status with no used category, `data-*` hooks present.
-- [ ] T034 [US3] E2E test, primary layer **E2E**, in `tests/e2e/career-timeline.spec.ts`: filter journey (matching steps open, items `data-match`, others closed and dithered but visible and openable), status text, All resets hand-opened steps, focus stays on the pressed button and moves to the summary when its step closes around it, no filter or status shown with JavaScript off, no layout shift on reveal, nothing written to storage or address, no animation under reduced motion.
+- [ ] T034 [US3] E2E test, primary layer **E2E**, in `tests/e2e/career-timeline.spec.ts`: filter journey (matching steps open, items `data-match`, others closed and dithered but visible and openable), status line empty on load and filled only after a change, status text, All resets hand-opened steps, focus stays on the pressed button and moves to the summary when its step closes around it, no filter or status shown with JavaScript off, no layout shift on reveal, nothing written to storage or address, no animation under reduced motion, a dithered summary keeps a visible focus outline, print emulation with a category chosen shows every step open with no dither, highlight, filter or status (FR-018), and a theme switch with a category chosen keeps the filter state.
 - [ ] T035 [US3] Accessibility test, primary layer **Accessibility** (second layer after the existing idle `/about/` entry in `a11y.spec.ts`), in `tests/e2e/career-timeline.a11y.spec.ts`: axe with each offered category chosen and with a dithered step opened by hand, light and dark, phone and desktop (SC-004). Reason for the second layer: the filtered markup and dither exist only after a press, as with the questions panel states.
 - [ ] T036 [US3] Visual test, primary layer **Visual**, in `tests/e2e/visual.spec.ts`: element shots `career-timeline-{phone,desktop}-{light,dark}` of the fixture timeline with one category chosen so an open highlighted step and a dithered step are in frame (FR-021). Fails until baselines exist (T044, T045).
 
 ### Implementation for User Story 3
 
-- [ ] T037 [P] [US3] Implement `src/lib/content/career-filter.ts` (pure): `usedCategories()`, `matchingSteps()`, `statusText()`. Makes T032 pass.
+- [ ] T037 [P] [US3] Implement `src/lib/content/career-filter.ts` (pure): `usedCategories()`, `matchingSteps()`, `statusText()`, `applyChoice()`. Makes T032 pass.
 - [ ] T038 [US3] Add the filter markup (hidden), status line (`aria-live`, not announced on load) and dither/highlight styles (CSS `radial-gradient` on the summary row with text on a solid backing, lower role weight, dashed border in forced colours, none in print) to `src/components/sections/CareerTimeline.astro`. Makes T033 pass.
-- [ ] T039 [US3] Add the `<career-timeline>` custom element in the component's processed `<script>` (same pattern as `src/components/ProjectFilter.astro`): reveal on run, single choice, apply fresh to every step, focus rules FR-013a/b, `textContent` only, no storage. Makes T034, T035 pass. Consult Astro docs MCP for script handling and `security.csp` hashing.
+- [ ] T039 [US3] Add the `<career-timeline>` custom element in the component's processed `<script>` (same pattern as `src/components/ProjectFilter.astro`): reveal on run (status line left empty), single choice, apply `applyChoice()` to every step, focus rules FR-013a/b, `textContent` only, no storage. Makes T034, T035 pass. Consult Astro docs MCP for script handling and `security.csp` hashing.
 - [ ] T040 [US3] Run `pnpm run verify:quick` and `pnpm run test:budget` for `/about/`; confirm no budget regression.
 
 **Checkpoint**: all three stories work.
@@ -137,7 +137,7 @@ description: "Task list for the interactive career timeline (feature 041)"
 - [ ] T044 Update the macOS visual baselines with `pnpm run test:visual:update` (nvm + shim wrapper in the background, see `.claude/skills/_shared/visual-baselines.md`); commit only the new `career-timeline-*-darwin.png`. Any other image that moves is a regression to fix, not accept.
 - [ ] T045 Update the Linux visual baselines with `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, ask Don to start it with an `AskUserQuestion` whose question text carries the instruction); commit only the new `*-linux.png`. Run after T044, not alongside Docker builds.
 - [ ] T046 Run `node scripts/ci/changed-paths.ts --base origin/main` and the checks for the tier it prints; ask Don before a full `pnpm run verify`.
-- [ ] T047 [PREVIEW-CHECK] Don reads the real `/about/` on the preview in light and dark, phone and desktop: wording of the six steps, dither legibility, highlight clarity, and that the Leadership line is gone.
+- [ ] T047 [PREVIEW-CHECK] Don reads the real `/about/` on the preview in light and dark, phone and desktop: wording of the six steps, dither legibility, highlight clarity, that the Leadership line is gone and "Recognition" is unchanged word for word, 3:1 contrast of the disclosure marker and filter button edges, and no clipped or overlapping text at 200% text zoom (FR-017).
 - [ ] T048 [PREVIEW-CHECK] Don checks print preview of `/about/`, the page with a screen reader (state announcements, status line), and every linked post and award target on the preview.
 
 ---
@@ -145,7 +145,7 @@ description: "Task list for the interactive career timeline (feature 041)"
 ## Dependencies & Execution Order
 
 - Phase 1 then Phase 2 (blocks all stories). T006 needs T008; T004/T005 are written before T007/T009.
-- US1 has no dependency on US2 or US3. US2 extends the files US1 creates (`career.ts`, `career.astro`, launch files), so run it after US1. US3 extends the component, so run it after US1; it does not need US2 beyond the shared component file.
+- US1 has no dependency on US2 or US3. US2 extends the files US1 creates (`src/lib/content/career.ts`, `CareerTimeline.astro`, launch files), so run it after US1. US3 extends the component, so run it after US1; it does not need US2 beyond the shared component file.
 - Polish after all stories; T044 before T045; T036 passes only after T044/T045.
 - Within a story: tests, see them fail, implementation, `verify:quick`.
 

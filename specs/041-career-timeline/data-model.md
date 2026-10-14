@@ -24,8 +24,8 @@ Schema: `src/content/schemas/career.ts` (strict object; any other key fails the 
 Text fields are trimmed, non-empty plain text, not Markdown; they render as text only, never as
 markup, and line breaks are not kept (spec FR-003a, FR-003b). Items, awards and posts render in
 file order. A file that cannot be parsed fails the build naming it; with no files at all the
-timeline renders nothing (the fixture site relies on this; the real six are guarded by
-`career-launch.test.ts`).
+timeline renders nothing (the fixture site relies on this; a content test,
+`career-launch.test.ts`, fails when the real site has no step files).
 
 ### Cross-file rules (`src/lib/content/career.ts`, run when the About page builds)
 
@@ -59,7 +59,7 @@ The component accepts a `timeline` prop that replaces the lookup (component test
 
 | State | Steps | Items | Status line |
 |---|---|---|---|
-| All (default) | Every step closed (on choosing All, including hand-opened ones) or as the visitor left them (on load); none dithered | none marked | "Showing all N roles." (not announced on load) |
+| All (default) | Every step closed (on choosing All, including hand-opened ones) or as the visitor left them (on load); none dithered | none marked | Empty on load (nothing announced); "Showing all N roles." after a return to All |
 | Category K | Matching steps open, others closed and `data-dithered` | matching items `data-match` | "M of N roles have k." or, when M is 1, "1 of N roles has k." (k = category in lower case) |
 
 Not stored in the address, cookie or storage; a reload starts from All. The visitor may open or

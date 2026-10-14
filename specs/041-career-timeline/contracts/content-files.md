@@ -21,7 +21,7 @@ achievements:
 leadership:
   - Built and led five teams, 20+ direct reports
 # awards:
-#   - name: 2024 CCHL Chapter Award for Distinguished Service
+#   - name: CCHL Chapter Award for Distinguished Service   # no year in the name
 #     year: 2024
 #     href: https://…      # optional; without it the award shows as plain text
 # posts:

@@ -15,7 +15,7 @@ The rendered HTML the tests and the client script rely on. Classes are free; the
       <button type="button" aria-pressed="false" data-category="achievements">Achievements</button>
       <!-- one button per used category, fixed order: achievements, leadership, awards -->
     </div>
-    <p role="status" aria-live="polite" data-career-status hidden>Showing all 6 roles.</p>
+    <p role="status" aria-live="polite" data-career-status hidden></p>
     <ol data-career-steps>
       <li data-step="<id>" data-categories="achievements|leadership">
         <details>
@@ -60,8 +60,9 @@ Rules:
 ## Client behaviour (`<career-timeline>` custom element)
 
 - On connect: attach the listeners first, then un-hide the filter group and the status line and
-  set `data-ready`, so a script that fails leaves the no-JS page (FR-014). Setting the status
-  text on connect is not an announcement (the status is hidden until then).
+  set `data-ready`, so a script that fails leaves the no-JS page (FR-014). The status line is
+  served empty and stays empty on connect; text is written only on a filter change, so nothing
+  is announced on load (FR-013).
 - Choose category K: pressed state moves to K; each `li` whose `data-categories` holds K gets
   `details.open = true` and its items in `ul[data-list=K]` get `data-match`; every other `li` gets
   `data-dithered` and `details.open = false`; the status line reads "M of N roles have k." or,
