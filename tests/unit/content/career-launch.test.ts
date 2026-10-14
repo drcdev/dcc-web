@@ -2,7 +2,7 @@
 // through the content helper and names no role, organization or post. The rules that need the
 // launch files to exist (at least one step, the launch content) are added with them (T018).
 import { describe, expect, it } from "vitest";
-import { careerSteps, currentCareerStep } from "../../helpers/content.ts";
+import { careerSteps, currentCareerStep, pages, posts } from "../../helpers/content.ts";
 
 describe("the real career steps", () => {
   it("gives every step file an id, a start and an end", () => {
@@ -23,5 +23,37 @@ describe("the real career steps", () => {
     const b = { id: "a", file: "a", data: { start: "2020-01", end: "present" } };
     const c = { id: "z", file: "z", data: { start: "2010-01", end: "2012-01" } };
     expect(currentCareerStep([c, a, b])).toBe(a);
+  });
+});
+
+describe("the About page placement", () => {
+  it("places the timeline after the About me list and before Recognition, with no Leadership line (FR-016)", () => {
+    const about = pages.find((page) => page.slug === "about")!;
+    const body = about.body;
+    const timeline = body.indexOf("<CareerTimeline />");
+    expect(timeline).toBeGreaterThan(-1);
+    expect(body.indexOf("## About me")).toBeLessThan(timeline);
+    expect(timeline).toBeLessThan(body.indexOf("### Recognition"));
+    const list = body.slice(body.indexOf("## About me"), timeline);
+    expect(list).not.toMatch(/^- \*\*Leadership/m);
+  });
+});
+
+describe("the real career steps, as rules", () => {
+  it("has at least one step; the last is the current role and ends present with no next move (FR-001a)", () => {
+    expect(careerSteps.length).toBeGreaterThan(0);
+    const current = currentCareerStep(careerSteps);
+    expect(current.data.end, current.file).toBe("present");
+    expect(current.data.nextMove, current.file).toBeUndefined();
+  });
+
+  it("lists only published posts", () => {
+    for (const step of careerSteps) {
+      for (const slug of step.data.posts ?? []) {
+        const post = posts.find((entry) => entry.slug === slug);
+        expect(post, `${step.file}: ${slug}`).toBeDefined();
+        expect(post!.draft, `${step.file}: ${slug}`).toBe(false);
+      }
+    }
   });
 });

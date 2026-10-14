@@ -15,6 +15,14 @@ describe("career timeline wiring", () => {
     expect(result.message).toContain("scope");
   });
 
+  it("T09: the About page build fails on a latest step that does not end present, naming the file", async () => {
+    // Only the real build shows that checkCareer() runs from the page (its one build run).
+    result = await buildFixtureSite([], { career: ["broken/latest-not-present.yaml"] });
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("latest-not-present.yaml");
+    expect(result.message).toContain("end must be present");
+  });
+
   it("a site with no step files syncs", async () => {
     result = await buildFixtureSite([], { mode: "sync" });
     expect(result.ok, result.message).toBe(true);

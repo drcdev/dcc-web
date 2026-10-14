@@ -304,6 +304,17 @@ button:focus-visible {
   }
 }
 
+/* The career timeline's step summaries use the same ring as links and buttons (specs/041). */
+summary:focus-visible {
+  @apply outline-2 outline-offset-2 outline-accent-500 dark:outline-accent-400;
+}
+
+@media (forced-colors: active) {
+  summary:focus-visible {
+    outline-color: CanvasText;
+  }
+}
+
 /* ===== Sections: wide and full-width images (port of Flux kg-width-*) ===== */
 /* The full-width wrapper around <main> is an inline-size container, so 100cqw
    is the width of the page without the scrollbar. 100vw includes the scrollbar
