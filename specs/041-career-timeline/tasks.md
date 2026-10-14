@@ -22,9 +22,9 @@ description: "Task list for the interactive career timeline (feature 041)"
 
 **Purpose**: Constants and fixture files every later phase reads
 
-- [ ] T001 Add `"career step"` to `ErrorKind` in `src/lib/content/errors.ts` so `contentError` can prefix `Career step file src/content/career/<id>.yaml:` (contracts/build-errors.md)
-- [ ] T002 [P] Create valid fixture step files in `tests/fixtures/career/valid/*.yaml`: neutral roles and organizations, posts naming fixture posts `every-part` and `text-only`, all three categories, one award without a link, one step with every detail part, last step `end: present` with no `nextMove`. Name no real role, post or award (`no-real-content-in-tests` guard).
-- [ ] T003 [P] Create broken fixture step files in `tests/fixtures/career/broken/` (one file per build run: missing `scope` for the T01 sync run; a latest step that does not end `present` for the T09 build run, contracts/build-errors.md "Wiring")
+- [X] T001 Add `"career step"` to `ErrorKind` in `src/lib/content/errors.ts` so `contentError` can prefix `Career step file src/content/career/<id>.yaml:` (contracts/build-errors.md)
+- [X] T002 [P] Create valid fixture step files in `tests/fixtures/career/valid/*.yaml`: neutral roles and organizations, posts naming fixture posts `every-part` and `text-only`, all three categories, one award without a link, one step with every detail part, last step `end: present` with no `nextMove`. Name no real role, post or award (`no-real-content-in-tests` guard).
+- [X] T003 [P] Create broken fixture step files in `tests/fixtures/career/broken/` (one file per build run: missing `scope` for the T01 sync run; a latest step that does not end `present` for the T09 build run, contracts/build-errors.md "Wiring")
 
 ---
 

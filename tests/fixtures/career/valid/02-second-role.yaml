@@ -1,0 +1,21 @@
+role: Team Lead
+organization: Sample Group
+start: "2013-09"
+end: "2017-12"
+scope: Led a team of five that built and ran internal tools.
+decision: Chose to rebuild the intake process before adding features.
+changed: Started writing decisions down before acting on them.
+wish: Ask for feedback sooner.
+nextMove: Running a team showed me how much I liked designing systems.
+achievements:
+  - Cut the monthly report time in half.
+  - Moved the team to weekly releases.
+leadership:
+  - Mentored two new hires into lead roles.
+awards:
+  - name: Community Recognition
+    year: 2016
+    href: https://example.com/recognition
+posts:
+  - every-part
+  - text-only
