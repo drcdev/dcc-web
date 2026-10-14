@@ -36,7 +36,7 @@ test.describe("without JavaScript", () => {
       return Array.from(html.matchAll(/<script\b[^>]*>/g), (m) => m[0]).sort();
     };
     const story = await scripts(STORY);
-    const plain = await scripts("/about/");
+    const plain = await scripts("/terms-of-use/");
     expect(story).toEqual(plain);
   });
 
