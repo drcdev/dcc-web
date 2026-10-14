@@ -36,17 +36,17 @@ description: "Task list for the interactive career timeline (feature 041)"
 
 ### Tests first (unit layer)
 
-- [ ] T004 [P] Unit test, primary layer **Unit**, for schema rows T01-T07 and T12 in `tests/unit/content/career-schema.test.ts` (one case per row, row id in the title; strict keys, `YYYY-MM` and `present`, end not before start, empty lists, award shape and https `href`, duplicate post, text limits 120/300/200). Run it and see it fail.
-- [ ] T005 [P] Unit test, primary layer **Unit**, for the harness in `tests/helpers/content.ts`: the helper reads `src/content/career/` and returns the current role by rule (latest start), naming no literal. Put it in `tests/unit/content/career-launch.test.ts` as the "reads the real files" skeleton (real-content rules are added in T018). See it fail.
-- [ ] T006 Build test, primary layer **Build (`sync`)**, in `tests/build/career-timeline.test.ts`: `buildFixtureSite(..., { mode: "sync" })` with the T01 broken fixture from T003 fails and the error names the step file and field (proves the schema is wired in `src/content.config.ts`; a unit test cannot see the call site). Depends on T008. See it fail.
+- [X] T004 [P] Unit test, primary layer **Unit**, for schema rows T01-T07 and T12 in `tests/unit/content/career-schema.test.ts` (one case per row, row id in the title; strict keys, `YYYY-MM` and `present`, end not before start, empty lists, award shape and https `href`, duplicate post, text limits 120/300/200). Run it and see it fail.
+- [X] T005 [P] Unit test, primary layer **Unit**, for the harness in `tests/helpers/content.ts`: the helper reads `src/content/career/` and returns the current role by rule (latest start), naming no literal. Put it in `tests/unit/content/career-launch.test.ts` as the "reads the real files" skeleton (real-content rules are added in T018). See it fail.
+- [X] T006 Build test, primary layer **Build (`sync`)**, in `tests/build/career-timeline.test.ts`: `buildFixtureSite(..., { mode: "sync" })` with the T01 broken fixture from T003 fails and the error names the step file and field (proves the schema is wired in `src/content.config.ts`; a unit test cannot see the call site). Depends on T008. See it fail.
 
 ### Implementation
 
-- [ ] T007 Create the strict step schema in `src/content/schemas/career.ts` per data-model.md (trimmed non-empty text, limits, `YYYY-MM`, `present`, end-not-before-start refine, list-not-empty, awards object with https `href`, `reference("posts")[]` with duplicate refine). Makes T004 pass.
-- [ ] T008 Register the `career` collection (`glob()` loader, `src/content/career/*.yaml`) in `src/content.config.ts`; add an empty-safe path so no files means no steps. Makes T006 pass.
-- [ ] T009 Extend `tests/helpers/content.ts` to read `src/content/career/`. Makes T005 pass.
-- [ ] T010 Update the fixture-site harness: `tests/build/fixture-site.ts` drops real career files unless `realPosts` is set (the reading-path rule) and gains a `career` option for fixture files; `scripts/build-fixture-site.ts` swaps in `tests/fixtures/career/valid/` for the Playwright fixture site (port 4322).
-- [ ] T011 Run `pnpm run verify:quick`; confirm no existing test moved because of the harness change (fixture builds still pass with no career files).
+- [X] T007 Create the strict step schema in `src/content/schemas/career.ts` per data-model.md (trimmed non-empty text, limits, `YYYY-MM`, `present`, end-not-before-start refine, list-not-empty, awards object with https `href`, `reference("posts")[]` with duplicate refine). Makes T004 pass.
+- [X] T008 Register the `career` collection (`glob()` loader, `src/content/career/*.yaml`) in `src/content.config.ts`; add an empty-safe path so no files means no steps. Makes T006 pass.
+- [X] T009 Extend `tests/helpers/content.ts` to read `src/content/career/`. Makes T005 pass.
+- [X] T010 Update the fixture-site harness: `tests/build/fixture-site.ts` drops real career files unless `realPosts` is set (the reading-path rule) and gains a `career` option for fixture files; `scripts/build-fixture-site.ts` swaps in `tests/fixtures/career/valid/` for the Playwright fixture site (port 4322).
+- [X] T011 Run `pnpm run verify:quick`; confirm no existing test moved because of the harness change (fixture builds still pass with no career files).
 
 **Checkpoint**: collection, schema and harness ready.
 
