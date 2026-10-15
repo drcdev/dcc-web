@@ -40,15 +40,15 @@ describe("applyChoice", () => {
     expect(applyChoice("awards", "awards", steps)).toBeNull();
   });
 
-  it("opens and marks matches and dithers the rest", () => {
+  it("opens and marks matches and mutes the rest", () => {
     const plan = applyChoice("all", "achievements", steps)!;
     expect(plan.choice).toBe("achievements");
     expect(plan.status).toBe("2 of 4 roles have achievements.");
     expect(plan.steps).toEqual([
-      { id: "a", open: true, dithered: false, match: true },
-      { id: "b", open: true, dithered: false, match: true },
-      { id: "c", open: false, dithered: true, match: false },
-      { id: "d", open: false, dithered: true, match: false },
+      { id: "a", open: true, muted: false, match: true },
+      { id: "b", open: true, muted: false, match: true },
+      { id: "c", open: false, muted: true, match: false },
+      { id: "d", open: false, muted: true, match: false },
     ]);
   });
 
@@ -56,9 +56,9 @@ describe("applyChoice", () => {
     expect(applyChoice("achievements", "awards", steps)!.steps.map((s) => s.open)).toEqual([false, false, false, true]);
   });
 
-  it("resets everything on all: closed, undithered, unmarked", () => {
+  it("resets everything on all: closed, unmuted, unmarked", () => {
     const plan = applyChoice("awards", "all", steps)!;
     expect(plan.status).toBe("Showing all 4 roles.");
-    expect(plan.steps.every((s) => !s.open && !s.dithered && !s.match)).toBe(true);
+    expect(plan.steps.every((s) => !s.open && !s.muted && !s.match)).toBe(true);
   });
 });

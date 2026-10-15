@@ -16,7 +16,7 @@ export interface FilterStep {
 export interface StepState {
   id: string;
   open: boolean;
-  dithered: boolean;
+  muted: boolean;
   match: boolean;
 }
 
@@ -53,9 +53,9 @@ export function applyChoice(current: Choice, next: Choice, steps: readonly Filte
     choice: next,
     status: statusText(next, matching.length, steps.length),
     steps: steps.map((step) => {
-      if (next === "all") return { id: step.id, open: false, dithered: false, match: false };
+      if (next === "all") return { id: step.id, open: false, muted: false, match: false };
       const match = matching.includes(step.id);
-      return { id: step.id, open: match, dithered: !match, match };
+      return { id: step.id, open: match, muted: !match, match };
     }),
   };
 }

@@ -1,5 +1,5 @@
 // Accessibility of the career timeline in the states that exist only after a press (specs/041-career-timeline
-// US3; SC-004). The template a11y runs cover /about/ as loaded; this adds each category chosen and a dithered
+// US3; SC-004). The template a11y runs cover /about/ as loaded; this adds each category chosen and a muted
 // step opened by hand, light and dark, phone and desktop. Runs on the fixture site (port 4322) so the steps
 // are fixed; the categories offered are read from the page.
 import AxeBuilder from "@axe-core/playwright";
@@ -41,11 +41,11 @@ for (const size of SIZES) {
         await expectNoAxeViolations(page);
       });
 
-      test("has zero axe violations with a dithered step opened by hand", async ({ page }) => {
+      test("has zero axe violations with a muted step opened by hand", async ({ page }) => {
         await page.locator("[data-career-filter] button[data-category]").first().click();
-        const dithered = page.locator("[data-career] [data-dithered]").first();
-        await dithered.locator("summary").click();
-        await expect(dithered.locator("[data-step-detail]")).toBeVisible();
+        const muted = page.locator("[data-career] [data-muted]").first();
+        await muted.locator("summary").click();
+        await expect(muted.locator("[data-step-detail]")).toBeVisible();
         await expectNoAxeViolations(page);
       });
 

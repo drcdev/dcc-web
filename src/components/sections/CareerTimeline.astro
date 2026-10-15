@@ -54,10 +54,10 @@ const list = "m-0 list-disc pl-6 [overflow-wrap:anywhere]";
       )}
       <ol data-career-steps class="m-0 list-none p-0">
         {timeline.steps.map((step) => (
-          <li data-step={step.id} data-categories={stepCategories(step)} class="m-0 border-t border-dusk-200 last:border-b dark:border-dusk-700 forced-colors:border-[CanvasText]">
+          <li data-step={step.id} data-categories={stepCategories(step)} class="m-0 border-t border-l-4 border-t-dusk-200 border-l-transparent pl-3 last:border-b last:border-b-dusk-200 dark:border-t-dusk-700 dark:last:border-b-dusk-700 forced-colors:border-t-[CanvasText] forced-colors:last:border-b-[CanvasText]">
             <details class="group print:details-content:block print:details-content:[content-visibility:visible]">
               <summary class="min-h-11 cursor-pointer py-2 text-dusk-900 dark:text-white">
-                <span data-step-role class="block font-bold [overflow-wrap:anywhere]">
+                <span data-step-role class="font-bold [overflow-wrap:anywhere]">
                   {step.role}
                 </span>
                 <span data-step-org class="block [overflow-wrap:anywhere]">
@@ -180,7 +180,8 @@ const list = "m-0 list-disc pl-6 [overflow-wrap:anywhere]";
           const li = items[index]!;
           const details = li.querySelector<HTMLDetailsElement>("details")!;
           details.open = state.open;
-          li.toggleAttribute("data-dithered", state.dithered);
+          li.toggleAttribute("data-muted", state.muted);
+          li.toggleAttribute("data-matching", state.match);
           for (const item of li.querySelectorAll<HTMLElement>("ul[data-list] > li")) {
             item.toggleAttribute("data-match", state.match && item.parentElement?.dataset.list === plan.choice);
           }

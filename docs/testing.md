@@ -195,7 +195,7 @@ more fixture subjects, `project-row-retired` (the retired index row, making five
 `retired-story-header` (the story header with the retired pill and note), on the fixture
 project `retired`.
 Feature 041 added four more fixture subjects, `career-timeline-{phone,desktop}-{light,dark}`: the
-fixture About page timeline with one category chosen, so an open highlighted step and a dithered
+fixture About page timeline with one category chosen, so an open highlighted step and a muted
 step are in frame.
 The project also sets the footer year to 2026 before every shot (`tests/e2e/footer-year.ts`), so
 a new calendar year cannot fail it; the real year is checked by `SiteFooter.test.ts` and

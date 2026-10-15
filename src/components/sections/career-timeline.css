@@ -1,6 +1,6 @@
 @reference "../../styles/global.css";
 
-/* The career timeline's filter, dither and highlight (specs/041-career-timeline US3;
+/* The career timeline's filter, muted steps and highlight (specs/041-career-timeline US3;
    contracts/timeline-markup.md "Styling contract"). Nothing animates (FR-015), and every effect
    is plain CSS so the CSP needs no inline style. The no-script page never sees any of it. */
 
@@ -37,23 +37,19 @@
   @apply mb-4 min-h-6 text-base text-dusk-800 dark:text-mist-200;
 }
 
-/* Dither: a CSS-only dot pattern over the summary row. The text sits on a solid backing of the
-   page colour, so no dot is ever behind a glyph and text keeps full contrast (FR-011). The dots
-   are at least 3:1 against the page (dusk-400 on white, dusk-500 on the dark page). The cue is
-   the pattern plus a lighter role weight, never colour alone. */
-[data-career] li[data-dithered] > details > summary {
-  background-image: radial-gradient(circle at center, var(--career-dot) 1px, transparent 1.5px);
-  background-size: 6px 6px;
-  --career-dot: var(--color-dusk-400);
+/* Muted steps, Variant A (FR-011, FR-011a): a step with nothing in the chosen category gets a soft
+   solid tint and a faint dashed left rule. Its text keeps the matching step's full-strength colour
+   on the solid tint, so contrast is never traded for the cue, and there is no opacity and no
+   background image. The rule is at least 3:1 against the page (dusk-400 on white, dusk-500 on the
+   dark page). A matching step gets a solid accent rule instead, while a category is chosen. */
+[data-career] li[data-muted] {
+  @apply border-l-dusk-400 border-dashed bg-dusk-50 dark:border-l-dusk-500 dark:bg-dusk-800;
 }
-:is(.dark) [data-career] li[data-dithered] > details > summary {
-  --career-dot: var(--color-dusk-500);
+[data-career] li[data-matching] {
+  @apply border-l-accent-700 border-solid dark:border-l-accent-300;
 }
-[data-career] li[data-dithered] > details > summary > span {
-  @apply w-fit bg-white pr-2 dark:bg-dusk-BASE;
-}
-[data-career] li[data-dithered] [data-step-role] {
-  @apply font-medium;
+[data-career] li[data-muted] [data-step-period] {
+  @apply text-dusk-700 dark:text-dusk-200;
 }
 
 /* Highlight: left border, bold and a light tint, so it is not colour alone (FR-010). */
@@ -72,10 +68,12 @@
   [data-career-filter-buttons] button:focus-visible {
     outline-color: CanvasText;
   }
-  /* The pattern is dropped; a dashed border carries the cue. */
-  [data-career] li[data-dithered] > details > summary {
-    background-image: none;
-    border: 2px dashed CanvasText;
+  /* The tint is dropped by the system; the dashed rule carries the cue. */
+  [data-career] li[data-muted] {
+    border-left-color: CanvasText;
+  }
+  [data-career] li[data-matching] {
+    border-left-color: Highlight;
   }
   [data-career] ul[data-list] > li[data-match] {
     border-left-color: Highlight;
@@ -89,12 +87,10 @@
   :root.js career-timeline:not([data-ready]) :is([data-career-filter], [data-career-status])[hidden] {
     display: none !important;
   }
-  [data-career] li[data-dithered] > details > summary {
-    background-image: none;
-    border: 0;
-  }
-  [data-career] li[data-dithered] [data-step-role] {
-    @apply font-bold;
+  [data-career] li[data-step] {
+    border-left-width: 0 !important;
+    background-color: transparent !important;
+    padding-left: 0 !important;
   }
   [data-career] ul[data-list] > li[data-match] {
     @apply border-l-0 bg-transparent pl-0 font-normal;
