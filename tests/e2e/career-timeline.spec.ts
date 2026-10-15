@@ -343,103 +343,48 @@ test("a muted step has no background image and no reduced opacity (FR-011)", asy
   }
 });
 
-// Variant B (FR-011a): a muted step collapses to one compact line in a smaller, muted-but-readable size; no tint,
-// no rule. The size and layout change is the non-colour cue. Browser-only: computed style and real layout.
-const lineOf = (page: Page, selector: string) =>
-  page.locator(selector).first().evaluate((li) => {
-    const tops = ["[data-step-role]", "[data-step-org]", "[data-step-period]"].map((part) => {
-      const rects = [...li.querySelector(part)!.getClientRects()];
-      return { top: Math.round(rects[0]!.top), bottom: Math.round(rects[rects.length - 1]!.bottom), lines: rects.length };
-    });
-    const s = getComputedStyle(li);
-    const sum = getComputedStyle(li.querySelector("summary")!);
-    return {
-      tops,
-      size: parseFloat(getComputedStyle(li.querySelector("[data-step-role]")!).fontSize),
-      bg: sum.backgroundColor,
-      liBg: s.backgroundColor,
-      image: s.backgroundImage,
-      borderStyle: s.borderLeftStyle,
-      borderColor: s.borderLeftColor,
-    };
-  });
+// Variant A (FR-011a): a solid tint and a dashed left rule mark a muted step; a matching step has a solid
+// accent rule. Browser-only: computed style, forced colours and print.
+const ruleOf = (el: Element) => {
+  const s = getComputedStyle(el);
+  return { style: s.borderLeftStyle, width: parseFloat(s.borderLeftWidth), color: s.borderLeftColor, bg: s.backgroundColor, image: s.backgroundImage, text: getComputedStyle(el.querySelector("[data-step-role]")!).color };
+};
 
-test("Variant B: a muted step is one compact line, smaller, with no tint, image or dashed rule; a matching step stays full size", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 900 });
+test("Variant A: a muted step has a solid tint and a dashed left rule, a matching step a solid accent rule", async ({ page }) => {
   await page.goto(ABOUT);
-  const before = await lineOf(page, `${steps}:not([data-muted])`);
   await button(page, "achievements").click();
-  const muted = await lineOf(page, `${steps}[data-muted]`);
-  const match = await lineOf(page, `${steps}[data-matching]`);
-  // Marker, role, organization and period share one line: the role, organization and period boxes overlap vertically.
-  const first = muted.tops[0]!;
-  for (const part of muted.tops) {
-    expect(part.lines).toBe(1);
-    expect(part.top).toBeLessThan(first.bottom);
-    expect(part.bottom).toBeGreaterThan(first.top);
-  }
-  expect(muted.size).toBeLessThan(match.size);
-  expect(match.size).toBe(before.size);
-  expect(muted.bg).toBe("rgba(0, 0, 0, 0)");
-  expect(muted.liBg).toBe("rgba(0, 0, 0, 0)");
+  const muted = await page.locator(`${steps}[data-muted]`).first().evaluate(ruleOf);
+  const match = await page.locator(`${steps}:not([data-muted])`).first().evaluate(ruleOf);
+  const plain = await page.locator(`${steps}:not([data-muted])`).first().evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(muted.style).toBe("dashed");
+  expect(muted.width).toBeGreaterThanOrEqual(2);
+  expect(muted.bg).not.toBe("rgba(0, 0, 0, 0)");
+  expect(muted.bg).not.toBe(plain);
   expect(muted.image).toBe("none");
-  expect(muted.borderStyle).not.toBe("dashed");
-  expect(match.borderStyle).not.toBe("dashed");
-  expect(match.borderColor).toBe(muted.borderColor);
+  expect(match.style).toBe("solid");
+  expect(match.width).toBeGreaterThanOrEqual(2);
+  expect(match.color).not.toBe(muted.color);
+  // Text keeps full strength: the muted role has the matching role's colour.
+  expect(muted.text).toBe(match.text);
 });
 
-test("Variant B: opening a muted step shows its detail at full size", async ({ page }) => {
-  await page.goto(ABOUT);
-  await button(page, "achievements").click();
-  const detailSize = (selector: string) =>
-    page.locator(`${selector} [data-step-detail]`).first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
-  const muted = page.locator(`${steps}[data-muted]`).first();
-  await muted.locator("summary").click();
-  await expect(muted.locator("[data-step-detail]")).toBeVisible();
-  expect(await detailSize(`${steps}[data-muted]`)).toBe(await detailSize(`${steps}[data-matching]`));
-});
-
-for (const width of [320, 160]) {
-  test(`Variant B: the muted line wraps at ${width} px with no sideways scroll or clipping`, async ({ page }) => {
-    await page.setViewportSize({ width, height: 900 });
-    await page.goto(ABOUT);
-    await button(page, "achievements").click();
-    // Only the muted lines are checked below: the rest of the page at 160 px is not this feature's.
-    if (width === 320) expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
-    for (const summary of await page.locator(`${steps}[data-muted] summary`).all()) {
-      const fits = await summary.evaluate((el) => {
-        const box = el.getBoundingClientRect();
-        return el.scrollWidth <= el.clientWidth + 1 && [...el.querySelectorAll("span")].every((s) => s.getBoundingClientRect().right <= box.right + 1);
-      });
-      expect(fits).toBe(true);
-    }
-  });
-}
-
-test("Variant B: in forced colours the muted line has no dashed rule and stays compact", async ({ page }) => {
+test("Variant A: in forced colours the muted rule is still dashed", async ({ page }) => {
   await page.emulateMedia({ forcedColors: "active" });
   await page.goto(ABOUT);
   await button(page, "achievements").click();
-  const muted = await lineOf(page, `${steps}[data-muted]`);
-  const match = await lineOf(page, `${steps}[data-matching]`);
-  expect(muted.borderStyle).not.toBe("dashed");
-  expect(muted.size).toBeLessThan(match.size);
+  const muted = await page.locator(`${steps}[data-muted]`).first().evaluate(ruleOf);
+  expect(muted.style).toBe("dashed");
+  expect(muted.width).toBeGreaterThanOrEqual(2);
 });
 
-test("Variant B: print shows full-size blocks, no rule and no tint", async ({ page }) => {
+test("Variant A: print shows neither rule nor tint", async ({ page }) => {
   await page.goto(ABOUT);
-  const full = await lineOf(page, steps);
   await button(page, "achievements").click();
   await page.emulateMedia({ media: "print" });
   for (const li of await page.locator(steps).all()) {
-    const style = await li.evaluate((el) => {
-      const s = getComputedStyle(el);
-      return { width: parseFloat(s.borderLeftWidth), bg: s.backgroundColor, size: parseFloat(getComputedStyle(el.querySelector("[data-step-role]")!).fontSize), orgDisplay: getComputedStyle(el.querySelector("[data-step-org]")!).display };
-    });
+    const style = await li.evaluate(ruleOf);
     expect(style.width).toBe(0);
     expect(style.bg).toBe("rgba(0, 0, 0, 0)");
-    expect(style.size).toBe(full.size);
-    expect(style.orgDisplay).toBe("block");
   }
 });
 
