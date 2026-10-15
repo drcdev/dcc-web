@@ -75,20 +75,16 @@ Don reviewed the preview of PR #180.
 - Q: Does the dot-pattern ("dither") treatment of non-matching steps stay? → A: No. It looks
   awkward on the page and is dropped. Non-matching steps are still collapsed and visibly
   de-emphasised, readable at full WCAG AA contrast and not marked by colour alone (FR-011).
+- Q: Which muted treatment did Don pick after comparing the previews? → A: "Muted + side rule"
+  (muted tint, dashed left rule, solid accent rule on matches), picked on 2026-10-15. The
+  alternative was rejected and its commit reverted (research R8).
 - Q: Where does the expand/collapse marker sit? → A: Inline with the role title, on the same
   line, never on a line of its own above it (FR-007b).
-- Q: Which treatment replaces the dot pattern? → A: Two candidates are built and compared on the
-  preview, each pushed as its own commit so Cloudflare gives each its own commit preview URL (no
-  runtime switch in the code). Don picks one; the chosen one replaces the other, which is
-  reverted (FR-011a).
-  - **Variant A, "Muted + side rule"**: a non-matching step collapses; its row gets a soft muted
-    background tint and a faint dashed left timeline rule; its text stays at full contrast. A
-    matching step gets a solid accent left rule. The non-colour cue is the rule's style (dashed
-    against solid).
-  - **Variant B, "Compact one-line rows"**: a non-matching step collapses to a single line
-    (marker, role, organization, period) in a smaller size, in a muted colour that still meets
-    AA contrast, with no background treatment; matching steps stay full size. The non-colour cue
-    is the size and layout change.
+- Q: Which treatment replaces the dot pattern? → A: Don compared two candidates on their own
+  commit previews on 2026-10-15 and picked "Muted + side rule" (FR-011a): a non-matching step
+  collapses; its row gets a soft muted background tint and a faint dashed left timeline rule; its
+  text stays at full contrast. A matching step gets a solid accent left rule. The non-colour cue
+  is the rule's style (dashed against solid).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -226,8 +222,7 @@ filter restores the timeline.
 - Theme change while a category is chosen: the filter state is kept; the muted treatment and
   highlight use the colours of the new theme.
 - A long role or organization in a step with the marker inline (FR-007b): the title wraps
-  beside the marker; the marker stays on the title's first line. Under Variant B a muted step's
-  single line may wrap at narrow widths rather than scroll sideways or be cut off (FR-017).
+  beside the marker; the marker stays on the title's first line.
 - More steps in future: steps, the status count and the used categories all come from the
   content files, so adding a step needs no new requirement and no code change. The categories
   stay fixed at three.
@@ -418,31 +413,19 @@ filter restores the timeline.
   - Text MUST meet WCAG 2.2 AA (4.5:1, or 3:1 for large text) in every state (idle, filtered,
     muted, closed, open, hover, focus), in the light and dark themes, and in forced-colours
     mode, measured against the solid colour actually behind it (the page colour, or the muted
-    row's solid tint under Variant A). Muting never uses `opacity` or a background image behind
+    row's solid tint). Muting never uses `opacity` or a background image behind
     text.
-  - Muting MUST NOT rely on colour alone. Each candidate treatment carries its own non-colour
-    cue, and that cue survives forced-colours mode:
-    - Variant A: the step's left timeline rule turns from solid (as on a matching step) to
-      dashed; in forced colours the dashed rule stays, in `CanvasText`.
-    - Variant B: the step's summary collapses to one line in a smaller text size; the size and
-      layout change stays in forced colours.
+  - Muting MUST NOT rely on colour alone. The non-colour cue is the step's left timeline rule,
+    which turns from solid (as on a matching step) to dashed; in forced colours the dashed rule
+    stays, in `CanvasText`.
   - Any rule, edge or tint boundary that carries the cue has at least 3:1 contrast against the
     page background (WCAG 1.4.11).
   - A muted step is not disabled or hidden: assistive technology reads it like any other step,
     and it can still be opened. Opening it does not remove the muting; the next filter change
     decides its state. Opened, its content shows at full size and full contrast.
-- **FR-011a**: Exactly one muting treatment ships. Two candidates are under review (Variant A,
-  "Muted + side rule", and Variant B, "Compact one-line rows", as defined in Clarifications,
-  session 2026-10-15). Each is pushed as its own commit for review on Cloudflare's per-commit
-  preview URL; the code carries no runtime switch between them. Don picks one on the preview;
-  the chosen one replaces the other, the other's code and baselines are reverted, and this
-  requirement is then reworded to name only the chosen treatment.
-  - Variant A: a muted step's row has a soft muted background tint and a faint dashed left
-    timeline rule; its text stays at full contrast. A matching step has a solid accent left
-    rule.
-  - Variant B: a muted step is a single line (marker, role, organization, period) in a smaller
-    text size and a muted colour that still meets AA contrast, with no background treatment. A
-    matching step stays full size.
+- **FR-011a**: Exactly one muting treatment ships, "Muted + side rule": a muted step's row has a
+  soft muted background tint and a faint dashed left timeline rule; its text stays at full
+  contrast. A matching step has a solid accent left rule. The code carries no runtime switch.
 - **FR-012**: Choosing "All" MUST remove all muting and highlights and close every step,
   including steps the visitor opened or closed by hand. This is deliberate: "All" is the reset
   to the timeline as first served (FR-007).
@@ -490,8 +473,7 @@ filter restores the timeline.
   MUST read as one column at every width.
   - At 320 CSS pixels (and at 400% zoom of a 1280 pixel window) nothing scrolls sideways: the
     filter buttons wrap onto more lines, and long organization names, award names and post
-    titles wrap. At 200% text zoom no text is clipped or overlapped, muted steps included (under
-    Variant B a muted step's one line wraps rather than clips).
+    titles wrap. At 200% text zoom no text is clipped or overlapped, muted steps included.
   - Summary lines and filter buttons are at least 24 by 24 CSS pixels (WCAG 2.5.8).
   - Summary lines, filter buttons and links show the site's visible focus ring, with at least
     3:1 contrast, never hidden by the muted treatment, the highlight or other content (WCAG 2.4.7 and
@@ -521,8 +503,7 @@ filter restores the timeline.
   period word "present". Any other wording needs a spec change.
 - **FR-021**: The visual checks MUST cover the timeline with a category chosen, so one opened
   step with highlighted items and one muted step are both shown, at phone and desktop widths,
-  in the light and dark themes. The baselines show the treatment in the commit under review
-  (Variant A or B), and after Don's pick only the chosen one (FR-011a).
+  in the light and dark themes. The baselines show the muted treatment of FR-011a.
 
 ### Key Entities
 

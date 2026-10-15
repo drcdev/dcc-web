@@ -167,6 +167,8 @@ description: "Task list for the interactive career timeline (feature 041)"
 
 ### Variant B, "Compact one-line rows"
 
+**Note (2026-10-15)**: Don picked Variant A; Variant B (T056-T059, done) was reverted after review in ae67f65.
+
 - [X] T056 E2E test, primary layer **E2E**, in `tests/e2e/career-timeline.spec.ts` (FR-011a Variant B), replacing T052's Variant A assertions: with a category chosen, a muted step's summary lays out marker, role, organization and period on one line at desktop width (their boxes share one line), its computed font size is smaller than a matching step's, it has no background colour or image and no dashed rule; a matching step stays full size; at 320 px and 200% text zoom the muted line wraps with no sideways scroll and no clipping (FR-017); opening a muted step shows its detail at full size. Contrast stays with the a11y layer (T035 rerun, light and dark). See it fail.
 - [X] T057 Implement Variant B in `src/components/sections/career-timeline.css` (and `CareerTimeline.astro` if needed), replacing the Variant A rules: one-line compact summary for `li[data-muted]` in a smaller size and a muted text token that meets 4.5:1 in both themes, no background treatment, matching steps unchanged, print shows full size. Makes T056, T049 and T035 pass; run `pnpm run verify:quick`.
 - [X] T058 Update the macOS visual baselines for Variant B with `pnpm run test:visual:update` (as T054); commit only the `career-timeline-*-darwin.png` changes.
@@ -174,9 +176,10 @@ description: "Task list for the interactive career timeline (feature 041)"
 
 ### Pick and settle
 
-- [ ] T060 [PREVIEW-CHECK] Don opens the Variant A commit preview (T055) and the Variant B commit preview (T059), compares `/about/` with a category chosen in light and dark, phone and desktop (muted steps clearly de-emphasised yet easy to read, the non-colour cue visible, the marker on the role title's line), and picks one.
-- [ ] T061 Record Don's pick in spec.md Clarifications and reword FR-011, FR-011a, research R8, `contracts/timeline-markup.md` and the PR body to name only the chosen treatment (via the clarify flow).
-- [ ] T062 Revert the unpicked variant: if A is picked, revert the Variant B commit (`git revert`, restoring A's tests, CSS and macOS baselines); if B is picked, remove any Variant A leftovers (B already replaced A's rules and tests). Then refresh the macOS baselines (`pnpm run test:visual:update`) and the Linux baselines (`pnpm run test:visual:update:linux`, Docker; if `docker info` fails ask Don to start it with an `AskUserQuestion` whose question text carries the instruction), commit only `career-timeline-*` PNGs, run `node scripts/ci/changed-paths.ts --base origin/main` and its tier, push, and arm auto-merge after the final push (`.claude/skills/_shared/open-pr.md`).
+- [X] T060 [PREVIEW-CHECK] Don opens the Variant A commit preview (T055) and the Variant B commit preview (T059), compares `/about/` with a category chosen in light and dark, phone and desktop (muted steps clearly de-emphasised yet easy to read, the non-colour cue visible, the marker on the role title's line), and picks one.
+- [X] T061 Record Don's pick in spec.md Clarifications and reword FR-011, FR-011a, research R8, `contracts/timeline-markup.md` and the PR body to name only the chosen treatment (via the clarify flow).
+- [X] T062 Revert the unpicked variant: if A is picked, revert the Variant B commit (`git revert`, restoring A's tests, CSS and macOS baselines); if B is picked, remove any Variant A leftovers (B already replaced A's rules and tests). Then refresh the macOS baselines (`pnpm run test:visual:update`) and the Linux baselines (`pnpm run test:visual:update:linux`, Docker; if `docker info` fails ask Don to start it with an `AskUserQuestion` whose question text carries the instruction), commit only `career-timeline-*` PNGs, run `node scripts/ci/changed-paths.ts --base origin/main` and its tier, push, and arm auto-merge after the final push (`.claude/skills/_shared/open-pr.md`).
+  - Done 2026-10-15: Variant B reverted in ae67f65; unit, E2E, a11y, local-site and verify:quick green; macOS baselines unchanged; Linux career-timeline PNGs refreshed. Auto-merge is armed by the orchestrator.
 
 ---
 

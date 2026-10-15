@@ -103,7 +103,7 @@ was used for every Astro choice below; each decision names the page it rests on.
 - **Pure logic** (`src/lib/content/career-filter.ts`): which categories are used, which steps match,
   and the status sentence. Unit-tested; the client script imports it.
 
-## R8. Muted steps: two CSS-only candidates, no pattern (revised 2026-10-15)
+## R8. Muted steps: tint and dashed side rule, CSS only, no pattern (revised 2026-10-15)
 
 - **Superseded decision**: the first build gave a non-matching step's summary row a CSS
   `radial-gradient` dot pattern ("dither") behind solid-backed text. Don reviewed it on the
@@ -112,32 +112,28 @@ was used for every Astro choice below; each decision names the page it rests on.
 - **Decision**: A non-matching step is collapsed and **muted** (spec FR-011): visibly
   de-emphasised with plain CSS from the Tailwind theme tokens, no background image, no pattern,
   no `opacity`, text at WCAG AA contrast against the solid colour behind it. The state attribute
-  is `data-muted` (renamed from `data-dithered`). Two candidates are built and shown to Don, each
-  as its own commit so Cloudflare's per-commit preview URL shows it alone; there is no runtime
-  switch (spec FR-011a). After the pick, the other candidate is reverted.
-  - **Variant A, "Muted + side rule"**: the muted step's row gets a soft solid muted tint and a
+  is `data-muted` (renamed from `data-dithered`). Don picked this treatment on 2026-10-15
+  after comparing it with one alternative on separate commit previews; there is no runtime
+  switch (spec FR-011a).
+  - **Muted + side rule**: the muted step's row gets a soft solid muted tint and a
     faint dashed left timeline rule; text keeps its normal colour and weight. A matching step
     gets a solid accent left rule. Non-colour cue: dashed against solid rule. Text contrast is
     measured against the tint (a solid colour, so axe measures it). The rule's dashes keep at
     least 3:1 against the page background (WCAG 1.4.11). Forced colours: the dashed rule stays,
     drawn in `CanvasText`; the tint drops.
-  - **Variant B, "Compact one-line rows"**: the muted step's summary shows marker, role,
-    organization and period on a single line, in a smaller size and a muted text token that
-    still meets 4.5:1 in each theme; no background treatment. Matching steps stay full size.
-    Non-colour cue: the size and layout change, which survives forced colours. The line wraps
-    rather than clips at 320 px and 200% text zoom (FR-017). Opened, the step's content shows at
-    full size.
-  - Both: print removes the muting (FR-018); the focus ring is never covered (FR-017); the
+  - Print removes the muting (FR-018); the focus ring is never covered (FR-017); the
     disclosure marker stays inline with the role title (FR-007b).
+  - Considered and rejected: compact one-line muted rows in a smaller size (Don preferred the
+    tint and side rule).
 - **Rationale**: The site's Tailwind theme is its design system (Technology Constraints); borders,
   solid tints and font sizes come from existing tokens with no image file and no new package.
   Solid colours keep contrast measurable by axe, which a patterned background did not allow
-  without a solid text backing. Showing the two candidates on separate commit previews lets Don
+  without a solid text backing. Showing the candidates on separate commit previews let Don
   compare the real page without shipping switch code.
 - **Alternatives considered**: keep the dot pattern. Rejected by Don on the preview. `opacity` or
   a grey text colour below AA. Rejected: lowers text contrast (FR-011 forbids it). An SVG or PNG
   halftone. Rejected: an asset request, and the pattern itself was the problem. A query-string or
-  cookie switch between A and B. Rejected: runtime code that would ship only to be removed.
+  cookie switch between candidates. Rejected: runtime code that would ship only to be removed.
 
 ## R9. Highlight of matching items
 

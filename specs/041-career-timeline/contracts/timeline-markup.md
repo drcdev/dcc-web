@@ -83,20 +83,14 @@ Rules:
 - Disclosure marker (spec FR-007b): the marker renders on the same line as the first line of
   `[data-step-role]`, at every width and in every state, JavaScript on or off; nothing in the
   summary puts the role on a line below the marker. The marker is not text in the accessible
-  name. Organization and period may follow on later lines (except Variant B's muted one-liner).
-- `li[data-muted]` (spec FR-011, FR-011a; one of the two variants ships, never both, never a
-  runtime switch). No background image, no pattern, no `opacity`; all text at AA contrast
+  name. Organization and period may follow on later lines.
+- `li[data-muted]` (spec FR-011, FR-011a; never a runtime switch). No background image, no pattern, no `opacity`; all text at AA contrast
   against the solid colour behind it, in both themes. `print`: no muting.
-  - **Variant A, "Muted + side rule"**: the muted step's row has a soft solid muted tint and a
+  - The muted step's row has a soft solid muted tint and a
     faint dashed left timeline rule (at least 3:1 against the page background); text keeps its
     normal colour. `li:not([data-muted])` while a category is chosen (a matching step) has a
     solid accent left rule. `forced-colors`: the tint drops; the dashed rule stays in
     `CanvasText`, the solid rule stays solid.
-  - **Variant B, "Compact one-line rows"**: the muted step's summary lays out marker, role,
-    organization and period on one line in a smaller text size and a muted text token that
-    still meets 4.5:1; no background. Matching steps stay full size. The line wraps rather than
-    clips or scrolls at 320 px and 200% text zoom. Opened, the step's detail shows at full size.
-    `forced-colors`: the size and layout change stays.
 - `summary:focus-visible` gets the same outline as `a:focus-visible` and `button:focus-visible`
   in `global.css` (including the forced-colours rule); the muted treatment and highlight never cover it.
 - Summaries and filter buttons are at least 24 x 24 CSS px; the filter row wraps; links are
