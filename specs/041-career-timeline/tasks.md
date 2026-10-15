@@ -106,9 +106,11 @@ description: "Task list for the interactive career timeline (feature 041)"
 
 ## Phase 5: User Story 3 - Filter the timeline by theme (Priority: P3)
 
-**Goal**: A progressively enhanced filter (All, Achievements, Leadership, Awards; used categories only) opens and highlights matching steps, collapses and dithers the rest, and announces a count.
+**Goal**: A progressively enhanced filter (All, Achievements, Leadership, Awards; used categories only) opens and highlights matching steps, collapses and mutes the rest (first built as a dot-pattern dither, replaced in Phase 7), and announces a count.
 
-**Independent Test**: With JavaScript on, choose a category and confirm matching steps open with highlighted items and the rest are dithered but readable and openable; choose All and everything resets.
+**Independent Test**: With JavaScript on, choose a category and confirm matching steps open with highlighted items and the rest are muted but readable and openable; choose All and everything resets.
+
+**Note (2026-10-15)**: the dot-pattern dither and `data-dithered` built in T032-T039 are superseded by Phase 7 (spec FR-011, FR-011a, research R8). These ticked tasks record what was built; Phase 7 changes it.
 
 ### Tests for User Story 3 (write first)
 
@@ -137,8 +139,44 @@ description: "Task list for the interactive career timeline (feature 041)"
 - [X] T044 Update the macOS visual baselines with `pnpm run test:visual:update` (nvm + shim wrapper in the background, see `.claude/skills/_shared/visual-baselines.md`); commit only the new `career-timeline-*-darwin.png`. Any other image that moves is a regression to fix, not accept.
 - [X] T045 Update the Linux visual baselines with `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, ask Don to start it with an `AskUserQuestion` whose question text carries the instruction); commit only the new `*-linux.png`. Run after T044, not alongside Docker builds.
 - [X] T046 Run `node scripts/ci/changed-paths.ts --base origin/main` and the checks for the tier it prints; ask Don before a full `pnpm run verify`.
-- [ ] T047 [PREVIEW-CHECK] Don reads the real `/about/` on the preview in light and dark, phone and desktop: wording of the six steps, dither legibility, highlight clarity, that the Leadership line is gone and "Recognition" is unchanged word for word, 3:1 contrast of the disclosure marker and filter button edges, and no clipped or overlapping text at 200% text zoom (FR-017).
+- [ ] T047 [PREVIEW-CHECK] Don reads the real `/about/` on the preview in light and dark, phone and desktop: wording of the six steps, legibility of the chosen muted treatment (T060), the disclosure marker on the role title's line (FR-007b), highlight clarity, that the Leadership line is gone and "Recognition" is unchanged word for word, 3:1 contrast of the disclosure marker and filter button edges, and no clipped or overlapping text at 200% text zoom (FR-017).
 - [ ] T048 [PREVIEW-CHECK] Don checks print preview of `/about/`, the page with a screen reader (state announcements, status line), and every linked post and award target on the preview.
+
+---
+
+## Phase 7: Review round — non-matching treatment
+
+**Purpose**: Don's 2026-10-15 preview review (spec Clarifications, session 2026-10-15): drop the dot-pattern dither, put the disclosure marker inline with the role title (FR-007b), and show two muting treatments (FR-011, FR-011a) as separate commits so each has its own Cloudflare commit preview URL. No runtime switch code. Don picks one; the other is reverted.
+
+**Independent Test**: On each variant's commit preview, choose a category on `/about/`: matching steps open with the marker on the role title's line; non-matching steps are collapsed, visibly muted, readable at AA contrast and carry their variant's non-colour cue.
+
+**Note**: the variant commits refresh only the macOS baselines, so the Linux visual shots in CI `verify` may fail on those two commits; that is expected and is fixed by T062 after the pick. Cloudflare builds the commit previews either way.
+
+### Inline disclosure marker and the muted state (tests first)
+
+- [ ] T049 E2E test, primary layer **E2E**, in `tests/e2e/career-timeline.spec.ts` (FR-007b): on the fixture `/about/`, at phone and desktop widths, idle, with a category chosen (a matching and a muted step), opened and closed, and with JavaScript off, the summary's disclosure marker sits on the same line as the first line of `[data-step-role]` (compare the marker's and the role's first-line boxes), and the summary's accessible name is unchanged (FR-007a). Reason E2E, not component: line placement needs real layout. See it fail on the current marker-above-title layout.
+- [ ] T050 Rename tests first (spec FR-011, research R7/R8): in `tests/unit/content/career-filter.test.ts` the step plan field `dithered` becomes `muted`; in `tests/e2e/career-timeline.spec.ts`, `tests/e2e/career-timeline.a11y.spec.ts` and `tests/e2e/visual.spec.ts` every `data-dithered` becomes `data-muted`, and the E2E asserts a muted summary has no `background-image` and no `opacity` below 1 (FR-011). Primary layers as in T032/T034/T035/T036. See them fail.
+- [ ] T051 Implement the inline marker and the rename in `src/components/sections/CareerTimeline.astro`, `src/components/sections/career-timeline.css` and `src/lib/content/career-filter.ts`: the role title shares its first line with the marker (no block role pushed below it), `dithered` → `muted`, `data-dithered` → `data-muted`, and the `radial-gradient` dot pattern, its solid text backing and forced-colours dashed border removed. Update `docs/testing.md` wording. Makes T049 and T050 pass.
+
+### Variant A, "Muted + side rule"
+
+- [ ] T052 E2E test, primary layer **E2E**, in `tests/e2e/career-timeline.spec.ts` (FR-011a Variant A): with a category chosen, a muted step's row has a solid background tint and a dashed left border, its role text keeps the colour of a matching step's role; a matching step has a solid left border in the accent colour; in forced colours the muted step's left border is still dashed; in print emulation neither rule nor tint shows. Contrast stays with the existing a11y layer (T035 rerun, light and dark). See it fail.
+- [ ] T053 Implement Variant A in `src/components/sections/career-timeline.css` (and classes in `CareerTimeline.astro` if needed) from Tailwind theme tokens: soft solid muted tint and faint dashed left timeline rule (at least 3:1 against the page background) on `li[data-muted]`, solid accent left rule on matching steps while a category is chosen, both themes, forced-colours and print rules, no `opacity`, no background image. Makes T052, T049 and T035 pass; run `pnpm run verify:quick`.
+- [ ] T054 Update the macOS visual baselines for Variant A with `pnpm run test:visual:update` (nvm + shim wrapper in the background, `.claude/skills/_shared/visual-baselines.md`); commit only the `career-timeline-*-darwin.png` changes. Any other image that moves is a regression to fix.
+- [ ] T055 Commit Variant A (T049-T054 together, conventional message naming "Variant A") and push to the PR #180 branch. Record the commit SHA and its Cloudflare commit preview URL (from the Cloudflare PR comment) in the PR body under the open `[PREVIEW-CHECK]` items. Do not arm or change auto-merge here.
+
+### Variant B, "Compact one-line rows"
+
+- [ ] T056 E2E test, primary layer **E2E**, in `tests/e2e/career-timeline.spec.ts` (FR-011a Variant B), replacing T052's Variant A assertions: with a category chosen, a muted step's summary lays out marker, role, organization and period on one line at desktop width (their boxes share one line), its computed font size is smaller than a matching step's, it has no background colour or image and no dashed rule; a matching step stays full size; at 320 px and 200% text zoom the muted line wraps with no sideways scroll and no clipping (FR-017); opening a muted step shows its detail at full size. Contrast stays with the a11y layer (T035 rerun, light and dark). See it fail.
+- [ ] T057 Implement Variant B in `src/components/sections/career-timeline.css` (and `CareerTimeline.astro` if needed), replacing the Variant A rules: one-line compact summary for `li[data-muted]` in a smaller size and a muted text token that meets 4.5:1 in both themes, no background treatment, matching steps unchanged, print shows full size. Makes T056, T049 and T035 pass; run `pnpm run verify:quick`.
+- [ ] T058 Update the macOS visual baselines for Variant B with `pnpm run test:visual:update` (as T054); commit only the `career-timeline-*-darwin.png` changes.
+- [ ] T059 Commit Variant B (T056-T058 together, conventional message naming "Variant B") as a separate commit after T055 and push. Record its SHA and Cloudflare commit preview URL in the PR body beside Variant A's.
+
+### Pick and settle
+
+- [ ] T060 [PREVIEW-CHECK] Don opens the Variant A commit preview (T055) and the Variant B commit preview (T059), compares `/about/` with a category chosen in light and dark, phone and desktop (muted steps clearly de-emphasised yet easy to read, the non-colour cue visible, the marker on the role title's line), and picks one.
+- [ ] T061 Record Don's pick in spec.md Clarifications and reword FR-011, FR-011a, research R8, `contracts/timeline-markup.md` and the PR body to name only the chosen treatment (via the clarify flow).
+- [ ] T062 Revert the unpicked variant: if A is picked, revert the Variant B commit (`git revert`, restoring A's tests, CSS and macOS baselines); if B is picked, remove any Variant A leftovers (B already replaced A's rules and tests). Then refresh the macOS baselines (`pnpm run test:visual:update`) and the Linux baselines (`pnpm run test:visual:update:linux`, Docker; if `docker info` fails ask Don to start it with an `AskUserQuestion` whose question text carries the instruction), commit only `career-timeline-*` PNGs, run `node scripts/ci/changed-paths.ts --base origin/main` and its tier, push, and arm auto-merge after the final push (`.claude/skills/_shared/open-pr.md`).
 
 ---
 
@@ -147,6 +185,7 @@ description: "Task list for the interactive career timeline (feature 041)"
 - Phase 1 then Phase 2 (blocks all stories). T006 needs T008; T004/T005 are written before T007/T009.
 - US1 has no dependency on US2 or US3. US2 extends the files US1 creates (`src/lib/content/career.ts`, `CareerTimeline.astro`, launch files), so run it after US1. US3 extends the component, so run it after US1; it does not need US2 beyond the shared component file.
 - Polish after all stories; T044 before T045; T036 passes only after T044/T045.
+- Phase 7 after Phase 6 and in order: T049-T051, then Variant A (T052-T055, one commit), then Variant B (T056-T059, a separate later commit), then T060 (Don), T061, T062. T049 and T050 both edit `tests/e2e/career-timeline.spec.ts`, so they are not parallel. T047 and T048 are walked on the chosen variant.
 - Within a story: tests, see them fail, implementation, `verify:quick`.
 
 ### Parallel opportunities
@@ -165,7 +204,7 @@ Task: "E2E test in tests/e2e/career-timeline.spec.ts"
 ## Implementation Strategy
 
 - **MVP**: Phases 1, 2 and 3 (US1): a readable, openable timeline with launch content. Stop and validate.
-- **Incremental**: add US2 (links, post checks), then US3 (filter, dither, visuals), then Polish with baselines.
+- **Incremental**: add US2 (links, post checks), then US3 (filter, muting, visuals), then Polish with baselines, then the Phase 7 review round (inline marker, Variant A and B on their own commit previews, Don picks, revert the other).
 - Sibling-worktree conflicts: follow the plan's "Shared files" table; keep own `.specify/feature.json` when merging main.
 
 ## Notes

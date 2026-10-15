@@ -53,7 +53,7 @@ Rules:
   group and the status line are not rendered.
 - Text from step files is rendered as text (Astro expressions), never with `set:html`.
 - The period's dash is `aria-hidden` and followed by visually hidden "to" (spec FR-002).
-- Print: every `<details>` content shows, no step is dithered, no item is highlighted, and the
+- Print: every `<details>` content shows, no step is muted (no tint, dashed rule or compact row), no item is highlighted, and the
   filter and status line are hidden (FR-018; `print:details-content:block` as in
   `SelfAssessment.astro`).
 
@@ -65,27 +65,40 @@ Rules:
   is announced on load (FR-013).
 - Choose category K: pressed state moves to K; each `li` whose `data-categories` holds K gets
   `details.open = true` and its items in `ul[data-list=K]` get `data-match`; every other `li` gets
-  `data-dithered` and `details.open = false`; the status line reads "M of N roles have k." or,
+  `data-muted` and `details.open = false`; the status line reads "M of N roles have k." or,
   when M is 1, "1 of N roles has k." (k in lower case) (FR-010, FR-011, FR-013).
-- Choose All: remove every `data-dithered` and `data-match`, close every `details` (hand-opened
+- Choose All: remove every `data-muted` and `data-match`, close every `details` (hand-opened
   ones too), status "Showing all N roles." (FR-012).
 - Every change is applied to every step, ignoring earlier hand opening or closing (FR-012a).
   Pressing the already-pressed button does nothing (no status write).
 - Focus stays on the pressed button. If `document.activeElement` is inside a step's detail that
   the change closes, focus moves to that step's `<summary>` first (FR-013a, FR-013b). Never
   scrolls.
-- A dithered step stays openable; opening it does not clear `data-dithered`.
+- A muted step stays openable; opening it does not clear `data-muted`.
 - No animation at all. Any transition added later is `motion-safe:` only (FR-015).
 - Writes nothing to the address, storage or cookies.
 
 ## Styling contract
 
-- `li[data-dithered] summary`: dot pattern (CSS `radial-gradient` background) whose dots have at
-  least 3:1 contrast with the page background in each theme, summary text on a solid backing of
-  the page colour, role drops from bold to medium. `forced-colors`: dashed `CanvasText` border
-  instead of the pattern. `print`: no background image.
+- Disclosure marker (spec FR-007b): the marker renders on the same line as the first line of
+  `[data-step-role]`, at every width and in every state, JavaScript on or off; nothing in the
+  summary puts the role on a line below the marker. The marker is not text in the accessible
+  name. Organization and period may follow on later lines (except Variant B's muted one-liner).
+- `li[data-muted]` (spec FR-011, FR-011a; one of the two variants ships, never both, never a
+  runtime switch). No background image, no pattern, no `opacity`; all text at AA contrast
+  against the solid colour behind it, in both themes. `print`: no muting.
+  - **Variant A, "Muted + side rule"**: the muted step's row has a soft solid muted tint and a
+    faint dashed left timeline rule (at least 3:1 against the page background); text keeps its
+    normal colour. `li:not([data-muted])` while a category is chosen (a matching step) has a
+    solid accent left rule. `forced-colors`: the tint drops; the dashed rule stays in
+    `CanvasText`, the solid rule stays solid.
+  - **Variant B, "Compact one-line rows"**: the muted step's summary lays out marker, role,
+    organization and period on one line in a smaller text size and a muted text token that
+    still meets 4.5:1; no background. Matching steps stay full size. The line wraps rather than
+    clips or scrolls at 320 px and 200% text zoom. Opened, the step's detail shows at full size.
+    `forced-colors`: the size and layout change stays.
 - `summary:focus-visible` gets the same outline as `a:focus-visible` and `button:focus-visible`
-  in `global.css` (including the forced-colours rule); the dither and highlight never cover it.
+  in `global.css` (including the forced-colours rule); the muted treatment and highlight never cover it.
 - Summaries and filter buttons are at least 24 x 24 CSS px; the filter row wraps; links are
   underlined.
 - Item `ul[data-list] > li[data-match]`: rust left border, bold, light tint, in both themes.

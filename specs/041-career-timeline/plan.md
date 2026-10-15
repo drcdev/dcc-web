@@ -18,7 +18,10 @@ The About page gains a **Career** timeline directly after the "About me" list, w
 - The filter (All, Achievements, Leadership, Awards; only used categories shown) is a small custom
   element in the component's processed `<script>`, hidden in the HTML and revealed when it runs, the
   same pattern as `ProjectFilter.astro`. A chosen category opens and highlights matching steps and
-  collapses and dithers the rest with a CSS-only dot pattern behind solid-backed text.
+  collapses and mutes the rest with CSS only (no pattern), text at full AA contrast. Two muting
+  treatments (Variant A "Muted + side rule", Variant B "Compact one-line rows") go to Don as
+  separate commits for preview review; the chosen one replaces the other (spec FR-011a, R8).
+- The disclosure marker sits inline with the role title (spec FR-007b).
 - Launch content is exactly the six steps in spec FR-006a. No reflection text is written.
 
 ## Technical Context
@@ -37,7 +40,7 @@ The About page gains a **Career** timeline directly after the "About me" list, w
 
 **Performance Goals**: `/about/` stays inside the CI performance budget; the only new client code is one small inline module (filter only).
 
-**Constraints**: Readable and openable without JavaScript; WCAG 2.2 AA in both themes, idle and filtered; dither never lowers text contrast; one column at 320 px; print shows everything; no motion under reduced motion.
+**Constraints**: Readable and openable without JavaScript; WCAG 2.2 AA in both themes, idle and filtered; muting never lowers text below AA contrast; one column at 320 px; print shows everything; no motion under reduced motion.
 
 **Scale/Scope**: Six step files at launch; one collection, one schema, two pure modules, one reader, one section component, one About page edit.
 
@@ -49,14 +52,14 @@ The About page gains a **Career** timeline directly after the "About me" list, w
 |---|-----------|--------|------------------------|
 | I | Test-First | PASS | Tests are written and seen to fail before each piece. One primary layer per behaviour (`docs/testing.md` "Where a test goes"); see "Test placement" below. |
 | II | Automated Release Gate | PASS | `pnpm run verify` unchanged and not loosened. New tests and baselines are added; none are weakened or skipped. Two Astro runs are added to the build budget and recorded in `docs/testing.md`. |
-| III | Human Review of Every Change | PASS | One PR from `drc-agents`, auto-merge armed after the final push. `[PREVIEW-CHECK]` items for Don: the six steps' text against FR-006a, the labels and status wording, and the dither in both themes. |
+| III | Human Review of Every Change | PASS | One PR from `drc-agents`, auto-merge armed after the final push. `[PREVIEW-CHECK]` items for Don: the six steps' text against FR-006a, the labels and status wording, the inline disclosure marker, and the choice between the two muting treatments (each on its own commit preview) in both themes. |
 | IV | First-Party Before Custom | PASS | Every capability uses a first-party option (table below). The Astro Docs MCP was available and used; research.md cites each page. Custom code is only what no first-party feature does: file-naming cross-collection checks, the current-role rule, period formatting and the filter's state logic. |
 | V | Static by Default | PASS | The timeline is prerendered in `/about/`. No endpoint. Core content is server HTML inside native `<details>`, readable and openable with JS off (FR-007, FR-014). The only script is the filter, an isolated custom element loaded as Astro's deferred module. |
 | VI | Content as Files | PASS | Career steps are YAML files under `src/content/career/`, validated by a collection schema. Bad content, a missing or draft post, or an unknown category fails the build naming the file (contracts/build-errors.md). Content is Don's only (FR-006): launch text is copied from FR-006a, nothing invented. |
 | VII | Private Data | PASS (n/a) | No input, no storage, no cookies. The filter state is not persisted. |
 | VIII | Cloudflare Best Practices | PASS (n/a) | No Worker, binding, D1, route or header change; `/about/` stays a static asset. |
 | IX | Cost Ceiling | PASS | **Expected new monthly cost: $0.** No new service, binding, storage or package. |
-| X | Accessible, Fast and Private | PASS | Native disclosure semantics; `aria-pressed` buttons and a polite status line for the filter; dither is pattern plus weight change, never colour alone, with text on a solid backing; forced-colours and print rules; axe on `/about/` idle and filtered; budget check on `/about/`; no third-party script. |
+| X | Accessible, Fast and Private | PASS | Native disclosure semantics; `aria-pressed` buttons and a polite status line for the filter; muting is never colour alone (Variant A: dashed against solid left rule; Variant B: smaller one-line row), text on a solid colour at AA contrast, no opacity; forced-colours and print rules; axe on `/about/` idle and filtered; budget check on `/about/`; no third-party script. |
 | XI | Spec Kit Workflow | PASS | Branch and directory from Spec Kit. Files shared with sibling worktrees are listed below with how conflicts are handled. |
 | — | Technology Constraints | PASS | Astro, strict TypeScript, Tailwind; one package manager; nothing new outside the list. |
 | — | Security Baseline | PASS | `public/_headers` unchanged. The page CSP comes from Astro's `security.csp` (astro.config.mjs), which hashes every processed script, so the new script needs no policy change ([security.csp](https://docs.astro.build/en/reference/configuration-reference/#securitycsp)). The script reads only `data-*` it owns and writes `textContent` only. Ruleset, Dependabot and abuse controls unchanged. |
@@ -72,7 +75,8 @@ The About page gains a **Career** timeline directly after the "About me" list, w
 | Post titles and addresses | Existing `getPostSummaries()` and `postHref()` | **Used** | One source for post titles and URLs. |
 | Open and close | HTML `<details>`/`<summary>` | **Used** | Works without JS, keyboard and screen-reader support built in; already used by the self-assessment (R6). Astro has no disclosure component. |
 | Filter interactivity | Astro processed `<script>` with a custom element and `data-*` props | **Used** | Astro's documented pattern for interactivity without a framework; bundled, deduplicated, inlined when small (R7). A `client:*` framework island was rejected: it would add a framework runtime for a few buttons. |
-| Dither pattern | Tailwind theme tokens with a CSS `radial-gradient` | **Used** | The theme is the design system; no image asset (R8). |
+| Muted step treatment | Tailwind theme tokens in plain CSS (borders, background colour, font size) | **Used** | The theme is the design system; no pattern, no image asset, no opacity (R8). |
+| Comparing two treatments | Cloudflare per-commit preview URLs | **Used** | Each variant is its own commit, so each gets its own preview; no runtime switch code (spec FR-011a). |
 | Page composition | MDX components passed to `<Content components>` (section registry) | **Used** | Same as `<Now />` and `<StartHere />` (R11). |
 | Print and reduced motion | CSS `print:` and `motion-safe:` variants (Tailwind) | **Used** | Same rules the self-assessment uses. |
 | Hosting | Cloudflare Workers static assets | **Used, unchanged** | Nothing runs at request time. |
@@ -94,11 +98,11 @@ written reason shown.
 | Markup: order, closed by default, labels only for present parts, FR-008 order, no empty headings, plain award without link, filter and status `hidden`, only used categories offered, no next-move label on the last step, nothing rendered with no steps | Component | `tests/component/sections/CareerTimeline.test.ts` (Container API, `timeline` prop) |
 | Schema wired and Astro names the file (sync, row T01); `checkCareer()` runs from `/about/` and names the file (build, row T09) | Build | `tests/build/career-timeline.test.ts` (2 runs; T10 and T11 reach the build through the same call site, so they are proven at the unit layer only) |
 | About page placement: `<CareerTimeline />` after the "About me" list, before "### Recognition"; Leadership line gone | Unit | `tests/unit/content/career-launch.test.ts`, reading `src/content/pages/about.mdx` through `tests/helpers/content.ts`. Reason it is not a build test: every fixture build drops the real career files (R12) and no `test:build:content` build keeps real posts, so a built `/about/` would show no timeline; the MDX order decides placement. |
-| Open/close by mouse, touch-size target and keyboard; filter journey; All resets hand-opened steps; dithered step still visible and openable; status text; focus stays on the button and moves to the summary when its step closes; no-JS; 320 px; print emulation; reduced motion; forced colours | E2E | `tests/e2e/career-timeline.spec.ts` on the fixture site `/about/` |
+| Open/close by mouse, touch-size target and keyboard; filter journey; All resets hand-opened steps; muted step still visible and openable, with its variant's non-colour cue (rule style or compact size); disclosure marker on the role title's line (FR-007b); status text; focus stays on the button and moves to the summary when its step closes; no-JS; 320 px; print emulation; reduced motion; forced colours | E2E | `tests/e2e/career-timeline.spec.ts` on the fixture site `/about/` |
 | Contrast and roles, idle | Accessibility | existing `a11y.spec.ts` entry for `/about/` (no change) |
-| Contrast and roles with each offered category chosen, and with a dithered step opened by hand, light and dark (SC-004) | Accessibility (second layer) | `tests/e2e/career-timeline.a11y.spec.ts`. Reason: the filtered markup and dither exist only after a press, as with the questions panel states. |
+| Contrast and roles with each offered category chosen, and with a muted step opened by hand, light and dark (SC-004) | Accessibility (second layer) | `tests/e2e/career-timeline.a11y.spec.ts`. Reason: the filtered markup and muting exist only after a press, as with the questions panel states. |
 | Budget | Budget | existing `/about/` entry (no change) |
-| Template pixels incl. dither | Visual | `visual.spec.ts`: one element shot of the fixture timeline with a category chosen and one step dithered, phone and desktop, light and dark |
+| Template pixels incl. the muted treatment and inline marker | Visual | `visual.spec.ts`: one element shot of the fixture timeline with a category chosen and one step muted, phone and desktop, light and dark |
 
 Fixtures: `tests/fixtures/career/` holds valid fixture steps (neutral roles, naming fixture posts
 `every-part` and `text-only`, all three categories, one award without a link, one step with every
@@ -165,9 +169,14 @@ component in the section registry.
   component, then the filter script, then the About page edit and launch files.
 - **Headings**: "Career" is an `h3` inside "About me", matching "Recognition"; list headings are
   `h4`. Steps are list items, not headings (R10).
-- **Dither** is a dot pattern on the summary row with the text on a solid backing; role weight
-  drops too, so the state is not colour alone. Forced colours get a dashed border; print gets none
-  (R8).
+- **Muted steps** (R8, spec FR-011, FR-011a): the dot-pattern dither was dropped after Don's
+  2026-10-15 preview review. Two CSS-only candidates are built in turn, each its own commit:
+  Variant A gives a muted row a soft solid tint and a faint dashed left rule, and a matching step
+  a solid accent left rule; Variant B shrinks a muted step to one smaller, muted-colour line with
+  no background. Both keep text at AA contrast and carry a non-colour cue that survives forced
+  colours; print shows neither. The step state attribute is renamed `data-dithered` →
+  `data-muted`. After Don's pick, the other variant is reverted and baselines refreshed.
+- **Disclosure marker** sits inline with the role title, on its first line (spec FR-007b).
 - **Matching items** show their role and organization through the opened step's summary line
   directly above them (R9); spec FR-010 settles this, so nothing is repeated per item.
 - **Current role** is the step with the latest start; it must end `present` and has no next move
@@ -185,8 +194,10 @@ component in the section registry.
   fail it, and **no existing baseline should change**. The shell shots are taken on `/`, not
   `/about/`.
 - **New baselines**: `career-timeline-{phone,desktop}-{light,dark}` on the fixture site `/about/`
-  (fixture steps, one category chosen so both an open highlighted step and a dithered step are in
-  frame), darwin and linux: 8 PNGs. macOS via `pnpm run test:visual:update`; Linux via
+  (fixture steps, one category chosen so both an open highlighted step and a muted step are in
+  frame), darwin and linux: 8 PNGs. In the 2026-10-15 review round each variant commit carries
+  refreshed macOS baselines only; the Linux PNGs are refreshed once, after Don's pick (tasks
+  Phase 7). macOS via `pnpm run test:visual:update`; Linux via
   `pnpm run test:visual:update:linux`, which needs Docker Desktop (ask Don to start it if
   `docker info` fails). Follow `.claude/skills/_shared/visual-baselines.md`; any other image that
   moves is a regression to fix.

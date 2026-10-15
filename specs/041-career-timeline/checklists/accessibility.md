@@ -1,6 +1,6 @@
 # Accessibility Checklist: Interactive career timeline
 
-**Purpose**: Validate that the accessibility requirements (WCAG 2.2 AA) for the timeline, filter, disclosure, dither, focus, motion and no-JS behaviour are complete, clear and measurable
+**Purpose**: Validate that the accessibility requirements (WCAG 2.2 AA) for the timeline, filter, disclosure, muted (non-matching) steps, focus, motion and no-JS behaviour are complete, clear and measurable
 **Created**: 2026-10-14
 **Feature**: [spec.md](../spec.md)
 
@@ -30,16 +30,16 @@
 - [x] CHK017 Is the visual and non-visual indication of the highlight required not to rely on colour alone? [Coverage, Spec §FR-010, §FR-011]
 - [x] CHK018 Is the requirement that each highlighted item shows its role and organization defined for assistive technology, not only sighted users? [Completeness, Spec §FR-010]
 
-## Dither and contrast
+## Muted steps and contrast
 
-- [x] CHK019 Is the dither's effect on text contrast quantified with the WCAG 2.2 AA thresholds that apply (4.5:1 body text, 3:1 large text and UI components)? [Measurability, Spec §FR-011]
-- [x] CHK020 Is the contrast requirement stated for every state: closed, open, hover, focus, filtered and idle? [Coverage, Spec §FR-011]
+- [x] CHK019 Is the muted treatment's effect on text contrast quantified with the WCAG 2.2 AA thresholds that apply (4.5:1 body text, 3:1 large text and UI components)? [Measurability, Spec §FR-011]
+- [x] CHK020 Is the contrast requirement stated for every state: closed, open, hover, focus, filtered, muted and idle? [Coverage, Spec §FR-011]
 - [x] CHK021 Is contrast required in both the light and dark themes, and in forced-colours mode? [Gap, Spec §FR-011]
-- [x] CHK022 Is the contrast measurement basis defined for a patterned background (worst-case point, solid backing, or averaged)? [Ambiguity, Spec §FR-011]
-- [x] CHK023 Is "must not rely on colour alone" translated into a specific non-colour cue for a dithered step (pattern, weight, label), and is the cue itself required to be perceivable? [Clarity, Spec §FR-011]
-- [x] CHK024 Are non-text contrast requirements (3:1) defined for the dither pattern, the summary affordance and the filter buttons? [Gap]
-- [x] CHK025 Is it specified that a dithered step is not exposed to assistive technology as disabled or hidden? [Clarity, Spec §FR-011, §US3-5]
-- [x] CHK026 Is behaviour specified for text zoom to 200% and 400% reflow with the dither present? [Gap, Spec §FR-017]
+- [x] CHK022 Is the contrast measurement basis defined for a muted step (the solid colour actually behind the text, with patterns, background images and opacity ruled out)? [Ambiguity, Spec §FR-011]
+- [x] CHK023 Is "must not rely on colour alone" translated into a specific non-colour cue for a muted step under each candidate treatment (rule style, size or layout), and is the cue itself required to be perceivable, including in forced-colours mode? [Clarity, Spec §FR-011]
+- [x] CHK024 Are non-text contrast requirements (3:1) defined for the muted-step cue (rule or edge), the summary affordance and the filter buttons? [Gap]
+- [x] CHK025 Is it specified that a muted step is not exposed to assistive technology as disabled or hidden? [Clarity, Spec §FR-011, §US3-5]
+- [x] CHK026 Is behaviour specified for text zoom to 200% and 400% reflow with muted steps present (including a compact one-line muted row)? [Gap, Spec §FR-017]
 
 ## Focus
 
@@ -47,14 +47,14 @@
 - [x] CHK028 Is focus behaviour specified when a filter change collapses the step that holds focus? [Edge Case, Gap, Spec §FR-010, §FR-011]
 - [x] CHK029 Is focus retention required on the filter button after a choice, so a keyboard user is not moved by the page reflow? [Gap, Spec §FR-010]
 - [x] CHK030 Is the minimum target size for summaries and filter buttons specified (WCAG 2.5.8, 24 CSS px) for the 320 px layout? [Gap, Spec §FR-017]
-- [x] CHK031 Is it specified that the dither or highlight must not obscure the focus indicator? [Gap]
+- [x] CHK031 Is it specified that the muted treatment or highlight must not obscure the focus indicator? [Gap]
 
 ## Motion, zoom and print
 
-- [x] CHK032 Is "does not animate" defined to cover every transition (opening, closing, dither change, highlight, scroll) under reduced motion? [Clarity, Spec §FR-015]
+- [x] CHK032 Is "does not animate" defined to cover every transition (opening, closing, muting change, highlight, scroll) under reduced motion? [Clarity, Spec §FR-015]
 - [x] CHK033 Is the default (no reduced-motion preference) motion behaviour specified, or is "no motion at all" the intended requirement? [Ambiguity, Spec §FR-015]
 - [x] CHK034 Is reflow at 320 CSS px defined with the filter row, long organization names and the longest award title included? [Coverage, Spec §FR-017]
-- [x] CHK035 Are print requirements for accessibility of printed output (undithered, text contrast, link visibility) defined, not only "open"? [Completeness, Spec §FR-018]
+- [x] CHK035 Are print requirements for accessibility of printed output (not muted, text contrast, link visibility) defined, not only "open"? [Completeness, Spec §FR-018]
 - [x] CHK036 Is the print state defined for a page where a filter was chosen before printing, and for how the filter control itself prints? [Edge Case, Spec §FR-018]
 
 ## No-JavaScript and measurability
@@ -64,3 +64,8 @@
 - [x] CHK039 Are the page states that must be checked for accessibility enumerated (no filter, each of three categories, a step opened by hand while filtered, both themes)? [Coverage, Spec §SC-004]
 - [x] CHK040 Is the requirement for the page's skip-to-content, landmark and heading order unchanged by the new section stated, or is its absence intentional? [Gap]
 - [x] CHK041 Are the language and reading-level requirements (plain language) for the filter labels and status messages measurable? [Measurability, Spec §FR-020]
+
+## Review round 2026-10-15
+
+- [x] CHK042 Is the position of the disclosure marker relative to the role title specified (same line, every width and state, JavaScript on or off) with its contrast, target size and accessible-name rules? [Clarity, Spec §FR-007b, §FR-017]
+- [x] CHK043 Is each candidate muting treatment specified with its own non-colour cue and contrast basis, so either one can be checked against the same AA rules? [Consistency, Spec §FR-011, §FR-011a]

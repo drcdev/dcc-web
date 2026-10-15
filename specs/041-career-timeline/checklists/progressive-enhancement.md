@@ -12,7 +12,7 @@
 - [x] CHK002 Is it specified how the filter is absent without JS, and what a visitor sees where the filter would be (nothing, no dead control, no layout gap)? [Clarity, Spec §FR-014]
 - [x] CHK003 Is the failure case "script fails to load or errors after the page renders" covered, so the page stays usable? [Edge Case, Gap, Spec §FR-014]
 - [x] CHK004 Is the moment the filter becomes visible specified, to prevent a flash or layout shift when it is revealed? [Gap, Spec §FR-017, §SC-005]
-- [x] CHK005 Is it specified that the server-rendered state of every step is closed and undithered, consistent with FR-007 and FR-012? [Consistency, Spec §FR-007, §FR-012]
+- [x] CHK005 Is it specified that the server-rendered state of every step is closed and not muted, consistent with FR-007 and FR-012? [Consistency, Spec §FR-007, §FR-012]
 
 ## Filter state model
 
@@ -25,7 +25,7 @@
 - [x] CHK012 Is it specified that the filter state is neither persisted, nor in the address, nor restored by back or forward navigation or a reload? [Clarity, Spec §Assumptions]
 - [x] CHK013 Is the case "category chosen, zero steps match" excluded by FR-009, and is the behaviour if it happened anyway defined? [Edge Case, Spec §FR-009, §US3-7]
 - [x] CHK014 Is a step whose only matching item is an award (Awards category) defined consistently with items in the Achievements and Leadership lists? [Consistency, Spec §FR-008, §FR-010]
-- [x] CHK015 Is "highlight" defined as a distinct, measurable state for items, with its relation to the dither on other steps? [Clarity, Spec §FR-010]
+- [x] CHK015 Is "highlight" defined as a distinct, measurable state for items, with its relation to the muting of other steps? [Clarity, Spec §FR-010]
 
 ## Page-level consistency
 
@@ -39,6 +39,10 @@
 - [x] CHK020 Is the performance requirement for the new script quantified against the named CI budget (script size, layout shift, interaction latency), not just "stays within"? [Measurability, Spec §FR-017, §SC-005]
 - [x] CHK021 Is Core Web Vitals "good" tied to concrete thresholds and the filter's effect on layout shift and interaction responsiveness? [Clarity, Spec §SC-005]
 - [x] CHK022 Is it stated that the feature adds no third-party script, cookie, storage or network request? [Completeness, Spec §Assumptions, constitution X]
-- [x] CHK023 Are the content-security-policy implications of the new script and the dither styles stated as requirements or assumptions? [Assumption, Gap]
+- [x] CHK023 Are the content-security-policy implications of the new script and the muted-step styles stated as requirements or assumptions? [Assumption, Gap]
 - [x] CHK024 Is the treatment of the content shown by the filter (text from content files only, never injected as markup) specified as a requirement? [Gap]
 - [x] CHK025 Are the visual regression expectations (which states and themes are baselines) stated as requirements rather than left to the plan? [Gap, Spec §SC-003]
+
+## Review round 2026-10-15
+
+- [x] CHK026 Is it specified that exactly one muting treatment ships, that the candidates are compared without runtime switch code, and what happens to the unpicked one? [Completeness, Spec §FR-011a]

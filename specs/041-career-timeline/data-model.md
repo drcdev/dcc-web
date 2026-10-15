@@ -59,8 +59,8 @@ The component accepts a `timeline` prop that replaces the lookup (component test
 
 | State | Steps | Items | Status line |
 |---|---|---|---|
-| All (default) | Every step closed (on choosing All, including hand-opened ones) or as the visitor left them (on load); none dithered | none marked | Empty on load (nothing announced); "Showing all N roles." after a return to All |
-| Category K | Matching steps open, others closed and `data-dithered` | matching items `data-match` | "M of N roles have k." or, when M is 1, "1 of N roles has k." (k = category in lower case) |
+| All (default) | Every step closed (on choosing All, including hand-opened ones) or as the visitor left them (on load); none muted | none marked | Empty on load (nothing announced); "Showing all N roles." after a return to All |
+| Category K | Matching steps open, others closed and `data-muted` | matching items `data-match` | "M of N roles have k." or, when M is 1, "1 of N roles has k." (k = category in lower case) |
 
 Not stored in the address, cookie or storage; a reload starts from All. The visitor may open or
 close any step at any time; that does not change the filter. Every filter change is applied fresh

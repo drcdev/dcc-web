@@ -45,7 +45,8 @@ island. Public content lives in the repository as files validated by a schema (P
   are optional, and a part left out is simply not shown.
 - Q: How do non-matching steps look when a category is chosen? → A: A dot (halftone) pattern
   over the collapsed step's background, made with CSS only; the text stays at full contrast and
-  the treatment does not rely on colour alone.
+  the treatment does not rely on colour alone. (Superseded in session 2026-10-15: the dot
+  pattern is dropped.)
 - Q: Which roles appear as steps? → A: Six: the four Island Health roles on the CV, the CCHL
   Vancouver Island Chapter board role (volunteer), and the current Director role. Education and
   pre-2014 work are not steps.
@@ -66,6 +67,28 @@ island. Public content lives in the repository as files validated by a schema (P
   A: Yes, as labelled lists: scope and any reflection parts, then an "Achievements" list and a
   "Leadership" list (each only when the step has items), then writing and awards. A chosen
   category highlights its matching items inside these lists.
+
+### Session 2026-10-15
+
+Don reviewed the preview of PR #180.
+
+- Q: Does the dot-pattern ("dither") treatment of non-matching steps stay? → A: No. It looks
+  awkward on the page and is dropped. Non-matching steps are still collapsed and visibly
+  de-emphasised, readable at full WCAG AA contrast and not marked by colour alone (FR-011).
+- Q: Where does the expand/collapse marker sit? → A: Inline with the role title, on the same
+  line, never on a line of its own above it (FR-007b).
+- Q: Which treatment replaces the dot pattern? → A: Two candidates are built and compared on the
+  preview, each pushed as its own commit so Cloudflare gives each its own commit preview URL (no
+  runtime switch in the code). Don picks one; the chosen one replaces the other, which is
+  reverted (FR-011a).
+  - **Variant A, "Muted + side rule"**: a non-matching step collapses; its row gets a soft muted
+    background tint and a faint dashed left timeline rule; its text stays at full contrast. A
+    matching step gets a solid accent left rule. The non-colour cue is the rule's style (dashed
+    against solid).
+  - **Variant B, "Compact one-line rows"**: a non-matching step collapses to a single line
+    (marker, role, organization, period) in a smaller size, in a muted colour that still meets
+    AA contrast, with no background treatment; matching steps stay full size. The non-colour cue
+    is the size and layout change.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -135,32 +158,32 @@ destination.
 
 A visitor uses a filter on the timeline to pick one kind of item, such as achievements,
 leadership themes or awards. Items of that kind stay in place, open, and each shows the role
-and context it belongs to. Every other step is collapsed and dithered (a dot pattern over its
-background, with its text still at full contrast) but stays visible in its place, so the visitor still sees where the matching
-items sit in the whole career.
+and context it belongs to. Every other step is collapsed and muted (visibly de-emphasised, with
+its text still at full contrast) but stays visible in its place, so the visitor still sees where
+the matching items sit in the whole career.
 
 **Why this priority**: It adds a second way to read the career, but depends on the timeline
 (Story 1) and its tagged content existing first.
 
 **Independent Test**: Choose one filter value and confirm the matching items are shown with
-their role, the other steps are collapsed and dithered but still on screen, and clearing the
+their role, the other steps are collapsed and muted but still on screen, and clearing the
 filter restores the timeline.
 
 **Acceptance Scenarios**:
 
 1. **Given** the timeline with no filter chosen, **When** it loads, **Then** "All" is selected
-   and every step is shown normally (none dithered).
+   and every step is shown normally (none muted).
 2. **Given** the filter, **When** the visitor chooses a category, **Then** each step holding at
    least one item of that category is opened with those items highlighted, and each highlighted
    item shows the role and organization of its step.
 3. **Given** a category is chosen, **When** a step holds no item of that category, **Then** the
-   step is collapsed to its summary line and dithered, stays in its place in the timeline, and
+   step is collapsed to its summary line and muted, stays in its place in the timeline, and
    can still be opened by the visitor.
 4. **Given** a category is chosen, **When** the visitor chooses "All", **Then** no step is
-   dithered and every step is closed, including any step the visitor opened by hand (FR-012).
+   muted and every step is closed, including any step the visitor opened by hand (FR-012).
 5. **Given** a category is chosen, **When** a screen reader user reaches the filter, **Then** the
-   number of matching steps is announced, and dithered steps are still readable (the dithering
-   is visual only and the text still meets contrast requirements when opened).
+   number of matching steps is announced, and muted steps are still readable (the muting is
+   visual only and the text meets contrast requirements whether the step is closed or opened).
 6. **Given** JavaScript is turned off, **When** the visitor views the page, **Then** the filter
    is not shown and the full timeline is readable.
 7. **Given** a category that no item uses, **When** the filter is built, **Then** that category
@@ -193,15 +216,18 @@ filter restores the timeline.
   current-role rules, every listed post published), never the launch count or which parts are
   filled, so adding a step or a reflection part needs no test change (FR-005b).
 - The visitor opens a step, then chooses a filter that does not match it: the step collapses
-  and is dithered like any other non-matching step.
+  and is muted like any other non-matching step.
 - Filter changes and focus: see FR-013b.
-- Printing the page: every step prints open and undithered, whatever the filter state (FR-018).
+- Printing the page: every step prints open and not muted, whatever the filter state (FR-018).
 - Reduced motion: opening, closing and filtering never animate (FR-015), so nothing moves when
   the visitor's system asks for reduced motion.
 - Narrow screens: the timeline reads as a single column at 320 CSS pixels wide with no
   horizontal scrolling (FR-017).
-- Theme change while a category is chosen: the filter state is kept; the dither and highlight
-  use the colours of the new theme.
+- Theme change while a category is chosen: the filter state is kept; the muted treatment and
+  highlight use the colours of the new theme.
+- A long role or organization in a step with the marker inline (FR-007b): the title wraps
+  beside the marker; the marker stays on the title's first line. Under Variant B a muted step's
+  single line may wrap at narrow widths rather than scroll sideways or be cut off (FR-017).
 - More steps in future: steps, the status count and the used categories all come from the
   content files, so adding a step needs no new requirement and no code change. The categories
   stay fixed at three.
@@ -326,7 +352,7 @@ filter restores the timeline.
 
 **Opening and closing**
 
-- **FR-007**: Every step MUST start closed and undithered in the page as served, showing only
+- **FR-007**: Every step MUST start closed and not muted in the page as served, showing only
   its summary line, and MUST be openable and closable by mouse, touch and keyboard (Tab to the
   summary line, Enter or Space to toggle). It MUST use the browser's native disclosure, so its
   expanded or collapsed state is exposed to assistive technology without script. This MUST work
@@ -334,6 +360,11 @@ filter restores the timeline.
 - **FR-007a**: The summary line is the step's control. Its accessible name is the role title, the
   organization and the period, in that order. Steps are items of one ordered list, so a screen
   reader hears the number of steps and each step's position.
+- **FR-007b**: The disclosure (expand/collapse) marker MUST sit inline with the role title, on
+  the same line as the title's first line, at every width, in every state (idle, matching,
+  muted, open, closed) and with JavaScript off. It MUST NOT sit on a line of its own above the
+  title. It keeps the 3:1 contrast and target-size rules of FR-017 and is not part of the
+  summary's accessible name (FR-007a).
 - **FR-008**: An opened step MUST show, in this order: each detail part under its own visible
   label; an "Achievements" list and a "Leadership" list of its categorized items; then its
   related writing and awards, each as a link (an award without a link shows as plain text).
@@ -378,27 +409,46 @@ filter restores the timeline.
   - The role and organization of a highlighted item are the summary line of the opened step that
     holds it, directly above the lists; a screen reader reaches the item inside that step's
     disclosure, whose name carries the role and organization (FR-007a).
-  - Dithered steps hold no matching items by definition, so a step is never both dithered and
+  - Muted steps hold no matching items by definition, so a step is never both muted and
     highlighted.
 - **FR-011**: Choosing a category MUST collapse every step that holds no matching item to its
-  summary line and dither it, while keeping it visible in its place in the timeline. Dithering
-  is a dot (halftone) pattern over the step's summary row, made with CSS only.
-  - The text sits on a solid backing of the page colour, so no dot is ever behind a glyph and
-    text contrast is measured against that solid colour. Text MUST meet WCAG 2.2 AA (4.5:1, or
-    3:1 for large text) in every state (idle, filtered, dithered, closed, open, hover, focus), in
-    the light and dark themes, and in forced-colours mode.
-  - The dither MUST NOT rely on colour alone: the pattern itself is the cue, its dots have at
-    least 3:1 contrast against the page background, and the role title drops from bold to
-    medium weight. In forced-colours mode a dashed border replaces the pattern.
-  - A dithered step is not disabled or hidden: assistive technology reads it like any other
-    step, and it can still be opened. Opening it does not remove the dither; the next filter
-    change decides its state.
-- **FR-012**: Choosing "All" MUST remove all dithering and highlights and close every step,
+  summary line and **mute** it: visibly de-emphasise it while keeping it visible in its place in
+  the timeline and readable at full WCAG AA contrast. Muting is made with CSS only and uses no
+  dot, halftone or other pattern (Clarifications, session 2026-10-15).
+  - Text MUST meet WCAG 2.2 AA (4.5:1, or 3:1 for large text) in every state (idle, filtered,
+    muted, closed, open, hover, focus), in the light and dark themes, and in forced-colours
+    mode, measured against the solid colour actually behind it (the page colour, or the muted
+    row's solid tint under Variant A). Muting never uses `opacity` or a background image behind
+    text.
+  - Muting MUST NOT rely on colour alone. Each candidate treatment carries its own non-colour
+    cue, and that cue survives forced-colours mode:
+    - Variant A: the step's left timeline rule turns from solid (as on a matching step) to
+      dashed; in forced colours the dashed rule stays, in `CanvasText`.
+    - Variant B: the step's summary collapses to one line in a smaller text size; the size and
+      layout change stays in forced colours.
+  - Any rule, edge or tint boundary that carries the cue has at least 3:1 contrast against the
+    page background (WCAG 1.4.11).
+  - A muted step is not disabled or hidden: assistive technology reads it like any other step,
+    and it can still be opened. Opening it does not remove the muting; the next filter change
+    decides its state. Opened, its content shows at full size and full contrast.
+- **FR-011a**: Exactly one muting treatment ships. Two candidates are under review (Variant A,
+  "Muted + side rule", and Variant B, "Compact one-line rows", as defined in Clarifications,
+  session 2026-10-15). Each is pushed as its own commit for review on Cloudflare's per-commit
+  preview URL; the code carries no runtime switch between them. Don picks one on the preview;
+  the chosen one replaces the other, the other's code and baselines are reverted, and this
+  requirement is then reworded to name only the chosen treatment.
+  - Variant A: a muted step's row has a soft muted background tint and a faint dashed left
+    timeline rule; its text stays at full contrast. A matching step has a solid accent left
+    rule.
+  - Variant B: a muted step is a single line (marker, role, organization, period) in a smaller
+    text size and a muted colour that still meets AA contrast, with no background treatment. A
+    matching step stays full size.
+- **FR-012**: Choosing "All" MUST remove all muting and highlights and close every step,
   including steps the visitor opened or closed by hand. This is deliberate: "All" is the reset
   to the timeline as first served (FR-007).
 - **FR-012a**: Every filter change is applied fresh to every step, whatever the visitor did by
   hand before it: on choosing a category, matching steps open and all others close and are
-  dithered. Between filter changes the visitor may open or close any step freely; a matching
+  muted. Between filter changes the visitor may open or close any step freely; a matching
   step closed by hand stays closed until the next filter change. Choosing the choice that is
   already selected changes nothing and announces nothing.
 - **FR-013**: After every filter change, including a return to "All", the number of matching
@@ -415,7 +465,7 @@ filter restores the timeline.
 - **FR-013b**: If keyboard focus is inside a step's opened content when a filter change closes
   that step, focus moves to that step's summary line, so it is never left on hidden content.
 - **FR-014**: Without JavaScript, the timeline MUST be complete and usable on its own: every
-  step is listed in order, closed and undithered, and can be opened and read in full with its
+  step is listed in order, closed and not muted, and can be opened and read in full with its
   native disclosure (FR-007, FR-008). The filter and the status line MUST NOT be shown, MUST NOT
   be exposed to assistive technology, and MUST leave no gap and no dead control. The filter is
   revealed only by its own script, after that script is ready to work, so if the script fails
@@ -440,10 +490,11 @@ filter restores the timeline.
   MUST read as one column at every width.
   - At 320 CSS pixels (and at 400% zoom of a 1280 pixel window) nothing scrolls sideways: the
     filter buttons wrap onto more lines, and long organization names, award names and post
-    titles wrap. At 200% text zoom no text is clipped or overlapped, dither included.
+    titles wrap. At 200% text zoom no text is clipped or overlapped, muted steps included (under
+    Variant B a muted step's one line wraps rather than clips).
   - Summary lines and filter buttons are at least 24 by 24 CSS pixels (WCAG 2.5.8).
   - Summary lines, filter buttons and links show the site's visible focus ring, with at least
-    3:1 contrast, never hidden by the dither, the highlight or other content (WCAG 2.4.7 and
+    3:1 contrast, never hidden by the muted treatment, the highlight or other content (WCAG 2.4.7 and
     2.4.11; the AAA rule 2.4.13 is not required). The disclosure marker and the filter buttons'
     edges have at least 3:1 contrast against the background.
   - Performance budget, measured on `/about/` by the CI budget check on a throttled phone:
@@ -455,7 +506,8 @@ filter restores the timeline.
   page. Its one script is processed by Astro and covered by the site's existing content
   security policy; its styles set no inline `style` attributes, so the policy needs no change.
 - **FR-018**: When printed, the page MUST show the plain timeline whatever the filter state:
-  every step open, no dither, no highlight, and no filter or status line. Printed text keeps its
+  every step open, no muting (no tint, dashed rule or compact row), no highlight, and no filter
+  or status line. Printed text keeps its
   normal contrast and links stay underlined.
 - **FR-019**: Don's job title MUST appear only on the About page; this feature MUST NOT add it
   anywhere else on the site. The career step files count as part of the About page for this
@@ -468,8 +520,9 @@ filter restores the timeline.
   "Achievements", "Leadership", "Writing", "Awards"; the status messages in FR-013; and the
   period word "present". Any other wording needs a spec change.
 - **FR-021**: The visual checks MUST cover the timeline with a category chosen, so one opened
-  step with highlighted items and one dithered step are both shown, at phone and desktop widths,
-  in the light and dark themes.
+  step with highlighted items and one muted step are both shown, at phone and desktop widths,
+  in the light and dark themes. The baselines show the treatment in the commit under review
+  (Variant A or B), and after Don's pick only the chosen one (FR-011a).
 
 ### Key Entities
 
@@ -496,11 +549,11 @@ filter restores the timeline.
 - **SC-002**: 100% of steps are readable, with every detail part they have, with JavaScript
   turned off.
 - **SC-003**: Choosing a category leaves 100% of steps on screen, with every non-matching step
-  dithered and every matching item showing its role and organization.
+  muted and every matching item showing its role and organization.
 - **SC-004**: The About page passes the automated accessibility checks (axe with the WCAG 2.0,
   2.1 and 2.2 A and AA rule tags the site already uses) with no violations, in the light and dark
   themes, in each of these states: no filter chosen; each offered category chosen; and a category
-  chosen with a dithered step opened by hand. These states are checked with JavaScript on; with
+  chosen with a muted step opened by hand. These states are checked with JavaScript on; with
   JavaScript off the page is the idle state without the filter.
 - **SC-005**: The About page stays within the site's performance budget and meets Core Web
   Vitals "good" thresholds on mobile.
@@ -509,11 +562,13 @@ filter restores the timeline.
 
 ## Assumptions
 
-- "Dithered" means a CSS-only dot (halftone) pattern over a non-matching step's background
-  (FR-011); the exact dot size and colour are a design decision for the plan, within the site's
-  design system and contrast rules. The site's design system has no dither treatment yet.
+- "Muted" means a non-matching step collapsed and visibly de-emphasised with CSS only, by one
+  of the two candidate treatments (FR-011, FR-011a); exact tints, rule widths and sizes are a
+  design decision for the plan, within the site's design system and contrast rules. The issue's
+  word "dithered" is read as this de-emphasis; the earlier dot-pattern reading was dropped on
+  2026-10-15 (Clarifications).
 - "Filtered items are collapsed and dithered" refers to the steps that do not match the chosen
-  category; matching items are the ones surfaced.
+  category (muted, in this spec's terms); matching items are the ones surfaced.
 - Only one category can be chosen at a time (FR-009a). Multi-select is out of scope.
 - The filter choice is not kept in the address or between visits (FR-014b).
 - The timeline adds no page, so the sitemap is unchanged (`/about/` is already in it), no feed

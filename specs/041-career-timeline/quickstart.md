@@ -32,9 +32,9 @@ pnpm run test:e2e -- tests/e2e/career-timeline.spec.ts
 ```
 
 Covers: open and close by mouse and keyboard; choose a category (matching steps open and marked,
-others closed and dithered, still on screen and openable, status line count); choose All (all closed,
-none dithered); JavaScript off (no filter, every step opens); 320 px with no horizontal scroll;
-print emulation (all open, no pattern); reduced motion; forced colours.
+others closed and muted, still on screen and openable, status line count); choose All (all closed,
+none muted); JavaScript off (no filter, every step opens); 320 px with no horizontal scroll;
+print emulation (all open, no muting); reduced motion; forced colours.
 
 ## 4. Accessibility, budget, visual
 
@@ -54,5 +54,5 @@ New baselines: `career-timeline-{phone,desktop}-{light,dark}` for darwin and lin
   unchanged.
 - The six steps and their text match spec FR-006a word for word.
 - Labels read well ("Scope", "Key decision", the list headings, the filter label and status line).
-- The dither looks deliberate in light and dark mode.
+- The muted treatment under review (Variant A or B, each on its own commit preview) looks deliberate in light and dark mode, and the disclosure marker sits on the role title's line.
 - The current job title appears nowhere outside `/about/`.
