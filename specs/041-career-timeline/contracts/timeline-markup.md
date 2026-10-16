@@ -29,7 +29,7 @@ The rendered HTML the tests and the client script rely on. Classes are free; the
               <dt>Scope</dt><dd>…</dd>
               <!-- then, only when present, in this order:
                    Key decision · What changed in how I worked · What I wish I'd known ·
-                   The skill that led to the next move (never on the last step) -->
+                   The skill that led to the next move (never on the first step, the current role) -->
             </dl>
             <h4>Achievements</h4><ul data-list="achievements"><li>…</li></ul>
             <h4>Leadership</h4><ul data-list="leadership"><li>…</li></ul>
@@ -45,7 +45,7 @@ The rendered HTML the tests and the client script rely on. Classes are free; the
 
 Rules:
 
-- Steps in start order; the last is the current role (FR-001). Every `<details>` starts closed
+- Steps newest first (start descending); the first is the current role (FR-001). The `<ol>` has no `reversed` attribute. Every `<details>` starts closed
   (FR-007). A period still running ends with the word `present`, not a `<time>`.
 - A part, list or heading with no content is not rendered (FR-003, FR-008, US2 scenario 3).
 - An award without `href` is plain text (FR-008).

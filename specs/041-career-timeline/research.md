@@ -65,7 +65,7 @@ was used for every Astro choice below; each decision names the page it rests on.
 - **Decision**: The current role is the step with the latest start. It must have `end: present`
   and must not have `nextMove` (FR-003, edge case). Other steps may end `present` (the CCHL board
   role does).
-- **Rationale**: The spec defines the timeline as ending with the current role (FR-001) and orders
+- **Rationale**: The spec defines the timeline as beginning with the current role (FR-001, newest first) and orders
   by start date. A separate `current: true` flag would be a second source of truth that can
   disagree with the order.
 - **Open point for Don**: when Don leaves the CCHL board, he changes its `end`; nothing else moves.

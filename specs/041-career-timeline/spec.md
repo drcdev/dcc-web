@@ -7,8 +7,9 @@
 **Status**: Draft
 
 **Input**: User description (GitHub issue #163, "Interactive career timeline"): "The About page
-shows Don's career as a timeline from his early roles to Director, Data Infrastructure and
-Architecture. Each step can be opened to show its scope, a key decision from that time, what
+shows Don's career as a timeline from Director, Data Infrastructure and
+Architecture back to his early roles (newest first; see Clarifications, session 2026-10-15,
+reverse order). Each step can be opened to show its scope, a key decision from that time, what
 changed in how he worked, what he wishes he had known, and the skill that led to the next move.
 Where there is writing or an award from that period, the step links to it. A filter can be used
 to surface achievements, leadership themes, awards, etc. and their associated role/context.
@@ -78,6 +79,14 @@ Don reviewed the preview of PR #180.
 - Q: Which muted treatment did Don pick after comparing the previews? → A: "Muted + side rule"
   (muted tint, dashed left rule, solid accent rule on matches), picked on 2026-10-15. The
   alternative was rejected and its commit reverted (research R8).
+- Q: In which order does the timeline list the steps? → A: Reverse chronological, newest first
+  (Don, 2026-10-15). The current role (Director, Data Infrastructure and Architecture, Jun
+  2026 – present) is the first step and the earliest role (Leader, Systems Engineer, 2014) is the
+  last. The current role is still the step with the latest start (FR-001a). Two steps with the
+  same start month are ordered by file name, descending, so the whole list is exactly the
+  reverse of the former earliest-first order and is deterministic. The list stays an ordered
+  list (`<ol>`) in the same order on screen and in the markup, with no `reversed` attribute (the
+  steps are not numbered).
 - Q: Where does the expand/collapse marker sit? → A: Inline with the role title, on the same
   line, never on a line of its own above it (FR-007b).
 - Q: Which treatment replaces the dot pattern? → A: Don compared two candidates on their own
@@ -90,8 +99,8 @@ Don reviewed the preview of PR #180.
 
 ### User Story 1 - Read the career as a timeline (Priority: P1)
 
-A visitor on the About page sees Don's career as an ordered timeline of steps, from his earliest
-listed role to his current role, Director, Data Infrastructure and Architecture. Each step
+A visitor on the About page sees Don's career as an ordered timeline of steps, from his current
+role, Director, Data Infrastructure and Architecture, back to his earliest listed role. Each step
 shows at a glance the role, the organization and the period. The visitor opens any step to
 read its detail: the scope of the role and, where Don has written them, a key decision from that
 time, what changed in how he worked, what he wishes he had known, and the skill that led to the
@@ -100,14 +109,14 @@ next move.
 **Why this priority**: This is the feature. Without it there is no timeline to filter or link
 from. On its own it already tells the story the issue asks for.
 
-**Independent Test**: Open the About page, confirm the steps appear in career order ending with
+**Independent Test**: Open the About page, confirm the steps appear newest first, starting with
 the current role, open one step and read its detail parts, then close it.
 
 **Acceptance Scenarios**:
 
 1. **Given** the About page, **When** it loads, **Then** the timeline lists every career step in
-   chronological order, earliest first, each showing its role, organization and period, and the
-   last step is Director, Data Infrastructure and Architecture at Island Health.
+   reverse chronological order, newest first, each showing its role, organization and period, and
+   the first step is Director, Data Infrastructure and Architecture at Island Health.
 2. **Given** a closed step, **When** the visitor opens it, **Then** it shows its scope and each
    other detail part the step has (key decision, what changed in how he worked, what he wishes
    he had known, the skill that led to the next move), each under its own label, followed by
@@ -115,7 +124,7 @@ the current role, open one step and read its detail parts, then close it.
    label.
 3. **Given** an open step, **When** the visitor closes it, **Then** only its summary line
    (role, organization, period) remains.
-4. **Given** the current role (the last step), **When** it is opened, **Then** the "skill that
+4. **Given** the current role (the first step), **When** it is opened, **Then** the "skill that
    led to the next move" part is never shown, because there is no next move yet.
 5. **Given** JavaScript is turned off, **When** the visitor opens the About page, **Then** every
    step can still be opened and read.
@@ -196,11 +205,11 @@ filter restores the timeline.
 - The current role has a "skill that led to the next move" part: the build fails, naming the
   step file.
 - Two steps that overlap in time (for example, a volunteer board role alongside a job): they
-  are ordered by start date, and each shows its own period. Two steps with the same start month
-  are ordered by file name.
+  are ordered by start date, newest first, and each shows its own period. Two steps with the same
+  start month are ordered by file name, descending.
 - A step whose period is still running: its period shows "present". Several steps may end
   "present" (the board role does); only the current role (FR-001a) must.
-- The last step by start date has an end month: the build fails, naming the step file (FR-001a).
+- The first step (the latest start) has an end month: the build fails, naming the step file (FR-001a).
 - An award or post that falls in no step's period: it is not forced onto the timeline; it stays
   where it is on the site.
 - A related post is later made a draft, renamed or deleted: the next build fails, naming the step
@@ -234,10 +243,11 @@ filter restores the timeline.
 **Timeline content**
 
 - **FR-001**: The About page MUST show a career timeline of steps ordered by start month,
-  earliest first, ending with Don's current role, Director, Data Infrastructure and
-  Architecture at Island Health. Steps with the same start month are ordered by file name.
-- **FR-001a**: The **current role** is the single step that comes last in the FR-001 order (the
-  latest start). It MUST end "present", and it MUST NOT have the "skill that led to the next
+  newest first, beginning with Don's current role, Director, Data Infrastructure and
+  Architecture at Island Health, and ending with the earliest role. Steps with the same start
+  month are ordered by file name, descending.
+- **FR-001a**: The **current role** is the single step that comes first in the FR-001 order (the
+  latest start; of two with the same latest start, the one whose file name sorts last). It MUST end "present", and it MUST NOT have the "skill that led to the next
   move" part. Every rule in this spec that names the current role means this step. Other steps
   MAY also end "present".
 - **FR-002**: Each step MUST have a role title, an organization and a period. A period is a
@@ -295,7 +305,7 @@ filter restores the timeline.
   invented. Its source is Don's CV and his clarify-round answers (Clarifications, session
   2026-10-14). The launch content is exactly the six steps in FR-006a; nothing else is added
   without Don.
-- **FR-006a**: The timeline MUST launch with these six steps, in this order (start date). Each
+- **FR-006a**: The timeline MUST launch with these six steps, in this order (start date; listed here earliest first for reading, shown on the page newest first per FR-001). Each
   step's scope is the text given. Only the Manager, Enterprise Systems Development step has a
   key decision; no step has "what changed", "wish I'd known" or "skill to the next move" at
   launch (Don adds them later).
@@ -510,7 +520,7 @@ filter restores the timeline.
 - **Career step**: one role in Don's career. Has a role title, organization, period (start, end
   or present), a required scope, up to four optional detail parts (never the "skill that led to
   the next move" for the current role), and optional related posts, awards and categorized
-  items. Ordered by start date.
+  items. Ordered by start date, newest first.
 - **Related post**: a reference from a step to a published post on this site, shown by its
   title.
 - **Award**: a recognition received during a step: name, year, optional link.
@@ -562,7 +572,7 @@ filter restores the timeline.
 - The timeline needs no server code, stores nothing and collects no personal data.
 - The current role is a single step. The CCHL board role is the only volunteer step; education
   is not a step (FR-006a). The board role overlaps the Island Health steps from Sep 2022 and is
-  ordered by its start date.
+  ordered by its start date (newest first).
 
 ## Out of scope
 

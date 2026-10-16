@@ -22,8 +22,8 @@ pnpm run build
 ```
 
 Expect: the sync run fails naming a broken step file; the build run fails naming a step with a
-missing post; the real build passes and `dist/about/index.html` holds six `<details>` in start
-order, the last being the current role, all closed, with no filter visible in the HTML (`hidden`).
+missing post; the real build passes and `dist/about/index.html` holds six `<details>` in reverse start
+order (newest first), the first being the current role, all closed, with no filter visible in the HTML (`hidden`).
 
 ## 3. Journeys in a browser (fixture site, port 4322)
 

@@ -181,6 +181,18 @@ description: "Task list for the interactive career timeline (feature 041)"
 - [X] T062 Revert the unpicked variant: if A is picked, revert the Variant B commit (`git revert`, restoring A's tests, CSS and macOS baselines); if B is picked, remove any Variant A leftovers (B already replaced A's rules and tests). Then refresh the macOS baselines (`pnpm run test:visual:update`) and the Linux baselines (`pnpm run test:visual:update:linux`, Docker; if `docker info` fails ask Don to start it with an `AskUserQuestion` whose question text carries the instruction), commit only `career-timeline-*` PNGs, run `node scripts/ci/changed-paths.ts --base origin/main` and its tier, push, and arm auto-merge after the final push (`.claude/skills/_shared/open-pr.md`).
   - Done 2026-10-15: Variant B reverted in ae67f65; unit, E2E, a11y, local-site and verify:quick green; macOS baselines unchanged; Linux career-timeline PNGs refreshed. Auto-merge is armed by the orchestrator.
 
+
+## Phase 8: Reverse chronological order
+
+**Purpose**: Don's 2026-10-15 request (spec Clarifications, session 2026-10-15, order question): the timeline lists the newest step first, the current role first and the earliest last. Ties: file name descending (FR-001). Same-day rule: the `<ol>` order is the visible order, no `reversed` attribute.
+
+- [X] T063 [P] Unit tests, primary layer **Unit**, in `tests/unit/content/career.test.ts` and `tests/unit/content/career-launch.test.ts`: `orderSteps()` sorts by start descending, ties by id descending, whatever the input order; `buildTimeline()` puts the current role first; `checkCareer()` still rejects a latest step that does not end `present` or has a next move; the real steps run newest first and the first is the current role. Seen failing first.
+- [X] T064 [P] Component test, primary layer **Component**, in `tests/component/sections/CareerTimeline.test.ts`: the ordered list holds the newest step first, no `reversed` attribute. E2E test, primary layer **E2E**, in `tests/e2e/career-timeline.spec.ts`: the steps' start dates run newest to earliest. Seen failing first.
+- [X] T065 Implement the order in `orderSteps()` in `src/lib/content/career.ts` (descending; `checkCareer()` takes the first step as the current role).
+- [X] T066 Run the targeted tests (career unit, component, E2E, a11y, `tests/build/local-site.test.ts`) and `pnpm run verify:quick`.
+- [X] T067 Update the macOS then the Linux visual baselines for the career timeline (`.claude/skills/_shared/visual-baselines.md`) and confirm newest first with Variant A styling.
+- [X] T068 Commit and push to the PR #180 branch.
+
 ---
 
 ## Dependencies & Execution Order
@@ -188,6 +200,7 @@ description: "Task list for the interactive career timeline (feature 041)"
 - Phase 1 then Phase 2 (blocks all stories). T006 needs T008; T004/T005 are written before T007/T009.
 - US1 has no dependency on US2 or US3. US2 extends the files US1 creates (`src/lib/content/career.ts`, `CareerTimeline.astro`, launch files), so run it after US1. US3 extends the component, so run it after US1; it does not need US2 beyond the shared component file.
 - Polish after all stories; T044 before T045; T036 passes only after T044/T045.
+- Phase 8 after Phase 7: T063 and T064 first (seen failing), then T065, T066, T067 (macOS, then Linux, never concurrently), T068.
 - Phase 7 after Phase 6 and in order: T049-T051, then Variant A (T052-T055, one commit), then Variant B (T056-T059, a separate later commit), then T060 (Don), T061, T062. T049 and T050 both edit `tests/e2e/career-timeline.spec.ts`, so they are not parallel. T047 and T048 are walked on the chosen variant.
 - Within a story: tests, see them fail, implementation, `verify:quick`.
 

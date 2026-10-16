@@ -80,9 +80,9 @@ export function formatPeriod(start: string, end: string): string {
   return `${formatMonth(start)} – ${end === "present" ? "present" : formatMonth(end)}`;
 }
 
-/** C1: by start ascending, ties by id. The last step is the current role. */
+/** C1: newest first, by start descending, ties by id descending. The first step is the current role. */
 export function orderSteps<T extends { id: string; data: { start: string } }>(files: readonly T[]): T[] {
-  return [...files].sort((a, b) => a.data.start.localeCompare(b.data.start) || a.id.localeCompare(b.id));
+  return [...files].sort((a, b) => b.data.start.localeCompare(a.data.start) || b.id.localeCompare(a.id));
 }
 
 /**
@@ -99,7 +99,7 @@ export function checkCareer(files: readonly StepFile[], posts?: PostLookup): voi
       }
     }
   }
-  const current = orderSteps(files).at(-1);
+  const current = orderSteps(files).at(0);
   if (!current) return;
   if (current.data.end !== "present") {
     throw contentError("career step", current.file, `end: ${current.data.end} – this is the latest role, so end must be present.`);

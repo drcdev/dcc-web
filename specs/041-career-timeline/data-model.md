@@ -29,7 +29,7 @@ timeline renders nothing (the fixture site relies on this; a content test,
 
 ### Cross-file rules (`src/lib/content/career.ts`, run when the About page builds)
 
-- **C1** Ordering: steps sort by `start` ascending, ties by id. The last is the **current role**
+- **C1** Ordering: steps sort by `start` descending (newest first), ties by id descending. The first is the **current role**
   (spec FR-001a); this is the only definition of it.
 - **C2** The current role has `end: present` and no `nextMove`.
 - **C3** Every `posts` entry names an existing post file.

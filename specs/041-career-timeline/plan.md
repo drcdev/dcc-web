@@ -93,7 +93,7 @@ written reason shown.
 | Used categories, matching steps, status sentence (singular for 1, plural otherwise), fresh re-application (`applyChoice()`), same-choice no-op | Unit | `tests/unit/content/career-filter.test.ts` |
 | Job title appears in no `src/` file but `about.mdx` and `src/content/career/` (FR-019) | Unit | `tests/unit/content/job-title-only-on-about.test.ts` (reads the current role through `tests/helpers/content.ts`; names no literal) |
 | Real content: at least one step, last is current and ends `present`, no `nextMove` on it, every post published (no launch count, no check on which parts are filled, so FR-005b edits need no test change) | Unit | `tests/unit/content/career-launch.test.ts` (rules over the real files via the helper, no literals) |
-| Markup: order, closed by default, labels only for present parts, FR-008 order, no empty headings, plain award without link, filter and status `hidden`, only used categories offered, no next-move label on the last step, nothing rendered with no steps | Component | `tests/component/sections/CareerTimeline.test.ts` (Container API, `timeline` prop) |
+| Markup: order, closed by default, labels only for present parts, FR-008 order, no empty headings, plain award without link, filter and status `hidden`, only used categories offered, no next-move label on the first step, nothing rendered with no steps | Component | `tests/component/sections/CareerTimeline.test.ts` (Container API, `timeline` prop) |
 | Schema wired and Astro names the file (sync, row T01); `checkCareer()` runs from `/about/` and names the file (build, row T09) | Build | `tests/build/career-timeline.test.ts` (2 runs; T10 and T11 reach the build through the same call site, so they are proven at the unit layer only) |
 | About page placement: `<CareerTimeline />` after the "About me" list, before "### Recognition"; Leadership line gone | Unit | `tests/unit/content/career-launch.test.ts`, reading `src/content/pages/about.mdx` through `tests/helpers/content.ts`. Reason it is not a build test: every fixture build drops the real career files (R12) and no `test:build:content` build keeps real posts, so a built `/about/` would show no timeline; the MDX order decides placement. |
 | Open/close by mouse, touch-size target and keyboard; filter journey; All resets hand-opened steps; muted step still visible and openable, with its non-colour cue (dashed rule); disclosure marker on the role title's line (FR-007b); status text; focus stays on the button and moves to the summary when its step closes; no-JS; 320 px; print emulation; reduced motion; forced colours | E2E | `tests/e2e/career-timeline.spec.ts` on the fixture site `/about/` |
@@ -175,7 +175,7 @@ component in the section registry.
 - **Disclosure marker** sits inline with the role title, on its first line (spec FR-007b).
 - **Matching items** show their role and organization through the opened step's summary line
   directly above them (R9); spec FR-010 settles this, so nothing is repeated per item.
-- **Current role** is the step with the latest start; it must end `present` and has no next move
+- **Current role** is the step with the latest start (the first in the newest-first list); it must end `present` and has no next move
   (R5, spec FR-001a).
 - **Filter state**: every change is applied fresh to every step; "All" closes hand-opened steps
   too (spec FR-012, FR-012a). Focus stays on the pressed button, or moves to the summary of a

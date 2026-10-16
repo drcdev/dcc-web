@@ -6,12 +6,12 @@ import { expect, test, type Page } from "@playwright/test";
 const ABOUT = "/about/";
 const steps = "[data-career] [data-step]";
 
-test("lists the steps earliest to latest, each closed", async ({ page }) => {
+test("lists the steps newest to earliest, each closed", async ({ page }) => {
   await page.goto(ABOUT);
   const count = await page.locator(steps).count();
   expect(count).toBeGreaterThan(1);
   const starts = await page.locator(`${steps} summary time:first-of-type`).evaluateAll((els) => els.map((e) => e.getAttribute("datetime")!));
-  expect(starts).toEqual([...starts].sort());
+  expect(starts).toEqual([...starts].sort().reverse());
   for (const details of await page.locator(`${steps} details`).all()) await expect(details).not.toHaveAttribute("open", "");
   await expect(page.getByRole("heading", { name: "Career", level: 3 })).toBeVisible();
 });

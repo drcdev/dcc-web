@@ -29,13 +29,17 @@ const timeline = buildTimeline([
   file("two", "2018-01", "present", { achievements: ["Another thing."] }),
 ], known);
 
+/** One step's markup, whatever the list order: from its data-step attribute to the next step's. */
+const stepBlock = (html: string, id: string): string => html.split('data-step="').find((chunk) => chunk.startsWith(`${id}"`))!;
+
 describe("CareerTimeline", () => {
   it("heads the section 'Career' (h3) and renders an ordered list of steps in order, all closed", async () => {
     const html = await render(CareerTimeline, { timeline });
     expect(textOf(html, "h3")).toBe("Career");
     expect(byName(html, "ol")).toHaveLength(1);
     const items = tags(html).filter((t) => t.name === "li" && t.attrs["data-step"]);
-    expect(items.map((i) => i.attrs["data-step"])).toEqual(["one", "two"]);
+    expect(items.map((i) => i.attrs["data-step"])).toEqual(["two", "one"]);
+    expect(byName(html, "ol")[0]!.attrs).not.toHaveProperty("reversed");
     const details = byName(html, "details");
     expect(details).toHaveLength(2);
     for (const d of details) expect("open" in d.attrs).toBe(false);
@@ -43,7 +47,7 @@ describe("CareerTimeline", () => {
 
   it("shows role, organization and period in the summary, with a hidden dash and 'to' for screen readers", async () => {
     const html = await render(CareerTimeline, { timeline });
-    const summary = /<summary[^>]*>([\s\S]*?)<\/summary>/.exec(html)![1]!;
+    const summary = /<summary[^>]*>([\s\S]*?)<\/summary>/.exec(stepBlock(html, "one"))![1]!;
     const text = summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
     expect(text).toBe("Role one Org one Mar 2010 – to Aug 2013");
     expect(summary).toContain('aria-hidden="true"');
@@ -53,7 +57,7 @@ describe("CareerTimeline", () => {
 
   it("ends a running period with the word present, not a time element", async () => {
     const html = await render(CareerTimeline, { timeline });
-    const second = html.split('data-step="two"')[1]!;
+    const second = stepBlock(html, "two");
     const summary = /<summary[^>]*>([\s\S]*?)<\/summary>/.exec(second)![1]!;
     expect(summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ")).toContain("present");
     expect(tags(summary).filter((t) => t.name === "time")).toHaveLength(1);
@@ -61,19 +65,19 @@ describe("CareerTimeline", () => {
 
   it("labels each detail part as a term and description, in order, and only those present", async () => {
     const html = await render(CareerTimeline, { timeline });
-    const first = html.split('data-step="one"')[1]!.split('data-step="two"')[0]!;
+    const first = stepBlock(html, "one");
     const terms = [...first.matchAll(/<dt[^>]*>([\s\S]*?)<\/dt>/g)].map((m) => m[1]!.trim().replace(/&#39;/g, "'"));
     expect(terms).toEqual(["Scope", "Key decision", "What I wish I'd known", "The skill that led to the next move"]);
-    const second = html.split('data-step="two"')[1]!;
+    const second = stepBlock(html, "two");
     expect([...second.matchAll(/<dt[^>]*>([\s\S]*?)<\/dt>/g)].map((m) => m[1]!.trim())).toEqual(["Scope"]);
     expect(second).not.toContain("next move");
   });
 
   it("shows Achievements, Leadership and Awards lists with h4 headings, only when they have items", async () => {
     const html = await render(CareerTimeline, { timeline });
-    const first = html.split('data-step="one"')[1]!.split('data-step="two"')[0]!;
+    const first = stepBlock(html, "one");
     expect([...first.matchAll(/<h4[^>]*>([\s\S]*?)<\/h4>/g)].map((m) => m[1]!.trim())).toEqual(["Achievements", "Leadership", "Writing", "Awards"]);
-    const second = html.split('data-step="two"')[1]!;
+    const second = stepBlock(html, "two");
     expect([...second.matchAll(/<h4[^>]*>([\s\S]*?)<\/h4>/g)].map((m) => m[1]!.trim())).toEqual(["Achievements"]);
     expect(tags(first).filter((t) => t.name === "ul" && t.attrs["data-list"]).map((t) => t.attrs["data-list"])).toEqual([
       "achievements",
@@ -92,7 +96,7 @@ describe("CareerTimeline", () => {
 
   it("lists related posts as links to each post's own title and address, in the listed order", async () => {
     const html = await render(CareerTimeline, { timeline });
-    const first = html.split('data-step="one"')[1]!.split('data-step="two"')[0]!;
+    const first = stepBlock(html, "one");
     const list = /<ul[^>]*data-list="posts"[^>]*>([\s\S]*?)<\/ul>/.exec(first)![1]!;
     const links = tags(list).filter((t) => t.name === "a");
     expect(links.map((l) => l.attrs.href)).toEqual(["/writing/p1/", "/writing/p2/"]);
@@ -102,7 +106,7 @@ describe("CareerTimeline", () => {
 
   it("leaves out the Writing and Awards lists when a step has none", async () => {
     const html = await render(CareerTimeline, { timeline });
-    const second = html.split('data-step="two"')[1]!;
+    const second = stepBlock(html, "two");
     expect(second).not.toContain('data-list="posts"');
     expect(second).not.toContain('data-list="awards"');
     expect(second).not.toContain("Writing");
@@ -152,7 +156,7 @@ describe("CareerTimeline", () => {
     const el = tags(html).find((t) => t.name === "career-timeline")!;
     expect(el.attrs["data-total"]).toBe("2");
     const items = tags(html).filter((t) => t.name === "li" && t.attrs["data-step"]);
-    expect(items.map((i) => i.attrs["data-categories"])).toEqual(["achievements|leadership|awards", "achievements"]);
+    expect(items.map((i) => i.attrs["data-categories"])).toEqual(["achievements", "achievements|leadership|awards"]);
   });
 
   it("renders no filter and no status line when no category is used", async () => {

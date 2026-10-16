@@ -10,9 +10,11 @@ const step = (id: string, start: string, end: string, extra: Partial<StepFile["d
 });
 
 describe("C1 ordering", () => {
-  it("sorts by start, then id, whatever the input order", () => {
+  it("sorts newest first by start, then id descending, whatever the input order", () => {
     const sorted = orderSteps([step("b", "2020-01", "present"), step("z", "2010-05", "2012-01"), step("a", "2020-01", "present")]);
-    expect(sorted.map((s) => s.id)).toEqual(["z", "a", "b"]);
+    expect(sorted.map((s) => s.id)).toEqual(["b", "a", "z"]);
+    const again = orderSteps([step("z", "2010-05", "2012-01"), step("a", "2020-01", "present"), step("b", "2020-01", "present")]);
+    expect(again.map((s) => s.id)).toEqual(["b", "a", "z"]);
   });
 });
 
@@ -46,20 +48,20 @@ describe("C2 current role", () => {
 });
 
 describe("buildTimeline", () => {
-  it("marks the last step as the current role and keeps only the parts present, in label order", () => {
+  it("puts the current role first and keeps only the parts present, in label order", () => {
     const timeline = buildTimeline([
       step("a", "2010-01", "2012-01", { wish: "W", decision: "D", nextMove: "N" }),
       step("b", "2020-01", "present"),
     ]);
-    expect(timeline.steps.map((s) => s.id)).toEqual(["a", "b"]);
-    expect(timeline.steps[0]!.parts.map((p) => p.label)).toEqual([
+    expect(timeline.steps.map((s) => s.id)).toEqual(["b", "a"]);
+    expect(timeline.steps[1]!.parts.map((p) => p.label)).toEqual([
       "Scope",
       "Key decision",
       "What I wish I'd known",
       "The skill that led to the next move",
     ]);
-    expect(timeline.steps[1]!.parts.map((p) => p.label)).toEqual(["Scope"]);
-    expect(timeline.steps[1]!.period).toBe("Jan 2020 – present");
+    expect(timeline.steps[0]!.parts.map((p) => p.label)).toEqual(["Scope"]);
+    expect(timeline.steps[0]!.period).toBe("Jan 2020 – present");
   });
   it("lists the used categories in the fixed order", () => {
     const timeline = buildTimeline([
@@ -92,9 +94,9 @@ describe("C3 and C4 related posts", () => {
       /Career step file src\/content\/career\/old\.yaml: .*posts.*post "wip" is a draft; publish it or remove it from posts/,
     );
   });
-  it("accepts live posts and resolves them to title and address in step order", () => {
+  it("accepts live posts and resolves them to title and address in step order (newest first)", () => {
     const files = [step("old", "2010-01", "2012-01", { posts: ["live"] }), last];
     expect(() => checkCareer(files, posts)).not.toThrow();
-    expect(buildTimeline(files, posts).steps[0]!.posts).toEqual([{ title: "A live post", href: "/writing/live/" }]);
+    expect(buildTimeline(files, posts).steps[1]!.posts).toEqual([{ title: "A live post", href: "/writing/live/" }]);
   });
 });

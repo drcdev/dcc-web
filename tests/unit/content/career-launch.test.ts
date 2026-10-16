@@ -2,6 +2,7 @@
 // through the content helper and names no role, organization or post. The rules that need the
 // launch files to exist (at least one step, the launch content) are added with them (T018).
 import { describe, expect, it } from "vitest";
+import { orderSteps } from "../../../src/lib/content/career.ts";
 import { careerSteps, currentCareerStep, pages, posts } from "../../helpers/content.ts";
 
 describe("the real career steps", () => {
@@ -40,11 +41,18 @@ describe("the About page placement", () => {
 });
 
 describe("the real career steps, as rules", () => {
-  it("has at least one step; the last is the current role and ends present with no next move (FR-001a)", () => {
+  it("has at least one step; the first is the current role and ends present with no next move (FR-001a)", () => {
     expect(careerSteps.length).toBeGreaterThan(0);
     const current = currentCareerStep(careerSteps);
     expect(current.data.end, current.file).toBe("present");
     expect(current.data.nextMove, current.file).toBeUndefined();
+  });
+
+  it("orders the real steps newest first, so the current role comes first and the earliest last (FR-001)", () => {
+    const ordered = orderSteps(careerSteps.map((s) => ({ id: s.id, data: { start: String(s.data.start) } })));
+    expect(ordered[0]!.id).toBe(currentCareerStep(careerSteps).id);
+    const starts = ordered.map((s) => s.data.start);
+    expect(starts).toEqual([...starts].sort().reverse());
   });
 
   it("lists only published posts", () => {
