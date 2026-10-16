@@ -164,6 +164,14 @@ export function prepareFixtureSite(siteRoot: string): void {
   for (const name of readdirSync(pathFixtures).filter((file) => file.endsWith(".yaml"))) {
     cpSync(resolve(pathFixtures, name), resolve(pathsDir, name));
   }
+  // The real career steps name real posts too; the valid fixture steps (naming the fixture posts below) replace them.
+  const careerDir = resolve(siteRoot, "src/content/career");
+  rmSync(careerDir, { recursive: true, force: true });
+  mkdirSync(careerDir, { recursive: true });
+  const careerFixtures = resolve(repoRoot, "tests/fixtures/career/valid");
+  for (const name of readdirSync(careerFixtures).filter((file) => file.endsWith(".yaml"))) {
+    cpSync(resolve(careerFixtures, name), resolve(careerDir, name));
+  }
   const nowDir = resolve(siteRoot, "src/content/now");
   rmSync(nowDir, { recursive: true, force: true });
   mkdirSync(nowDir, { recursive: true });

@@ -110,7 +110,7 @@ See [the kinds of work](/work-with-me/#kinds-of-work) I am considering.
 ## Components
 
 Available in `.mdx` files with no import. Leave a blank line after an opening tag and before a
-closing tag. There are nine, listed here in full.
+closing tag. There are eleven, listed here in full.
 
 `Lead` takes no props. It is an intro paragraph.
 
@@ -196,6 +196,15 @@ is hidden, and in the live site a draft item is left out.
 
 ```mdx
 <StartHere />
+```
+
+`CareerTimeline` shows the About page's career timeline: one closed disclosure per role, earliest
+first. It takes no props and no content. Its steps come from the files in `src/content/career/`
+(one file per role; the latest start is the current role), so you edit those files and not the
+page. With no step files the section is hidden.
+
+```mdx
+<CareerTimeline />
 ```
 
 ## Build errors you may see

@@ -1,0 +1,19 @@
+role: "Cloud Architect / IT Project Manager"
+organization: "Island Health"
+start: "2023-04"
+end: "2026-05"
+scope: "Architected the Microsoft 365 governance framework for 36,000 users, led cloud migrations with disaster recovery planning, and managed vendors and cloud budgets using FinOps practices."
+achievements:
+  - "Governance framework for 36,000 users"
+  - "Adoption program starting with 80 teams and 50+ enablement proposals"
+  - "Adoption and usage dashboards"
+leadership:
+  - "Led the ADKAR-based change program from pilot to governed operation"
+awards:
+  - name: "Celebration of Excellence, “Leading our C.A.R.E. Values”"
+    year: 2026
+posts:
+  - starting-something-new
+  - self-contained-development-for-ghost-themes
+  - building-focus-pocus-what-i-learned-about-ai-coding-and-integration
+  - the-systems-leadership-wayfinder-five-mindset-shifts-for-leading-complex-change

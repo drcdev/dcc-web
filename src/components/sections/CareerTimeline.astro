@@ -1,0 +1,206 @@
+---
+// The About page's career timeline (specs/041-career-timeline; contracts/timeline-markup.md): the
+// career steps as an ordered list of native <details> disclosures, closed by default. The steps
+// come from src/content/career/ through getCareerTimeline(); a `timeline` prop replaces the lookup,
+// which is how the component tests feed it. Renders nothing when there are no steps. Everything
+// here works without JavaScript. Text is rendered as text, never as markup (FR-003b), no style
+// attribute is set (CSP, FR-017a), and nothing animates (FR-015).
+import { getCareerTimeline } from "../../lib/career.ts";
+import { formatMonth, type CategoryId, type Timeline } from "../../lib/content/career.ts";
+import "./career-timeline.css";
+
+export interface Props {
+  timeline?: Timeline;
+}
+
+const timeline = Astro.props.timeline ?? (await getCareerTimeline());
+
+const categoryLabels: Record<CategoryId, string> = { achievements: "Achievements", leadership: "Leadership", awards: "Awards" };
+/** The categories a step holds items of, in the fixed order, for the filter script. */
+const stepCategories = (step: Timeline["steps"][number]) => timeline.categories.filter((id) => step[id].length > 0).join("|");
+
+const link =
+  "font-medium text-dusk-900 underline underline-offset-4 hover:text-rust-700 dark:text-white dark:hover:text-rust-400";
+const listHeading = "mb-1 mt-4 text-base font-bold text-dusk-900 dark:text-white";
+const list = "m-0 list-disc pl-6 [overflow-wrap:anywhere]";
+---
+
+{
+  timeline.steps.length > 0 && (
+    <section aria-labelledby="career-heading" data-career class="not-prose my-10">
+      <h3 id="career-heading" class="mb-4 mt-0 text-2xl font-bold text-dusk-900 dark:text-white">
+        Career
+      </h3>
+      <career-timeline data-total={timeline.steps.length}>
+      {timeline.categories.length > 0 && (
+        <>
+          <div role="group" aria-labelledby="career-filter-label" data-career-filter hidden>
+            <p id="career-filter-label" data-career-filter-label>
+              Show
+            </p>
+            <div data-career-filter-buttons>
+              <button type="button" aria-pressed="true" data-category-all>
+                All
+              </button>
+              {timeline.categories.map((id) => (
+                <button type="button" aria-pressed="false" data-category={id}>
+                  {categoryLabels[id]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <p role="status" aria-live="polite" data-career-status hidden />
+        </>
+      )}
+      <ol data-career-steps class="m-0 list-none p-0">
+        {timeline.steps.map((step) => (
+          <li data-step={step.id} data-categories={stepCategories(step)} class="m-0 border-t border-l-4 border-t-dusk-200 border-l-transparent pl-3 last:border-b last:border-b-dusk-200 dark:border-t-dusk-700 dark:last:border-b-dusk-700 forced-colors:border-t-[CanvasText] forced-colors:last:border-b-[CanvasText]">
+            <details class="group print:details-content:block print:details-content:[content-visibility:visible]">
+              <summary class="min-h-11 cursor-pointer py-2 text-dusk-900 dark:text-white">
+                <span data-step-role class="font-bold [overflow-wrap:anywhere]">
+                  {step.role}
+                </span>
+                <span data-step-org class="block [overflow-wrap:anywhere]">
+                  {step.organization}
+                </span>
+                <span data-step-period class="block text-sm text-dusk-600 dark:text-dusk-300">
+                  <time datetime={step.start}>{formatMonth(step.start)}</time>{" "}
+                  <span aria-hidden="true">{"–"}</span>
+                  <span class="sr-only">to</span>{" "}
+                  {step.end === "present" ? "present" : <time datetime={step.end}>{formatMonth(step.end)}</time>}
+                </span>
+              </summary>
+              <div data-step-detail class="pb-4 pl-4 text-dusk-700 dark:text-mist-300">
+                <dl class="m-0">
+                  {step.parts.map((part) => (
+                    <>
+                      <dt class="mt-3 font-bold text-dusk-900 first:mt-0 dark:text-white">{part.label}</dt>
+                      <dd class="m-0 [overflow-wrap:anywhere]">{part.text}</dd>
+                    </>
+                  ))}
+                </dl>
+                {step.achievements.length > 0 && (
+                  <>
+                    <h4 class={listHeading}>Achievements</h4>
+                    <ul data-list="achievements" class={list}>
+                      {step.achievements.map((item) => (
+                        <li>{item}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                {step.leadership.length > 0 && (
+                  <>
+                    <h4 class={listHeading}>Leadership</h4>
+                    <ul data-list="leadership" class={list}>
+                      {step.leadership.map((item) => (
+                        <li>{item}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                {step.posts.length > 0 && (
+                  <>
+                    <h4 class={listHeading}>Writing</h4>
+                    <ul data-list="posts" class={list}>
+                      {step.posts.map((post) => (
+                        <li>
+                          <a href={post.href} class={link}>
+                            {post.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                {step.awards.length > 0 && (
+                  <>
+                    <h4 class={listHeading}>Awards</h4>
+                    <ul data-list="awards" class={list}>
+                      {step.awards.map((award) => (
+                        <li>
+                          {award.href ? (
+                            <>
+                              <a href={award.href} class={link}>
+                                {award.name}
+                              </a>{" "}
+                              ({award.year})
+                            </>
+                          ) : (
+                            `${award.name} (${award.year})`
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
+            </details>
+          </li>
+        ))}
+      </ol>
+      </career-timeline>
+    </section>
+  )
+}
+
+<script>
+  import { applyChoice, type Choice, type FilterStep } from "../../lib/content/career-filter.ts";
+  import { categoryIds, type CategoryId } from "../../lib/content/career.ts";
+
+  // The filter (contracts/timeline-markup.md "Client behaviour"). The server renders the complete
+  // timeline and keeps the filter and status line hidden; this element reveals them once its
+  // listeners are attached, so a script that fails leaves the no-script page. The status line
+  // stays empty until the first change, so nothing is announced on load. State lives in the page
+  // only: no address, storage or cookie. Text is written with textContent. Astro bundles this as
+  // a module (docs.astro.build/en/guides/client-side-scripts/#web-components-with-custom-elements).
+  class CareerTimeline extends HTMLElement {
+    connectedCallback() {
+      const filter = this.querySelector<HTMLElement>("[data-career-filter]");
+      const status = this.querySelector<HTMLElement>("[data-career-status]");
+      if (!filter || !status) return;
+      const items = [...this.querySelectorAll<HTMLElement>("[data-step]")];
+      const model: FilterStep[] = items.map((li) => ({
+        id: li.dataset.step ?? "",
+        categories: (li.dataset.categories ?? "")
+          .split("|")
+          .filter((id): id is CategoryId => (categoryIds as readonly string[]).includes(id)),
+      }));
+      const buttons = [...filter.querySelectorAll<HTMLButtonElement>("button")];
+      let current: Choice = "all";
+
+      const choose = (next: Choice) => {
+        const plan = applyChoice(current, next, model);
+        if (!plan) return;
+        // Focus inside content this change closes moves to that step's summary first (FR-013b).
+        const active = document.activeElement;
+        const focused = items.findIndex((li) => active && li.querySelector("[data-step-detail]")?.contains(active));
+        current = plan.choice;
+        plan.steps.forEach((state, index) => {
+          const li = items[index]!;
+          const details = li.querySelector<HTMLDetailsElement>("details")!;
+          details.open = state.open;
+          li.toggleAttribute("data-muted", state.muted);
+          li.toggleAttribute("data-matching", state.match);
+          for (const item of li.querySelectorAll<HTMLElement>("ul[data-list] > li")) {
+            item.toggleAttribute("data-match", state.match && item.parentElement?.dataset.list === plan.choice);
+          }
+        });
+        if (focused >= 0 && !plan.steps[focused]!.open) items[focused]!.querySelector("summary")?.focus({ preventScroll: true });
+        for (const button of buttons) {
+          const pressed = (button.dataset.category ?? "all") === plan.choice;
+          button.setAttribute("aria-pressed", String(pressed));
+        }
+        status.textContent = plan.status;
+      };
+
+      for (const button of buttons) button.addEventListener("click", () => choose((button.dataset.category as CategoryId | undefined) ?? "all"));
+
+      filter.hidden = false;
+      status.hidden = false;
+      this.dataset.ready = "";
+    }
+  }
+
+  if (!customElements.get("career-timeline")) customElements.define("career-timeline", CareerTimeline);
+</script>
