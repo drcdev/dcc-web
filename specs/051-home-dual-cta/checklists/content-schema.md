@@ -8,37 +8,37 @@
 
 ## Schema definition
 
-- [ ] CHK001 Is "the same rules as the main call to action" defined precisely enough to be unambiguous (what is a "valid site link")? [Clarity, Spec §FR-001]
-- [ ] CHK002 Is the full set of invalid inputs enumerated (empty label, whitespace-only label, missing link, external link, extra field, wrong type)? [Completeness, Spec §Story 3]
-- [ ] CHK003 Is the behaviour for a present but empty `secondaryCta` object specified, as distinct from an absent one? [Gap, Spec §FR-001]
-- [ ] CHK004 Is it stated whether `secondaryCta` is allowed to be null or only absent? [Ambiguity, Spec §FR-001]
-- [ ] CHK005 Is the requirement that the main call to action stays required and unchanged consistent with the edge case that rejects a second one alone? [Consistency, Spec §FR-002, §Edge Cases]
-- [ ] CHK006 Is the field name `secondaryCta` recorded in one place, with the same spelling in the spec, plan and data model? [Consistency, Spec §Clarifications]
-- [ ] CHK007 Is the schema's scope limited to the home page's introduction, or must other pages that share the schema reject the field? [Gap, Spec §FR-001]
+- [x] CHK001 Is "the same rules as the main call to action" defined precisely enough to be unambiguous (what is a "valid site link")? [Clarity, Spec §FR-001]
+- [x] CHK002 Is the full set of invalid inputs enumerated (empty label, whitespace-only label, missing link, external link, extra field, wrong type)? [Completeness, Spec §Story 3]
+- [x] CHK003 Is the behaviour for a present but empty `secondaryCta` object specified, as distinct from an absent one? [Gap, Spec §FR-001]
+- [x] CHK004 Is it stated whether `secondaryCta` is allowed to be null or only absent? [Ambiguity, Spec §FR-001]
+- [x] CHK005 Is the requirement that the main call to action stays required and unchanged consistent with the edge case that rejects a second one alone? [Consistency, Spec §FR-002, §Edge Cases]
+- [x] CHK006 Is the field name `secondaryCta` recorded in one place, with the same spelling in the spec, plan and data model? [Consistency, Spec §Clarifications]
+- [x] CHK007 Is the schema's scope limited to the home page's introduction, or must other pages that share the schema reject the field? [Gap, Spec §FR-001]
 
 ## Build-time errors
 
-- [ ] CHK008 Is "a clear error naming the problem field" specified with what the message must contain? [Clarity, Spec §Story 3]
-- [ ] CHK009 Is it defined whether all invalid fields are reported or only the first? [Gap, Spec §Story 3]
-- [ ] CHK010 Is the requirement that invalid content fails the build traced to Principle VI? [Traceability, Spec §Assumptions]
+- [x] CHK008 Is "a clear error naming the problem field" specified with what the message must contain? [Clarity, Spec §Story 3]
+- [x] CHK009 Is it defined whether all invalid fields are reported or only the first? [Gap, Spec §Story 3]
+- [x] CHK010 Is the requirement that invalid content fails the build traced to Principle VI? [Traceability, Spec §Assumptions]
 
 ## Content and copy
 
-- [ ] CHK011 Is the launch label and link stated exactly (text, capitalisation, trailing slash)? [Clarity, Spec §FR-013]
-- [ ] CHK012 Is "plain language with no hype" backed by a checkable rule beyond the job title exclusion? [Measurability, Spec §FR-015]
-- [ ] CHK013 Is there a stated limit on label length that the layout requirements rely on? [Gap, Spec §Edge Cases]
-- [ ] CHK014 Is the behaviour defined when both buttons point to the same page, including whether that is acceptable for the accessible-name guidance? [Coverage, Spec §Edge Cases]
-- [ ] CHK015 Is the link-to-hidden-or-draft-page risk handled by a requirement or only noted as an edge case? [Gap, Spec §Edge Cases]
+- [x] CHK011 Is the launch label and link stated exactly (text, capitalisation, trailing slash)? [Clarity, Spec §FR-013]
+- [x] CHK012 Is "plain language with no hype" backed by a checkable rule beyond the job title exclusion? [Measurability, Spec §FR-015]
+- [x] CHK013 Is there a stated limit on label length that the layout requirements rely on? [Gap, Spec §Edge Cases]
+- [x] CHK014 Is the behaviour defined when both buttons point to the same page, including whether that is acceptable for the accessible-name guidance? [Coverage, Spec §Edge Cases]
+- [x] CHK015 Is the link-to-hidden-or-draft-page risk handled by a requirement or only noted as an edge case? [Gap, Spec §Edge Cases]
 
 ## Absent-second-button behaviour
 
-- [ ] CHK016 Is "renders exactly as it does without this feature" reconciled with the 44 px height change and the moved social row, which alter the one-button card? [Conflict, Spec §FR-004, §FR-008, §FR-011]
-- [ ] CHK017 Is the one-button layout specified at each breakpoint (alignment, width, spacing)? [Gap, Spec §FR-004, §FR-007]
+- [x] CHK016 Is "renders exactly as it does without this feature" reconciled with the 44 px height change and the moved social row, which alter the one-button card? [Conflict, Spec §FR-004, §FR-008, §FR-011]
+- [x] CHK017 Is the one-button layout specified at each breakpoint (alignment, width, spacing)? [Gap, Spec §FR-004, §FR-007]
 
 ## Scope, dependencies and traceability
 
-- [ ] CHK018 Is the superseded spec 040 decision recorded where a future reader of 040 will find it? [Traceability, Spec §Assumptions]
-- [ ] CHK019 Are the affected visual baselines and the tests that assert the single-button card named as expected consequences? [Dependency, Spec §Assumptions]
-- [ ] CHK020 Is the exclusion of the contact form and API stated, so no data or endpoint requirement is implied? [Boundary, Spec §Assumptions]
-- [ ] CHK021 Are the "no new colours" and "no client script" requirements measurable by a stated check? [Measurability, Spec §FR-012, §FR-014]
-- [ ] CHK022 Is the performance budget requirement tied to a named budget and metric? [Ambiguity, Spec §FR-014, §SC-005]
+- [x] CHK018 Is the superseded spec 040 decision recorded where a future reader of 040 will find it? [Traceability, Spec §Assumptions]
+- [x] CHK019 Are the affected visual baselines and the tests that assert the single-button card named as expected consequences? [Dependency, Spec §Assumptions]
+- [x] CHK020 Is the exclusion of the contact form and API stated, so no data or endpoint requirement is implied? [Boundary, Spec §Assumptions]
+- [x] CHK021 Are the "no new colours" and "no client script" requirements measurable by a stated check? [Measurability, Spec §FR-012, §FR-014]
+- [x] CHK022 Is the performance budget requirement tied to a named budget and metric? [Ambiguity, Spec §FR-014, §SC-005]

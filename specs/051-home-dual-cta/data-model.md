@@ -21,7 +21,7 @@ Strict object, one shared definition for `cta` and `secondaryCta`.
 
 | Field | Type | Rule |
 |---|---|---|
-| `label` | text | `requiredText`: non-empty |
+| `label` | text | `requiredText`: non-empty after trimming |
 | `href` | text | `linkTarget`: site path or https URL; protocol-relative rejected (#95) |
 
 Extra keys are rejected.
@@ -32,9 +32,10 @@ Extra keys are rejected.
 |---|---|
 | `intro` with `cta`, no `secondaryCta` | valid |
 | `intro` with `cta` and `secondaryCta: { label: "Read my writing", href: "/writing/" }` | valid |
-| `secondaryCta.label` empty | invalid (names `secondaryCta.label`) |
+| `secondaryCta.label` empty or whitespace only | invalid (names `secondaryCta.label`) |
 | `secondaryCta.href` missing, relative (`writing`) or protocol-relative (`//x`) | invalid |
 | `secondaryCta` with an extra key | invalid |
+| `secondaryCta: {}`, `secondaryCta: null`, or a string | invalid (absent is the only way to omit it) |
 | `secondaryCta` set, `cta` missing | invalid |
 
 ## Launch content (`src/content/pages/index.mdx`)

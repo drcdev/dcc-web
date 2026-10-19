@@ -8,42 +8,42 @@
 
 ## Contrast
 
-- [ ] CHK001 Are text contrast requirements stated for both buttons at rest, hover and focus, in light and dark mode? [Completeness, Spec §FR-009]
-- [ ] CHK002 Is the focus state's contrast requirement stated separately from rest and hover, rather than only implied? [Gap, Spec §FR-009, §FR-010]
-- [ ] CHK003 Is the 3:1 threshold for the outlined button's border tied to a named background (the card) in both modes? [Clarity, Spec §FR-009]
-- [ ] CHK004 Is the hover tint (mist-200 light, dusk-700 dark) required to keep text at 4.5:1 against the tinted background, not just the resting one? [Clarity, Spec §Edge Cases, §FR-005]
-- [ ] CHK005 Is the contrast of the focus indicator against both the card and the button fill specified? [Gap, Spec §FR-010]
-- [ ] CHK006 Is it stated which exact colour tokens are used at rest in each mode, so contrast is measurable without guessing? [Ambiguity, Spec §Assumptions]
-- [ ] CHK007 Is the main button's existing dark-mode hover (lighter rust) covered by an explicit contrast requirement? [Coverage, Spec §Assumptions, §FR-009]
+- [x] CHK001 Are text contrast requirements stated for both buttons at rest, hover and focus, in light and dark mode? [Completeness, Spec §FR-009]
+- [x] CHK002 Is the focus state's contrast requirement stated separately from rest and hover, rather than only implied? [Gap, Spec §FR-009, §FR-010]
+- [x] CHK003 Is the 3:1 threshold for the outlined button's border tied to a named background (the card) in both modes? [Clarity, Spec §FR-009]
+- [x] CHK004 Is the hover tint (mist-200 light, dusk-700 dark) required to keep text at 4.5:1 against the tinted background, not just the resting one? [Clarity, Spec §Edge Cases, §FR-005]
+- [x] CHK005 Is the contrast of the focus indicator against both the card and the button fill specified? [Gap, Spec §FR-010]
+- [x] CHK006 Is it stated which exact colour tokens are used at rest in each mode, so contrast is measurable without guessing? [Ambiguity, Spec §Assumptions]
+- [x] CHK007 Is the main button's existing dark-mode hover (lighter rust) covered by an explicit contrast requirement? [Coverage, Spec §Assumptions, §FR-009]
 
 ## Target size and focus
 
-- [ ] CHK008 Is "at least 44 by 44 pixels" defined as a rendered target area, including whether padding counts? [Clarity, Spec §FR-008]
-- [ ] CHK009 Is the requirement consistent between the 44 px height (FR-008) and the 24 px WCAG 2.2 minimum, so the stricter value is clearly the intended one? [Consistency, Spec §FR-008]
-- [ ] CHK010 Is spacing between the two buttons, and between them and the social icons, specified so adjacent targets do not crowd each other? [Gap]
-- [ ] CHK011 Are the social icon links' own target size requirements stated now that their row moves? [Gap, Spec §FR-011]
-- [ ] CHK012 Is "visible focus indicator that meets WCAG 2.2 AA focus appearance for the site" measurable (thickness, offset, contrast)? [Ambiguity, Spec §FR-010]
-- [ ] CHK013 Is the full focus order (social links versus buttons, given the row move) defined, not just main before second? [Gap, Spec §FR-003, §Edge Cases]
-- [ ] CHK014 Is it specified that the visual order matches the reading and focus order at every width? [Consistency, Spec §FR-003, §FR-007]
-- [ ] CHK015 Is the focus indicator required not to be clipped by the card or by neighbouring elements? [Edge Case, Gap]
+- [x] CHK008 Is "at least 44 by 44 pixels" defined as a rendered target area, including whether padding counts? [Clarity, Spec §FR-008]
+- [x] CHK009 Is the requirement consistent between the 44 px height (FR-008) and the 24 px WCAG 2.2 minimum, so the stricter value is clearly the intended one? [Consistency, Spec §FR-008]
+- [x] CHK010 Is spacing between the two buttons, and between them and the social icons, specified so adjacent targets do not crowd each other? [Gap]
+- [x] CHK011 Are the social icon links' own target size requirements stated now that their row moves? [Gap, Spec §FR-011]
+- [x] CHK012 Is "visible focus indicator that meets WCAG 2.2 AA focus appearance for the site" measurable (thickness, offset, contrast)? [Ambiguity, Spec §FR-010]
+- [x] CHK013 Is the full focus order (social links versus buttons, given the row move) defined, not just main before second? [Gap, Spec §FR-003, §Edge Cases]
+- [x] CHK014 Is it specified that the visual order matches the reading and focus order at every width? [Consistency, Spec §FR-003, §FR-007]
+- [x] CHK015 Is the focus indicator required not to be clipped by the card or by neighbouring elements? [Edge Case, Gap]
 
 ## Reflow, text and motion
 
-- [ ] CHK016 Is the reflow requirement tied to 320 px width and 400 percent zoom, not only to "from 320 pixels up"? [Clarity, Spec §FR-011]
-- [ ] CHK017 Are requirements defined for text resizing and increased text spacing affecting button height and wrapping? [Gap, Spec §Edge Cases]
-- [ ] CHK018 Is the long-label rule ("wraps or stacks") a single unambiguous behaviour, and does it keep both buttons at equal height? [Ambiguity, Spec §Edge Cases, §FR-008]
-- [ ] CHK019 Is the requirement that the 640 px layout keeps all links visible and tappable measurable? [Measurability, Spec §FR-011]
-- [ ] CHK020 Is the reduced-motion requirement specific about which transitions it covers, for both buttons? [Clarity, Spec §Edge Cases]
-- [ ] CHK021 Are forced-colours or high-contrast mode requirements stated for the outlined button, whose border is its only boundary? [Gap]
+- [x] CHK016 Is the reflow requirement tied to 320 px width and 400 percent zoom, not only to "from 320 pixels up"? [Clarity, Spec §FR-011]
+- [x] CHK017 Are requirements defined for text resizing and increased text spacing affecting button height and wrapping? [Gap, Spec §Edge Cases]
+- [x] CHK018 Is the long-label rule ("wraps or stacks") a single unambiguous behaviour, and does it keep both buttons at equal height? [Ambiguity, Spec §Edge Cases, §FR-008]
+- [x] CHK019 Is the requirement that the 640 px layout keeps all links visible and tappable measurable? [Measurability, Spec §FR-011]
+- [x] CHK020 Is the reduced-motion requirement specific about which transitions it covers, for both buttons? [Clarity, Spec §Edge Cases]
+- [x] CHK021 Are forced-colours or high-contrast mode requirements stated for the outlined button, whose border is its only boundary? [Gap]
 
 ## Semantics and names
 
-- [ ] CHK022 Is the accessible name of each button required to match its visible label (label in name)? [Completeness, Spec §FR-006]
-- [ ] CHK023 Is the semantics of the social links row (list, group label, icon-only names) specified now that it is a separate row? [Gap, Spec §FR-011]
-- [ ] CHK024 Are the two buttons distinguishable to a screen reader user who hears them as a pair of links with similar roles? [Gap, Spec §FR-006]
+- [x] CHK022 Is the accessible name of each button required to match its visible label (label in name)? [Completeness, Spec §FR-006]
+- [x] CHK023 Is the semantics of the social links row (list, group label, icon-only names) specified now that it is a separate row? [Gap, Spec §FR-011]
+- [x] CHK024 Are the two buttons distinguishable to a screen reader user who hears them as a pair of links with similar roles? [Gap, Spec §FR-006]
 
 ## Acceptance and verification
 
-- [ ] CHK025 Are the accessibility acceptance criteria tied to named viewports and both colour modes, with a pass condition stated? [Measurability, Spec §SC-002, §SC-003]
-- [ ] CHK026 Does the success criterion on zero violations state whether hover and focus states are included in the automated check? [Ambiguity, Spec §SC-003]
-- [ ] CHK027 Is the state with the second button absent covered by the same accessibility requirements as the two-button state? [Coverage, Spec §FR-004]
+- [x] CHK025 Are the accessibility acceptance criteria tied to named viewports and both colour modes, with a pass condition stated? [Measurability, Spec §SC-002, §SC-003]
+- [x] CHK026 Does the success criterion on zero violations state whether hover and focus states are included in the automated check? [Ambiguity, Spec §SC-003]
+- [x] CHK027 Is the state with the second button absent covered by the same accessibility requirements as the two-button state? [Coverage, Spec §FR-004]
