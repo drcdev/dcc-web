@@ -8,27 +8,27 @@
 
 ## Tracking and Third Parties
 
-- [ ] CHK001 Is "no tracking" defined concretely (no analytics events, no tracking parameters in share addresses, no referral beacons)? [Clarity, Spec §FR-011]
-- [ ] CHK002 Are the share address contents specified as limited to the post title and address, with no other parameters? [Completeness, Spec §US3, §FR-010]
-- [ ] CHK003 Is the requirement against share counts and analytics events in the share links consistent between scope, FR-011 and Assumptions? [Consistency, Spec §Out of scope, §FR-011]
-- [ ] CHK004 Is the privacy basis (Principle X: privacy-focused analytics or none) cited as a requirement source rather than only an assumption? [Traceability, Spec §Assumptions]
-- [ ] CHK005 Are requirements defined for external-link referrer and opener behaviour on the LinkedIn link? [Gap]
-- [ ] CHK006 Is it stated that the photo and any footer asset are first-party, with no third-party fetch on page load? [Completeness, Spec §FR-011]
+- [x] CHK001 Is "no tracking" defined concretely (no analytics events, no tracking parameters in share addresses, no referral beacons)? [Clarity, Spec §FR-011]
+- [x] CHK002 Are the share address contents specified as limited to the post title and address, with no other parameters? [Completeness, Spec §US3, §FR-010]
+- [x] CHK003 Is the requirement against share counts and analytics events in the share links consistent between scope, FR-011 and Assumptions? [Consistency, Spec §Out of scope, §FR-011]
+- [x] CHK004 Is the privacy basis (Principle X: privacy-focused analytics or none) cited as a requirement source rather than only an assumption? [Traceability, Spec §Assumptions]
+- [x] CHK005 Are requirements defined for external-link referrer and opener behaviour on the LinkedIn link? [Gap]
+- [x] CHK006 Is it stated that the photo and any footer asset are first-party, with no third-party fetch on page load? [Completeness, Spec §FR-011]
 
 ## Content Security Policy
 
-- [ ] CHK007 Is the unchanged-policy requirement testable, naming the header file that must stay identical? [Measurability, Spec §FR-011]
-- [ ] CHK008 Is the prohibition on inline script and inline style stated for generated markup as well as authored source (including style attributes)? [Clarity, Spec §FR-011]
-- [ ] CHK009 Is the Share button's existing script requirement bounded (same bundle, no added bytes, no new origin)? [Completeness, Spec §FR-011, §FR-017]
-- [ ] CHK010 Is the policy outcome defined for the case where scripts are blocked (links still work, button hidden)? [Coverage, Spec §US3, §FR-012]
+- [x] CHK007 Is the unchanged-policy requirement testable, naming the header file that must stay identical? [Measurability, Spec §FR-011]
+- [x] CHK008 Is the prohibition on inline script and inline style stated for generated markup as well as authored source (including style attributes)? [Clarity, Spec §FR-011]
+- [x] CHK009 Is the Share button's existing script requirement bounded (same bundle, no added bytes, no new origin)? [Completeness, Spec §FR-011, §FR-017]
+- [x] CHK010 Is the policy outcome defined for the case where scripts are blocked (links still work, button hidden)? [Coverage, Spec §US3, §FR-012]
 
 ## Data Handling and Untrusted Input
 
-- [ ] CHK011 Are the post title and address encoded in share addresses per a stated requirement, covering titles with special characters? [Gap, Spec §FR-010]
-- [ ] CHK012 Is the source of all footer content (blog settings, post data) stated as committed content only, with no visitor-supplied input? [Assumption, Spec §Key Entities]
-- [ ] CHK013 Is it stated that the footer collects, stores and logs no personal data, consistent with Principle VII? [Traceability, Gap]
-- [ ] CHK014 Is the "no job title in new copy" rule's scope clear when the views note mentions employers? [Ambiguity, Spec §FR-019]
+- [x] CHK011 Are the post title and address encoded in share addresses per a stated requirement, covering titles with special characters? [Gap, Spec §FR-010]
+- [x] CHK012 Is the source of all footer content (blog settings, post data) stated as committed content only, with no visitor-supplied input? [Assumption, Spec §Key Entities]
+- [x] CHK013 Is it stated that the footer collects, stores and logs no personal data, consistent with Principle VII? [Traceability, Gap]
+- [x] CHK014 Is the "no job title in new copy" rule's scope clear when the views note mentions employers? [Ambiguity, Spec §FR-019]
 
 ## Dependencies
 
-- [ ] CHK015 Are the earlier specs whose behaviour must be preserved (035, 039) cited by requirement number so regression scope is traceable? [Traceability, Spec §US3]
+- [x] CHK015 Are the earlier specs whose behaviour must be preserved (035, 039) cited by requirement number so regression scope is traceable? [Traceability, Spec §US3]

@@ -41,3 +41,4 @@ section[data-related]   (outside the article, unchanged, mt-10)
 | F10 | Links, Share button and script behaviour unchanged (specs/039 A7, A8; 008 Share rules); no new script, inline style or external resource; `public/_headers` unchanged. | FR-009 to FR-011, SC-005 |
 | F11 | With scripts off, every part of the block is present and both share links work. | FR-012 |
 | F12 | Forced colours: the wrapper's border, the divider, the views note and all links are visible. | FR-015 |
+| F13 | Share links and Share button: focus ring 2 px, offset 2 px, `rust-600` in the light theme and `rust-300` in the dark theme (≥ 3:1 on the box); author links keep the site-wide accent ring. | FR-015, FR-015a |

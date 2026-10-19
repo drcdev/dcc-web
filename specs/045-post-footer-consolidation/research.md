@@ -101,7 +101,8 @@ Contrast values below are computed from the theme's `hsl(from …)` steps in `sr
 | **Views note** | **`text-sm` (0.875 rem), italic** | **`dusk-600`, 7.5:1** | **`dusk-300`, 5.8:1** |
 | "Share this post" (`h2`) | `text-lg`, bold | `dusk-900`, 18.2:1 | `white`, 14.3:1 |
 | Share pills | `text-sm`, `font-medium` | `rust-800`, 11.6:1; hover bg `rust-50`, 10.4:1 | `rust-300`, 7.3:1; hover bg `rust-950`, 9.9:1 |
-| Share pill border / focus ring | — | `rust-600`, 4.8:1 (needs 3:1) | `rust-300`, 7.3:1 |
+| Share pill border / focus ring | — | `rust-600`, 4.8:1 (needs 3:1) | border `rust-300`, 7.3:1; focus ring today `rust-600`, 3.0:1 (2.998, fails), so it gains `dark:focus-visible:outline-rust-300`, 7.3:1 (spec FR-015a) |
+| Author link focus ring (site-wide) | — | `accent-500`, 3.2:1 | `accent-400`, 5.7:1 |
 
 - **Decision**: the views note keeps its current tokens (`text-sm italic text-dusk-600
   dark:text-dusk-300`). It is smaller than the author lines (0.875 rem against 1 rem) and a lighter

@@ -8,35 +8,35 @@
 
 ## Box and Divider
 
-- [ ] CHK001 Is "the post title card's box style" defined by named properties (border, background, radius, padding, shadow) so it cannot drift if the title card changes? [Clarity, Spec §FR-004]
-- [ ] CHK002 Are the requirements for the share part's removed styling (gradient, rust border, smaller radius) complete for both themes? [Completeness, Spec §FR-004]
-- [ ] CHK003 Is the divider's thickness and colour token specified, not only "thin" and "the box's border colour"? [Ambiguity, Spec §FR-005]
-- [ ] CHK004 Is the divider spacing (1.5 rem each side) consistent with the box's inner padding value stated in FR-004? [Consistency, Spec §FR-004, §FR-005]
-- [ ] CHK005 Is it clear whether the divider spacing is measured from the views note, the heading box or the pills? [Ambiguity, Spec §FR-005]
+- [x] CHK001 Is "the post title card's box style" defined by named properties (border, background, radius, padding, shadow) so it cannot drift if the title card changes? [Clarity, Spec §FR-004]
+- [x] CHK002 Are the requirements for the share part's removed styling (gradient, rust border, smaller radius) complete for both themes? [Completeness, Spec §FR-004]
+- [x] CHK003 Is the divider's thickness and colour token specified, not only "thin" and "the box's border colour"? [Ambiguity, Spec §FR-005]
+- [x] CHK004 Is the divider spacing (1.5 rem each side) consistent with the box's inner padding value stated in FR-004? [Consistency, Spec §FR-004, §FR-005]
+- [x] CHK005 Is it clear whether the divider spacing is measured from the views note, the heading box or the pills? [Ambiguity, Spec §FR-005]
 
 ## Spacing to Neighbours
 
-- [ ] CHK006 Is the 2.5 rem gap defined from the text edge of the post content, not its container padding, so the measurement is unambiguous? [Clarity, Spec §FR-007]
-- [ ] CHK007 Are the gap requirements consistent between FR-007 (375 and 1440 px) and the Edge Case of a post with no Related posts and one with the questions panel? [Consistency, Spec §FR-007, §Edge Cases]
-- [ ] CHK008 Is the gap's behaviour defined at intermediate widths (768 and 1024 px), or only at the two sampled widths? [Coverage, Spec §FR-007, §SC-003]
-- [ ] CHK009 Is it stated whether the Related posts heading's own margins count toward the 40 px gap? [Ambiguity, Spec §FR-007]
+- [x] CHK006 Is the 2.5 rem gap defined from the text edge of the post content, not its container padding, so the measurement is unambiguous? [Clarity, Spec §FR-007]
+- [x] CHK007 Are the gap requirements consistent between FR-007 (375 and 1440 px) and the Edge Case of a post with no Related posts and one with the questions panel? [Consistency, Spec §FR-007, §Edge Cases]
+- [x] CHK008 Is the gap's behaviour defined at intermediate widths (768 and 1024 px), or only at the two sampled widths? [Coverage, Spec §FR-007, §SC-003]
+- [x] CHK009 Is it stated whether the Related posts heading's own margins count toward the 40 px gap? [Ambiguity, Spec §FR-007]
 
 ## Width and Alignment
 
-- [ ] CHK010 Are alignment requirements for the views note defined for each breakpoint with no conflict between FR-003 and FR-008? [Consistency, Spec §FR-003, §FR-008]
-- [ ] CHK011 Is the 768 px layout (photo left, text right, share heading left, links right) specified for the share row's wrapping when the links do not fit? [Edge Case, Spec §FR-008]
-- [ ] CHK012 Is the edge-matching tolerance (1 px) justified and applied to both left and right edges at every listed width? [Measurability, Spec §FR-006, §SC-002]
-- [ ] CHK013 Is the footer's width with the questions panel from 1280 px stated for both the panel and no-panel cases? [Coverage, Spec §Edge Cases]
+- [x] CHK010 Are alignment requirements for the views note defined for each breakpoint with no conflict between FR-003 and FR-008? [Consistency, Spec §FR-003, §FR-008]
+- [x] CHK011 Is the 768 px layout (photo left, text right, share heading left, links right) specified for the share row's wrapping when the links do not fit? [Edge Case, Spec §FR-008]
+- [x] CHK012 Is the edge-matching tolerance (1 px) justified and applied to both left and right edges at every listed width? [Measurability, Spec §FR-006, §SC-002]
+- [x] CHK013 Is the footer's width with the questions panel from 1280 px stated for both the panel and no-panel cases? [Coverage, Spec §Edge Cases]
 
 ## Typography and States
 
-- [ ] CHK014 Is the views note's size defined as a measurable value or token relative to the author lines? [Clarity, Spec §FR-003]
-- [ ] CHK015 Are hover and focus appearances for the unchanged links and pills stated as "unchanged" with a reference to where they are defined? [Traceability, Spec §FR-009]
-- [ ] CHK016 Are long-text requirements (series name, revised note) given a maximum wrap behaviour rather than only "wraps"? [Edge Case, Spec §Edge Cases]
-- [ ] CHK017 Is the layout-shift requirement for the late Share button quantified (zero shift, reserved space)? [Measurability, Spec §FR-017, §Edge Cases]
+- [x] CHK014 Is the views note's size defined as a measurable value or token relative to the author lines? [Clarity, Spec §FR-003]
+- [x] CHK015 Are hover and focus appearances for the unchanged links and pills stated as "unchanged" with a reference to where they are defined? [Traceability, Spec §FR-009]
+- [x] CHK016 Are long-text requirements (series name, revised note) given a maximum wrap behaviour rather than only "wraps"? [Edge Case, Spec §Edge Cases]
+- [x] CHK017 Is the layout-shift requirement for the late Share button quantified (zero shift, reserved space)? [Measurability, Spec §FR-017, §Edge Cases]
 
 ## Baselines and Scope
 
-- [ ] CHK018 Is it specified which post-page visual baselines must change and which must not, so SC-006 is checkable? [Clarity, Spec §FR-018, §SC-006]
-- [ ] CHK019 Are both themes and both platforms (macOS, Linux) named for the baseline refresh? [Completeness, Spec §FR-018]
-- [ ] CHK020 Are the drafts-on-preview and no-Related-posts variants included in the visual coverage requirements? [Coverage, Spec §Edge Cases]
+- [x] CHK018 Is it specified which post-page visual baselines must change and which must not, so SC-006 is checkable? [Clarity, Spec §FR-018, §SC-006]
+- [x] CHK019 Are both themes and both platforms (macOS, Linux) named for the baseline refresh? [Completeness, Spec §FR-018]
+- [x] CHK020 Are the drafts-on-preview and no-Related-posts variants included in the visual coverage requirements? [Coverage, Spec §Edge Cases]

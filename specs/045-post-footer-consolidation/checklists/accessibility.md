@@ -8,38 +8,38 @@
 
 ## Structure and Reading Order
 
-- [ ] CHK001 Is the heading outline of the footer block specified relative to the post and "Related posts" (levels, siblings, no skipped level)? [Completeness, Spec §FR-013]
-- [ ] CHK002 Is "adds no landmark and no accessible name of its own" stated unambiguously enough to decide whether a section, aside or group role is allowed? [Clarity, Spec §FR-013]
-- [ ] CHK003 Does the reading order in FR-014 agree with the order in User Story 2 scenario 3 and in the Clarifications? [Consistency, Spec §FR-014, §US2]
-- [ ] CHK004 Is it specified how the reading order (photo description after the views note) relates to the visual order on narrow widths, where the photo sits above the text? [Conflict, Spec §FR-008, §FR-014]
-- [ ] CHK005 Is the keyboard order defined for the case where the Share button is hidden and for the case where it appears after scripts run? [Coverage, Spec §FR-014]
-- [ ] CHK006 Are the requirements for how the views note is exposed (ordinary paragraph, no role, not hidden) free of conflict with its italic, small styling? [Consistency, Spec §US2]
+- [x] CHK001 Is the heading outline of the footer block specified relative to the post and "Related posts" (levels, siblings, no skipped level)? [Completeness, Spec §FR-013]
+- [x] CHK002 Is "adds no landmark and no accessible name of its own" stated unambiguously enough to decide whether a section, aside or group role is allowed? [Clarity, Spec §FR-013]
+- [x] CHK003 Does the reading order in FR-014 agree with the order in User Story 2 scenario 3 and in the Clarifications? [Consistency, Spec §FR-014, §US2]
+- [x] CHK004 Is it specified how the reading order (photo description after the views note) relates to the visual order on narrow widths, where the photo sits above the text? [Conflict, Spec §FR-008, §FR-014]
+- [x] CHK005 Is the keyboard order defined for the case where the Share button is hidden and for the case where it appears after scripts run? [Coverage, Spec §FR-014]
+- [x] CHK006 Are the requirements for how the views note is exposed (ordinary paragraph, no role, not hidden) free of conflict with its italic, small styling? [Consistency, Spec §US2]
 
 ## Contrast and Visual Perception
 
-- [ ] CHK007 Is the contrast minimum defined for every text and control state the block has (normal, hover, focus, visited)? [Completeness, Spec §FR-015]
-- [ ] CHK008 Is "secondary text colour" for the views note tied to a named, measurable token rather than described as "grey"? [Ambiguity, Spec §FR-003]
-- [ ] CHK009 Is the background against which contrast is measured defined for both themes (box background, not page background)? [Clarity, Spec §FR-015, §SC-004]
-- [ ] CHK010 Is a minimum size for the views note defined (not only "smaller than the author lines"), so small italic text stays readable? [Gap, Spec §FR-003]
-- [ ] CHK011 Are non-text contrast requirements stated for the outlined share pills and the focus indicator, as distinct from the decorative border and divider? [Coverage, Spec §FR-009, §FR-015]
-- [ ] CHK012 Is the rationale for exempting the divider and outer border from contrast documented against WCAG 1.4.11? [Assumption, Spec §FR-015]
+- [x] CHK007 Is the contrast minimum defined for every text and control state the block has (normal, hover, focus, visited)? [Completeness, Spec §FR-015]
+- [x] CHK008 Is "secondary text colour" for the views note tied to a named, measurable token rather than described as "grey"? [Ambiguity, Spec §FR-003]
+- [x] CHK009 Is the background against which contrast is measured defined for both themes (box background, not page background)? [Clarity, Spec §FR-015, §SC-004]
+- [x] CHK010 Is a minimum size for the views note defined (not only "smaller than the author lines"), so small italic text stays readable? [Gap, Spec §FR-003]
+- [x] CHK011 Are non-text contrast requirements stated for the outlined share pills and the focus indicator, as distinct from the decorative border and divider? [Coverage, Spec §FR-009, §FR-015]
+- [x] CHK012 Is the rationale for exempting the divider and outer border from contrast documented against WCAG 1.4.11? [Assumption, Spec §FR-015]
 
 ## Focus, Targets and Zoom
 
-- [ ] CHK013 Is the focus indicator style specified (thickness, colour, offset) for author links and share controls, not only its 3:1 ratio? [Clarity, Spec §FR-015]
-- [ ] CHK014 Are the 24 by 24 px target requirements stated for the inline author links, which sit in running text rows? [Coverage, Spec §FR-016]
-- [ ] CHK015 Is "never entirely hidden by the sticky header" quantified (scroll-margin or equivalent) for both link rows? [Measurability, Spec §FR-016]
-- [ ] CHK016 Are reflow requirements defined for 320 px, 200% text zoom and text-spacing overrides, including the share row wrapping? [Coverage, Spec §Edge Cases]
-- [ ] CHK017 Are requirements defined for the Share button appearing late so focus and reading position are not disturbed? [Edge Case, Spec §Edge Cases]
+- [x] CHK013 Is the focus indicator style specified (thickness, colour, offset) for author links and share controls, not only its 3:1 ratio? [Clarity, Spec §FR-015]
+- [x] CHK014 Are the 24 by 24 px target requirements stated for the inline author links, which sit in running text rows? [Coverage, Spec §FR-016]
+- [x] CHK015 Is "never entirely hidden by the sticky header" quantified (scroll-margin or equivalent) for both link rows? [Measurability, Spec §FR-016]
+- [x] CHK016 Are reflow requirements defined for 320 px, 200% text zoom and text-spacing overrides, including the share row wrapping? [Coverage, Spec §Edge Cases]
+- [x] CHK017 Are requirements defined for the Share button appearing late so focus and reading position are not disturbed? [Edge Case, Spec §Edge Cases]
 
 ## Alternate Modes
 
-- [ ] CHK018 Are forced-colours requirements defined per element (border, divider, note, links, pills) rather than as one general statement? [Completeness, Spec §Edge Cases]
-- [ ] CHK019 Is the photo's failure behaviour specified for assistive tech as well as sighted users (alt text source, empty alt not allowed)? [Edge Case, Spec §Edge Cases]
-- [ ] CHK020 Are reduced-motion and print requirements either stated or explicitly excluded? [Gap]
-- [ ] CHK021 Is the dark-theme contrast requirement stated separately from light, with the dark box background named? [Clarity, Spec §FR-013]
+- [x] CHK018 Are forced-colours requirements defined per element (border, divider, note, links, pills) rather than as one general statement? [Completeness, Spec §Edge Cases]
+- [x] CHK019 Is the photo's failure behaviour specified for assistive tech as well as sighted users (alt text source, empty alt not allowed)? [Edge Case, Spec §Edge Cases]
+- [x] CHK020 Are reduced-motion and print requirements either stated or explicitly excluded? [Gap]
+- [x] CHK021 Is the dark-theme contrast requirement stated separately from light, with the dark box background named? [Clarity, Spec §FR-013]
 
 ## Verification Clarity
 
-- [ ] CHK022 Is "no new violations" in the automated check defined against a stated baseline and rule set (WCAG 2.2 AA tags)? [Measurability, Spec §SC-004]
-- [ ] CHK023 Is it stated which accessibility criteria cannot be checked automatically and need a manual or preview check? [Gap]
+- [x] CHK022 Is "no new violations" in the automated check defined against a stated baseline and rule set (WCAG 2.2 AA tags)? [Measurability, Spec §SC-004]
+- [x] CHK023 Is it stated which accessibility criteria cannot be checked automatically and need a manual or preview check? [Gap]
