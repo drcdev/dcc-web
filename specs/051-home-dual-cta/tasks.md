@@ -56,8 +56,8 @@
 
 ## Phase 4: Visual baselines and review
 
-- [ ] T012 Layer: visual (page template appearance). Regenerate the macOS baselines with `pnpm run test:visual:update` (nvm and pnpm shim wrapper in the background, per `.claude/skills/_shared/visual-baselines.md`); only `tests/e2e/visual.spec.ts-snapshots/home-now-start-here-{phone,desktop}-{light,dark}-visual-darwin.png` should change. Review the images by eye.
-- [ ] T013 Regenerate the Linux baselines with `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, ask Don to start it). Only the four `home-now-start-here-*-visual-linux.png` files should change; commit all 8 images. Depends on T012.
+- [X] T012 Layer: visual (page template appearance). Regenerate the macOS baselines with `pnpm run test:visual:update` (nvm and pnpm shim wrapper in the background, per `.claude/skills/_shared/visual-baselines.md`); only `tests/e2e/visual.spec.ts-snapshots/home-now-start-here-{phone,desktop}-{light,dark}-visual-darwin.png` should change. Review the images by eye.
+- [X] T013 Regenerate the Linux baselines with `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, ask Don to start it). Only the four `home-now-start-here-*-visual-linux.png` files should change; commit all 8 images. Depends on T012.
 - [ ] T014 Run the local gate for the changed-paths tier (`changed-paths.ts --base origin/main`), and ask Don before any full `pnpm run verify` (CLAUDE.md memory: check in before the full gate). Tick tasks only after tests pass.
 - [ ] T015 [PREVIEW-CHECK] Don checks on the preview: the main button is taller (44 px) and the social icons sit on their own row; "Read my writing" is clearly quieter and lands on `/writing/`; light and dark look right at phone and desktop width; hover tint and visible focus ring on both buttons; Windows high contrast shows both button outlines (not testable locally); at 200 percent text size labels wrap without clipping.
 
