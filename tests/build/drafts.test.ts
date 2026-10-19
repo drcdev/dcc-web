@@ -71,14 +71,14 @@ const written = (build: FixtureSiteResult, path: string) => (existsSync(join(bui
 const summaries = (build: FixtureSiteResult) => JSON.parse(build.read("summaries.json")) as Summary[];
 const items = (xml: string) => [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((m) => m[1]!);
 
-// The story navigation block (spec 042): between the last part and the invitation.
+// The story navigation block (spec 042): after the invitation, outside the story article.
 const storyNav = (html: string) => /<nav[^>]*data-story-nav[^>]*>[\s\S]*?<\/nav>/.exec(html)?.[0] ?? "";
 const navHrefs = (nav: string) => [...nav.matchAll(/href="([^"]*)"/g)].map((m) => m[1]);
-const expectNavBetweenPartsAndInvitation = (html: string) => {
+const expectNavAfterInvitation = (html: string) => {
   const nav = html.indexOf("data-story-nav");
-  const lastPart = html.lastIndexOf("data-part=");
-  expect(nav).toBeGreaterThan(lastPart);
-  expect(html.indexOf("data-invitation-block")).toBeGreaterThan(nav);
+  expect(nav).toBeGreaterThan(html.lastIndexOf("data-part="));
+  expect(nav).toBeGreaterThan(html.indexOf("data-invitation-block"));
+  expect(nav).toBeGreaterThan(html.indexOf("</article>"));
 };
 
 const builtNames = (build: FixtureSiteResult) => filesUnder(build.dist).map((path) => path.slice(build.dist.length));
@@ -152,14 +152,14 @@ describe("a production build (Workers Builds, main)", () => {
 
   // 042 FR-002, FR-004: only the real build applies the production draft filter to routes. The site
   // also holds the real projects, so the checks name the fixtures and not the whole sequence.
-  it("never links a draft from a story's navigation, and sits it between the last part and the invitation", () => {
+  it("never links a draft from a story's navigation, and sits it after the invitation", () => {
     const pages = [...build().htmlFiles().keys()].filter((path) => /^projects\/[^/]+\/index\.html$/.test(path));
     expect(pages).toContain("projects/minimal/index.html");
     for (const path of pages) {
       const html = build().read(path);
       expect(storyNav(html), path).not.toContain("/projects/draft/");
       expect(navHrefs(storyNav(html)), path).toContain("/projects/");
-      expectNavBetweenPartsAndInvitation(html);
+      expectNavAfterInvitation(html);
     }
   });
 
@@ -383,7 +383,7 @@ describe("a preview build (Workers Builds, another branch)", () => {
     const minimal = storyNav(build().read("projects/minimal/index.html"));
     expect(minimal).toMatch(/<a[^>]*href="\/projects\/draft\/"[^>]*rel="prev"|<a[^>]*rel="prev"[^>]*href="\/projects\/draft\/"/);
     expect(minimal).toContain("Draft project");
-    expectNavBetweenPartsAndInvitation(build().read("projects/minimal/index.html"));
+    expectNavAfterInvitation(build().read("projects/minimal/index.html"));
     const draft = storyNav(build().read("projects/draft/index.html"));
     expect(draft).toMatch(/<a[^>]*href="\/projects\/minimal\/"[^>]*rel="next"|<a[^>]*rel="next"[^>]*href="\/projects\/minimal\/"/);
   });

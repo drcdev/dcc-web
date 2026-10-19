@@ -16,7 +16,7 @@ Run every command with the Node version from `.nvmrc` (see CLAUDE.md, Local tool
 ## By hand (preview deployment or `pnpm run dev`)
 
 1. Open a middle project story and scroll to the end: "← Previous: <title>", "All projects",
-   "Next: <title> →" sit after the Lessons part and before the invitation.
+   "Next: <title> →" sit after the invitation.
 2. Follow Next until the last project; compare each step with the order on `/projects/`.
    The last story has no Next link; the first has no Previous link.
 3. Tab through the block: focus moves previous, All projects, next, each with a visible outline.

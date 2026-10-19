@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: GitHub issue #186, "Add Previous / Next / Index navigation to project story pages". A reader who finishes a project story reaches the invitation block and has no way on except scrolling back to the header menu. Add links to the previous project, the projects index and the next project, after the four-part story and before the invitation, handling the first and last project cleanly and leaving drafts out of production.
+**Input**: User description: GitHub issue #186, "Add Previous / Next / Index navigation to project story pages". A reader who finishes a project story reaches the invitation block and has no way on except scrolling back to the header menu. Add links to the previous project, the projects index and the next project, after the four-part story and the invitation, handling the first and last project cleanly and leaving drafts out of production.
 
 ## Clarifications
 
@@ -16,12 +16,13 @@
 - Q: Should the index link read "All projects" (sentence case) or "All Projects" (title case, as the issue wrote it)? → A: "All projects", sentence case.
 - Q: At phone width, should the three links stack in one column or stay on one row and wrap? → A: Stack vertically as full-width links below 640 px (Tailwind `sm`); one row from 640 px up.
 - Q: Should the Previous and Next links show only the direction and the project title, or also the project's status? → A: Direction and title only, for example "← Previous: Flux"; no status.
+- Q (correction, Don, after review of PR #191): Should the nav sit above or below the invitation? -> A: Below. The invitation block belongs to the project story, so the nav goes after it, as site wayfinding outside the story article.
 
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Move to the next or previous project from the end of a story (Priority: P1)
 
-A reader finishes a project story. Below the last part of the story, before the invitation, they see a short set of links: the previous project by title, a link to all projects, and the next project by title. They follow one and land on that story or on the projects index, without going back to the header menu.
+A reader finishes a project story. Below the invitation that closes the story, they see a short set of links: the previous project by title, a link to all projects, and the next project by title. They follow one and land on that story or on the projects index, without going back to the header menu.
 
 **Why this priority**: This is the whole change. Without it the story is a dead end.
 
@@ -29,7 +30,7 @@ A reader finishes a project story. Below the last part of the story, before the 
 
 **Acceptance Scenarios**:
 
-1. **Given** a story that has projects listed both before and after it on the projects index, **When** the reader reaches the end of the four parts, **Then** they see, in this order, a link naming the previous project, a link to all projects, and a link naming the next project, all placed before the invitation.
+1. **Given** a story that has projects listed both before and after it on the projects index, **When** the reader reaches the end of the four parts, **Then** they see, in this order, a link naming the previous project, a link to all projects, and a link naming the next project, all placed after the invitation.
 2. **Given** that story, **When** the reader follows the next-project link, **Then** they land on the story the projects index lists directly after the current one.
 3. **Given** that story, **When** the reader follows the all-projects link, **Then** they land on the projects index.
 4. **Given** the first project on the projects index, **When** the reader reaches the end of its story, **Then** there is no previous-project link and no empty placeholder control; the all-projects and next-project links still show.
@@ -87,7 +88,7 @@ A reader who uses a keyboard, a screen reader or a phone can find and use the sa
 
 ## Appearance and visual baselines
 
-Every project story page changes appearance: a new block appears between the last part and the invitation. The project story visual baselines (macOS and Linux) must be refreshed in this change. The projects index and all other pages do not change appearance.
+Every project story page changes appearance: a new block appears below the invitation. The project story visual baselines (macOS and Linux) must be refreshed in this change. The projects index and all other pages do not change appearance.
 
 ## Assumptions
 

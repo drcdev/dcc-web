@@ -164,10 +164,11 @@ summary,
 
 /* -------------------------------------------------------- Story navigation */
 
-/* Previous, all projects and next, between the last part and the invitation: stacked full-width links
-   below sm, one row from sm. */
+/* Previous, all projects and next, after the story and its invitation, outside the article: stacked
+   full-width links below sm, one row from sm. Sized like the article; the invitation block already ends in
+   padding, so a small top margin is enough, and the bottom margin sets it off from the site footer. */
 [data-story-nav] {
-  @apply mt-12;
+  @apply mx-auto mt-2 mb-8 max-w-screen-xl;
 }
 [data-story-nav] ul {
   @apply m-0 flex list-none flex-col gap-2 p-0 sm:flex-row sm:flex-wrap sm:justify-between;

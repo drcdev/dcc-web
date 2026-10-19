@@ -42,7 +42,7 @@ Astro.csp?.insertStyleHash(transitionHash([slug]));
   <article data-story class="mx-auto">
     <StoryHeader title={title} problem={problem} status={status} themes={themes} draft={draft} slug={slug} replacement={replacement} />
     <slot />
-    <StoryNav previous={previous} next={next} />
     <ProjectInvitation />
   </article>
+  <StoryNav previous={previous} next={next} />
 </BaseLayout>

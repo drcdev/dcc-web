@@ -304,6 +304,16 @@ test.describe("story navigation", () => {
     }
   });
 
+  test("sits after the invitation, outside the story article", async ({ page }) => {
+    await page.goto("/projects/every-part/");
+    const placed = await page.evaluate(() => {
+      const invitation = document.querySelector("[data-invitation-block]")!;
+      const nav = document.querySelector("[data-story-nav]")!;
+      return { after: !!(invitation.compareDocumentPosition(nav) & Node.DOCUMENT_POSITION_FOLLOWING), inArticle: !!nav.closest("article") };
+    });
+    expect(placed).toEqual({ after: true, inArticle: false });
+  });
+
   test("All projects goes to the index", async ({ page }) => {
     await page.goto("/projects/every-part/");
     await nav(page).getByRole("link", { name: "All projects" }).click();

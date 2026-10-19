@@ -6,8 +6,8 @@
 
 ## Summary
 
-Every project story gets a small navigation block between its last part and the closing
-invitation: "← Previous: <title>", "All projects" and "Next: <title> →". The neighbours are read
+Every project story gets a small navigation block after the closing
+invitation, outside the story article: "← Previous: <title>", "All projects" and "Next: <title> →". The neighbours are read
 from the same ordered list the projects index renders, so the sequence matches the index in every
 build (drafts only where the index lists them; retired projects included). The route already
 holds that list in `getStaticPaths()`, so it passes each story its two neighbours as props; a new
@@ -115,7 +115,7 @@ change; no constitution amendment.
   All projects: `<a href="/projects/">All projects</a>`. A missing neighbour's `<li>` is not
   rendered at all (FR-003). No status, date or other metadata (FR-001).
 - Styles in `portfolio.css` under a new `/* Story navigation */` block, using `[data-story-nav]`
-  selectors like the other story blocks: a top margin before the invitation; `flex flex-col`
+  selectors like the other story blocks: a small top margin below the invitation and a bottom margin above the site footer; `flex flex-col`
   below `sm` with each link `flex w-full min-h-11` and padding so the target is at least 44 x 44;
   `sm:flex-row` from 640 px; link colours, underline and `:focus-visible` outline copied from the
   existing story link styles (`[data-invitation]` focus outline, accent tokens); `break-words`
@@ -151,7 +151,7 @@ change; no constitution amendment.
 |---|---|---|
 | Neighbour rules: middle has both, first has no previous, last has no next, single has neither, no wrap-around, uses the given order | unit | `tests/unit/content/project-order.test.ts` (existing file, new `describe("neighbours")`) |
 | Block markup: `nav` labelled "Projects", order previous / all / next, hrefs, visible text "Previous: <title>" / "All projects" / "Next: <title>", arrows `aria-hidden`, a missing side renders no `li`/`a`, no status text, no script or button | component | new `tests/component/project/StoryNav.test.ts` (one test file per component is the repo norm; uses the existing helpers unchanged) |
-| Production build never links a draft; preview build includes it where the index does (minimal's previous is draft in preview, absent in production) and the block sits between the last part and the invitation | build | `tests/build/drafts.test.ts` (existing builds; new `it` cases; reason for build layer: only the real build applies the production draft filter to routes) |
+| Production build never links a draft; preview build includes it where the index does (minimal's previous is draft in preview, absent in production) and the block sits after the invitation, outside the article | build | `tests/build/drafts.test.ts` (existing builds; new `it` cases; reason for build layer: only the real build applies the production draft filter to routes) |
 | Journey on the fixture site: from the first project follow Next to the last, each step lands on the next index row; first has no Previous, last has no Next; All projects lands on `/projects/`; at 390 px the links stack full width, each at least 44 x 44, no horizontal scroll; keyboard focus order previous, all, next with a visible outline | E2E | `tests/e2e/projects-fixtures.spec.ts` (existing, port 4322) |
 | No new axe violations on the story template | a11y | existing `tests/e2e/a11y.spec.ts` cases (no edit) |
 | Pixels of the story template | visual | existing `story-template` shot in `tests/e2e/visual.spec.ts` (no spec edit; baselines refreshed, macOS and Linux via Docker) |
@@ -173,7 +173,7 @@ build, so the draft is listed. Its index order is: `draft` (2026-01-02), `minima
   it is covered by `tests/build/drafts.test.ts`, whose production build has `minimal`, a draft and
   `retired`.
 - Existing assertions that the invitation follows the last part (`projects.spec.ts`,
-  `drafts.test.ts`) stay true: the block sits between them and contains no `data-part`.
+  `drafts.test.ts`) stay true: the block sits after both, outside the article, and contains no `data-part`.
 
 ## Project Structure
 
@@ -197,7 +197,7 @@ src/
 ├── components/project/
 │   ├── StoryNav.astro          # new: the previous / all projects / next block
 │   └── portfolio.css           # edit: story-nav styles + forced-colours focus rule
-├── layouts/ProjectLayout.astro # edit: optional previous/next props, render StoryNav before the invitation
+├── layouts/ProjectLayout.astro # edit: optional previous/next props, render StoryNav after the invitation, after the article
 ├── lib/content/project-order.ts# edit: add pure neighbours()
 └── pages/projects/[slug].astro # edit: pass previous/next props from the ordered list
 
