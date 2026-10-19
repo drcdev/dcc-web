@@ -83,6 +83,17 @@ const link = "underline underline-offset-2 hover:text-rust-700 dark:hover:text-r
     )
   }
   <Column {...columnProps}>
+  {/* Heading and privacy paragraph sit outside the form so focusing the privacy link does not trigger the form's focusin spam-check load (FR-013). */}
+  <h2 id="contact-form-heading" class="mb-4 text-2xl font-bold text-dusk-900 dark:text-white">Send a message</h2>
+
+  {
+    hasPrivacy && (
+      <div data-contact-privacy class="mb-4 text-sm [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-rust-700 dark:[&_a:hover]:text-rust-300">
+        <slot />
+      </div>
+    )
+  }
+
   <form
     id="contact-form"
     class="text-dusk-900 dark:text-mist-300"
@@ -91,16 +102,6 @@ const link = "underline underline-offset-2 hover:text-rust-700 dark:hover:text-r
     method="post"
     aria-labelledby="contact-form-heading"
   >
-    <h2 id="contact-form-heading" class="mb-4 text-2xl font-bold text-dusk-900 dark:text-white">Send a message</h2>
-
-    {
-      hasPrivacy && (
-        <div data-contact-privacy class="mb-4 text-sm [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-rust-700 dark:[&_a:hover]:text-rust-300">
-          <slot />
-        </div>
-      )
-    }
-
     <p id="contact-js-required" class="mb-4 rounded-lg border border-dusk-500 p-3 text-sm dark:border-dusk-400">
       Sending this form needs JavaScript. You can still read how your information is handled in the
       <a class={link} href="/privacy-policy/" target="_blank" rel="noopener">privacy policy (opens in a new tab)</a>.

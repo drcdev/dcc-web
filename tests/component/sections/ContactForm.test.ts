@@ -323,10 +323,10 @@ describe("ContactForm with a note slot", async () => {
     expect(pageTags.find((t) => "data-contact-note-body" in t.attrs)!.attrs.class).toContain("lg:max-w-none");
   });
 
-  it("L8 puts the privacy slot inside the form after its heading", () => {
+  it("L8 puts the privacy slot after the form heading and before the form, outside it", () => {
     const form = at('id="contact-form"');
     expect(at("data-contact-privacy")).toBeGreaterThan(at("contact-form-heading"));
-    expect(at("data-contact-privacy")).toBeGreaterThan(form);
+    expect(at("data-contact-privacy")).toBeLessThan(form);
     expect(at("data-contact-privacy")).toBeLessThan(at("contact-js-required"));
     expect(page).toContain("privacy-copy");
   });

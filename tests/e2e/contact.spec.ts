@@ -385,8 +385,15 @@ test.describe("layout", () => {
       }
       await page.waitForTimeout(500);
       expect(challengeRequests, "no spam-check request while on the note links (FR-013)").toEqual([]);
-      // The privacy note's link sits inside the form, between the quick links and Name; the form's
-      // focusin handler loads the check from there, as it does from any control in the form.
+      // The privacy note's link sits in the form column, outside the form, so focusing it does not
+      // load the check either (FR-013).
+      const privacyLink = page.locator("[data-contact-privacy] a").first();
+      for (let i = 0; i < 5 && !(await privacyLink.evaluate((el) => el === document.activeElement)); i++) {
+        await page.keyboard.press("Tab");
+      }
+      await expect(privacyLink).toBeFocused();
+      await page.waitForTimeout(500);
+      expect(challengeRequests, "no spam-check request while on the privacy link (FR-013)").toEqual([]);
       const name = page.getByLabel("Name", { exact: true });
       for (let i = 0; i < 5 && !(await name.evaluate((el) => el === document.activeElement)); i++) {
         await page.keyboard.press("Tab");

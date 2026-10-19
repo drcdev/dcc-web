@@ -148,7 +148,7 @@ component that already owns the form, so no new section, layout or route is adde
 | Test | Effect |
 |------|--------|
 | `tests/e2e/contact.spec.ts` (all journeys, CSP, tab order from Name, honeypot, `?project=`) | Expected to pass **unchanged**. The ids and form order do not change. The tab-order test starts at Name, so the note links before it do not affect it. |
-| `contact.spec.ts` "privacy note" | Expected to pass unchanged. `main p a[href='/privacy-policy/']` `.first()` is still the privacy paragraph, now first inside the form, and it stays underlined (R5). |
+| `contact.spec.ts` "privacy note" | Expected to pass unchanged. `main p a[href='/privacy-policy/']` `.first()` is still the privacy paragraph, now first in the form column above the form element (outside it, so its focus does not load the spam check, FR-013), and it stays underlined (R5). |
 | `a11y.spec.ts` (`TEMPLATES` idle scans; "contact form states") | No edit. It covers the new note in both themes at both widths. |
 | `geometry.spec.ts`, `no-js.spec.ts` | No edit. `/contact/` is in `TEMPLATES`. |
 | `budget.spec.ts` | No edit. No script is added. |

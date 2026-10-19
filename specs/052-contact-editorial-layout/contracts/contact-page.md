@@ -44,9 +44,9 @@ the privacy slot and the page file shape. Row ids (`L1`…) are for test titles.
     </ul>
   </section>
   <div data-contact-form-column class="mt-10 lg:col-span-7 lg:mt-0">
+    <h2 id="contact-form-heading">Send a message</h2>
+    <div data-contact-privacy class="mb-4 text-sm …"><!-- default slot --></div>
     <form id="contact-form" … aria-labelledby="contact-form-heading">
-      <h2 id="contact-form-heading">Send a message</h2>
-      <div data-contact-privacy class="mb-4 text-sm …"><!-- default slot --></div>
       <p id="contact-js-required">…</p>
       <p id="contact-required-note">…</p>
       … (every existing element, unchanged and in the same order)
@@ -65,7 +65,7 @@ the privacy slot and the page file shape. Row ids (`L1`…) are for test titles.
 | L5 | `[data-contact-links]` holds exactly three links in this order: one per `socialNavigation` entry (`href` and visible label from the entry), then `mailto:` + `site.contactEmail` with the address as its visible text and no query string (no subject or body). No link has a `target` attribute (FR-007, FR-007b). Every `socialNavigation` entry has an icon (FR-007c). |
 | L6 | Every icon in `[data-contact-links]` is an `svg` with `aria-hidden="true"`. The link's accessible name is its visible text (FR-007). GitHub and LinkedIn use `src/icons/github.svg` and `linkedin.svg`. Email uses the new `src/icons/mail.svg`. |
 | L7 | The note links have a visible focus outline (`focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500`, `dark:focus-visible:outline-accent-400`). In both themes they use the colour pairs the form and the home "open to" line already use (FR-015). |
-| L8 | `[data-contact-privacy]` is inside `#contact-form`, after `#contact-form-heading` and before `#contact-js-required`. Its links are underlined (FR-008; e2e "privacy note"). |
+| L8 | `#contact-form-heading` and `[data-contact-privacy]` are in the form column, before and outside `#contact-form` (which still takes its name from the heading via `aria-labelledby`), so focusing the privacy link does not fire the form's `focusin` spam-check load (FR-013). `[data-contact-privacy]` follows the heading and precedes `#contact-js-required`. Its links are underlined (FR-008; e2e "privacy note"). |
 | L9 | `#contact-success` is inside `[data-contact-form-column]`. When it replaces the form, the note column does not move (FR-014; edge case "Success panel height"). |
 | L10 | The note and form columns have `min-w-0`, so a 100-character `?project=` value or a long error wraps inside its column and does not widen it (edge cases). |
 | L11 | Each quick link is at least 24 px tall (`min-h-6`) and may wrap its text (`break-words`), one link per line. The note body is `max-w-prose lg:max-w-none` (FR-007c, FR-015, FR-017). |
