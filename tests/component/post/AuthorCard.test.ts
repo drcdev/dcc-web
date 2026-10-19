@@ -86,6 +86,12 @@ describe("AuthorCard inside the footer box (specs/045 rows F2, F4)", () => {
     expect(html.indexOf("</div>", note)).toBeLessThan(html.indexOf("<img"));
   });
 
+  it("F9: the views note has no rule of its own and inherits the card's alignment (FR-003, FR-005)", async () => {
+    const note = tags(await render()).find((t) => "data-views-note" in t.attrs);
+    const classes = classList(note!);
+    for (const c of ["border-t", "pt-4", "text-center", "md:text-left"]) expect(classes, c).not.toContain(c);
+  });
+
   it("the text column breaks long words inside the box", async () => {
     const column = tags(await render()).find((t) => t.name === "div");
     expect(classList(column!)).toContain("[overflow-wrap:anywhere]");

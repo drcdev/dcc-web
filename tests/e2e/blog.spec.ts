@@ -662,6 +662,23 @@ test.describe("share", () => {
   });
 });
 
+test.describe("views note caption (specs/045 F9)", () => {
+  test("F9: the note is 14 px italic, smaller than the author lines, and appears once", async ({ page }) => {
+    await page.goto(POST);
+    await expect(page.locator("[data-views-note]")).toHaveCount(1);
+    const note = await page.locator("[data-views-note]").evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { size: s.fontSize, style: s.fontStyle };
+    });
+    const line = await page
+      .locator("[data-author-card] p:not([data-views-note])")
+      .first()
+      .evaluate((el) => getComputedStyle(el).fontSize);
+    expect(note).toEqual({ size: "14px", style: "italic" });
+    expect(line).toBe("16px");
+  });
+});
+
 test.describe("related posts", () => {
   test("lists up to 3 other posts, most shared topics first, never the post itself", async ({ page }) => {
     await page.goto(POST);

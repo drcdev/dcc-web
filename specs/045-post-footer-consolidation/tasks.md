@@ -69,15 +69,15 @@ US1 builds the box and US2 the caption; US3 proves nothing regressed.
 
 ### Tests for User Story 2 (write first, confirm they fail)
 
-- [ ] T015 [P] [US2] In `tests/component/post/AuthorCard.test.ts` (layer: component; the placement half of F2 is already in T003): the `[data-views-note]` rendered inside the card has no `border-t`, `pt-4` or own `text-center`/`md:text-left` classes, so it inherits the card's alignment (FR-003, FR-005 "no rule of its own"). Must fail before T019.
-- [ ] T016 [P] [US2] In `tests/component/post/ViewsNote.test.ts` (layer: component): still one plain `p`, exact wording from `src/config/blog.ts`, no role, not a heading; add that it carries `text-sm italic text-dusk-600 dark:text-dusk-300` and no border or padding classes (FR-003).
-- [ ] T017 [US2] In `tests/e2e/blog.spec.ts` add the F9 computed-style test (layer: e2e; the class alone does not prove the rendered size): the note's `font-size` is 14 px at default zoom, smaller than the author lines' 16 px, `font-style` is italic, and the note appears exactly once on the page. Different `describe` block from T007; do it after T009 since the file is shared.
-- [ ] T018 [P] [US2] In `tests/e2e/blog.a11y.spec.ts` (layer: a11y/axe, the layer that measures contrast on the real rendered box): confirm the post template scan covers the footer in both themes and widths with zero violations (row F9, SC-004); the target-size selector list stays as it is (the note is not a target). Add one test that hovers each author link and each share link in turn and runs axe's `color-contrast` rule scoped to `[data-post-footer]` in both themes (FR-015 hover state; axe's default scan sees only the resting state). Add the dark focus-ring check in T021, not here.
+- [x] T015 [P] [US2] In `tests/component/post/AuthorCard.test.ts` (layer: component; the placement half of F2 is already in T003): the `[data-views-note]` rendered inside the card has no `border-t`, `pt-4` or own `text-center`/`md:text-left` classes, so it inherits the card's alignment (FR-003, FR-005 "no rule of its own"). Must fail before T019.
+- [x] T016 [P] [US2] In `tests/component/post/ViewsNote.test.ts` (layer: component): still one plain `p`, exact wording from `src/config/blog.ts`, no role, not a heading; add that it carries `text-sm italic text-dusk-600 dark:text-dusk-300` and no border or padding classes (FR-003).
+- [x] T017 [US2] In `tests/e2e/blog.spec.ts` add the F9 computed-style test (layer: e2e; the class alone does not prove the rendered size): the note's `font-size` is 14 px at default zoom, smaller than the author lines' 16 px, `font-style` is italic, and the note appears exactly once on the page. Different `describe` block from T007; do it after T009 since the file is shared.
+- [x] T018 [P] [US2] In `tests/e2e/blog.a11y.spec.ts` (layer: a11y/axe, the layer that measures contrast on the real rendered box): confirm the post template scan covers the footer in both themes and widths with zero violations (row F9, SC-004); the target-size selector list stays as it is (the note is not a target). Add one test that hovers each author link and each share link in turn and runs axe's `color-contrast` rule scoped to `[data-post-footer]` in both themes (FR-015 hover state; axe's default scan sees only the resting state). Add the dark focus-ring check in T021, not here.
 
 ### Implementation for User Story 2
 
-- [ ] T019 [US2] Edit `src/components/post/ViewsNote.astro`: classes become `m-0 mt-4 text-sm italic text-dusk-600 dark:text-dusk-300` (no border, no padding, no own alignment); wording still comes from the blog settings; update the comment.
-- [ ] T020 [US2] Run the T015 to T018 tests plus `tests/e2e/fonts.spec.ts` (note stays Inter-Italic) and confirm they pass; update the `AuthorCard.astro` header comment if it still describes the note as separate.
+- [x] T019 [US2] Edit `src/components/post/ViewsNote.astro`: classes become `m-0 mt-4 text-sm italic text-dusk-600 dark:text-dusk-300` (no border, no padding, no own alignment); wording still comes from the blog settings; update the comment.
+- [x] T020 [US2] Run the T015 to T018 tests plus `tests/e2e/fonts.spec.ts` (note stays Inter-Italic) and confirm they pass; update the `AuthorCard.astro` header comment if it still describes the note as separate.
 
 **Checkpoint**: The note is a caption, readable, once per page.
 
