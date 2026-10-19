@@ -134,6 +134,11 @@ test.describe("with reduced motion", () => {
     expect(animated).toBe(0);
   });
 
+  test("has no transition on the project row visuals", async ({ page }) => {
+    await page.goto("/projects/");
+    await expect(page.locator("[data-project-visual] img").first()).toHaveCSS("transition-duration", "0s");
+  });
+
   test("has no view transition on either page", async ({ page }) => {
     await page.goto(STORY);
     expect(await activeViewTransitionRules(page)).toEqual([]);
