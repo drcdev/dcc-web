@@ -23,12 +23,29 @@ questions buttons, the status messages, the list, the AI note, the request rules
 bucket) is unchanged and keeps 022's contract rows P04, P06–P17 and P21–P24. This feature
 replaces 022's row P20 (the full panel as a block above the body below `xl`).
 
+## Clarifications
+
+### Session 2026-10-19
+
+- Q: What exact words should the closed bar show on phones and tablets? → A: Don's own wording:
+  "Think while you read" on the first line and a smaller second line "Optional AI critical
+  thinking questions" (exact strings).
+- Q: What should the closed bar look like on the page? → A: The panel's own rounded, bordered
+  card cut down to one slim row (label on the left, open/closed arrow on the right); when opened,
+  the same card grows to show the content.
+- Q: If a reader closes the panel after questions have loaded, or while they are still loading,
+  should the closed bar show that? → A: No. The closed bar always reads the same; the questions
+  or message are there when the reader reopens.
+- Open item for the next clarify round: whether the panel's existing heading ("Think before you
+  read", shown at 1280 px and wider and naming the landmark) also changes to "Think while you
+  read". Not decided here.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Start reading straight away on a phone (Priority: P1)
 
 A reader opens a writing post on a phone or tablet. Under the title card they see a single, slim
-"Think before you read" bar instead of the full panel, and the article's first paragraph begins
+"Think while you read" bar instead of the full panel, and the article's first paragraph begins
 within the first screen, so they can start reading without scrolling past a widget.
 
 **Why this priority**: This is the problem the issue reports. Most of the gain comes from the
@@ -41,8 +58,9 @@ article's first paragraph is inside the first viewport.
 **Acceptance Scenarios**:
 
 1. **Given** a writing post at a viewport narrower than 1280 px with JavaScript on, **When**
-   the page loads, **Then** the questions area shows only a closed trigger that names the
-   feature ("Think before you read") and says it is optional AI questions, and the panel's
+   the page loads, **Then** the questions area shows only a closed trigger reading "Think
+   while you read" with the smaller second line "Optional AI critical thinking questions", and
+   the panel's
    description sentence, buttons, status text and list are not displayed.
 2. **Given** the same page at 390×844 (and at 768×1024), **When** it loads, **Then** the top
    edge of the first paragraph of the article body is inside the first viewport without
@@ -152,11 +170,16 @@ of the questions area is displayed or reachable by keyboard, and the body follow
 
 - **FR-001**: Below 1280 CSS px, with JavaScript on, the questions area MUST first appear as a
   closed disclosure: a single trigger in the same place the panel occupies today (after the
-  title card, before the body, in DOM and focus order).
-- **FR-002**: The trigger's visible label MUST read "Think before you read" and MUST say the
-  questions are optional and written by AI (working copy: "Optional AI questions"), with a
-  non-text indicator of open or closed state that is not the only way the state is conveyed.
-  Copy is plain language with no emoji (constitution, Development Workflow).
+  title card, before the body, in DOM and focus order). The closed state is the panel's own
+  rounded, bordered card cut down to one slim row, label on the left and the open/closed
+  indicator on the right; opening grows the same card to show the content.
+- **FR-002**: The trigger's visible label MUST be exactly "Think while you read" on the first
+  line and, in smaller text on a second line, exactly "Optional AI critical thinking
+  questions", with a non-text indicator of open or closed state on the right that is not the
+  only way the state is conveyed. The label is fixed: it does not change when questions have
+  loaded, are loading or have failed. Copy is plain language with no emoji (constitution,
+  Development Workflow). Whether the panel's existing heading (at 1280 px and wider, and the
+  landmark name) changes to match is an open item for the next clarify round.
 - **FR-003**: The trigger MUST be a native button that exposes its state through
   `aria-expanded` and identifies the content it controls; it MUST be operable by pointer,
   Enter and Space; it MUST use the site's existing focus ring and have a target of at least
@@ -221,7 +244,8 @@ of the questions area is displayed or reachable by keyboard, and the body follow
 ## Assumptions
 
 - The trigger replaces the panel's visible heading on the small layout; the panel remains a
-  complementary landmark named "Think before you read" in both layouts, and the post title
+  complementary landmark in both layouts (its name, "Think before you read" today, follows the
+  open heading-wording item in Clarifications), and the post title
   stays the page's only `h1`. The plan decides whether the button sits inside the heading (the
   usual disclosure pattern) so the landmark keeps one name.
 - The issue's emoji and arrow ("💡 ... ↓") are illustrative. The site's copy rule is plain
