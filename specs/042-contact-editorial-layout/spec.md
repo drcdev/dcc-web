@@ -22,6 +22,8 @@
 - Q: How should the GitHub, LinkedIn and email quick links look in the note? → A: Icon plus visible text: the site's existing GitHub and LinkedIn icons beside visible text labels, and the email address shown as text.
 - Q: Should the GitHub and LinkedIn links open in a new tab? → A: No, they open in the same tab, like the footer and home page links.
 - Q: On wide screens, where does the "Contact" page title go? → A: Full width above both columns; the note and form columns start level beneath it.
+- Q: The site has GitHub and LinkedIn icons but no email icon; what should the email link show? → A: Add a new decorative envelope (mail) icon in the same style as the GitHub and LinkedIn icons; FR-007 stays as written.
+- Q: Should the note's h2 be exactly "Before you write"? → A: Yes, the heading text is exactly "Before you write".
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -35,7 +37,7 @@ A visitor on a laptop or desktop opens the contact page. On the left they read a
 
 **Acceptance Scenarios**:
 
-1. **Given** a viewport 1024 px wide or wider, **When** a visitor opens the contact page, **Then** the "Contact" page title spans the full width above both columns, the note column (headed by its own h2, such as "Before you write") is on the left, the form column is on the right, the form column is the wider of the two (roughly 7 parts to 5), and the two columns are top-aligned beneath the title.
+1. **Given** a viewport 1024 px wide or wider, **When** a visitor opens the contact page, **Then** the "Contact" page title spans the full width above both columns, the note column (headed by its own h2, "Before you write") is on the left, the form column is on the right, the form column is the wider of the two (roughly 7 parts to 5), and the two columns are top-aligned beneath the title.
 2. **Given** the note column, **When** the visitor reads it, **Then** it names the conversations Don welcomes (speaking and mentoring, on systems leadership and AI experiments), says he reads every message and replies by email within a few days, says "Vancouver Island, BC" and "Pacific Time", and offers links to GitHub, LinkedIn and his email address, each with an icon and visible text, opening in the same tab.
 3. **Given** the form column, **When** the visitor reads it, **Then** the "Send a message" heading comes first, followed by the existing privacy notice (what typed details are used for, how long they are kept, and a link to the privacy policy that opens in a new tab), and then the form fields, in that visual and reading order.
 4. **Given** a visitor using a screen reader or the keyboard, **When** they move through the page, **Then** they reach the note and its links first and the form second, matching the visual order.
@@ -90,13 +92,13 @@ A visitor who arrives from a project story's call to action (the page opens with
 ### Functional Requirements
 
 - **FR-001**: At viewport widths of 1024 px and above, the contact page MUST show the page title full width above two top-aligned columns: the note on the left and the form on the right, with the form column wider (roughly a 5 to 7 split of the content width).
-- **FR-001a**: The note MUST open with its own visible h2 (a short heading such as "Before you write"), at the same heading level as the form's "Send a message" heading.
+- **FR-001a**: The note MUST open with its own visible h2 with the exact text "Before you write", at the same heading level as the form's "Send a message" heading.
 - **FR-002**: Below 1024 px, the contact page MUST show one column, with the note above the form, and MUST NOT scroll sideways at 320 px and up.
 - **FR-003**: Reading order and keyboard order MUST match the visual order at every width: page title, note (its h2, text, then quick links), then the form column ("Send a message" heading, privacy notice, then form fields).
 - **FR-004**: The note MUST say which conversations Don welcomes, matching the home page's "open to" line: speaking and mentoring conversations, with systems leadership and AI experiments named as topics. It MUST NOT invite consulting inquiries.
 - **FR-005**: The note MUST state the response expectation in plain words: Don reads every message and replies by email within a few days.
 - **FR-006**: The note MUST state Don's location and time zone as "Vancouver Island, BC" and "Pacific Time".
-- **FR-007**: The note MUST offer links to Don's GitHub and LinkedIn profiles, taken from the same list the site footer and home page already use so the three stay in step, and a plain mailto link to the email address the privacy policy and terms of use already publish, with the address contact@doncoleman.ca shown as the link text. Each quick link MUST show an icon beside visible text (GitHub and LinkedIn reuse the site's existing icons, decorative and hidden from screen readers; their visible labels are the link names), and the GitHub and LinkedIn links MUST open in the same tab, like the footer and home page links.
+- **FR-007**: The note MUST offer links to Don's GitHub and LinkedIn profiles, taken from the same list the site footer and home page already use so the three stay in step, and a plain mailto link to the email address the privacy policy and terms of use already publish, with the address contact@doncoleman.ca shown as the link text. Each quick link MUST show an icon beside visible text (GitHub and LinkedIn reuse the site's existing icons; the email link gets a new envelope icon added in the same style; all three icons are decorative and hidden from screen readers, and the visible text is the link name), and the GitHub and LinkedIn links MUST open in the same tab, like the footer and home page links.
 - **FR-008**: The page MUST keep its existing privacy notice (what typed details are used for, that Don keeps them only as long as needed and deletes them on request, and the link to the privacy policy that opens in a new tab), placed in the form column directly under the "Send a message" heading and directly above the form fields, not in the note column, and in that order for reading.
 - **FR-009**: The note's text MUST stay in the contact page's content file so Don can edit it without touching a component (Principle VI), and MUST be readable with JavaScript turned off.
 - **FR-010**: The note MUST NOT include Don's job title, and its copy MUST be plain language with no hype or filler.
@@ -109,8 +111,8 @@ A visitor who arrives from a project story's call to action (the page opens with
 
 ### Key Entities
 
-- **Contact note**: the short block of text on the contact page's left column (or top, on a phone), under its own h2: welcomed conversations, reply expectation, location and time zone, and quick links. Edited by Don in the contact page's content file.
-- **Quick links**: GitHub and LinkedIn (from the site's existing social link list) and the public contact email address, shown as the text of a mailto link. Each shows an icon beside visible text; GitHub and LinkedIn open in the same tab.
+- **Contact note**: the short block of text on the contact page's left column (or top, on a phone), under its own h2 "Before you write": welcomed conversations, reply expectation, location and time zone, and quick links. Edited by Don in the contact page's content file.
+- **Quick links**: GitHub and LinkedIn (from the site's existing social link list) and the public contact email address, shown as the text of a mailto link. Each shows an icon beside visible text (a new envelope icon for the email link); GitHub and LinkedIn open in the same tab.
 - **Privacy notice**: the existing paragraph about how typed details are used, in the form column between the "Send a message" heading and the fields. It is not part of the note.
 
 ## Success Criteria *(mandatory)*
