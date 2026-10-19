@@ -4,9 +4,12 @@
 import { postHref } from "./addresses.ts";
 import { contentError } from "./errors.ts";
 
-export type CategoryId = "achievements" | "leadership" | "awards";
-/** The fixed category list, in display order (data-model.md "Category"). */
-export const categoryIds: readonly CategoryId[] = ["achievements", "leadership", "awards"];
+export type CategoryId = "leadership" | "awards" | "volunteer";
+/**
+ * The fixed category list, in display order (data-model.md "Category"). Achievements are shown but are
+ * not a category (spec Clarifications, session 2026-10-19).
+ */
+export const categoryIds: readonly CategoryId[] = ["leadership", "awards", "volunteer"];
 
 export interface Award {
   name: string;
@@ -34,6 +37,7 @@ export interface StepFile {
     leadership?: string[];
     awards?: Award[];
     posts?: string[];
+    volunteer?: boolean;
   };
 }
 
@@ -58,6 +62,8 @@ export interface TimelineStep {
   achievements: string[];
   leadership: string[];
   awards: Award[];
+  /** A volunteer role (FR-004a): the Volunteer category. */
+  volunteer: boolean;
   /** Related posts resolved to title and address; filled from User Story 2. */
   posts: { title: string; href: string }[];
 }
@@ -133,11 +139,17 @@ export function buildTimeline(files: readonly StepFile[], posts?: PostLookup): T
     achievements: (data.achievements ?? []).map(oneLine),
     leadership: (data.leadership ?? []).map(oneLine),
     awards: (data.awards ?? []).map((award) => ({ ...award, name: oneLine(award.name) })),
+    volunteer: data.volunteer ?? false,
     posts: (data.posts ?? []).flatMap((slug) => {
       const post = posts?.get(slug);
       return post ? [{ title: oneLine(post.title), href: postHref(slug) }] : [];
     }),
   }));
-  const categories = categoryIds.filter((id) => steps.some((step) => step[id].length > 0));
+  const categories = categoryIds.filter((id) => steps.some((step) => stepHas(step, id)));
   return { steps, categories };
+}
+
+/** Whether a step uses a category: an item in its list, or for Volunteer the step's own flag (FR-009). */
+export function stepHas(step: TimelineStep, id: CategoryId): boolean {
+  return id === "volunteer" ? step.volunteer : step[id].length > 0;
 }

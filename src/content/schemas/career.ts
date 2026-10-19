@@ -1,5 +1,5 @@
 // The `career` collection (specs/041-career-timeline/data-model.md; contracts/build-errors.md rows
-// T01 to T07 and T12). One YAML file per career step. Every object is strict, so an unknown key
+// T01 to T07, T12 and T14). One YAML file per career step. Every object is strict, so an unknown key
 // (including a fourth category) fails the build. Posts are references
 // (docs.astro.build/en/guides/content-collections/#defining-collection-references); the rules that
 // span files (C1 to C4) run when the About page builds. Zod comes from Astro's own re-export.
@@ -52,6 +52,7 @@ export function careerSchema() {
         }),
       ).optional(),
       posts: list("posts", reference("posts")).optional(),
+      volunteer: z.boolean({ error: "volunteer: write true, or leave the key out" }).optional(),
     })
     .superRefine((step, ctx) => {
       if (step.end !== "present" && month.test(step.start) && step.end < step.start) {

@@ -6,7 +6,7 @@
 // here works without JavaScript. Text is rendered as text, never as markup (FR-003b), no style
 // attribute is set (CSP, FR-017a), and nothing animates (FR-015).
 import { getCareerTimeline } from "../../lib/career.ts";
-import { formatMonth, type CategoryId, type Timeline } from "../../lib/content/career.ts";
+import { formatMonth, stepHas, type CategoryId, type Timeline } from "../../lib/content/career.ts";
 import "./career-timeline.css";
 
 export interface Props {
@@ -15,9 +15,9 @@ export interface Props {
 
 const timeline = Astro.props.timeline ?? (await getCareerTimeline());
 
-const categoryLabels: Record<CategoryId, string> = { achievements: "Achievements", leadership: "Leadership", awards: "Awards" };
-/** The categories a step holds items of, in the fixed order, for the filter script. */
-const stepCategories = (step: Timeline["steps"][number]) => timeline.categories.filter((id) => step[id].length > 0).join("|");
+const categoryLabels: Record<CategoryId, string> = { leadership: "Leadership", awards: "Awards", volunteer: "Volunteer" };
+/** The categories a step matches (items, or the volunteer flag), in the fixed order, for the filter script. */
+const stepCategories = (step: Timeline["steps"][number]) => timeline.categories.filter((id) => stepHas(step, id)).join("|");
 
 const link =
   "font-medium text-dusk-900 underline underline-offset-4 hover:text-rust-700 dark:text-white dark:hover:text-rust-400";

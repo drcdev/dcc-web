@@ -153,7 +153,7 @@ for (const size of [{ name: "phone", width: 390, height: 844 }, { name: "desktop
     await page.goto(ABOUT);
     await markerOnRoleLine(page);
     await expect(page.locator(steps).first().locator("summary")).toHaveAccessibleName(/\S.* to .*\S/);
-    await button(page, "achievements").click();
+    await button(page, "leadership").click();
     await markerOnRoleLine(page); // a matching step (open) and a muted one
     await page.locator(`${steps}[data-muted] summary`).first().click();
     await markerOnRoleLine(page); // opened by hand
@@ -200,7 +200,7 @@ test("reveals the filter once ready, with All selected and an empty status line"
 test("choosing a category opens matching steps with marked items and mutes the rest, still openable", async ({ page }) => {
   await page.goto(ABOUT);
   const info = await stepCategories(page);
-  const category = "achievements";
+  const category = "leadership";
   const matching = info.filter((s) => s.categories.includes(category));
   const others = info.filter((s) => !s.categories.includes(category));
   expect(matching.length).toBeGreaterThan(0);
@@ -230,7 +230,45 @@ test("choosing a category opens matching steps with marked items and mutes the r
   await expect(muted.locator("[data-step-detail]")).toBeVisible();
   await expect(muted).toHaveAttribute("data-muted", "");
   // The match marks only the chosen category's lists.
-  expect(await page.locator("[data-match]").evaluateAll((els) => els.every((el) => el.parentElement?.getAttribute("data-list") === "achievements"))).toBe(true);
+  expect(await page.locator("[data-match]").evaluateAll((els) => els.every((el) => el.parentElement?.getAttribute("data-list") === "leadership"))).toBe(true);
+});
+
+test("offers no Achievements choice; the Achievements list is shown but never marked", async ({ page }) => {
+  await page.goto(ABOUT);
+  await expect(page.locator(filter).getByRole("button")).toHaveText(["All", "Leadership", "Awards", "Volunteer"]);
+  await expect(button(page, "leadership")).toHaveCount(0);
+  expect(await page.locator(`${steps} [data-list=achievements]`).count()).toBeGreaterThan(0);
+  for (const category of ["leadership", "awards", "volunteer"]) {
+    await button(page, category).click();
+    await expect(page.locator("[data-list=achievements] > li[data-match]")).toHaveCount(0);
+  }
+});
+
+test("choosing Volunteer opens the volunteer steps as matches, marks no item and mutes the rest", async ({ page }) => {
+  await page.goto(ABOUT);
+  const info = await stepCategories(page);
+  const matching = info.filter((s) => s.categories.includes("volunteer"));
+  const others = info.filter((s) => !s.categories.includes("volunteer"));
+  expect(matching.length).toBeGreaterThan(0);
+  expect(others.length).toBeGreaterThan(0);
+  await button(page, "volunteer").click();
+  await expect(button(page, "volunteer")).toHaveAttribute("aria-pressed", "true");
+  for (const step of matching) {
+    const li = page.locator(`${steps}[data-step="${step.id}"]`);
+    await expect(li.locator("details")).toHaveJSProperty("open", true);
+    await expect(li).toHaveAttribute("data-matching", "");
+    await expect(li).not.toHaveAttribute("data-muted", "");
+    expect(await li.evaluate((el) => getComputedStyle(el).borderLeftStyle)).toBe("solid");
+  }
+  for (const step of others) {
+    const li = page.locator(`${steps}[data-step="${step.id}"]`);
+    await expect(li).toHaveAttribute("data-muted", "");
+    await expect(li.locator("details")).toHaveJSProperty("open", false);
+  }
+  await expect(page.locator("[data-match]")).toHaveCount(0);
+  const total = info.length;
+  const n = matching.length;
+  await expect(page.locator(statusLine)).toHaveText(n === 1 ? `1 of ${total} roles is a volunteer role.` : `${n} of ${total} roles are volunteer roles.`);
 });
 
 test("announces the count only after a change, in the exact wording", async ({ page }) => {
@@ -240,11 +278,14 @@ test("announces the count only after a change, in the exact wording", async ({ p
   await expect(status).toHaveText("");
   const info = await stepCategories(page);
   const count = (c: string) => info.filter((s) => s.categories.includes(c)).length;
-  for (const category of ["achievements", "leadership", "awards"]) {
+  for (const category of ["leadership", "awards"]) {
     const n = count(category);
     await button(page, category).click();
     await expect(status).toHaveText(`${n} of ${total} ${n === 1 ? "roles has" : "roles have"} ${category}.`);
   }
+  const v = count("volunteer");
+  await button(page, "volunteer").click();
+  await expect(status).toHaveText(v === 1 ? `1 of ${total} roles is a volunteer role.` : `${v} of ${total} roles are volunteer roles.`);
   await allButton(page).click();
   await expect(status).toHaveText(`Showing all ${total} roles.`);
 });
@@ -282,8 +323,8 @@ test("All resets hand-opened steps, muted and marks", async ({ page }) => {
 
 test("each change is fresh for every step, whatever was done by hand", async ({ page }) => {
   await page.goto(ABOUT);
-  await button(page, "achievements").click();
-  const match = page.locator(`${stepsFor("achievements")} details`).first();
+  await button(page, "awards").click();
+  const match = page.locator(`${stepsFor("awards")} details`).first();
   await match.locator("summary").click(); // close a matching step by hand
   await expect(match).toHaveJSProperty("open", false);
   await button(page, "leadership").click();
@@ -296,16 +337,16 @@ test("each change is fresh for every step, whatever was done by hand", async ({ 
 
 test("focus stays on the pressed button; it moves to the summary when its step closes around it", async ({ page }) => {
   await page.goto(ABOUT);
-  await button(page, "achievements").click();
-  await expect(button(page, "achievements")).toBeFocused();
+  await button(page, "awards").click();
+  await expect(button(page, "awards")).toBeFocused();
   // Keyboard: Space on the next button keeps focus there.
   await button(page, "leadership").focus();
   await page.keyboard.press("Space");
   await expect(button(page, "leadership")).toBeFocused();
 
   // Focus inside a step the next change closes (a script-driven press leaves focus where it was).
-  await button(page, "achievements").click();
-  const closing = page.locator(`${stepsFor("achievements")}:not(${stepsFor("leadership")})`).first();
+  await button(page, "awards").click();
+  const closing = page.locator(`${stepsFor("awards")}:not(${stepsFor("leadership")})`).first();
   await closing.locator("[data-step-detail]").evaluate((el) => el.setAttribute("tabindex", "-1"));
   await closing.locator("[data-step-detail]").focus();
   await button(page, "leadership").evaluate((el: HTMLElement) => el.click());
@@ -352,7 +393,7 @@ const ruleOf = (el: Element) => {
 
 test("Variant A: a muted step has a solid tint and a dashed left rule, a matching step a solid accent rule", async ({ page }) => {
   await page.goto(ABOUT);
-  await button(page, "achievements").click();
+  await button(page, "leadership").click();
   const muted = await page.locator(`${steps}[data-muted]`).first().evaluate(ruleOf);
   const match = await page.locator(`${steps}:not([data-muted])`).first().evaluate(ruleOf);
   const plain = await page.locator(`${steps}:not([data-muted])`).first().evaluate((el) => getComputedStyle(el).backgroundColor);
@@ -371,7 +412,7 @@ test("Variant A: a muted step has a solid tint and a dashed left rule, a matchin
 test("Variant A: in forced colours the muted rule is still dashed", async ({ page }) => {
   await page.emulateMedia({ forcedColors: "active" });
   await page.goto(ABOUT);
-  await button(page, "achievements").click();
+  await button(page, "leadership").click();
   const muted = await page.locator(`${steps}[data-muted]`).first().evaluate(ruleOf);
   expect(muted.style).toBe("dashed");
   expect(muted.width).toBeGreaterThanOrEqual(2);
@@ -379,7 +420,7 @@ test("Variant A: in forced colours the muted rule is still dashed", async ({ pag
 
 test("Variant A: print shows neither rule nor tint", async ({ page }) => {
   await page.goto(ABOUT);
-  await button(page, "achievements").click();
+  await button(page, "leadership").click();
   await page.emulateMedia({ media: "print" });
   for (const li of await page.locator(steps).all()) {
     const style = await li.evaluate(ruleOf);
@@ -462,7 +503,7 @@ test("keeps the filter state through a theme switch", async ({ page }) => {
 
 test("shows the highlight as a left border and bold text, not colour alone", async ({ page }) => {
   await page.goto(ABOUT);
-  await button(page, "achievements").click();
+  await button(page, "leadership").click();
   const item = page.locator("[data-match]").first();
   const style = await item.evaluate((el) => {
     const s = getComputedStyle(el);

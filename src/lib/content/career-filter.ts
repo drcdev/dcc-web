@@ -39,6 +39,7 @@ export function matchingSteps(steps: readonly FilterStep[], category: CategoryId
 /** The polite status message (FR-013). */
 export function statusText(choice: Choice, matching: number, total: number): string {
   if (choice === "all") return `Showing all ${total} roles.`;
+  if (choice === "volunteer") return matching === 1 ? `1 of ${total} roles is a volunteer role.` : `${matching} of ${total} roles are volunteer roles.`;
   return `${matching} of ${total} ${matching === 1 ? "roles has" : "roles have"} ${choice}.`;
 }
 

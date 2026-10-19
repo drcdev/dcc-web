@@ -1,4 +1,4 @@
-// The career step schema (specs/041-career-timeline/contracts/build-errors.md rows T01 to T07 and T12).
+// The career step schema (specs/041-career-timeline/contracts/build-errors.md rows T01 to T07, T12 and T14).
 // Posts are references; a plain slug string is what the YAML holds.
 import { describe, expect, it } from "vitest";
 import { careerSchema } from "../../../src/content/schemas/career.ts";
@@ -32,6 +32,7 @@ describe("career step schema", () => {
         leadership: ["l"],
         awards: [{ name: "Award", year: 2012, href: "https://example.com/a" }, { name: "Other", year: 2013 }],
         posts: ["one", "two"],
+        volunteer: true,
       }).success,
     ).toBe(true);
   });
@@ -78,6 +79,14 @@ describe("career step schema", () => {
 
   it("T07: the same post twice fails, naming it", () => {
     expect(problems({ ...valid, posts: ["one", "two", "one"] })).toContain("posts: one is listed twice");
+  });
+
+  it("T14: volunteer is true or false, or left out", () => {
+    expect(schema.safeParse({ ...valid, volunteer: true }).success).toBe(true);
+    expect(schema.safeParse({ ...valid, volunteer: false }).success).toBe(true);
+    for (const bad of ["yes", "true", 1, null, []]) {
+      expect(problems({ ...valid, volunteer: bad }), String(bad)).toContain("volunteer: write true, or leave the key out");
+    }
   });
 
   it("T12: text over its limit is named with the limit", () => {

@@ -63,12 +63,24 @@ describe("buildTimeline", () => {
     expect(timeline.steps[0]!.parts.map((p) => p.label)).toEqual(["Scope"]);
     expect(timeline.steps[0]!.period).toBe("Jan 2020 – present");
   });
-  it("lists the used categories in the fixed order", () => {
+  it("lists the used categories in the fixed order, never achievements", () => {
     const timeline = buildTimeline([
-      step("a", "2010-01", "2012-01", { awards: [{ name: "A", year: 2011 }] }),
-      step("b", "2020-01", "present", { achievements: ["x"] }),
+      step("a", "2010-01", "2012-01", { awards: [{ name: "A", year: 2011 }], volunteer: true }),
+      step("b", "2020-01", "present", { achievements: ["x"], leadership: ["y"] }),
     ]);
-    expect(timeline.categories).toEqual(["achievements", "awards"]);
+    expect(timeline.categories).toEqual(["leadership", "awards", "volunteer"]);
+    expect(buildTimeline([step("b", "2020-01", "present", { achievements: ["x"] })]).categories).toEqual([]);
+  });
+  it("carries the volunteer flag, false when left out, and offers Volunteer only when a step sets it", () => {
+    const timeline = buildTimeline([step("a", "2010-01", "2012-01", { volunteer: true }), step("b", "2020-01", "present", { volunteer: false })]);
+    expect(timeline.steps.map((s) => [s.id, s.volunteer])).toEqual([
+      ["b", false],
+      ["a", true],
+    ]);
+    expect(timeline.categories).toEqual(["volunteer"]);
+    const none = buildTimeline([step("a", "2010-01", "2012-01"), step("b", "2020-01", "present", { volunteer: false })]);
+    expect(none.steps.every((s) => s.volunteer === false)).toBe(true);
+    expect(none.categories).toEqual([]);
   });
   it("is empty with no steps", () => {
     expect(buildTimeline([])).toEqual({ steps: [], categories: [] });

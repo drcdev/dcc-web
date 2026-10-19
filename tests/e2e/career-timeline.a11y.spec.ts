@@ -32,7 +32,8 @@ for (const size of SIZES) {
 
       test("has zero axe violations with each offered category chosen", async ({ page }) => {
         const categories = await page.locator("[data-career-filter] button[data-category]").evaluateAll((els) => els.map((el) => el.getAttribute("data-category")!));
-        expect(categories.length).toBeGreaterThan(0);
+        // The fixture steps use every category, so each state is checked, Volunteer included.
+        expect(categories).toEqual(["leadership", "awards", "volunteer"]);
         for (const category of categories) {
           await page.locator(`[data-career-filter] button[data-category="${category}"]`).click();
           await expectNoAxeViolations(page);
