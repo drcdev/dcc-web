@@ -64,7 +64,7 @@ or 200% zoom; block edges equal the title card's within 1 px; no new landmark
 | File | Change |
 |------|--------|
 | `src/components/post/PostFooter.astro` (new) | Props `{ topics, title, href }`. Renders `div[data-post-footer]` with `mt-10 rounded-xl border border-dusk-200 bg-white p-6 shadow-sm dark:border-dusk-700 dark:bg-dusk-800`, then `<AuthorCard topics>` and `<Share title href>`. |
-| `src/components/post/AuthorCard.astro` | Drop the box classes and `mt-8` from the `section`; render `<ViewsNote />` after the `ul` inside the text column; update the header comment. |
+| `src/components/post/AuthorCard.astro` | Drop the box classes and `mt-8` from the `section`; render `<ViewsNote />` after the `ul` inside the text column; add `[overflow-wrap:anywhere]` to the text column (spec Edge Cases "Long text"); update the header comment. |
 | `src/components/post/ViewsNote.astro` | Classes become `m-0 mt-4 text-sm italic text-dusk-600 dark:text-dusk-300` (no border, no padding, no own alignment); update the comment. |
 | `src/components/post/Share.astro` | Drop `mt-8 rounded-lg border-rust-200 bg-gradient-to-r … p-4` and the dark gradient; add `mt-6 border-t border-dusk-200 pt-6 dark:border-dusk-700`; add `dark:focus-visible:outline-rust-300` to the control classes (spec FR-015a: `rust-600` is 3.0:1 on `dusk-800`); update the comment. Script unchanged. |
 | `src/layouts/PostLayout.astro` | Replace the views-note wrapper, `<AuthorCard>` and `<Share>` with `<PostFooter topics={post.topics} title={post.title} href={post.href} />`; update imports and the header comment. |
@@ -72,7 +72,7 @@ or 200% zoom; block edges equal the title card's within 1 px; no new landmark
 | Tests | See "Tests" and "Existing tests to update". |
 | `tests/e2e/visual.spec.ts-snapshots/post-template-*` | Eight baselines refreshed. |
 
-Exact markup, spacing and the contract rows F1 to F12: [contracts/post-footer.md](./contracts/post-footer.md).
+Exact markup, spacing and the contract rows F1 to F13: [contracts/post-footer.md](./contracts/post-footer.md).
 
 ### Decisions settled in this plan (clarify left them open)
 
@@ -101,7 +101,7 @@ Exact markup, spacing and the contract rows F1 to F12: [contracts/post-footer.md
 | Behaviour | Row | Layer | File |
 |-----------|-----|-------|------|
 | `PostFooter` is one `div[data-post-footer]` with no role/aria, containing author card then share; title-card box classes on the wrapper; no `footer`, `aside`, `hr` | F1, F3, F4 | Component | `tests/component/post/PostFooter.test.ts` (new) |
-| Views note inside the author card's text column, after the `ul`, before the `img`; no border classes on the note; the card has no box classes | F2, F4 | Component | `tests/component/post/AuthorCard.test.ts` |
+| Views note inside the author card's text column, after the `ul`, before the `img`; no border classes on the note; the card has no box classes; the text column wraps long words | F2, F4 | Component | `tests/component/post/AuthorCard.test.ts` |
 | Share has no gradient, radius or side borders; top border and padding present | F4 | Component | `tests/component/post/Share.test.ts` |
 | Share controls' dark-theme focus ring is `rust-300` (FR-015a) | F13 | Component (class on the control; axe does not check focus rings) | `tests/component/post/Share.test.ts` |
 | The block is the last child of the article, once, for the four post kinds (plain, related, questions, draft); related after the article | F1, F2 | Component | `tests/component/post/PostLayout.test.ts` |
@@ -112,6 +112,7 @@ Exact markup, spacing and the contract rows F1 to F12: [contracts/post-footer.md
 | Alignment below and from 768 px, share heading at the photo's left edge, note under the author text | F8 | E2E | `tests/e2e/blog.spec.ts` |
 | Views note font size smaller than the author lines | F9 | E2E (computed style; the class alone does not prove the rendered size) | `tests/e2e/blog.spec.ts` |
 | Contrast of the note and all text in both themes; 24 px targets | F9, FR-016 | a11y (axe) | `tests/e2e/blog.a11y.spec.ts` (post template already scanned) |
+| Contrast of author and share links in the hover state, both themes | FR-015 | a11y (axe `color-contrast` scoped to the block after hover; the resting scan does not see hover) | `tests/e2e/blog.a11y.spec.ts` |
 | Border, divider, note and links visible in forced colours | F12 | E2E | `tests/e2e/blog-forced-colors.spec.ts` |
 | JS off: all parts present, links visible, button hidden | F11 | E2E | `tests/e2e/blog.spec.ts` "without scripts" (extend) |
 | Links and Share button behaviour | F10 | Existing tests unchanged | `AuthorCard.test.ts` links, `Share.test.ts`, `blog.spec.ts` share tests, `site-links.spec.ts` |

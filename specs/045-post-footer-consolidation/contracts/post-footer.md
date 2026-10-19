@@ -12,7 +12,7 @@ article
   … title card, body/questions row …
   div[data-post-footer]   title-card box: rounded-xl border bg p-6 shadow-sm; mt-10; no role, no aria-*
     section[data-author-card]   no box of its own; flex-col centred, md: row, text-left
-      div (text column)
+      div (text column, overflow-wrap: anywhere)
         h2  "Written by {author.name}"
         p   line 1
         p   line 2
