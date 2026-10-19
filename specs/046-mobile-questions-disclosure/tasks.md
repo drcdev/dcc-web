@@ -93,7 +93,8 @@ description: "Task list for the collapsible questions panel on small screens"
 
 ### Implementation for User Story 3
 
-&
+- [X] T014 [US3] Fix anything T013 or the unchanged 022 tests (P21, P21a, P21b, P22 to P24) expose in the `xl:` classes of `src/components/post/QuestionsPanel.astro`. Add no resize script (D08: pure CSS and the untouched attribute). If the checks already pass, record that in the task notes and make no change.
+
 **Phase 5 notes**: T013 passed on first run because Phase 2 already built the `xl:` behaviour, so it was seen to fail by a temporary break (removing `xl:hidden` from the toggle classes: the D03 and breakpoint tests failed, 3 of 5; reverted, never committed). Two corrections while writing: the heading check reads `innerText` (the rendered text) because `toHaveText` also counts the hidden button's lines, and the resize focus test keeps focus on "Get questions" because a focused toggle is necessarily blurred by the browser once it becomes `display: none` at 1280 px. T014: all of T013 and the unchanged P21, P21a, P21b, P22 to P24 tests pass (56 of 56 in `questions.spec.ts`), so no change was made to the component.
 
 
@@ -152,4 +153,4 @@ description: "Task list for the collapsible questions panel on small screens"
 
 ## Phase 8: Convergence
 
-- [ ] T025 Restore the lost T014 task line in `specs/046-mobile-questions-disclosure/tasks.md`: under "### Implementation for User Story 3" a stray `&` replaced it in the phase 5 commit (d3c28d89); put back `- [X] T014 [US3] Fix anything T013 or the unchanged 022 tests (P21, P21a, P21b, P22 to P24) expose in the `xl:` classes of `src/components/post/QuestionsPanel.astro`. Add no resize script (D08: pure CSS and the untouched attribute). If the checks already pass, record that in the task notes and make no change.` (ticked, as the Phase 5 notes record it done with no component change) and remove the `&` line, with no code change, per plan: US3 task traceability (partial)
+- [X] T025 Restore the lost T014 task line in `specs/046-mobile-questions-disclosure/tasks.md`: under "### Implementation for User Story 3" a stray `&` replaced it in the phase 5 commit (d3c28d89); put back `- [X] T014 [US3] Fix anything T013 or the unchanged 022 tests (P21, P21a, P21b, P22 to P24) expose in the `xl:` classes of `src/components/post/QuestionsPanel.astro`. Add no resize script (D08: pure CSS and the untouched attribute). If the checks already pass, record that in the task notes and make no change.` (ticked, as the Phase 5 notes record it done with no component change) and remove the `&` line, with no code change, per plan: US3 task traceability (partial)
