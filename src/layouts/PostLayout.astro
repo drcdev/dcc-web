@@ -2,20 +2,18 @@
 // One blog post inside BaseLayout (Direction A of docs/design/blog.md; contracts/
 // blog-pages.md "Post"; research R14). In DOM order: the hero feature image
 // (only when the post has one), the title card that overlaps it visually, the
-// body in the site's reading column, and the "views are my own" note. A draft
+// body in the site's reading column, and the one footer block (author part with the
+// "views are my own" note, then Share; specs/045) as the article's last child. A draft
 // starts its title card with the Draft notice and is always noindex (FR-032,
-// FR-045). After the note come the author card (specs/039) and the Share area (inside the
-// article), then the Related posts (FR-028, FR-029).
+// FR-045). The Related posts follow outside the article (FR-028, FR-029).
 import type { ComponentProps } from "astro/types";
 import BaseLayout from "./BaseLayout.astro";
-import AuthorCard from "../components/post/AuthorCard.astro";
 import DraftNotice from "../components/page/DraftNotice.astro";
 import PostHero from "../components/post/PostHero.astro";
+import PostFooter from "../components/post/PostFooter.astro";
 import PostMeta from "../components/post/PostMeta.astro";
 import QuestionsPanel from "../components/post/QuestionsPanel.astro";
 import RelatedPosts from "../components/post/RelatedPosts.astro";
-import Share from "../components/post/Share.astro";
-import ViewsNote from "../components/post/ViewsNote.astro";
 import { featuredMark } from "../components/post/topic-styles.ts";
 import { blog } from "../config/blog.ts";
 import { proseClasses } from "../lib/prose.ts";
@@ -85,11 +83,7 @@ const seo: Partial<ComponentProps<typeof BaseLayout>> = {
         <slot />
       </div>
     </div>
-    <div class="mt-8">
-      <ViewsNote />
-    </div>
-    <AuthorCard topics={post.topics} />
-    <Share title={post.title} href={post.href} />
+    <PostFooter topics={post.topics} title={post.title} href={post.href} />
   </article>
   <RelatedPosts posts={related} />
 </BaseLayout>

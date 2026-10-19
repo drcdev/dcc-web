@@ -492,17 +492,47 @@ test.describe("share", () => {
   });
 
   for (const width of [320, 375, 768, 1024, 1440]) {
-    test(`views note, author card and share area match the title card's edges at ${width} px`, async ({ page }) => {
+    test(`F6: the footer box matches the title card's edges at ${width} px, with and without the questions panel`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
-      await page.goto(POST);
-      const card = (await page.locator("[data-title-card]").boundingBox())!;
-      for (const selector of ["[data-views-note]", "[data-author-card]", "[data-share]"]) {
-        const box = (await page.locator(selector).boundingBox())!;
-        expect(Math.abs(box.x - card.x), `${selector} left`).toBeLessThanOrEqual(1);
-        expect(Math.abs(box.x + box.width - (card.x + card.width)), `${selector} right`).toBeLessThanOrEqual(1);
+      for (const href of [POST, SERIES_POST.href, PLAIN_POST]) {
+        await page.goto(href);
+        const card = (await page.locator("[data-title-card]").boundingBox())!;
+        const box = (await page.locator("[data-post-footer]").boundingBox())!;
+        expect(Math.abs(box.x - card.x), `${href} left`).toBeLessThanOrEqual(1);
+        expect(Math.abs(box.x + box.width - (card.x + card.width)), `${href} right`).toBeLessThanOrEqual(1);
       }
     });
   }
+
+  for (const width of [375, 1440]) {
+    test(`F7: the footer has a 40 px gap above and below at ${width} px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(POST);
+      const gaps = await page.evaluate(() => {
+        const footer = document.querySelector("[data-post-footer]")!;
+        const above = footer.previousElementSibling!.getBoundingClientRect();
+        const box = footer.getBoundingClientRect();
+        const heading = document.querySelector("[data-related] h2")!.getBoundingClientRect();
+        return { top: box.top - above.bottom, bottom: heading.top - box.bottom };
+      });
+      expect(Math.abs(gaps.top), "top gap").toBeGreaterThan(39);
+      expect(Math.abs(gaps.top - 40), "top gap").toBeLessThanOrEqual(1);
+      expect(Math.abs(gaps.bottom - 40), "bottom gap").toBeLessThanOrEqual(1);
+    });
+  }
+
+  test("F5: the divider has 24 px above and below", async ({ page }) => {
+    await page.goto(POST);
+    const gaps = await page.evaluate(() => {
+      const share = document.querySelector("[data-share]")!;
+      const author = document.querySelector("[data-author-card]")!.getBoundingClientRect();
+      const s = share.getBoundingClientRect();
+      const heading = share.querySelector("h2")!.getBoundingClientRect();
+      return { above: s.top - author.bottom, below: heading.top - s.top - parseFloat(getComputedStyle(share).borderTopWidth) };
+    });
+    expect(Math.abs(gaps.above - 24)).toBeLessThanOrEqual(1);
+    expect(Math.abs(gaps.below - 24)).toBeLessThanOrEqual(1);
+  });
 
   test("A8: the writing link on a series post lands on that series page", async ({ page }) => {
     await page.goto(SERIES_POST.href);
@@ -513,7 +543,7 @@ test.describe("share", () => {
     await expect(page.locator("main h1")).toHaveText(SERIES_POST_NAME);
   });
 
-  test("A3: the author card matches the title card's edges at 1440 px with and without the questions panel", async ({
+  test("F6: the footer box matches the title card's edges at 1440 px, and the questions panel kinds are seen", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -522,7 +552,7 @@ test.describe("share", () => {
       await page.goto(href);
       kinds.add((await page.locator("[data-questions]").count()) > 0);
       const title = (await page.locator("[data-title-card]").boundingBox())!;
-      const box = (await page.locator("[data-author-card]").boundingBox())!;
+      const box = (await page.locator("[data-post-footer]").boundingBox())!;
       expect(Math.abs(box.x - title.x), `${href} left`).toBeLessThanOrEqual(1);
       expect(Math.abs(box.x + box.width - (title.x + title.width)), `${href} right`).toBeLessThanOrEqual(1);
     }
@@ -567,11 +597,14 @@ test.describe("share", () => {
       const last = (await links.last().boundingBox())!;
       expect(h2.x).toBeLessThan(first.x);
       expect(Math.abs(h2.y + h2.height / 2 - (first.y + first.height / 2))).toBeLessThanOrEqual(1);
-      const contentRight = await share.evaluate((el) => {
+      const contentRight = await page.locator("[data-post-footer]").evaluate((el) => {
         const s = getComputedStyle(el);
         return el.getBoundingClientRect().right - parseFloat(s.paddingRight) - parseFloat(s.borderRightWidth);
       });
       expect(Math.abs(last.x + last.width - contentRight)).toBeLessThanOrEqual(1);
+      // F8: the heading's left edge is the box's inner left edge, in line with the photo.
+      const photo = (await page.locator("[data-author-card] img").boundingBox())!;
+      expect(Math.abs(h2.x - photo.x)).toBeLessThanOrEqual(1);
       await expect(page.locator("[data-views-note]")).toHaveCSS("text-align", "left");
     });
   }
@@ -588,7 +621,7 @@ test.describe("share", () => {
       }
       await expect(share.locator("h2")).toHaveCSS("text-align", "center");
       await expect(page.locator("[data-views-note]")).toHaveCSS("text-align", "center");
-      const { left, right } = await share.evaluate((el) => {
+      const { left, right } = await page.locator("[data-post-footer]").evaluate((el) => {
         const s = getComputedStyle(el);
         const r = el.getBoundingClientRect();
         return {
@@ -613,6 +646,19 @@ test.describe("share", () => {
       await expect(share.getByRole("link", { name: "Share by email" })).toBeVisible();
       await expect(share.getByRole("button")).toBeHidden();
     });
+
+    test("F11: the whole footer block is present and the Share button is out of the tab order", async ({ page }) => {
+      await page.goto(POST);
+      const footer = page.locator("[data-post-footer]");
+      await expect(footer.getByRole("heading", { level: 2, name: /^Written by / })).toBeVisible();
+      await expect(footer.getByRole("heading", { level: 2, name: "Share this post" })).toBeVisible();
+      await expect(footer.locator("img")).toHaveAttribute("alt", /.+/);
+      await expect(footer.locator("[data-author-card] p:not([data-views-note])")).toHaveCount(2);
+      await expect(footer.locator("[data-author-card] ul a")).toHaveCount(3);
+      await expect(footer.locator("[data-views-note]")).toBeVisible();
+      await expect(footer.locator("[data-share] a")).toHaveCount(2);
+      await expect(footer.locator("[data-share] button")).toBeHidden();
+    });
   });
 });
 
@@ -626,15 +672,16 @@ test.describe("related posts", () => {
     expect(hrefs).not.toContain(POST);
   });
 
-  test("puts the author card, the share area and then the related posts after the views note", async ({ page }) => {
+  test("F2: orders the author part, the views note, the share part and then the related posts", async ({ page }) => {
     await page.goto(POST);
-    const views = await page.locator("[data-views-note]").boundingBox();
-    const author = await page.locator("[data-author-card]").boundingBox();
-    const share = await page.locator("[data-share]").boundingBox();
-    const related = await page.locator("[data-related]").boundingBox();
-    expect(author!.y).toBeGreaterThan(views!.y);
-    expect(share!.y).toBeGreaterThan(author!.y);
-    expect(related!.y).toBeGreaterThan(share!.y);
+    const top = async (selector: string) => (await page.locator(selector).boundingBox())!.y;
+    const author = await top("[data-author-card]");
+    const views = await top("[data-views-note]");
+    const share = await top("[data-share]");
+    const related = await top("[data-related]");
+    expect(views).toBeGreaterThan(author);
+    expect(share).toBeGreaterThan(views);
+    expect(related).toBeGreaterThan(share);
   });
 });
 

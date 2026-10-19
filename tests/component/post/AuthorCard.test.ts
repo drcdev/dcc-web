@@ -4,7 +4,7 @@ import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, it } from "vitest";
 import AuthorCard from "../../../src/components/post/AuthorCard.astro";
 import { blog } from "../../../src/config/blog.ts";
-import { byName, tags, textOf } from "../html.ts";
+import { byName, classList, tags, textOf } from "../html.ts";
 
 let container: AstroContainer;
 beforeAll(async () => {
@@ -16,7 +16,7 @@ const render = (topics: readonly string[] = ["agentic-ai"]) =>
 
 const decode = (text: string) => text.replace(/&#39;/g, "'").replace(/&amp;/g, "&");
 const paragraphs = (html: string) =>
-  [...html.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)].map((m) => decode(m[1]!.replace(/<[^>]+>/g, "").trim()));
+  [...html.matchAll(/<p\b(?![^>]*data-views-note)[^>]*>([\s\S]*?)<\/p>/g)].map((m) => decode(m[1]!.replace(/<[^>]+>/g, "").trim()));
 
 describe("AuthorCard markup", () => {
   it("A1/A9: is one section[data-author-card] with no script, button, hidden element or landmark attributes", async () => {
@@ -58,13 +58,37 @@ describe("AuthorCard markup", () => {
     const html = await render();
     const h2 = html.indexOf("<h2");
     const first = html.indexOf("<p");
-    const last = html.lastIndexOf("<p");
     const img = html.indexOf("<img");
     expect(h2).toBeLessThan(first);
-    expect(last).toBeLessThan(img);
+    // The views note is the last paragraph, still before the photo in the DOM (045 row F2).
+    expect(html.indexOf("data-views-note")).toBeLessThan(img);
     expect(html.lastIndexOf("</p>")).toBeLessThan(img);
     expect(byName(html, "time")).toHaveLength(0);
     expect(html).not.toContain("data-topic-pill");
+  });
+});
+
+describe("AuthorCard inside the footer box (specs/045 rows F2, F4)", () => {
+  it("F4: the section carries no box classes and no top margin", async () => {
+    const [section] = byName(await render(), "section");
+    const classes = classList(section!);
+    for (const c of ["border", "bg-white", "dark:bg-dusk-800", "shadow-sm", "rounded-xl", "mt-8"]) {
+      expect(classes, c).not.toContain(c);
+    }
+  });
+
+  it("F2: the views note is in the text column after the list and before the photo", async () => {
+    const html = await render();
+    const note = html.indexOf("data-views-note");
+    expect(note).toBeGreaterThan(html.indexOf("</ul>"));
+    expect(note).toBeLessThan(html.indexOf("<img"));
+    expect(html.slice(0, note).split("</div>").length - 1).toBeLessThan(html.slice(0, note).split("<div").length - 1);
+    expect(html.indexOf("</div>", note)).toBeLessThan(html.indexOf("<img"));
+  });
+
+  it("the text column breaks long words inside the box", async () => {
+    const column = tags(await render()).find((t) => t.name === "div");
+    expect(classList(column!)).toContain("[overflow-wrap:anywhere]");
   });
 });
 

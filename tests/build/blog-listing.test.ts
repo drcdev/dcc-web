@@ -362,6 +362,25 @@ describe("the series strip images on series pages (FR-003, FR-007, SC-005; resea
   });
 });
 
+describe("the post footer block (specs/045 rows F1 and F2; FR-001, FR-002, SC-001)", () => {
+  const isPost = (path: string) => /^writing\/(?:listing-post-\d+|tie-b|free-form-post)\/index\.html$/.test(path);
+  const markers = ["data-post-footer", "data-views-note", "data-author-card", "data-share"];
+  const count = (html: string, marker: string) => html.match(new RegExp(`<[a-z]+\\b[^>]*\\s${marker}[\\s>=]`, "g"))?.length ?? 0;
+
+  it("F1: every post page has exactly one footer, one views note, one author card and one share part", () => {
+    const postPages = [...site.htmlFiles()].filter(([path]) => isPost(path));
+    expect(postPages.length).toBeGreaterThan(10);
+    for (const [path, html] of postPages) for (const m of markers) expect(count(html, m), `${path} ${m}`).toBe(1);
+  });
+
+  it("F1: no other page and not the feed has any of the four", () => {
+    const others = [...site.htmlFiles()].filter(([path]) => !isPost(path));
+    expect(others.length).toBeGreaterThan(5);
+    for (const [path, html] of others) for (const m of markers) expect(count(html, m), `${path} ${m}`).toBe(0);
+    for (const m of markers) expect(site.read("writing/rss.xml")).not.toContain(m);
+  });
+});
+
 describe("the author card (specs/039 rows A1 and A5; FR-001, FR-013, FR-014)", () => {
   const cards = (html: string) => html.match(/<section\b[^>]*data-author-card/g)?.length ?? 0;
 
