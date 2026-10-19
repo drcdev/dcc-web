@@ -28,7 +28,7 @@ pnpm exec playwright test tests/e2e/geometry.spec.ts tests/e2e/sections.spec.ts 
 Read `.claude/skills/_shared/visual-baselines.md` first. Run the visual project; only the images
 listed in research R7 (not-found, sections, home-now-start-here, contact-form) may differ. Then
 `pnpm run test:visual:update` (macOS) and `pnpm run test:visual:update:linux` (Docker), and check
-that the diff touches only those 64 files.
+that the diff touches only those 32 files (16 per platform).
 
 ## 4. By eye (also the PR's `[PREVIEW-CHECK]`)
 

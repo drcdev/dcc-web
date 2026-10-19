@@ -73,7 +73,7 @@ Technology, Contact, Privacy policy, Terms of use, app privacy pages) and the no
 | XI. Spec Kit Workflow | PASS | Spec Kit branch `050-page-container-harmony`, one feature. Sibling worktrees: this plan touches `PageLayout.astro`, `404.astro`, `theme-tokens.spec.ts` and visual baselines; if a sibling edits them, merge `origin/main` before the gate and resolve by keeping both changes, then refresh baselines last. |
 | Technology Constraints | PASS | Astro, strict TypeScript, Tailwind theme as design system; no new tool. |
 | Security Baseline | PASS | `public/_headers`, CSP and the ruleset are untouched; no inline style or script is added (the card is classes only, so CSP is unaffected). |
-| Development Workflow | PASS | Astro choice cites the docs (above, research R1). Every behaviour has one primary layer (research R6); the 320 px no-scroll criterion (SC-004) is already owned by `geometry.spec.ts`, which runs every template at 320 px, so no second test is added. Out-of-scope items stay in the spec's follow-up list. Copy is unchanged. |
+| Development Workflow | PASS | Astro choice cites the docs (above, research R1). Every behaviour has one primary layer (research R6); the 320 px no-scroll criterion (SC-004) is owned by `geometry.spec.ts` for the light theme (every template at 320 px); its dark half, which that spec does not load, is checked once per page in `content-card.spec.ts`, with the reason written in research R6. Out-of-scope items stay in the spec's follow-up list. Copy is unchanged. |
 
 No violations; Complexity Tracking is empty.
 

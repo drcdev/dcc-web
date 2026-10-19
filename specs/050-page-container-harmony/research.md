@@ -87,7 +87,8 @@ left as NEEDS CLARIFICATION; the decisions below record the choices made.
 | Light card has a visible edge: border width ≥ 1 px and non-`none` box-shadow (SC-003) | same spec | — | Same load. |
 | Card background and border colour resolve to the right tokens per theme (FR-001, FR-002) | E2E (theme tokens) | `tests/e2e/theme-tokens.spec.ts` probe on fixture `/sections/` `#content-section` | That spec owns token-per-theme. Border tokens carry `/80`, so the probe helper learns an `alpha` form (`dusk-200/80` → `color-mix(in oklab, var(--color-dusk-200) 80%, transparent)`, Tailwind 4's own output), still with no colour literal. |
 | Not-found page uses the same card as `PageLayout` (FR-006) | Component | `tests/component/NotFound.test.ts` | Cheapest: render both and compare the `#content-section` class lists; content-independent. |
-| No horizontal scroll at 320 px (SC-004) | Already covered | `tests/e2e/geometry.spec.ts` (every template incl. about and not-found at 320 px) | Not duplicated (Development Workflow). |
+| No horizontal scroll at 320 px, light (SC-004) | Already covered | `tests/e2e/geometry.spec.ts` (every template incl. about and not-found at 320 px, default light theme) | Not duplicated (Development Workflow). |
+| No horizontal scroll at 320 px, dark (SC-004) | E2E (geometry) | `tests/e2e/content-card.spec.ts`, one 320 px load per page, dark flipped in place | `geometry.spec.ts` runs in the light theme only, so the dark half has no other owner; written reason per Development Workflow. |
 | Zero axe violations every template, both themes (SC-005, FR-008) | Already covered | `tests/e2e/a11y.spec.ts` and siblings | Unchanged; must stay green. |
 | Pixel look of the card (FR-011) | Visual | `tests/e2e/visual.spec.ts` | Refresh only the predicted baselines (R7). |
 | Wide/full image break-out (FR-009) | Already covered | `tests/e2e/sections.spec.ts` | Unchanged; must stay green. |
@@ -104,7 +105,7 @@ Predicted to change, each at phone and desktop, light and dark, on darwin and li
 - `home-now-start-here-*` (fixture home; full page)
 - `contact-form-*` (element shot of `[data-contact]`; its width follows the card's content width)
 
-That is 32 images per platform, 64 in all. Predicted **unchanged**: `header-*`, `footer-*`,
+That is 16 images per platform (4 shots x 2 widths x 2 themes), 32 in all. Predicted **unchanged**: `header-*`, `footer-*`,
 `menu-open-*`, `post-template-*`, `story-template-*`, `lead-story-*`, `listing-cards-*`,
 `series-*`, `project-row-*`, `retired-story-header-*` (other layouts or shell only). If any of
 these changes, stop and investigate.
