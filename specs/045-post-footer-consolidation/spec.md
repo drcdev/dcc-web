@@ -39,6 +39,9 @@ does not change.
 - Q: Where should the views note go? → A: In the author part, under the three author links and above the divider to the share part.
 - Q: How should the views note look? → A: Small italic grey text, smaller than the author lines, meeting AA contrast.
 - Q: How big should the space between the footer box and the "Related posts" heading be? → A: The same gap above and below the box, about 40 px (2.5 rem, the larger of today's two spacings).
+- Q: From 768 px up, where should the "Share this post" heading start? → A: At the box's left edge, in line with the photo, with the share links on the right.
+- Q: How much space should be above and below the divider between the author part and the share part? → A: 1.5 rem (about 24 px) each side, the same as the box's inner padding.
+- Q: Should the photo's description be read before or after the views note? → A: After it: author heading, lines, links, views note, photo description, then "Share this post".
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -96,7 +99,7 @@ measure its contrast against the box background.
    background, **Then** it is at least 4.5:1.
 3. **Given** a screen reader user, **When** they read through the footer block, **Then** the views
    note is read as an ordinary paragraph (not hidden, not a heading, no special role), after the
-   author's lines and links and before the "Share this post" heading.
+   author's lines and links, before the photo's description and the "Share this post" heading.
 
 ---
 
@@ -173,7 +176,8 @@ author link and each share link; on a device with the system share feature, use 
   corner radius; it sits in the same box as the author part.
 - **FR-005**: The author part and the share part MUST be separated by one thin horizontal divider
   inside the box, using the box's border colour, spanning the box's inner width. The space above
-  and below that divider MUST be equal. The views note has no rule of its own above it.
+  and below that divider MUST be equal, 1.5 rem (24 px at the default text size) each, the same as
+  the box's inner padding. The views note has no rule of its own above it.
 - **FR-006**: The footer block's left and right edges MUST equal the post title card's within 1 px
   at 320, 375, 768, 1024 and 1440 px, with and without the questions panel (as 035 and 039 require
   of the pieces today).
@@ -185,7 +189,9 @@ author link and each share link; on a device with the system share feature, use 
   author text and the author text, views note, share heading and share links are centred; from
   768 px the photo sits left of the author text, the author text and views note are left-aligned,
   and the share heading sits left with the share links right, on one row and vertically centred.
-  The views note lines up with the author text (not under the photo) from 768 px.
+  The views note lines up with the author text (not under the photo) from 768 px; the share
+  heading starts at the box's inner left edge, in line with the photo, not indented to the author
+  text.
 - **FR-009**: The share links and the Share button MUST keep their current appearance (rust
   outlined pills), size, order and text. The author links MUST keep their current plain
   underlined style and text.
@@ -208,7 +214,7 @@ author link and each share link; on a device with the system share feature, use 
   320 px. "Written by Don Coleman" and "Share this post" MUST stay level-2 headings, siblings of
   "Related posts". The block adds no landmark and no accessible name of its own.
 - **FR-014**: Reading order MUST be: author heading, the two author lines, the three author links,
-  the photo, the views note, the "Share this post" heading, the share links, the Share button (when
+  the views note, the photo (its alt text), the "Share this post" heading, the share links, the Share button (when
   shown). Keyboard order: the three author links, then the share links and the Share button, in
   that order, with nothing focusable added.
 - **FR-015**: The views note text, both headings, the author lines and all link text MUST each have
