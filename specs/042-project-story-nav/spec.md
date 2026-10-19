@@ -8,6 +8,15 @@
 
 **Input**: User description: GitHub issue #186, "Add Previous / Next / Index navigation to project story pages". A reader who finishes a project story reaches the invitation block and has no way on except scrolling back to the header menu. Add links to the previous project, the projects index and the next project, after the four-part story and before the invitation, handling the first and last project cleanly and leaving drafts out of production.
 
+## Clarifications
+
+### Session 2026-10-19
+
+- Q: Should "Next" go to the project listed directly below on the projects index (the next older one), so that "Previous" is the newer project above it? → A: Yes. Previous is the project above on the index (newer), Next is the one below (older).
+- Q: Should the index link read "All projects" (sentence case) or "All Projects" (title case, as the issue wrote it)? → A: "All projects", sentence case.
+- Q: At phone width, should the three links stack in one column or stay on one row and wrap? → A: Stack vertically as full-width links below 640 px (Tailwind `sm`); one row from 640 px up.
+- Q: Should the Previous and Next links show only the direction and the project title, or also the project's status? → A: Direction and title only, for example "← Previous: Flux"; no status.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Move to the next or previous project from the end of a story (Priority: P1)
@@ -40,7 +49,7 @@ A reader who uses a keyboard, a screen reader or a phone can find and use the sa
 
 1. **Given** a project story, **When** a screen reader lists the page's navigation regions, **Then** the links sit in their own labelled navigation region (for example "Projects"), separate from the site menu, and each link's accessible name states its direction and the project title (for example "Previous project: Flux").
 2. **Given** a keyboard user tabbing past the last part of the story, **When** each link receives focus, **Then** a visible focus indicator shows on it, and the focus order is previous, all projects, next.
-3. **Given** a phone-width screen, **When** the reader taps a link, **Then** each link's target is at least 44 by 44 CSS pixels and the links fit without horizontal scrolling, wrapping onto more lines if a title is long.
+3. **Given** a phone-width screen, **When** the reader taps a link, **Then** the links are stacked in one column as full-width links, each link's target is at least 44 by 44 CSS pixels, and the links fit without horizontal scrolling, with a long title wrapping inside its link.
 
 ---
 
@@ -58,10 +67,12 @@ A reader who uses a keyboard, a screen reader or a phone can find and use the sa
 ### Functional Requirements
 
 - **FR-001**: Every project story MUST show a navigation block after the last of its four parts and before the closing invitation. The block holds, in this order: a link to the previous project labelled "Previous" with that project's title, a link to the projects index labelled "All projects", and a link to the next project labelled "Next" with that project's title.
-- **FR-002**: "Previous" and "Next" MUST follow the exact order in which the projects index lists projects in the same build: newest date first, then title, then file name, with drafts included only in builds that list them on the index and retired projects included because the index lists them. "Previous" is the project listed directly above the current one; "Next" is the one listed directly below.
+- **FR-002**: "Previous" and "Next" MUST follow the exact order in which the projects index lists projects in the same build: newest date first, then title, then file name, with drafts included only in builds that list them on the index and retired projects included because the index lists them. "Previous" is the project listed directly above the current one (the newer neighbour); "Next" is the one listed directly below (the older neighbour).
 - **FR-003**: When a story has no project before it (or after it) in that order, the corresponding link MUST be left out entirely, with no disabled or empty control in its place, and the sequence MUST NOT wrap around. The all-projects link MUST always show.
 - **FR-004**: The production build MUST NOT link to a draft project from any story's navigation block.
 - **FR-005**: The block MUST meet WCAG 2.2 AA: it is a navigation landmark with its own accessible label distinct from the site menu; each link's accessible name includes its direction and, for previous and next, the project title; each link shows a visible focus indicator; each link's target is at least 44 by 44 CSS pixels; the block works without JavaScript and without horizontal scrolling at phone width.
+- **FR-006**: Below 640 CSS pixels (Tailwind `sm`) the links MUST stack in one column, in the order previous, all projects, next, each spanning the full width of the block. From 640 CSS pixels up they MUST sit in a single row.
+- **FR-007**: The previous and next links MUST show only the direction and the project title (for example "← Previous: Flux"); they MUST NOT show the project's status or any other metadata.
 
 ### Key Entities
 
@@ -82,7 +93,7 @@ Every project story page changes appearance: a new block appears between the las
 
 ## Assumptions
 
-- Labels are plain text: "Previous: <title>", "All projects" and "Next: <title>", with left and right arrows as decoration hidden from assistive technology. The issue wrote "All Projects"; sentence case is used to match the site's other labels.
+- Labels are plain text: "Previous: <title>", "All projects" and "Next: <title>", with left and right arrows as decoration hidden from assistive technology. The issue wrote "All Projects"; Don confirmed sentence case ("All projects") to match the site's other labels.
 - The block reuses the site's existing link, focus and spacing styles from the Tailwind theme; no new colours or fonts.
 - The theme filter on the projects index (shown only above ten projects) does not affect the sequence; the sequence is the full, unfiltered index order.
 - No client-side JavaScript is added; the block is part of the prerendered page.
