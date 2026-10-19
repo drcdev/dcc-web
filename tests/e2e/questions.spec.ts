@@ -235,11 +235,24 @@ test.describe("questions panel placement", () => {
 
   const box = async (locator: ReturnType<Page["locator"]>) => (await locator.boundingBox())!;
 
-  for (const width of [320, 390, 1279]) {
-    test(`is a block between the title card and the body at ${width} px with no sideways scroll (P20)`, async ({ page }) => {
+  const toggle = (page: Page) => panel(page).locator("[data-questions-toggle]");
+  const content = (page: Page) => panel(page).locator("[data-questions-content]");
+
+  // D01, D12, D13: below 1280 px a slim closed bar, readable at 320 px, and the body starts on screen.
+  for (const width of [320, 390, 640, 768, 1279]) {
+    test(`is one closed bar between the title card and the body at ${width} px with no sideways scroll (D01, D12)`, async ({ page }) => {
       await page.setViewportSize({ width, height: 800 });
       await page.goto(POST);
       await expect(panel(page)).toBeVisible();
+      const button = toggle(page);
+      await expect(button).toBeVisible();
+      await expect(button).toHaveAttribute("aria-expanded", "false");
+      await expect(button).toContainText("Think while you read");
+      await expect(button).toContainText("Optional AI critical thinking questions");
+      await expect(content(page)).not.toBeVisible();
+      const target = await box(button);
+      expect(target.width).toBeGreaterThanOrEqual(44);
+      expect(target.height).toBeGreaterThanOrEqual(44);
       const [card, aside, text] = [await box(titleCard(page)), await box(panel(page)), await box(body(page))];
       expect(aside.y).toBeGreaterThanOrEqual(card.y + card.height - 1);
       expect(aside.y + aside.height).toBeLessThanOrEqual(text.y + 1);
@@ -247,6 +260,59 @@ test.describe("questions panel placement", () => {
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
       ).toBe(true);
+      const fontPx = await button.locator("span.text-sm").evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+      expect(fontPx).toBeGreaterThanOrEqual(14);
+    });
+  }
+
+  test("wraps the label at 320 px with the chevron to its right and not overlapping (D12)", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto(POST);
+    const label = await box(toggle(page).locator("> span").first());
+    const chevron = await box(toggle(page).locator("svg"));
+    expect(chevron.x).toBeGreaterThanOrEqual(label.x + label.width - 1);
+    const button = await box(toggle(page));
+    expect(chevron.x + chevron.width).toBeLessThanOrEqual(button.x + button.width + 1);
+  });
+
+  for (const [width, height] of [
+    [390, 844],
+    [768, 1024],
+  ]) {
+    test(`keeps the closed bar slim and the first paragraph inside the first screen at ${width}x${height} (D13)`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await page.goto(POST);
+      await expect(toggle(page)).toBeVisible();
+      if (width === 390) expect((await box(panel(page))).height).toBeLessThanOrEqual(80);
+      const first = await box(page.locator("[data-post-body] p").first());
+      expect(first.y).toBeLessThan(height);
+    });
+  }
+
+  // D11: the questions area causes no layout shift (guards existing behaviour; seen to fail by a
+  // temporary break that toggled the aside's display from script after load).
+  for (const [width, height] of [
+    [390, 844],
+    [1280, 800],
+  ]) {
+    test(`causes no layout shift in or around the questions panel at ${width}x${height} (D11)`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await page.addInitScript(() => {
+        (window as unknown as { __shifts: number }).__shifts = 0;
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries() as unknown as { sources?: { node?: Node }[] }[]) {
+            for (const source of entry.sources ?? []) {
+              const node = source.node;
+              const el = node instanceof Element ? node : node?.parentElement;
+              if (el?.closest("[data-questions]") || el?.querySelector("[data-questions]")) (window as unknown as { __shifts: number }).__shifts++;
+            }
+          }
+        }).observe({ type: "layout-shift", buffered: true });
+      });
+      await page.goto(POST, { waitUntil: "networkidle" });
+      await expect(panel(page)).toBeVisible();
+      await page.waitForTimeout(500);
+      expect(await page.evaluate(() => (window as unknown as { __shifts: number }).__shifts)).toBe(0);
     });
   }
 
@@ -353,6 +419,8 @@ test.describe("questions panel placement", () => {
     for (const width of [1280, 320]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(POST);
+      // Below 1280 px the content starts closed; open it (an attribute, so the policy allows it).
+      await page.evaluate(() => document.querySelector("[data-questions-toggle]")?.setAttribute("aria-expanded", "true"));
       await getButton(page).click();
       await expect(items(page)).toHaveCount(4);
       // The page policy blocks an inline <style>, so the overrides go in as a constructed stylesheet.
