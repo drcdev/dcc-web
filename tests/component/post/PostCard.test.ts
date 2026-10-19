@@ -119,10 +119,28 @@ describe("PostCard dark-mode edge (spec 025 FR-010, FR-013, FR-016)", () => {
     expect(classes).not.toContain("dark:border-dusk-500");
     expect(classes).not.toContain("border");
   });
+});
 
-  it("adds no hover, focus or active classes to the card", async () => {
-    const article = byName(await render(withImage("pic")), "article")[0]!;
-    expect(classList(article).filter((c) => /^(hover|focus|active|group-hover)/.test(c))).toEqual([]);
+describe("PostCard full-card link and hover feedback (spec 049)", () => {
+  it("marks the title link as the one post link, with the image outside any link", async () => {
+    for (const post of [summary("one"), withImage("two")]) {
+      const html = await render(post);
+      const toPost = byName(html, "a").filter((a) => a.attrs.href === post.href);
+      expect(toPost).toHaveLength(1);
+      expect("data-post-link" in toPost[0]!.attrs).toBe(true);
+      expect(byName(html, "a").filter((a) => "data-post-link" in a.attrs)).toHaveLength(1);
+    }
+    expect(await render(withImage("pic"))).not.toMatch(/<a [^>]*>(?:(?!<\/a>)[\s\S])*<img/);
+  });
+
+  it("moves only under motion-safe and never lifts on focus", async () => {
+    const html = await render(withImage("pic"));
+    const article = byName(html, "article")[0]!;
+    const [img] = byName(html, "img");
+    for (const cls of [...classList(article), ...classList(img!)]) {
+      if (/(translate|scale|transition)/.test(cls)) expect(cls, cls).toMatch(/^motion-safe:/);
+      expect(cls).not.toMatch(/^(focus|focus-visible):.*(translate|scale|shadow)/);
+    }
   });
 });
 
