@@ -15,7 +15,8 @@ The About page gains a **Career** timeline directly after the "About me" list, w
 - A new body section, `<CareerTimeline />`, renders the steps as an ordered list of native
   `<details>`/`<summary>` disclosures. Opening and closing need no JavaScript, and the page reads in
   full with JavaScript off.
-- The filter (All, Achievements, Leadership, Awards; only used categories shown) is a small custom
+- The filter (All, Leadership, Awards, Volunteer; only used categories shown; Volunteer is a
+  step flag, `volunteer: true`, set on the two CCHL steps) is a small custom
   element in the component's processed `<script>`, hidden in the HTML and revealed when it runs, the
   same pattern as `ProjectFilter.astro`. A chosen category opens and highlights matching steps and
   collapses and mutes the rest with CSS only (no pattern), text at full AA contrast. The muting
@@ -100,10 +101,10 @@ written reason shown.
 | Contrast and roles, idle | Accessibility | existing `a11y.spec.ts` entry for `/about/` (no change) |
 | Contrast and roles with each offered category chosen, and with a muted step opened by hand, light and dark (SC-004) | Accessibility (second layer) | `tests/e2e/career-timeline.a11y.spec.ts`. Reason: the filtered markup and muting exist only after a press, as with the questions panel states. |
 | Budget | Budget | existing `/about/` entry (no change) |
-| Template pixels incl. the muted treatment and inline marker | Visual | `visual.spec.ts`: one element shot of the fixture timeline with a category chosen and one step muted, phone and desktop, light and dark |
+| Template pixels incl. the muted treatment and inline marker | Visual | `visual.spec.ts`: one element shot of the fixture timeline with Leadership chosen (highlighted items) and one step muted, phone and desktop, light and dark |
 
 Fixtures: `tests/fixtures/career/` holds valid fixture steps (neutral roles, naming fixture posts
-`every-part` and `text-only`, all three categories, one award without a link, one step with every
+`every-part` and `text-only`, all three categories (one fixture step marked `volunteer: true`), one award without a link, one step with every
 part) and broken files for the build runs. No test names a real role, post or award; the
 `no-real-content-in-tests` guard stays green.
 

@@ -201,6 +201,19 @@ description: "Task list for the interactive career timeline (feature 041)"
 - [X] T070 Add `src/content/career/cchl-vancouver-island-chapter-vice-chair.yaml` with the FR-006a scope and the one achievement; no other text. Director stays first by the file-name tie rule.
 - [X] T071 Update spec, plan, quickstart, data-model and contracts to seven steps; run the career tests, the build tests and `pnpm run verify:quick`.
 
+## Phase 10: Volunteer filter replaces Achievements
+
+**Purpose**: Don's 2026-10-19 request (spec Clarifications, session 2026-10-19): Achievements is no longer a filter category (nearly every step has achievements, so it filtered nothing); a Volunteer category, a step-level `volunteer: true` flag, surfaces the two CCHL steps. Filter choices: All, Leadership, Awards, Volunteer.
+
+- [X] T072 Update spec.md (Clarifications, US3, edge cases, FR-004, FR-004a, FR-005a, FR-006a, FR-009, FR-010, FR-011, FR-013, FR-020, FR-021, Key Entities, SC-003), plan.md, research R3, data-model.md, contracts (content-files, timeline-markup, build-errors T14), quickstart.md, checklists and `docs/testing.md`.
+- [X] T073 [P] Schema unit test, primary layer **Unit**, in `tests/unit/content/career-schema.test.ts`: `volunteer: true` and `false` are accepted, omitted is allowed, any other value fails with "volunteer: write true, or leave the key out" (T14). Seen failing first.
+- [X] T074 [P] Filter and timeline unit tests, primary layer **Unit**, in `tests/unit/content/career-filter.test.ts` and `tests/unit/content/career.test.ts`: the category list is leadership, awards, volunteer; `buildTimeline()` carries `volunteer` and offers Volunteer only when a step sets it, never Achievements; Volunteer matching opens the volunteer steps and mutes the rest; status "M of N roles are volunteer roles." and "1 of N roles is a volunteer role."; Leadership and Awards wording unchanged. Seen failing first.
+- [X] T075 [P] Component test, primary layer **Component**, in `tests/component/sections/CareerTimeline.test.ts`: the buttons are All, Leadership, Awards, Volunteer; no Achievements button; a volunteer step's `data-categories` holds `volunteer`; the Achievements list still renders. Seen failing first.
+- [X] T076 Fixture and E2E updates, primary layer **E2E**: mark one fixture step in `tests/fixtures/career/valid/` `volunteer: true`; `tests/e2e/career-timeline.spec.ts` and `tests/e2e/career-timeline.a11y.spec.ts` drop the Achievements choice, cover Volunteer (volunteer steps open and matching, no item highlighted, status line), and the visual shot in `tests/e2e/visual.spec.ts` chooses Leadership. Seen failing first.
+- [X] T077 Implement: `volunteer` in `src/content/schemas/career.ts`; categories and `volunteer` in `src/lib/content/career.ts`; Volunteer status wording in `src/lib/content/career-filter.ts`; labels and `data-categories` in `src/components/sections/CareerTimeline.astro`; `volunteer: true` in the two CCHL step files.
+- [ ] T078 Run the targeted tests, `pnpm run build` (buttons All, Leadership, Awards, Volunteer; two steps with `volunteer` in `data-categories`) and `pnpm run verify:quick`.
+- [ ] T079 Refresh the macOS then the Linux career-timeline baselines (`.claude/skills/_shared/visual-baselines.md`), commit and push to the PR #180 branch.
+
 ---
 
 ## Dependencies & Execution Order

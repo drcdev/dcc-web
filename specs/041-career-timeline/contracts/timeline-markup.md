@@ -12,12 +12,13 @@ The rendered HTML the tests and the client script rely on. Classes are free; the
     <div role="group" aria-labelledby="career-filter-label" data-career-filter hidden>
       <p id="career-filter-label">Show</p>
       <button type="button" aria-pressed="true" data-category-all>All</button>
-      <button type="button" aria-pressed="false" data-category="achievements">Achievements</button>
-      <!-- one button per used category, fixed order: achievements, leadership, awards -->
+      <button type="button" aria-pressed="false" data-category="leadership">Leadership</button>
+      <!-- one button per used category, fixed order: leadership, awards, volunteer -->
     </div>
     <p role="status" aria-live="polite" data-career-status hidden></p>
     <ol data-career-steps>
-      <li data-step="<id>" data-categories="achievements|leadership">
+      <li data-step="<id>" data-categories="leadership|volunteer">
+        <!-- data-categories: the used categories this step matches; volunteer when volunteer: true -->
         <details>
           <summary>
             <span data-step-role>Role</span>
@@ -64,9 +65,12 @@ Rules:
   served empty and stays empty on connect; text is written only on a filter change, so nothing
   is announced on load (FR-013).
 - Choose category K: pressed state moves to K; each `li` whose `data-categories` holds K gets
-  `details.open = true` and its items in `ul[data-list=K]` get `data-match`; every other `li` gets
-  `data-muted` and `details.open = false`; the status line reads "M of N roles have k." or,
-  when M is 1, "1 of N roles has k." (k in lower case) (FR-010, FR-011, FR-013).
+  `details.open = true` and `data-matching`, and its items in `ul[data-list=K]` get `data-match`
+  (Volunteer has no list, so no item is marked; `ul[data-list=achievements]` is never marked);
+  every other `li` gets `data-muted` and `details.open = false`; the status line reads "M of N
+  roles have k." or, when M is 1, "1 of N roles has k." (k in lower case), and for Volunteer
+  "M of N roles are volunteer roles." or "1 of N roles is a volunteer role." (FR-010, FR-011,
+  FR-013).
 - Choose All: remove every `data-muted` and `data-match`, close every `details` (hand-opened
   ones too), status "Showing all N roles." (FR-012).
 - Every change is applied to every step, ignoring earlier hand opening or closing (FR-012a).

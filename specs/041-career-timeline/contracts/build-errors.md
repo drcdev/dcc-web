@@ -21,10 +21,11 @@ phrases below are the asserted part; exact wording is settled in implement.
 | T11 | A `posts` entry names a draft post | `checkCareer()` | `post "<slug>" is a draft; publish it or remove it from posts` |
 | T12 | A text field over its limit (role, organization 120; scope and detail parts 300; items and award names 200) | schema | `<field>: keep this under <limit> characters` |
 | T13 | A step file that cannot be parsed | Astro's YAML loader | Astro's parse error naming the file |
+| T14 | `volunteer` is not true or false | schema | `volunteer: write true, or leave the key out` |
 
 ## Where each row is proven (docs/testing.md "Check functions and call sites")
 
-- **Logic**: T01–T07 and T12 in `tests/unit/content/career-schema.test.ts`; T08–T11 in
+- **Logic**: T01–T07, T12 and T14 in `tests/unit/content/career-schema.test.ts`; T08–T11 in
   `tests/unit/content/career.test.ts`. One case per row; the test title carries the row id.
 - **T13** is decided by Astro's own YAML loader; no custom code decides it, so it has no test of
   its own.

@@ -16,10 +16,11 @@ Schema: `src/content/schemas/career.ts` (strict object; any other key fails the 
 | `changed` | text | no | "What changed in how I worked". |
 | `wish` | text | no | "What I wish I'd known". |
 | `nextMove` | text | no | "The skill that led to the next move". Forbidden on the current role (cross-file rule C2). |
-| `achievements` | text[] | no | Category Achievements. Each item at most 200 characters. Empty list is an error (leave the key out). |
+| `achievements` | text[] | no | Shown as the "Achievements" list; not a filter category (spec session 2026-10-19). Each item at most 200 characters. Empty list is an error (leave the key out). |
 | `leadership` | text[] | no | Category Leadership. Same rule. |
 | `awards` | `{ name: text, year: integer, href?: https URL }[]` | no | Category Awards. Same rule. `name` at most 200 characters and without the year (the year shows after it: "Name (2024)"). |
 | `posts` | `reference("posts")[]` | no | Each a post file name. Must exist and not be a draft (C3, C4). No duplicates. |
+| `volunteer` | boolean | no | Category Volunteer (spec FR-004a). `true` marks a volunteer role; omitted means `false`. Any other value fails the build. Set on the two CCHL chapter steps only. |
 
 Text fields are trimmed, non-empty plain text, not Markdown; they render as text only, never as
 markup, and line breaks are not kept (spec FR-003a, FR-003b). Items, awards and posts render in
@@ -41,8 +42,10 @@ and, where there is one, the offending value (spec FR-005a). See
 
 ## Category
 
-A fixed list of three, in this order: Achievements, Leadership, Awards. Each maps to one step key.
-A category appears in the filter only when at least one step has an item of it.
+A fixed list of three, in this order: Leadership, Awards, Volunteer. Each maps to one step key:
+Leadership and Awards to a list (a step uses them when the list has an item), Volunteer to the
+`volunteer` flag (a step uses it when the flag is `true`). A category appears in the filter only
+when at least one step uses it. Achievements is not a category (spec session 2026-10-19).
 
 ## Derived: timeline view (what the component renders)
 
@@ -50,7 +53,7 @@ A category appears in the filter only when at least one step has an item of it.
 
 - `steps`: in order, each with `id`, `role`, `organization`, `start`, `end`, a display `period`
   ("Oct 2014 – Sep 2016"), `parts` (only those present, in the fixed label order), `achievements`,
-  `leadership`, `awards`, and `posts` resolved to `{ title, href }` from `getPostSummaries()`.
+  `leadership`, `awards`, `volunteer` (boolean), and `posts` resolved to `{ title, href }` from `getPostSummaries()`.
 - `categories`: the used categories, in the fixed order.
 
 The component accepts a `timeline` prop that replaces the lookup (component tests use it).
@@ -60,7 +63,8 @@ The component accepts a `timeline` prop that replaces the lookup (component test
 | State | Steps | Items | Status line |
 |---|---|---|---|
 | All (default) | Every step closed (on choosing All, including hand-opened ones) or as the visitor left them (on load); none muted | none marked | Empty on load (nothing announced); "Showing all N roles." after a return to All |
-| Category K | Matching steps open, others closed and `data-muted` | matching items `data-match` | "M of N roles have k." or, when M is 1, "1 of N roles has k." (k = category in lower case) |
+| Category K (Leadership, Awards) | Matching steps open and `data-matching`, others closed and `data-muted` | matching items `data-match` | "M of N roles have k." or, when M is 1, "1 of N roles has k." (k = category in lower case) |
+| Volunteer | Volunteer steps open and `data-matching`, others closed and `data-muted` | none marked | "M of N roles are volunteer roles." or, when M is 1, "1 of N roles is a volunteer role." |
 
 Not stored in the address, cookie or storage; a reload starts from All. The visitor may open or
 close any step at any time; that does not change the filter. Every filter change is applied fresh
@@ -77,9 +81,9 @@ one `decision` on Manager, Enterprise Systems Development. Proposed file names:
 1. `leader-systems-engineer.yaml`
 2. `manager-enterprise-systems-development.yaml`
 3. `project-director-enabling-technologies.yaml`
-4. `cchl-vancouver-island-chapter.yaml` (Treasurer, ends May 2026)
+4. `cchl-vancouver-island-chapter.yaml` (Treasurer, ends May 2026; `volunteer: true`)
 5. `cloud-architect-it-project-manager.yaml`
-6. `cchl-vancouver-island-chapter-vice-chair.yaml` (starts Jun 2026, sorts after Director by file name descending)
+6. `cchl-vancouver-island-chapter-vice-chair.yaml` (`volunteer: true`; starts Jun 2026, sorts after Director by file name descending)
 7. `director-data-infrastructure-and-architecture.yaml`
 
 Step 5's four related posts are named by their post file names. Step 4's two awards link to the

@@ -40,9 +40,13 @@ was used for every Astro choice below; each decision names the page it rests on.
 
 ## R3. Categories are fixed keys, not a free list
 
-- **Decision**: A step holds `achievements: string[]`, `leadership: string[]` and
-  `awards: { name, year, href? }[]`. The three keys are the three categories (FR-009). The filter
-  offers "All" plus each category that at least one step uses (US3 scenario 7).
+- **Decision**: A step holds `achievements: string[]`, `leadership: string[]`,
+  `awards: { name, year, href? }[]` and an optional `volunteer: boolean`. The three category keys
+  are `leadership`, `awards` and `volunteer` (FR-009); `achievements` is shown but is not a
+  category (spec session 2026-10-19: nearly every step has achievements, so it filtered nothing).
+  Volunteer is a step-level flag, not an item list, because being a volunteer role is a property
+  of the whole step. The filter offers "All" plus each category that at least one step uses (US3
+  scenario 8).
 - **Rationale**: The strict object schema rejects any other key, which is how "a category not in
   the allowed list fails the build" is met (FR-005) without a second category registry. Awards count
   as items of the Awards category (Key Entities), so they need no separate tag.

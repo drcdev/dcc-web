@@ -195,8 +195,8 @@ more fixture subjects, `project-row-retired` (the retired index row, making five
 `retired-story-header` (the story header with the retired pill and note), on the fixture
 project `retired`.
 Feature 041 added four more fixture subjects, `career-timeline-{phone,desktop}-{light,dark}`: the
-fixture About page timeline with one category chosen, so an open highlighted step and a muted
-step are in frame.
+fixture About page timeline with Leadership chosen, so an open step with highlighted items and a
+muted step are in frame.
 The project also sets the footer year to 2026 before every shot (`tests/e2e/footer-year.ts`), so
 a new calendar year cannot fail it; the real year is checked by `SiteFooter.test.ts` and
 `shell.spec.ts`.
@@ -468,7 +468,7 @@ The section markup is asserted in `component/sections/Now.test.ts` and
 
 | Rows | Rule | Primary assertion | Call-site run |
 |---|---|---|---|
-| T01 to T07, T12 | Required text, `YYYY-MM` and `present`, end not before start, unknown key, empty lists, award shape and https `href`, duplicate post, text limits | `unit/content/career-schema.test.ts` (row id in each title) | schema sync, `build/career-timeline.test.ts` "T01" |
+| T01 to T07, T12, T14 | Required text, `YYYY-MM` and `present`, end not before start, unknown key, empty lists, award shape and https `href`, duplicate post, text limits, `volunteer` true or false | `unit/content/career-schema.test.ts` (row id in each title) | schema sync, `build/career-timeline.test.ts` "T01" |
 | T08, T09 | The current role (latest start) has no `nextMove` and ends `present` | `unit/content/career.test.ts` "T08", "T09" | build, `build/career-timeline.test.ts` "T09" |
 | T10, T11 | A listed post exists and is not a draft | `unit/content/career.test.ts` "T10", "T11" | the same build run as T09 |
 | T13 | A step file that does not parse | none: Astro's YAML loader decides it | none |

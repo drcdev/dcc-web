@@ -26,6 +26,7 @@ leadership:
 #     href: https://…      # optional; without it the award shows as plain text
 # posts:
 #   - starting-something-new   # a post file name in src/content/posts/, published
+# volunteer: true          # optional: marks a volunteer role (Volunteer filter); leave out otherwise
 ```
 
 ## Editing rules
@@ -33,8 +34,10 @@ leadership:
 - Add a reflection part later by adding its key to one file. Nothing else changes.
 - Leave a list key out rather than writing an empty list.
 - A new role is a new file. Its start date places it; the latest start is the current role.
-- Only the three category keys exist: `achievements`, `leadership`, `awards`. Any other key fails
-  the build.
+- The category keys are `leadership`, `awards` and `volunteer`; `achievements` is a shown list
+  but not a filter category. Any key not shown above fails the build.
+- `volunteer` takes `true` only where the role was a volunteer one; leave it out otherwise. The
+  role text still says "(volunteer)".
 - Text is plain, not Markdown.
 
 ## Launch files

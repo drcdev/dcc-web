@@ -32,7 +32,8 @@ pnpm run test:e2e -- tests/e2e/career-timeline.spec.ts
 ```
 
 Covers: open and close by mouse and keyboard; choose a category (matching steps open and marked,
-others closed and muted, still on screen and openable, status line count); choose All (all closed,
+others closed and muted, still on screen and openable, status line count; Volunteer opens the
+volunteer steps and highlights no item; no Achievements choice); choose All (all closed,
 none muted); JavaScript off (no filter, every step opens); 320 px with no horizontal scroll;
 print emulation (all open, no muting); reduced motion; forced colours.
 
