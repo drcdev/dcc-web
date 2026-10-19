@@ -147,3 +147,9 @@ description: "Task list for the collapsible questions panel on small screens"
 
 - MVP is Phase 2 plus US1 (closed bar, first paragraph on screen), but US2 must ship in the same PR: a bar that cannot open would remove the feature from small screens.
 - Deliver in story order, running the story's tests after each implementation task; do the baseline refresh only once, after all implementation (T018, T019).
+
+---
+
+## Phase 8: Convergence
+
+- [ ] T025 Restore the lost T014 task line in `specs/046-mobile-questions-disclosure/tasks.md`: under "### Implementation for User Story 3" a stray `&` replaced it in the phase 5 commit (d3c28d89); put back `- [X] T014 [US3] Fix anything T013 or the unchanged 022 tests (P21, P21a, P21b, P22 to P24) expose in the `xl:` classes of `src/components/post/QuestionsPanel.astro`. Add no resize script (D08: pure CSS and the untouched attribute). If the checks already pass, record that in the task notes and make no change.` (ticked, as the Phase 5 notes record it done with no component change) and remove the `&` line, with no code change, per plan: US3 task traceability (partial)
