@@ -2,6 +2,7 @@
 // P04, P08, P10 to P17; FR-005, FR-016, FR-019). Runs on the fixture site (port 4322, project
 // `sections`) with `/api/questions` stubbed, so no model is ever called.
 import { expect, test, type Page } from "@playwright/test";
+import { cspViolations, recordCspViolations } from "./csp-violations.ts";
 import { stubQuestionsApi } from "./questions-stub.ts";
 
 const POST = "/writing/text-only/";
@@ -419,8 +420,8 @@ test.describe("questions panel placement", () => {
     for (const width of [1280, 320]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(POST);
-      // Below 1280 px the content starts closed; open it (an attribute, so the policy allows it).
-      await page.evaluate(() => document.querySelector("[data-questions-toggle]")?.setAttribute("aria-expanded", "true"));
+      // Below 1280 px the content starts closed; open it like a reader would.
+      if (width < 1280) await panel(page).locator("[data-questions-toggle]").click();
       await getButton(page).click();
       await expect(items(page)).toHaveCount(4);
       // The page policy blocks an inline <style>, so the overrides go in as a constructed stylesheet.
@@ -444,5 +445,132 @@ test.describe("questions panel placement", () => {
       });
       expect(clipped).toEqual({ overflow: false, outside: false, sideways: false });
     }
+  });
+});
+
+// D05, D06 (specs/046 contracts/questions-disclosure.md): the trigger opens and closes the panel
+// without losing state, focus or any request.
+test.describe("questions disclosure", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  const toggle = (page: Page) => panel(page).locator("[data-questions-toggle]");
+  const content = (page: Page) => panel(page).locator("[data-questions-content]");
+  const focusIsOnBody = (page: Page) => page.evaluate(() => document.activeElement === document.body);
+
+  test("names the button with both lines in order (FR-003)", async ({ page }) => {
+    await page.goto(POST);
+    await expect(toggle(page)).toHaveAccessibleName("Think while you read Optional AI critical thinking questions");
+  });
+
+  for (const how of ["click", "Enter", "Space"] as const) {
+    test(`opens and closes with ${how} and keeps focus on the button (SC-004)`, async ({ page }) => {
+      await page.goto(POST);
+      const press = async () => {
+        if (how === "click") await toggle(page).click();
+        else {
+          await toggle(page).focus();
+          await page.keyboard.press(how === "Space" ? "Space" : "Enter");
+        }
+      };
+      await press();
+      await expect(toggle(page)).toHaveAttribute("aria-expanded", "true");
+      await expect(content(page)).toBeVisible();
+      await expect(getButton(page)).toBeVisible();
+      await expect(toggle(page)).toBeFocused();
+      expect(await focusIsOnBody(page)).toBe(false);
+      await press();
+      await expect(toggle(page)).toHaveAttribute("aria-expanded", "false");
+      await expect(content(page)).not.toBeVisible();
+      await expect(toggle(page)).toBeFocused();
+      expect(await focusIsOnBody(page)).toBe(false);
+    });
+  }
+
+  test("keeps closed content out of the accessibility tree and the focus order", async ({ page }) => {
+    await page.goto(POST);
+    await expect(page.getByRole("button", { name: "Get questions" })).toHaveCount(0);
+    await toggle(page).focus();
+    await page.keyboard.press("Tab");
+    await expect(getButton(page)).not.toBeFocused();
+    await expect(panel(page).locator("[data-questions-content] :focus")).toHaveCount(0);
+    await toggle(page).click();
+    await expect(page.getByRole("button", { name: "Get questions" })).toHaveCount(1);
+  });
+
+  test("opening sends no request to /api/questions", async ({ page }) => {
+    const stub = await stubQuestionsApi(page, [ok(SET)]);
+    await page.goto(POST);
+    await toggle(page).click();
+    await expect(getButton(page)).toBeVisible();
+    await page.waitForLoadState("networkidle");
+    expect(stub.requests).toHaveLength(0);
+  });
+
+  test("closing and reopening after Get questions shows the same list with no new request", async ({ page }) => {
+    const stub = await stubQuestionsApi(page, [ok(SET)]);
+    await page.goto(POST);
+    await toggle(page).click();
+    await getButton(page).click();
+    await expect(items(page)).toHaveCount(3);
+    const before = await items(page).allTextContents();
+    await toggle(page).click();
+    await expect(content(page)).not.toBeVisible();
+    await toggle(page).click();
+    await expect(items(page)).toHaveCount(3);
+    expect(await items(page).allTextContents()).toEqual(before);
+    expect(stub.requests).toHaveLength(1);
+  });
+
+  test("closing while a request is pending, then reopening, shows the result and never loses focus", async ({ page }) => {
+    const stub = await stubQuestionsApi(page, [{ ...ok(SET), hold: true }]);
+    await page.goto(POST);
+    await toggle(page).click();
+    await getButton(page).click();
+    await expect(getButton(page)).toHaveAttribute("aria-disabled", "true");
+    await toggle(page).focus();
+    await toggle(page).click();
+    await expect(content(page)).not.toBeVisible();
+    stub.release();
+    await page.waitForTimeout(300);
+    expect(await focusIsOnBody(page)).toBe(false);
+    await expect(toggle(page)).toBeFocused();
+    await toggle(page).click();
+    await expect(items(page)).toHaveCount(3);
+    expect(await focusIsOnBody(page)).toBe(false);
+    expect(stub.requests).toHaveLength(1);
+  });
+
+  test("changes no storage, cookie or address and starts closed after a reload (FR-011, D01)", async ({ page }) => {
+    await stubQuestionsApi(page, [ok(SET)]);
+    await page.goto(POST);
+    const snapshot = () =>
+      page.evaluate(() => ({
+        local: JSON.stringify(localStorage),
+        session: JSON.stringify(sessionStorage),
+        cookie: document.cookie,
+        url: location.href,
+      }));
+    const before = await snapshot();
+    await toggle(page).click();
+    await getButton(page).click();
+    await expect(items(page)).toHaveCount(3);
+    await toggle(page).click();
+    await toggle(page).click();
+    expect(await snapshot()).toEqual(before);
+    await page.reload();
+    await expect(toggle(page)).toHaveAttribute("aria-expanded", "false");
+    await expect(content(page)).not.toBeVisible();
+  });
+
+  test("records no CSP violation while opening, closing and getting questions (FR-012)", async ({ page }) => {
+    await stubQuestionsApi(page, [ok(SET)]);
+    await recordCspViolations(page);
+    await page.goto(POST);
+    await toggle(page).click();
+    await getButton(page).click();
+    await expect(items(page)).toHaveCount(3);
+    await toggle(page).click();
+    await toggle(page).click();
+    expect(await cspViolations(page)).toEqual([]);
   });
 });

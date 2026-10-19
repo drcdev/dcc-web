@@ -224,6 +224,8 @@ test.describe("questions panel states", () => {
           await stubQuestionsApi(page, state.responses);
           await page.goto(QUESTIONS_POST);
           await expectThemeClass(page, theme);
+          // Below 1280 px the content starts closed; open it like a reader would.
+          if (size.width < 1280) await page.locator("[data-questions-toggle]").click();
           await page.locator("[data-questions-get]").click();
           await expect(page.locator("[data-questions]")).toContainText(state.text);
           await expectNoAxeViolations(page);
@@ -231,4 +233,50 @@ test.describe("questions panel states", () => {
       }
     }
   }
+});
+
+// D15: the open disclosure on a phone. The template scan covers the closed bar; the open markup
+// exists only after a press (specs/046 T010).
+test.describe("questions disclosure, open", () => {
+  for (const theme of THEMES) {
+    test(`has zero axe violations when open at 390 px in the ${theme} theme`, async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await setTheme(page, theme);
+      await stubQuestionsApi(page, QUESTION_STATES[0].responses);
+      await page.goto(QUESTIONS_POST);
+      await expectThemeClass(page, theme);
+      await page.locator("[data-questions-toggle]").click();
+      await expect(page.locator("[data-questions-toggle]")).toHaveAttribute("aria-expanded", "true");
+      await expectNoAxeViolations(page);
+      await page.locator("[data-questions-get]").click();
+      await expect(page.locator("[data-questions]")).toContainText(QUESTION_STATES[0].text);
+      await expectNoAxeViolations(page);
+    });
+  }
+
+  test("grows the bar with text spacing applied without clipping the button", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(QUESTIONS_POST);
+    const button = page.locator("[data-questions-toggle]");
+    const before = (await button.boundingBox())!;
+    await page.evaluate(() => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(`* { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; }`);
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    });
+    const after = (await button.boundingBox())!;
+    expect(after.height).toBeGreaterThanOrEqual(before.height);
+    const clipped = await button.evaluate((el) => {
+      const outer = el.getBoundingClientRect();
+      return (
+        el.scrollHeight > el.clientHeight ||
+        el.scrollWidth > el.clientWidth ||
+        [...el.querySelectorAll("*")].some((child) => {
+          const r = child.getBoundingClientRect();
+          return r.right > outer.right + 1 || r.bottom > outer.bottom + 1 || r.left < outer.left - 1;
+        })
+      );
+    });
+    expect(clipped).toBe(false);
+  });
 });

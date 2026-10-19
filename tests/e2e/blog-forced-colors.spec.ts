@@ -42,6 +42,25 @@ test("the questions panel keeps its border, button outline and focus indicator (
   await expect(button).toHaveCSS("outline-width", "2px");
 });
 
+test("the questions disclosure bar keeps its border, chevron and Highlight focus ring at 390 px (D15)", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(POST);
+  const panel = page.locator("[data-questions]");
+  const button = panel.locator("[data-questions-toggle]");
+  await expect(button).toBeVisible();
+  await expect(panel).toHaveCSS("border-top-width", "1px");
+  await expect(panel).not.toHaveCSS("border-top-style", "none");
+  await expect(panel).toHaveCSS("border-top-color", await systemColor(page, "CanvasText"));
+  const chevron = button.locator("svg");
+  await expect(chevron).toBeVisible();
+  await expect(chevron).toHaveCSS("stroke", await systemColor(page, "ButtonText"));
+  await button.focus();
+  await expect(button).toBeFocused();
+  await expect(button).not.toHaveCSS("outline-style", "none");
+  await expect(button).toHaveCSS("outline-width", "2px");
+  await expect(button).toHaveCSS("outline-color", await systemColor(page, "Highlight"));
+});
+
 test("an ordinary topic pill keeps a 1px border", async ({ page }) => {
   await page.goto(POST);
   const pill = page.locator("[data-topic-pill]").first();
