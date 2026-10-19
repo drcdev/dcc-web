@@ -91,3 +91,15 @@ for (const scheme of ["light", "dark"] as const) {
     });
   });
 }
+
+test("the focused post card is outlined in the system text colour (spec 049)", async ({ page }) => {
+  await page.goto("/writing/");
+  const link = page.locator("[data-post-card] a[data-post-link]").first();
+  await link.focus();
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Tab");
+  await expect(link).toBeFocused();
+  const card = page.locator("[data-post-card]").first();
+  await expect(card).toHaveCSS("outline-style", "solid");
+  await expect(card).toHaveCSS("outline-color", await systemColor(page, "CanvasText"));
+});

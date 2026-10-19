@@ -34,33 +34,44 @@ const border = !textOnly
   : mainTopic
     ? `border-2 ${topicStyle(mainTopic.colour).border}`
     : "border border-dusk-200 dark:border-dusk-700";
+const HOVER = "hover:z-1 hover:shadow-lg motion-safe:hover:-translate-y-1 motion-safe:transition-[transform,box-shadow] motion-safe:duration-200 motion-safe:ease-out";
+const OUTLINE =
+  "has-[[data-post-link]:focus-visible]:outline-2 has-[[data-post-link]:focus-visible]:outline-offset-2 has-[[data-post-link]:focus-visible]:outline-accent-500 dark:has-[[data-post-link]:focus-visible]:outline-accent-400 forced-colors:has-[[data-post-link]:focus-visible]:outline-[CanvasText]";
 ---
 
 <article
   data-lead-story
   {...flags}
   class:list={[
-    "grid min-w-0 overflow-hidden rounded-xl bg-white dark:bg-dusk-800",
+    "group relative grid min-w-0 overflow-hidden rounded-xl bg-white dark:bg-dusk-800",
+    HOVER,
+    OUTLINE,
     post.featureImage && "md:grid-cols-2",
     border,
   ]}
 >
   {
     post.featureImage && (
-      <Image
+      <div class="overflow-hidden md:min-h-64">
+        <Image
         src={post.featureImage.src as ImageMetadata}
         alt={post.featureImage.alt}
         widths={[480, 640, 800, 960]}
         sizes="(min-width: 1024px) 512px, (min-width: 768px) 50vw, 100vw"
         loading="eager"
         fetchpriority="auto"
-        class="aspect-[16/9] h-auto w-full object-cover md:aspect-auto md:h-full md:min-h-64"
+        class="aspect-[16/9] h-auto w-full object-cover md:aspect-auto md:h-full md:min-h-64 motion-safe:group-hover:scale-[1.02] motion-safe:transition-transform motion-safe:duration-200"
       />
+      </div>
     )
   }
   <div class="flex min-w-0 flex-col gap-3 p-6 md:p-8">
     <h2 class="m-0 text-2xl font-bold leading-tight [overflow-wrap:anywhere] sm:text-3xl">
-      <a href={post.href} class="text-dusk-900 hover:underline dark:text-white">{post.title}</a>
+      <a
+        href={post.href}
+        data-post-link
+        class="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none! text-dusk-900 hover:underline dark:text-white"
+      >{post.title}</a>
     </h2>
     <p class="m-0 text-lg text-dusk-700 [overflow-wrap:anywhere] dark:text-mist-300">{post.summary}</p>
     {
@@ -75,7 +86,7 @@ const border = !textOnly
       <time datetime={isoDate(post.date)}>{formatDate(post.date)}</time> · {post.minutesRead} min read
     </p>
     <ul aria-label="Topics" class="m-0 mt-auto flex list-none flex-wrap gap-2 p-0">
-      {orderTopics(post.topics).map((topic) => <li><TopicPill topic={topic} /></li>)}
+      {orderTopics(post.topics).map((topic) => <li class="relative"><TopicPill topic={topic} /></li>)}
     </ul>
   </div>
 </article>
