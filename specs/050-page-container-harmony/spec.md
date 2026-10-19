@@ -25,6 +25,15 @@ So the same page has a different reading frame in each theme. In dark mode the t
 inside a visible panel; in light mode it starts at the panel's outer edge. Switching theme moves
 the text sideways and changes the line length, and light mode looks unfinished next to dark.
 
+## Clarifications
+
+### Session 2026-10-19
+
+- Q: Should the home page body get the new light-mode card too, or only the standalone content pages and the not-found page? → A: Every page the standard layout draws gets the card, including home, contact and the app privacy pages.
+- Q: Should the text inside the card be held to a prose reading width (about 65 characters), or fill the card up to the 64rem article width as today? → A: Keep the card at 64rem with today's prose styles inside it; lines shorten by at most 4rem from the padding.
+- Q: In light mode, should the page behind the card stay plain white, or change to a light dusk tint? → A: Keep the white page; the 1 px border and smallest shadow set the card apart.
+- Q: How much should automated tests cover when checking the card is identical across themes? → A: Browser tests measure About and the not-found page at 390, 640, 768 and 1280 px in both themes; the existing visual and accessibility suites cover the other templates.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - A standalone page reads inside the same card in either theme (Priority: P1)
@@ -151,15 +160,16 @@ card with a standalone page's at the same viewport width.
 
 ### Measurable Outcomes
 
-- **SC-001**: On every standalone page and on the not-found page, at 390 px, 640 px, 768 px and
-  1280 px, the content card's bounding box and inner padding are identical in light and dark mode
-  (0 px difference).
-- **SC-002**: At the same widths, the first paragraph of body text starts at the same x position and
-  has the same width in light and dark mode (0 px difference).
+- **SC-001**: On the About page (representing every page the standard layout draws) and on the
+  not-found page, at 390 px, 640 px, 768 px and 1280 px, the content card's bounding box and inner
+  padding are identical in light and dark mode (0 px difference). Browser tests measure these two
+  pages only; the other layout pages are covered by the visual and accessibility suites (SC-005).
+- **SC-002**: On the same two pages and at the same widths, the first paragraph of body text starts
+  at the same x position and has the same width in light and dark mode (0 px difference).
 - **SC-003**: In light mode the content card's edge is visible against the page: it has a non-zero
-  border and a non-transparent shadow on every standalone page and the not-found page.
-- **SC-004**: No standalone page or the not-found page scrolls horizontally at 320 px wide in either
-  theme.
+  border and a non-transparent shadow on the About page and the not-found page.
+- **SC-004**: Neither the About page nor the not-found page scrolls horizontally at 320 px wide in
+  either theme.
 - **SC-005**: Automated accessibility checks report zero violations on every page template in both
   themes, and the visual regression suite passes with the refreshed baselines.
 
@@ -167,7 +177,7 @@ card with a standalone page's at the same viewport width.
 
 - **Scope covers every page the standard layout draws**, not only the five pages named in the
   issue. Home, Contact and the app privacy pages use the same layout and already get the dark card,
-  so leaving them out would break the parity the issue asks for. Blog posts, project stories and the
+  so leaving them out would break the parity the issue asks for (confirmed in clarification). Blog posts, project stories and the
   writing and projects listings use their own layouts and are out of scope.
 - **Padding values**: the issue lists both a fixed 1.5rem padding and a 1rem / 1.5rem / 2rem
   responsive scale. The responsive scale is used for both themes, because the issue asks for
@@ -180,8 +190,11 @@ card with a standalone page's at the same viewport width.
 - **Text measure**: the card stays capped at the article width (64rem) as today, and the prose
   styles keep their own measure inside it, so line length is not otherwise changed. The extra
   padding narrows the text column by at most 4rem at desktop widths and by 2rem on phones; this is
-  accepted as the cost of the frame.
-- **The page background stays as it is**: white in light mode, the dusk base in dark mode.
+  accepted as the cost of the frame. No prose-width cap is added inside the card (confirmed in
+  clarification).
+- **The page background stays as it is**: white in light mode, the dusk base in dark mode. In light
+  mode the white card is set apart from the white page only by its 1 px border and smallest shadow;
+  no page background tint is added (confirmed in clarification).
 
 ## Out of Scope (follow-up work)
 
