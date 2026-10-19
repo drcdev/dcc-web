@@ -8,6 +8,16 @@
 
 **Input**: User description: "Introduce dual call-to-action to homepage hero card" (GitHub issue #182). The home page's introduction card shows one button, "See how I can help", which goes to the contact page. For a first-time visitor, a contact form straight away is a big ask. The card gains an optional second, quieter button that leads to the writing (or projects) so a visitor has a lower-commitment next step. The main button stays the visually stronger one. On phones the two buttons stack; from tablet width up they sit side by side. Both buttons are at least 44 pixels tall and meet WCAG 2.2 AA contrast in light and dark modes.
 
+## Clarifications
+
+### Session 2026-10-19
+
+- Q: Where should the second, quieter button go, and what should it say? → A: "Read my writing", linking to the writing page (/writing/).
+- Q: With two buttons, where should the GitHub and LinkedIn icons go from 640 px up? → A: On their own row above the buttons, at every width.
+- Q: On phones (below 640 px), how wide should the stacked buttons be? → A: Both full width of the card's text column.
+- Q: What should the second button be called in the home page file? → A: A separate `secondaryCta: { label, href }` field beside the existing `cta` (orchestrator's decision, matching the issue; not put to the user).
+- Q: What should happen to the outlined second button when it is hovered, especially in dark mode? → A: A faint background tint (light: mist-200; dark: dusk-700); border and text colours unchanged.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - A first-time visitor picks a low-commitment next step (Priority: P1)
@@ -37,8 +47,8 @@ The two buttons look like a balanced pair on any screen. On a phone they are sta
 
 **Acceptance Scenarios**:
 
-1. **Given** a viewport 375 pixels wide, **When** the home page loads, **Then** the two calls to action are stacked vertically, main one on top, and neither overflows the card.
-2. **Given** a viewport 640 pixels wide or wider, **When** the home page loads, **Then** the two calls to action sit side by side on one row, main one first, and the card has no horizontal overflow.
+1. **Given** a viewport 375 pixels wide, **When** the home page loads, **Then** the two calls to action are stacked vertically, main one on top, each the full width of the card's text column, and neither overflows the card.
+2. **Given** a viewport 640 pixels wide or wider, **When** the home page loads, **Then** the two calls to action sit side by side on one row, main one first, with the GitHub and LinkedIn links on their own row above them, and the card has no horizontal overflow.
 3. **Given** any viewport, **When** the calls to action are measured, **Then** both have the same rendered height, and that height (the touch target) is at least 44 pixels; each is at least 44 pixels wide.
 4. **Given** light mode and dark mode, **When** the home page is checked for contrast, **Then** each call to action's text meets 4.5:1 against its own background, the second call to action's outline meets 3:1 against the card, and the same holds for their hover states.
 
@@ -65,27 +75,27 @@ Don sets, changes or removes the second call to action by editing the home page 
 
 - **Second call to action alone**: a page file with a second call to action but no main one is invalid, because the main one stays required.
 - **Long labels**: if a label is long enough that two buttons do not fit side by side, the text wraps inside its button or the buttons stack; nothing is clipped and the card never scrolls sideways.
-- **Social links in the same row**: the card's GitHub and LinkedIn icon links currently share a row with the call to action. With two buttons, the layout must still keep every link visible and tappable at 640 pixels, where the card's text column is narrowest; the social links may move to their own row.
+- **Social links row**: the card's GitHub and LinkedIn icon links currently share a row with the call to action. They move to their own row directly above the calls to action at every width (also when only the main call to action is set), so every link stays visible and tappable at 640 pixels, where the card's text column is narrowest.
 - **Same destination twice**: nothing stops Don pointing both calls to action at the same page; the schema does not forbid it (no visitor harm, just redundancy).
 - **Link to a hidden or draft page**: the second call to action uses the same link rules as the main one. Pointing it at a page that is hidden or draft would give a 404 on production, as with any other link; the launch content points at the writing page, which always exists.
-- **Dark mode hover**: hover colours change only the background or border, never reduce text contrast below 4.5:1.
+- **Hover on the second call to action**: hover adds only a faint background tint (light mode mist-200, dark mode dusk-700); the border and text colours stay as at rest, and text contrast never drops below 4.5:1.
 - **Reduced motion**: any colour transition on hover respects the visitor's reduced-motion setting, as the existing button does.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: The home page's introduction settings MUST accept an optional second call to action with exactly two fields, a label and a link, validated by the same rules as the main call to action (non-empty label, valid site link, no extra fields).
+- **FR-001**: The home page's introduction settings MUST accept an optional second call to action, the field `secondaryCta` beside the existing `cta`, with exactly two fields, a label and a link, validated by the same rules as the main call to action (non-empty label, valid site link, no extra fields).
 - **FR-002**: The main call to action MUST stay required, and its rules MUST NOT change.
 - **FR-003**: When a second call to action is set, the introduction card MUST show it after the main call to action, in reading order and in focus order.
 - **FR-004**: When no second call to action is set, the card MUST render exactly as it does without this feature: one call to action and no empty element for the missing one.
-- **FR-005**: The main call to action MUST look filled (solid accent background with contrasting text) and the second MUST look outlined (border, no fill at rest), so the main one is clearly the stronger choice in both light and dark mode.
+- **FR-005**: The main call to action MUST look filled (solid accent background with contrasting text) and the second MUST look outlined (border, no fill at rest), so the main one is clearly the stronger choice in both light and dark mode. On hover the second call to action gains a faint background tint (light mode mist-200, dark mode dusk-700) with its border and text colours unchanged; the main call to action keeps its existing hover.
 - **FR-006**: Both calls to action MUST be links (they navigate to a page), each with its label as its accessible name, and MUST work with JavaScript turned off.
-- **FR-007**: Below 640 pixels the two calls to action MUST be stacked vertically; from 640 pixels up they MUST sit side by side on one row.
+- **FR-007**: Below 640 pixels the two calls to action MUST be stacked vertically, each the full width of the card's text column; from 640 pixels up they MUST sit side by side on one row.
 - **FR-008**: Both calls to action MUST have the same rendered height, at least 44 by 44 pixels of target area, at every viewport width. This applies to the main call to action too, which is currently shorter than 44 pixels.
 - **FR-009**: In light and dark mode, at rest and on hover, each call to action's text MUST have at least 4.5:1 contrast with its background, and the second call to action's border MUST have at least 3:1 contrast with the card background (WCAG 2.2 AA).
 - **FR-010**: Each call to action MUST show a visible keyboard focus indicator that meets WCAG 2.2 AA focus appearance for the site.
-- **FR-011**: The card MUST NOT overflow horizontally at any viewport width from 320 pixels up, and the social links MUST stay visible and tappable.
+- **FR-011**: The card MUST NOT overflow horizontally at any viewport width from 320 pixels up. The GitHub and LinkedIn links MUST sit on their own row directly above the calls to action at every width, and stay visible and tappable.
 - **FR-012**: The colours used MUST come from the site's existing theme colours; no new colours are added.
 - **FR-013**: The launch content MUST set the second call to action to the label "Read my writing" linking to the writing page. The main call to action keeps its current label and link.
 - **FR-014**: The change MUST add no client-side script and MUST keep the home page within the existing performance budget.
@@ -101,7 +111,7 @@ Don sets, changes or removes the second call to action by editing the home page 
 ### Measurable Outcomes
 
 - **SC-001**: On the built home page, a visitor can reach the writing page from the introduction card in one tap or click, without scrolling past the card on a 375 by 667 pixel screen.
-- **SC-002**: At 375, 640, 768 and 1280 pixels wide, both calls to action measure at least 44 pixels tall, their heights are equal, they are stacked at 375 and on one row from 640, and the card has zero horizontal overflow.
+- **SC-002**: At 375, 640, 768 and 1280 pixels wide, both calls to action measure at least 44 pixels tall, their heights are equal, they are stacked and full width at 375 and on one row from 640, the social links sit on their own row above them, and the card has zero horizontal overflow.
 - **SC-003**: The home page passes the site's automated accessibility check with zero violations in both light and dark mode, including colour contrast for both calls to action.
 - **SC-004**: Removing the second call to action from the page file and rebuilding gives a card with exactly one call to action and a successful build; each invalid second call to action (empty label, bad link, extra field) fails the build.
 - **SC-005**: The home page ships no more client-side script than before, and the performance budget check passes unchanged.
@@ -109,9 +119,9 @@ Don sets, changes or removes the second call to action by editing the home page 
 ## Assumptions
 
 - **Home content file**: the issue's path `src/content/pages/index.mdx` is correct; that file holds the `intro` settings including the current call to action. The schema is in `src/content/schemas/page.ts` and the card in `src/components/page/HomeIntro.astro`, as the issue says.
-- **Field name**: the issue's suggested name `secondaryCta` (beside the existing `cta`) is taken as the working name; the plan may confirm it.
-- **Destination and label**: the issue allows `/writing/` or `/projects/`. Chosen: the writing page, labelled "Read my writing", because the writing list is the broader entry point and the projects page is already reachable from the Start here paths and the header. Don can change either in review by editing the page file. (Answered without the user; flag for clarify.)
-- **Theme colour names**: the issue's suggested colours all exist in the site's theme (rust 200/300/600/700, dusk 100/300/600/700/800/900, mist 200). The issue's primary style omits the existing dark-mode hover (lighter rust); the current hover is kept. The issue's class strings are a starting point, not a requirement; whatever colours are used must pass FR-009, checked by the accessibility tests.
+- **Field name**: `secondaryCta` beside the existing `cta`, as the issue suggests (confirmed in Clarifications).
+- **Destination and label**: the issue allows `/writing/` or `/projects/`. Chosen: the writing page, labelled "Read my writing", because the writing list is the broader entry point and the projects page is already reachable from the Start here paths and the header. Don can change either in review by editing the page file. (Confirmed in Clarifications.)
+- **Theme colour names**: the issue's suggested colours all exist in the site's theme (rust 200/300/600/700, dusk 100/300/600/700/800/900, mist 200). The issue's primary style omits the existing dark-mode hover (lighter rust); the current hover is kept. The second call to action's hover tint is mist-200 (light) and dusk-700 (dark), per Clarifications. The issue's class strings are a starting point, not a requirement; whatever colours are used must pass FR-009, checked by the accessibility tests.
 - **44-pixel target**: the current main button (small text with small vertical padding) is about 36 pixels tall, so it grows to meet FR-008. This is a deliberate visible change to the existing button and will change the home page's visual baselines.
 - **Breakpoint**: "tablet" means 640 pixels, the site's existing small breakpoint, where the card already switches to the photo-beside-text layout.
 - **Spec 040 decision superseded**: spec 040 recorded that the introduction's call to action stays the home page's one button. This feature deliberately adds a second button to the card; the Now section's inline "open to" link stays an ordinary text link.
