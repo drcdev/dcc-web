@@ -43,11 +43,11 @@ relative-luminance formula:
 | Main text on fill, hover | white on rust-700: 7.36 | dusk-900 on rust-200: 11.82 |
 | Second text on card, at rest | dusk-800 on white: 14.29 | mist-200 on dusk-800: 11.30 |
 | Second text on tint, hover | dusk-800 on mist-200: 11.30 | mist-200 on dusk-700: 8.26 |
-| Second outline vs card | dusk-500 vs white: 5.41 | dusk-400 vs dusk-800: 4.00 |
+| Second border vs card | dusk-500 vs white: 5.41 | dusk-400 vs dusk-800: 4.00 |
 
 - **Decision**: Second button `border-dusk-500 text-dusk-800 hover:bg-mist-200` / `dark:border-dusk-400
   dark:text-mist-200 dark:hover:bg-dusk-700`. Main button keeps its current colours and hover.
-- **Rationale**: FR-009 requires 3:1 for the outline. The issue's suggested `border-dusk-300` (2.46:1)
+- **Rationale**: FR-009 requires 3:1 for the border. The issue's suggested `border-dusk-300` (2.46:1)
   and `dark:border-dusk-600` (1.91:1) fail; dusk-500 and dusk-400 are the nearest passing steps
   that still read as quieter than the filled button. All colours are existing theme tokens (FR-012).
   Hover tints are the ones fixed in Clarifications.

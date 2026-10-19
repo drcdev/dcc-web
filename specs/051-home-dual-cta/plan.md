@@ -30,7 +30,7 @@ no new dependency, no new cost.
 
 **Performance Goals**: Home page stays inside the existing CI performance budget (`tests/e2e/budget.spec.ts`); zero added client JavaScript
 
-**Constraints**: WCAG 2.2 AA (text 4.5:1, outline 3:1, 44 × 44 px targets, visible focus); existing theme colours only; no horizontal overflow from 320 px
+**Constraints**: WCAG 2.2 AA (text 4.5:1, border and focus outline 3:1, 44 × 44 px targets, visible focus); existing theme colours only; no horizontal overflow from 320 px
 
 **Scale/Scope**: One schema field, one component, one content file, one docs row, test extensions and 8 visual baselines
 
@@ -49,7 +49,7 @@ no new dependency, no new cost.
 | VII. Private Data | Pass (N/A) | No personal data, no form, no logging. |
 | VIII. Cloudflare Best Practices | Pass (N/A) | No Worker, binding, D1 or config change; `/api/*` untouched. |
 | IX. Cost Ceiling | Pass | Expected added monthly cost: **$0** (static markup and CSS only, no new service or dependency). |
-| X. Accessible, Fast and Private | Pass | Contrast computed for every state (research.md R3): all text ≥ 7.36:1 except the main button at rest in light mode (4.77:1, unchanged); outline 5.41:1 light, 4.00:1 dark. 44 px min height on both buttons. Global `a:focus-visible` outline applies. No script, no tracker; Tailwind classes add bytes in the hundreds. |
+| X. Accessible, Fast and Private | Pass | Contrast computed for every state (research.md R3): all text ≥ 7.36:1 except the main button at rest in light mode (4.77:1, unchanged); second button border 5.41:1 light, 4.00:1 dark; focus outline about 3.2:1 light, 5.7:1 dark (FR-010). 44 px min height on both buttons. Global `a:focus-visible` outline applies. No script, no tracker; Tailwind classes add bytes in the hundreds. |
 | XI. Spec Kit Workflow | Pass | Spec Kit branch/dir naming, one feature per branch. Parallel worktrees: this feature edits `HomeIntro.astro`, `page.ts`, `index.mdx`, `docs/pages.md`, the tests named below and the `home-now-start-here-*` baselines; any sibling touching those resolves by merging `origin/main` and regenerating baselines. |
 | Dev workflow: scope and copy | Pass | Only the home card changes. Copy is "Read my writing": plain, no job title (FR-015). |
 
@@ -101,7 +101,7 @@ Each behaviour has one primary layer (`docs/testing.md`, "Where a test goes").
 | `secondaryCta` optional; same rules as `cta` (empty or whitespace-only label, missing/relative/protocol-relative href, extra field, empty object, `null` and wrong type rejected, with the issue path naming the field; internal and https accepted); `secondaryCta` without `cta` rejected | Unit (schema) | `tests/unit/content/page-schema.test.ts` (existing `intro`/`cta` cases at lines ~19–24, 74–75, 141–160) |
 | Build wiring of schema errors | Build (existing, no change) | `tests/build/page-validation.test.ts` already proves the collection schema runs on real files; the new field reuses that path, so no second-layer test |
 | Second link renders after main, source and focus order GitHub, LinkedIn, main, second; filled vs outlined classes; `min-h-11` on both; no second link and no empty element when unset; social `<ul>` before the button group | Component | `tests/component/HomeIntro.test.ts` (add a second `intro` fixture with `secondaryCta`; update "focusable in order" and "source order") |
-| Stacked full width at 375; one row, label widths, left-aligned from 640 (640, 768, 1280); social row above; all four links inside the card and not overlapping; equal heights ≥ 44; second link navigates to its content href; border 3:1, focus outline 3:1 against the card and hover text 4.5:1 in both themes (axe does not check borders, focus or hover) | E2E | `tests/e2e/pages.spec.ts`, describe "home introduction card" (lines ~147–207; the 24 px target test's `toHaveCount(3)` becomes 4). Add `homeSecondaryCtaHref` beside `homeCtaHref` in `tests/helpers/content.ts` so the spec reads the href from content (literal guard). Hover checks emulate `reducedMotion: "reduce"` so no mid-fade colour is sampled. |
+| Stacked full width at 375; one row, label widths, left-aligned from 640 (640, 768, 1280); social row above; all four links inside the card and not overlapping; equal heights ≥ 44; gaps 12 px and 16 px; a long label (text swapped in the page) wraps with equal heights and no overflow; second link navigates to its content href; border 3:1, focus outline 3:1 against the card and not clipped or covered, and hover text 4.5:1 in both themes (axe does not check borders, focus or hover) | E2E | `tests/e2e/pages.spec.ts`, describe "home introduction card" (lines ~147–207; the 24 px target test's `toHaveCount(3)` becomes 4). Add `homeSecondaryCtaHref` beside `homeCtaHref` in `tests/helpers/content.ts` so the spec reads the href from content (literal guard). Hover checks emulate `reducedMotion: "reduce"` so no mid-fade colour is sampled. |
 | Text contrast at rest, both themes, every width; no-JS DOM | E2E a11y (existing, no change) | `tests/e2e/a11y.spec.ts` (home is in `tests/e2e/templates.ts`) |
 | No horizontal overflow at 320/390/1280 | E2E geometry (existing, no change) | `tests/e2e/geometry.spec.ts` |
 | Appearance | Visual (baselines change) | `tests/e2e/visual.spec.ts` "home now and start here" → regenerate `tests/e2e/visual.spec.ts-snapshots/home-now-start-here-{phone,desktop}-{light,dark}-visual-{darwin,linux}.png` (8 files) |
@@ -149,7 +149,7 @@ tests/
 - **Spec 040 superseded.** Spec 040 said the intro's call to action is the home page's one button;
   this feature knowingly changes that (spec Assumptions). `tests/e2e/pages.spec.ts` "the text below
   the card has no button-style links" stays valid because both buttons are inside the card.
-- **Dark outline 4.00:1** passes with margin but is the tightest new ratio; the e2e border-contrast
+- **Dark border 4.00:1** passes with margin but is the tightest new ratio; the e2e border-contrast
   check guards it.
 
 ## Complexity Tracking
