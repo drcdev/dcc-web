@@ -8,26 +8,26 @@
 
 ## Requirement Completeness
 
-- [ ] CHK001 Are padding values defined for every viewport range, including the exact boundary widths (639, 640, 767, 768 px)? [Clarity, Spec §FR-003]
-- [ ] CHK002 Are the viewports between and beyond the tested widths (320, 390, 640, 768, 1280 px) covered by a stated rule, e.g. widths above the 64rem cap? [Coverage, Spec SC-001]
-- [ ] CHK003 Is the page-edge gutter outside the card (the margin between viewport and card) specified for phones, or only the inner padding? [Gap, Spec §FR-004]
-- [ ] CHK004 Is the card's vertical spacing (above, below, against header and footer) specified at each breakpoint? [Gap]
+- [x] CHK001 Are padding values defined for every viewport range, including the exact boundary widths (639, 640, 767, 768 px)? [Clarity, Spec §FR-003]
+- [x] CHK002 Are the viewports between and beyond the tested widths (320, 390, 640, 768, 1280 px) covered by a stated rule, e.g. widths above the 64rem cap? [Coverage, Spec SC-001]
+- [x] CHK003 Is the page-edge gutter outside the card (the margin between viewport and card) specified for phones, or only the inner padding? [Gap, Spec §FR-004]
+- [x] CHK004 Is the card's vertical spacing (above, below, against header and footer) specified at each breakpoint? [Gap]
 
 ## Requirement Clarity
 
-- [ ] CHK005 Is "comfortable text measure" from the issue translated into a measurable limit, given the clarification that no prose cap is added? [Ambiguity, Spec Clarifications]
-- [ ] CHK006 Is the accepted loss of text width (up to 4rem desktop, 2rem phone) stated with the resulting minimum column width at 320 px? [Measurability, Spec Assumptions]
-- [ ] CHK007 Is "identical" (0 px difference) defined with a tolerance for sub-pixel rounding across engines? [Clarity, Spec §SC-001, §SC-002]
+- [x] CHK005 Is "comfortable text measure" from the issue translated into a measurable limit, given the clarification that no prose cap is added? [Ambiguity, Spec Clarifications]
+- [x] CHK006 Is the accepted loss of text width (up to 4rem desktop, 2rem phone) stated with the resulting minimum column width at 320 px? [Measurability, Spec Assumptions]
+- [x] CHK007 Is "identical" (0 px difference) defined with a tolerance for sub-pixel rounding across engines? [Clarity, Spec §SC-001, §SC-002]
 
 ## Requirement Consistency
 
-- [ ] CHK008 Do FR-003 (responsive padding) and the issue's fixed 1.5rem value conflict, and is the resolution recorded as the single authority? [Conflict, Spec Assumptions]
-- [ ] CHK009 Is the claim "outer width and position unchanged" (FR-004) consistent with the full-width image rule that spans the viewport? [Consistency, Spec §FR-004, §FR-009]
-- [ ] CHK010 Are the padding breakpoints stated as the site's existing breakpoints and consistent with the other components' breakpoints? [Consistency, Spec Assumptions]
+- [x] CHK008 Do FR-003 (responsive padding) and the issue's fixed 1.5rem value conflict, and is the resolution recorded as the single authority? [Conflict, Spec Assumptions]
+- [x] CHK009 Is the claim "outer width and position unchanged" (FR-004) consistent with the full-width image rule that spans the viewport? [Consistency, Spec §FR-004, §FR-009]
+- [x] CHK010 Are the padding breakpoints stated as the site's existing breakpoints and consistent with the other components' breakpoints? [Consistency, Spec Assumptions]
 
 ## Edge Case Coverage
 
-- [ ] CHK011 Are requirements defined for 320 px viewports with long unbreakable strings (URLs, code) inside the card? [Coverage, Spec §SC-004]
-- [ ] CHK012 Are landscape phone and text-zoom/200% browser zoom layouts addressed? [Gap, Edge Case]
-- [ ] CHK013 Are requirements specified for the contact form fields at 320 px inside the reduced text column? [Gap, Spec Edge Cases]
-- [ ] CHK014 Is the behaviour of very short pages (not-found) relative to viewport height, such as footer position, specified? [Gap, Spec §FR-006]
+- [x] CHK011 Are requirements defined for 320 px viewports with long unbreakable strings (URLs, code) inside the card? [Coverage, Spec §SC-004]
+- [x] CHK012 Are landscape phone and text-zoom/200% browser zoom layouts addressed? [Gap, Edge Case]
+- [x] CHK013 Are requirements specified for the contact form fields at 320 px inside the reduced text column? [Gap, Spec Edge Cases]
+- [x] CHK014 Is the behaviour of very short pages (not-found) relative to viewport height, such as footer position, specified? [Gap, Spec §FR-006]

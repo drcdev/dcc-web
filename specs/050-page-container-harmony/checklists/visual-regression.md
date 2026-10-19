@@ -8,28 +8,28 @@
 
 ## Requirement Completeness
 
-- [ ] CHK001 Is the exact set of baselines expected to change listed (template, theme, viewport, platform), not only "pages that change"? [Completeness, Spec §FR-011]
-- [ ] CHK002 Are both platforms (macOS and Linux via Docker) named as required for the refresh? [Completeness, Plan Constitution Check II]
-- [ ] CHK003 Is there a requirement that baselines for unaffected templates (posts, stories, listings) stay unchanged? [Gap, Spec Out of Scope]
-- [ ] CHK004 Is the review criterion for an updated baseline stated (what a reviewer compares it against) so a wrong card cannot be accepted by regeneration alone? [Gap, Traceability]
+- [x] CHK001 Is the exact set of baselines expected to change listed (template, theme, viewport, platform), not only "pages that change"? [Completeness, Spec §FR-011]
+- [x] CHK002 Are both platforms (macOS and Linux via Docker) named as required for the refresh? [Completeness, Plan Constitution Check II]
+- [x] CHK003 Is there a requirement that baselines for unaffected templates (posts, stories, listings) stay unchanged? [Gap, Spec Out of Scope]
+- [x] CHK004 Is the review criterion for an updated baseline stated (what a reviewer compares it against) so a wrong card cannot be accepted by regeneration alone? [Gap, Traceability]
 
 ## Requirement Clarity
 
-- [ ] CHK005 Is "visual regression suite passes with the refreshed baselines" distinguished from "baselines match the spec", given regenerated images pass by construction? [Ambiguity, Spec §SC-005]
-- [ ] CHK006 Is the split between browser geometry tests (About, not-found) and visual coverage (other templates) explicit about which requirement each layer owns? [Clarity, Spec Clarifications, SC-001]
+- [x] CHK005 Is "visual regression suite passes with the refreshed baselines" distinguished from "baselines match the spec", given regenerated images pass by construction? [Ambiguity, Spec §SC-005]
+- [x] CHK006 Is the split between browser geometry tests (About, not-found) and visual coverage (other templates) explicit about which requirement each layer owns? [Clarity, Spec Clarifications, SC-001]
 
 ## Requirement Consistency
 
-- [ ] CHK007 Does the list of refreshed baselines in the plan (not-found, sections, home, contact form) agree with the spec's list of affected templates? [Consistency, Spec §FR-011, Plan Summary]
-- [ ] CHK008 Is the padding change in dark mode (1.5rem fixed to responsive) recognised as altering dark baselines too? [Consistency, Spec Assumptions]
+- [x] CHK007 Does the list of refreshed baselines in the plan (not-found, sections, home, contact form) agree with the spec's list of affected templates? [Consistency, Spec §FR-011, Plan Summary]
+- [x] CHK008 Is the padding change in dark mode (1.5rem fixed to responsive) recognised as altering dark baselines too? [Consistency, Spec Assumptions]
 
 ## Edge Case Coverage
 
-- [ ] CHK009 Are font and Linux rendering differences handled in the requirement for white-on-white card edge visibility across platforms? [Gap, Edge Case]
-- [ ] CHK010 Is a requirement defined for baselines of pages with draft notices or full-width images, which are unusual layouts inside the card? [Gap, Spec Edge Cases]
-- [ ] CHK011 Are the pass criteria for SC-003 (non-zero border, non-transparent shadow) measurable from computed styles without relying on screenshots? [Measurability, Spec §SC-003]
+- [x] CHK009 Are font and Linux rendering differences handled in the requirement for white-on-white card edge visibility across platforms? [Gap, Edge Case]
+- [x] CHK010 Is a requirement defined for baselines of pages with draft notices or full-width images, which are unusual layouts inside the card? [Gap, Spec Edge Cases]
+- [x] CHK011 Are the pass criteria for SC-003 (non-zero border, non-transparent shadow) measurable from computed styles without relying on screenshots? [Measurability, Spec §SC-003]
 
 ## Dependencies and Assumptions
 
-- [ ] CHK012 Is the dependency on Docker availability for Linux baselines recorded, with a stated action if it is unavailable? [Dependency, Plan Constitution Check II]
-- [ ] CHK013 Is sibling-worktree overlap on baselines and shared specs addressed as a dependency? [Dependency, Plan Constitution Check XI]
+- [x] CHK012 Is the dependency on Docker availability for Linux baselines recorded, with a stated action if it is unavailable? [Dependency, Plan Constitution Check II]
+- [x] CHK013 Is sibling-worktree overlap on baselines and shared specs addressed as a dependency? [Dependency, Plan Constitution Check XI]

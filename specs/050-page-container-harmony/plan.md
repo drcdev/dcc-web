@@ -19,6 +19,15 @@ About and the not-found page at 390, 640, 768 and 1280 px in both themes; the th
 gains the card's colours; a component test proves both pages render the same card; the
 not-found, sections, home and contact-form visual baselines are refreshed on both platforms.
 
+Spec requirements added at the checklist phase need no extra test layer: FR-012 (baseline review
+against the spec's card properties table) is a review step recorded in the PR body; FR-013 (focus
+rings never clipped) holds because the card's class list has no `overflow-*` utility and its
+smallest padding (1rem) exceeds the 4 px focus-ring extent, with the axe suites as the check;
+FR-014 (reading order, draft notice first) is already asserted by
+`tests/component/PageLayout.test.ts`; FR-010's "no JavaScript needed" is covered by
+`no-js.spec.ts`. The spec's Dependencies (Docker for Linux baselines, sibling worktrees) are
+handled as in the Constitution Check rows II and XI below.
+
 ## Technical Context
 
 **Language/Version**: TypeScript (strict) in Astro 7.3.5 components; Node 24 (`.nvmrc`)
