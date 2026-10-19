@@ -48,9 +48,9 @@ description: "Task list for feature 050 page container harmony"
 
 **Independent Test**: `pnpm exec playwright test tests/e2e/content-card.spec.ts --project=e2e` for `/about/` passes in both themes.
 
-- [ ] T008 [US1] Replace the inline `<section id="content-section">` in `src/layouts/PageLayout.astro` with `<ContentCard>{draft && <DraftNotice />}<slot /></ContentCard>`. Keep the title section, `HomeIntro` and feature image above it untouched, and keep the draft notice as the first child (FR-007, FR-014). Make T003 pass for `/about/` and T004 pass.
-- [ ] T009 [US1] Run `pnpm exec vitest run tests/component/PageLayout.test.ts` (structure, draft-notice-first and reading-order assertions, FR-014, already the primary layer for them) and `pnpm exec playwright test tests/e2e/geometry.spec.ts tests/e2e/sections.spec.ts tests/e2e/no-js.spec.ts --project=e2e` (320 px no scroll, wide and full-width image break-out FR-009, no-JS FR-010) to confirm they stay green. Fix the implementation, not the tests, if any fail.
-- [ ] T010 [US1] Run `pnpm exec playwright test tests/e2e/a11y.spec.ts tests/e2e/home.spec.ts tests/e2e/pages.spec.ts tests/e2e/contact.spec.ts` and confirm zero axe violations in both themes on every template and that the home and contact journeys still pass (SC-005, FR-008, FR-013). Second layer note: axe is the accessibility layer for templates, not a repeat of the geometry test.
+- [x] T008 [US1] Replace the inline `<section id="content-section">` in `src/layouts/PageLayout.astro` with `<ContentCard>{draft && <DraftNotice />}<slot /></ContentCard>`. Keep the title section, `HomeIntro` and feature image above it untouched, and keep the draft notice as the first child (FR-007, FR-014). Make T003 pass for `/about/` and T004 pass.
+- [x] T009 [US1] Run `pnpm exec vitest run tests/component/PageLayout.test.ts` (structure, draft-notice-first and reading-order assertions, FR-014, already the primary layer for them) and `pnpm exec playwright test tests/e2e/geometry.spec.ts tests/e2e/sections.spec.ts tests/e2e/no-js.spec.ts --project=e2e` (320 px no scroll, wide and full-width image break-out FR-009, no-JS FR-010) to confirm they stay green. Fix the implementation, not the tests, if any fail.
+- [x] T010 [US1] Run `pnpm exec playwright test tests/e2e/a11y.spec.ts tests/e2e/home.spec.ts tests/e2e/pages.spec.ts tests/e2e/contact.spec.ts` and confirm zero axe violations in both themes on every template and that the home and contact journeys still pass (SC-005, FR-008, FR-013). Second layer note: axe is the accessibility layer for templates, not a repeat of the geometry test.
 
 **Checkpoint**: Story 1 complete and independently testable.
 
@@ -62,7 +62,7 @@ description: "Task list for feature 050 page container harmony"
 
 **Independent Test**: The padding assertions in `tests/e2e/content-card.spec.ts` at 390, 640, 768 and 1280 px.
 
-- [ ] T011 [US2] Confirm the padding assertions of T003 (16, 24, 32, 32 px) pass for `/about/` in both themes with the `p-4 sm:p-6 md:p-8` classes from T007. If a width fails, adjust only the component's padding classes. No new test: T003 already owns this behaviour (FR-003), and a second test would repeat it.
+- [x] T011 [US2] Confirm the padding assertions of T003 (16, 24, 32, 32 px) pass for `/about/` in both themes with the `p-4 sm:p-6 md:p-8` classes from T007. If a width fails, adjust only the component's padding classes. No new test: T003 already owns this behaviour (FR-003), and a second test would repeat it.
 
 **Checkpoint**: Stories 1 and 2 work.
 
@@ -74,8 +74,8 @@ description: "Task list for feature 050 page container harmony"
 
 **Independent Test**: T003 on `/nope/` and T005 pass; `tests/e2e/not-found.spec.ts` stays green.
 
-- [ ] T012 [US3] Replace the inline content `<section>` in `src/pages/404.astro` with `<ContentCard>` wrapping the existing `<h1>` and copy unchanged; keep `BaseLayout` and its single main landmark; the card is not a landmark or region (FR-006). Make T003 pass for `/nope/` and T005 pass.
-- [ ] T013 [US3] Run `pnpm exec playwright test tests/e2e/not-found.spec.ts tests/e2e/geometry.spec.ts tests/e2e/content-card.spec.ts tests/e2e/a11y.spec.ts` and confirm the not-found journey, 320 px no-scroll (SC-004: light in `geometry.spec.ts`, dark in `content-card.spec.ts`) and axe checks (both themes) pass. The footer stays at the bottom on the short page (spec edge case).
+- [x] T012 [US3] Replace the inline content `<section>` in `src/pages/404.astro` with `<ContentCard>` wrapping the existing `<h1>` and copy unchanged; keep `BaseLayout` and its single main landmark; the card is not a landmark or region (FR-006). Make T003 pass for `/nope/` and T005 pass.
+- [x] T013 [US3] Run `pnpm exec playwright test tests/e2e/not-found.spec.ts tests/e2e/geometry.spec.ts tests/e2e/content-card.spec.ts tests/e2e/a11y.spec.ts` and confirm the not-found journey, 320 px no-scroll (SC-004: light in `geometry.spec.ts`, dark in `content-card.spec.ts`) and axe checks (both themes) pass. The footer stays at the bottom on the short page (spec edge case).
 
 **Checkpoint**: All stories work.
 

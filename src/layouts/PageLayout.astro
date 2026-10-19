@@ -6,6 +6,7 @@ import type { ImageMetadata } from "astro";
 import type { ComponentProps } from "astro/types";
 import BaseLayout from "./BaseLayout.astro";
 import DraftNotice from "../components/page/DraftNotice.astro";
+import ContentCard from "../components/page/ContentCard.astro";
 import HomeIntro from "../components/page/HomeIntro.astro";
 import FeatureImage from "../components/page/FeatureImage.astro";
 import type { SiteNavigation } from "../config/navigation";
@@ -53,12 +54,9 @@ const { title, description, navigation, image, imageAlt, featureImage, intro, dr
         </section>
       )
     }
-    <section
-      id="content-section"
-      class="prose lg:prose-lg dark:prose-invert prose-accent mx-auto mb-8 max-w-screen-lg dark:rounded-2xl dark:bg-dusk-800 dark:p-6"
-    >
+    <ContentCard>
       {draft && <DraftNotice />}
       <slot />
-    </section>
+    </ContentCard>
   </article>
 </BaseLayout>
