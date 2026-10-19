@@ -381,6 +381,33 @@ describe("the post footer block (specs/045 rows F1 and F2; FR-001, FR-002, SC-00
   });
 });
 
+describe("the post footer block and the CSP (specs/045 row F10; FR-010a, FR-011)", () => {
+  // Regression guard: it passes from the start, no implementation task covers it. The generated
+  // markup is what the CSP cares about, so it is asserted on the built page.
+  const footer = () => {
+    const html = site.read("writing/listing-post-01/index.html");
+    const start = html.indexOf("data-post-footer");
+    expect(start, "footer present").toBeGreaterThan(-1);
+    return html.slice(html.lastIndexOf("<div", start), html.indexOf("</main>", start) > -1 ? html.indexOf("</main>", start) : undefined);
+  };
+
+  it("has no inline style attribute, no inline script and no event-handler attribute", () => {
+    const html = footer();
+    expect(html).not.toMatch(/\sstyle\s*=/i);
+    // The Share button's own bundled module is the one script allowed; Astro inlines this small
+    // module into the page, as it did before 045. Anything else inline would be new.
+    const scripts = [...html.matchAll(/<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]!);
+    expect(scripts.filter((body) => !body.includes("data-share-button"))).toEqual([]);
+    expect(html).not.toMatch(/\son[a-z]+\s*=/i);
+  });
+
+  it("gives the LinkedIn link no target, rel, ping or referrerpolicy", () => {
+    const tag = /<a\b[^>]*href="https:\/\/www\.linkedin\.com\/sharing[^>]*>/.exec(footer())?.[0] ?? "";
+    expect(tag, "LinkedIn share link").not.toBe("");
+    for (const a of ["target", "rel", "ping", "referrerpolicy"]) expect(tag).not.toMatch(new RegExp(`\\s${a}\\s*=`, "i"));
+  });
+});
+
 describe("the author card (specs/039 rows A1 and A5; FR-001, FR-013, FR-014)", () => {
   const cards = (html: string) => html.match(/<section\b[^>]*data-author-card/g)?.length ?? 0;
 

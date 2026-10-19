@@ -59,4 +59,14 @@ describe("Share", () => {
     }
     expect(classes.filter((c) => /^(dark:)?(from|to)-/.test(c))).toEqual([]);
   });
+  it("045 F13: the links and the Share button carry the light and the dark focus ring colours", async () => {
+    const html = await render();
+    const controls = [...byName(html, "a"), ...byName(html, "button")];
+    expect(controls).toHaveLength(3);
+    for (const c of controls) {
+      const classes = classList(c);
+      expect(classes, "light ring").toContain("focus-visible:outline-rust-600");
+      expect(classes, "dark ring").toContain("dark:focus-visible:outline-rust-300");
+    }
+  });
 });

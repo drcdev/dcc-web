@@ -20,7 +20,7 @@ const { title, href } = Astro.props;
 const url = new URL(href, Astro.site ?? Astro.url).href;
 const links = shareLinks(title, url);
 const control =
-  "inline-flex min-h-11 items-center rounded-full border border-rust-600 px-4 py-2 text-sm font-medium text-rust-800 no-underline hover:bg-rust-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rust-600 dark:border-rust-300 dark:text-rust-300 dark:hover:bg-rust-950";
+  "inline-flex min-h-11 items-center rounded-full border border-rust-600 px-4 py-2 text-sm font-medium text-rust-800 no-underline hover:bg-rust-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rust-600 dark:border-rust-300 dark:text-rust-300 dark:hover:bg-rust-950 dark:focus-visible:outline-rust-300";
 ---
 
 <section
