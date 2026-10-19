@@ -45,7 +45,7 @@ dependency, endpoint or service is added.
 
 | # | Principle | Status | How this plan meets it |
 |---|-----------|--------|------------------------|
-| I | Test-First | PASS | Tests are written and seen to fail before the component changes. **Component** (Container API, `ContactForm.test.ts`): contract rows L1–L11 (note `h2` and its level, `aria-labelledby`, quick links from `socialNavigation` in the same tab, a `mailto:` with the address as text, `aria-hidden` icons, grid classes, DOM order, privacy slot placement) and N1–N2 (no note → no grid, form as today). **Unit**: the shown address equals the address the privacy policy publishes; `contact.mdx` puts the note in `slot="note"` with the privacy link outside it. **E2E** (`contact.spec.ts`, real `/contact/`): columns side by side, top-aligned and 5:7 at 1024/1280 px; stacked at 1023/375 px; no sideways scroll at 1023; quick links before Name in tab order; valid send and `?project=` at 390 px. **A11y and visual** run on the template (existing `TEMPLATES` loop, the "contact form states" block, the `contact-form` fixture subject). Layers and second-layer reasons are in research.md R10. |
+| I | Test-First | PASS | Tests are written and seen to fail before the component changes. **Component** (Container API, `ContactForm.test.ts`): contract rows L1–L11 (note `h2` and its level, `aria-labelledby`, quick links from `socialNavigation` in the same tab, a `mailto:` with the address as text, `aria-hidden` icons, grid classes, DOM order, privacy slot placement) and N1–N2 (no note → no grid, form as today). **Unit**: the shown address equals the address the privacy policy publishes; `contact.mdx` puts the note in `slot="note"` with the privacy link outside it. **E2E** (`contact.spec.ts`, real `/contact/`): columns side by side, top-aligned and 5:7 at 1024/1280 px; stacked with a 40 px gap at 1023/375 px; 48 px gap and 1 px top alignment at 1024/1280; no sideways scroll at 1023 and 375; quick links before Name in tab order; valid send and `?project=` at 375 px. **A11y and visual** run on the template (existing `TEMPLATES` loop, the "contact form states" block, the `contact-form` fixture subject). Layers and second-layer reasons are in research.md R10. |
 | II | Automated Release Gate | PASS | Nothing is skipped or loosened. Eight baselines are refreshed, not weakened or removed, and the threshold stays. The full `pnpm run verify` runs before the PR (after asking Don, per the local gate notes). |
 | III | Human Review of Every Change | PASS | One PR from `drc-agents`, auto-merge armed after the final push. The note wording (FR-004 to FR-006, FR-010) and a real send on the preview are `[PREVIEW-CHECK]` items. |
 | IV | First-Party Before Custom | PASS | Every capability uses an Astro or Tailwind first-party feature (table below). The Astro Docs MCP was available and used, and research.md cites each page. There is no custom code beyond component markup and one config field. |
@@ -86,8 +86,8 @@ specs/052-contact-editorial-layout/
 ├── data-model.md        # Phase 1: note, privacy notice, quick link, site config
 ├── quickstart.md        # Phase 1: how to validate end to end
 ├── contracts/
-│   └── contact-page.md  # Phase 1: page file shape and rendered markup rows L1–L10, N1–N2
-├── checklists/requirements.md
+│   └── contact-page.md  # Phase 1: page file shape and rendered markup rows L1–L11, N1–N2
+├── checklists/          # requirements, accessibility, privacy-security, responsive
 └── tasks.md             # Phase 2 (/speckit-tasks; not created here)
 ```
 
@@ -101,7 +101,7 @@ src/
 └── content/pages/contact.mdx               # EDIT: note in <div slot="note">, privacy paragraph inside <ContactForm>
 
 tests/
-├── component/sections/ContactForm.test.ts  # EDIT: rows L1–L10, N1–N2 (render with named slots)
+├── component/sections/ContactForm.test.ts  # EDIT: rows L1–L11, N1–N2 (render with named slots)
 ├── component/sections/helpers.ts           # EDIT: render() accepts named slots (keeps the default-slot signature)
 ├── unit/site/privacy-policy.test.ts        # EDIT: privacy policy and terms of use publish mailto:${site.contactEmail}
 ├── unit/content/site-pages.test.ts         # EDIT: contact.mdx note is in slot="note"; privacy link outside it

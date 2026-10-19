@@ -157,9 +157,11 @@ left as NEEDS CLARIFICATION; the decisions below settle how each requirement is 
 | No `note` slot → no note column, no grid classes, form markup unchanged (fixture case) | Component | same | — |
 | Shown address equals the one the privacy policy and terms of use publish (FR-007b) | Unit | `tests/unit/site/privacy-policy.test.ts` | — |
 | Every `socialNavigation` entry has a quick-link icon (FR-007c); the `mailto:` href has no query string (FR-007b) | Component | `tests/component/sections/ContactForm.test.ts` | — |
+| Note links carry the site's focus-outline classes (contract L7, FR-015) | Component | same | Seeing the outline in both themes is a `[PREVIEW-CHECK]` (axe cannot test focus visibility) |
 | `contact.mdx` puts the note in `slot="note"` and keeps the privacy link outside it | Unit | `tests/unit/content/site-pages.test.ts` | — |
 | Columns side by side, top-aligned, form column wider at 1024 and 1280 px; stacked with the note above the form at 1023 and 375 px; no sideways scroll at 1023 px | E2E (only a browser computes layout) | `tests/e2e/contact.spec.ts` (project `e2e`, real `/contact/`, asserts by `data-*` hooks, no copy) | — |
-| Tab order: the quick links come before Name, at 1280 and 375 px (SC-006) | E2E | same | — |
+| Tab order: the quick links come before Name, at 1280 and 375 px (SC-006); no spam-check request while tabbing through the note links (FR-013) | E2E | same | — |
+| 48 px column gap and 1 px top alignment at 1024/1280 px; form column at least 300 px; content at most 1024 px wide and centred at 1920 px | E2E | same | — |
 | Valid send and the `?project=` line at phone width | E2E | same | Second width for SC-003: the stacked layout must not hide or cover a control. The existing journeys keep the default desktop viewport. |
 | No sideways scroll at 320/390/1280 px, JS on and off | E2E (existing) | `geometry.spec.ts`, `no-js.spec.ts` via `TEMPLATES` | Unchanged; already include `/contact/` |
 | Axe in both themes at both widths, idle and in the error/success states | A11y (existing) | `a11y.spec.ts` (`TEMPLATES` + "contact form states") | Unchanged |

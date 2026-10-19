@@ -35,17 +35,20 @@
 
 ### Tests (write first, see them fail)
 
-- [ ] T006 [P] [US1] Test, primary layer **Component** (Container API): in `tests/component/sections/ContactForm.test.ts` add rows L1, L3, L4, L5, L6, L8, L9, L10, L11 (grid classes, DOM order, h2 text and `aria-labelledby`, exactly three quick links from `socialNavigation` in the same tab plus a query-free `mailto:` with the address as text, every `socialNavigation` entry has an icon, icons `aria-hidden`, privacy slot placement, success panel inside the form column, `min-w-0`, `min-h-6`/`break-words`) and N1, N2 (no note slot: no grid, no note, form markup as today). No second layer: markup contracts are cheapest here
-- [ ] T007 [P] [US1] Test, primary layer **Unit**: in `tests/unit/content/site-pages.test.ts` assert `src/content/pages/contact.mdx` puts the note in one `<div slot="note">`, keeps the privacy policy link outside it, and the note holds no heading and no job title (FR-009, FR-010, P1 to P3)
-- [ ] T008 [P] [US1] Test, primary layer **Unit**: in `tests/unit/site/fixture-posts.test.ts` change the `<ContactForm />` assertion to `<ContactForm` (fixture is no longer self-closing)
-- [ ] T009 [US1] Test, primary layer **E2E** (only a browser computes layout): in `tests/e2e/contact.spec.ts` add a "layout" describe on the real `/contact/`, asserting by `data-*` hooks and not copy: at 1024 and 1280 px the note and form columns are side by side, top-aligned beneath the title, and the form column is wider (about 7:5); the note is first in DOM and focus order. No second layer: axe and visual shots do not prove geometry
+All test tasks T006 to T010 are written and seen to fail before any implementation task (T011 onward). T010 is the US2 layout test: it sits here because the markup that makes it pass is written in T011, and Principle I needs it failing before then.
+
+- [ ] T006 [P] [US1] Test, primary layer **Component** (Container API): in `tests/component/sections/ContactForm.test.ts` add rows L1, L3, L4, L5, L6, L7, L8, L9, L10, L11 (grid classes including `lg:gap-x-12`, DOM order, h2 text and `aria-labelledby`, one quick link per `socialNavigation` entry in the same tab followed by a query-free `mailto:` with the address as text, every `socialNavigation` entry has an icon, icons `aria-hidden`, the focus-outline classes on each note link, privacy slot placement, success panel inside the form column, `min-w-0`, `min-h-6`/`break-words`) and N1, N2 (no note slot: no grid, no note, form markup as today). No second layer: markup contracts are cheapest here
+- [ ] T007 [P] [US1] Test, primary layer **Unit**: in `tests/unit/content/site-pages.test.ts` assert `src/content/pages/contact.mdx` puts the note in one `<div slot="note">`, keeps the privacy policy link outside it, and the note holds no heading (FR-009, P1 to P3). The copy rules (FR-004 to FR-006, FR-010, including no job title) are not restated in tests (research.md R10); they are T022
+- [ ] T008 [P] [US1] Test, primary layer **Unit**: in `tests/unit/site/fixture-posts.test.ts` change the `<ContactForm />` assertion to `<ContactForm` (fixture is no longer self-closing). This keeps an existing guard working after T013 rather than adding behaviour, so it is not expected to fail first
+- [ ] T009 [US1] Test, primary layer **E2E** (only a browser computes layout): in `tests/e2e/contact.spec.ts` add a "layout" describe on the real `/contact/`, asserting by `data-*` hooks and not copy: at 1024 and 1280 px the note and form columns are side by side, their top edges within 1 px beneath the title, the gap between them is 48 px, the form column is wider (about 7:5) and at least 300 px wide (FR-017); at 1920 px `[data-contact]` is at most 1024 px wide and centred; the note is first in DOM and focus order. No second layer: axe and visual shots do not prove geometry
+- [ ] T010 [US2] Test, primary layer **E2E**, same "layout" describe (sequential with T009, same file): at 1023 and 375 px the note's bottom is above the form column's top, the gap is 40 px, and the document has no horizontal scroll; the three quick links come before Name in Tab order at 1280 and 375 px (SC-006), and no request goes to the spam-check service while tabbing through the note links, only once Name gets focus (FR-013); a valid send and a `?project=` journey at 375 px (SC-003, second width: the stacked layout must not hide or cover a control)
 
 ### Implementation
 
-- [ ] T010 [US1] Edit `src/components/sections/ContactForm.astro`: add the named `note` slot and default slot; when `Astro.slots.has("note")` wrap in `lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12`, render `section[data-contact-note]` (`lg:col-span-5`, h2 `#contact-note-heading` "Before you write", `data-contact-note-body`, `ul[data-contact-links]` from `socialNavigation` plus the mailto using `site.contactEmail` and `mail.svg`) and `div[data-contact-form-column]` (`lg:col-span-7`, `mt-10 lg:mt-0`, `min-w-0`) holding the unchanged form and `#contact-success`; render `[data-contact-privacy]` under the "Send a message" heading; without the slot render as today (contract L1 to L11, N1, N2)
-- [ ] T011 [US1] Edit `src/content/pages/contact.mdx`: wrap in `<ContactForm>`, put the note Markdown (speaking and mentoring on systems leadership and AI experiments; reads every message and replies by email within a few days; "Vancouver Island, BC — Pacific Time"; no consulting, no job title, plain language) in `<div slot="note">`, move the privacy paragraph word for word inside as the default slot, delete the old first paragraph
-- [ ] T012 [US1] Edit `tests/fixtures/pages/contact-form.mdx`: same shape with an ASCII fixture note and fixture privacy paragraph (no real content, `no-real-content-in-tests`)
-- [ ] T013 [US1] Run the T002 and T006 to T009 tests plus the existing `contact.spec.ts` and `tests/unit/content/site-pages.test.ts`; all green
+- [ ] T011 [US1] Edit `src/components/sections/ContactForm.astro`: add the named `note` slot and default slot; when `Astro.slots.has("note")` wrap in `lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12`, render `section[data-contact-note]` (`lg:col-span-5`, h2 `#contact-note-heading` "Before you write", `data-contact-note-body` with `max-w-prose lg:max-w-none`, `ul[data-contact-links]` from `socialNavigation` plus the mailto using `site.contactEmail` and `mail.svg`, links `min-h-6 break-words` with the form's focus outline) and `div[data-contact-form-column]` (`lg:col-span-7`, `mt-10 lg:mt-0`, `min-w-0`) holding the unchanged form and `#contact-success`; render `[data-contact-privacy]` under the "Send a message" heading; without the slot render as today (contract L1 to L11, N1, N2)
+- [ ] T012 [US1] Edit `src/content/pages/contact.mdx`: wrap in `<ContactForm>`, put the note Markdown (speaking and mentoring on systems leadership and AI experiments; reads every message and replies by email within a few days; "Vancouver Island, BC — Pacific Time"; no consulting, no job title, plain language) in `<div slot="note">`, move the privacy paragraph word for word inside as the default slot, delete the old first paragraph
+- [ ] T013 [US1] Edit `tests/fixtures/pages/contact-form.mdx`: same shape with an ASCII fixture note and fixture privacy paragraph (no real content, `no-real-content-in-tests`)
+- [ ] T014 [US1] Run the T002 and T006 to T009 tests plus the existing `contact.spec.ts` and `tests/unit/content/site-pages.test.ts`; all green
 
 **Checkpoint**: US1 works and is testable alone.
 
@@ -57,8 +60,7 @@
 
 **Independent test**: `/contact/` at 375 and 1023 px is one column, note first, no horizontal scroll.
 
-- [ ] T014 [US2] Test, primary layer **E2E**: in the "layout" describe of `tests/e2e/contact.spec.ts` assert at 1023 and 375 px the note's bottom is above the form column's top, the gap is 40 px, and the document has no horizontal scroll; assert the three quick links come before Name in Tab order at 1280 and 375 px (SC-006); add a valid send and a `?project=` journey at 375 px (SC-003, second width: the stacked layout must not hide or cover a control)
-- [ ] T015 [US2] Make T014 pass; the stacked behaviour should already come from T010 (no `lg:` classes below 1024 px). Adjust only `src/components/sections/ContactForm.astro` classes if it fails (note body `max-w-prose lg:max-w-none`, links `break-words` so the address wraps at 320 px)
+- [ ] T015 [US2] Make T010 pass; the stacked behaviour should already come from T011 (no `lg:` classes below 1024 px). Adjust only `src/components/sections/ContactForm.astro` classes if it fails (note body `max-w-prose lg:max-w-none`, links `break-words` so the address wraps at 320 px)
 
 **Checkpoint**: US1 and US2 both pass.
 
@@ -79,19 +81,21 @@
 
 ## Phase 6: Polish and cross-cutting
 
-- [ ] T018 Refresh the macOS visual baselines: `pnpm run test:visual:update` (read `.claude/skills/_shared/visual-baselines.md` first; run via the nvm and pnpm shim wrapper in the background under `perl alarm`); expect only `contact-form-{desktop,phone}-{light,dark}-visual-darwin.png` to change; compare `-previous.png`
-- [ ] T019 Refresh the Linux visual baselines: `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, report it so Don can start Docker); expect only the four `-visual-linux.png` contact-form files to change; commit all eight images. Do not run T018 and T019 while Docker is building dist
-- [ ] T020 Run the local gate for the changed paths only (`changed-paths.ts --base origin/main` tier, per CLAUDE.md and memory notes); ask Don before any full `pnpm run verify`. Check the unit guards `no-real-content-in-tests` and the literal guard pass
-- [ ] T021 [PREVIEW-CHECK] Don reads the note copy on the preview and confirms the wording (FR-004 to FR-006, FR-010: speaking and mentoring, reply within a few days, "Vancouver Island, BC — Pacific Time", no job title, plain language)
-- [ ] T022 [PREVIEW-CHECK] Don sends a real message from the preview (Turnstile needs a browser) and sees it arrive as a preview-marked email; also checks SC-001 and SC-005 at 1280 x 800 (note heading, "Send a message", reply expectation, "Pacific Time" and all three links visible without scrolling) and 200% zoom reflow
-- [ ] T023 [PREVIEW-CHECK] After sibling 050-page-container-harmony merges, merge `origin/main`, rerun the contact geometry e2e tests and the `contact-form` visual shots (container width can move the baselines)
+Visual baseline tasks follow `.claude/skills/_shared/visual-baselines.md` (read it first; it is not restated here).
+
+- [ ] T018 Sibling check: if 050-page-container-harmony has merged, merge `origin/main` (keep this feature's `.specify/feature.json`) and rerun the T009 and T010 layout tests before refreshing baselines, since a changed container width moves the geometry and the shots. If it merges after T019 and T020, repeat this task and both refreshes before the final push
+- [ ] T019 Refresh the macOS visual baselines: `pnpm run test:visual:update` (run via the nvm and pnpm shim wrapper in the background under `perl alarm`); expect only `contact-form-{desktop,phone}-{light,dark}-visual-darwin.png` to change; compare `-previous.png`. Any other changed image is a regression to fix, not a baseline to refresh
+- [ ] T020 Refresh the Linux visual baselines: `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, Don is asked to start it through an `AskUserQuestion` whose question text carries the instruction, and the task waits; there is no other route to Linux baselines); expect only the four `-visual-linux.png` contact-form files to change. Do not run T019 while Docker is building dist. Commit and push all eight images before the PR opens; if CI's visual check then fails on the Docker images, stop and tell Don (Docker has drifted from CI) and do not refresh from a CI run
+- [ ] T021 Run the local gate for the changed paths only (`changed-paths.ts --base origin/main` tier, per CLAUDE.md and memory notes); ask Don before any full `pnpm run verify`. Check the unit guards `no-real-content-in-tests` and the literal guard pass
+- [ ] T022 [PREVIEW-CHECK] Don reads the note copy on the preview and confirms the wording (FR-004 to FR-006, FR-010: speaking and mentoring, reply within a few days, "Vancouver Island, BC — Pacific Time", no job title or role, plain language)
+- [ ] T023 [PREVIEW-CHECK] Don sends a real message from the preview (Turnstile needs a browser) and sees it arrive as a preview-marked email; also checks SC-001 and SC-005 at 1280 x 800 (note heading, "Send a message", reply expectation, "Pacific Time" and all three links visible without scrolling), 200% zoom reflow, the visible focus outline on the note links in both themes, and the WCAG 1.4.12 text-spacing values (nothing clips or overlaps) (SC-004, FR-002, FR-015)
 
 ---
 
 ## Dependencies and order
 
-- Phase 1, then Phase 2 (T002 to T004 parallel, T005 after T002 is seen failing), then US1, then US2 and US3 (both depend on T010; US2 tests and US3 verification can run in parallel), then Polish (T018 before T019; both after T016).
-- Within US1: T006 to T008 in parallel (different files) and T009 sequential with T014 (same file); all written and failing before T010 to T012.
+- Phase 1, then Phase 2 (T002 to T004 parallel, T005 after T002 is seen failing), then the Phase 3 tests T006 to T010 (all written and seen failing), then T011 to T014, then US2 (T015) and US3 (T016, T017) in parallel, then Polish (T018, then T019 before T020, all after T016; T021 after the images are committed).
+- Within the tests: T006 to T008 in parallel (different files); T009 then T010 sequential (same file).
 - `[P]` candidates: T002, T003, T004; T006, T007, T008.
 
 ## Implementation strategy

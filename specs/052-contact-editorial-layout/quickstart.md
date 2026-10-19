@@ -17,7 +17,7 @@ pnpm exec vitest run tests/component/sections/ContactForm.test.ts \
   tests/unit/site/fixture-posts.test.ts
 ```
 
-Expected: the component rows L1–L10 and N1–N2 (`contracts/contact-page.md`) pass, the shown
+Expected: the component rows L1–L11 and N1–N2 (`contracts/contact-page.md`) pass, the shown
 address matches the privacy policy, and the fixture page check accepts `<ContactForm>`.
 
 ## Browser checks
@@ -37,7 +37,7 @@ Expected:
 2. At 1023 and 375 px, the note's bottom edge is above the form column's top edge, and
    `scrollWidth <= clientWidth` (SC-002).
 3. Tabbing from the top of `main` reaches GitHub, LinkedIn and the email link before Name.
-4. Every existing journey passes unchanged. Valid send and `?project=` also pass at 390 px
+4. Every existing journey passes unchanged. Valid send and `?project=` also pass at 375 px
    (SC-003).
 5. Axe finds zero violations in both themes at both widths, idle and in the error, form-error and
    success states (SC-004).

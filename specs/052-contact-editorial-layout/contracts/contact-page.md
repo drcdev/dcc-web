@@ -58,7 +58,7 @@ the privacy slot and the page file shape. Row ids (`L1`…) are for test titles.
 
 | Row | Rule |
 |-----|------|
-| L1 | With a `note` slot, `[data-contact]` carries `lg:grid lg:grid-cols-12 lg:items-start`. The note column is `lg:col-span-5` and the form column `lg:col-span-7` (FR-001). No other breakpoint changes the column count. |
+| L1 | With a `note` slot, `[data-contact]` carries `lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12` (48 px gap). The note column is `lg:col-span-5` and the form column `lg:col-span-7` (FR-001). No other breakpoint changes the column count. |
 | L2 | Below `lg` (1024 px) the two columns are blocks in source order. The note is first, and the form column has a top margin (FR-002). |
 | L3 | DOM order is the note `h2`, the note body, `[data-contact-links]`, `#contact-form-heading`, `[data-contact-privacy]`, `#contact-js-required`, then the fields. No CSS reorders them, and no element has a positive `tabindex` (FR-003). |
 | L4 | `#contact-note-heading` is an `h2` with the exact text "Before you write". It is the accessible name of `section[data-contact-note]` (FR-001a). |

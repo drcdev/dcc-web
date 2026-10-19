@@ -31,6 +31,6 @@
 
 ## Notes
 
-- One [NEEDS CLARIFICATION] marker remains (FR-004): whether the note names "consulting inquiries" (from the issue) given the home page's "open to" line names only speaking and mentoring (feature 040). Left for `/speckit-clarify`; no user was present during specify.
+- The one [NEEDS CLARIFICATION] marker left by specify (FR-004, consulting inquiries versus the home "open to" line) was resolved in the 2026-10-19 clarify session: speaking and mentoring only, no consulting inquiries.
 - Tailwind and the 1024 px breakpoint are named only in Assumptions, as the site's existing theme (constitution Technology Constraints), not as a requirement.
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`
