@@ -10,7 +10,7 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Confirm the worktree is clean on branch `052-contact-editorial-layout`, `.specify/feature.json` points at `specs/052-contact-editorial-layout`, and `.reference/flux` is present (symlink or copy from the main checkout if missing)
+- [X] T001 Confirm the worktree is clean on branch `052-contact-editorial-layout`, `.specify/feature.json` points at `specs/052-contact-editorial-layout`, and `.reference/flux` is present (symlink or copy from the main checkout if missing)
 
 ---
 
@@ -18,10 +18,10 @@
 
 **Purpose**: the shared pieces every story's tests and markup need.
 
-- [ ] T002 [P] Test, primary layer **Unit**: in `tests/unit/site/privacy-policy.test.ts` assert the privacy policy and terms of use both publish `mailto:${site.contactEmail}` (FR-007b, no drift). Fails until T005 adds the field
-- [ ] T003 [P] Extend the `render()` helper in `tests/component/sections/helpers.ts` to accept named slots, keeping the existing default-slot signature
-- [ ] T004 [P] Add the decorative envelope icon `src/icons/mail.svg`, same style, size and `currentColor` use as `src/icons/github.svg`
-- [ ] T005 Add `contactEmail: "contact@doncoleman.ca"` to `SiteConfig` and the site object in `src/config/site.ts` (no other config change); T002 now passes
+- [X] T002 [P] Test, primary layer **Unit**: in `tests/unit/site/privacy-policy.test.ts` assert the privacy policy and terms of use both publish `mailto:${site.contactEmail}` (FR-007b, no drift). Fails until T005 adds the field
+- [X] T003 [P] Extend the `render()` helper in `tests/component/sections/helpers.ts` to accept named slots, keeping the existing default-slot signature
+- [X] T004 [P] Add the decorative envelope icon `src/icons/mail.svg`, same style, size and `currentColor` use as `src/icons/github.svg`
+- [X] T005 Add `contactEmail: "contact@doncoleman.ca"` to `SiteConfig` and the site object in `src/config/site.ts` (no other config change); T002 now passes
 
 **Checkpoint**: helper, icon and config exist; the new unit test is green.
 
