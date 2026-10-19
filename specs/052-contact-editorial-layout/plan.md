@@ -64,7 +64,7 @@ dependency, endpoint or service is added.
 | Capability | First-party option (Astro / Cloudflare / Fly.io) | Used? | Why / why not |
 |------------|--------------------------------------------------|-------|---------------|
 | Note text editable in the page file | Astro named slots (`slot="note"`) on an MDX child, read with `Astro.slots.has()` / `<slot name="note" />` (docs.astro.build/en/basics/astro-components/#named-slots, docs.astro.build/en/reference/astro-syntax/#astroslots) | **Used** | Keeps the Markdown in `contact.mdx`. Astro's JSX renderer routes MDX children by their `slot` prop. |
-| Privacy paragraph inside the form | Astro default slot | **Used** | Lets page copy sit under a heading the component owns, inside its `<form>`. |
+| Privacy paragraph in the form column | Astro default slot | **Used** | Lets page copy sit under a heading the component owns, just above its `<form>` (outside it, so the link does not load the spam check). |
 | Putting sections in MDX | Passing components to `<Content components>` (docs.astro.build/en/guides/integrations-guide/mdx/#passing-components-to-mdx-content) | **Used, unchanged** | The registry already exposes `ContactForm`. No new section. |
 | Two columns at 1024 px | Tailwind `lg:` breakpoint (theme default `64rem`) and grid utilities | **Used** | It is the design system (Technology Constraints). No custom media query or CSS file. |
 | Icons | Astro SVG components (docs.astro.build/en/guides/images/#svg-components) with the existing `src/icons/*.svg` | **Used** | Already used by the footer, header and home intro. One new `mail.svg`. An icon package would be a new dependency for one glyph. |

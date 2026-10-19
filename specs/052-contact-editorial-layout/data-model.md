@@ -22,7 +22,7 @@ No storage, schema or API change. The "entities" are pieces of page content and 
 - **Where**: the default-slot children of `<ContactForm>` in `contact.mdx`, i.e. the existing
   paragraph, moved inside the element and kept word for word.
 - **Rules**: it keeps the retention statement and the new-tab `/privacy-policy/` link
-  (`site-pages.test.ts`, "Contact note (FR-015)"). It renders inside the form, under
+  (`site-pages.test.ts`, "Contact note (FR-015)"). It renders in the form column, outside `<form>` (FR-013), under
   "Send a message" (FR-008).
 
 ## Quick link
