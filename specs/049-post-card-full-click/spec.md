@@ -14,6 +14,14 @@
 - The lead story (`LeadStory`, the large story at the top of the writing landing page) has the same structure and the same limitation.
 - Neither has any hover change except the title's underline.
 
+## Clarifications
+
+### Session 2026-10-19
+
+- Q: When a keyboard user tabs to a card's post link, where should the focus outline go? → A: Around the whole card's rounded edge while the title link has keyboard focus; the title gets no separate outline, and focus does not lift the card.
+- Q: Is it acceptable that readers can no longer select or copy a card's summary text with the mouse? → A: Yes; the whole card opens the post and summary text is not selectable on the card (it is on the post page).
+- Q: On touch screens, should the lift and image enlargement be turned off? → A: Yes; hover feedback applies only on devices with a real hover pointer (mouse or trackpad); touch screens get the larger click target with no hover effect.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Open a post by clicking anywhere on its card (Priority: P1)
@@ -58,7 +66,7 @@ A keyboard user tabs through a listing. Each card is one stop for the post (on t
 
 **Acceptance Scenarios**:
 
-1. **Given** a listing page, **When** the keyboard user tabs to a card, **Then** focus lands on the post link with a clearly visible focus indicator, and Enter opens the post.
+1. **Given** a listing page, **When** the keyboard user tabs to a card, **Then** focus lands on the post link, a clearly visible focus outline is drawn around the whole card's rounded edge (not separately around the title), the card does not lift, and Enter opens the post.
 2. **Given** a card, **When** its links are listed by assistive technology, **Then** there is exactly one link to the post, named by the post title, plus one link per topic pill or series marker.
 
 ---
@@ -73,8 +81,9 @@ A mouse user moving over a card sees it lift slightly, with a soft shadow, and i
 
 **Acceptance Scenarios**:
 
-1. **Given** motion is allowed, **When** the pointer moves over a card, **Then** the card rises slightly, gains a shadow and its image enlarges slightly within the card's edges, with a short transition; moving away reverses it.
+1. **Given** motion is allowed and the device has a real hover pointer (mouse or trackpad), **When** the pointer moves over a card, **Then** the card rises slightly, gains a shadow and its image enlarges slightly within the card's edges, with a short transition; moving away reverses it.
 2. **Given** the reader prefers reduced motion, **When** the pointer moves over a card, **Then** nothing moves or scales and there is no animated transition.
+3. **Given** a touch screen with no hover pointer, **When** the reader taps a card, **Then** the post opens and the card shows no lift, shadow or image enlargement, before or after navigating back.
 
 ---
 
@@ -84,8 +93,9 @@ A mouse user moving over a card sees it lift slightly, with a soft shadow, and i
 - The image's slight enlargement stays inside the card's rounded corners and never overlaps neighbouring cards or text.
 - The lifted card and its shadow do not cover or get clipped by neighbouring cards in a grid at any breakpoint, and cause no layout shift.
 - Featured and draft labels are plain text, not links; clicking them opens the post.
-- Selecting summary text with a mouse drag may now start a link drag instead; this is accepted as the normal cost of a whole-card link.
-- Forced-colours (high contrast) mode: the focus indicator stays visible, as it is today.
+- Summary and other card text cannot be selected or copied with the mouse on the card, because the whole card is the post link's target; this is accepted, and the same text can be selected on the post page.
+- Forced-colours (high contrast) mode: the whole-card focus outline stays visible, using the system colour as the site's link outline does today.
+- Touch screens: no hover feedback, so a tapped card is never left in a lifted state.
 
 ## Requirements *(mandatory)*
 
@@ -94,8 +104,8 @@ A mouse user moving over a card sees it lift slightly, with a soft shadow, and i
 - **FR-001**: Clicking or tapping any part of a post card or the lead story that is not a topic pill or series marker MUST open that post. This includes the feature image, summary, featured and draft labels, date line and empty card area.
 - **FR-002**: Topic pills and series markers inside a card MUST remain separate links that open their own pages and MUST NOT also open the post.
 - **FR-003**: Each card MUST keep exactly one link to the post, the existing title link, named by the post title. No second link to the post, no wrapping link around the whole card, and no change to the card's list, article and heading structure.
-- **FR-004**: When the post link has keyboard focus, a focus indicator MUST be visible and meet WCAG 2.2 AA (2.4.7 Focus Visible and 2.4.11 Focus Not Obscured), including in forced-colours mode.
-- **FR-005**: On pointer hover, a post card and the lead story MUST lift slightly with a soft shadow and their feature image MUST enlarge slightly within the card's edges, with a short transition. When the reader prefers reduced motion, there MUST be no movement, scaling or animated transition.
+- **FR-004**: When the post link has keyboard focus, a focus outline MUST be drawn around the whole card's rounded edge, with no separate outline around the title and no lift or shadow. It MUST be visible and meet WCAG 2.2 AA (2.4.7 Focus Visible and 2.4.11 Focus Not Obscured), including in forced-colours mode.
+- **FR-005**: On pointer hover, a post card and the lead story MUST lift slightly with a soft shadow and their feature image MUST enlarge slightly within the card's edges, with a short transition. This hover feedback MUST apply only on devices with a real hover pointer (mouse or trackpad); touch screens MUST show none. When the reader prefers reduced motion, there MUST be no movement, scaling or animated transition.
 
 ### Accessibility
 
@@ -105,7 +115,7 @@ WCAG 2.2 AA (Principle X). The whole card becomes one pointer target for the pos
 
 - Static (non-hover, non-focus) appearance of every page is intended to be unchanged, so visual baselines should not need refreshing.
 - Pages that render post cards or the lead story and have visual baselines, and so could change if the static look shifts: the writing landing page (fixture lead story, fixture series intro), the topic listing (fixture listing cards), the series page (fixture series banner), the home page (home now and start here) and the post template (fixture post template, which shows related posts).
-- If the focus indicator is redrawn around the whole card rather than the title, only focused states change; no baseline captures focus.
+- The focus outline moves from the title to the whole card, so only focused states change; no baseline captures focus.
 
 ## Success Criteria *(mandatory)*
 
@@ -121,9 +131,9 @@ WCAG 2.2 AA (Principle X). The whole card becomes one pointer target for the pos
 
 - "Post cards" means `PostCard` wherever it is used plus the lead story; both share the same treatment so the writing pages look consistent.
 - The lift, shadow and image enlargement are small (a few pixels, a light shadow, about 2% scale) and use the site's existing Tailwind theme; exact values are a plan decision.
-- Hover feedback applies to the whole card, not only when the title is hovered. The title's existing underline on hover stays.
+- Hover feedback applies to the whole card, not only when the title is hovered, and only on devices with a real hover pointer. The title's existing underline on hover stays.
 - No client-side JavaScript is added (Principle V); the behaviour is CSS only.
-- The focus indicator stays on the title link; whether it outlines the title or the whole card is a plan decision, as long as FR-004 holds.
+- Keyboard focus stays on the title link; the outline is drawn around the whole card (FR-004).
 
 ## Out of Scope / Follow-ups
 
