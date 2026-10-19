@@ -96,6 +96,7 @@ Every project story page changes appearance: a new block appears below the invit
 - The block reuses the site's existing link, focus and spacing styles from the Tailwind theme; no new colours or fonts.
 - The theme filter on the projects index (shown only above ten projects) does not affect the sequence; the sequence is the full, unfiltered index order.
 - No client-side JavaScript is added; the block is part of the prerendered page.
+- Publishing a project re-renders the story pages of its immediate neighbours, because their Previous or Next link now points at it.
 
 ## Out of Scope
 

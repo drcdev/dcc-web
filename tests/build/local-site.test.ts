@@ -252,20 +252,31 @@ describe("a post that is one file", () => {
 });
 
 describe("a project that is one file", () => {
-  it("publishes the story and lists it on the index, touching no other page", () => {
+  it("publishes the story and lists it on the index, changing only the neighbours' story pages besides", () => {
     expect(l3.ok, l3.message).toBe(true);
     const before = l1.htmlFiles();
     const after = l3.htmlFiles();
 
     const story = after.get("projects/brand-new/index.html") ?? "";
     expect(story).toContain("Every setting");
-    expect(after.get("projects/index.html")).toContain("/projects/brand-new/");
+    const index = after.get("projects/index.html") ?? "";
+    expect(index).toContain("/projects/brand-new/");
     expect(l3.read("sitemap-0.xml")).toContain("/projects/brand-new/");
 
+    // The story navigation links each story to the project above and below it in the index, so the
+    // new project's immediate neighbours (read from the built index order) re-render; nothing else does.
+    const order = [...new Set([...index.matchAll(/href="\/projects\/([^/"]+)\/"/g)].map((m) => m[1]!))];
+    const at = order.indexOf("brand-new");
+    expect(at, "the new project is listed on the index").toBeGreaterThanOrEqual(0);
+    const neighbourPages = [order[at - 1], order[at + 1]].filter((slug): slug is string => slug !== undefined).map((slug) => `projects/${slug}/index.html`);
+
     const changed = [...after.keys()].filter((path) => before.get(path) !== after.get(path)).sort();
-    const expected = ["projects/brand-new/index.html", "projects/index.html"];
-    // Other pages may only differ by the header or footer if navigation listed projects; it does not.
+    const expected = ["projects/brand-new/index.html", "projects/index.html", ...neighbourPages].sort();
     expect(changed).toEqual(expected);
+
+    // A neighbour changes only in its navigation block.
+    const withoutNav = (html: string) => html.replace(/<nav\b[^>]*data-story-nav[\s\S]*?<\/nav>/, "");
+    for (const path of neighbourPages) expect(withoutNav(after.get(path) ?? ""), `${path} outside its navigation`).toBe(withoutNav(before.get(path) ?? ""));
   });
 });
 
