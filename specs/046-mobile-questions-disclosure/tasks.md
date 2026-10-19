@@ -21,8 +21,8 @@ description: "Task list for the collapsible questions panel on small screens"
 
 ## Phase 1: Setup
 
-- [ ] T001 Run `node -v` and, if it differs from `.nvmrc`, `source ~/.nvm/nvm.sh && nvm use` in the same command as every toolchain call (CLAUDE.md "Local toolchain"); read `docs/testing.md` ("Where a test goes", "Critical-thinking questions") and `specs/046-mobile-questions-disclosure/contracts/questions-disclosure.md`
-- [ ] T002 [P] Read `src/components/post/QuestionsPanel.astro`, `tests/component/post/QuestionsPanel.test.ts`, `tests/e2e/questions.spec.ts` and the 022 P20/P21 tests to list the tests this feature replaces (three P20 tests) and the ones that must keep passing unchanged (P21, P21a, P21b)
+- [X] T001 Run `node -v` and, if it differs from `.nvmrc`, `source ~/.nvm/nvm.sh && nvm use` in the same command as every toolchain call (CLAUDE.md "Local toolchain"); read `docs/testing.md` ("Where a test goes", "Critical-thinking questions") and `specs/046-mobile-questions-disclosure/contracts/questions-disclosure.md`
+- [X] T002 [P] Read `src/components/post/QuestionsPanel.astro`, `tests/component/post/QuestionsPanel.test.ts`, `tests/e2e/questions.spec.ts` and the 022 P20/P21 tests to list the tests this feature replaces (three P20 tests) and the ones that must keep passing unchanged (P21, P21a, P21b)
 
 ---
 
