@@ -249,6 +249,24 @@ test.describe("the projects index", () => {
     await expect(page.locator("h1")).toHaveText(pickedStory.title);
   });
 
+  test("the visual opens the story and dims on hover without moving anything", async ({ page }) => {
+    await page.goto(INDEX);
+    const row = page.locator("[data-project]").first();
+    const href = await row.locator("h2 a").getAttribute("href");
+    const visual = row.locator("[data-project-visual]");
+    const image = visual.locator("img");
+    const boxes = async () => ({
+      text: await row.locator("[data-project-text]").boundingBox(),
+      visual: await visual.boundingBox(),
+    });
+    const before = await boxes();
+    await image.hover();
+    await expect.poll(() => image.evaluate((el) => Number(getComputedStyle(el).opacity))).toBeLessThan(1);
+    expect(await boxes()).toEqual(before);
+    await image.click();
+    await expect(page).toHaveURL(new RegExp(`${href}$`));
+  });
+
   test("the header Projects link is current on the index and on a story", async ({ page }) => {
     // The index is the link's own page; a story is inside its section (spec 008 FR-004).
     for (const [path, value] of [

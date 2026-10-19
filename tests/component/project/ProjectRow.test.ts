@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import ProjectRow from "../../../src/components/project/ProjectRow.astro";
-import { byName, textOf } from "../html.ts";
+import { byName, focusable, textOf } from "../html.ts";
 import { render } from "../sections/helpers.ts";
 import { image } from "./helpers.ts";
 
@@ -25,13 +25,26 @@ describe("ProjectRow", () => {
     expect(html.indexOf("data-project-text")).toBeLessThan(html.indexOf("data-project-visual"));
   });
 
-  it("has one link, named by the title, to the story", async () => {
+  it("exposes one link to assistive technology and keyboard, named by the title", async () => {
     const html = await render(ProjectRow, props);
-    const links = byName(html, "a");
-    expect(links).toHaveLength(1);
-    expect(links[0]!.attrs.href).toBe("/projects/focus-pocus/");
+    const reachable = focusable(html);
+    expect(reachable).toHaveLength(1);
+    expect(reachable[0]!.attrs.href).toBe("/projects/focus-pocus/");
+    expect(byName(html, "a").filter((t) => t.attrs["aria-hidden"] !== "true")).toHaveLength(1);
     expect(textOf(html, "a")).toBe("Focus Pocus");
     expect(textOf(html, "h2")).toBe("Focus Pocus");
+  });
+
+  it("the visual is a hidden link to the same story", async () => {
+    const html = await render(ProjectRow, props);
+    const links = byName(html, "a");
+    expect(links).toHaveLength(2);
+    const hidden = links[1]!;
+    expect(hidden.attrs.href).toBe(links[0]!.attrs.href);
+    expect(hidden.attrs["aria-hidden"]).toBe("true");
+    expect(hidden.attrs.tabindex).toBe("-1");
+    const between = html.slice(hidden.index, html.indexOf("</a>", hidden.index));
+    expect(between).toContain("<img");
   });
 
   it("shows the problem, the status as text and the themes", async () => {
@@ -44,10 +57,17 @@ describe("ProjectRow", () => {
     expect(html).toContain("AI integration");
   });
 
-  it("shows the visual with its alt text", async () => {
+  it("keeps the visual's description as screen-reader-only text", async () => {
     const html = await render(ProjectRow, props);
     const [img] = byName(html, "img");
-    expect(img!.attrs.alt).toBe("Claude Desktop answering a question");
+    expect(img!.attrs.alt).toBe("");
+    const container = html.slice(html.indexOf("data-project-visual"));
+    const span = byName(container, "span").find((t) => t.attrs.class?.split(/\s+/).includes("sr-only"));
+    expect(span).toBeDefined();
+    expect(container.slice(span!.index, container.indexOf("</span>", span!.index))).toContain(
+      "Claude Desktop answering a question",
+    );
+    expect(span!.index).toBeLessThan(container.indexOf("<a "));
   });
 
   it("carries the view-transition name project-<slug> on the title", async () => {
@@ -70,7 +90,8 @@ describe("ProjectRow", () => {
     expect(byName(html, "span").some((t) => t.attrs["data-status"] === "retired")).toBe(true);
     expect(html).toContain("Retired");
     expect(byName(html, "li").find((t) => "data-project" in t.attrs)!.attrs["data-themes"]).toBe("ai-integration|macos");
-    expect(byName(html, "a")).toHaveLength(1);
-    expect(byName(html, "a")[0]!.attrs.href).toBe("/projects/focus-pocus/");
+    expect(focusable(html)).toHaveLength(1);
+    expect(byName(html, "a").filter((t) => t.attrs["aria-hidden"] !== "true")).toHaveLength(1);
+    expect(focusable(html)[0]!.attrs.href).toBe("/projects/focus-pocus/");
   });
 });
