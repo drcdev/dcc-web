@@ -89,11 +89,13 @@ description: "Task list for the collapsible questions panel on small screens"
 
 ### Tests for User Story 3
 
-- [ ] T013 [US3] Add D03/D07/D08 tests in `tests/e2e/questions.spec.ts`. Layer: e2e (breakpoint and resize behaviour need a browser). At 1280x800 and 1440x900: the button is not visible and not focusable, the `h2` reads exactly "Think while you read", the content is shown, and the existing P21/P21a placement and sticky tests still pass unchanged. Resize 390 to 1280 to 390: after opening on the small layout the sidebar shows full content at 1280; narrowing again restores the open state and fetched questions; a never-opened panel returns closed; no focus is moved by the resize. See the new assertions fail (the heading text and the toggle do not exist yet).
+- [X] T013 [US3] Add D03/D07/D08 tests in `tests/e2e/questions.spec.ts`. Layer: e2e (breakpoint and resize behaviour need a browser). At 1280x800 and 1440x900: the button is not visible and not focusable, the `h2` reads exactly "Think while you read", the content is shown, and the existing P21/P21a placement and sticky tests still pass unchanged. Resize 390 to 1280 to 390: after opening on the small layout the sidebar shows full content at 1280; narrowing again restores the open state and fetched questions; a never-opened panel returns closed; no focus is moved by the resize. See the new assertions fail (the heading text and the toggle do not exist yet).
 
 ### Implementation for User Story 3
 
-- [ ] T014 [US3] Fix anything T013 or the unchanged 022 tests (P21, P21a, P21b, P22 to P24) expose in the `xl:` classes of `src/components/post/QuestionsPanel.astro`. Add no resize script (D08: pure CSS and the untouched attribute). If the checks already pass, record that in the task notes and make no change.
+&
+**Phase 5 notes**: T013 passed on first run because Phase 2 already built the `xl:` behaviour, so it was seen to fail by a temporary break (removing `xl:hidden` from the toggle classes: the D03 and breakpoint tests failed, 3 of 5; reverted, never committed). Two corrections while writing: the heading check reads `innerText` (the rendered text) because `toHaveText` also counts the hidden button's lines, and the resize focus test keeps focus on "Get questions" because a focused toggle is necessarily blurred by the browser once it becomes `display: none` at 1280 px. T014: all of T013 and the unchanged P21, P21a, P21b, P22 to P24 tests pass (56 of 56 in `questions.spec.ts`), so no change was made to the component.
+
 
 ---
 
