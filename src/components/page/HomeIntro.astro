@@ -17,6 +17,7 @@ export interface Props {
     tagline: string;
     bio: string;
     cta: { label: string; href: string };
+    secondaryCta?: { label: string; href: string };
   };
 }
 
@@ -43,7 +44,7 @@ const icons = { GitHub: GitHubIcon, LinkedIn: LinkedInIcon } as const;
         <h1 class="text-xl font-bold text-dusk-900 sm:text-2xl dark:text-white">{intro.name}</h1>
         <p class="mt-1 text-xs text-mauve-600 italic sm:text-sm dark:text-mauve-400">{intro.tagline}</p>
         <p class="mt-3 text-sm leading-relaxed text-dusk-600 sm:text-base dark:text-mist-400">{intro.bio}</p>
-        <div class="mt-4 flex w-full flex-col items-center gap-4 sm:w-auto sm:flex-row">
+        <div class="mt-4 flex w-full flex-col items-center gap-4 sm:items-start">
           <ul class="flex items-center justify-center gap-3 sm:justify-start">
             {
               socialNavigation.map((item) => {
@@ -62,12 +63,24 @@ const icons = { GitHub: GitHubIcon, LinkedIn: LinkedInIcon } as const;
               })
             }
           </ul>
-          <a
-            href={intro.cta.href}
-            class="inline-flex items-center gap-2 rounded-lg bg-rust-600 px-4 py-2 text-sm font-medium text-white hover:bg-rust-700 dark:bg-rust-300 dark:text-dusk-900 dark:hover:bg-rust-200 motion-safe:transition-colors"
-          >
-            {intro.cta.label}
-          </a>
+          <div class="grid w-full auto-rows-fr gap-3 sm:flex sm:w-auto sm:flex-row">
+            <a
+              href={intro.cta.href}
+              class="inline-flex min-h-11 items-center justify-center rounded-lg border border-transparent bg-rust-600 px-4 py-2 text-sm font-medium text-white hover:bg-rust-700 motion-safe:transition-colors dark:bg-rust-300 dark:text-dusk-900 dark:hover:bg-rust-200"
+            >
+              {intro.cta.label}
+            </a>
+            {
+              intro.secondaryCta && (
+                <a
+                  href={intro.secondaryCta.href}
+                  class="inline-flex min-h-11 items-center justify-center rounded-lg border border-dusk-500 px-4 py-2 text-sm font-medium text-dusk-800 hover:bg-mist-200 motion-safe:transition-colors dark:border-dusk-400 dark:text-mist-200 dark:hover:bg-dusk-700"
+                >
+                  {intro.secondaryCta.label}
+                </a>
+              )
+            }
+          </div>
         </div>
       </div>
     </div>

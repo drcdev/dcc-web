@@ -16,12 +16,16 @@ const intro = {
   cta: { label: "Work with Don", href: "/work-with-me/" },
 };
 
+const secondaryCta = { label: "Read my writing", href: "/writing/" };
+
 let html = "";
+let both = "";
 let footer = "";
 
 beforeAll(async () => {
   const container = await AstroContainer.create();
   html = await container.renderToString(HomeIntro, { props: { intro } });
+  both = await container.renderToString(HomeIntro, { props: { intro: { ...intro, secondaryCta } } });
   footer = await container.renderToString(SiteFooter, { props: { navigation: [] }, request: new Request("https://example.test/") });
 });
 
@@ -102,12 +106,13 @@ describe("HomeIntro links", () => {
     for (const svg of svgs) expect(svg.attrs["aria-hidden"]).toBe("true");
   });
 
-  it("makes only the links focusable, in order GitHub, LinkedIn, call to action", () => {
-    const hrefs = focusable(html).map((t) => `${t.name}:${t.attrs.href}`);
+  it("makes only the links focusable, in order GitHub, LinkedIn, main, second call to action", () => {
+    const hrefs = focusable(both).map((t) => `${t.name}:${t.attrs.href}`);
     expect(hrefs).toEqual([
       "a:https://github.com/drcdev",
       "a:https://www.linkedin.com/in/drcdev",
       "a:/work-with-me/",
+      "a:/writing/",
     ]);
   });
 
@@ -118,7 +123,8 @@ describe("HomeIntro links", () => {
 });
 
 describe("HomeIntro source order", () => {
-  it("is photo, name, tagline, bio, GitHub, LinkedIn, call to action", () => {
+  it("is photo, name, tagline, bio, GitHub, LinkedIn, main, second call to action", () => {
+    const html = both;
     const at = [
       html.indexOf("<img"),
       html.indexOf("<h1"),
@@ -127,9 +133,52 @@ describe("HomeIntro source order", () => {
       html.indexOf("https://github.com"),
       html.indexOf("https://www.linkedin.com"),
       html.indexOf('href="/work-with-me/"'),
+      html.indexOf('href="/writing/"'),
     ];
     expect(at.every((n) => n >= 0)).toBe(true);
     expect([...at].sort((a, b) => a - b)).toEqual(at);
     expect(words().length).toBeGreaterThan(4);
+  });
+});
+
+describe("HomeIntro second call to action", () => {
+  const button = (h: string, href: string) => byName(h, "a").find((a) => a.attrs.href === href)!;
+
+  it("renders the second link after the main, filled versus outlined", () => {
+    const main = classList(button(both, "/work-with-me/"));
+    const second = classList(button(both, "/writing/"));
+    expect(both.indexOf('href="/writing/"')).toBeGreaterThan(both.indexOf('href="/work-with-me/"'));
+    expect(main).toContain("bg-rust-600");
+    expect(second).not.toContain("bg-rust-600");
+    expect(second).toContain("border-dusk-500");
+  });
+
+  it("gives both a 44 px minimum, a real border and reduced-motion-safe transitions", () => {
+    for (const href of ["/work-with-me/", "/writing/"]) {
+      const c = classList(button(both, href));
+      for (const k of ["min-h-11", "border", "motion-safe:transition-colors"]) expect(c, href).toContain(k);
+    }
+    expect(classList(button(both, "/work-with-me/"))).toContain("border-transparent");
+  });
+
+  it("puts the social list before the button group and names the link by its label", () => {
+    expect(both.indexOf("<ul")).toBeLessThan(both.indexOf('href="/work-with-me/"'));
+    expect(both).toMatch(/href="\/writing\/"[^>]*>\s*Read my writing\s*</);
+    const second = button(both, "/writing/");
+    expect(second.attrs["aria-label"]).toBeUndefined();
+    expect(second.attrs.role).toBeUndefined();
+  });
+
+  it("renders exactly one button and no empty element without secondaryCta", () => {
+    const buttons = byName(html, "a").filter((a) => !a.attrs.href?.startsWith("https://"));
+    expect(buttons).toHaveLength(1);
+    expect(html).not.toMatch(/<a[^>]*>\s*<\/a>/);
+    expect(html).not.toContain("/writing/");
+  });
+
+  it("uses only theme colour classes on the buttons", () => {
+    for (const href of ["/work-with-me/", "/writing/"]) {
+      for (const k of classList(button(both, href))) expect(k, href).not.toMatch(/\[#|\[rgb|\[hsl/);
+    }
   });
 });
