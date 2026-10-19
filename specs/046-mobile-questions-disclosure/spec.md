@@ -36,9 +36,16 @@ replaces 022's row P20 (the full panel as a block above the body below `xl`).
 - Q: If a reader closes the panel after questions have loaded, or while they are still loading,
   should the closed bar show that? → A: No. The closed bar always reads the same; the questions
   or message are there when the reader reopens.
-- Open item for the next clarify round: whether the panel's existing heading ("Think before you
-  read", shown at 1280 px and wider and naming the landmark) also changes to "Think while you
-  read". Not decided here.
+- Q: Should the panel's heading (shown at 1280 px and wider, and the panel's landmark name) also
+  change from "Think before you read" to "Think while you read"? → A: Yes, at every width. Wide
+  screens show no second line; SC-005 allows this one wording change. (Closes round 1's open
+  item.)
+- Q: How tall may the closed bar be on a phone? → A: No taller than 5rem plus its margins at
+  390 px wide with default text size.
+- Q: Does the open panel on a phone keep the sentence "Get a few questions to keep in mind while
+  you read this post."? → A: Yes; the open panel's content matches the wide-screen panel.
+- Q: Does the panel open and close instantly or with a slide? → A: Instantly, with no animation;
+  only the open/closed arrow changes.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -105,7 +112,7 @@ response, and activating the trigger again closes it.
 
 ### User Story 3 - Wide screens keep the sidebar (Priority: P2)
 
-A reader on a desktop window 1280 px or wider sees the panel exactly as today: open, in the
+A reader on a desktop window 1280 px or wider sees the panel as today (only its heading now reads "Think while you read"): open, in the
 right-hand column beside the body, sticky while it fits the window, with no trigger.
 
 **Why this priority**: It protects existing behaviour; nothing new is delivered at this width.
@@ -157,8 +164,8 @@ of the questions area is displayed or reachable by keyboard, and the body follow
 - **Forced colours**: the trigger's boundary, its state indicator and its focus ring stay
   visible using system colours, as 022's P23 requires for the panel.
 - **Dark theme**: the trigger meets the same contrast rules as the panel in both themes.
-- **Reduced motion**: opening and closing is instant, or any transition is removed under
-  `prefers-reduced-motion: reduce`.
+- **Reduced motion**: opening and closing is instant for everyone, with no animation (only the
+  open/closed arrow changes), so `prefers-reduced-motion: reduce` needs no special handling.
 - **Find in page**: text inside the closed panel is not found by the browser's find, which is
   acceptable because it is generated controls, not article content.
 - **Posts without a question hash**: no panel and no trigger, as today.
@@ -178,22 +185,25 @@ of the questions area is displayed or reachable by keyboard, and the body follow
   questions", with a non-text indicator of open or closed state on the right that is not the
   only way the state is conveyed. The label is fixed: it does not change when questions have
   loaded, are loading or have failed. Copy is plain language with no emoji (constitution,
-  Development Workflow). Whether the panel's existing heading (at 1280 px and wider, and the
-  landmark name) changes to match is an open item for the next clarify round.
+  Development Workflow). The panel's heading at 1280 px and wider, and the panel's landmark name
+  at every width, MUST also read exactly "Think while you read" (replacing "Think before you
+  read"); wide screens show no second line.
 - **FR-003**: The trigger MUST be a native button that exposes its state through
   `aria-expanded` and identifies the content it controls; it MUST be operable by pointer,
   Enter and Space; it MUST use the site's existing focus ring and have a target of at least
   44×44 CSS px.
 - **FR-004**: Opening MUST reveal the panel's existing content (description, buttons, status,
-  list, AI note) directly after the trigger; closing MUST hide it from sight, from the
-  accessibility tree and from the focus order. Focus MUST stay on the trigger on both open and
-  close.
+  list, AI note) directly after the trigger; the description sentence "Get a few questions to
+  keep in mind while you read this post." is kept, so the open content matches the wide-screen
+  panel. Closing MUST hide it from sight, from the accessibility tree and from the focus order.
+  Focus MUST stay on the trigger on both open and close. Opening and closing MUST be instant,
+  with no animation; only the open/closed indicator changes.
 - **FR-005**: Opening or closing MUST NOT send a questions request, and MUST NOT reset the
   panel's state; fetched questions, the current message and a pending request survive closing
   and reopening.
 - **FR-006**: At 1280 CSS px and wider the panel MUST be shown open in the right-hand column
-  exactly as today (022 P21, P21a), with no trigger displayed or focusable, whatever the
-  small-layout state.
+  exactly as today (022 P21, P21a) apart from the heading wording (FR-002), with no trigger
+  displayed or focusable, whatever the small-layout state.
 - **FR-007**: Crossing the 1280 px boundary while the page is open MUST switch layouts without a
   reload and MUST keep the panel's state; below 1280 px the open or closed state the reader last
   chose on the small layout is restored (closed if never opened).
@@ -229,23 +239,23 @@ of the questions area is displayed or reachable by keyboard, and the body follow
 
 - **SC-001**: On a representative post at 390×844 and 768×1024 with JavaScript on, the top of
   the article's first paragraph is within the first viewport, where today it is not at 390×844.
-- **SC-002**: The closed questions area is no taller than 4rem plus its margins at 390 px wide
+- **SC-002**: The closed questions area is no taller than 5rem plus its margins at 390 px wide
   with default text size (versus the full panel today).
 - **SC-003**: Cumulative layout shift attributable to the questions area on page load is 0 at
   390×844 and at 1280×800, and the post template stays within its existing CLS budget.
 - **SC-004**: A keyboard-only reader can open the panel, get questions and close it again using
   only Tab, Enter and Space, with focus never lost to the page start.
 - **SC-005**: At 1280 px and wider, the panel's position, size and sticky behaviour match the
-  current behaviour (existing placement checks and visual baselines for that width pass
-  unchanged).
+  current behaviour (existing placement checks pass unchanged; visual baselines for that width
+  differ only by the heading now reading "Think while you read").
 - **SC-006**: With JavaScript off, zero focusable elements are in the questions area at any
   width.
 
 ## Assumptions
 
 - The trigger replaces the panel's visible heading on the small layout; the panel remains a
-  complementary landmark in both layouts (its name, "Think before you read" today, follows the
-  open heading-wording item in Clarifications), and the post title
+  complementary landmark in both layouts, named "Think while you read" (FR-002), and the post
+  title
   stays the page's only `h1`. The plan decides whether the button sits inside the heading (the
   usual disclosure pattern) so the landmark keeps one name.
 - The issue's emoji and arrow ("💡 ... ↓") are illustrative. The site's copy rule is plain
@@ -260,7 +270,8 @@ of the questions area is displayed or reachable by keyboard, and the body follow
   behaviour and the panel's existing script are expected to be enough (the plan names the
   first-party option per Principle IV).
 - Below-`xl` visual baselines for the post template will change and need refreshing on macOS and
-  Linux (`.claude/skills/_shared/visual-baselines.md`); `xl` baselines should not change.
+  Linux (`.claude/skills/_shared/visual-baselines.md`); `xl` baselines change only for
+  the heading wording.
 - 022's contract file is history and is not edited; this feature's own contract records the
   replacement for P20.
 
