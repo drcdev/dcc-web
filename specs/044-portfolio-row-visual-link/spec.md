@@ -13,6 +13,12 @@ story and nothing happens. Make the visual open the same story, keep one link pe
 screen readers, and add a subtle hover effect that signals the visual can be clicked without
 moving anything on the page.
 
+## Clarifications
+
+### Session 2026-10-19
+
+- Q: How should the clickable visual hide its duplicate link from screen readers while still announcing the screenshot or diagram description? → A: Wrap the image in an `aria-hidden="true" tabindex="-1"` link, give the image an empty alt (`alt=""`), and place the description next to it, outside the link, as screen-reader-only text.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Open a project story from its visual (Priority: P1)
@@ -58,7 +64,8 @@ still available.
 2. **Given** the projects index, **When** a screen reader lists the page's links, **Then**
    each project appears once, by its title.
 3. **Given** a row's visual has a text description, **When** a screen reader reaches the row,
-   **Then** the description of the screenshot or diagram is still announced as it is today.
+   **Then** the description of the screenshot or diagram is still announced at the same point
+   in the row (as text beside the hidden link rather than as the image's alt).
 
 ---
 
@@ -82,9 +89,10 @@ still available.
 - **FR-002**: The visual's link MUST be hidden from assistive technology and left out of the
   keyboard tab order, so each row exposes exactly one link to screen readers and keyboard users:
   the title.
-- **FR-003**: The visual's text description MUST remain available to screen readers exactly as
-  it is today; hiding the duplicate link must not hide the description of the screenshot or
-  diagram.
+- **FR-003**: The visual's text description MUST remain available to screen readers at the
+  same point in the row as today. Because the hidden link hides everything inside it, the image
+  inside the link MUST have an empty alt (`alt=""`), and the description MUST be rendered next
+  to the link, outside it, as screen-reader-only text that sighted readers do not see.
 - **FR-004**: Pointing at the visual MUST show a link pointer and a subtle hover effect (for
   example a slight change in opacity or scale) that causes no layout shift. When the reader
   prefers reduced motion, the effect MUST appear without any animated transition or scaling.
