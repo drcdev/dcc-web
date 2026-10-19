@@ -48,8 +48,8 @@ island. Public content lives in the repository as files validated by a schema (P
   over the collapsed step's background, made with CSS only; the text stays at full contrast and
   the treatment does not rely on colour alone. (Superseded in session 2026-10-15: the dot
   pattern is dropped.)
-- Q: Which roles appear as steps? → A: Six: the four Island Health roles on the CV, the CCHL
-  Vancouver Island Chapter board role (volunteer), and the current Director role. Education and
+- Q: Which roles appear as steps? → A: Seven (six at first; see session 2026-10-19): the four Island Health roles on the CV, the CCHL
+  Vancouver Island Chapter Treasurer and Vice Chair roles (volunteer), and the current Director role. Education and
   pre-2014 work are not steps.
 - Q: What does the current step show? → A: The scope line from the About page ("Leads data
   warehousing, data modernization, and AI support and compliance for a regional health
@@ -94,6 +94,15 @@ Don reviewed the preview of PR #180.
   collapses; its row gets a soft muted background tint and a faint dashed left timeline rule; its
   text stays at full contrast. A matching step gets a solid accent left rule. The non-colour cue
   is the rule's style (dashed against solid).
+
+### Session 2026-10-19
+
+- Q: Is the CCHL Treasurer role still current? → A: No. It ended May 2026 (Sep 2022 – May 2026).
+- Q: What new step is added? → A: Vice Chair (volunteer), Canadian College of Health Leaders –
+  Vancouver Island Chapter, Jun 2026 – present, with the scope and the one achievement in
+  FR-006a (rebuilt the mentorship program curriculum around action learning and realigned it to
+  the new LEADS framework). Nothing else is added for it. It starts the same month as the
+  Director role, so the file-name tie rule keeps Director first as the current role.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -303,9 +312,9 @@ filter restores the timeline.
 - **FR-006**: The career content (which roles, organizations, periods, the text of each detail
   part, related posts, awards and categorized items) MUST come from Don and MUST NOT be
   invented. Its source is Don's CV and his clarify-round answers (Clarifications, session
-  2026-10-14). The launch content is exactly the six steps in FR-006a; nothing else is added
+  2026-10-14). The launch content is exactly the seven steps in FR-006a; nothing else is added
   without Don.
-- **FR-006a**: The timeline MUST launch with these six steps, in this order (start date; listed here earliest first for reading, shown on the page newest first per FR-001). Each
+- **FR-006a**: The timeline MUST launch with these seven steps, in this order (start date; listed here earliest first for reading, shown on the page newest first per FR-001). Each
   step's scope is the text given. Only the Manager, Enterprise Systems Development step has a
   key decision; no step has "what changed", "wish I'd known" or "skill to the next move" at
   launch (Don adds them later).
@@ -315,10 +324,12 @@ filter restores the timeline.
   | 1 | Leader, Systems Engineer | Island Health | Oct 2014 – Sep 2016 | Led integration projects that redeveloped 70+ HL7 interfaces and Oracle database integrations, and built proactive monitoring and analytics tools. |
   | 2 | Manager, Enterprise Systems Development | Island Health | Sep 2016 – Jan 2022 | Led five cross-functional teams (20+ direct reports) running database, web, integration and collaboration services under 24/7 service commitments, and managed real-time and batch clinical data integration pipelines. |
   | 3 | Project Director, Enabling Technologies | Island Health | Jan 2022 – Mar 2023 | Coordinated technology for the pandemic response and aligned technology investment with executive committees, clinical leads and provincial stakeholders. |
-  | 4 | Treasurer and Director at Large (volunteer) | Canadian College of Health Leaders – Vancouver Island Chapter | Sep 2022 – present | Chapter finances (budget, reporting, taxation, investment plan), executive governance and the mentorship program. |
+  | 4 | Treasurer and Director at Large (volunteer) | Canadian College of Health Leaders – Vancouver Island Chapter | Sep 2022 – May 2026 | Chapter finances (budget, reporting, taxation, investment plan), executive governance and the mentorship program. |
   | 5 | Cloud Architect / IT Project Manager | Island Health | Apr 2023 – May 2026 | Architected the Microsoft 365 governance framework for 36,000 users, led cloud migrations with disaster recovery planning, and managed vendors and cloud budgets using FinOps practices. |
-  | 6 | Director, Data Infrastructure and Architecture | Island Health | Jun 2026 – present | Leads data warehousing, data modernization, and AI support and compliance for a regional health authority. |
+  | 6 | Vice Chair (volunteer) | Canadian College of Health Leaders – Vancouver Island Chapter | Jun 2026 – present | Executive officer and acting chair when the chair is away, in line to become chapter chair. Supports the chair, chapter planning and member events, sits on the executive nominating committee and chairs nominations for College awards and honours. |
+  | 7 | Director, Data Infrastructure and Architecture | Island Health | Jun 2026 – present | Leads data warehousing, data modernization, and AI support and compliance for a regional health authority. |
 
+  Vice Chair (6) and Director (7) both start Jun 2026. They tie on start month, so the file-name rule (FR-001) applies: Director shows first as the current role and Vice Chair second, although it also ends present.
   Key decision (step 2 only): "Organized database, web, integration and collaboration services
   into five cross-functional teams, each owning its 24/7 commitments."
 
@@ -331,16 +342,17 @@ filter restores the timeline.
   | 3 | Surge-response plan and rapid deployment of 9 immunization clinics; access to COVID-19 data for clinical and operational reporting; business case approved for a permanent patient-facing Contact Centre | Coordinated executive committees, clinical leads and provincial stakeholders | – | – |
   | 4 | Mentorship program supporting 102 health leaders (2023); chapter social media engagement up 62% | – | 2024 CCHL Chapter Award for Distinguished Service (link: the CCHL article used on the About page); 2024 CCHL Member Profile (link: the CCHL profile article used on the About page) | – |
   | 5 | Governance framework for 36,000 users; adoption program starting with 80 teams and 50+ enablement proposals; adoption and usage dashboards | Led the ADKAR-based change program from pilot to governed operation | 2026 Celebration of Excellence, "Leading our C.A.R.E. Values" (no link) | Starting something new; Self-contained development for Ghost themes; Building Focus Pocus: What I Learned About AI Coding and Integration; The Systems Leadership Wayfinder: Five Mindset Shifts for Leading Complex Change |
-  | 6 | – | – | – | – |
+  | 6 | Rebuilt the mentorship program curriculum around action learning and realigned it to the new LEADS framework | – | – | – |
+  | 7 | – | – | – | – |
 
   Notes on the launch content:
 
   - Every fact in these two tables comes from Don's CV or his clarify answers; the
     number-bearing claims (70+, 40%, 20+, 9, 36,000, 80, 50+, 102, 62%) are Don's figures as
     given and change only when Don changes them.
-  - Step 6 has a scope only: no key decision, no items, no awards, no posts. That is a valid step
+  - Step 7 has a scope only: no key decision, no items, no awards, no posts. That is a valid step
     (FR-003, FR-008).
-  - Step 6's scope is the About page's "Current role" sentence with "Leads" in place of
+  - Step 7's scope is the About page's "Current role" sentence with "Leads" in place of
     "leading". The step file is the only source of the timeline's text; the "About me" list's
     "Current role" line stays separate page copy, and Don edits both when his role changes.
   - Step 4's links: the CCHL Chapter Award for Distinguished Service links to
@@ -570,9 +582,11 @@ filter restores the timeline.
 - Writing links point to posts on this site; links to outside writing are treated like award
   links (name, year, link).
 - The timeline needs no server code, stores nothing and collects no personal data.
-- The current role is a single step. The CCHL board role is the only volunteer step; education
-  is not a step (FR-006a). The board role overlaps the Island Health steps from Sep 2022 and is
-  ordered by its start date (newest first).
+- The current role is a single step. The two CCHL chapter roles (Treasurer, then Vice Chair) are the
+  volunteer steps; education is not a step (FR-006a). Two steps end present (Director and Vice
+  Chair); only the first in order, Director, is the current role, and the file-name tie rule puts
+  it first. The Treasurer role overlaps the Island Health steps from Sep 2022 and is ordered by
+  its start date (newest first).
 
 ## Out of scope
 

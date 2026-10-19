@@ -74,7 +74,7 @@ description: "Task list for the interactive career timeline (feature 041)"
 - [X] T020 [US1] Implement `src/lib/career.ts`: `getCareerTimeline()` reads the collection, runs `checkCareer()` and returns the timeline view (data-model.md); post resolution is stubbed until US2.
 - [X] T021 [US1] Implement `src/components/sections/CareerTimeline.astro`: ordered list of `<details>`/`<summary>`, closed by default, labelled detail parts, Achievements and Leadership lists, `timeline` prop override, Tailwind theme tokens, `motion-safe:` only, print shows all open, forced-colours rules. Register in `src/components/sections/index.ts` and `src/components/sections/schemas.ts` (no-prop schema). Makes T013 and T014 pass. Consult the Astro docs MCP for component and script patterns (Principle IV).
 - [X] T022 [US1] Edit `src/content/pages/about.mdx`: remove the "Leadership" line from the "About me" list and add `<CareerTimeline />` after it, before `### Recognition` (FR-016).
-- [X] T023 [US1] Create the six launch step files in `src/content/career/` named in data-model.md, content exactly as spec FR-006a (no reflection text except the one `decision`; step 5 lists no posts and steps 4 and 5 no awards until T030 adds them). Makes T016, T017 and T018 pass.
+- [X] T023 [US1] Create the seven launch step files in `src/content/career/` named in data-model.md, content exactly as spec FR-006a (no reflection text except the one `decision`; step 5 lists no posts and steps 4 and 5 no awards until T030 adds them). Makes T016, T017 and T018 pass.
 - [X] T024 [US1] Run `pnpm run verify:quick`; fix anything it reports.
 
 **Checkpoint**: US1 works alone and is demonstrable.
@@ -139,7 +139,7 @@ description: "Task list for the interactive career timeline (feature 041)"
 - [X] T044 Update the macOS visual baselines with `pnpm run test:visual:update` (nvm + shim wrapper in the background, see `.claude/skills/_shared/visual-baselines.md`); commit only the new `career-timeline-*-darwin.png`. Any other image that moves is a regression to fix, not accept.
 - [X] T045 Update the Linux visual baselines with `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, ask Don to start it with an `AskUserQuestion` whose question text carries the instruction); commit only the new `*-linux.png`. Run after T044, not alongside Docker builds.
 - [X] T046 Run `node scripts/ci/changed-paths.ts --base origin/main` and the checks for the tier it prints; ask Don before a full `pnpm run verify`.
-- [ ] T047 [PREVIEW-CHECK] Don reads the real `/about/` on the preview in light and dark, phone and desktop: wording of the six steps, legibility of the chosen muted treatment (T060), the disclosure marker on the role title's line (FR-007b), highlight clarity, that the Leadership line is gone and "Recognition" is unchanged word for word, 3:1 contrast of the disclosure marker and filter button edges, and no clipped or overlapping text at 200% text zoom (FR-017).
+- [ ] T047 [PREVIEW-CHECK] Don reads the real `/about/` on the preview in light and dark, phone and desktop: wording of the seven steps, legibility of the chosen muted treatment (T060), the disclosure marker on the role title's line (FR-007b), highlight clarity, that the Leadership line is gone and "Recognition" is unchanged word for word, 3:1 contrast of the disclosure marker and filter button edges, and no clipped or overlapping text at 200% text zoom (FR-017).
 - [ ] T048 [PREVIEW-CHECK] Don checks print preview of `/about/`, the page with a screen reader (state announcements, status line), and every linked post and award target on the preview.
 
 ---
@@ -192,6 +192,14 @@ description: "Task list for the interactive career timeline (feature 041)"
 - [X] T066 Run the targeted tests (career unit, component, E2E, a11y, `tests/build/local-site.test.ts`) and `pnpm run verify:quick`.
 - [X] T067 Update the macOS then the Linux visual baselines for the career timeline (`.claude/skills/_shared/visual-baselines.md`) and confirm newest first with Variant A styling.
 - [X] T068 Commit and push to the PR #180 branch.
+
+## Phase 9: Vice Chair step
+
+**Purpose**: Don's 2026-10-19 request (spec Clarifications, session 2026-10-19): end the CCHL Treasurer role in May 2026 and add the Vice Chair step (Jun 2026 – present).
+
+- [X] T069 Set `end: "2026-05"` in `src/content/career/cchl-vancouver-island-chapter.yaml`.
+- [X] T070 Add `src/content/career/cchl-vancouver-island-chapter-vice-chair.yaml` with the FR-006a scope and the one achievement; no other text. Director stays first by the file-name tie rule.
+- [X] T071 Update spec, plan, quickstart, data-model and contracts to seven steps; run the career tests, the build tests and `pnpm run verify:quick`.
 
 ---
 

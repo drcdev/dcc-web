@@ -39,5 +39,5 @@ leadership:
 
 ## Launch files
 
-Exactly the six steps of spec FR-006a, with the file names in `../data-model.md`. Nothing is added
+Exactly the seven steps of spec FR-006a, with the file names in `../data-model.md`. Nothing is added
 that is not in FR-006a.

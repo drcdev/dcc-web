@@ -22,7 +22,7 @@ pnpm run build
 ```
 
 Expect: the sync run fails naming a broken step file; the build run fails naming a step with a
-missing post; the real build passes and `dist/about/index.html` holds six `<details>` in reverse start
+missing post; the real build passes and `dist/about/index.html` holds seven `<details>` in reverse start
 order (newest first), the first being the current role, all closed, with no filter visible in the HTML (`hidden`).
 
 ## 3. Journeys in a browser (fixture site, port 4322)
@@ -52,7 +52,7 @@ New baselines: `career-timeline-{phone,desktop}-{light,dark}` for darwin and lin
 
 - `/about/`: timeline sits after "About me", the "Leadership" line is gone, "Recognition" is
   unchanged.
-- The six steps and their text match spec FR-006a word for word.
+- The seven steps and their text match spec FR-006a word for word.
 - Labels read well ("Scope", "Key decision", the list headings, the filter label and status line).
 - The muted treatment (tint and dashed left rule, FR-011a) looks deliberate in light and dark mode, and the disclosure marker sits on the role title's line.
 - The current job title appears nowhere outside `/about/`.

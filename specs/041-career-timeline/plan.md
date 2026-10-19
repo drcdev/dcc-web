@@ -21,7 +21,7 @@ The About page gains a **Career** timeline directly after the "About me" list, w
   collapses and mutes the rest with CSS only (no pattern), text at full AA contrast. The muting
   treatment is a tint with a dashed side rule (spec FR-011a, R8).
 - The disclosure marker sits inline with the role title (spec FR-007b).
-- Launch content is exactly the six steps in spec FR-006a. No reflection text is written.
+- Launch content is exactly the seven steps in spec FR-006a. No reflection text is written.
 
 ## Technical Context
 
@@ -41,7 +41,7 @@ The About page gains a **Career** timeline directly after the "About me" list, w
 
 **Constraints**: Readable and openable without JavaScript; WCAG 2.2 AA in both themes, idle and filtered; muting never lowers text below AA contrast; one column at 320 px; print shows everything; no motion under reduced motion.
 
-**Scale/Scope**: Six step files at launch; one collection, one schema, two pure modules, one reader, one section component, one About page edit.
+**Scale/Scope**: Seven step files at launch; one collection, one schema, two pure modules, one reader, one section component, one About page edit.
 
 ## Constitution Check
 
@@ -51,7 +51,7 @@ The About page gains a **Career** timeline directly after the "About me" list, w
 |---|-----------|--------|------------------------|
 | I | Test-First | PASS | Tests are written and seen to fail before each piece. One primary layer per behaviour (`docs/testing.md` "Where a test goes"); see "Test placement" below. |
 | II | Automated Release Gate | PASS | `pnpm run verify` unchanged and not loosened. New tests and baselines are added; none are weakened or skipped. Two Astro runs are added to the build budget and recorded in `docs/testing.md`. |
-| III | Human Review of Every Change | PASS | One PR from `drc-agents`, auto-merge armed after the final push. `[PREVIEW-CHECK]` items for Don: the six steps' text against FR-006a, the labels and status wording, the inline disclosure marker, and the choice between the two muting treatments (each on its own commit preview) in both themes. |
+| III | Human Review of Every Change | PASS | One PR from `drc-agents`, auto-merge armed after the final push. `[PREVIEW-CHECK]` items for Don: the seven steps' text against FR-006a, the labels and status wording, the inline disclosure marker, and the choice between the two muting treatments (each on its own commit preview) in both themes. |
 | IV | First-Party Before Custom | PASS | Every capability uses a first-party option (table below). The Astro Docs MCP was available and used; research.md cites each page. Custom code is only what no first-party feature does: file-naming cross-collection checks, the current-role rule, period formatting and the filter's state logic. |
 | V | Static by Default | PASS | The timeline is prerendered in `/about/`. No endpoint. Core content is server HTML inside native `<details>`, readable and openable with JS off (FR-007, FR-014). The only script is the filter, an isolated custom element loaded as Astro's deferred module. |
 | VI | Content as Files | PASS | Career steps are YAML files under `src/content/career/`, validated by a collection schema. Bad content, a missing or draft post, or an unknown category fails the build naming the file (contracts/build-errors.md). Content is Don's only (FR-006): launch text is copied from FR-006a, nothing invented. |
@@ -130,7 +130,7 @@ specs/041-career-timeline/
 src/
 ├── content.config.ts                     # EDIT: add `career` collection (glob, YAML)
 ├── content/
-│   ├── career/*.yaml                     # NEW: six launch steps (FR-006a)
+│   ├── career/*.yaml                     # NEW: seven launch steps (FR-006a)
 │   ├── schemas/career.ts                 # NEW: strict step schema (T01–T07)
 │   └── pages/about.mdx                   # EDIT: drop Leadership line, add <CareerTimeline /> before ### Recognition
 ├── lib/

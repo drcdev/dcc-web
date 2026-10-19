@@ -71,15 +71,16 @@ filter or status line is rendered.
 
 ## Launch content (FR-006a)
 
-Six files, content exactly as spec FR-006a's two tables, with no reflection parts other than the
+Seven files, content exactly as spec FR-006a's two tables, with no reflection parts other than the
 one `decision` on Manager, Enterprise Systems Development. Proposed file names:
 
 1. `leader-systems-engineer.yaml`
 2. `manager-enterprise-systems-development.yaml`
 3. `project-director-enabling-technologies.yaml`
-4. `cchl-vancouver-island-chapter.yaml`
+4. `cchl-vancouver-island-chapter.yaml` (Treasurer, ends May 2026)
 5. `cloud-architect-it-project-manager.yaml`
-6. `director-data-infrastructure-and-architecture.yaml`
+6. `cchl-vancouver-island-chapter-vice-chair.yaml` (starts Jun 2026, sorts after Director by file name descending)
+7. `director-data-infrastructure-and-architecture.yaml`
 
 Step 5's four related posts are named by their post file names. Step 4's two awards link to the
 same CCHL articles the About page's Recognition section already uses; step 5's award has no link.
