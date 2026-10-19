@@ -1,6 +1,6 @@
 # Research: Two-column editorial layout for the contact page
 
-**Feature**: `042-contact-editorial-layout` | **Date**: 2026-10-19
+**Feature**: `052-contact-editorial-layout` | **Date**: 2026-10-19
 
 The Astro Docs MCP server (`astro-docs`) was available and was used for every Astro decision
 below. Astro is 7.3.5 (`node_modules/astro/package.json`). No item in the Technical Context was

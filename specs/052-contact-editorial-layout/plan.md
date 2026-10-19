@@ -1,8 +1,8 @@
 # Implementation Plan: Two-column editorial layout for the contact page
 
-**Branch**: `042-contact-editorial-layout` | **Date**: 2026-10-19 | **Spec**: [spec.md](./spec.md)
+**Branch**: `052-contact-editorial-layout` | **Date**: 2026-10-19 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/042-contact-editorial-layout/spec.md` (issue #188)
+**Input**: Feature specification from `/specs/052-contact-editorial-layout/spec.md` (issue #188)
 
 ## Summary
 
@@ -80,7 +80,7 @@ dependency, endpoint or service is added.
 ### Documentation (this feature)
 
 ```text
-specs/042-contact-editorial-layout/
+specs/052-contact-editorial-layout/
 ├── plan.md              # This file
 ├── research.md          # Phase 0: decisions R1–R10 (incl. test placement table)
 ├── data-model.md        # Phase 1: note, privacy notice, quick link, site config
@@ -170,8 +170,8 @@ component that already owns the form, so no new section, layout or route is adde
 | `tests/e2e/visual.spec.ts-snapshots/` | Refreshes `contact-form-*` | Any sibling refreshing shell or post baselines | Different files. Only a binary conflict on the same PNG needs a re-run. |
 | `src/config/site.ts`, `src/config/navigation.ts` | Adds `contactEmail`; reads `socialNavigation` | **051-home-dual-cta** may touch the home intro links | Additive field; resolve by keeping both. |
 | `tests/component/sections/helpers.ts` | Named-slot option | Other section work | Backward-compatible signature. |
-| `.specify/feature.json` | Points at 042-contact-editorial-layout | Every sibling | Keep own value when merging main (known DIRTY-PR cause). |
-| Feature number 042 | `specs/042-contact-editorial-layout/` | **042-project-story-nav** (sibling worktree) uses the same number | Directories differ, so there is no file conflict. Flag it to Don; renumbering is his call (Spec Kit naming, Principle XI). |
+| `.specify/feature.json` | Points at 052-contact-editorial-layout | Every sibling | Keep own value when merging main (known DIRTY-PR cause). |
+| Feature number 042 | `specs/052-contact-editorial-layout/` | **042-project-story-nav** (sibling worktree) uses the same number | Directories differ, so there is no file conflict. Flag it to Don; renumbering is his call (Spec Kit naming, Principle XI). |
 
 ## Complexity Tracking
 

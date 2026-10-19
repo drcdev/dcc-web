@@ -1,6 +1,6 @@
 # Feature Specification: Two-column editorial layout for the contact page
 
-**Feature Branch**: `042-contact-editorial-layout`
+**Feature Branch**: `052-contact-editorial-layout`
 
 **Created**: 2026-10-19
 
