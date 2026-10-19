@@ -4,6 +4,9 @@
 import { z } from "astro/zod";
 import { captionedImage, imageWithAlt, linkTarget, navField, requiredText, seoFields, type ImageValidator } from "./shared.ts";
 
+// One shared definition for the introduction card's two buttons (data-model.md "CallToAction").
+const callToAction = z.strictObject({ label: requiredText, href: linkTarget });
+
 export function pageSchema({ image }: { image: ImageValidator }) {
   return z.strictObject({
     ...seoFields,
@@ -18,7 +21,8 @@ export function pageSchema({ image }: { image: ImageValidator }) {
         name: requiredText,
         tagline: requiredText,
         bio: requiredText,
-        cta: z.strictObject({ label: requiredText, href: linkTarget }),
+        cta: callToAction,
+        secondaryCta: callToAction.optional(),
       })
       .optional(),
   });

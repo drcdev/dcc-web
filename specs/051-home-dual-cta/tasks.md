@@ -8,7 +8,7 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Confirm Node matches `.nvmrc` (`node -v`, else `source ~/.nvm/nvm.sh && nvm use` in the same command) and read `docs/testing.md` ("Where a test goes"), `.claude/skills/_shared/visual-baselines.md` and `specs/051-home-dual-cta/contracts/home-intro-ctas.md`; no file changes.
+- [x] T001 Confirm Node matches `.nvmrc` (`node -v`, else `source ~/.nvm/nvm.sh && nvm use` in the same command) and read `docs/testing.md` ("Where a test goes"), `.claude/skills/_shared/visual-baselines.md` and `specs/051-home-dual-cta/contracts/home-intro-ctas.md`; no file changes.
 
 ---
 
@@ -20,12 +20,12 @@
 
 ### Tests (write first, see them fail)
 
-- [ ] T002 [US3] Layer: unit (schema). Extend `tests/unit/content/page-schema.test.ts` next to the existing `intro`/`cta` cases: accepts `secondaryCta` absent, with an internal `/x/` href and with an `https://` href; rejects empty and whitespace-only label, missing href, relative href, protocol-relative `//host`, extra field, empty object, `null`, wrong type, and `secondaryCta` without `cta`; each rejection's issue path names `intro.secondaryCta.<field>` and every bad field is reported together (FR-001, FR-002, FR-016). No second layer: `tests/build/page-validation.test.ts` already proves the collection schema runs on real files.
+- [x] T002 [US3] Layer: unit (schema). Extend `tests/unit/content/page-schema.test.ts` next to the existing `intro`/`cta` cases: accepts `secondaryCta` absent, with an internal `/x/` href and with an `https://` href; rejects empty and whitespace-only label, missing href, relative href, protocol-relative `//host`, extra field, empty object, `null`, wrong type, and `secondaryCta` without `cta`; each rejection's issue path names `intro.secondaryCta.<field>` and every bad field is reported together (FR-001, FR-002, FR-016). No second layer: `tests/build/page-validation.test.ts` already proves the collection schema runs on real files.
 
 ### Implementation
 
-- [ ] T003 [US3] In `src/content/schemas/page.ts`, define the call-to-action `z.strictObject` once as a local `callToAction` constant, use it for `cta` (required, rules unchanged) and add `secondaryCta: callToAction.optional()` inside the strict `intro` object (data-model.md). T002 passes.
-- [ ] T004 [P] [US3] Update the `intro` row in `docs/pages.md` (line ~46) to list `secondaryCta` (optional, same shape as `cta`).
+- [x] T003 [US3] In `src/content/schemas/page.ts`, define the call-to-action `z.strictObject` once as a local `callToAction` constant, use it for `cta` (required, rules unchanged) and add `secondaryCta: callToAction.optional()` inside the strict `intro` object (data-model.md). T002 passes.
+- [x] T004 [P] [US3] Update the `intro` row in `docs/pages.md` (line ~46) to list `secondaryCta` (optional, same shape as `cta`).
 
 **Checkpoint**: Schema accepts and rejects as specified.
 

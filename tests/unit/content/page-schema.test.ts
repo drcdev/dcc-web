@@ -163,6 +163,39 @@ describe("pageSchema", () => {
   });
 });
 
+describe("pageSchema intro.secondaryCta (051)", () => {
+  const withSecond = (secondaryCta: unknown) => ({ ...minimal, intro: { ...full.intro, secondaryCta } });
+
+  it("accepts an absent secondaryCta, an internal address and an https address", () => {
+    expect(schema.safeParse({ ...minimal, intro: full.intro }).success).toBe(true);
+    for (const href of ["/x/", "https://example.com/"]) {
+      expect(schema.safeParse(withSecond({ label: "Read my writing", href })).success, href).toBe(true);
+    }
+  });
+
+  it("rejects a bad secondaryCta and names the field", () => {
+    const bad = [
+      { label: "", href: "/x/" },
+      { label: "   ", href: "/x/" },
+      { label: "Go" },
+      { label: "Go", href: "writing" },
+      { label: "Go", href: "//example.com/" },
+      { label: "Go", href: "/x/", extra: 1 },
+      {},
+      null,
+      "Read",
+      42,
+    ];
+    for (const value of bad) expect(issueText(withSecond(value)), JSON.stringify(value)).toContain("intro.secondaryCta");
+    expect(issueText(withSecond({ label: "", href: "writing" }))).toMatch(/intro\.secondaryCta\.label[\s\S]*intro\.secondaryCta\.href/);
+  });
+
+  it("rejects a secondaryCta without a cta", () => {
+    const rest = Object.fromEntries(Object.entries(full.intro).filter(([name]) => name !== "cta"));
+    rejects({ ...minimal, intro: { ...rest, secondaryCta: { label: "Go", href: "/x/" } } });
+  });
+});
+
 describe("landingSchema (029)", () => {
   const landing = { title: "Section", nav: { location: "header", position: 4 } };
   const landingIssues = (value: unknown) => {
