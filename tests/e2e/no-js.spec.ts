@@ -121,6 +121,34 @@ test("a writing post shows no questions panel without JavaScript and reads norma
   await expect(page.locator("[data-post-body]")).toBeVisible();
 });
 
+// specs/046 D09, SC-006: with JavaScript off, at phone and desktop width, nothing in the questions
+// area is displayed or focusable, and the post body follows the title card.
+for (const size of WIDTHS) {
+  test(`the questions area is not shown or focusable without JavaScript at ${size.name} width`, async ({ page }) => {
+    await page.setViewportSize({ width: size.width, height: size.height });
+    await page.goto("/writing/sample-everything/");
+    const aside = page.locator("[data-questions]");
+    await expect(aside).toBeHidden();
+    await expect(page.locator("[data-questions-toggle]")).toBeHidden();
+    await expect(page.locator("[data-questions-content]")).toBeHidden();
+    // No focusable element survives inside the area: nothing is displayed, so Tab cannot land there.
+    const focusable = await aside.evaluate(
+      (el) =>
+        [...el.querySelectorAll<HTMLElement>("button, a[href], input, select, textarea, [tabindex]")].filter(
+          (node) => node.getClientRects().length > 0,
+        ).length,
+    );
+    expect(focusable).toBe(0);
+    const order = await page.evaluate(() => {
+      const card = document.querySelector("[data-title-card]");
+      const body = document.querySelector("[data-post-body]");
+      return card && body ? Boolean(card.compareDocumentPosition(body) & Node.DOCUMENT_POSITION_FOLLOWING) : false;
+    });
+    expect(order).toBe(true);
+    await expect(page.locator("[data-post-body]")).toBeVisible();
+  });
+}
+
 // specs/037 U18: without JavaScript the post reads in full, the self-assessment shows a note and its
 // statements as a list, and no form control is visible.
 test("the self-assessment post reads without JavaScript and lists the statements without controls", async ({ page }) => {

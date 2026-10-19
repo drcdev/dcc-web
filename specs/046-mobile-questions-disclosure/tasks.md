@@ -107,11 +107,11 @@ description: "Task list for the collapsible questions panel on small screens"
 
 ### Tests for User Story 4
 
-- [ ] T015 [US4] Extend the existing no-JS test in `tests/e2e/no-js.spec.ts` for D09: at 390x844 and 1280x800 with JavaScript disabled, the aside, the button and the content are not displayed, zero focusable elements exist in the questions area (SC-006), and the body follows the title card. The "not displayed" assertions pass before the change (no button exists yet), so see them fail by temporarily removing the aside's `hidden` class and record that. Layer: e2e (JavaScript-disabled browsing context; the `js` root class cannot be exercised in a component test).
+- [X] T015 [US4] Extend the existing no-JS test in `tests/e2e/no-js.spec.ts` for D09: at 390x844 and 1280x800 with JavaScript disabled, the aside, the button and the content are not displayed, zero focusable elements exist in the questions area (SC-006), and the body follows the title card. The "not displayed" assertions pass before the change (no button exists yet), so see them fail by temporarily removing the aside's `hidden` class and record that. Layer: e2e (JavaScript-disabled browsing context; the `js` root class cannot be exercised in a component test).
 
 ### Implementation for User Story 4
 
-- [ ] T016 [US4] Confirm `src/components/post/QuestionsPanel.astro` keeps `hidden [.js_&]:block` on the aside and that no toggle markup shows without the `js` class; fix only if T015 fails.
+- [X] T016 [US4] Confirm `src/components/post/QuestionsPanel.astro` keeps `hidden [.js_&]:block` on the aside and that no toggle markup shows without the `js` class; fix only if T015 fails. Notes: T015 break used: removed `hidden` from the aside's class list (rebuilt); all three questions tests failed on `toBeHidden`, then passed after the revert. T016: confirmed, `hidden [.js_&]:block` is unchanged and the toggle sits inside the aside, so no fix was needed.
 
 ---
 
