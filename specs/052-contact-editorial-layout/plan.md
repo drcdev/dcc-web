@@ -171,7 +171,7 @@ component that already owns the form, so no new section, layout or route is adde
 | `src/config/site.ts`, `src/config/navigation.ts` | Adds `contactEmail`; reads `socialNavigation` | **051-home-dual-cta** may touch the home intro links | Additive field; resolve by keeping both. |
 | `tests/component/sections/helpers.ts` | Named-slot option | Other section work | Backward-compatible signature. |
 | `.specify/feature.json` | Points at 052-contact-editorial-layout | Every sibling | Keep own value when merging main (known DIRTY-PR cause). |
-| Feature number 042 | `specs/052-contact-editorial-layout/` | **042-project-story-nav** (sibling worktree) uses the same number | Directories differ, so there is no file conflict. Flag it to Don; renumbering is his call (Spec Kit naming, Principle XI). |
+| Feature number | `specs/052-contact-editorial-layout/` | Renumbered from 042 to 052 because sibling worktree 042-project-story-nav uses 042 | Resolved. |
 
 ## Complexity Tracking
 
