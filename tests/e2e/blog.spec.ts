@@ -527,8 +527,10 @@ test.describe("share", () => {
       const share = document.querySelector("[data-share]")!;
       const author = document.querySelector("[data-author-card]")!.getBoundingClientRect();
       const s = share.getBoundingClientRect();
-      const heading = share.querySelector("h2")!.getBoundingClientRect();
-      return { above: s.top - author.bottom, below: heading.top - s.top - parseFloat(getComputedStyle(share).borderTopWidth) };
+      // The content starts at its tallest item: from md the heading is centred against the 44 px
+      // links, so the heading's own top sits lower than the row's top.
+      const top = Math.min(...[...share.children].map((child) => child.getBoundingClientRect().top));
+      return { above: s.top - author.bottom, below: top - s.top - parseFloat(getComputedStyle(share).borderTopWidth) };
     });
     expect(Math.abs(gaps.above - 24)).toBeLessThanOrEqual(1);
     expect(Math.abs(gaps.below - 24)).toBeLessThanOrEqual(1);
