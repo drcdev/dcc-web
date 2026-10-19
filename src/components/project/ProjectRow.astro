@@ -1,7 +1,9 @@
 ---
 // One project on the index: a ruled row with the text on the left and the index
 // visual on the right at wide widths (Direction C rows, Direction A split;
-// contracts/pages-dom.md). The title is the row's only link. The title carries
+// contracts/pages-dom.md). The title is the row's only link exposed to assistive
+// technology; the visual repeats it as a hidden pointer target, and its description is
+// kept as screen-reader-only text beside it. The title carries
 // the view-transition name `project-<slug>` through `data-title-slug`, which the story's
 // title shares; <TitleTransition> on the index page writes the rules.
 import { Image } from "astro:assets";
@@ -43,13 +45,16 @@ const keys = [...new Set(themes.map(themeKey))].join("|");
     </div>
   </div>
   <div data-project-visual>
-    <Image
-      src={visual.src as ImageMetadata}
-      alt={visual.alt}
-      widths={[480, 800]}
-      sizes="(min-width: 64rem) 32rem, 100vw"
-      loading={eager ? "eager" : "lazy"}
-      decoding={eager ? "sync" : "async"}
-    />
+    <span class="sr-only">{visual.alt}</span>
+    <a href={projectHref(slug)} aria-hidden="true" tabindex="-1" data-project-visual-link>
+      <Image
+        src={visual.src as ImageMetadata}
+        alt=""
+        widths={[480, 800]}
+        sizes="(min-width: 64rem) 32rem, 100vw"
+        loading={eager ? "eager" : "lazy"}
+        decoding={eager ? "sync" : "async"}
+      />
+    </a>
   </div>
 </li>
