@@ -31,6 +31,15 @@ the views note, the author card and the Share area one footer block with one loo
 step from that block to Related posts a clear, consistent space. What each piece says and does
 does not change.
 
+## Clarifications
+
+### Session 2026-10-19
+
+- Q: Should the author part and the share part sit in one box with a thin line between them, or in two boxes that look the same? → A: One box, with a thin divider between the author part and the share part.
+- Q: Where should the views note go? → A: In the author part, under the three author links and above the divider to the share part.
+- Q: How should the views note look? → A: Small italic grey text, smaller than the author lines, meeting AA contrast.
+- Q: How big should the space between the footer box and the "Related posts" heading be? → A: The same gap above and below the box, about 40 px (2.5 rem, the larger of today's two spacings).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - The end of a post reads as one footer (Priority: P1)
@@ -152,8 +161,8 @@ author link and each share link; on a device with the system share feature, use 
   outside the footer block, and no other page gains any of them (specs/039-post-author-card
   FR-013 still holds).
 - **FR-003**: The views note MUST sit inside the author part, after the author's links and before
-  the divider to the share part, as a small caption line in the style of a secondary note (smaller
-  than the author lines; it may stay italic). Its wording MUST stay exactly as it is today and stay
+  the divider to the share part, as a small caption line: italic, grey (a secondary text colour
+  with at least 4.5:1 contrast, FR-015) and in a smaller font size than the author lines. Its wording MUST stay exactly as it is today and stay
   in the one blog-settings place it comes from now.
 
 **Look**
@@ -170,7 +179,8 @@ author link and each share link; on a device with the system share feature, use 
   of the pieces today).
 - **FR-007**: The gap from the end of the post text to the footer block's top edge and the gap from
   the footer block's bottom edge to the "Related posts" heading MUST be equal, within 1 px, at 375
-  and 1440 px.
+  and 1440 px, and both MUST be 2.5 rem (40 px at the default text size), the larger of the two
+  spacings the post end uses today.
 - **FR-008**: Alignment by width MUST stay as today: below 768 px the photo sits centred above the
   author text and the author text, views note, share heading and share links are centred; from
   768 px the photo sits left of the author text, the author text and views note are left-aligned,
@@ -242,7 +252,7 @@ author link and each share link; on a device with the system share feature, use 
 - **SC-002**: The footer block's edges match the title card's within 1 px at 320, 375, 768, 1024
   and 1440 px, with and without the questions panel.
 - **SC-003**: The gap above the footer block and the gap between it and the "Related posts" heading
-  differ by at most 1 px at 375 and 1440 px.
+  are each 40 px (2.5 rem) and differ by at most 1 px at 375 and 1440 px.
 - **SC-004**: The views note measures at least 4.5:1 contrast against the block background in
   both themes, and the post page passes the site's automated accessibility check with no new
   violations and no sideways scroll at 320 px.
@@ -253,17 +263,17 @@ author link and each share link; on a device with the system share feature, use 
 
 ## Assumptions
 
-- "A single, well-structured author and sharing footer block" is read as one box holding both
-  parts with an internal divider, rather than two matching boxes stacked with a gap. One box removes
-  the most clutter and is the plainest reading of "single block"; the clarify phase may revisit
-  this.
+- "A single, well-structured author and sharing footer block" means one box holding both parts
+  with an internal divider, not two matching boxes (confirmed in Clarifications).
 - The block takes the author card's current look (the title card's box), not the Share area's
   gradient, because it then echoes the title card at the top of the post and keeps the site's
   existing visual language (specs/039-post-author-card FR-012).
 - The views note sits after the author links, not between the author lines and links, so it reads
-  as a caption to the author part and does not split the author's details from his links.
-- "Consistent vertical spacing" is read as the same gap above and below the footer block, using a
-  spacing step the site already uses (today the pieces use 2 rem and Related posts 2.5 rem).
+  as a caption to the author part and does not split the author's details from his links
+  (confirmed in Clarifications).
+- "Consistent vertical spacing" means the same 2.5 rem gap above and below the footer block, a
+  spacing step the site already uses (today the pieces use 2 rem and Related posts 2.5 rem;
+  confirmed in Clarifications).
 - "Analytics compliance" means the share links stay free of tracking: the site uses only
   privacy-focused analytics or none (Principle X), and the share links carry no tracking today.
 - The headings "Written by Don Coleman" and "Share this post" stay visible; merging them into one
