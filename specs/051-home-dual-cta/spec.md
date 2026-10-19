@@ -17,6 +17,7 @@
 - Q: On phones (below 640 px), how wide should the stacked buttons be? → A: Both full width of the card's text column.
 - Q: What should the second button be called in the home page file? → A: A separate `secondaryCta: { label, href }` field beside the existing `cta` (orchestrator's decision, matching the issue; not put to the user).
 - Q: What should happen to the outlined second button when it is hovered, especially in dark mode? → A: A faint background tint (light: mist-200; dark: dusk-700); border and text colours unchanged.
+- Q: From 640 px up, when the two buttons sit side by side, should they be the same width or each as wide as its own label? → A: Each as wide as its own label (so they differ in width), left-aligned with the text.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -48,7 +49,7 @@ The two buttons look like a balanced pair on any screen. On a phone they are sta
 **Acceptance Scenarios**:
 
 1. **Given** a viewport 375 pixels wide, **When** the home page loads, **Then** the two calls to action are stacked vertically, main one on top, each the full width of the card's text column, and neither overflows the card.
-2. **Given** a viewport 640 pixels wide or wider, **When** the home page loads, **Then** the two calls to action sit side by side on one row, main one first, with the GitHub and LinkedIn links on their own row above them, and the card has no horizontal overflow.
+2. **Given** a viewport 640 pixels wide or wider, **When** the home page loads, **Then** the two calls to action sit side by side on one row, main one first, each as wide as its own label and left-aligned with the text, with the GitHub and LinkedIn links on their own row above them, and the card has no horizontal overflow.
 3. **Given** any viewport, **When** the calls to action are measured, **Then** both have the same rendered height, and that height (the touch target) is at least 44 pixels; each is at least 44 pixels wide.
 4. **Given** light mode and dark mode, **When** the home page is checked for contrast, **Then** each call to action's text meets 4.5:1 against its own background, the second call to action's outline meets 3:1 against the card, and the same holds for their hover states.
 
@@ -91,7 +92,7 @@ Don sets, changes or removes the second call to action by editing the home page 
 - **FR-004**: When no second call to action is set, the card MUST render exactly as it does without this feature: one call to action and no empty element for the missing one.
 - **FR-005**: The main call to action MUST look filled (solid accent background with contrasting text) and the second MUST look outlined (border, no fill at rest), so the main one is clearly the stronger choice in both light and dark mode. On hover the second call to action gains a faint background tint (light mode mist-200, dark mode dusk-700) with its border and text colours unchanged; the main call to action keeps its existing hover.
 - **FR-006**: Both calls to action MUST be links (they navigate to a page), each with its label as its accessible name, and MUST work with JavaScript turned off.
-- **FR-007**: Below 640 pixels the two calls to action MUST be stacked vertically, each the full width of the card's text column; from 640 pixels up they MUST sit side by side on one row.
+- **FR-007**: Below 640 pixels the two calls to action MUST be stacked vertically, each the full width of the card's text column; from 640 pixels up they MUST sit side by side on one row, each only as wide as its own label (so their widths differ), left-aligned with the card's text.
 - **FR-008**: Both calls to action MUST have the same rendered height, at least 44 by 44 pixels of target area, at every viewport width. This applies to the main call to action too, which is currently shorter than 44 pixels.
 - **FR-009**: In light and dark mode, at rest and on hover, each call to action's text MUST have at least 4.5:1 contrast with its background, and the second call to action's border MUST have at least 3:1 contrast with the card background (WCAG 2.2 AA).
 - **FR-010**: Each call to action MUST show a visible keyboard focus indicator that meets WCAG 2.2 AA focus appearance for the site.
