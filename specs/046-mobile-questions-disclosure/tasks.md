@@ -9,7 +9,7 @@ description: "Task list for the collapsible questions panel on small screens"
 
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/questions-disclosure.md, quickstart.md
 
-**Tests**: Mandatory (constitution Principle I). Every story has test tasks ordered before the implementation they cover, and each test task names its one primary layer (`docs/testing.md`, "Where a test goes"). A second layer carries a written reason. Run each new test and see it fail before the implementation task that follows it.
+**Tests**: Mandatory (constitution Principle I). Every story has test tasks ordered before the implementation they cover, and each test task names its one primary layer (`docs/testing.md`, "Where a test goes"). A second layer carries a written reason. Run each new test and see it fail before the implementation task that follows it. An assertion that guards behaviour the current code already has (no layout shift, nothing shown without JavaScript, the wide placement) passes before the change, so it is seen to fail by temporarily breaking the behaviour it guards (for example removing the aside's `hidden` class, or setting the closed bar's size from script), and the task notes record the break used; the break is never committed.
 
 **Organization**: Grouped by user story. All stories edit one component (`src/components/post/QuestionsPanel.astro`), so implementation tasks are sequential; test tasks in different files can run in parallel.
 
@@ -30,7 +30,7 @@ description: "Task list for the collapsible questions panel on small screens"
 
 **Purpose**: the disclosure markup and the heading rename, which every story depends on.
 
-- [ ] T003 Rewrite the P07 test and add D02/D03/D04 markup tests in `tests/component/post/QuestionsPanel.test.ts`. Layer: component (markup and exact strings need no browser). Assert: aside is a landmark with `aria-label="Think while you read"` (no `aria-labelledby`); `h2` contains a `button[type=button][data-questions-toggle][aria-expanded=false][aria-controls=questions-content]` with the two exact lines "Think while you read" and "Optional AI critical thinking questions"; the chevron `svg` is `aria-hidden`; the wide span reads exactly "Think while you read" and has no second line; `#questions-content[data-questions-content]` holds the existing sentence, buttons, status region, list and AI note in 022's order (P09); no `style` attribute anywhere in the markup. Run it and see it fail.
+- [ ] T003 Rewrite the P07 test and add D02/D03/D04 markup tests in `tests/component/post/QuestionsPanel.test.ts`. Layer: component (markup and exact strings need no browser). Assert: aside is a landmark with `aria-label="Think while you read"` (no `aria-labelledby`); `h2` contains a `button[type=button][data-questions-toggle][aria-expanded=false][aria-controls=questions-content]` with the two exact lines "Think while you read" and "Optional AI critical thinking questions"; the chevron `svg` is `aria-hidden`; the wide span reads exactly "Think while you read" and has no second line; `#questions-content[data-questions-content]` holds the existing sentence, buttons, status region, list and AI note in 022's order (P09); no `style` attribute anywhere in the markup; the panel holds exactly one live region, inside `#questions-content` (FR-009, 022 P08). Run it and see it fail.
 - [ ] T004 Implement the markup in `src/components/post/QuestionsPanel.astro`: `TITLE = "Think while you read"` constant, `aria-label` on the aside, `h2` with the `xl:hidden` button (min-h-11, label left, chevron right, site focus ring and forced-colour classes, chevron turned by a variant on the expanded state, no transition) and the `hidden xl:inline` heading span, content wrapper `#questions-content`, padding `xl:p-6` only, content shown below xl only while `aria-expanded="true"` and always from xl (pure CSS, Tailwind). Keep `hidden [.js_&]:block`, `data-sticky` and the grid placement. T003 passes.
 
 **Checkpoint**: the markup matches the contract; behaviour is added per story.
@@ -45,8 +45,8 @@ description: "Task list for the collapsible questions panel on small screens"
 
 ### Tests for User Story 1
 
-- [ ] T005 [US1] Replace the three 022 P20 tests in `tests/e2e/questions.spec.ts` with D01, D12 and D13 tests. Layer: e2e (needs real layout and measured geometry). At 320, 390, 768 and 1279 px with JavaScript on: the button is visible with both exact lines, `aria-expanded="false"`, the content wrapper is not displayed, and there is no horizontal scroll; at 390 px the aside border box is at most 80 px (5rem) tall; at 390x844 and 768x1024 the first body paragraph's top is less than the viewport height. See them fail.
-- [ ] T006 [P] [US1] Add a D11 layout-shift test in `tests/e2e/questions.spec.ts`, observing `layout-shift` entries from navigation until idle at 390x844 and 1280x800 and asserting none has a source inside `[data-questions]`. Layer: e2e (a shift is only measurable in a browser with fonts swapping). The existing `budget.spec.ts` stays the whole-page CLS gate and is not duplicated.
+- [ ] T005 [US1] Replace the three 022 P20 tests in `tests/e2e/questions.spec.ts` with D01, D12 and D13 tests. Layer: e2e (needs real layout and measured geometry). At 320, 390, 640 (200% zoom of 1280), 768 and 1279 px with JavaScript on: the button is visible with both exact lines, `aria-expanded="false"`, its bounding box is at least 44x44 CSS px, the content wrapper is not displayed, and there is no horizontal scroll; at 320 px the label wraps inside the button and the chevron's box stays to the right of the text without overlapping it; the second line's computed font size is at least 14 px (0.875rem) at default text size (FR-002, FR-003, Edge Cases); at 390 px the aside border box is at most 80 px (5rem) tall; at 390x844 and 768x1024 the first body paragraph's top is less than the viewport height. See them fail.
+- [ ] T006 [US1] Add a D11 layout-shift test in `tests/e2e/questions.spec.ts`, observing `layout-shift` entries from navigation until idle at 390x844 and 1280x800 and asserting none has a source inside `[data-questions]`. Layer: e2e (a shift is only measurable in a browser with fonts swapping). The existing `budget.spec.ts` stays the whole-page CLS gate and is not duplicated. This guards existing behaviour, so see it fail by a temporary break (for example toggling the aside's display from script after load) and record the break.
 
 ### Implementation for User Story 1
 
@@ -65,7 +65,7 @@ description: "Task list for the collapsible questions panel on small screens"
 
 ### Tests for User Story 2
 
-- [ ] T009 [US2] Add D05 and D06 tests in `tests/e2e/questions.spec.ts`. Layer: e2e (focus, keyboard and request counts are browser behaviour). At 390x844: open and close by click, Enter and Space (the button is the active element after each, and `document.activeElement` never becomes `body`, SC-004); closed content is out of the accessibility tree and focus order; opening sends no request to `/api/questions`; after "Get questions", closing and reopening shows the same list with no new request; closing while the stubbed request is pending, then reopening, shows the result and focus was never lost. See them fail.
+- [ ] T009 [US2] Add D05 and D06 tests in `tests/e2e/questions.spec.ts`. Layer: e2e (focus, keyboard and request counts are browser behaviour). At 390x844: the button's accessible name is "Think while you read Optional AI critical thinking questions" (both lines in order, FR-003); open and close by click, Enter and Space (the button is the active element after each, and `document.activeElement` never becomes `body`, SC-004); closed content is out of the accessibility tree and focus order; opening sends no request to `/api/questions`; after "Get questions", closing and reopening shows the same list with no new request; closing while the stubbed request is pending, then reopening, shows the result and focus was never lost; after opening, `localStorage`, `sessionStorage`, `document.cookie` and the URL are unchanged, and a reload starts closed (FR-011, D01); no CSP violation is recorded while opening, closing and getting questions (`recordCspViolations` from `tests/e2e/csp-violations.ts`, FR-012). See them fail.
 - [ ] T010 [P] [US2] Add a D15 open-state axe scan at 390 px in light and dark themes in `tests/e2e/blog-fixture.a11y.spec.ts`. Layer: a11y. Second layer is justified because the open markup exists only after a press, so the template scan (which already covers the closed state) cannot see it, as 022 argued. Also assert the text-spacing override grows the bar without clipping.
 - [ ] T011 [P] [US2] Add a D15 forced-colours test in `tests/e2e/blog-forced-colors.spec.ts`: at 390 px the card border, chevron and focus ring on the button are visible and the ring uses `Highlight`. Layer: e2e (forced-colours emulation is browser-only).
 
@@ -85,7 +85,7 @@ description: "Task list for the collapsible questions panel on small screens"
 
 ### Tests for User Story 3
 
-- [ ] T013 [US3] Add D03/D07/D08 tests in `tests/e2e/questions.spec.ts`. Layer: e2e (breakpoint and resize behaviour need a browser). At 1280x800 and 1440x900: the button is not visible and not focusable, the `h2` reads exactly "Think while you read", the content is shown, and the existing P21/P21a placement and sticky tests still pass unchanged. Resize 390 to 1280 to 390: after opening on the small layout the sidebar shows full content at 1280; narrowing again restores the open state and fetched questions; a never-opened panel returns closed; no focus is moved by the resize.
+- [ ] T013 [US3] Add D03/D07/D08 tests in `tests/e2e/questions.spec.ts`. Layer: e2e (breakpoint and resize behaviour need a browser). At 1280x800 and 1440x900: the button is not visible and not focusable, the `h2` reads exactly "Think while you read", the content is shown, and the existing P21/P21a placement and sticky tests still pass unchanged. Resize 390 to 1280 to 390: after opening on the small layout the sidebar shows full content at 1280; narrowing again restores the open state and fetched questions; a never-opened panel returns closed; no focus is moved by the resize. See the new assertions fail (the heading text and the toggle do not exist yet).
 
 ### Implementation for User Story 3
 
@@ -101,7 +101,7 @@ description: "Task list for the collapsible questions panel on small screens"
 
 ### Tests for User Story 4
 
-- [ ] T015 [US4] Extend the existing no-JS test in `tests/e2e/no-js.spec.ts` for D09: at 390x844 and 1280x800 with JavaScript disabled, the aside, the button and the content are not displayed, zero focusable elements exist in the questions area (SC-006), and the body follows the title card. Layer: e2e (JavaScript-disabled browsing context; the `js` root class cannot be exercised in a component test).
+- [ ] T015 [US4] Extend the existing no-JS test in `tests/e2e/no-js.spec.ts` for D09: at 390x844 and 1280x800 with JavaScript disabled, the aside, the button and the content are not displayed, zero focusable elements exist in the questions area (SC-006), and the body follows the title card. The "not displayed" assertions pass before the change (no button exists yet), so see them fail by temporarily removing the aside's `hidden` class and record that. Layer: e2e (JavaScript-disabled browsing context; the `js` root class cannot be exercised in a component test).
 
 ### Implementation for User Story 4
 
@@ -135,7 +135,7 @@ description: "Task list for the collapsible questions panel on small screens"
 - T005 and T006 target the same file, so write them in one pass; T008 runs alongside T007.
 - T010 and T011 run in parallel with each other (different files) once T009 is written.
 - T013 (`questions.spec.ts`), T015 (`no-js.spec.ts`) and T010/T011 touch different files and can be written in parallel after Phase 2.
-- T017 runs in parallel with the test-writing tasks.
+- T017 runs in parallel with the US3 and US4 tasks (T013 to T016), after T012 as the dependency list says.
 
 ## Implementation strategy
 

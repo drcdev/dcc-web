@@ -14,8 +14,8 @@ in [data-model.md](./data-model.md).
 
 | Command | Proves |
 |---|---|
-| `pnpm exec vitest run tests/component/post/QuestionsPanel.test.ts` | Markup: aside `aria-label`, `h2 > button[aria-expanded=false][aria-controls]` with the two exact label lines, aria-hidden chevron, wide heading span, content wrapper id, 022 DOM order inside it (D01–D04, D09) |
-| `pnpm exec playwright test tests/e2e/questions.spec.ts` | Closed on load at 320/390/768/1279 px, ≤ 5rem at 390 px, first paragraph in the first viewport at 390×844 and 768×1024, open/close by click, Enter and Space with focus kept, no request on open, state kept across close and across 1280 px resizes, wide layout unchanged (D01, D05–D08, D12, D13) |
+| `pnpm exec vitest run tests/component/post/QuestionsPanel.test.ts` | Markup: aside `aria-label`, `h2 > button[aria-expanded=false][aria-controls]` with the two exact label lines, aria-hidden chevron, wide heading span, content wrapper id, 022 DOM order inside it, one live region (D01–D04, D10) |
+| `pnpm exec playwright test tests/e2e/questions.spec.ts` | Closed on load at 320/390/640/768/1279 px with a 44×44 target, ≤ 5rem at 390 px, first paragraph in the first viewport at 390×844 and 768×1024, open/close by click, Enter and Space with focus kept, no request on open, state kept across close and across 1280 px resizes, no storage and closed on reload, no CSP violation, wide layout unchanged (D01, D05–D08, D11–D14) |
 | `pnpm exec playwright test tests/e2e/no-js.spec.ts` | No trigger or panel without JavaScript at 390 and 1280 px (D09) |
 | `pnpm exec playwright test --project=a11y` and `tests/e2e/blog-fixture.a11y.spec.ts`, `tests/e2e/blog-forced-colors.spec.ts` | axe closed and open at 390 px in both themes; forced colours on the trigger (D15) |
 | `pnpm run test:budget` | JS, LCP and CLS budgets on the post template (D11, D14) |
