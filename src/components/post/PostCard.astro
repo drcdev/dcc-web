@@ -2,7 +2,9 @@
 // One post as a card (contracts/blog-pages.md "Post card"; FR-011, FR-044,
 // FR-047): `<li><article data-post-card>`, so it is used inside a `<ul>`
 // (CardGrid). The title is the only link to the post; the card is not wrapped
-// in a link. A post with no feature image is a text-only card with a border in
+// in a link, and the title link's `::after` stretches over the card so the whole card opens the post
+// (spec 049). Topic pills sit above it. Hover feedback is motion-safe and, in Tailwind 4, hover-only.
+// A post with no feature image is a text-only card with a border in
 // its main topic's colour, and no empty image box. Images go through
 // `astro:assets`, which gives width, height and lazy loading
 // (docs.astro.build/en/guides/images/#astro-components-for-images).
@@ -36,29 +38,43 @@ const border = !textOnly
   : mainTopic
     ? `border-2 ${topicStyle(mainTopic.colour).border}`
     : "border border-dusk-200 dark:border-dusk-700";
+const HOVER = "hover:z-1 hover:shadow-lg motion-safe:hover:-translate-y-1 motion-safe:transition-[transform,box-shadow] motion-safe:duration-200 motion-safe:ease-out";
+const OUTLINE =
+  "has-[[data-post-link]:focus-visible]:outline-2 has-[[data-post-link]:focus-visible]:outline-offset-2 has-[[data-post-link]:focus-visible]:outline-accent-500 dark:has-[[data-post-link]:focus-visible]:outline-accent-400 forced-colors:has-[[data-post-link]:focus-visible]:outline-[CanvasText]";
 ---
 
 <li class="flex min-w-0">
   <article
     data-post-card
     {...flags}
-    class:list={["flex w-full min-w-0 flex-col overflow-hidden rounded-xl bg-white dark:bg-dusk-800", border]}
+    class:list={[
+      "group relative flex w-full min-w-0 flex-col overflow-hidden rounded-xl bg-white dark:bg-dusk-800",
+      HOVER,
+      OUTLINE,
+      border,
+    ]}
   >
     {
       post.featureImage && (
-        <Image
+        <div class="overflow-hidden">
+          <Image
           src={post.featureImage.src}
           alt={post.featureImage.alt}
           widths={[320, 400, 640]}
           sizes="(min-width: 1024px) 320px, (min-width: 640px) 45vw, calc(100vw - 2rem)"
           quality={65}
-          class="aspect-[16/9] h-auto w-full object-cover"
+          class="aspect-[16/9] h-auto w-full object-cover motion-safe:group-hover:scale-[1.02] motion-safe:transition-transform motion-safe:duration-200"
         />
+        </div>
       )
     }
     <div class="flex flex-1 flex-col gap-3 p-4">
       <Heading class="m-0 text-xl font-semibold leading-snug [overflow-wrap:anywhere]">
-        <a href={post.href} class="text-dusk-900 hover:underline dark:text-mist-100">{post.title}</a>
+        <a
+          href={post.href}
+          data-post-link
+          class="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none! text-dusk-900 hover:underline dark:text-mist-100"
+        >{post.title}</a>
       </Heading>
       <p class="m-0 text-dusk-700 [overflow-wrap:anywhere] dark:text-mist-300">{post.summary}</p>
       {
@@ -73,7 +89,7 @@ const border = !textOnly
         <time datetime={isoDate(post.date)}>{formatDate(post.date)}</time> · {post.minutesRead} min read
       </p>
       <ul aria-label="Topics" class="m-0 mt-auto flex list-none flex-wrap gap-2 p-0">
-        {orderTopics(post.topics).map((topic) => <li><TopicPill topic={topic} /></li>)}
+        {orderTopics(post.topics).map((topic) => <li class="relative"><TopicPill topic={topic} /></li>)}
       </ul>
     </div>
   </article>
