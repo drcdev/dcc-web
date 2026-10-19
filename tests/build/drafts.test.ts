@@ -71,6 +71,16 @@ const written = (build: FixtureSiteResult, path: string) => (existsSync(join(bui
 const summaries = (build: FixtureSiteResult) => JSON.parse(build.read("summaries.json")) as Summary[];
 const items = (xml: string) => [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((m) => m[1]!);
 
+// The story navigation block (spec 042): between the last part and the invitation.
+const storyNav = (html: string) => /<nav[^>]*data-story-nav[^>]*>[\s\S]*?<\/nav>/.exec(html)?.[0] ?? "";
+const navHrefs = (nav: string) => [...nav.matchAll(/href="([^"]*)"/g)].map((m) => m[1]);
+const expectNavBetweenPartsAndInvitation = (html: string) => {
+  const nav = html.indexOf("data-story-nav");
+  const lastPart = html.lastIndexOf("data-part=");
+  expect(nav).toBeGreaterThan(lastPart);
+  expect(html.indexOf("data-invitation-block")).toBeGreaterThan(nav);
+};
+
 const builtNames = (build: FixtureSiteResult) => filesUnder(build.dist).map((path) => path.slice(build.dist.length));
 
 describe("a production build (Workers Builds, main)", () => {
@@ -139,6 +149,20 @@ describe("a production build (Workers Builds, main)", () => {
     expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
     expect(html).toContain("<main");
   });
+
+  // 042 FR-002, FR-004: only the real build applies the production draft filter to routes. The site
+  // also holds the real projects, so the checks name the fixtures and not the whole sequence.
+  it("never links a draft from a story's navigation, and sits it between the last part and the invitation", () => {
+    const pages = [...build().htmlFiles().keys()].filter((path) => /^projects\/[^/]+\/index\.html$/.test(path));
+    expect(pages).toContain("projects/minimal/index.html");
+    for (const path of pages) {
+      const html = build().read(path);
+      expect(storyNav(html), path).not.toContain("/projects/draft/");
+      expect(navHrefs(storyNav(html)), path).toContain("/projects/");
+      expectNavBetweenPartsAndInvitation(html);
+    }
+  });
+
   // Moved from the project drafts test.
   it("leaves the draft project out of the index, the routes and the sitemap", () => {
     const pages = [...build().htmlFiles().keys()];
@@ -352,5 +376,15 @@ describe("a preview build (Workers Builds, another branch)", () => {
   it("emits the draft project's own image, and leaves the published project unmarked", () => {
     expect(builtNames(build()).some((name) => name.includes("draft-only"))).toBe(true);
     expect(build().read("projects/minimal/index.html")).not.toContain("data-draft-notice");
+  });
+
+  it("puts the draft in the navigation where the index lists it", () => {
+    // Draft (2026-01-02) is listed directly above minimal (2026-01-01), whatever else the site holds.
+    const minimal = storyNav(build().read("projects/minimal/index.html"));
+    expect(minimal).toMatch(/<a[^>]*href="\/projects\/draft\/"[^>]*rel="prev"|<a[^>]*rel="prev"[^>]*href="\/projects\/draft\/"/);
+    expect(minimal).toContain("Draft project");
+    expectNavBetweenPartsAndInvitation(build().read("projects/minimal/index.html"));
+    const draft = storyNav(build().read("projects/draft/index.html"));
+    expect(draft).toMatch(/<a[^>]*href="\/projects\/minimal\/"[^>]*rel="next"|<a[^>]*rel="next"[^>]*href="\/projects\/minimal\/"/);
   });
 });

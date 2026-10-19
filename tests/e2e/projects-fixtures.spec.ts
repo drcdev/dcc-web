@@ -277,3 +277,69 @@ test("the retired story's note links to the replacement story in the same tab", 
   await expect(page).toHaveURL(/\/projects\/minimal\/$/);
   await expect(page.locator("[data-story-title]")).toHaveText("Minimal project");
 });
+
+// Story navigation (spec 042, SC-001, FR-005): following links, focus order, the stacked 390 px layout
+// and target sizes need a real browser. The neighbour rule itself is the unit test's.
+test.describe("story navigation", () => {
+  const nav = (page: Page) => page.locator("[data-story-nav]");
+  const indexSlugs = async (page: Page) => {
+    await page.goto(INDEX);
+    const hrefs = await page.locator("[data-project] h2 a").evaluateAll((as) => as.map((a) => a.getAttribute("href")!));
+    return hrefs.map((href) => href.replace(/\/$/, "").split("/").pop()!);
+  };
+
+  test("Next walks the index from the first project to the last, and Previous walks back", async ({ page }) => {
+    const slugs = await indexSlugs(page);
+    expect(slugs).toHaveLength(ALL);
+    await page.goto(`/projects/${slugs[0]}/`);
+    await expect(nav(page).locator('a[rel="prev"]')).toHaveCount(0);
+    for (const slug of slugs.slice(1)) {
+      await nav(page).locator('a[rel="next"]').click();
+      await expect(page).toHaveURL(new RegExp(`/projects/${slug}/$`));
+    }
+    await expect(nav(page).locator('a[rel="next"]')).toHaveCount(0);
+    for (const slug of slugs.slice(0, -1).reverse()) {
+      await nav(page).locator('a[rel="prev"]').click();
+      await expect(page).toHaveURL(new RegExp(`/projects/${slug}/$`));
+    }
+  });
+
+  test("All projects goes to the index", async ({ page }) => {
+    await page.goto("/projects/every-part/");
+    await nav(page).getByRole("link", { name: "All projects" }).click();
+    await expect(page).toHaveURL(/\/projects\/$/);
+  });
+
+  test("Tab order is previous, all projects, next, each with a visible focus outline", async ({ page }) => {
+    await page.goto("/projects/every-part/");
+    const links = nav(page).locator("a");
+    await expect(links).toHaveCount(3);
+    await links.first().focus();
+    for (let i = 0; i < 3; i++) {
+      await expect(links.nth(i)).toBeFocused();
+      const outline = await links.nth(i).evaluate((el) => getComputedStyle(el).outlineStyle);
+      expect(outline).not.toBe("none");
+      if (i < 2) await page.keyboard.press("Tab");
+    }
+  });
+
+  test("at 390 px the links stack, each at least 44 x 44, with no sideways scroll", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto("/projects/every-part/");
+    const boxes = [];
+    for (const link of await nav(page).locator("a").all()) {
+      await link.scrollIntoViewIfNeeded();
+      const box = (await link.boundingBox())!;
+      expect(box.width).toBeGreaterThanOrEqual(44);
+      expect(box.height).toBeGreaterThanOrEqual(44);
+      boxes.push(box);
+    }
+    expect(boxes).toHaveLength(3);
+    for (let i = 1; i < boxes.length; i++) expect(boxes[i]!.y).toBeGreaterThanOrEqual(boxes[i - 1]!.y + boxes[i - 1]!.height - 1);
+    const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }));
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+  });
+});

@@ -4,6 +4,7 @@
 import type { ComponentProps } from "astro/types";
 import BaseLayout from "./BaseLayout.astro";
 import ReadingProgress from "../components/project/ReadingProgress.astro";
+import StoryNav from "../components/project/StoryNav.astro";
 import ProjectInvitation from "../components/project/ProjectInvitation.astro";
 import StoryHeader from "../components/project/StoryHeader.astro";
 import TitleTransition from "../components/project/TitleTransition.astro";
@@ -26,9 +27,12 @@ export interface Props {
   slug: string;
   /** For a retired project: the resolved replacement shown in the note. */
   replacement?: ComponentProps<typeof StoryHeader>["replacement"];
+  /** The projects either side of this one in the index order; a missing side shows no link. */
+  previous?: ComponentProps<typeof StoryNav>["previous"];
+  next?: ComponentProps<typeof StoryNav>["next"];
 }
 
-const { title, problem, description, status, themes, navigation, image, imageAlt, draft = false, slug, replacement } = Astro.props;
+const { title, problem, description, status, themes, navigation, image, imageAlt, draft = false, slug, replacement, previous, next } = Astro.props;
 Astro.csp?.insertStyleHash(transitionHash([slug]));
 ---
 
@@ -38,6 +42,7 @@ Astro.csp?.insertStyleHash(transitionHash([slug]));
   <article data-story class="mx-auto">
     <StoryHeader title={title} problem={problem} status={status} themes={themes} draft={draft} slug={slug} replacement={replacement} />
     <slot />
+    <StoryNav previous={previous} next={next} />
     <ProjectInvitation />
   </article>
 </BaseLayout>

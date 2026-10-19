@@ -1,0 +1,43 @@
+---
+// The navigation block that closes a project story: the project above this one in the index, a link to the
+// index, and the project below (spec 042). Plain links, no script. The visible text is the accessible name
+// (WCAG 2.5.3), so the arrows are empty hidden spans that portfolio.css draws. A missing side renders nothing.
+import { projectHref } from "../../lib/content/addresses.ts";
+import "./portfolio.css";
+
+interface Neighbour {
+  slug: string;
+  title: string;
+}
+
+export interface Props {
+  previous?: Neighbour;
+  next?: Neighbour;
+}
+
+const { previous, next } = Astro.props;
+---
+
+<nav aria-label="Projects" data-story-nav>
+  <ul>
+    {
+      previous && (
+        <li>
+          <a href={projectHref(previous.slug)} rel="prev">
+            <span aria-hidden="true" data-arrow="prev"></span> Previous: {previous.title}
+          </a>
+        </li>
+      )
+    }
+    <li><a href="/projects/">All projects</a></li>
+    {
+      next && (
+        <li>
+          <a href={projectHref(next.slug)} rel="next">
+            Next: {next.title} <span aria-hidden="true" data-arrow="next"></span>
+          </a>
+        </li>
+      )
+    }
+  </ul>
+</nav>

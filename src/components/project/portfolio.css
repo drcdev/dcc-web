@@ -162,6 +162,40 @@ summary,
   @apply outline-2 outline-offset-2 outline-accent-500 dark:outline-accent-400;
 }
 
+/* -------------------------------------------------------- Story navigation */
+
+/* Previous, all projects and next, between the last part and the invitation: stacked full-width links
+   below sm, one row from sm. */
+[data-story-nav] {
+  @apply mt-12;
+}
+[data-story-nav] ul {
+  @apply m-0 flex list-none flex-col gap-2 p-0 sm:flex-row sm:flex-wrap sm:justify-between;
+}
+[data-story-nav] li {
+  @apply m-0 p-0;
+}
+[data-story-nav] a {
+  @apply flex min-h-11 w-full items-center break-words py-2 font-semibold text-dusk-900 underline dark:text-white sm:w-auto;
+}
+/* The arrows are drawn here, not typed in the markup: the self-hosted font subsets carry no left arrow,
+   so the browser falls back for both, and the pair matches. */
+[data-story-nav] [data-arrow="prev"] {
+  @apply mr-2;
+}
+[data-story-nav] [data-arrow="next"] {
+  @apply ml-2;
+}
+[data-story-nav] [data-arrow="prev"]::before {
+  content: "\2190";
+}
+[data-story-nav] [data-arrow="next"]::before {
+  content: "\2192";
+}
+[data-story-nav] a:focus-visible {
+  @apply outline-2 outline-offset-2 outline-accent-500 dark:outline-accent-400;
+}
+
 /* ---------------------------------------------------------------- Motion */
 
 /* Reading progress: a bar fixed to the top edge, filled by the root scroll. */
@@ -234,6 +268,7 @@ summary,
     outline-color: CanvasText;
   }
   [data-build-links] a:focus-visible,
+  [data-story-nav] a:focus-visible,
   [data-invitation]:focus-visible {
     outline-color: CanvasText;
   }
