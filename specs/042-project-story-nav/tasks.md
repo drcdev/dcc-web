@@ -32,7 +32,7 @@
 ### Visual baselines
 
 - [X] T012 Read `.claude/skills/_shared/visual-baselines.md`, then run `pnpm run test:visual:update` and inspect that only `story-template-*` macOS images changed (the diff shows previous "Minimal project", all projects and next "Every setting" on `/projects/every-part/`).
-- [ ] T013 Run `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, ask Don to start it as the shared file describes), confirm only `story-template-*-linux.png` changed, and commit both sets of images before the PR is opened.
+- [x] T013 Run `pnpm run test:visual:update:linux` (needs Docker Desktop; if `docker info` fails, ask Don to start it as the shared file describes), confirm only `story-template-*-linux.png` changed, and commit both sets of images before the PR is opened.
 
 ### Preview checks
 
