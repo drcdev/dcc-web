@@ -8,30 +8,30 @@
 
 ## Breakpoint and Layout Switching
 
-- [ ] CHK001 Is the 1280 px boundary stated unambiguously (below 1280 vs 1280 and wider) and in the same unit everywhere it appears? [Clarity, Spec §FR-001, §FR-006]
-- [ ] CHK002 Are requirements defined for resize, rotation and zoom across the boundary, including what state is restored? [Coverage, Spec §FR-007, User Story 3]
-- [ ] CHK003 Is it specified which viewport widths (320, 390, 768, 1279, 1280, 1440) the requirements must hold at? [Completeness, Spec §Success Criteria]
-- [ ] CHK004 Is the position of the questions area in DOM and focus order defined consistently for both layouts? [Consistency, Spec §FR-001, §FR-006]
-- [ ] CHK005 Are requirements for the other post-page elements (title card, body, share area, author card, related posts) stated as unchanged at every width? [Completeness, Spec §FR-014]
+- [x] CHK001 Is the 1280 px boundary stated unambiguously (below 1280 vs 1280 and wider) and in the same unit everywhere it appears? [Clarity, Spec §FR-001, §FR-006]
+- [x] CHK002 Are requirements defined for resize, rotation and zoom across the boundary, including what state is restored? [Coverage, Spec §FR-007, User Story 3]
+- [x] CHK003 Is it specified which viewport widths (320, 390, 768, 1279, 1280, 1440) the requirements must hold at? [Completeness, Spec §Success Criteria]
+- [x] CHK004 Is the position of the questions area in DOM and focus order defined consistently for both layouts? [Consistency, Spec §FR-001, §FR-006]
+- [x] CHK005 Are requirements for the other post-page elements (title card, body, share area, author card, related posts) stated as unchanged at every width? [Completeness, Spec §FR-014]
 
 ## Size and First-Screen Targets
 
-- [ ] CHK006 Is the closed-bar height limit (5rem plus margins at 390 px, default text size) defined with a clear measurement basis, including whether margins and borders count? [Clarity, Spec §SC-002]
-- [ ] CHK007 Is "representative post" defined for the first-viewport criterion, given that long titles or summaries change the result? [Ambiguity, Spec §SC-001, Plan §Risks]
-- [ ] CHK008 Is "inside the first viewport" defined precisely (top edge only, or the whole first line) and for which viewport sizes? [Clarity, Spec §SC-001, User Story 1]
-- [ ] CHK009 Is the closed-bar height requirement reconciled with the larger-text, text-spacing and 320 px label-wrap cases, where 5rem may be unattainable? [Conflict, Spec §SC-002, §Edge Cases]
-- [ ] CHK010 Are the open-panel size and growth requirements specified (does the open card push the body, any maximum height)? [Gap, Spec §FR-004]
+- [x] CHK006 Is the closed-bar height limit (5rem plus margins at 390 px, default text size) defined with a clear measurement basis, including whether margins and borders count? [Clarity, Spec §SC-002]
+- [x] CHK007 Is "representative post" defined for the first-viewport criterion, given that long titles or summaries change the result? [Ambiguity, Spec §SC-001, Plan §Risks]
+- [x] CHK008 Is "inside the first viewport" defined precisely (top edge only, or the whole first line) and for which viewport sizes? [Clarity, Spec §SC-001, User Story 1]
+- [x] CHK009 Is the closed-bar height requirement reconciled with the larger-text, text-spacing and 320 px label-wrap cases, where 5rem may be unattainable? [Conflict, Spec §SC-002, §Edge Cases]
+- [x] CHK010 Are the open-panel size and growth requirements specified (does the open card push the body, any maximum height)? [Gap, Spec §FR-004]
 
 ## Layout Shift
 
-- [ ] CHK011 Is "no layout shift attributable to the questions area" defined as a measurable value and measurement method? [Measurability, Spec §SC-003]
-- [ ] CHK012 Is the exclusion of reader-initiated open/close from shift counting stated clearly, and what counts as reader-initiated (for example a late result arriving while open)? [Clarity, Spec §FR-010]
-- [ ] CHK013 Are shift requirements defined for content that arrives after load (questions list, status message, font swap)? [Coverage, Gap]
-- [ ] CHK014 Are shift requirements stated for the wide layout at 1280 px, including the sticky behaviour? [Completeness, Spec §SC-003, §FR-006]
-- [ ] CHK015 Is the relationship between the performance budget (JS size, LCP, CLS) and this change quantified rather than "stays within"? [Measurability, Spec §FR-012]
+- [x] CHK011 Is "no layout shift attributable to the questions area" defined as a measurable value and measurement method? [Measurability, Spec §SC-003]
+- [x] CHK012 Is the exclusion of reader-initiated open/close from shift counting stated clearly, and what counts as reader-initiated (for example a late result arriving while open)? [Clarity, Spec §FR-010]
+- [x] CHK013 Are shift requirements defined for content that arrives after load (questions list, status message, font swap)? [Coverage, Gap]
+- [x] CHK014 Are shift requirements stated for the wide layout at 1280 px, including the sticky behaviour? [Completeness, Spec §SC-003, §FR-006]
+- [x] CHK015 Is the relationship between the performance budget (JS size, LCP, CLS) and this change quantified rather than "stays within"? [Measurability, Spec §FR-012]
 
 ## Edge Cases
 
-- [ ] CHK016 Are very long post titles, long translated or wrapped labels and narrow containers addressed for the trigger layout? [Edge Case, Spec §Edge Cases]
-- [ ] CHK017 Is behaviour specified for posts without a question hash and for the request-in-flight-while-closed case? [Coverage, Spec §Edge Cases]
-- [ ] CHK018 Is the print behaviour exclusion explicit and consistent with the layout requirements? [Consistency, Spec §Edge Cases, Follow-up]
+- [x] CHK016 Are very long post titles, long translated or wrapped labels and narrow containers addressed for the trigger layout? [Edge Case, Spec §Edge Cases]
+- [x] CHK017 Is behaviour specified for posts without a question hash and for the request-in-flight-while-closed case? [Coverage, Spec §Edge Cases]
+- [x] CHK018 Is the print behaviour exclusion explicit and consistent with the layout requirements? [Consistency, Spec §Edge Cases, Follow-up]

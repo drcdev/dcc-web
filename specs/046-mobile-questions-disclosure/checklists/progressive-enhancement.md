@@ -8,17 +8,17 @@
 
 ## JavaScript Off
 
-- [ ] CHK001 Is "neither displayed nor reachable" defined for trigger, content and landmark at every width? [Clarity, Spec §FR-008, §SC-006]
-- [ ] CHK002 Is the requirement that no dead button exists measurable (zero focusable elements, zero dead controls)? [Measurability, Spec §SC-006]
-- [ ] CHK003 Is the requirement that article content stays readable without JavaScript stated and consistent with Principle V? [Consistency, Spec §User Story 4, Constitution V]
-- [ ] CHK004 Is the no-JS requirement consistent with 022 P05, including its extension to the trigger? [Consistency, Spec §Context, §FR-008]
+- [x] CHK001 Is "neither displayed nor reachable" defined for trigger, content and landmark at every width? [Clarity, Spec §FR-008, §SC-006]
+- [x] CHK002 Is the requirement that no dead button exists measurable (zero focusable elements, zero dead controls)? [Measurability, Spec §SC-006]
+- [x] CHK003 Is the requirement that article content stays readable without JavaScript stated and consistent with Principle V? [Consistency, Spec §User Story 4, Constitution V]
+- [x] CHK004 Is the no-JS requirement consistent with 022 P05, including its extension to the trigger? [Consistency, Spec §Context, §FR-008]
 
 ## JavaScript On: Timing and Failure
 
-- [ ] CHK005 Is the moment the closed bar becomes visible defined relative to script load, so the bar is never a non-working control before the handler is attached? [Gap, Spec §FR-010]
-- [ ] CHK006 Are requirements specified for the script failing to load or throwing after the bar is shown? [Gap, Exception Flow]
-- [ ] CHK007 Is the requirement that state lives only for the page's lifetime (no storage, cookies) unambiguous? [Clarity, Spec §FR-011]
-- [ ] CHK008 Is behaviour specified for back/forward cache restoration and page reload (always closed)? [Coverage, Spec §FR-011]
-- [ ] CHK009 Are requirements consistent between the first-party markup mechanism assumed in Assumptions and the constraint of no new dependency? [Consistency, Spec §Assumptions, §FR-012]
-- [ ] CHK010 Are CSP constraints (no inline style, no style attribute from script) stated as testable conditions? [Measurability, Spec §FR-012]
-- [ ] CHK011 Is the no-new-network-request requirement distinguished from the existing questions request rules? [Clarity, Spec §FR-005, §FR-012]
+- [x] CHK005 Is the moment the closed bar becomes visible defined relative to script load, so the bar is never a non-working control before the handler is attached? [Gap, Spec §FR-010]
+- [x] CHK006 Are requirements specified for the script failing to load or throwing after the bar is shown? [Gap, Exception Flow]
+- [x] CHK007 Is the requirement that state lives only for the page's lifetime (no storage, cookies) unambiguous? [Clarity, Spec §FR-011]
+- [x] CHK008 Is behaviour specified for back/forward cache restoration and page reload (always closed)? [Coverage, Spec §FR-011]
+- [x] CHK009 Are requirements consistent between the first-party markup mechanism assumed in Assumptions and the constraint of no new dependency? [Consistency, Spec §Assumptions, §FR-012]
+- [x] CHK010 Are CSP constraints (no inline style, no style attribute from script) stated as testable conditions? [Measurability, Spec §FR-012]
+- [x] CHK011 Is the no-new-network-request requirement distinguished from the existing questions request rules? [Clarity, Spec §FR-005, §FR-012]

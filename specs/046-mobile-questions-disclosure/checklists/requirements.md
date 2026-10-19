@@ -34,7 +34,7 @@
 - The spec names `aria-expanded`, a native button and the 1280 px breakpoint because the issue's
   acceptance criteria and 022's contract name them; they are accessibility and layout
   requirements, not implementation choices.
-- FR-009 leaves to the plan whether a status change is announced while the panel is closed;
-  the requirement (no lost message, one live region) is testable either way.
+- FR-009 now states that a status change made while the panel is closed is not announced
+  (decided at checklist time, matching plan research R4); no lost message, one live region.
 - No clarification markers: open choices were resolved as stated in Assumptions (no emoji,
   panel stays above the body, state not stored, focus stays on the trigger).

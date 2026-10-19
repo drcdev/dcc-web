@@ -171,7 +171,7 @@ docs/testing.md
 - **5rem at 390 px is tight** (≈ 4.63rem by arithmetic, R5); if Inter's metrics wrap the second
   line at 390 px, reduce horizontal padding or chevron gap rather than the text size.
 - **Live region while closed**: a result that arrives while the panel is closed is not
-  announced (R4, allowed by FR-009).
+  announced (R4, as FR-009 now states).
 - **Sibling worktrees** touching `PostLayout.astro` or `post-template` baselines (R10).
 
 ## Complexity Tracking

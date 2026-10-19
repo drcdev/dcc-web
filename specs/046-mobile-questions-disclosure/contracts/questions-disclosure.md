@@ -60,7 +60,7 @@ Class lists are illustrative; the rules below are the contract.
   sticky behaviour are unchanged.
 - **D08 Crossing 1280 px (FR-007)**: no script runs on resize for the disclosure; the attribute
   is untouched, so the small layout restores the reader's last choice and the panel state is
-  kept.
+  kept. No focus is moved on resize; a focused control inside the content keeps focus.
 - **D09 JavaScript off (FR-008, P05)**: the aside stays `hidden` without the `js` root class;
   no button in the questions area is displayed or focusable at any width.
 - **D10 Live region (FR-009)**: one status region (P08), inside the content. It is not

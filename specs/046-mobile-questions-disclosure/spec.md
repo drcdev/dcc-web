@@ -23,6 +23,9 @@ questions buttons, the status messages, the list, the AI note, the request rules
 bucket) is unchanged and keeps 022's contract rows P04, P06–P17 and P21–P24. This feature
 replaces 022's row P20 (the full panel as a block above the body below `xl`).
 
+Every width in this spec is a viewport width in CSS px. "Below 1280 px" (the small layout) means
+1279 CSS px and narrower; "1280 px and wider" (the wide layout) includes 1280 itself.
+
 ## Clarifications
 
 ### Session 2026-10-19
@@ -160,7 +163,19 @@ of the questions area is displayed or reachable by keyboard, and the body follow
   keeps a target of at least 44×44 CSS px, matching the panel's existing buttons.
 - **Request in flight when closed**: if the reader closes the panel while "Getting questions..."
   is running, the request completes and its result (questions or message) is shown when they
-  reopen (FR-005, FR-009).
+  reopen (FR-005, FR-009). Focus is never moved into the closed content: the focus move 022 makes
+  on success (to "New questions") has no effect while the panel is closed, and focus stays where
+  the reader left it (normally the trigger).
+- **Script fails to load or throws**: the closed bar is already shown (FR-010), so tapping it
+  does nothing, the same failure mode as 022's buttons today; the article still reads normally.
+  No fallback is added, because any fallback would itself need script.
+- **Back/forward cache**: a page restored from the browser's back/forward cache is the same page
+  instance, so it may keep the open or closed state the reader left; a reload or new navigation
+  always starts closed (FR-011).
+- **Long titles, wrapping and narrow containers**: a long post title or summary grows only the
+  title card, not the bar. The label strings are fixed English (the site has no translations).
+  When the label wraps (320 px, larger text, text-spacing overrides) the indicator stays on the
+  right, vertically centred, and never overlaps the text.
 - **Forced colours**: the trigger's boundary, its state indicator and its focus ring stay
   visible using system colours, as 022's P23 requires for the panel.
 - **Dark theme**: the trigger meets the same contrast rules as the panel in both themes.
@@ -183,47 +198,83 @@ of the questions area is displayed or reachable by keyboard, and the body follow
 - **FR-002**: The trigger's visible label MUST be exactly "Think while you read" on the first
   line and, in smaller text on a second line, exactly "Optional AI critical thinking
   questions", with a non-text indicator of open or closed state on the right that is not the
-  only way the state is conveyed. The label is fixed: it does not change when questions have
+  only way the state is conveyed: the state is also exposed as the trigger's `aria-expanded`
+  value and shown by the content being displayed or not, so a check of the attribute and of the
+  content's visibility proves it. The second line is no smaller than 0.875rem and is sized in
+  rem so it scales with the reader's text size. The label is fixed: it does not change when questions have
   loaded, are loading or have failed. Copy is plain language with no emoji (constitution,
   Development Workflow). The panel's heading at 1280 px and wider, and the panel's landmark name
   at every width, MUST also read exactly "Think while you read" (replacing "Think before you
   read"); wide screens show no second line.
 - **FR-003**: The trigger MUST be a native button that exposes its state through
-  `aria-expanded` and identifies the content it controls; it MUST be operable by pointer,
-  Enter and Space; it MUST use the site's existing focus ring and have a target of at least
-  44×44 CSS px.
+  `aria-expanded` and names the content it controls through `aria-controls` (the id of the
+  content wrapper, which exists in the markup in both states). Its accessible name MUST be its
+  visible text, both lines in order, so the name contains the visible label (WCAG 2.5.3); the
+  indicator is hidden from assistive technology. It MUST be operable by a single click or tap,
+  Enter and Space, with no hover, drag or path gesture (WCAG 2.5.1, 2.5.7). Escape is not
+  required to close it: the content is in-flow page content, not an overlay (APG disclosure
+  pattern). It MUST use the site's existing focus ring and have a target of at least 44×44 CSS
+  px at every width, including 320 px.
 - **FR-004**: Opening MUST reveal the panel's existing content (description, buttons, status,
   list, AI note) directly after the trigger; the description sentence "Get a few questions to
   keep in mind while you read this post." is kept, so the open content matches the wide-screen
   panel. Closing MUST hide it from sight, from the accessibility tree and from the focus order.
   Focus MUST stay on the trigger on both open and close. Opening and closing MUST be instant,
-  with no animation; only the open/closed indicator changes.
+  with no animation; only the open/closed indicator changes. The open card grows in the page
+  flow to fit its content and pushes the body down; it has no maximum height and no inner
+  scroll.
 - **FR-005**: Opening or closing MUST NOT send a questions request, and MUST NOT reset the
   panel's state; fetched questions, the current message and a pending request survive closing
   and reopening.
 - **FR-006**: At 1280 CSS px and wider the panel MUST be shown open in the right-hand column
   exactly as today (022 P21, P21a) apart from the heading wording (FR-002), with no trigger
-  displayed or focusable, whatever the small-layout state.
+  displayed or focusable, whatever the small-layout state. The questions area keeps the same DOM
+  and focus-order position in both layouts (after the title card, before the body); only its
+  visual placement differs.
 - **FR-007**: Crossing the 1280 px boundary while the page is open MUST switch layouts without a
   reload and MUST keep the panel's state; below 1280 px the open or closed state the reader last
-  chose on the small layout is restored (closed if never opened).
+  chose on the small layout is restored (closed if never opened). Focus on a control inside the
+  content stays on it across the boundary when the content is displayed on both sides. The page
+  moves no focus on a resize: if the trigger itself has focus when the window becomes 1280 px or
+  wider, it stops being displayed and the browser's default handling applies; this is accepted
+  because the reader caused the change (resize, rotation or zoom), not the page.
 - **FR-008**: With JavaScript off, neither the trigger nor the panel MUST be displayed or
-  reachable at any width (022 P05 extended to the trigger).
-- **FR-009**: The panel keeps a single live region (022 P08). Status changes that happen while
-  the panel is closed MUST NOT be lost: the current message is visible when the panel is
-  reopened. Whether a message is announced while closed is left to the plan, provided no
-  duplicate live region is added.
+  reachable at any width (022 P05 extended to the trigger): the trigger, the content and the
+  panel's landmark are all absent from sight, the accessibility tree and the focus order.
+- **FR-009**: The panel keeps a single live region (022 P08), inside the content. Status changes
+  that happen while the panel is closed MUST NOT be lost: whatever the request state reached
+  while closed (loading, ready with its list, limited, stale or error, each with its 022
+  message) is the state shown when the panel is reopened. A change made while the panel is
+  closed is not announced, and no duplicate live region is added. This meets WCAG 4.1.3: the
+  reader has hidden the area, so the message is not presented until they reopen it, and it is
+  then in place and readable in the region.
 - **FR-010**: The closed state MUST be rendered in its final size before first paint when
   JavaScript is on, so the page shows no layout shift from the questions area while scripts
-  initialise. Opening and closing are reader-initiated and are not counted as unexpected shift.
-- **FR-011**: The open or closed choice MUST NOT be stored between page loads or pages; every
-  page load starts closed below 1280 px.
+  initialise. The bar is visible from first paint (as the whole panel is today), before the
+  deferred script attaches its handler; a tap in that short window does nothing and the reader
+  can tap again. This is accepted because showing the bar only after the script loads would be
+  the layout shift this requirement forbids. Opening and closing are reader-initiated and are not
+  counted as unexpected shift; neither is the open card growing when questions or a message
+  arrive after the reader pressed "Get questions" or "New questions", which is unchanged from
+  022 and outside the page-load measure in SC-003.
+- **FR-011**: The open or closed choice MUST NOT be stored between page loads or pages: it is
+  never written to cookies, local or session storage or the URL, and every page load (including a
+  reload) starts closed below 1280 px.
 - **FR-012**: The change MUST keep the post template inside the performance budget (JavaScript
-  size, LCP, CLS) and the existing content security policy: no inline styles, no style
-  attributes set from script, no new third-party code, and no new network requests.
+  size, LCP, CLS) without raising any budget limit, and the existing content security policy:
+  no `style` attribute in the panel's markup or set by script, no new inline script, the CSP
+  header unchanged, no CSP violation reported in the browser on the post page, and no new
+  third-party code. The disclosure makes no network request of its own; the only requests from
+  the panel remain 022's questions requests, sent only by "Get questions" and "New questions"
+  (FR-005).
 - **FR-013**: The trigger and the open panel MUST meet WCAG 2.2 AA in light and dark themes and
-  in forced-colours mode, and pass the automated accessibility scans on the post template in
-  both the closed and open states.
+  in forced-colours mode. Text, including the smaller second line, meets 4.5:1 against the
+  card background; the indicator meets 3:1 (WCAG 1.4.11); the card border is decorative (the
+  label identifies the control) and keeps the panel's current colours. The focus ring is visible
+  in both themes at 3:1 against adjacent colours, uses the system `Highlight` colour in forced
+  colours, and the focused trigger is not hidden by other content (WCAG 2.4.7, 2.4.11). The
+  automated accessibility scans on the post template MUST pass with the panel closed and open
+  at 390 px in light and dark themes, and at 1280 px as today.
 - **FR-014**: Nothing else on the post page changes: the title card, body, share area, author
   card and related posts keep their current layout at every width.
 
@@ -237,27 +288,43 @@ of the questions area is displayed or reachable by keyboard, and the body follow
 
 ### Measurable Outcomes
 
-- **SC-001**: On a representative post at 390×844 and 768×1024 with JavaScript on, the top of
-  the article's first paragraph is within the first viewport, where today it is not at 390×844.
+- **SC-001**: On the representative post at 390×844 and 768×1024 with JavaScript on, the top
+  edge of the article's first paragraph is within the first viewport (its top is less than the
+  viewport height, 844 or 1024 px, with the page scrolled to the top), where today it is not at
+  390×844. The representative post is the fixture post the existing post-template checks use;
+  real posts with unusually long titles or summaries are not bound by this criterion.
 - **SC-002**: The closed questions area is no taller than 5rem plus its margins at 390 px wide
-  with default text size (versus the full panel today).
+  with default text size (versus the full panel today), measured as the closed card's border
+  box: its border is included, its outer margins are not. The limit applies only at 390 px with
+  default text size and spacing; at 320 px, with larger text or with text-spacing overrides the
+  bar may grow to fit its wrapped label (Edge Cases), keeping its 44×44 CSS px minimum.
 - **SC-003**: Cumulative layout shift attributable to the questions area on page load is 0 at
-  390×844 and at 1280×800, and the post template stays within its existing CLS budget.
+  390×844 and at 1280×800 (including the sticky sidebar at 1280×800), and the post template
+  stays within its existing CLS budget. Measured from navigation until the page is idle, with
+  the web font swap included: no layout-shift entry has a source inside the questions area or
+  is caused by it, and the existing budget check passes.
 - **SC-004**: A keyboard-only reader can open the panel, get questions and close it again using
-  only Tab, Enter and Space, with focus never lost to the page start.
+  only Tab, Enter and Space, with focus never lost to the page start: at no point in that
+  sequence does the document's active element become the page body.
 - **SC-005**: At 1280 px and wider, the panel's position, size and sticky behaviour match the
   current behaviour (existing placement checks pass unchanged; visual baselines for that width
-  differ only by the heading now reading "Think while you read").
+  differ only by the heading now reading "Think while you read"). The visual comparison keeps its
+  existing threshold, and the reviewer of the refreshed images confirms the only changed region
+  is the heading text.
 - **SC-006**: With JavaScript off, zero focusable elements are in the questions area at any
   width.
+- **SC-007**: The small-layout requirements hold at 320, 390, 768 and 1279 px wide, and the
+  wide-layout requirements at 1280 and 1440 px wide.
 
 ## Assumptions
 
 - The trigger replaces the panel's visible heading on the small layout; the panel remains a
   complementary landmark in both layouts, named "Think while you read" (FR-002), and the post
   title
-  stays the page's only `h1`. The plan decides whether the button sits inside the heading (the
-  usual disclosure pattern) so the landmark keeps one name.
+  stays the page's only `h1`. Decided in the plan (research R3): below 1280 px the trigger sits
+  inside the panel's `h2` (the usual disclosure pattern), so the panel stays in heading
+  navigation; at 1280 px and wider the same `h2` shows the plain heading text. The landmark is
+  named directly, so it keeps the one name "Think while you read" at every width.
 - The issue's emoji and arrow ("💡 ... ↓") are illustrative. The site's copy rule is plain
   language, so the label has no emoji; the open or closed indicator is a decorative icon hidden
   from assistive technology.
@@ -266,12 +333,20 @@ of the questions area is displayed or reachable by keyboard, and the body follow
   screen.
 - The breakpoint stays at the site's `xl` (1280 CSS px), the same as 022, so tablets in either
   orientation get the small layout.
-- No new page, component library, dependency or API is needed; first-party HTML disclosure
-  behaviour and the panel's existing script are expected to be enough (the plan names the
-  first-party option per Principle IV).
-- Below-`xl` visual baselines for the post template will change and need refreshing on macOS and
-  Linux (`.claude/skills/_shared/visual-baselines.md`); `xl` baselines change only for
-  the heading wording.
+- No new page, component library, dependency or API is needed; standard HTML (a native button
+  with disclosure attributes) and the panel's existing script are enough. The plan names
+  `<details>`/`<summary>` as the first-party option considered and why it falls short
+  (Principle IV, research R1).
+- Visual baselines: the post-template shots at phone width (390 px, closed bar) and at desktop
+  width (1280 px, heading wording) change, each in light and dark, on macOS and Linux: eight
+  images. CI compares against the Linux images, which are refreshed in Docker
+  (`.claude/skills/_shared/visual-baselines.md`). The open state and tablet widths get no
+  baseline; their behaviour is covered by the end-to-end and accessibility checks. Any visual
+  diff outside those eight images is a regression. The shots use the fixture post with the panel
+  idle (no questions requested), so no generated text appears, and the existing visual helpers
+  (self-hosted fonts, lazy images loaded before capture) keep them deterministic.
+- The heading rename touches only the panel component, its tests and `docs/testing.md`; no other
+  page shows the panel's heading, and 022's spec files are history and keep the old wording.
 - 022's contract file is history and is not edited; this feature's own contract records the
   replacement for P20.
 

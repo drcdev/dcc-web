@@ -8,16 +8,16 @@
 
 ## Expected Change Scope
 
-- [ ] CHK001 Are the visual states that must have baselines (closed, open, light, dark, phone, desktop) enumerated in the requirements? [Completeness, Spec §Assumptions, Plan §Visual baselines]
-- [ ] CHK002 Is "differ only by the heading now reading Think while you read" at xl objectively checkable, including tolerance? [Measurability, Spec §SC-005]
-- [ ] CHK003 Is the list of changing baselines consistent between the spec's assumptions and the plan's eight images? [Consistency, Spec §Assumptions, Plan §Visual baselines]
-- [ ] CHK004 Are baselines for tablet widths (768 px) and the open state required or deliberately excluded? [Gap, Spec §User Story 1]
-- [ ] CHK005 Is it stated that any baseline diff beyond the named set counts as a regression? [Clarity, Plan §Constitution Check II]
+- [x] CHK001 Are the visual states that must have baselines (closed, open, light, dark, phone, desktop) enumerated in the requirements? [Completeness, Spec §Assumptions, Plan §Visual baselines]
+- [x] CHK002 Is "differ only by the heading now reading Think while you read" at xl objectively checkable, including tolerance? [Measurability, Spec §SC-005]
+- [x] CHK003 Is the list of changing baselines consistent between the spec's assumptions and the plan's eight images? [Consistency, Spec §Assumptions, Plan §Visual baselines]
+- [x] CHK004 Are baselines for tablet widths (768 px) and the open state required or deliberately excluded? [Gap, Spec §User Story 1]
+- [x] CHK005 Is it stated that any baseline diff beyond the named set counts as a regression? [Clarity, Plan §Constitution Check II]
 
 ## Platform and Process
 
-- [ ] CHK006 Are macOS and Linux refresh requirements stated, with the source of truth for CI identified? [Completeness, Spec §Assumptions]
-- [ ] CHK007 Are requirements for stable fixture content (post, questions text, fonts, lazy images) stated so baselines are deterministic? [Gap]
-- [ ] CHK008 Is the interaction between this feature's baseline changes and sibling worktrees touching the same post-template images documented? [Dependency, Plan §Risks]
-- [ ] CHK009 Is the heading rename's effect on other pages, tests and docs referencing "Think before you read" bounded in scope? [Coverage, Spec §FR-002, §FR-014]
-- [ ] CHK010 Is the visual-regression layer's role distinguished from behavioural layers to avoid duplicate coverage (Development Workflow test placement)? [Consistency, Plan §Tests]
+- [x] CHK006 Are macOS and Linux refresh requirements stated, with the source of truth for CI identified? [Completeness, Spec §Assumptions]
+- [x] CHK007 Are requirements for stable fixture content (post, questions text, fonts, lazy images) stated so baselines are deterministic? [Gap]
+- [x] CHK008 Is the interaction between this feature's baseline changes and sibling worktrees touching the same post-template images documented? [Dependency, Plan §Risks]
+- [x] CHK009 Is the heading rename's effect on other pages, tests and docs referencing "Think before you read" bounded in scope? [Coverage, Spec §FR-002, §FR-014]
+- [x] CHK010 Is the visual-regression layer's role distinguished from behavioural layers to avoid duplicate coverage (Development Workflow test placement)? [Consistency, Plan §Tests]
