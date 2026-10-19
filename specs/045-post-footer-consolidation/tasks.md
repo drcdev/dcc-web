@@ -136,3 +136,9 @@ US1 builds the box and US2 the caption; US3 proves nothing regressed.
 
 MVP is Phase 2 (US1): one box, divider, gaps and edges. Add the caption (US2), then the focus-ring
 fix and regression proof (US3), then baselines and the gate. Each phase is sized for one subagent.
+
+---
+
+## Phase 6: Convergence
+
+- [ ] T033 Amend the wording of FR-011 in `specs/045-post-footer-consolidation/spec.md` (and the matching F10 row in `contracts/post-footer.md` if it repeats it) to match the delivered page: the Share button's script is Astro's processed module, which Astro inlines into the built page as a `<script type="module">` (as on `main` before 045) and which the page's Astro-generated CSP `<meta>` allows by hash (`astro.config.mjs` `security.csp`); its source is unchanged, so the emitted module and its byte count are the same. Replace "loaded from the site's own origin" and qualify "no inline script" as "no inline script other than that unchanged Share module", consistent with the existing guard in `tests/build/blog-listing.test.ts` ("the post footer block and the CSP"). Documentation only: no code, test or `public/_headers` change, per FR-011 (contradicts)
