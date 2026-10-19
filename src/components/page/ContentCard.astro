@@ -1,0 +1,12 @@
+---
+// The content card every standalone page draws its body in (spec 050;
+// contracts/content-card.md). One box in both themes: only colours change with the theme, so
+// switching theme never moves the text. No props; the default slot is the page body.
+---
+
+<section
+  id="content-section"
+  class="prose lg:prose-lg dark:prose-invert prose-accent mx-auto mb-8 max-w-screen-lg rounded-2xl border border-dusk-200/80 bg-white p-4 shadow-xs sm:p-6 md:p-8 dark:border-dusk-700/80 dark:bg-dusk-800"
+>
+  <slot />
+</section>
