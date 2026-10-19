@@ -8,44 +8,44 @@
 
 ## Structure and Reading Order
 
-- [ ] CHK001 Is the heading outline of the page (title h1, "Before you write" h2, "Send a message" h2) specified, including the heading level of the success panel's heading? [Completeness, Spec §FR-001a]
-- [ ] CHK002 Is the requirement that DOM order equals visual order stated for every width, with the full sequence enumerated? [Clarity, Spec §FR-003]
-- [ ] CHK003 Are landmark or region requirements for the note and form columns (e.g., whether the note is a labelled region) defined or explicitly excluded? [Gap]
-- [ ] CHK004 Is the accessible name of the quick-links group (list, nav, or plain paragraph) specified? [Gap, Spec §FR-007]
-- [ ] CHK005 Is the page `<title>` requirement stated, or explicitly unchanged? [Gap]
+- [x] CHK001 Is the heading outline of the page (title h1, "Before you write" h2, "Send a message" h2) specified, including the heading level of the success panel's heading? [Completeness, Spec §FR-001a]
+- [x] CHK002 Is the requirement that DOM order equals visual order stated for every width, with the full sequence enumerated? [Clarity, Spec §FR-003]
+- [x] CHK003 Are landmark or region requirements for the note and form columns (e.g., whether the note is a labelled region) defined or explicitly excluded? [Gap]
+- [x] CHK004 Is the accessible name of the quick-links group (list, nav, or plain paragraph) specified? [Gap, Spec §FR-007]
+- [x] CHK005 Is the page `<title>` requirement stated, or explicitly unchanged? [Gap]
 
 ## Links and Icons
 
-- [ ] CHK006 Is "decorative and hidden from screen readers" defined precisely enough to be objectively checked for all three icons? [Measurability, Spec §FR-007]
-- [ ] CHK007 Is the accessible name of each quick link defined so it is unique and meaningful out of context (GitHub, LinkedIn, the address)? [Clarity, Spec §FR-007]
-- [ ] CHK008 Is the behaviour of links that open in the same tab versus the privacy link that opens in a new tab described consistently, including any new-tab warning? [Consistency, Spec §FR-007, §FR-008]
-- [ ] CHK009 Are link-purpose requirements met for the mailto link, given that it launches an external mail client (indicated in text or not)? [Gap, WCAG 2.4.4]
-- [ ] CHK010 Is the link's visible text required to match its accessible name (WCAG 2.5.3 Label in Name)? [Gap]
+- [x] CHK006 Is "decorative and hidden from screen readers" defined precisely enough to be objectively checked for all three icons? [Measurability, Spec §FR-007]
+- [x] CHK007 Is the accessible name of each quick link defined so it is unique and meaningful out of context (GitHub, LinkedIn, the address)? [Clarity, Spec §FR-007]
+- [x] CHK008 Is the behaviour of links that open in the same tab versus the privacy link that opens in a new tab described consistently, including any new-tab warning? [Consistency, Spec §FR-007, §FR-008]
+- [x] CHK009 Are link-purpose requirements met for the mailto link, given that it launches an external mail client (indicated in text or not)? [Gap, WCAG 2.4.4]
+- [x] CHK010 Is the link's visible text required to match its accessible name (WCAG 2.5.3 Label in Name)? [Gap]
 
 ## Keyboard, Focus and Targets
 
-- [ ] CHK011 Is visible focus on the new note links quantified (contrast and indicator size) rather than only "visible"? [Clarity, Spec §FR-015]
-- [ ] CHK012 Are focus-not-obscured requirements (WCAG 2.4.11) addressed for sticky headers and in-page focus moves to the success panel? [Gap]
-- [ ] CHK013 Is the minimum target size (WCAG 2.5.8, 24 px) specified for the quick links on touch widths? [Gap]
-- [ ] CHK014 Is focus placement defined for the success panel when the note column remains and the page height shrinks? [Coverage, Spec §Edge Cases, §FR-014]
-- [ ] CHK015 Are tab-order requirements stated for the transition across the 1024 px breakpoint (no reordering through CSS order)? [Consistency, Spec §FR-003]
+- [x] CHK011 Is visible focus on the new note links quantified (contrast and indicator size) rather than only "visible"? [Clarity, Spec §FR-015]
+- [x] CHK012 Are focus-not-obscured requirements (WCAG 2.4.11) addressed for sticky headers and in-page focus moves to the success panel? [Gap]
+- [x] CHK013 Is the minimum target size (WCAG 2.5.8, 24 px) specified for the quick links on touch widths? [Gap]
+- [x] CHK014 Is focus placement defined for the success panel when the note column remains and the page height shrinks? [Coverage, Spec §Edge Cases, §FR-014]
+- [x] CHK015 Are tab-order requirements stated for the transition across the 1024 px breakpoint (no reordering through CSS order)? [Consistency, Spec §FR-003]
 
 ## Contrast, Themes and Zoom
 
-- [ ] CHK016 Are contrast thresholds named (4.5:1 text, 3:1 icons and focus indicators) for the note, links and icons in both themes? [Measurability, Spec §FR-015]
-- [ ] CHK017 Is the new envelope icon's contrast requirement defined, given it is decorative yet adjacent to text? [Gap, Spec §FR-007]
-- [ ] CHK018 Are reflow requirements (WCAG 1.4.10 at 320 px) and 200% text resize or zoom behaviour stated for the two-column layout? [Coverage, Spec §FR-002]
-- [ ] CHK019 Is text-spacing tolerance (WCAG 1.4.12) addressed for the note and wrapped error messages? [Gap]
-- [ ] CHK020 Is behaviour with reduced-motion and forced-colors modes specified, or declared out of scope? [Gap]
+- [x] CHK016 Are contrast thresholds named (4.5:1 text, 3:1 icons and focus indicators) for the note, links and icons in both themes? [Measurability, Spec §FR-015]
+- [x] CHK017 Is the new envelope icon's contrast requirement defined, given it is decorative yet adjacent to text? [Gap, Spec §FR-007]
+- [x] CHK018 Are reflow requirements (WCAG 1.4.10 at 320 px) and 200% text resize or zoom behaviour stated for the two-column layout? [Coverage, Spec §FR-002]
+- [x] CHK019 Is text-spacing tolerance (WCAG 1.4.12) addressed for the note and wrapped error messages? [Gap]
+- [x] CHK020 Is behaviour with reduced-motion and forced-colors modes specified, or declared out of scope? [Gap]
 
 ## Form Behaviour Parity
 
-- [ ] CHK021 Is "exactly as now" for error announcements enumerated by the behaviours it covers (status line, aria-describedby, focus to first invalid)? [Ambiguity, Spec §FR-014]
-- [ ] CHK022 Does the spec say whether the privacy notice remains programmatically associated with the form after moving above the fields? [Gap, Spec §FR-008]
-- [ ] CHK023 Is the no-JavaScript notice's position and announcement defined within the new column order? [Coverage, Spec §US1-5]
-- [ ] CHK024 Are accessible authentication, redundant entry and consistent help (WCAG 2.2 criteria 3.3.7, 3.3.8, 3.2.6) assessed for the form and spam check? [Gap]
+- [x] CHK021 Is "exactly as now" for error announcements enumerated by the behaviours it covers (status line, aria-describedby, focus to first invalid)? [Ambiguity, Spec §FR-014]
+- [x] CHK022 Does the spec say whether the privacy notice remains programmatically associated with the form after moving above the fields? [Gap, Spec §FR-008]
+- [x] CHK023 Is the no-JavaScript notice's position and announcement defined within the new column order? [Coverage, Spec §US1-5]
+- [x] CHK024 Are accessible authentication, redundant entry and consistent help (WCAG 2.2 criteria 3.3.7, 3.3.8, 3.2.6) assessed for the form and spam check? [Gap]
 
 ## Acceptance Criteria Quality
 
-- [ ] CHK025 Is "zero automated accessibility violations" scoped to named tools, rule sets, themes and widths, and is the coverage of manual-only criteria stated? [Measurability, Spec §SC-004]
-- [ ] CHK026 Is the screen-reader and keyboard walkthrough in User Story 1 backed by a measurable criterion rather than "reach the note first"? [Measurability, Spec §US1-4]
+- [x] CHK025 Is "zero automated accessibility violations" scoped to named tools, rule sets, themes and widths, and is the coverage of manual-only criteria stated? [Measurability, Spec §SC-004]
+- [x] CHK026 Is the screen-reader and keyboard walkthrough in User Story 1 backed by a measurable criterion rather than "reach the note first"? [Measurability, Spec §US1-4]

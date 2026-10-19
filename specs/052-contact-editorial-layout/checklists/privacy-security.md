@@ -8,38 +8,38 @@
 
 ## Form Behaviour Preservation
 
-- [ ] CHK001 Is the list of unchanged form elements complete, including the hidden trap field's name, position and hiding method? [Completeness, Spec §FR-011]
-- [ ] CHK002 Is it stated that the same-origin and API request shape remain unchanged by the markup move? [Gap, Spec §Out of scope]
-- [ ] CHK003 Is the consent box requirement preserved with its privacy link, and is its relation to the separate privacy notice clear? [Consistency, Spec §FR-008, §FR-011]
-- [ ] CHK004 Is it defined whether the trap field remains reachable only by bots at the new layout (not visible, not focusable, not announced)? [Clarity, Spec §FR-011]
-- [ ] CHK005 Are the failure messages that must remain unchanged enumerated rather than described as "the same as today"? [Ambiguity, Spec §US3-5, §FR-014]
+- [x] CHK001 Is the list of unchanged form elements complete, including the hidden trap field's name, position and hiding method? [Completeness, Spec §FR-011]
+- [x] CHK002 Is it stated that the same-origin and API request shape remain unchanged by the markup move? [Gap, Spec §Out of scope]
+- [x] CHK003 Is the consent box requirement preserved with its privacy link, and is its relation to the separate privacy notice clear? [Consistency, Spec §FR-008, §FR-011]
+- [x] CHK004 Is it defined whether the trap field remains reachable only by bots at the new layout (not visible, not focusable, not announced)? [Clarity, Spec §FR-011]
+- [x] CHK005 Are the failure messages that must remain unchanged enumerated rather than described as "the same as today"? [Ambiguity, Spec §US3-5, §FR-014]
 
 ## Turnstile and CSP
 
-- [ ] CHK006 Is "loads only after the first interaction" defined by which events count (focus, input, pointer) and which do not? [Clarity, Spec §FR-013]
-- [ ] CHK007 Is the requirement that the CSP allowance stays scoped to this page only measurable, and is the guarantee that no other page gains it stated? [Measurability, Spec §FR-013]
-- [ ] CHK008 Is it stated that the new note, icon and mailto link add no inline script, inline style needing a CSP change, or third-party origin? [Gap, Spec §FR-016]
-- [ ] CHK009 Is the spam check's position within the form column constrained so a wider or narrower column cannot clip its widget? [Gap]
-- [ ] CHK010 Are the requirements for the spam-check refusal and unavailable states unchanged in the narrow-column case? [Coverage, Spec §US3-5]
+- [x] CHK006 Is "loads only after the first interaction" defined by which events count (focus, input, pointer) and which do not? [Clarity, Spec §FR-013]
+- [x] CHK007 Is the requirement that the CSP allowance stays scoped to this page only measurable, and is the guarantee that no other page gains it stated? [Measurability, Spec §FR-013]
+- [x] CHK008 Is it stated that the new note, icon and mailto link add no inline script, inline style needing a CSP change, or third-party origin? [Gap, Spec §FR-016]
+- [x] CHK009 Is the spam check's position within the form column constrained so a wider or narrower column cannot clip its widget? [Gap]
+- [x] CHK010 Are the requirements for the spam-check refusal and unavailable states unchanged in the narrow-column case? [Coverage, Spec §US3-5]
 
 ## Published Email Address
 
-- [ ] CHK011 Is the decision to publish contact@doncoleman.ca on the page reconciled with the forwarding-address policy and with the constitution's rule that contact email goes only to verified destinations? [Consistency, Spec §Assumptions]
-- [ ] CHK012 Is the exposure of the address to scrapers accepted as an assumption, with mitigation or non-mitigation stated? [Assumption, Spec §FR-007]
-- [ ] CHK013 Is the single source of truth for the address defined, so the contact page, privacy policy and terms of use cannot drift apart? [Gap, Spec §FR-007]
-- [ ] CHK014 Is the relationship between mailing Don directly and the form's privacy notice (retention, deletion on request) stated, since direct email bypasses the notice? [Gap, Spec §FR-008]
-- [ ] CHK015 Is it specified that the mailto link carries no prefilled subject, body or other data? [Clarity, Spec §FR-007]
+- [x] CHK011 Is the decision to publish contact@doncoleman.ca on the page reconciled with the forwarding-address policy and with the constitution's rule that contact email goes only to verified destinations? [Consistency, Spec §Assumptions]
+- [x] CHK012 Is the exposure of the address to scrapers accepted as an assumption, with mitigation or non-mitigation stated? [Assumption, Spec §FR-007]
+- [x] CHK013 Is the single source of truth for the address defined, so the contact page, privacy policy and terms of use cannot drift apart? [Gap, Spec §FR-007]
+- [x] CHK014 Is the relationship between mailing Don directly and the form's privacy notice (retention, deletion on request) stated, since direct email bypasses the notice? [Gap, Spec §FR-008]
+- [x] CHK015 Is it specified that the mailto link carries no prefilled subject, body or other data? [Clarity, Spec §FR-007]
 
 ## Privacy Notice and Data Handling
 
-- [ ] CHK016 Is the privacy notice required to stay word for word, and does "unless the plan finds a reason to trim it" have a bound? [Ambiguity, Spec §Assumptions]
-- [ ] CHK017 Is `?project=` handling defined as untrusted input, including cleaning rules, 100-character cap and plain-text rendering? [Clarity, Spec §FR-012]
-- [ ] CHK018 Are requirements stated that no analytics, logging or tracking is added by the note or icons? [Gap, Spec §FR-016]
-- [ ] CHK019 Is the note's copy constrained from promising reply times or handling commitments that conflict with the privacy policy? [Consistency, Spec §FR-005]
-- [ ] CHK020 Is the exclusion of Don's job title from the note traceable to its rationale and checkable? [Measurability, Spec §FR-010]
+- [x] CHK016 Is the privacy notice required to stay word for word, and does "unless the plan finds a reason to trim it" have a bound? [Ambiguity, Spec §Assumptions]
+- [x] CHK017 Is `?project=` handling defined as untrusted input, including cleaning rules, 100-character cap and plain-text rendering? [Clarity, Spec §FR-012]
+- [x] CHK018 Are requirements stated that no analytics, logging or tracking is added by the note or icons? [Gap, Spec §FR-016]
+- [x] CHK019 Is the note's copy constrained from promising reply times or handling commitments that conflict with the privacy policy? [Consistency, Spec §FR-005]
+- [x] CHK020 Is the exclusion of Don's job title from the note traceable to its rationale and checkable? [Measurability, Spec §FR-010]
 
 ## Content and Dependencies
 
-- [ ] CHK021 Is it defined that the note is static content authored in the content file, with no HTML injection path from the query string? [Completeness, Spec §FR-009]
-- [ ] CHK022 Is the dependency on the shared social links list (external profile URLs) documented with the failure mode if an entry is removed? [Dependency, Spec §FR-007]
-- [ ] CHK023 Is the fixture page behaviour (form without the note) specified so the test site does not diverge from production security headers? [Coverage, Spec §Edge Cases]
+- [x] CHK021 Is it defined that the note is static content authored in the content file, with no HTML injection path from the query string? [Completeness, Spec §FR-009]
+- [x] CHK022 Is the dependency on the shared social links list (external profile URLs) documented with the failure mode if an entry is removed? [Dependency, Spec §FR-007]
+- [x] CHK023 Is the fixture page behaviour (form without the note) specified so the test site does not diverge from production security headers? [Coverage, Spec §Edge Cases]

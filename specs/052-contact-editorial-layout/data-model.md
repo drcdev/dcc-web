@@ -42,7 +42,7 @@ No storage, schema or API change. The "entities" are pieces of page content and 
 - **New field**: `contactEmail: string` on `SiteConfig`, value `contact@doncoleman.ca`, with a
   doc comment saying it is the public address shown on the contact page and published in the
   privacy policy.
-- **Invariant**: `privacy-policy.mdx` contains `mailto:${site.contactEmail}`
+- **Invariant**: `privacy-policy.mdx` and `terms-of-use.mdx` contain `mailto:${site.contactEmail}`
   (unit test, `tests/unit/site/privacy-policy.test.ts`).
 - **Not the same as** `CONTACT_DESTINATION` (`worker/src/contact/email.ts`), the delivery address
   for form emails (Principle VII). The two have the same value today but are separate facts.

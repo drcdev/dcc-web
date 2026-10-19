@@ -8,31 +8,31 @@
 
 ## Breakpoints and Columns
 
-- [ ] CHK001 Is the 1024 px breakpoint stated inclusively ("1024 and above") the same way everywhere, including the 1023 px phone test width? [Consistency, Spec §FR-001, §FR-002, §SC-002]
-- [ ] CHK002 Is "roughly a 5 to 7 split" quantified with a tolerance or exact ratio and gap size? [Ambiguity, Spec §FR-001]
-- [ ] CHK003 Is "top-aligned" defined for the first lines of both columns, given the note's h2 and the form's h2 differ in content? [Clarity, Spec §US1-1]
-- [ ] CHK004 Are requirements defined for the range between 1024 px and a narrow desktop (for example 1024 px wide with long form errors)? [Coverage, Spec §Edge Cases]
-- [ ] CHK005 Is the maximum content width referenced by value or by a named existing standard rather than "the site's existing width"? [Clarity, Spec §Assumptions]
+- [x] CHK001 Is the 1024 px breakpoint stated inclusively ("1024 and above") the same way everywhere, including the 1023 px phone test width? [Consistency, Spec §FR-001, §FR-002, §SC-002]
+- [x] CHK002 Is "roughly a 5 to 7 split" quantified with a tolerance or exact ratio and gap size? [Ambiguity, Spec §FR-001]
+- [x] CHK003 Is "top-aligned" defined for the first lines of both columns, given the note's h2 and the form's h2 differ in content? [Clarity, Spec §US1-1]
+- [x] CHK004 Are requirements defined for the range between 1024 px and a narrow desktop (for example 1024 px wide with long form errors)? [Coverage, Spec §Edge Cases]
+- [x] CHK005 Is the maximum content width referenced by value or by a named existing standard rather than "the site's existing width"? [Clarity, Spec §Assumptions]
 
 ## Stacked Layout
 
-- [ ] CHK006 Is the spacing between stacked note and form defined, and distinct from the wide-screen column gap? [Gap]
-- [ ] CHK007 Is the supported minimum width consistent between "320 px and up" and the 375 px test width? [Consistency, Spec §FR-002, §US2]
-- [ ] CHK008 Are line-length requirements for the note and form fields stated (readable width at both layouts)? [Gap, Spec §US1]
-- [ ] CHK009 Is the behaviour of the quick links when the three do not fit one line (wrapping, stacking) specified? [Gap, Spec §FR-007]
+- [x] CHK006 Is the spacing between stacked note and form defined, and distinct from the wide-screen column gap? [Gap]
+- [x] CHK007 Is the supported minimum width consistent between "320 px and up" and the 375 px test width? [Consistency, Spec §FR-002, §US2]
+- [x] CHK008 Are line-length requirements for the note and form fields stated (readable width at both layouts)? [Gap, Spec §US1]
+- [x] CHK009 Is the behaviour of the quick links when the three do not fit one line (wrapping, stacking) specified? [Gap, Spec §FR-007]
 
 ## Content Extremes
 
-- [ ] CHK010 Is the long email address wrapping or overflow behaviour specified for 320 px? [Edge Case, Spec §FR-007]
-- [ ] CHK011 Are the `?project=` 100-character wrapping requirements consistent in both column widths? [Consistency, Spec §Edge Cases]
-- [ ] CHK012 Are note-longer-than-form and form-longer-than-note cases both addressed, including sticky or independent column behaviour? [Gap]
-- [ ] CHK013 Is the success panel height change specified for both layouts, with the note column's alignment while the panel shows? [Coverage, Spec §Edge Cases]
-- [ ] CHK014 Is the 1920 px and larger behaviour defined for centring and surrounding whitespace? [Clarity, Spec §Edge Cases]
+- [x] CHK010 Is the long email address wrapping or overflow behaviour specified for 320 px? [Edge Case, Spec §FR-007]
+- [x] CHK011 Are the `?project=` 100-character wrapping requirements consistent in both column widths? [Consistency, Spec §Edge Cases]
+- [x] CHK012 Are note-longer-than-form and form-longer-than-note cases both addressed, including sticky or independent column behaviour? [Gap]
+- [x] CHK013 Is the success panel height change specified for both layouts, with the note column's alignment while the panel shows? [Coverage, Spec §Edge Cases]
+- [x] CHK014 Is the 1920 px and larger behaviour defined for centring and surrounding whitespace? [Clarity, Spec §Edge Cases]
 
 ## Acceptance Criteria Quality
 
-- [ ] CHK015 Is "without scrolling on a 1280 x 800 screen" defined with respect to header height, browser chrome and text zoom? [Measurability, Spec §SC-001]
-- [ ] CHK016 Is the 10-second findability criterion measurable and attributable to a test method? [Measurability, Spec §SC-005]
-- [ ] CHK017 Are the widths and themes in which baselines must be refreshed enumerated (desktop, phone, light, dark, both platforms)? [Completeness, Spec §Assumptions]
-- [ ] CHK018 Is the performance budget constraint tied to named metrics, given the added icon and layout? [Measurability, Spec §FR-016]
-- [ ] CHK019 Is the fixture-page layout (form alone filling its space) specified for both widths? [Coverage, Spec §Edge Cases]
+- [x] CHK015 Is "without scrolling on a 1280 x 800 screen" defined with respect to header height, browser chrome and text zoom? [Measurability, Spec §SC-001]
+- [x] CHK016 Is the 10-second findability criterion measurable and attributable to a test method? [Measurability, Spec §SC-005]
+- [x] CHK017 Are the widths and themes in which baselines must be refreshed enumerated (desktop, phone, light, dark, both platforms)? [Completeness, Spec §Assumptions]
+- [x] CHK018 Is the performance budget constraint tied to named metrics, given the added icon and layout? [Measurability, Spec §FR-016]
+- [x] CHK019 Is the fixture-page layout (form alone filling its space) specified for both widths? [Coverage, Spec §Edge Cases]

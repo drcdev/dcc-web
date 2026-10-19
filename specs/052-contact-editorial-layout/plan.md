@@ -45,7 +45,7 @@ dependency, endpoint or service is added.
 
 | # | Principle | Status | How this plan meets it |
 |---|-----------|--------|------------------------|
-| I | Test-First | PASS | Tests are written and seen to fail before the component changes. **Component** (Container API, `ContactForm.test.ts`): contract rows L1–L10 (note `h2` and its level, `aria-labelledby`, quick links from `socialNavigation` in the same tab, a `mailto:` with the address as text, `aria-hidden` icons, grid classes, DOM order, privacy slot placement) and N1–N2 (no note → no grid, form as today). **Unit**: the shown address equals the address the privacy policy publishes; `contact.mdx` puts the note in `slot="note"` with the privacy link outside it. **E2E** (`contact.spec.ts`, real `/contact/`): columns side by side, top-aligned and 5:7 at 1024/1280 px; stacked at 1023/375 px; no sideways scroll at 1023; quick links before Name in tab order; valid send and `?project=` at 390 px. **A11y and visual** run on the template (existing `TEMPLATES` loop, the "contact form states" block, the `contact-form` fixture subject). Layers and second-layer reasons are in research.md R10. |
+| I | Test-First | PASS | Tests are written and seen to fail before the component changes. **Component** (Container API, `ContactForm.test.ts`): contract rows L1–L11 (note `h2` and its level, `aria-labelledby`, quick links from `socialNavigation` in the same tab, a `mailto:` with the address as text, `aria-hidden` icons, grid classes, DOM order, privacy slot placement) and N1–N2 (no note → no grid, form as today). **Unit**: the shown address equals the address the privacy policy publishes; `contact.mdx` puts the note in `slot="note"` with the privacy link outside it. **E2E** (`contact.spec.ts`, real `/contact/`): columns side by side, top-aligned and 5:7 at 1024/1280 px; stacked at 1023/375 px; no sideways scroll at 1023; quick links before Name in tab order; valid send and `?project=` at 390 px. **A11y and visual** run on the template (existing `TEMPLATES` loop, the "contact form states" block, the `contact-form` fixture subject). Layers and second-layer reasons are in research.md R10. |
 | II | Automated Release Gate | PASS | Nothing is skipped or loosened. Eight baselines are refreshed, not weakened or removed, and the threshold stays. The full `pnpm run verify` runs before the PR (after asking Don, per the local gate notes). |
 | III | Human Review of Every Change | PASS | One PR from `drc-agents`, auto-merge armed after the final push. The note wording (FR-004 to FR-006, FR-010) and a real send on the preview are `[PREVIEW-CHECK]` items. |
 | IV | First-Party Before Custom | PASS | Every capability uses an Astro or Tailwind first-party feature (table below). The Astro Docs MCP was available and used, and research.md cites each page. There is no custom code beyond component markup and one config field. |
@@ -103,7 +103,7 @@ src/
 tests/
 ├── component/sections/ContactForm.test.ts  # EDIT: rows L1–L10, N1–N2 (render with named slots)
 ├── component/sections/helpers.ts           # EDIT: render() accepts named slots (keeps the default-slot signature)
-├── unit/site/privacy-policy.test.ts        # EDIT: privacy policy publishes mailto:${site.contactEmail}
+├── unit/site/privacy-policy.test.ts        # EDIT: privacy policy and terms of use publish mailto:${site.contactEmail}
 ├── unit/content/site-pages.test.ts         # EDIT: contact.mdx note is in slot="note"; privacy link outside it
 ├── unit/site/fixture-posts.test.ts         # EDIT: "<ContactForm />" → "<ContactForm" (fixture is no longer self-closing)
 ├── fixtures/pages/contact-form.mdx         # EDIT: ASCII fixture note + fixture privacy paragraph
@@ -127,9 +127,15 @@ component that already owns the form, so no new section, layout or route is adde
 - **Slot text styles**: the wrapper is `not-prose`, so the slots use explicit utilities (R5). The
   note body uses the Now "open to" pattern; the privacy slot uses `text-sm` and the form's `link`
   classes, so the existing "privacy note" e2e test stays green.
-- **Quick links**: a vertical list (`flex flex-col gap-3`). Each item is `inline-flex items-center
-  gap-2`, with a `size-5` icon and the label, and the form's focus outline. The `icons` map is keyed
-  by label, like `SiteFooter.astro`.
+- **Quick links**: a vertical list (`flex flex-col gap-3`), one link per line at every width. Each
+  item is `inline-flex min-h-6 items-center gap-2 break-words` (at least 24 px tall, WCAG 2.5.8; the
+  address may wrap at 320 px), with a `size-5` icon and the label, and the form's focus outline.
+  The `icons` map is keyed by label, like `SiteFooter.astro`; a `socialNavigation` entry with no
+  icon fails the component test (FR-007c).
+- **Line length**: the note body gets `max-w-prose lg:max-w-none`, so stacked note text stays near
+  65 characters a line; in the 5-part column it is already narrower (FR-017).
+- **Spam-check width**: at 1024 px the form column is about 7/12 of the content width less the
+  48 px gap (over 500 px), wider than the 300 px Turnstile widget, so it cannot clip (FR-017).
 - **Script**: untouched. It finds elements by id, and no id changes.
 - **Copy** (content file, for Don to confirm on the preview): one or two short paragraphs. They say
   Don is open to speaking and mentoring conversations about systems leadership and AI experiments,

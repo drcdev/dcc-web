@@ -62,12 +62,13 @@ the privacy slot and the page file shape. Row ids (`L1`…) are for test titles.
 | L2 | Below `lg` (1024 px) the two columns are blocks in source order. The note is first, and the form column has a top margin (FR-002). |
 | L3 | DOM order is the note `h2`, the note body, `[data-contact-links]`, `#contact-form-heading`, `[data-contact-privacy]`, `#contact-js-required`, then the fields. No CSS reorders them, and no element has a positive `tabindex` (FR-003). |
 | L4 | `#contact-note-heading` is an `h2` with the exact text "Before you write". It is the accessible name of `section[data-contact-note]` (FR-001a). |
-| L5 | `[data-contact-links]` holds exactly three links in this order: one per `socialNavigation` entry (`href` and visible label from the entry), then `mailto:` + `site.contactEmail` with the address as its visible text. No link has a `target` attribute (FR-007). |
+| L5 | `[data-contact-links]` holds exactly three links in this order: one per `socialNavigation` entry (`href` and visible label from the entry), then `mailto:` + `site.contactEmail` with the address as its visible text and no query string (no subject or body). No link has a `target` attribute (FR-007, FR-007b). Every `socialNavigation` entry has an icon (FR-007c). |
 | L6 | Every icon in `[data-contact-links]` is an `svg` with `aria-hidden="true"`. The link's accessible name is its visible text (FR-007). GitHub and LinkedIn use `src/icons/github.svg` and `linkedin.svg`. Email uses the new `src/icons/mail.svg`. |
 | L7 | The note links have a visible focus outline (`focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500`, `dark:focus-visible:outline-accent-400`). In both themes they use the colour pairs the form and the home "open to" line already use (FR-015). |
 | L8 | `[data-contact-privacy]` is inside `#contact-form`, after `#contact-form-heading` and before `#contact-js-required`. Its links are underlined (FR-008; e2e "privacy note"). |
 | L9 | `#contact-success` is inside `[data-contact-form-column]`. When it replaces the form, the note column does not move (FR-014; edge case "Success panel height"). |
 | L10 | The note and form columns have `min-w-0`, so a 100-character `?project=` value or a long error wraps inside its column and does not widen it (edge cases). |
+| L11 | Each quick link is at least 24 px tall (`min-h-6`) and may wrap its text (`break-words`), one link per line. The note body is `max-w-prose lg:max-w-none` (FR-007c, FR-015, FR-017). |
 
 ## Rendered markup without a `note` slot (fixture-free use, P4)
 

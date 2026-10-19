@@ -155,10 +155,11 @@ left as NEEDS CLARIFICATION; the decisions below settle how each requirement is 
 | Note column markup: `h2` text and level, `aria-labelledby`, slot rendered, quick links from `socialNavigation` (same tab), `mailto:` link with the address as text, icons `aria-hidden`, grid classes `lg:grid-cols-12` / `lg:col-span-5` / `lg:col-span-7`, DOM order note → form | Component | `tests/component/sections/ContactForm.test.ts` | — |
 | Privacy slot sits after the "Send a message" heading and before `#contact-js-required` and the first field | Component | same | — |
 | No `note` slot → no note column, no grid classes, form markup unchanged (fixture case) | Component | same | — |
-| Shown address equals the one the privacy policy publishes | Unit | `tests/unit/site/privacy-policy.test.ts` | — |
+| Shown address equals the one the privacy policy and terms of use publish (FR-007b) | Unit | `tests/unit/site/privacy-policy.test.ts` | — |
+| Every `socialNavigation` entry has a quick-link icon (FR-007c); the `mailto:` href has no query string (FR-007b) | Component | `tests/component/sections/ContactForm.test.ts` | — |
 | `contact.mdx` puts the note in `slot="note"` and keeps the privacy link outside it | Unit | `tests/unit/content/site-pages.test.ts` | — |
 | Columns side by side, top-aligned, form column wider at 1024 and 1280 px; stacked with the note above the form at 1023 and 375 px; no sideways scroll at 1023 px | E2E (only a browser computes layout) | `tests/e2e/contact.spec.ts` (project `e2e`, real `/contact/`, asserts by `data-*` hooks, no copy) | — |
-| Tab order: the quick links come before Name | E2E | same | — |
+| Tab order: the quick links come before Name, at 1280 and 375 px (SC-006) | E2E | same | — |
 | Valid send and the `?project=` line at phone width | E2E | same | Second width for SC-003: the stacked layout must not hide or cover a control. The existing journeys keep the default desktop viewport. |
 | No sideways scroll at 320/390/1280 px, JS on and off | E2E (existing) | `geometry.spec.ts`, `no-js.spec.ts` via `TEMPLATES` | Unchanged; already include `/contact/` |
 | Axe in both themes at both widths, idle and in the error/success states | A11y (existing) | `a11y.spec.ts` (`TEMPLATES` + "contact form states") | Unchanged |
