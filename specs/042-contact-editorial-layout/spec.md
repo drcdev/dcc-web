@@ -8,6 +8,16 @@
 
 **Input**: User description: "Two-column editorial layout for contact page" (GitHub issue #188). The contact page today is a short text blurb followed by a form that runs the full width of the content area, which reads as austere on a wide screen. On wide screens the page becomes two columns: on the left, a note from Don about the conversations he welcomes, when to expect a reply, where he is and which time zone he works in, and quick links to GitHub, LinkedIn and his email address; on the right, the form (Name, Email, Organization (optional), Message, the project line when the page is opened with `?project=`, the spam check and the consent box). Below 1024 px wide the two columns stack, with the note above the form. The `?project=` handling and the spam check keep working exactly as now, as do sending, validation error announcements and the success message.
 
+## Clarifications
+
+### Session 2026-10-19
+
+- Q: Which conversations should the contact note say Don welcomes (the issue lists consulting inquiries; the home "open to" line names only speaking and mentoring)? → A: Match the home line: speaking and mentoring conversations, with systems leadership and AI experiments as topics; no consulting inquiries.
+- Q: How should the note state when a visitor can expect a reply? → A: "Within a few days", as in the issue.
+- Q: How should the note show where Don is and his time zone? → A: As in the issue: "Vancouver Island, BC — Pacific Time".
+- Q: Should the note show Don's email address as a quick link? → A: Yes, a plain mailto link that shows the address contact@doncoleman.ca as its text.
+- Q: Where should the existing privacy paragraph sit on a wide screen? → A: At the top of the form column, directly above the form fields (not in the note column).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Read who Don wants to hear from, then write to him, on a wide screen (Priority: P1)
@@ -21,8 +31,8 @@ A visitor on a laptop or desktop opens the contact page. On the left they read a
 **Acceptance Scenarios**:
 
 1. **Given** a viewport 1024 px wide or wider, **When** a visitor opens the contact page, **Then** the note column is on the left, the form column is on the right, the form column is the wider of the two (roughly 7 parts to 5), and the two columns are top-aligned.
-2. **Given** the note column, **When** the visitor reads it, **Then** it names the conversations Don welcomes, says he reads every message and replies by email within a few days, says "Vancouver Island, BC" and "Pacific Time", and offers links to GitHub, LinkedIn and his email address.
-3. **Given** the note column, **When** the visitor reads it, **Then** the existing privacy notice (what typed details are used for, how long they are kept, and a link to the privacy policy that opens in a new tab) is still on the page and comes before the form fields in reading order.
+2. **Given** the note column, **When** the visitor reads it, **Then** it names the conversations Don welcomes (speaking and mentoring, on systems leadership and AI experiments), says he reads every message and replies by email within a few days, says "Vancouver Island, BC" and "Pacific Time", and offers links to GitHub, LinkedIn and his email address.
+3. **Given** the form column, **When** the visitor reads it, **Then** the existing privacy notice (what typed details are used for, how long they are kept, and a link to the privacy policy that opens in a new tab) sits at the top of the form column, directly above the form fields, and comes before them in reading order.
 4. **Given** a visitor using a screen reader or the keyboard, **When** they move through the page, **Then** they reach the note and its links first and the form second, matching the visual order.
 5. **Given** JavaScript is turned off, **When** the visitor opens the page, **Then** the note and its links are fully readable and the form shows the existing notice that sending needs JavaScript.
 
@@ -76,12 +86,12 @@ A visitor who arrives from a project story's call to action (the page opens with
 
 - **FR-001**: At viewport widths of 1024 px and above, the contact page MUST show two top-aligned columns: the note on the left and the form on the right, with the form column wider (roughly a 5 to 7 split of the content width).
 - **FR-002**: Below 1024 px, the contact page MUST show one column, with the note above the form, and MUST NOT scroll sideways at 320 px and up.
-- **FR-003**: Reading order and keyboard order MUST match the visual order at every width: page title, note, then form.
-- **FR-004**: The note MUST say which conversations Don welcomes: speaking, systems leadership and AI experiments [NEEDS CLARIFICATION: the issue also lists "consulting inquiries", but the home page's "open to" line (feature 040) deliberately names only speaking and mentoring and dropped advisory work; should the contact note name consulting inquiries, mentoring, both, or neither?].
+- **FR-003**: Reading order and keyboard order MUST match the visual order at every width: page title, note, then the form column (privacy notice, then form fields).
+- **FR-004**: The note MUST say which conversations Don welcomes, matching the home page's "open to" line: speaking and mentoring conversations, with systems leadership and AI experiments named as topics. It MUST NOT invite consulting inquiries.
 - **FR-005**: The note MUST state the response expectation in plain words: Don reads every message and replies by email within a few days.
 - **FR-006**: The note MUST state Don's location and time zone as "Vancouver Island, BC" and "Pacific Time".
-- **FR-007**: The note MUST offer links to Don's GitHub and LinkedIn profiles, taken from the same list the site footer and home page already use so the three stay in step, and a link to the email address the privacy policy and terms of use already publish (contact@doncoleman.ca).
-- **FR-008**: The note MUST keep the page's existing privacy notice (what typed details are used for, that Don keeps them only as long as needed and deletes them on request, and the link to the privacy policy that opens in a new tab), placed before the form fields in reading order.
+- **FR-007**: The note MUST offer links to Don's GitHub and LinkedIn profiles, taken from the same list the site footer and home page already use so the three stay in step, and a plain mailto link to the email address the privacy policy and terms of use already publish, with the address contact@doncoleman.ca shown as the link text.
+- **FR-008**: The page MUST keep its existing privacy notice (what typed details are used for, that Don keeps them only as long as needed and deletes them on request, and the link to the privacy policy that opens in a new tab), placed at the top of the form column directly above the form fields, not in the note column, and before the fields in reading order.
 - **FR-009**: The note's text MUST stay in the contact page's content file so Don can edit it without touching a component (Principle VI), and MUST be readable with JavaScript turned off.
 - **FR-010**: The note MUST NOT include Don's job title, and its copy MUST be plain language with no hype or filler.
 - **FR-011**: The form MUST keep every existing field, label, help text and control unchanged in content and behaviour: Name, Email, Organization (optional), Message, the consent box with its privacy policy link, the hidden trap field, the project line, the spam check, the status line, the Send button and the "Sending this form needs JavaScript" notice. No field is added or removed.
@@ -94,7 +104,8 @@ A visitor who arrives from a project story's call to action (the page opens with
 ### Key Entities
 
 - **Contact note**: the short block of text on the contact page's left column (or top, on a phone): welcomed conversations, reply expectation, location and time zone, and quick links. Edited by Don in the contact page's content file.
-- **Quick links**: GitHub and LinkedIn (from the site's existing social link list) and the public contact email address.
+- **Quick links**: GitHub and LinkedIn (from the site's existing social link list) and the public contact email address, shown as the text of a mailto link.
+- **Privacy notice**: the existing paragraph about how typed details are used, at the top of the form column above the fields. It is not part of the note.
 
 ## Success Criteria *(mandatory)*
 
@@ -110,7 +121,7 @@ A visitor who arrives from a project story's call to action (the page opens with
 
 - **Email address**: the address shown is contact@doncoleman.ca, which the privacy policy and terms of use already publish; showing it on the contact page publishes nothing new. It is a plain mail link, not a form or a script.
 - **Location and response time**: "Vancouver Island, BC — Pacific Time" and "replies by email within a few days" are Don's own words from the issue, so they are used as given. "Vancouver Island" already appears on the About page.
-- **Existing copy**: the current first paragraph ("Use this form to ask about a project, a talk, something I've written…") is replaced by the note; the privacy paragraph is kept word for word unless the plan finds a reason to trim it.
+- **Existing copy**: the current first paragraph ("Use this form to ask about a project, a talk, something I've written…") is replaced by the note; the privacy paragraph moves to the top of the form column and is kept word for word unless the plan finds a reason to trim it.
 - **Fields already present**: the issue lists Organization (optional) and a consent checkbox as if new; both already exist and are kept as they are.
 - **Width**: the two columns share the site's existing page content width (the same maximum width other pages use); the page does not get a wider container.
 - **Breakpoint**: 1024 px is the site's existing "large" breakpoint in its Tailwind theme, so the issue's grid class names are read as intent and the plan picks how to express it in the theme.
