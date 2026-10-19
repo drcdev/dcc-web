@@ -15,15 +15,50 @@ const render = () => container.renderToString(QuestionsPanel, { props: { slug: "
 const attr = (html: string, name: string) => tags(html).find((t) => name in t.attrs);
 
 describe("QuestionsPanel markup", () => {
-  it("is an aside named by the h2 'Think before you read' (P07)", async () => {
+  it("is an aside landmark named 'Think while you read' by aria-label (D03, P07 replaced)", async () => {
     const html = await render();
     const aside = attr(html, "data-questions")!;
     expect(aside.name).toBe("aside");
-    expect(aside.attrs["aria-labelledby"]).toBe("questions-heading");
-    const h2 = byName(html, "h2");
-    expect(h2).toHaveLength(1);
-    expect(h2[0]!.attrs.id).toBe("questions-heading");
-    expect(textOf(html, "h2")).toBe("Think before you read");
+    expect(aside.attrs["aria-label"]).toBe("Think while you read");
+    expect("aria-labelledby" in aside.attrs).toBe(false);
+    expect(byName(html, "h2")).toHaveLength(1);
+  });
+
+  it("has a toggle button with two exact lines and an aria-hidden chevron (D02, D04)", async () => {
+    const html = await render();
+    const toggle = attr(html, "data-questions-toggle")!;
+    expect(toggle.name).toBe("button");
+    expect(toggle.attrs.type).toBe("button");
+    expect(toggle.attrs["aria-expanded"]).toBe("false");
+    expect(toggle.attrs["aria-controls"]).toBe("questions-content");
+    const h2 = /<h2\b[^>]*>([\s\S]*?)<\/h2>/.exec(html)![1]!;
+    expect(h2).toContain("data-questions-toggle");
+    const button = /<button\b[^>]*data-questions-toggle[^>]*>([\s\S]*?)<\/button>/.exec(html)![1]!;
+    const lines = [...button.matchAll(/<span\b[^>]*>([^<]*)<\/span>/g)].map((m) => m[1]!.trim()).filter(Boolean);
+    expect(lines).toEqual(["Think while you read", "Optional AI critical thinking questions"]);
+    const svg = byName(button, "svg");
+    expect(svg).toHaveLength(1);
+    expect(svg[0]!.attrs["aria-hidden"]).toBe("true");
+  });
+
+  it("has a wide heading span reading exactly 'Think while you read' (D03)", async () => {
+    const html = await render();
+    const h2 = /<h2\b[^>]*>([\s\S]*?)<\/h2>/.exec(html)![1]!;
+    const wide = [...h2.matchAll(/<span\b([^>]*)>([^<]*)<\/span>/g)].find((m) => /xl:inline/.test(m[1]!));
+    expect(wide).toBeTruthy();
+    expect(wide![2]!.trim()).toBe("Think while you read");
+    expect(classList({ name: "span", attrs: { class: /class="([^"]*)"/.exec(wide![1]!)![1]! }, index: 0, raw: "" })).toContain("hidden");
+  });
+
+  it("wraps the content in #questions-content (D04)", async () => {
+    const html = await render();
+    const content = attr(html, "data-questions-content")!;
+    expect(content.attrs.id).toBe("questions-content");
+    const start = html.indexOf("data-questions-content");
+    for (const marker of ["Get a few questions", "data-questions-get", "data-questions-status", "data-questions-list", "data-questions-note"]) {
+      expect(html.indexOf(marker), marker).toBeGreaterThan(start);
+    }
+    expect(html.match(/aria-live=/g)).toHaveLength(1);
   });
 
   it("carries the slug and hash as data attributes (P02)", async () => {
@@ -43,9 +78,10 @@ describe("QuestionsPanel markup", () => {
     const html = await render();
     expect(html).toContain("Get a few questions to keep in mind while you read this post.");
     expect(html).toContain("These questions were written by an AI model from the post text. They may be imperfect.");
-    expect(textOf(html, "button")).toBe("Get questions");
+    expect(textOf(html, "button")).toContain("Think while you read");
+    expect(html).toMatch(/data-questions-get[^>]*>\s*Get questions\s*</);
     const buttons = byName(html, "button");
-    expect(buttons).toHaveLength(2);
+    expect(buttons).toHaveLength(3);
     expect(html).toMatch(/data-questions-new[^>]*>\s*New questions\s*</);
   });
 
@@ -71,7 +107,7 @@ describe("QuestionsPanel markup", () => {
 
   it("orders heading, sentence, buttons, status, list, note (P09)", async () => {
     const html = await render();
-    const order = ["<h2", "Get a few questions", "data-questions-get", "data-questions-new", "data-questions-status", "data-questions-list", "data-questions-note"];
+    const order = ["<h2", "data-questions-content", "Get a few questions", "data-questions-get", "data-questions-new", "data-questions-status", "data-questions-list", "data-questions-note"];
     const positions = order.map((marker) => html.indexOf(marker));
     expect(positions.every((p) => p >= 0)).toBe(true);
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
@@ -88,7 +124,7 @@ describe("QuestionsPanel markup", () => {
     }
   });
 
-  it("has type=button on both buttons so nothing submits", async () => {
+  it("has type=button on every button so nothing submits", async () => {
     for (const button of byName(await render(), "button")) expect(button.attrs.type).toBe("button");
   });
 });
