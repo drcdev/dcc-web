@@ -252,8 +252,10 @@ author link and each share link; on a device with the system share feature, use 
   header contract, so LinkedIn receives at most the site's origin, never the post's path. The link
   adds no `target`, `rel`, `ping` or `referrerpolicy` attribute of its own.
 - **FR-011**: The change MUST add no client-side script beyond the Share button's existing
-  bundled script (the same module, the same number of bytes, loaded from the site's own origin), no
-  inline script (including event-handler attributes) and no inline style (including `style`
+  bundled script (the same module, the same number of bytes; Astro inlines it into the built page
+  as a `<script type="module">`, as on `main` before this feature, and the page's Astro-generated
+  CSP `<meta>` allows it by hash), no inline script other than that unchanged Share module
+  (including event-handler attributes) and no inline style (including `style`
   attributes in the generated markup, not only in authored source), no third-party resource and no
   tracking. "No tracking" means: no analytics or click events, no tracking or campaign parameters
   (such as `utm_*`) in any link, no beacons, pings or pixel requests, and no cookies. This follows

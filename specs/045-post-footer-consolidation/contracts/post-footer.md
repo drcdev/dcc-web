@@ -38,7 +38,7 @@ section[data-related]   (outside the article, unchanged, mt-10)
 | F7 | Wrapper top minus the bottom of its previous sibling, and the "Related posts" heading's top minus the wrapper's bottom, are each 40 px (±1) at 375 and 1440 px. | FR-007, SC-003 |
 | F8 | Below 768 px: photo above centred author text, views note, share heading and centred share links. From 768 px: photo left of left-aligned author text; views note left-aligned and starting at the author text's left edge; share heading's left edge at the box's inner left edge (the photo's left edge, ±1 px); share links right-aligned on the same row, vertically centred with the heading. | FR-008 |
 | F9 | Views note: `font-size` smaller than the author lines', italic; contrast against the box ≥ 4.5:1 in both themes (axe). | FR-003, FR-015, SC-004 |
-| F10 | Links, Share button and script behaviour unchanged (specs/039 A7, A8; 008 Share rules); no new script, inline style or external resource; `public/_headers` unchanged. | FR-009 to FR-011, SC-005 |
+| F10 | Links, Share button and script behaviour unchanged (specs/039 A7, A8; 008 Share rules); no new script (the Share module stays Astro's inlined, hash-allowed module), no inline script other than it, no inline style or external resource; `public/_headers` unchanged. | FR-009 to FR-011, SC-005 |
 | F11 | With scripts off, every part of the block is present and both share links work. | FR-012 |
 | F12 | Forced colours: the wrapper's border, the divider, the views note and all links are visible. | FR-015 |
 | F13 | Share links and Share button: focus ring 2 px, offset 2 px, `rust-600` in the light theme and `rust-300` in the dark theme (≥ 3:1 on the box); author links keep the site-wide accent ring. | FR-015, FR-015a |
