@@ -253,7 +253,7 @@ Task: "E2E test in tests/e2e/career-timeline.spec.ts"
 
 ## Phase 11: "Awards" reads "Recognition"
 
-- [ ] T080 Fix the career e2e helpers: `stepsFor` must match the `|`-joined `data-categories` (the contract), and the no-Achievements test must assert no `achievements` button.
-- [ ] T081 Update tests first: filter labels All, Leadership, Recognition, Volunteer; list heading "Recognition"; status "M of N roles have recognition." / "1 of N roles has recognition.".
-- [ ] T082 Change the button label, the list heading and the status wording in `CareerTimeline.astro` and `career-filter.ts`; ids and the `awards` field unchanged.
-- [ ] T083 Run the targeted tests and the career e2e specs, refresh the macOS then Linux career-timeline baselines, commit and push.
+- [x] T080 Fix the career e2e helpers: `stepsFor` must match the `|`-joined `data-categories` (the contract), and the no-Achievements test must assert no `achievements` button.
+- [x] T081 Update tests first: filter labels All, Leadership, Recognition, Volunteer; list heading "Recognition"; status "M of N roles have recognition." / "1 of N roles has recognition.".
+- [x] T082 Change the button label, the list heading and the status wording in `CareerTimeline.astro` and `career-filter.ts`; ids and the `awards` field unchanged.
+- [x] T083 Run the targeted tests and the career e2e specs, refresh the macOS then Linux career-timeline baselines, commit and push.
