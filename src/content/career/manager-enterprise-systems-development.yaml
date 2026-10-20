@@ -1,0 +1,11 @@
+role: "Manager, Enterprise Systems Development"
+organization: "Island Health"
+start: "2016-09"
+end: "2022-01"
+scope: "Led five cross-functional teams (20+ direct reports) running database, web, integration and collaboration services under 24/7 service commitments, and managed real-time and batch clinical data integration pipelines."
+decision: "Organized database, web, integration and collaboration services into five cross-functional teams, each owning its 24/7 commitments."
+achievements:
+  - "On-call incidents cut by 40% through ITIL-based incident management"
+  - "COVID-19 vaccine rollout integration delivered with zero deployment delays"
+leadership:
+  - "Built and led five teams, 20+ direct reports"

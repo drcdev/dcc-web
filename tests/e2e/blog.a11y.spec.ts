@@ -91,7 +91,8 @@ for (const template of blogTemplates) {
               const el = document.activeElement as HTMLElement | null;
               if (!el || el === document.body) return null;
               const all = Array.from(document.querySelectorAll("*"));
-              const style = getComputedStyle(el);
+              // A post card draws its focus outline on the card, not on its title link (spec 049).
+              const style = getComputedStyle(el.matches("[data-post-link]") ? (el.closest("[data-post-card], [data-lead-story]") ?? el) : el);
               return {
                 index: all.indexOf(el),
                 // Cards in one grid row are read one after the other, so a card's pills sit below
