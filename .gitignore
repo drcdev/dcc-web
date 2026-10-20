@@ -63,6 +63,9 @@ Thumbs.db
 # Spec Kit extension catalog cache
 .specify/extensions/.cache/
 
+# Spec Kit current-feature pointer, written per worktree by specify
+.specify/feature.json
+
 # Read-only design reference (Flux theme), never committed
 .reference/
 
