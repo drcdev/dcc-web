@@ -24,6 +24,7 @@ const projectFixturesRoot = resolve(repoRoot, "tests/fixtures/projects");
 const assessmentFixturesRoot = resolve(repoRoot, "tests/fixtures/assessments");
 const readingPathFixturesRoot = resolve(repoRoot, "tests/fixtures/reading-paths");
 const nowFixturesRoot = resolve(repoRoot, "tests/fixtures/now");
+const careerFixturesRoot = resolve(repoRoot, "tests/fixtures/career");
 
 /**
  * A fixture file: `from` is relative to tests/fixtures/pages/ (for the `posts` option, to
@@ -78,6 +79,12 @@ export interface FixtureSiteOptions {
    * projects are not removed, because they point at real posts and projects.
    */
   readingPaths?: readonly (string | FixtureFile)[];
+  /**
+   * Career step fixture files, relative to tests/fixtures/career/ (for example `valid/01-first-role.yaml`
+   * or `broken/missing-scope.yaml`), copied into src/content/career/. The repository's real step files
+   * are left out of the copy unless real posts are kept (`realPosts`), because they name real posts.
+   */
+  career?: readonly (string | FixtureFile)[];
   /** A Now fixture file, relative to tests/fixtures/now/, installed as src/content/now/now.md in place of the default; `false` leaves the site with no Now file. */
   now?: string | false;
   /** Page files to delete from the copied site, relative to src/content/pages/ (for example a landing file). */
@@ -196,6 +203,17 @@ export async function buildFixtureSite(
   if (options.readingPaths) {
     mkdirSync(copiedPaths, { recursive: true });
     copyFixtures(options.readingPaths, readingPathFixturesRoot, copiedPaths);
+  }
+  // The real career steps name real posts, so they follow them out of the copy too.
+  const copiedCareer = resolve(root, "src/content/career");
+  if (!options.realPosts && existsSync(copiedCareer)) {
+    for (const name of readdirSync(copiedCareer)) {
+      if (/\.ya?ml$/.test(name)) rmSync(resolve(copiedCareer, name));
+    }
+  }
+  if (options.career) {
+    mkdirSync(copiedCareer, { recursive: true });
+    copyFixtures(options.career, careerFixturesRoot, copiedCareer);
   }
   if (options.now === false) rmSync(resolve(root, "src/content/now/now.md"), { force: true });
   else if (options.now) {
