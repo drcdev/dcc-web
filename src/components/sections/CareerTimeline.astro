@@ -15,7 +15,7 @@ export interface Props {
 
 const timeline = Astro.props.timeline ?? (await getCareerTimeline());
 
-const categoryLabels: Record<CategoryId, string> = { leadership: "Leadership", awards: "Awards", volunteer: "Volunteer" };
+const categoryLabels: Record<CategoryId, string> = { leadership: "Leadership", awards: "Recognition", volunteer: "Volunteer" };
 /** The categories a step matches (items, or the volunteer flag), in the fixed order, for the filter script. */
 const stepCategories = (step: Timeline["steps"][number]) => timeline.categories.filter((id) => stepHas(step, id)).join("|");
 
@@ -115,7 +115,7 @@ const list = "m-0 list-disc pl-6 [overflow-wrap:anywhere]";
                 )}
                 {step.awards.length > 0 && (
                   <>
-                    <h4 class={listHeading}>Awards</h4>
+                    <h4 class={listHeading}>Recognition</h4>
                     <ul data-list="awards" class={list}>
                       {step.awards.map((award) => (
                         <li>

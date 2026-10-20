@@ -177,7 +177,8 @@ const filter = "[data-career-filter]";
 const statusLine = "[data-career-status]";
 const button = (page: Page, category: string) => page.locator(`${filter} button[data-category="${category}"]`);
 const allButton = (page: Page) => page.locator(`${filter} [data-category-all]`);
-const stepsFor = (category: string) => `${steps}[data-categories~="${category}"]`;
+// data-categories is "|"-joined (contracts/timeline-markup.md); category ids never contain one another.
+const stepsFor = (category: string) => `${steps}[data-categories*="${category}"]`;
 
 /** Fixture step ids, and which categories each holds, read from the DOM. */
 async function stepCategories(page: Page) {
@@ -235,8 +236,8 @@ test("choosing a category opens matching steps with marked items and mutes the r
 
 test("offers no Achievements choice; the Achievements list is shown but never marked", async ({ page }) => {
   await page.goto(ABOUT);
-  await expect(page.locator(filter).getByRole("button")).toHaveText(["All", "Leadership", "Awards", "Volunteer"]);
-  await expect(button(page, "leadership")).toHaveCount(0);
+  await expect(page.locator(filter).getByRole("button")).toHaveText(["All", "Leadership", "Recognition", "Volunteer"]);
+  await expect(button(page, "achievements")).toHaveCount(0);
   expect(await page.locator(`${steps} [data-list=achievements]`).count()).toBeGreaterThan(0);
   for (const category of ["leadership", "awards", "volunteer"]) {
     await button(page, category).click();
@@ -278,10 +279,10 @@ test("announces the count only after a change, in the exact wording", async ({ p
   await expect(status).toHaveText("");
   const info = await stepCategories(page);
   const count = (c: string) => info.filter((s) => s.categories.includes(c)).length;
-  for (const category of ["leadership", "awards"]) {
+  for (const [category, word] of [["leadership", "leadership"], ["awards", "recognition"]] as const) {
     const n = count(category);
     await button(page, category).click();
-    await expect(status).toHaveText(`${n} of ${total} ${n === 1 ? "roles has" : "roles have"} ${category}.`);
+    await expect(status).toHaveText(`${n} of ${total} ${n === 1 ? "roles has" : "roles have"} ${word}.`);
   }
   const v = count("volunteer");
   await button(page, "volunteer").click();

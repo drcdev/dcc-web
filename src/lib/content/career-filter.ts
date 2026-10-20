@@ -36,11 +36,14 @@ export function matchingSteps(steps: readonly FilterStep[], category: CategoryId
   return steps.filter((step) => step.categories.includes(category)).map((step) => step.id);
 }
 
+/** The category as the status line names it: the awards category reads "recognition". */
+const statusWords: Record<"leadership" | "awards", string> = { leadership: "leadership", awards: "recognition" };
+
 /** The polite status message (FR-013). */
 export function statusText(choice: Choice, matching: number, total: number): string {
   if (choice === "all") return `Showing all ${total} roles.`;
   if (choice === "volunteer") return matching === 1 ? `1 of ${total} roles is a volunteer role.` : `${matching} of ${total} roles are volunteer roles.`;
-  return `${matching} of ${total} ${matching === 1 ? "roles has" : "roles have"} ${choice}.`;
+  return `${matching} of ${total} ${matching === 1 ? "roles has" : "roles have"} ${statusWords[choice]}.`;
 }
 
 /**

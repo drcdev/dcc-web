@@ -36,7 +36,7 @@ describe("matchingSteps", () => {
 describe("statusText", () => {
   it("reads for all, one match and many matches", () => {
     expect(statusText("all", 4, 6)).toBe("Showing all 6 roles.");
-    expect(statusText("awards", 1, 6)).toBe("1 of 6 roles has awards.");
+    expect(statusText("awards", 1, 6)).toBe("1 of 6 roles has recognition.");
     expect(statusText("leadership", 2, 6)).toBe("2 of 6 roles have leadership.");
     expect(statusText("leadership", 0, 6)).toBe("0 of 6 roles have leadership.");
   });

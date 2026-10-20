@@ -74,10 +74,10 @@ describe("CareerTimeline", () => {
     expect(second).not.toContain("next move");
   });
 
-  it("shows Achievements, Leadership and Awards lists with h4 headings, only when they have items", async () => {
+  it("shows Achievements, Leadership and Recognition lists with h4 headings, only when they have items", async () => {
     const html = await render(CareerTimeline, { timeline });
     const first = stepBlock(html, "one");
-    expect([...first.matchAll(/<h4[^>]*>([\s\S]*?)<\/h4>/g)].map((m) => m[1]!.trim())).toEqual(["Achievements", "Leadership", "Writing", "Awards"]);
+    expect([...first.matchAll(/<h4[^>]*>([\s\S]*?)<\/h4>/g)].map((m) => m[1]!.trim())).toEqual(["Achievements", "Leadership", "Writing", "Recognition"]);
     const second = stepBlock(html, "two");
     expect([...second.matchAll(/<h4[^>]*>([\s\S]*?)<\/h4>/g)].map((m) => m[1]!.trim())).toEqual(["Achievements"]);
     expect(tags(first).filter((t) => t.name === "ul" && t.attrs["data-list"]).map((t) => t.attrs["data-list"])).toEqual([
@@ -105,7 +105,7 @@ describe("CareerTimeline", () => {
     expect(list).toContain("Second post");
   });
 
-  it("leaves out the Writing and Awards lists when a step has none", async () => {
+  it("leaves out the Writing and Recognition lists when a step has none", async () => {
     const html = await render(CareerTimeline, { timeline });
     const second = stepBlock(html, "two");
     expect(second).not.toContain('data-list="posts"');
@@ -138,7 +138,7 @@ describe("CareerTimeline", () => {
     expect(buttons.map((b) => b.attrs["data-category"] ?? "all")).toEqual(["all", "leadership", "awards", "volunteer"]);
     expect(buttons.map((b) => b.attrs["aria-pressed"])).toEqual(["true", "false", "false", "false"]);
     const labels = [...html.matchAll(/<button[^>]*>([\s\S]*?)<\/button>/g)].map((m) => m[1]!.trim());
-    expect(labels).toEqual(["All", "Leadership", "Awards", "Volunteer"]);
+    expect(labels).toEqual(["All", "Leadership", "Recognition", "Volunteer"]);
     expect("data-category-all" in buttons[0]!.attrs).toBe(true);
     for (const b of buttons) expect(b.attrs.type).toBe("button");
     const status = tags(html).find((t) => "data-career-status" in t.attrs)!;
