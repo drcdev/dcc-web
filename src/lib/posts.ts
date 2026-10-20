@@ -44,6 +44,12 @@ function getCheckedPosts(): Promise<PostEntry[]> {
   return checked;
 }
 
+/** Slug, title and draft flag of every post file, drafts included in any build mode (for career step checks). */
+export async function getPostLookup(): Promise<Map<string, { title: string; draft: boolean }>> {
+  const entries = await getCheckedPosts();
+  return new Map(entries.map((entry) => [entry.id, { title: entry.data.title, draft: entry.data.draft }]));
+}
+
 /**
  * Every post visible in this build, newest first. A draft is visible unless this is a production
  * build (a Workers Builds build of `main`; FR-032, FR-046).

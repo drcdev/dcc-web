@@ -130,6 +130,37 @@ function readReadingPaths(): ReadingPathFile[] {
 }
 export const readingPaths: ReadingPathFile[] = readReadingPaths();
 
+/** One career step file in src/content/career/ (YAML, one step per file). */
+export interface CareerStepFile {
+  /** The file name without extension, the step's id. */
+  id: string;
+  file: string;
+  data: { role?: string; organization?: string; start?: string; end?: string; nextMove?: string; posts?: string[]; [key: string]: unknown };
+}
+
+/** The career steps in src/content/career/, in file-name order. Empty when there are none. */
+function readCareerSteps(): CareerStepFile[] {
+  const dir = join(root, "src/content/career");
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((name) => /\.ya?ml$/.test(name))
+    .sort()
+    .map((name) => ({
+      id: name.replace(/\.ya?ml$/, ""),
+      file: `src/content/career/${name}`,
+      data: (parseYaml(readFileSync(join(dir, name), "utf-8")) ?? {}) as CareerStepFile["data"],
+    }));
+}
+export const careerSteps: CareerStepFile[] = readCareerSteps();
+
+/** The current role by rule C1 (data-model.md): the step with the latest start, ties by id. */
+export function currentCareerStep(steps: readonly CareerStepFile[]): CareerStepFile {
+  const sorted = [...steps].sort(
+    (a, b) => String(a.data.start).localeCompare(String(b.data.start)) || a.id.localeCompare(b.id),
+  );
+  return sorted[sorted.length - 1]!;
+}
+
 /** The Now file (src/content/now/now.md): its parsed front matter and its body (the "open to" line). */
 function readNow(): Entry | undefined {
   const file = join(root, "src/content/now/now.md");
