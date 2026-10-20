@@ -113,14 +113,14 @@ In order (FR-019–FR-030):
 3. (no separate item: the Draft notice sits at the start of the title card, FR-032.)
 4. Body in `prose dark:prose-invert prose-accent`: headings from `h2`; `Figure`/`WideImage`/
    `FullImage`; code blocks (below); tables (below).
-5. Views note (`data-views-note`): a plain `<p>` (no role, not hidden) with the text from
-   `src/config/blog.ts`, identical on every post.
-5a. Author card (`data-author-card`): a direct child of the `<article>` between the views note and
-   Share; see `specs/039-post-author-card/contracts/author-card.md`.
-6. Share (`data-share`): `<h2>Share this post</h2>`; always the links "Share on LinkedIn" and
-   "Share by email" (work without scripts; only the title and address, no tracking
-   parameters); a `button` "Share" at the end of the same row that is `hidden` until a script
-   finds `navigator.share`, so showing it moves nothing else.
+5. Views note: now a caption inside the author part of the single post footer; see
+   `specs/045-post-footer-consolidation/contracts/post-footer.md`.
+5a. Author card (`data-author-card`): part of the single post footer box; see
+   `specs/045-post-footer-consolidation/contracts/post-footer.md` and
+   `specs/039-post-author-card/contracts/author-card.md`.
+6. Share (`data-share`): the lower part of the single post footer box (`<h2>Share this post</h2>`,
+   LinkedIn and email links, and the script-revealed Share button); see
+   `specs/045-post-footer-consolidation/contracts/post-footer.md`.
 7. Related posts (`data-related`): `<h2>Related posts</h2>` + up to 3 cards (titles `h3`) in a
    list (R5); left out when there are no other posts.
 

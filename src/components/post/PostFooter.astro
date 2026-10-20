@@ -1,0 +1,28 @@
+---
+// The one footer block at the end of every post (specs/045-post-footer-consolidation;
+// contracts/post-footer.md). A single box with the title card's look holding the author part
+// (which carries the views note) and the Share part, divided by the Share part's top border.
+// A plain div: no role or label, so it adds no landmark; the two parts keep their own h2s.
+// The last child of the post's <article>; Related posts follows outside it.
+import AuthorCard from "./AuthorCard.astro";
+import Share from "./Share.astro";
+
+export interface Props {
+  /** The post's topic ids; the author part reads the series from them. */
+  topics: readonly string[];
+  /** The post's title, for the share links. */
+  title: string;
+  /** The post's address on this site, such as `/writing/one/`. */
+  href: string;
+}
+
+const { topics, title, href } = Astro.props;
+---
+
+<div
+  data-post-footer
+  class="mt-10 rounded-xl border border-dusk-200 bg-white p-6 shadow-sm dark:border-dusk-700 dark:bg-dusk-800"
+>
+  <AuthorCard topics={topics} />
+  <Share title={title} href={href} />
+</div>

@@ -4,7 +4,7 @@ import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, it } from "vitest";
 import Share from "../../../src/components/post/Share.astro";
 import { shareLinks } from "../../../src/lib/share.ts";
-import { byName, tags, textOf } from "../html.ts";
+import { byName, classList, tags, textOf } from "../html.ts";
 
 let container: AstroContainer;
 beforeAll(async () => {
@@ -48,5 +48,25 @@ describe("Share", () => {
     // Same row: links and button are siblings, not a list (a hidden item would leave an empty one).
     expect(byName(html, "ul")).toHaveLength(0);
     expect(button.index).toBeGreaterThan(html.indexOf("<h2"));
+  });
+
+  it("045 F4/F5: sits in the footer box as a divided part: no gradient, radius, side borders or top margin", async () => {
+    const [section] = tags(await render()).filter((t) => "data-share" in t.attrs);
+    const classes = classList(section!);
+    for (const c of ["mt-6", "border-t", "border-dusk-200", "pt-6", "dark:border-dusk-700"]) expect(classes, c).toContain(c);
+    for (const c of ["mt-8", "p-4", "rounded-lg", "border-rust-200", "bg-gradient-to-r", "dark:border-dusk-600"]) {
+      expect(classes, c).not.toContain(c);
+    }
+    expect(classes.filter((c) => /^(dark:)?(from|to)-/.test(c))).toEqual([]);
+  });
+  it("045 F13: the links and the Share button carry the light and the dark focus ring colours", async () => {
+    const html = await render();
+    const controls = [...byName(html, "a"), ...byName(html, "button")];
+    expect(controls).toHaveLength(3);
+    for (const c of controls) {
+      const classes = classList(c);
+      expect(classes, "light ring").toContain("focus-visible:outline-rust-600");
+      expect(classes, "dark ring").toContain("dark:focus-visible:outline-rust-300");
+    }
   });
 });
