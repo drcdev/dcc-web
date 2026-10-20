@@ -432,8 +432,10 @@ describe("the story of a valid every-setting project", () => {
     const about = l1.read("about/index.html");
     const shell = l1.read("terms-of-use/index.html");
     // The script defines the element; it ships with the page that uses CareerTimeline, whether or
-    // not this build's content has any career steps.
-    expect(about).toContain("customElements.define(`career-timeline`");
+    // not this build's content has any career steps. Vite inlines it while it is under 4 KB and
+    // emits it as an /_astro/ module (allowed by the CSP's 'self') once it grows past that.
+    const external = [...about.matchAll(/<script type="module" src="\/(_astro\/[^"]+\.js)"/g)].map((m) => l1.read(m[1]!));
+    expect([about, ...external].some((code) => code.includes("customElements.define(`career-timeline`"))).toBe(true);
     expect(shell).not.toContain("career-timeline");
     expect(scripts(about)).toBe(scripts(shell) + 1);
   });
