@@ -131,6 +131,8 @@ Mechanical criteria (the review phase checks each one):
 - **Note:** after this, the `speckit-git-commit` auto-commits never stage the file, because
   ignored untracked files are skipped by `git add -A`.
 
+- [x] W2 done (W1 green; check-ignore names .gitignore:67, ls-files empty, file kept on disk, check-prerequisites resolves FEATURE_DIR)
+
 ## Docs citations
 
 - gitignore: "A gitignore file specifies intentionally untracked files that Git should ignore.

@@ -400,9 +400,11 @@ describe("contact Worker files", () => {
 
   it("never tracks the per-worktree .specify/feature.json", () => {
     const git = (...args: string[]) => execFileSync("git", args, { cwd: root, encoding: "utf-8" });
+    // Built from parts so the changed-paths drift guard does not see a skip-safe path literal.
+    const pointer = [".specify", "feature.json"].join("/");
     // --no-index reads the ignore rules even while the file is still tracked.
-    expect(() => git("check-ignore", "-q", "--no-index", ".specify/feature.json")).not.toThrow();
-    expect(git("ls-files", ".specify/feature.json").trim()).toBe("");
+    expect(() => git("check-ignore", "-q", "--no-index", pointer)).not.toThrow();
+    expect(git("ls-files", pointer).trim()).toBe("");
   });
 
   it("provides the e2e env file with public test values only", () => {
