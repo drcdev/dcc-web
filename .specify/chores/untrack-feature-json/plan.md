@@ -19,8 +19,7 @@ This chore adds `.specify/feature.json` to `.gitignore` and removes it from the 
 
 Mechanical criteria (the review phase checks each one):
 
-1. **Test seen failing first.** The W1 unit test fails before W2 (the file is tracked and not
-   ignored) and passes after. The implement summary records the red run.
+1. **No test.** Don ruled during implement that this chore needs no test (W1 withdrawn).
 2. **Ignored.** `git check-ignore -v --no-index .specify/feature.json` exits 0 and names the new
    `.gitignore` line.
 3. **Untracked.** `git ls-files .specify/feature.json` prints nothing, and
@@ -31,7 +30,7 @@ Mechanical criteria (the review phase checks each one):
    `.specify/scripts/bash/check-prerequisites.sh --json --paths-only` still prints the
    `FEATURE_DIR` from the file (the resolver reads it from disk; tracking does not matter).
 6. **Scope of the diff:** `git diff --name-only main` lists only `.gitignore`,
-   `.specify/feature.json` (deleted from the index), `tests/unit/site/config-files.test.ts` and
+   `.specify/feature.json` (deleted from the index) and
    `.specify/chores/untrack-feature-json/**`.
 7. Local gate: the changed-paths tier (`.gitignore` puts it in the full tier) per CLAUDE.md and
    the check-in-before-full-gate rule; CI `verify` green before merge.
@@ -52,7 +51,6 @@ Mechanical criteria (the review phase checks each one):
 - `.gitignore`: one entry, `.specify/feature.json`, with a short `#` header comment, placed
   beside the `# Spec Kit extension catalog cache` group.
 - `git rm --cached .specify/feature.json`.
-- `tests/unit/site/config-files.test.ts`: one test (W1).
 - This plan, and the review report later.
 
 **Out:**
@@ -87,8 +85,8 @@ Mechanical criteria (the review phase checks each one):
 
 ## Constitution Check
 
-- **I. Test-First:** W1 (unit) is written and seen failing before W2.
-- **II. Automated Release Gate:** no check is skipped or weakened; one test is added.
+- **I. Test-First:** no behaviour: n/a (an ignore rule and an index removal; Don ruled no test).
+- **II. Automated Release Gate:** no check is skipped or weakened.
 - **III. Human Review of Every Change:** normal PR from `drc-agents`, Don approves, auto-merge
   armed after the final push.
 - **IV. First-Party Before Custom:** uses git's own `.gitignore` and `git rm --cached`; no
@@ -117,7 +115,8 @@ Mechanical criteria (the review phase checks each one):
   never committed), not a mirror of a config value, and follows the existing `.cache/` and
   `.reference/` ignore tests. CI checks out a full git work tree, so `git` is available.
 
-- [x] W1 done (test seen red: `check-ignore --no-index` exits 1 before W2)
+- **Withdrawn.** Don ruled the chore needs no test; the test added in 212b8909 was removed again.
+  (It also needed a path built from parts to get past the changed-paths drift guard.)
 
 ### W2: Ignore and untrack `.specify/feature.json`
 
@@ -125,13 +124,12 @@ Mechanical criteria (the review phase checks each one):
   `# Spec Kit current-feature pointer, written per worktree by specify` and
   `.specify/feature.json`, next to `.specify/extensions/.cache/`); index removal of
   `.specify/feature.json` via `git rm --cached .specify/feature.json`.
-- **Test:** W1 turns green; acceptance 2–5 checked by hand and recorded in the implement
-  summary.
-- **Layer:** unit (W1).
+- **Test:** no behaviour: n/a (Don ruled no test); acceptance 2–5 checked by hand and recorded
+  in the implement summary.
 - **Note:** after this, the `speckit-git-commit` auto-commits never stage the file, because
   ignored untracked files are skipped by `git add -A`.
 
-- [x] W2 done (W1 green; check-ignore names .gitignore:67, ls-files empty, file kept on disk, check-prerequisites resolves FEATURE_DIR)
+- [x] W2 done (check-ignore names .gitignore:67, ls-files empty, file kept on disk, check-prerequisites resolves FEATURE_DIR)
 
 ## Docs citations
 
@@ -155,5 +153,3 @@ Mechanical criteria (the review phase checks each one):
   `SPECIFY_FEATURE_DIRECTORY` to resume. Low impact: only worktrees mid-feature are affected,
   and they will be resolving the conflict above at the same moment (keep a copy before
   resolving if needed).
-- **Test depends on git in the test environment.** Vitest runs from a git checkout locally and
-  in CI; if `git` were missing the test fails loudly rather than passing falsely.

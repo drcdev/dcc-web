@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { stripJsonc } from "../../../scripts/lib/jsonc.ts";
@@ -396,15 +395,6 @@ describe("contact Worker files", () => {
   it("ignores .cache/ in git", () => {
     const gitignore = readFileSync(`${root}.gitignore`, "utf-8").split("\n");
     expect(gitignore).toContain(".cache/");
-  });
-
-  it("never tracks the per-worktree .specify/feature.json", () => {
-    const git = (...args: string[]) => execFileSync("git", args, { cwd: root, encoding: "utf-8" });
-    // Built from parts so the changed-paths drift guard does not see a skip-safe path literal.
-    const pointer = [".specify", "feature.json"].join("/");
-    // --no-index reads the ignore rules even while the file is still tracked.
-    expect(() => git("check-ignore", "-q", "--no-index", pointer)).not.toThrow();
-    expect(git("ls-files", pointer).trim()).toBe("");
   });
 
   it("provides the e2e env file with public test values only", () => {
