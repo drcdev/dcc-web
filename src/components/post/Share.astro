@@ -4,7 +4,7 @@
 // button is `hidden` in the markup, at the end of the same row, and the script below shows it only
 // when the device offers `navigator.share`. Showing it moves nothing vertically; the links are
 // right-aligned (768 px and wider) or centred (narrower), so it shifts the other links sideways,
-// never the heading. The area spans the post's full width, like the title card. The script is a
+// never the heading. It sits inside the post footer box (specs/045) below a divider, with no box of its own. The script is a
 // bundled module, loaded after parse (docs.astro.build/en/guides/client-side-scripts/), so the
 // content security policy is unchanged.
 import { shareLinks } from "../../lib/share.ts";
@@ -20,14 +20,14 @@ const { title, href } = Astro.props;
 const url = new URL(href, Astro.site ?? Astro.url).href;
 const links = shareLinks(title, url);
 const control =
-  "inline-flex min-h-11 items-center rounded-full border border-rust-600 px-4 py-2 text-sm font-medium text-rust-800 no-underline hover:bg-rust-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rust-600 dark:border-rust-300 dark:text-rust-300 dark:hover:bg-rust-950";
+  "inline-flex min-h-11 items-center rounded-full border border-rust-600 px-4 py-2 text-sm font-medium text-rust-800 no-underline hover:bg-rust-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rust-600 dark:border-rust-300 dark:text-rust-300 dark:hover:bg-rust-950 dark:focus-visible:outline-rust-300";
 ---
 
 <section
   data-share
   data-share-title={title}
   data-share-url={url}
-  class="mt-8 rounded-lg text-center md:flex md:items-center md:justify-between md:gap-x-6 md:text-left border border-rust-200 bg-gradient-to-r from-rust-50 to-white p-4 dark:border-dusk-600 dark:from-rust-800 dark:to-dusk-700"
+  class="mt-6 border-t border-dusk-200 pt-6 text-center md:flex md:items-center md:justify-between md:gap-x-6 md:text-left dark:border-dusk-700"
 >
   <h2 class="m-0 mb-3 md:mb-0 md:shrink-0 text-lg font-bold text-dusk-900 dark:text-white">Share this post</h2>
   <div class="flex flex-wrap items-center justify-center gap-3 md:justify-end">

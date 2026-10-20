@@ -1,14 +1,15 @@
 ---
-// The author card at the end of every post (specs/039-post-author-card; contracts/author-card.md).
-// A direct child of the post's <article>, between the views note and the Share area, spanning the
-// post's full width like the title card. The wording and the photo come from blog.author. The
+// The author part of the post footer (specs/039-post-author-card; contracts/author-card.md; box and
+// views note moved by specs/045-post-footer-consolidation). It has no box of its own: PostFooter
+// draws the one box. The views note sits last in the text column, a caption after the links. The wording and the photo come from blog.author. The
 // photo is last in the DOM so a screen reader meets the heading and lines first; `order-first`
 // puts it first visually. Photo: Astro's <Image /> at 96 px with 1x and 2x WebP candidates
 // (docs.astro.build/en/guides/images/; research R2). Below md everything is centred and stacked;
-// from md the photo sits left of left-aligned text, the same breakpoint as the views note and Share.
+// from md the photo sits left of left-aligned text, the same breakpoint as Share.
 import { Image } from "astro:assets";
 import portrait from "../../content/pages/images/don-coleman.jpg";
 import { blog } from "../../config/blog.ts";
+import ViewsNote from "./ViewsNote.astro";
 import { findTopic, seriesOf, topicHref } from "../../config/topics.ts";
 
 export interface Props {
@@ -28,14 +29,15 @@ const linkClass =
 
 <section
   data-author-card
-  class="mt-8 flex flex-col items-center gap-4 rounded-xl border border-dusk-200 bg-white p-6 text-center shadow-sm dark:border-dusk-700 dark:bg-dusk-800 md:flex-row md:items-start md:gap-6 md:text-left"
+  class="flex flex-col items-center gap-4 text-center md:flex-row md:items-start md:gap-6 md:text-left"
 >
-  <div class="min-w-0 flex-1">
+  <div class="min-w-0 flex-1 [overflow-wrap:anywhere]">
     <h2 class="m-0 mb-2 text-lg font-bold text-dusk-900 dark:text-white">Written by {author.name}</h2>
     {author.lines.map((line) => <p class="m-0 mb-2 text-dusk-700 dark:text-mist-300">{line}</p>)}
     <ul class="m-0 mt-3 flex list-none flex-wrap justify-center gap-x-4 gap-y-2 p-0 md:justify-start">
       {links.map((link) => <li><a href={link.href} class={linkClass}>{link.text}</a></li>)}
     </ul>
+    <ViewsNote />
   </div>
   <Image
     src={portrait}

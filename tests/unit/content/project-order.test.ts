@@ -2,7 +2,7 @@
 // "Derived: published projects and order"): newest date first, then title, then file name. The collection
 // call itself lives in src/lib/projects.ts; the pure part is tested here.
 import { describe, expect, it } from "vitest";
-import { selectPublishedProjects } from "../../../src/lib/content/project-order.ts";
+import { neighbours, selectPublishedProjects } from "../../../src/lib/content/project-order.ts";
 
 interface P {
   id: string;
@@ -57,5 +57,36 @@ describe("selectPublishedProjects", () => {
     const list = [p("b", { date: new Date("2024-01-01") }), p("a", { date: new Date("2025-01-01") })];
     selectPublishedProjects(list, local);
     expect(ids(list)).toEqual(["b", "a"]);
+  });
+});
+
+describe("neighbours", () => {
+  const list = [p("newest"), p("middle"), p("oldest")];
+
+  it("gives a middle entry the one above as previous and the one below as next", () => {
+    expect(neighbours(list, "middle")).toEqual({ previous: list[0], next: list[2] });
+  });
+
+  it("gives the first entry no previous", () => {
+    expect(neighbours(list, "newest")).toEqual({ previous: undefined, next: list[1] });
+  });
+
+  it("gives the last entry no next, without wrapping round", () => {
+    expect(neighbours(list, "oldest")).toEqual({ previous: list[1], next: undefined });
+  });
+
+  it("gives a single entry neither", () => {
+    expect(neighbours([p("only")], "only")).toEqual({ previous: undefined, next: undefined });
+  });
+
+  it("uses the given order and never sorts", () => {
+    const given = [p("b", { date: new Date("2020-01-01") }), p("a", { date: new Date("2030-01-01") })];
+    expect(neighbours(given, "b").next?.id).toBe("a");
+    expect(neighbours(given, "a").previous?.id).toBe("b");
+    expect(ids(given)).toEqual(["b", "a"]);
+  });
+
+  it("gives an id that is not in the list neither", () => {
+    expect(neighbours(list, "missing")).toEqual({ previous: undefined, next: undefined });
   });
 });

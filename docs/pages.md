@@ -43,7 +43,7 @@ draft: true
 | `nav.location` | with `nav` | `header` or `footer`. |
 | `nav.position` | with `nav` | Order within that menu, a whole number from 1. |
 | `nav.label` | no | Menu text. Defaults to `title`. |
-| `intro` | no | Home page only: the introduction card (`photo`, `name`, `tagline`, `bio`, `cta`). |
+| `intro` | no | Home page only: the introduction card (`photo`, `name`, `tagline`, `bio`, `cta`, and an optional `secondaryCta` with the same `label` and `href` shape as `cta`). |
 
 Do not write a `# Heading` in the body; the title is the page's only main heading. Use `##`.
 
