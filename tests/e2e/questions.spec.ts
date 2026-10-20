@@ -2,6 +2,7 @@
 // P04, P08, P10 to P17; FR-005, FR-016, FR-019). Runs on the fixture site (port 4322, project
 // `sections`) with `/api/questions` stubbed, so no model is ever called.
 import { expect, test, type Page } from "@playwright/test";
+import { cspViolations, recordCspViolations } from "./csp-violations.ts";
 import { stubQuestionsApi } from "./questions-stub.ts";
 
 const POST = "/writing/text-only/";
@@ -235,11 +236,24 @@ test.describe("questions panel placement", () => {
 
   const box = async (locator: ReturnType<Page["locator"]>) => (await locator.boundingBox())!;
 
-  for (const width of [320, 390, 1279]) {
-    test(`is a block between the title card and the body at ${width} px with no sideways scroll (P20)`, async ({ page }) => {
+  const toggle = (page: Page) => panel(page).locator("[data-questions-toggle]");
+  const content = (page: Page) => panel(page).locator("[data-questions-content]");
+
+  // D01, D12, D13: below 1280 px a slim closed bar, readable at 320 px, and the body starts on screen.
+  for (const width of [320, 390, 640, 768, 1279]) {
+    test(`is one closed bar between the title card and the body at ${width} px with no sideways scroll (D01, D12)`, async ({ page }) => {
       await page.setViewportSize({ width, height: 800 });
       await page.goto(POST);
       await expect(panel(page)).toBeVisible();
+      const button = toggle(page);
+      await expect(button).toBeVisible();
+      await expect(button).toHaveAttribute("aria-expanded", "false");
+      await expect(button).toContainText("Think while you read");
+      await expect(button).toContainText("Optional AI critical thinking questions");
+      await expect(content(page)).not.toBeVisible();
+      const target = await box(button);
+      expect(target.width).toBeGreaterThanOrEqual(44);
+      expect(target.height).toBeGreaterThanOrEqual(44);
       const [card, aside, text] = [await box(titleCard(page)), await box(panel(page)), await box(body(page))];
       expect(aside.y).toBeGreaterThanOrEqual(card.y + card.height - 1);
       expect(aside.y + aside.height).toBeLessThanOrEqual(text.y + 1);
@@ -247,6 +261,59 @@ test.describe("questions panel placement", () => {
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
       ).toBe(true);
+      const fontPx = await button.locator("span.text-sm").evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+      expect(fontPx).toBeGreaterThanOrEqual(14);
+    });
+  }
+
+  test("wraps the label at 320 px with the chevron to its right and not overlapping (D12)", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto(POST);
+    const label = await box(toggle(page).locator("> span").first());
+    const chevron = await box(toggle(page).locator("svg"));
+    expect(chevron.x).toBeGreaterThanOrEqual(label.x + label.width - 1);
+    const button = await box(toggle(page));
+    expect(chevron.x + chevron.width).toBeLessThanOrEqual(button.x + button.width + 1);
+  });
+
+  for (const [width, height] of [
+    [390, 844],
+    [768, 1024],
+  ]) {
+    test(`keeps the closed bar slim and the first paragraph inside the first screen at ${width}x${height} (D13)`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await page.goto(POST);
+      await expect(toggle(page)).toBeVisible();
+      if (width === 390) expect((await box(panel(page))).height).toBeLessThanOrEqual(80);
+      const first = await box(page.locator("[data-post-body] p").first());
+      expect(first.y).toBeLessThan(height);
+    });
+  }
+
+  // D11: the questions area causes no layout shift (guards existing behaviour; seen to fail by a
+  // temporary break that toggled the aside's display from script after load).
+  for (const [width, height] of [
+    [390, 844],
+    [1280, 800],
+  ]) {
+    test(`causes no layout shift in or around the questions panel at ${width}x${height} (D11)`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await page.addInitScript(() => {
+        (window as unknown as { __shifts: number }).__shifts = 0;
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries() as unknown as { sources?: { node?: Node }[] }[]) {
+            for (const source of entry.sources ?? []) {
+              const node = source.node;
+              const el = node instanceof Element ? node : node?.parentElement;
+              if (el?.closest("[data-questions]") || el?.querySelector("[data-questions]")) (window as unknown as { __shifts: number }).__shifts++;
+            }
+          }
+        }).observe({ type: "layout-shift", buffered: true });
+      });
+      await page.goto(POST, { waitUntil: "networkidle" });
+      await expect(panel(page)).toBeVisible();
+      await page.waitForTimeout(500);
+      expect(await page.evaluate(() => (window as unknown as { __shifts: number }).__shifts)).toBe(0);
     });
   }
 
@@ -353,6 +420,8 @@ test.describe("questions panel placement", () => {
     for (const width of [1280, 320]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(POST);
+      // Below 1280 px the content starts closed; open it like a reader would.
+      if (width < 1280) await panel(page).locator("[data-questions-toggle]").click();
       await getButton(page).click();
       await expect(items(page)).toHaveCount(4);
       // The page policy blocks an inline <style>, so the overrides go in as a constructed stylesheet.
@@ -376,5 +445,205 @@ test.describe("questions panel placement", () => {
       });
       expect(clipped).toEqual({ overflow: false, outside: false, sideways: false });
     }
+  });
+});
+
+// D05, D06 (specs/046 contracts/questions-disclosure.md): the trigger opens and closes the panel
+// without losing state, focus or any request.
+test.describe("questions disclosure", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  const toggle = (page: Page) => panel(page).locator("[data-questions-toggle]");
+  const content = (page: Page) => panel(page).locator("[data-questions-content]");
+  const focusIsOnBody = (page: Page) => page.evaluate(() => document.activeElement === document.body);
+
+  test("names the button with both lines in order (FR-003)", async ({ page }) => {
+    await page.goto(POST);
+    await expect(toggle(page)).toHaveAccessibleName("Think while you read Optional AI critical thinking questions");
+  });
+
+  for (const how of ["click", "Enter", "Space"] as const) {
+    test(`opens and closes with ${how} and keeps focus on the button (SC-004)`, async ({ page }) => {
+      await page.goto(POST);
+      const press = async () => {
+        if (how === "click") await toggle(page).click();
+        else {
+          await toggle(page).focus();
+          await page.keyboard.press(how === "Space" ? "Space" : "Enter");
+        }
+      };
+      await press();
+      await expect(toggle(page)).toHaveAttribute("aria-expanded", "true");
+      await expect(content(page)).toBeVisible();
+      await expect(getButton(page)).toBeVisible();
+      await expect(toggle(page)).toBeFocused();
+      expect(await focusIsOnBody(page)).toBe(false);
+      await press();
+      await expect(toggle(page)).toHaveAttribute("aria-expanded", "false");
+      await expect(content(page)).not.toBeVisible();
+      await expect(toggle(page)).toBeFocused();
+      expect(await focusIsOnBody(page)).toBe(false);
+    });
+  }
+
+  test("keeps closed content out of the accessibility tree and the focus order", async ({ page }) => {
+    await page.goto(POST);
+    await expect(page.getByRole("button", { name: "Get questions" })).toHaveCount(0);
+    await toggle(page).focus();
+    await page.keyboard.press("Tab");
+    await expect(getButton(page)).not.toBeFocused();
+    await expect(panel(page).locator("[data-questions-content] :focus")).toHaveCount(0);
+    await toggle(page).click();
+    await expect(page.getByRole("button", { name: "Get questions" })).toHaveCount(1);
+  });
+
+  test("opening sends no request to /api/questions", async ({ page }) => {
+    const stub = await stubQuestionsApi(page, [ok(SET)]);
+    await page.goto(POST);
+    await toggle(page).click();
+    await expect(getButton(page)).toBeVisible();
+    await page.waitForLoadState("networkidle");
+    expect(stub.requests).toHaveLength(0);
+  });
+
+  test("closing and reopening after Get questions shows the same list with no new request", async ({ page }) => {
+    const stub = await stubQuestionsApi(page, [ok(SET)]);
+    await page.goto(POST);
+    await toggle(page).click();
+    await getButton(page).click();
+    await expect(items(page)).toHaveCount(3);
+    const before = await items(page).allTextContents();
+    await toggle(page).click();
+    await expect(content(page)).not.toBeVisible();
+    await toggle(page).click();
+    await expect(items(page)).toHaveCount(3);
+    expect(await items(page).allTextContents()).toEqual(before);
+    expect(stub.requests).toHaveLength(1);
+  });
+
+  test("closing while a request is pending, then reopening, shows the result and never loses focus", async ({ page }) => {
+    const stub = await stubQuestionsApi(page, [{ ...ok(SET), hold: true }]);
+    await page.goto(POST);
+    await toggle(page).click();
+    await getButton(page).click();
+    await expect(getButton(page)).toHaveAttribute("aria-disabled", "true");
+    await toggle(page).focus();
+    await toggle(page).click();
+    await expect(content(page)).not.toBeVisible();
+    stub.release();
+    await page.waitForTimeout(300);
+    expect(await focusIsOnBody(page)).toBe(false);
+    await expect(toggle(page)).toBeFocused();
+    await toggle(page).click();
+    await expect(items(page)).toHaveCount(3);
+    expect(await focusIsOnBody(page)).toBe(false);
+    expect(stub.requests).toHaveLength(1);
+  });
+
+  test("changes no storage, cookie or address and starts closed after a reload (FR-011, D01)", async ({ page }) => {
+    await stubQuestionsApi(page, [ok(SET)]);
+    await page.goto(POST);
+    const snapshot = () =>
+      page.evaluate(() => ({
+        local: JSON.stringify(localStorage),
+        session: JSON.stringify(sessionStorage),
+        cookie: document.cookie,
+        url: location.href,
+      }));
+    const before = await snapshot();
+    await toggle(page).click();
+    await getButton(page).click();
+    await expect(items(page)).toHaveCount(3);
+    await toggle(page).click();
+    await toggle(page).click();
+    expect(await snapshot()).toEqual(before);
+    await page.reload();
+    await expect(toggle(page)).toHaveAttribute("aria-expanded", "false");
+    await expect(content(page)).not.toBeVisible();
+  });
+
+  test("records no CSP violation while opening, closing and getting questions (FR-012)", async ({ page }) => {
+    await stubQuestionsApi(page, [ok(SET)]);
+    await recordCspViolations(page);
+    await page.goto(POST);
+    await toggle(page).click();
+    await getButton(page).click();
+    await expect(items(page)).toHaveCount(3);
+    await toggle(page).click();
+    await toggle(page).click();
+    expect(await cspViolations(page)).toEqual([]);
+  });
+});
+
+// D03, D07, D08 (specs/046 contracts/questions-disclosure.md): from 1280 px the panel is the open
+// sidebar with no trigger, and crossing the breakpoint keeps the open state and the fetched list.
+test.describe("questions panel on wide screens and across the breakpoint", () => {
+  const toggle = (page: Page) => panel(page).locator("[data-questions-toggle]");
+  const content = (page: Page) => panel(page).locator("[data-questions-content]");
+  const heading = (page: Page) => panel(page).locator("h2");
+  const activeIsBody = (page: Page) => page.evaluate(() => document.activeElement === document.body);
+
+  for (const [width, height] of [
+    [1280, 800],
+    [1440, 900],
+  ]) {
+    test(`shows the open sidebar with no trigger at ${width}x${height} (D03)`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await page.goto(POST);
+      await expect(panel(page)).toBeVisible();
+      await expect(toggle(page)).toBeHidden();
+      const focusable = await toggle(page).evaluate((el) => {
+        (el as HTMLElement).focus();
+        return document.activeElement === el;
+      });
+      expect(focusable).toBe(false);
+      // innerText is the rendered text: the hidden button's two lines do not count.
+      await expect.poll(() => heading(page).evaluate((el) => (el as HTMLElement).innerText.trim())).toBe("Think while you read");
+      await expect(content(page)).toBeVisible();
+      await expect(getButton(page)).toBeVisible();
+    });
+  }
+
+  test("keeps the open state and fetched questions across 390 to 1280 to 390 (D07, D08)", async ({ page }) => {
+    await stubQuestionsApi(page, [ok(SET)]);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(POST);
+    await toggle(page).click();
+    await getButton(page).click();
+    await expect(items(page)).toHaveCount(3);
+
+    await toggle(page).focus();
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(toggle(page)).toBeHidden();
+    await expect(content(page)).toBeVisible();
+    await expect(items(page)).toHaveCount(3);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(toggle(page)).toHaveAttribute("aria-expanded", "true");
+    await expect(content(page)).toBeVisible();
+    await expect(items(page)).toHaveCount(3);
+  });
+
+  test("returns closed when a never-opened panel crosses the breakpoint and back (D08)", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(POST);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(content(page)).toBeVisible();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(toggle(page)).toHaveAttribute("aria-expanded", "false");
+    await expect(content(page)).not.toBeVisible();
+  });
+
+  test("moves no focus when the window is resized (D08)", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(POST);
+    await toggle(page).click();
+    await getButton(page).focus();
+    await expect(getButton(page)).toBeFocused();
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(getButton(page)).toBeFocused();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(getButton(page)).toBeFocused();
+    expect(await activeIsBody(page)).toBe(false);
   });
 });
