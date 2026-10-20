@@ -104,6 +104,8 @@ describe("ContactForm consent", () => {
       "I agree that Don Coleman may keep what I enter in this form and use it to reply to me, as described in the privacy policy (opens in a new tab).",
     );
     const label = /<label[^>]*for="contact-consent"[^>]*>([\s\S]*?)<\/label>/.exec(html)![1]!;
+    // The new-tab warning is for screen readers only; sighted visitors see "privacy policy".
+    expect(label).toMatch(/privacy policy<span class="sr-only"[^>]*> \(opens in a new tab\)<\/span><\/a>/);
     const link = byName(label, "a")[0]!;
     expect(link.attrs.href).toBe("/privacy-policy/");
     expect(link.attrs.target).toBe("_blank");
@@ -259,7 +261,7 @@ describe("Contact page privacy note (FR-007)", () => {
   const page = readFileSync(fileURLToPath(new URL("../../../src/content/pages/contact.mdx", import.meta.url)), "utf-8");
 
   it("fills the form's privacy slot and links the privacy policy in a new tab", () => {
-    const link = /<a href="\/privacy-policy\/" target="_blank" rel="noopener">privacy policy \(opens in a new tab\)<\/a>/.exec(page);
+    const link = /<a href="\/privacy-policy\/" target="_blank" rel="noopener">privacy policy<span class="sr-only"> \(opens in a new tab\)<\/span><\/a>/.exec(page);
     expect(link).not.toBeNull();
     expect(link!.index).toBeGreaterThan(page.indexOf("<ContactForm>"));
     expect(link!.index).toBeLessThan(page.indexOf("</ContactForm>"));
