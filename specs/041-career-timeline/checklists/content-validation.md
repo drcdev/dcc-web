@@ -12,7 +12,7 @@
 - [x] CHK002 Is the period format defined (date precision, month and year, how "present" is represented, how a start after an end is treated)? [Gap, Spec §FR-002]
 - [x] CHK003 Is "plain text" defined for detail parts (are Markdown, links or line breaks allowed or rejected)? [Clarity, Spec §FR-003]
 - [x] CHK004 Is the shape of a categorized item defined (text, one category, whether an item may have more than one category)? [Gap, Spec §FR-004, Key Entities]
-- [x] CHK005 Is the relationship between the Awards category and the separate awards list defined, so one award is not entered twice or counted twice? [Ambiguity, Spec §Key Entities, §FR-009]
+- [x] CHK005 Is the relationship between the Recognition category and the separate awards list defined, so one award is not entered twice or counted twice? [Ambiguity, Spec §Key Entities, §FR-009]
 - [x] CHK006 Is the shape of an award link defined (internal, external, allowed schemes), and is the treatment of external links stated? [Gap, Spec §FR-004, Assumptions]
 - [x] CHK007 Is the rule for ordering two steps with the same start date defined? [Edge Case, Gap, Spec §FR-001]
 - [x] CHK008 Is the file naming and identity rule for a step (slug, uniqueness) specified? [Gap, Spec §FR-005]

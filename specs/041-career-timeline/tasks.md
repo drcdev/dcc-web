@@ -211,8 +211,8 @@ description: "Task list for the interactive career timeline (feature 041)"
 - [X] T075 [P] Component test, primary layer **Component**, in `tests/component/sections/CareerTimeline.test.ts`: the buttons are All, Leadership, Awards, Volunteer; no Achievements button; a volunteer step's `data-categories` holds `volunteer`; the Achievements list still renders. Seen failing first.
 - [X] T076 Fixture and E2E updates, primary layer **E2E**: mark one fixture step in `tests/fixtures/career/valid/` `volunteer: true`; `tests/e2e/career-timeline.spec.ts` and `tests/e2e/career-timeline.a11y.spec.ts` drop the Achievements choice, cover Volunteer (volunteer steps open and matching, no item highlighted, status line), and the visual shot in `tests/e2e/visual.spec.ts` chooses Leadership. Seen failing first.
 - [X] T077 Implement: `volunteer` in `src/content/schemas/career.ts`; categories and `volunteer` in `src/lib/content/career.ts`; Volunteer status wording in `src/lib/content/career-filter.ts`; labels and `data-categories` in `src/components/sections/CareerTimeline.astro`; `volunteer: true` in the two CCHL step files.
-- [ ] T078 Run the targeted tests, `pnpm run build` (buttons All, Leadership, Awards, Volunteer; two steps with `volunteer` in `data-categories`) and `pnpm run verify:quick`.
-- [ ] T079 Refresh the macOS then the Linux career-timeline baselines (`.claude/skills/_shared/visual-baselines.md`), commit and push to the PR #180 branch.
+- [x] T078 Run the targeted tests, `pnpm run build` (buttons All, Leadership, Awards, Volunteer; two steps with `volunteer` in `data-categories`) and `pnpm run verify:quick`.
+- [x] T079 Refresh the macOS then the Linux career-timeline baselines (`.claude/skills/_shared/visual-baselines.md`), commit and push to the PR #180 branch.
 
 ---
 
@@ -250,3 +250,10 @@ Task: "E2E test in tests/e2e/career-timeline.spec.ts"
 - Reflection text is not written at launch (spec FR-006); do not invent copy.
 - Never put Don's job title anywhere but the About page and the current step file (FR-019).
 - Commit after each logical group; PR opens from `drc-agents` (CLAUDE.md "Merging").
+
+## Phase 11: "Awards" reads "Recognition"
+
+- [ ] T080 Fix the career e2e helpers: `stepsFor` must match the `|`-joined `data-categories` (the contract), and the no-Achievements test must assert no `achievements` button.
+- [ ] T081 Update tests first: filter labels All, Leadership, Recognition, Volunteer; list heading "Recognition"; status "M of N roles have recognition." / "1 of N roles has recognition.".
+- [ ] T082 Change the button label, the list heading and the status wording in `CareerTimeline.astro` and `career-filter.ts`; ids and the `awards` field unchanged.
+- [ ] T083 Run the targeted tests and the career e2e specs, refresh the macOS then Linux career-timeline baselines, commit and push.

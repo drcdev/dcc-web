@@ -61,7 +61,7 @@
 
 - [x] CHK037 Are the assistive-technology requirements with JavaScript off (native disclosure semantics, no orphaned filter, no dead controls) stated separately from the JS-on requirements? [Coverage, Spec §FR-007, §FR-014]
 - [x] CHK038 Is "no violations" in SC-004 tied to a named rule set and tags (WCAG 2.2 AA) and to the exact page states checked (idle, each category, dark theme)? [Measurability, Spec §SC-004]
-- [x] CHK039 Are the page states that must be checked for accessibility enumerated (no filter, each of the three categories Leadership, Awards and Volunteer, a step opened by hand while filtered, both themes)? [Coverage, Spec §SC-004]
+- [x] CHK039 Are the page states that must be checked for accessibility enumerated (no filter, each of the three categories Leadership, Recognition and Volunteer, a step opened by hand while filtered, both themes)? [Coverage, Spec §SC-004]
 - [x] CHK040 Is the requirement for the page's skip-to-content, landmark and heading order unchanged by the new section stated, or is its absence intentional? [Gap]
 - [x] CHK041 Are the language and reading-level requirements (plain language) for the filter labels and status messages measurable? [Measurability, Spec §FR-020]
 

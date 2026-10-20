@@ -24,7 +24,7 @@
 - [x] CHK011 Is the requirement "one category at a time" stated as a rule of the control, not only as an assumption? [Ambiguity, Spec §Assumptions]
 - [x] CHK012 Is it specified that the filter state is neither persisted, nor in the address, nor restored by back or forward navigation or a reload? [Clarity, Spec §Assumptions]
 - [x] CHK013 Is the case "category chosen, zero steps match" excluded by FR-009, and is the behaviour if it happened anyway defined? [Edge Case, Spec §FR-009, §US3-7]
-- [x] CHK014 Is a step whose only matching item is an award (Awards category) defined consistently with items in the Leadership list, and is a Volunteer match (a step with no items to highlight) defined consistently with item matches? [Consistency, Spec §FR-008, §FR-010]
+- [x] CHK014 Is a step whose only matching item is an award (Recognition category) defined consistently with items in the Leadership list, and is a Volunteer match (a step with no items to highlight) defined consistently with item matches? [Consistency, Spec §FR-008, §FR-010]
 - [x] CHK015 Is "highlight" defined as a distinct, measurable state for items, with its relation to the muting of other steps? [Clarity, Spec §FR-010]
 
 ## Page-level consistency

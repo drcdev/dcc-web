@@ -14,7 +14,7 @@ changed in how he worked, what he wishes he had known, and the skill that led to
 Where there is writing or an award from that period, the step links to it. A filter can be used
 to surface achievements, leadership themes, awards, etc. and their associated role/context.
 Filtered items are collapsed and dithered, but still visible." (The filter's categories are now
-Leadership, Awards and Volunteer; see Clarifications, session 2026-10-19.)
+Leadership, Recognition and Volunteer; see Clarifications, session 2026-10-19.)
 
 ## Background
 
@@ -39,7 +39,7 @@ island. Public content lives in the repository as files validated by a schema (P
   (Director, Data Infrastructure and Architecture at Island Health since 2026), which the CV does
   not yet include. Nothing is invented.
 - Q: Which categories does the filter offer? → A: Exactly three: Achievements, Leadership,
-  Awards. (Superseded in session 2026-10-19: Leadership, Awards, Volunteer.)
+  Recognition. (Superseded in session 2026-10-19: Leadership, Recognition, Volunteer.)
 - Q: Where does the timeline sit on the About page? → A: Directly after the "About me" list; the
   list's "Leadership" line is removed; "Recognition" stays as it is, and its awards are also
   linked from their matching steps.
@@ -109,15 +109,20 @@ Don reviewed the preview of PR #180.
   still shown as the labelled "Achievements" list in an opened step (FR-008 unchanged); they are
   no longer a category and are never highlighted.
 - Q: What replaces it? → A: A Volunteer category that surfaces the two CCHL chapter steps
-  (Treasurer and Director at Large; Vice Chair). The filter choices are All, Leadership, Awards,
+  (Treasurer and Director at Large; Vice Chair). The filter choices are All, Leadership, Recognition,
   Volunteer, in that order; single choice with "All" selected on load, as before. Volunteer is a
   step-level flag, not an item list: a step file MAY set `volunteer: true` (omitted means not a
   volunteer step), and only the two CCHL step files set it. Their role text keeps "(volunteer)".
   Choosing Volunteer opens the volunteer steps and mutes the others with the same treatment
   (FR-011a); a volunteer step has no items to highlight, so the match is the step itself, shown by
   its solid accent rule. The status line reads "2 of 7 roles are volunteer roles." (one match:
-  "1 of N roles is a volunteer role."); the Leadership and Awards wording is unchanged. A
+  "1 of N roles is a volunteer role."); the Leadership and Recognition wording is unchanged. A
   category no step uses is still not offered (FR-009).
+- Q: What is the awards category called? → A: "Recognition" (Don, 2026-10-19). The filter
+  button and the opened step's list heading read "Recognition", and the status line reads
+  "M of N roles have recognition." (one match: "1 of N roles has recognition."). Only the visible
+  wording changes: the step file field stays `awards`, and the internal category id stays
+  `awards`.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -177,7 +182,7 @@ destination.
 2. **Given** a step with one or more awards, **When** it is opened, **Then** it lists each award
    by name and year, linking to the award's page where one exists.
 3. **Given** a step with no related writing or awards, **When** it is opened, **Then** no empty
-   "Writing" or "Awards" heading appears.
+   "Writing" or "Recognition" heading appears.
 4. **Given** a step names a post that does not exist or is a draft, **When** the site is built,
    **Then** the build fails with an error naming the step file and the post (FR-005a).
 
@@ -202,7 +207,7 @@ filter restores the timeline.
 
 1. **Given** the timeline with no filter chosen, **When** it loads, **Then** "All" is selected
    and every step is shown normally (none muted).
-2. **Given** the filter, **When** the visitor chooses Leadership or Awards, **Then** each step
+2. **Given** the filter, **When** the visitor chooses Leadership or Recognition, **Then** each step
    holding at least one item of that category is opened with those items highlighted, and each
    highlighted item shows the role and organization of its step.
 3. **Given** the filter, **When** the visitor chooses Volunteer, **Then** each volunteer step is
@@ -263,10 +268,10 @@ filter restores the timeline.
   beside the marker; the marker stays on the title's first line.
 - More steps in future: steps, the status count and the used categories all come from the
   content files, so adding a step needs no new requirement and no code change. The categories
-  stay fixed at three (Leadership, Awards, Volunteer). A new volunteer role is a new step file
+  stay fixed at three (Leadership, Recognition, Volunteer). A new volunteer role is a new step file
   with `volunteer: true`.
 - A volunteer step that also holds leadership items or awards: it matches Volunteer as a step,
-  and it matches Leadership or Awards through its items like any other step.
+  and it matches Leadership or Recognition through its items like any other step.
 - Choosing Volunteer: no list item is highlighted in any step, because volunteer is a property of
   the step, not of its items; the matching step's solid accent rule is the cue.
 - Achievements: every step may still have an "Achievements" list; choosing any category never
@@ -307,7 +312,7 @@ filter restores the timeline.
     the list it is written in decides what it is, and an item cannot be in two lists. Leadership
     items are the Leadership category; achievement items are shown but are not a filter category
     (Clarifications, session 2026-10-19).
-  - The step's **awards list is the Awards category**: an award is entered once, in that list,
+  - The step's **awards list is the Recognition category**: an award is entered once, in that list,
     and is never repeated as an achievement. It is counted once.
   - An award link MUST be an absolute `https` address. Award and post links open in the same tab,
     like every other link on the About page.
@@ -369,7 +374,7 @@ filter restores the timeline.
 
   Categorized items, awards and related posts per step:
 
-  | # | Achievements | Leadership | Awards | Related posts | Volunteer |
+  | # | Achievements | Leadership | Recognition | Related posts | Volunteer |
   |---|--------------|------------|--------|---------------|-----------|
   | 1 | 70+ HL7 interfaces redeveloped; proactive monitoring reduced reactive troubleshooting | – | – | – | – |
   | 2 | On-call incidents cut by 40% through ITIL-based incident management; COVID-19 vaccine rollout integration delivered with zero deployment delays | Built and led five teams, 20+ direct reports | – | – | – |
@@ -426,7 +431,7 @@ filter restores the timeline.
 - **FR-008a**: Structure and labels:
   - The timeline is headed "Career", one heading level below "About me" (the same level as
     "Recognition"). The steps are not headings. The "Achievements", "Leadership", "Writing" and
-    "Awards" list headings are one level below "Career". The page keeps its skip link, landmarks
+    "Recognition" list headings are one level below "Career". The page keeps its skip link, landmarks
     and unbroken heading order; the timeline sits inside the main content.
   - The detail-part labels are, in order: "Scope", "Key decision", "What changed in how I
     worked", "What I wish I'd known", "The skill that led to the next move". Each label is tied
@@ -439,9 +444,9 @@ filter restores the timeline.
 **Filter**
 
 - **FR-009**: The timeline MUST offer a filter whose choices are "All" plus each category used
-  by at least one step, in the fixed order Leadership, Awards, Volunteer. The categories MUST
-  come from one fixed list of exactly three: Leadership, Awards, Volunteer. A step uses
-  Leadership when it has a leadership item, Awards when it has an award, and Volunteer when it is
+  by at least one step, in the fixed order Leadership, Recognition, Volunteer. The categories MUST
+  come from one fixed list of exactly three: Leadership, Recognition, Volunteer. A step uses
+  Leadership when it has a leadership item, Recognition when it has an award, and Volunteer when it is
   marked as a volunteer role (FR-004a). Leadership is one category, not a set of named themes.
   Achievements is not a category: the filter never offers it (Clarifications, session
   2026-10-19). Which categories are offered is worked out from the content at build time; when
@@ -453,16 +458,16 @@ filter restores the timeline.
   "Career" heading, above the first step, so Tab reaches it before the steps. It scrolls with
   the page (not sticky) and overlaps nothing.
 - **FR-010**: Choosing a category MUST open each matching step and mark it with the solid accent
-  rule (FR-011a). For Leadership and Awards it MUST also highlight the matching items inside the
-  step's Leadership or Awards list (FR-008) and show the role and organization each matching
+  rule (FR-011a). For Leadership and Recognition it MUST also highlight the matching items inside the
+  step's Leadership or Recognition list (FR-008) and show the role and organization each matching
   item belongs to.
-  - A step "matches" Leadership or Awards when it holds at least one item of that category, and
+  - A step "matches" Leadership or Recognition when it holds at least one item of that category, and
     matches Volunteer when it is marked as a volunteer role (FR-004a). Matching is counted in
     steps, never in items, in the outcome and in the status line alike.
-  - The matching items are all the items in the chosen category's list (for Awards, every award
+  - The matching items are all the items in the chosen category's list (for Recognition, every award
     in the step's awards list). The highlight is a left border, bold text and a light tint, so it
     is not colour alone. Assistive technology learns the match from the list's own heading
-    ("Leadership" or "Awards"), which names the chosen category, and from the status line; no
+    ("Leadership" or "Recognition"), which names the chosen category, and from the status line; no
     extra hidden text is added. The "Achievements" list is never highlighted.
   - Volunteer has no items, so choosing it highlights no list item; the match is the step
     itself, opened, with its role and organization as its summary line. Assistive technology
@@ -505,9 +510,9 @@ filter restores the timeline.
   not interrupt speech and is not repeated. Nothing is announced when the page loads. The
   status text is, with N the number of steps and M the number of matching steps:
   - "All": "Showing all N roles."
-  - Leadership or Awards, M is 1: "1 of N roles has <category>." (for example "1 of 7 roles has
+  - Leadership or Recognition, M is 1: "1 of N roles has <category>." (for example "1 of 7 roles has
     awards.")
-  - Leadership or Awards, M is not 1: "M of N roles have <category>." The category is in lower
+  - Leadership or Recognition, M is not 1: "M of N roles have <category>." The category is in lower
     case.
   - Volunteer, M is 1: "1 of N roles is a volunteer role."
   - Volunteer, M is not 1: "M of N roles are volunteer roles." (at launch "2 of 7 roles are
@@ -569,8 +574,8 @@ filter restores the timeline.
 - **FR-020**: Copy for labels and messages MUST be plain language, in the site's voice
   (`VOICE.md`), with no hype or filler. The complete set of labels and messages this feature
   adds is: the heading "Career"; the filter label "Show" and its choices "All",
-  "Leadership", "Awards", "Volunteer"; the detail labels in FR-008a; the list headings
-  "Achievements", "Leadership", "Writing", "Awards"; the status messages in FR-013; and the
+  "Leadership", "Recognition", "Volunteer"; the detail labels in FR-008a; the list headings
+  "Achievements", "Leadership", "Writing", "Recognition"; the status messages in FR-013; and the
   period word "present". Any other wording needs a spec change.
 - **FR-021**: The visual checks MUST cover the timeline with a category chosen that highlights
   items (Leadership), so one opened step with highlighted items and one muted step are both shown, at phone and desktop widths,
@@ -587,10 +592,10 @@ filter restores the timeline.
 - **Award**: a recognition received during a step: name, year, optional link.
 - **Categorized item**: a short statement attached to a step, an achievement or a leadership
   theme, given by the list it is written in. Leadership items are the Leadership category;
-  achievements are shown but are not a filter category. Awards count as items of the Awards
+  achievements are shown but are not a filter category. Recognition count as items of the Recognition
   category; each award is entered once, in the step's awards list (FR-004).
-- **Category**: one value in the fixed list the filter offers: Leadership, Awards or Volunteer
-  (FR-009). Leadership and Awards are matched through a step's items; Volunteer through the
+- **Category**: one value in the fixed list the filter offers: Leadership, Recognition or Volunteer
+  (FR-009). Leadership and Recognition are matched through a step's items; Volunteer through the
   step's volunteer flag.
 
 ## Success Criteria *(mandatory)*
@@ -602,7 +607,7 @@ filter restores the timeline.
 - **SC-002**: 100% of steps are readable, with every detail part they have, with JavaScript
   turned off.
 - **SC-003**: Choosing a category leaves 100% of steps on screen, with every non-matching step
-  muted, every matching step open, and (for Leadership and Awards) every matching item showing
+  muted, every matching step open, and (for Leadership and Recognition) every matching item showing
   its role and organization.
 - **SC-004**: The About page passes the automated accessibility checks (axe with the WCAG 2.0,
   2.1 and 2.2 A and AA rule tags the site already uses) with no violations, in the light and dark

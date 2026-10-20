@@ -35,7 +35,7 @@ The rendered HTML the tests and the client script rely on. Classes are free; the
             <h4>Achievements</h4><ul data-list="achievements"><li>…</li></ul>
             <h4>Leadership</h4><ul data-list="leadership"><li>…</li></ul>
             <h4>Writing</h4><ul data-list="posts"><li><a href="/writing/<slug>/">Title</a></li></ul>
-            <h4>Awards</h4><ul data-list="awards"><li><a href="…">Name</a> (2024)</li><li>Name (2026)</li></ul>
+            <h4>Recognition</h4><ul data-list="awards"><li><a href="…">Name</a> (2024)</li><li>Name (2026)</li></ul>
           </div>
         </details>
       </li>

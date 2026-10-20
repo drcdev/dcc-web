@@ -48,8 +48,8 @@ was used for every Astro choice below; each decision names the page it rests on.
   of the whole step. The filter offers "All" plus each category that at least one step uses (US3
   scenario 8).
 - **Rationale**: The strict object schema rejects any other key, which is how "a category not in
-  the allowed list fails the build" is met (FR-005) without a second category registry. Awards count
-  as items of the Awards category (Key Entities), so they need no separate tag.
+  the allowed list fails the build" is met (FR-005) without a second category registry. Recognition count
+  as items of the Recognition category (Key Entities), so they need no separate tag.
 - **Alternatives considered**: a generic `items: { category, text }[]` list with an enum. Rejected:
   more to type for Don, and awards would need a second shape anyway.
 
@@ -156,7 +156,7 @@ was used for every Astro choice below; each decision names the page it rests on.
 - **Decision**: The section heading is an `h3`, "Career", because it sits inside "About me" (an
   `h2`) beside "Recognition" (an `h3`). Detail parts render as a `<dl>`: "Scope", "Key decision",
   "What changed in how I worked", "What I wish I'd known", "The skill that led to the next move".
-  Lists render under `h4` headings: "Achievements", "Leadership", "Writing", "Awards". First person
+  Lists render under `h4` headings: "Achievements", "Leadership", "Writing", "Recognition". First person
   matches the About page's voice. All labels are listed as a `[PREVIEW-CHECK]` for Don (FR-020).
 - **Rationale**: Headings may not go inside `<summary>` (its role overrides them), so the steps are
   list items, not headings, and the parts use a description list.

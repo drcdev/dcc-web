@@ -15,7 +15,7 @@ The About page gains a **Career** timeline directly after the "About me" list, w
 - A new body section, `<CareerTimeline />`, renders the steps as an ordered list of native
   `<details>`/`<summary>` disclosures. Opening and closing need no JavaScript, and the page reads in
   full with JavaScript off.
-- The filter (All, Leadership, Awards, Volunteer; only used categories shown; Volunteer is a
+- The filter (All, Leadership, Recognition, Volunteer; only used categories shown; Volunteer is a
   step flag, `volunteer: true`, set on the two CCHL steps) is a small custom
   element in the component's processed `<script>`, hidden in the HTML and revealed when it runs, the
   same pattern as `ProjectFilter.astro`. A chosen category opens and highlights matching steps and
