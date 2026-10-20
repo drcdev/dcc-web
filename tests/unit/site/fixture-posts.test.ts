@@ -99,7 +99,7 @@ describe("fixture pages", () => {
   it("keeps the contact-form page ASCII, with the form in its body", () => {
     const source = read("contact-form.mdx");
     expect(/^[\x00-\x7f]*$/.test(source)).toBe(true);
-    expect(source).toContain("<ContactForm />");
+    expect(source).toContain("<ContactForm");
   });
 
   it("keeps the form off the sections page, so its baselines and no-JS script count hold", () => {

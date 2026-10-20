@@ -104,6 +104,8 @@ describe("ContactForm consent", () => {
       "I agree that Don Coleman may keep what I enter in this form and use it to reply to me, as described in the privacy policy (opens in a new tab).",
     );
     const label = /<label[^>]*for="contact-consent"[^>]*>([\s\S]*?)<\/label>/.exec(html)![1]!;
+    // The new-tab warning is for screen readers only; sighted visitors see "privacy policy".
+    expect(label).toMatch(/privacy policy<span class="sr-only"[^>]*> \(opens in a new tab\)<\/span><\/a>/);
     const link = byName(label, "a")[0]!;
     expect(link.attrs.href).toBe("/privacy-policy/");
     expect(link.attrs.target).toBe("_blank");
@@ -258,9 +260,98 @@ describe("ContactForm error containers (FR-008e to FR-008i)", () => {
 describe("Contact page privacy note (FR-007)", () => {
   const page = readFileSync(fileURLToPath(new URL("../../../src/content/pages/contact.mdx", import.meta.url)), "utf-8");
 
-  it("sits above the form and links the privacy policy in a new tab", () => {
-    const link = /<a href="\/privacy-policy\/" target="_blank" rel="noopener">privacy policy \(opens in a new tab\)<\/a>/.exec(page);
+  it("fills the form's privacy slot and links the privacy policy in a new tab", () => {
+    const link = /<a href="\/privacy-policy\/" target="_blank" rel="noopener">privacy policy<span class="sr-only"> \(opens in a new tab\)<\/span><\/a>/.exec(page);
     expect(link).not.toBeNull();
-    expect(link!.index).toBeLessThan(page.indexOf("<ContactForm"));
+    expect(link!.index).toBeGreaterThan(page.indexOf("<ContactForm>"));
+    expect(link!.index).toBeLessThan(page.indexOf("</ContactForm>"));
+  });
+});
+
+// Two-column layout with a note (specs/052-contact-editorial-layout, contracts/contact-page.md L1 to L11, N1, N2).
+describe("ContactForm with a note slot", async () => {
+  const { socialNavigation } = await import("../../../src/config/navigation.ts");
+  const { site } = await import("../../../src/config/site.ts");
+  const note = '<p id="note-copy">Fixture note.</p>';
+  const privacy = '<p id="privacy-copy">Fixture privacy. <a href="/privacy-policy/">Policy</a></p>';
+  const page = await render(ContactForm, {}, privacy, undefined, { note });
+  const pageTags = tags(page);
+  const at = (needle: string) => page.indexOf(needle);
+  const links = /<ul[^>]*data-contact-links[^>]*>([\s\S]*?)<\/ul>/.exec(page)![1]!;
+  const anchors = [...links.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)];
+
+  it("L1 lays out a 5:7 grid from lg with a 48 px gap", () => {
+    const root = pageTags.find((t) => "data-contact" in t.attrs)!;
+    for (const c of ["lg:grid", "lg:grid-cols-12", "lg:items-start", "lg:gap-x-12"]) expect(root.attrs.class).toContain(c);
+    expect(pageTags.find((t) => "data-contact-note" in t.attrs)!.attrs.class).toContain("lg:col-span-5");
+    expect(pageTags.find((t) => "data-contact-form-column" in t.attrs)!.attrs.class).toContain("lg:col-span-7");
+  });
+
+  it("L3 keeps the note before the form in source order", () => {
+    const order = ["contact-note-heading", "note-copy", "data-contact-links", "contact-form-heading", "data-contact-privacy", "contact-js-required"].map(at);
+    expect(order.every((n) => n >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    expect(pageTags.some((t) => Number(t.attrs.tabindex) > 0)).toBe(false);
+  });
+
+  it("L4 names the note section from an h2", () => {
+    expect(page).toMatch(/<h2[^>]*id="contact-note-heading"[^>]*>\s*Before you write\s*<\/h2>/);
+    expect(pageTags.find((t) => "data-contact-note" in t.attrs)!.attrs["aria-labelledby"]).toBe("contact-note-heading");
+  });
+
+  it("L5 lists one link per social entry, then a query-free mailto with the address as text", () => {
+    expect(anchors).toHaveLength(socialNavigation.length + 1);
+    socialNavigation.forEach((item, i) => {
+      expect(anchors[i]![1]).toContain(`href="${item.href}"`);
+      expect(anchors[i]![2]).toContain(item.label);
+      expect(anchors[i]![1]).not.toContain("target=");
+    });
+    const mail = anchors[anchors.length - 1]!;
+    expect(mail[1]).toContain(`href="mailto:${site.contactEmail}"`);
+    expect(mail[2]).toContain(site.contactEmail);
+    expect(mail[1]).not.toContain("target=");
+  });
+
+  it("L6 draws an aria-hidden icon in every link", () => {
+    for (const a of anchors) expect(a[2]).toMatch(/<svg[^>]*aria-hidden="true"/);
+  });
+
+  it("L7 and L11 give each link a focus outline, a 24 px minimum height and wrapping", () => {
+    for (const a of anchors) {
+      for (const c of ["focus-visible:outline-2", "focus-visible:outline-offset-2", "focus-visible:outline-accent-500", "dark:focus-visible:outline-accent-400", "min-h-6", "break-words"])
+        expect(a[1]).toContain(c);
+    }
+    expect(pageTags.find((t) => "data-contact-note-body" in t.attrs)!.attrs.class).toContain("max-w-prose");
+    expect(pageTags.find((t) => "data-contact-note-body" in t.attrs)!.attrs.class).toContain("lg:max-w-none");
+  });
+
+  it("L8 puts the privacy slot after the form heading and before the form, outside it", () => {
+    const form = at('id="contact-form"');
+    expect(at("data-contact-privacy")).toBeGreaterThan(at("contact-form-heading"));
+    expect(at("data-contact-privacy")).toBeLessThan(form);
+    expect(at("data-contact-privacy")).toBeLessThan(at("contact-js-required"));
+    expect(page).toContain("privacy-copy");
+  });
+
+  it("L9 and L10 keep the success panel in the form column and let both columns shrink", () => {
+    const column = at("data-contact-form-column");
+    expect(at('id="contact-success"')).toBeGreaterThan(column);
+    expect(at("</form>")).toBeLessThan(at('id="contact-success"'));
+    expect(pageTags.find((t) => "data-contact-note" in t.attrs)!.attrs.class).toContain("min-w-0");
+    expect(pageTags.find((t) => "data-contact-form-column" in t.attrs)!.attrs.class).toContain("min-w-0");
+  });
+});
+
+describe("ContactForm without a note slot", () => {
+  it("N1 renders no note, links or grid", () => {
+    expect(html).not.toContain("data-contact-note");
+    expect(html).not.toContain("data-contact-links");
+    expect(html).not.toMatch(/lg:grid|lg:col-span/);
+    const root = tags(html).find((t) => "data-contact" in t.attrs)!;
+    expect(root.attrs.class).toContain("not-prose mx-auto max-w-screen-lg");
+  });
+
+  it("N2 renders no privacy block without a default slot", () => {
+    expect(html).not.toContain("data-contact-privacy");
   });
 });

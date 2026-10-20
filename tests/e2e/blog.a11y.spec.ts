@@ -286,6 +286,25 @@ for (const template of blogTemplates) {
       });
     }
 
+    if (template.name === "writing-post") {
+      for (const theme of THEMES) {
+        test(`F9: author and share links keep readable contrast on hover in the ${theme} theme`, async ({ page }) => {
+          await setTheme(page, theme);
+          await page.goto(template.path);
+          const links = page.locator("[data-post-footer] a");
+          const count = await links.count();
+          for (let i = 0; i < count; i++) {
+            await links.nth(i).hover();
+            const results = await new AxeBuilder({ page })
+              .include("[data-post-footer]")
+              .withRules(["color-contrast"])
+              .analyze();
+            expect(results.violations, `link ${i}`).toEqual([]);
+          }
+        });
+      }
+    }
+
     test("loads only the site's own scripts, plus the copy module on a post page (FR-054)", async ({ page }) => {
       await page.goto(template.path);
       const scripts = await page.evaluate(() =>

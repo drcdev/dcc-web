@@ -15,6 +15,7 @@ import ProjectPart from "../../components/project/ProjectPart.astro";
 import { checkReplacements, resolveReplacement } from "../../lib/content/project-replacement";
 import { validateProjectStory } from "../../lib/content/project-story";
 import type { OptionsComparison } from "../../lib/content/options-comparison";
+import { neighbours } from "../../lib/content/project-order";
 import { fileOfProject, getPublishedProjects } from "../../lib/projects";
 import { getNavigation } from "../../lib/pages";
 
@@ -30,13 +31,24 @@ export async function getStaticPaths() {
   checkReplacements(all);
   const projects = await getPublishedProjects(process.env);
   const publishedIds = new Set(projects.map((entry) => entry.id));
-  return projects.map((entry) => ({
-    params: { slug: entry.id },
-    props: { entry, comparison: comparisons.get(entry.id)!, replacement: resolveReplacement(entry, all, publishedIds) },
-  }));
+  // The neighbours come from the list the projects index renders, so the two sequences cannot differ.
+  const link = (project?: (typeof projects)[number]) => (project ? { slug: project.id, title: project.data.title } : undefined);
+  return projects.map((entry) => {
+    const { previous, next } = neighbours(projects, entry.id);
+    return {
+      params: { slug: entry.id },
+      props: {
+        entry,
+        comparison: comparisons.get(entry.id)!,
+        replacement: resolveReplacement(entry, all, publishedIds),
+        previous: link(previous),
+        next: link(next),
+      },
+    };
+  });
 }
 
-const { entry, comparison, replacement } = Astro.props;
+const { entry, comparison, replacement, previous, next } = Astro.props;
 const { data } = entry;
 // The story components read the project from here (src/env.d.ts) and name its file in errors.
 Astro.locals.project = { slug: entry.id, file: fileOfProject(entry), data, comparison };
@@ -61,6 +73,8 @@ const share = data.image ? await getImage({ src: data.image.src as ImageMetadata
   draft={data.draft}
   slug={entry.id}
   replacement={replacement}
+  previous={previous}
+  next={next}
 >
   <Content components={{ ProjectPart, OptionsTable }} />
 </ProjectLayout>

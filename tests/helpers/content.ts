@@ -310,3 +310,12 @@ export function postsWithAssessment(): PostWithAssessment[] {
   }
   return found;
 }
+
+/** The home page's second intro call-to-action link address, from `src/content/pages/index.mdx`. */
+function pickHomeSecondaryCtaHref(): string {
+  const home = pages.find((page) => page.slug === "index");
+  const href = (home?.data.intro as { secondaryCta?: { href?: string } } | undefined)?.secondaryCta?.href;
+  if (!href) throw new Error("tests/helpers/content.ts: the home page has no intro.secondaryCta.href.");
+  return href;
+}
+export const homeSecondaryCtaHref: string = pickHomeSecondaryCtaHref();

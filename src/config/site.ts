@@ -13,6 +13,8 @@ export interface SiteConfig {
   locale: string;
   /** Name in the footer copyright line. */
   copyrightName: string;
+  /** Address shown to visitors on the contact page and in the legal pages. Display only; delivery is a Worker setting. */
+  contactEmail: string;
 }
 
 export const site: SiteConfig = {
@@ -22,4 +24,5 @@ export const site: SiteConfig = {
   defaultImageAlt: "Don Coleman",
   locale: "en_CA",
   copyrightName: "Don Coleman",
+  contactEmail: "contact@doncoleman.ca",
 };

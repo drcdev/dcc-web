@@ -6,6 +6,11 @@
 // Turnstile only after the first interaction, and shows accessible errors.
 import { PUBLIC_TURNSTILE_SITE_KEY } from "astro:env/client";
 import { EMAIL_MAX, MESSAGE_MAX, NAME_MAX, ORGANIZATION_MAX } from "../../../worker/src/contact/rules.ts";
+import { socialNavigation } from "../../config/navigation.ts";
+import { site } from "../../config/site.ts";
+import GitHubIcon from "../../icons/github.svg";
+import LinkedInIcon from "../../icons/linkedin.svg";
+import MailIcon from "../../icons/mail.svg";
 import { allowTurnstile } from "./contact-csp.ts";
 import { checkSection } from "./validate.ts";
 
@@ -26,10 +31,69 @@ const control =
 const label = "mb-2 block text-sm font-medium text-dusk-900 dark:text-white";
 const error =
   "mt-2 items-start gap-2 text-sm font-medium text-rust-700 dark:text-rust-300 [&:not([hidden])]:flex";
+// Layout (specs/052-contact-editorial-layout): with a `note` slot the page is a 5:7 grid from lg
+// (1024 px) and stacks, note first, below it. Without one the form renders alone.
+const hasNote = Astro.slots.has("note");
+const hasPrivacy = Astro.slots.has("default");
+const noteIcons = { GitHub: GitHubIcon, LinkedIn: LinkedInIcon } as const;
+const noteLinks = [
+  ...socialNavigation.map((item) => ({
+    href: item.href,
+    text: item.label,
+    Icon: noteIcons[item.label as keyof typeof noteIcons],
+  })),
+  { href: `mailto:${site.contactEmail}`, text: site.contactEmail, Icon: MailIcon },
+];
+const noteLink =
+  "inline-flex min-h-6 items-center gap-2 break-words text-dusk-900 underline underline-offset-2 " +
+  "hover:text-rust-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500 " +
+  "dark:text-mist-300 dark:hover:text-rust-300 dark:focus-visible:outline-accent-400";
+const Column = hasNote ? "div" : Fragment;
+const columnProps = hasNote ? { "data-contact-form-column": "", class: "mt-10 min-w-0 lg:col-span-7 lg:mt-0" } : {};
 const link = "underline underline-offset-2 hover:text-rust-700 dark:hover:text-rust-300";
 ---
 
-<div class="not-prose mx-auto max-w-screen-lg" data-contact>
+<div
+  class:list={["not-prose mx-auto max-w-screen-lg", hasNote && "lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12"]}
+  data-contact
+>
+  {
+    hasNote && (
+      <section data-contact-note aria-labelledby="contact-note-heading" class="min-w-0 lg:col-span-5">
+        <h2 id="contact-note-heading" class="mb-4 text-2xl font-bold text-dusk-900 dark:text-white">
+          Before you write
+        </h2>
+        <div
+          data-contact-note-body
+          class="max-w-prose text-dusk-900 lg:max-w-none dark:text-mist-300 [&_p]:mb-4"
+        >
+          <slot name="note" />
+        </div>
+        <ul data-contact-links class="mt-6 space-y-2">
+          {noteLinks.map(({ href, text, Icon }) => (
+            <li>
+              <a href={href} class={noteLink}>
+                <Icon class="size-5 shrink-0" aria-hidden="true" />
+                <span>{text}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+  <Column {...columnProps}>
+  {/* Heading and privacy paragraph sit outside the form so focusing the privacy link does not trigger the form's focusin spam-check load (FR-013). */}
+  <h2 id="contact-form-heading" class="mb-4 text-2xl font-bold text-dusk-900 dark:text-white">Send a message</h2>
+
+  {
+    hasPrivacy && (
+      <div data-contact-privacy class="mb-4 text-sm [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-rust-700 dark:[&_a:hover]:text-rust-300">
+        <slot />
+      </div>
+    )
+  }
+
   <form
     id="contact-form"
     class="text-dusk-900 dark:text-mist-300"
@@ -38,8 +102,6 @@ const link = "underline underline-offset-2 hover:text-rust-700 dark:hover:text-r
     method="post"
     aria-labelledby="contact-form-heading"
   >
-    <h2 id="contact-form-heading" class="mb-4 text-2xl font-bold text-dusk-900 dark:text-white">Send a message</h2>
-
     <p id="contact-js-required" class="mb-4 rounded-lg border border-dusk-500 p-3 text-sm dark:border-dusk-400">
       Sending this form needs JavaScript. You can still read how your information is handled in the
       <a class={link} href="/privacy-policy/" target="_blank" rel="noopener">privacy policy (opens in a new tab)</a>.
@@ -169,7 +231,7 @@ const link = "underline underline-offset-2 hover:text-rust-700 dark:hover:text-r
             class={link}
             href="/privacy-policy/"
             target="_blank"
-            rel="noopener">privacy policy (opens in a new tab)</a
+            rel="noopener">privacy policy<span class="sr-only"> (opens in a new tab)</span></a
           >.</label
         >
       </div>
@@ -203,6 +265,7 @@ const link = "underline underline-offset-2 hover:text-rust-700 dark:hover:text-r
     <h2 id="contact-success-heading" tabindex="-1" class="mb-2 text-xl font-bold text-sage-900 dark:text-sage-100">Message sent</h2>
     <p class="text-sage-900 dark:text-sage-100">Thanks, your message was sent. I'll reply by email.</p>
   </section>
+  </Column>
 </div>
 
 <script>

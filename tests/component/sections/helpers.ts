@@ -10,11 +10,13 @@ export async function render(
   props: Record<string, unknown> = {},
   slot?: string,
   locals?: Record<string, unknown>,
+  /** Named slots (for example `{ note: "<p>…</p>" }`), rendered beside the default slot. */
+  slots: Record<string, string> = {},
 ): Promise<string> {
   container ??= await AstroContainer.create();
   return container.renderToString(component, {
     props,
-    slots: slot === undefined ? {} : { default: slot },
+    slots: { ...(slot === undefined ? {} : { default: slot }), ...slots },
     ...(locals ? { locals: locals as App.Locals } : {}),
   });
 }

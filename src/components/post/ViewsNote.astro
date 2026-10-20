@@ -1,10 +1,11 @@
 ---
 // The "views are my own" note under every post (FR-027). The wording lives in
 // src/config/blog.ts, so it is identical on every post and changed in one place.
-// A plain paragraph: no role, not hidden.
+// A small italic caption inside the author part of the post footer (specs/045): no rule or
+// alignment of its own, it inherits the card's. A plain paragraph: no role, not hidden.
 import { blog } from "../../config/blog.ts";
 ---
 
-<p data-views-note class="m-0 text-center md:text-left border-t border-dusk-200 pt-4 text-sm italic text-dusk-600 dark:border-dusk-700 dark:text-dusk-300">
+<p data-views-note class="m-0 mt-4 text-sm italic text-dusk-600 dark:text-dusk-300">
   {blog.viewsNote}
 </p>

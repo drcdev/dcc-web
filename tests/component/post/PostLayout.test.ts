@@ -98,8 +98,7 @@ describe("PostLayout share and related (FR-028, FR-029)", () => {
   });
 });
 
-describe("PostLayout author card (specs/039 row A2, FR-001)", () => {
-  const cardIndexes = (html: string) => [...html.matchAll(/<section\b[^>]*data-author-card/g)].map((m) => m.index!);
+describe("PostLayout footer block (specs/045 rows F1 and F2)", () => {
   const cases: [string, ReturnType<typeof summary>, Record<string, unknown>][] = [
     ["a post without related posts or questions", summary("one"), {}],
     ["a post with related posts", summary("one"), { related: [summary("two")] }],
@@ -107,18 +106,25 @@ describe("PostLayout author card (specs/039 row A2, FR-001)", () => {
     ["a draft post", summary("one", { draft: true }), { related: [summary("two")], questionHash: "ab".repeat(32) }],
   ];
   for (const [name, post, extra] of cases) {
-    it(`A2: puts one card inside the article, after the views note and before the share area, for ${name}`, async () => {
+    it(`F1/F2: one footer, last in the article, holding the card, note and share part, for ${name}`, async () => {
       const html = await render(post, extra);
-      const [card, ...others] = cardIndexes(html);
-      expect(card).toBeDefined();
-      expect(others).toHaveLength(0);
-      expect(card!).toBeGreaterThan(html.indexOf("<article"));
-      expect(card!).toBeGreaterThan(html.indexOf("data-views-note"));
-      expect(card!).toBeLessThan(html.indexOf("data-share"));
-      expect(card!).toBeLessThan(html.indexOf("</article>"));
-      // A direct child of the article: nothing opened since the article is still open at the card.
-      const between = html.slice(html.indexOf("data-views-note"), card!);
-      expect(between.split("</div>").length - 1).toBeGreaterThanOrEqual(between.split("<div").length - 1);
+      const starts = [...html.matchAll(/<div\b[^>]*data-post-footer/g)].map((m) => m.index!);
+      expect(starts).toHaveLength(1);
+      const footer = starts[0]!;
+      const end = html.indexOf("</article>");
+      expect(footer).toBeGreaterThan(html.indexOf("<article"));
+      // Last element child of the article: the footer's own div closes right before </article>.
+      expect(html.slice(footer, end).trimEnd().endsWith("</div>")).toBe(true);
+      expect(html.slice(footer, end).split("<div").length).toBe(html.slice(footer, end).split("</div>").length);
+      const inside = html.slice(footer, end);
+      for (const marker of ["data-author-card", "data-views-note", "data-share"]) {
+        const opening = new RegExp(`<[a-z]+\\b[^>]*\\s${marker}[\\s>=]`, "g");
+        expect(inside.match(opening)?.length, marker).toBe(1);
+        expect(html.match(opening)?.length, marker).toBe(1);
+      }
+      expect(inside.indexOf("data-author-card")).toBeLessThan(inside.indexOf("data-share "));
+      expect(inside.indexOf("data-views-note")).toBeLessThan(inside.indexOf("data-share "));
+      if (extra.related) expect(html.indexOf("data-related")).toBeGreaterThan(end);
     });
   }
 });

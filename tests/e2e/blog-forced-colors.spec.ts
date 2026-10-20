@@ -42,6 +42,25 @@ test("the questions panel keeps its border, button outline and focus indicator (
   await expect(button).toHaveCSS("outline-width", "2px");
 });
 
+test("the questions disclosure bar keeps its border, chevron and Highlight focus ring at 390 px (D15)", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(POST);
+  const panel = page.locator("[data-questions]");
+  const button = panel.locator("[data-questions-toggle]");
+  await expect(button).toBeVisible();
+  await expect(panel).toHaveCSS("border-top-width", "1px");
+  await expect(panel).not.toHaveCSS("border-top-style", "none");
+  await expect(panel).toHaveCSS("border-top-color", await systemColor(page, "CanvasText"));
+  const chevron = button.locator("svg");
+  await expect(chevron).toBeVisible();
+  await expect(chevron).toHaveCSS("stroke", await systemColor(page, "ButtonText"));
+  await button.focus();
+  await expect(button).toBeFocused();
+  await expect(button).not.toHaveCSS("outline-style", "none");
+  await expect(button).toHaveCSS("outline-width", "2px");
+  await expect(button).toHaveCSS("outline-color", await systemColor(page, "Highlight"));
+});
+
 test("an ordinary topic pill keeps a 1px border", async ({ page }) => {
   await page.goto(POST);
   const pill = page.locator("[data-topic-pill]").first();
@@ -73,10 +92,19 @@ for (const scheme of ["light", "dark"] as const) {
       await expect(page.locator("[data-series-image]").first()).toBeVisible();
     });
 
-    test("author card at the end of a post (A15)", async ({ page }) => {
+    test("footer block at the end of a post (045 F12)", async ({ page }) => {
       await page.goto(POST);
+      const footer = page.locator("[data-post-footer]");
+      await expectEdge(page, footer);
+      await expectEdge(page, page.locator("[data-share]"));
+      const note = page.locator("[data-views-note]");
+      await expect(note).toBeVisible();
+      const [noteColour, boxColour] = await Promise.all([
+        note.evaluate((el) => getComputedStyle(el).color),
+        footer.evaluate((el) => getComputedStyle(el).backgroundColor),
+      ]);
+      expect(noteColour).not.toBe(boxColour);
       const card = page.locator("[data-author-card]");
-      await expectEdge(page, card);
       await expect(card.locator("h2")).toBeVisible();
       await expect(card.locator("p").first()).toBeVisible();
       const links = card.locator("a");

@@ -22,3 +22,14 @@ export function selectPublishedProjects<T extends Orderable>(
   const production = isProductionBuild(env);
   return entries.filter((entry) => !(production && entry.data.draft)).sort(compare);
 }
+
+/**
+ * The entries either side of one in an already ordered list: `previous` is listed above it (newer),
+ * `next` below it (older). It never sorts and never wraps round, so the first entry has no previous
+ * and the last has no next.
+ */
+export function neighbours<T extends { id: string }>(ordered: readonly T[], id: string): { previous?: T; next?: T } {
+  const index = ordered.findIndex((entry) => entry.id === id);
+  if (index === -1) return {};
+  return { previous: ordered[index - 1], next: ordered[index + 1] };
+}
