@@ -125,7 +125,7 @@ describe("the projects index below the filter threshold", () => {
     expect(html).not.toContain("data-filter-");
     expect(html).not.toContain("No projects match");
     const scripts = (page: string) => count(l1.read(page), /<script\b/g);
-    expect(scripts("projects/index.html")).toBe(scripts("about/index.html"));
+    expect(scripts("projects/index.html")).toBe(scripts("terms-of-use/index.html"));
   });
 });
 
@@ -420,9 +420,24 @@ describe("the story of a valid every-setting project", () => {
   });
 
   it("ships no page script beyond the shell's", () => {
-    const about = l1.read("about/index.html");
+    // The shell reference is a page without the career timeline: About carries its filter script.
+    const shell = l1.read("terms-of-use/index.html");
     const scripts = (page: string) => count(page, /<script\b/g);
-    expect(scripts(html)).toBe(scripts(about));
+    expect(scripts(html)).toBe(scripts(shell));
+    expect(html).not.toContain("career-timeline");
+  });
+
+  it("ships the career filter script only on pages that render the timeline", () => {
+    const scripts = (page: string) => count(page, /<script\b/g);
+    const about = l1.read("about/index.html");
+    const shell = l1.read("terms-of-use/index.html");
+    // The script defines the element; it ships with the page that uses CareerTimeline, whether or
+    // not this build's content has any career steps. Vite inlines it while it is under 4 KB and
+    // emits it as an /_astro/ module (allowed by the CSP's 'self') once it grows past that.
+    const external = [...about.matchAll(/<script type="module" src="\/(_astro\/[^"]+\.js)"/g)].map((m) => l1.read(m[1]!));
+    expect([about, ...external].some((code) => code.includes("customElements.define(`career-timeline`"))).toBe(true);
+    expect(shell).not.toContain("career-timeline");
+    expect(scripts(about)).toBe(scripts(shell) + 1);
   });
 });
 

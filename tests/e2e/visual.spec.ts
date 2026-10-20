@@ -164,6 +164,23 @@ for (const size of WIDTHS) {
   }
 }
 
+// The fixture career timeline with Leadership chosen, so an open step with highlighted items and a
+// muted step are in frame (specs/041-career-timeline FR-021). Layer: visual, because the muted pattern and the
+// highlight are pixels only a snapshot shows; what they do is asserted in career-timeline.spec.ts.
+for (const size of WIDTHS) {
+  for (const theme of THEMES) {
+    test(`career timeline — ${size.name} — ${theme}`, async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await open(page, "http://localhost:4322/about/", size.width, size.height, theme);
+      await expect(page.locator("career-timeline")).toHaveAttribute("data-ready", "");
+      await page.locator('[data-career-filter] button[data-category="leadership"]').click();
+      await expect(page.locator("[data-career] [data-muted]").first()).toBeVisible();
+      await expect(page.locator("[data-career] [data-match]").first()).toBeVisible();
+      await expect(page.locator("[data-career]")).toHaveScreenshot(`career-timeline-${size.name}-${theme}.png`);
+    });
+  }
+}
+
 // The fixture-site template subjects (V3). Layer: visual, because pixel identity
 // of a template on frozen content is what only a snapshot shows. What these
 // pages do is asserted elsewhere (blog-fixtures, projects-fixtures, contact,
