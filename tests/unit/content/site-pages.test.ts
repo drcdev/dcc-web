@@ -137,6 +137,24 @@ describe("Contact note (FR-015)", () => {
   });
 });
 
+describe("Contact page shape (FR-009)", () => {
+  const { body } = load("contact.mdx");
+
+  it("puts the note in one slot div and keeps the privacy link outside it", () => {
+    expect(body.match(/<div slot="note">/g)).toHaveLength(1);
+    const start = body.indexOf('<div slot="note">');
+    const end = body.indexOf("</div>", start);
+    expect(end).toBeGreaterThan(start);
+    const note = body.slice(start, end);
+    expect(note).not.toContain("/privacy-policy/");
+    expect(note).not.toMatch(/^#{1,6}\s/m);
+    expect(note).not.toMatch(/<h[1-6]/);
+    expect(body.slice(0, start)).toMatch(/<ContactForm>\s*$/);
+    expect(body.slice(end)).toContain('href="/privacy-policy/"');
+    expect(body.trimEnd().endsWith("</ContactForm>")).toBe(true);
+  });
+});
+
 describe("Technology", () => {
   it("names email delivery and no longer names D1 storage or the cron for contact data", () => {
     const { text } = load("technology.mdx");

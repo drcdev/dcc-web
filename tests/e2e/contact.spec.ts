@@ -314,3 +314,101 @@ test.describe("privacy note", () => {
     expect(await link.evaluate((el) => getComputedStyle(el).textDecorationLine)).toContain("underline");
   });
 });
+
+// Two-column layout (specs/052-contact-editorial-layout; FR-001, FR-002, FR-003, FR-013, FR-017).
+// By data hooks, not copy: Don reviews the words.
+test.describe("layout", () => {
+  const box = async (page: Page, selector: string) => (await page.locator(selector).boundingBox())!;
+
+  for (const width of [1024, 1280]) {
+    test(`puts the note beside the form at ${width} px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/contact/");
+      const note = await box(page, "[data-contact-note]");
+      const form = await box(page, "[data-contact-form-column]");
+      expect(note.x + note.width).toBeLessThanOrEqual(form.x);
+      expect(Math.abs(note.y - form.y)).toBeLessThanOrEqual(1);
+      expect(Math.round(form.x - (note.x + note.width))).toBe(48);
+      expect(form.width).toBeGreaterThan(note.width);
+      expect(form.width).toBeGreaterThanOrEqual(300);
+      const title = await box(page, "h1");
+      expect(note.y).toBeGreaterThan(title.y + title.height - 1);
+      const order = await page.evaluate(() => {
+        const n = document.querySelector("[data-contact-note]")!;
+        const f = document.querySelector("[data-contact-form-column]")!;
+        return n.compareDocumentPosition(f) & Node.DOCUMENT_POSITION_FOLLOWING;
+      });
+      expect(order).toBeTruthy();
+    });
+  }
+
+  test("caps and centres the layout at 1920 px", async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1000 });
+    await page.goto("/contact/");
+    const root = await box(page, "[data-contact]");
+    expect(root.width).toBeLessThanOrEqual(1024);
+    expect(Math.abs(root.x - (1920 - (root.x + root.width)))).toBeLessThanOrEqual(1);
+  });
+
+  for (const width of [1023, 375]) {
+    test(`stacks the note above the form at ${width} px with no sideways scroll`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto("/contact/");
+      const note = await box(page, "[data-contact-note]");
+      const form = await box(page, "[data-contact-form-column]");
+      expect(note.y + note.height).toBeLessThanOrEqual(form.y);
+      expect(Math.round(form.y - (note.y + note.height))).toBe(40);
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+  }
+
+  for (const width of [1280, 375]) {
+    test(`tabs through the note links before Name at ${width} px without loading the spam check`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      const challengeRequests: string[] = [];
+      page.on("request", (request) => {
+        if (request.url().includes("challenges.cloudflare.com")) challengeRequests.push(request.url());
+      });
+      await page.goto("/contact/");
+      const links = page.locator("[data-contact-links] a");
+      const count = await links.count();
+      expect(count).toBe(3);
+      await page.locator("body").press("Tab");
+      // Skip any shell links (skip link, header) until the first note link has focus.
+      for (let i = 0; i < 40 && !(await links.nth(0).evaluate((el) => el === document.activeElement)); i++) {
+        await page.keyboard.press("Tab");
+      }
+      for (let i = 0; i < count; i++) {
+        await expect(links.nth(i)).toBeFocused();
+        if (i < count - 1) await page.keyboard.press("Tab");
+      }
+      await page.waitForTimeout(500);
+      expect(challengeRequests, "no spam-check request while on the note links (FR-013)").toEqual([]);
+      // The privacy note's link sits in the form column, outside the form, so focusing it does not
+      // load the check either (FR-013).
+      const privacyLink = page.locator("[data-contact-privacy] a").first();
+      for (let i = 0; i < 5 && !(await privacyLink.evaluate((el) => el === document.activeElement)); i++) {
+        await page.keyboard.press("Tab");
+      }
+      await expect(privacyLink).toBeFocused();
+      await page.waitForTimeout(500);
+      expect(challengeRequests, "no spam-check request while on the privacy link (FR-013)").toEqual([]);
+      const name = page.getByLabel("Name", { exact: true });
+      for (let i = 0; i < 5 && !(await name.evaluate((el) => el === document.activeElement)); i++) {
+        await page.keyboard.press("Tab");
+      }
+      await expect(name).toBeFocused();
+      await expect.poll(() => challengeRequests.length).toBeGreaterThan(0);
+    });
+  }
+
+  test("sends a valid message at 375 px", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    await page.goto("/contact/?project=Fixture%20project");
+    await expect(page.locator("#contact-project")).toBeVisible();
+    await fillValid(page);
+    await page.getByRole("button", { name: "Send" }).click();
+    await expect(page.locator("#contact-success")).toBeVisible({ timeout: 5000 });
+  });
+});

@@ -4,6 +4,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { site } from "../../../src/config/site";
 
 const source = readFileSync(
   fileURLToPath(new URL("../../../src/content/pages/privacy-policy.mdx", import.meta.url)),
@@ -129,5 +130,18 @@ describe("privacy policy: whole page", () => {
 
   it("has a current Last updated day (this change is dated 10 October 2026)", () => {
     expect(body).toContain("**Last updated:** 10 October 2026");
+  });
+});
+
+describe("contact address: no drift from site config", () => {
+  it("privacy policy and terms of use both publish mailto:<site.contactEmail>", () => {
+    expect(site.contactEmail).toMatch(/^[^@\s]+@[^@\s]+$/);
+    for (const page of ["privacy-policy.mdx", "terms-of-use.mdx"]) {
+      const text = readFileSync(
+        fileURLToPath(new URL(`../../../src/content/pages/${page}`, import.meta.url)),
+        "utf-8",
+      );
+      expect(text, page).toContain(`mailto:${site.contactEmail}`);
+    }
   });
 });

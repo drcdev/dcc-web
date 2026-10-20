@@ -69,10 +69,11 @@ for (const [path, title, draft] of PAGES) {
       await expect(page.getByRole("main")).toHaveCount(1);
       await expect(page.getByRole("contentinfo")).toHaveCount(1);
       // The home page's "Recent writing" (spec 008 US7), "Now" and "Start here" sections and each
-      // reading path (spec 040 FR-018) are regions labelled by their own heading, by design.
+      // reading path (spec 040 FR-018) and the contact note (spec 052 FR-001a) are regions labelled
+      // by their own heading, by design.
       await expect(
         page.locator(
-          "main [role=region], main section[aria-label], main section[aria-labelledby]:not([data-recent-writing], [data-now], [data-start-here], [data-reading-path], [data-career])",
+          "main [role=region], main section[aria-label], main section[aria-labelledby]:not([data-recent-writing], [data-now], [data-start-here], [data-reading-path], [data-career], [data-contact-note])",
         ),
       ).toHaveCount(0);
       await expect(page.locator("aside, [role=complementary], [role=search]")).toHaveCount(0);
