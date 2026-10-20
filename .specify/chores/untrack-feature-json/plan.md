@@ -117,6 +117,8 @@ Mechanical criteria (the review phase checks each one):
   never committed), not a mirror of a config value, and follows the existing `.cache/` and
   `.reference/` ignore tests. CI checks out a full git work tree, so `git` is available.
 
+- [x] W1 done (test seen red: `check-ignore --no-index` exits 1 before W2)
+
 ### W2: Ignore and untrack `.specify/feature.json`
 
 - **Files:** `.gitignore` (add
