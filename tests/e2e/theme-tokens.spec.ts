@@ -46,7 +46,7 @@ interface Probe {
   hasText?: string;
   /** Focus the element before reading it, to read its focus ring. */
   focus?: boolean;
-  /** Each computed property with its [light, dark] token. */
+  /** Each computed property with its [light, dark] token; `token/80` is the token at 80% alpha. */
   props: Record<string, [light: Token, dark: Token]>;
 }
 
@@ -64,6 +64,14 @@ const PAGES: Page_[] = [
       await expect(page.locator("[data-theme-switch]")).toBeVisible();
     },
     probes: [
+      {
+        name: "content card (FR-001, FR-002)",
+        selector: "#content-section",
+        props: {
+          "background-color": ["white", "dusk-800"],
+          "border-top-color": ["dusk-200/80", "dusk-700/80"],
+        },
+      },
       { name: "page background", selector: "body", props: { "background-color": ["white", "dusk-BASE"] } },
       {
         name: "header rule",
@@ -263,14 +271,17 @@ const PAGES: Page_[] = [
  */
 async function colourOf(page: Page, token: Token): Promise<string> {
   if (token === "transparent") return "rgba(0, 0, 0, 0)";
-  const got = await page.evaluate((name) => {
+  // `dusk-200/80` is the token at 80% alpha, as Tailwind's `border-dusk-200/80` draws it.
+  const [name, alpha] = token.split("/");
+  const got = await page.evaluate(([name, alpha]) => {
     const probe = document.createElement("span");
-    probe.style.setProperty("color", `var(--color-${name}, rgb(1, 2, 3))`);
+    const base = `var(--color-${name}, rgb(1, 2, 3))`;
+    probe.style.setProperty("color", alpha ? `color-mix(in oklab, ${base} ${alpha}%, transparent)` : base);
     document.body.append(probe);
     const colour = getComputedStyle(probe).color;
     probe.remove();
     return colour;
-  }, token);
+  }, [name!, alpha] as [string, string | undefined]);
   expect(got, `token --color-${token} is not defined`).not.toBe("rgb(1, 2, 3)");
   return got;
 }

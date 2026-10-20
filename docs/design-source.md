@@ -92,6 +92,9 @@ Test support for this structure:
   (`:has(.kg-width-wide, .kg-width-full)`). Putting the container on `<body>` stopped the dark
   background reaching the whole window, and an always-on container made Chromium run every
   colour transition in `<main>` on load, which axe caught mid-fade on the home call to action.
+- The standalone and not-found pages draw their content in a card in both themes. Flux's
+  `content-section.hbs` has no light-mode card, so the light card (white, fine border, soft
+  shadow) is a dcc-web departure (spec 050).
 - `.prose-accent` has `overflow-wrap: anywhere` so a long unbroken address wraps instead of
   scrolling sideways.
 

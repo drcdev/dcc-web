@@ -9,6 +9,7 @@
 // is false because a not-found page has no address of its own to point
 // search engines or sharers at (FR-017c).
 import BaseLayout from "../layouts/BaseLayout.astro";
+import ContentCard from "../components/page/ContentCard.astro";
 import { getNavigation } from "../lib/pages";
 
 const navigation = await getNavigation();
@@ -21,13 +22,12 @@ const navigation = await getNavigation();
   noindex
   navigation={navigation}
 >
-  {/* Flux content-section.hbs wrapper (see PageLayout.astro). */}
-  <section class="mx-auto mb-8 max-w-screen-lg prose lg:prose-lg dark:prose-invert prose-accent dark:rounded-2xl dark:bg-dusk-800 dark:p-6">
+  <ContentCard>
     <h1>Page not found</h1>
     <p>
       Sorry, there's nothing here. Older blog addresses have moved and are not carried over to this
       site, or the link you followed may be out of date.
     </p>
     <p><a href="/">Go to the home page</a></p>
-  </section>
+  </ContentCard>
 </BaseLayout>

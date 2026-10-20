@@ -16,7 +16,8 @@ vi.mock("../../src/lib/pages", () => ({
 }));
 
 import NotFound from "../../src/pages/404.astro";
-import { byName, meta, textOf } from "./html.ts";
+import PageLayout from "../../src/layouts/PageLayout.astro";
+import { byName, classList, meta, textOf } from "./html.ts";
 
 const ORIGIN = "https://example.test";
 
@@ -79,5 +80,28 @@ describe("404 page metadata", () => {
   it("has no canonical link and no og:url (FR-017c)", () => {
     expect(byName(html, "link").filter((l) => l.attrs.rel === "canonical")).toHaveLength(0);
     expect(meta(html, "property", "og:url")).toHaveLength(0);
+  });
+});
+
+describe("404 content card (FR-006)", () => {
+  it("draws the same single #content-section as PageLayout, with the h1 inside", async () => {
+    const container = await AstroContainer.create({ astroConfig: { site: ORIGIN } });
+    const layoutHtml = await container.renderToString(PageLayout, {
+      partial: false,
+      props: {
+        title: "Workshops",
+        description: "About workshops.",
+        navigation: { header: [], footer: [] },
+      },
+      request: new Request(`${ORIGIN}/workshops/`),
+      slots: { default: "<p>Body text.</p>" },
+    });
+    const cards = (markup: string) => byName(markup, "section").filter((s) => s.attrs.id === "content-section");
+    const [pageCard] = cards(layoutHtml);
+    const [notFoundCard] = cards(html);
+    expect(cards(layoutHtml)).toHaveLength(1);
+    expect(cards(html)).toHaveLength(1);
+    expect([...classList(notFoundCard!)].sort()).toEqual([...classList(pageCard!)].sort());
+    expect(html).toMatch(/<section[^>]*id="content-section"[^>]*>[\s\S]*<h1[^>]*>Page not found<\/h1>/);
   });
 });
