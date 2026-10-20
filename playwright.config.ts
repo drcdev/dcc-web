@@ -8,6 +8,7 @@ const FIXTURE_SITE_SPECS = [
   /projects-fixtures\.spec\.ts$/,
   /questions\.spec\.ts$/,
   /home\.spec\.ts$/,
+  /career-timeline\.spec\.ts$/,
 ];
 
 // E2E always runs against the production build served by Cloudflare's own

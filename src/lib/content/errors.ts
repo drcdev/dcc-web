@@ -12,7 +12,7 @@ export type ContentKind = "page" | "post" | "project";
  * Every kind of file a build error can name. The file-backed kinds (`ContentKind`) have addresses
  * and images to check; the Now file and the reading-path files do not, so they are listed here only.
  */
-export type ErrorKind = ContentKind | "now" | "reading path";
+export type ErrorKind = ContentKind | "now" | "reading path" | "career step";
 
 /**
  * A problem in one file (`Page file <path>: <problem>`) or between two files

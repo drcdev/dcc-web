@@ -194,6 +194,9 @@ and in-progress projects index rows, making four. The retired status (feature 01
 more fixture subjects, `project-row-retired` (the retired index row, making five) and
 `retired-story-header` (the story header with the retired pill and note), on the fixture
 project `retired`.
+Feature 041 added four more fixture subjects, `career-timeline-{phone,desktop}-{light,dark}`: the
+fixture About page timeline with Leadership chosen, so an open step with highlighted items and a
+muted step are in frame.
 The project also sets the footer year to 2026 before every shot (`tests/e2e/footer-year.ts`), so
 a new calendar year cannot fail it; the real year is checked by `SiteFooter.test.ts` and
 `shell.spec.ts`.
@@ -461,6 +464,20 @@ The section markup is asserted in `component/sections/Now.test.ts` and
 | Must build: only a free-form topic | Builds; the pill links to an existing topic page | `build/local-site.test.ts` "builds a post that is free-form only, with a silent build"; the topic page: `build/blog-listing.test.ts` "builds a plain banner and listing for a free-form id named by a visible post" | the L1 build |
 | Must build: one series plus others | Builds | `build/local-site.test.ts` "builds a post that is series plus others, with a silent build" | the L1 build |
 
+### Career timeline: `specs/041-career-timeline/contracts/build-errors.md`
+
+| Rows | Rule | Primary assertion | Call-site run |
+|---|---|---|---|
+| T01 to T07, T12, T14 | Required text, `YYYY-MM` and `present`, end not before start, unknown key, empty lists, award shape and https `href`, duplicate post, text limits, `volunteer` true or false | `unit/content/career-schema.test.ts` (row id in each title) | schema sync, `build/career-timeline.test.ts` "T01" |
+| T08, T09 | The current role (latest start) has no `nextMove` and ends `present` | `unit/content/career.test.ts` "T08", "T09" | build, `build/career-timeline.test.ts` "T09" |
+| T10, T11 | A listed post exists and is not a draft | `unit/content/career.test.ts` "T10", "T11" | the same build run as T09 |
+| T13 | A step file that does not parse | none: Astro's YAML loader decides it | none |
+
+The timeline markup is asserted in `component/sections/CareerTimeline.test.ts`, the filter logic
+in `unit/content/career-filter.test.ts`, the journeys in `e2e/career-timeline.spec.ts`, the
+filtered states in `e2e/career-timeline.a11y.spec.ts`, and the placement and launch rules in
+`unit/content/career-launch.test.ts`.
+
 ## Build budget
 
 The `build` Vitest project (`tests/build/**`) runs real Astro work, so it is capped. The target
@@ -487,6 +504,10 @@ Counted on 2026-10-01 after phase 2:
 | `project-validation.test.ts` | 2 | 3 |
 | `fixture-site.test.ts` | 0 | 2 |
 | **Total** | **20** | **12** |
+
+Feature 041 (career timeline) adds `career-timeline.test.ts`: 1 build (T09, the About page) and
+2 syncs (T01 and a site with no step files). The T10 and T11 rows reach the build through the same
+call site and are proven at the unit layer.
 
 Before phase 2 the project ran 144 runs: 132 full builds and 12 syncs.
 
