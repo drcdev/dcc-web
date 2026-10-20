@@ -408,3 +408,122 @@ test.describe("title card width", () => {
     expect(Math.abs(card.right - article.right)).toBeLessThanOrEqual(1);
   });
 });
+
+// Full-card click, focus outline and hover feedback on post cards (spec 049).
+const CARD_IMAGE = "/writing/fixture-post-02/";
+const cardFor = (page: Page, selector: string, href: string) =>
+  page.locator(selector).filter({ has: page.locator(`a[data-post-link][href="${href}"]`) }).first();
+
+/** The href of the link at a point of the card, found by hit-testing, or null for none. */
+const hitHref = (page: Page, card: ReturnType<Page["locator"]>, where: string) =>
+  card.evaluate((el, target) => {
+    const box = el.getBoundingClientRect();
+    const rect = (sel: string) => el.querySelector(sel)?.getBoundingClientRect();
+    const mid = (r: DOMRect | undefined) => (r ? [r.left + r.width / 2, r.top + r.height / 2] : [NaN, NaN]);
+    const [x, y] =
+      target === "image"
+        ? mid(rect("img"))
+        : target === "summary"
+          ? mid(rect("p"))
+          : target === "date"
+            ? mid(rect("time"))
+            : [box.right - 6, box.top + box.height / 2];
+    return document.elementFromPoint(x!, y!)?.closest("a")?.getAttribute("href") ?? null;
+  }, where);
+
+test.describe("full-card click on the fixture site", () => {
+  test.use({ viewport: { width: 1280, height: 900 } });
+  const CASES = [
+    { name: "lead story", selector: "[data-lead-story]", href: LEAD, parts: ["image", "summary", "date", "empty"] },
+    { name: "image card", selector: "[data-post-card]", href: CARD_IMAGE, parts: ["image", "summary", "date", "empty"] },
+    { name: "text-only card", selector: "[data-post-card]", href: TEXT_ONLY, parts: ["summary", "date", "empty"] },
+  ];
+  for (const { name, selector, href, parts } of CASES) {
+    test(`the ${name} opens the post from ${parts.join(", ")}`, async ({ page }) => {
+      await page.goto(LANDING);
+      const card = cardFor(page, selector, href);
+      await card.scrollIntoViewIfNeeded();
+      for (const part of parts) expect(await hitHref(page, card, part), part).toBe(href);
+    });
+  }
+
+  test("a real click on the card image opens the post", async ({ page }) => {
+    await page.goto(LANDING);
+    const card = cardFor(page, "[data-post-card]", CARD_IMAGE);
+    await card.scrollIntoViewIfNeeded();
+    // The link overlay covers the image, so click the image's position rather than the element.
+    const box = (await card.locator("img").boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(page).toHaveURL(new RegExp(`${CARD_IMAGE}$`));
+  });
+
+  test("a topic pill and a series marker open their own page, not the post", async ({ page }) => {
+    await page.goto(LANDING);
+    const lead = page.locator("[data-lead-story]");
+    await lead.locator("[data-topic-pill]").first().click();
+    await expect(page).toHaveURL(/\/writing\/topics\//);
+    await page.goto(LANDING);
+    await lead.locator("[data-series-marker]").click();
+    await expect(page).toHaveURL(/\/writing\/drift\/$/);
+  });
+
+  test("keyboard focus outlines the card, not the link, and does not lift it", async ({ page }) => {
+    await page.goto(LANDING);
+    const card = cardFor(page, "[data-post-card]", CARD_IMAGE);
+    const link = card.locator("a[data-post-link]");
+    for (let i = 0; i < 80 && !(await link.evaluate((el) => el === document.activeElement)); i++) {
+      await page.keyboard.press("Tab");
+    }
+    await expect(link).toBeFocused();
+    await expect(card).toHaveCSS("outline-style", "solid");
+    await expect(card).toHaveCSS("outline-width", "2px");
+    await expect(link).toHaveCSS("outline-style", "none");
+    await expect(card).toHaveCSS("transform", "none");
+  });
+});
+
+test.describe("hover feedback on post cards", () => {
+  test.use({ viewport: { width: 1280, height: 900 } });
+  const lift = async (page: Page) => {
+    await page.goto(LANDING);
+    const card = cardFor(page, "[data-post-card]", CARD_IMAGE);
+    await card.scrollIntoViewIfNeeded();
+    const before = await card.boundingBox();
+    await card.hover();
+    return { card, before };
+  };
+
+  test.describe("motion allowed", () => {
+    test.use({ reducedMotion: "no-preference" });
+    test("the card lifts, gains a shadow and the image grows", async ({ page }) => {
+      const { card, before } = await lift(page);
+      await expect.poll(async () => (await card.boundingBox())!.y).toBeLessThan(before!.y - 2);
+      await expect(card).not.toHaveCSS("box-shadow", "none");
+      await expect.poll(() => card.locator("img").evaluate((el) => getComputedStyle(el).scale)).not.toMatch(/^(none|1)$/);
+    });
+  });
+
+  test.describe("reduced motion", () => {
+    test.use({ reducedMotion: "reduce" });
+    test("nothing moves or scales", async ({ page }) => {
+      const { card, before } = await lift(page);
+      await expect(card).not.toHaveCSS("box-shadow", "none");
+      expect((await card.boundingBox())!.y).toBe(before!.y);
+      expect(await card.locator("img").evaluate((el) => getComputedStyle(el).scale)).toMatch(/^(none|1)$/);
+    });
+  });
+
+  test.describe("touch device", () => {
+    test.use({ hasTouch: true, isMobile: true, reducedMotion: "no-preference", viewport: { width: 390, height: 844 } });
+    test("hover shows no lift or shadow", async ({ page }) => {
+      await page.goto(LANDING);
+      const card = cardFor(page, "[data-post-card]", CARD_IMAGE);
+      await card.scrollIntoViewIfNeeded();
+      expect(await page.evaluate(() => matchMedia("(hover: none)").matches)).toBe(true);
+      const before = await card.boundingBox();
+      await card.hover();
+      await expect(card).toHaveCSS("box-shadow", "none");
+      expect((await card.boundingBox())!.y).toBe(before!.y);
+    });
+  });
+});

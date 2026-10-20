@@ -52,4 +52,5 @@ export const sectionSchemas = {
   RecentWriting: section({}),
   Now: section({}),
   StartHere: section({}),
+  CareerTimeline: section({}),
 } satisfies Record<SectionName, z.ZodType>;
