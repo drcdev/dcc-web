@@ -71,7 +71,7 @@ for (const [path, title, draft] of PAGES) {
       // reading path (spec 040 FR-018) are regions labelled by their own heading, by design.
       await expect(
         page.locator(
-          "main [role=region], main section[aria-label], main section[aria-labelledby]:not([data-recent-writing], [data-now], [data-start-here], [data-reading-path])",
+          "main [role=region], main section[aria-label], main section[aria-labelledby]:not([data-recent-writing], [data-now], [data-start-here], [data-reading-path], [data-career])",
         ),
       ).toHaveCount(0);
       await expect(page.locator("aside, [role=complementary], [role=search]")).toHaveCount(0);
