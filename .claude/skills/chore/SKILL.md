@@ -1,6 +1,6 @@
 ---
 name: chore
-description: Run the orchestrated chore pipeline for work with no user-visible behaviour change — tests, CI, tooling, dependencies, docs, pipeline skills, refactors — ingest a description or GitHub issue, create a chore branch, then explore → plan → implement → review in fresh subagents, finishing with the full verify gate and a PR. Pauses only for unticked decisions in the issue or plan. Use when the user asks for maintenance or infrastructure work; not for a feature (/deliver), a small visible change (/tweak) or a bug (/squash).
+description: Run the orchestrated chore pipeline for work with no user-visible behaviour change — tests, CI, tooling, dependencies, docs, pipeline skills, refactors — ingest a description or GitHub issue, create a chore branch, then explore → plan → implement → review in fresh subagents, finishing with the full verify gate and a PR. Pauses only for unticked decisions in the issue or plan. Use when the user asks for maintenance or infrastructure work; not for a feature (/deliver), a small visible change (/tweak), a content update (/content) or a bug (/squash).
 argument-hint: "Chore description, or a GitHub issue reference (#42, 42, or issue URL)"
 user-invocable: true
 disable-model-invocation: false

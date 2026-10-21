@@ -61,9 +61,10 @@ from Don's `cadence` project (read-only clone at `.reference/cadence`, gitignore
 `.reference/flux` for the design theme).
 `/chore` is local to this repository: it has no spec phase (a chore changes no user-visible
 behaviour), plans into `.specify/chores/<slug>/` on a `chore/<slug>` branch, and adds a
-fresh-eyes review phase before verify.
+fresh-eyes review phase before verify. `/content` handles edits under `src/content/` with no spec and CI as
+the gate, and uses the same `_shared/` files.
 
-Wording the four pipelines share lives once in `.claude/skills/_shared/`. Each skill reads it at
+Wording the five pipelines share lives once in `.claude/skills/_shared/`. Each skill reads it at
 the point of use, and no skill restates it; the Local toolchain rules live above in this file.
 
 ## Spec Kit extensions

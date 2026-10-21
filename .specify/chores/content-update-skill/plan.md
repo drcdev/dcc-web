@@ -178,7 +178,7 @@ Sections:
    or layout, stop and hand off to `/tweak`. If it becomes a new feature, hand off to
    `/deliver`.
 
-### W2 Routing pointers and shared-file lines
+### [x] W2 Routing pointers and shared-file lines
 
 Files: `.claude/skills/tweak/SKILL.md`, `.claude/skills/chore/SKILL.md` (frontmatter
 `description` only), `.claude/skills/_shared/verify-gate.md`, `.claude/skills/_shared/open-pr.md`

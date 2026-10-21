@@ -1,6 +1,6 @@
 ---
 name: tweak
-description: Run the short speckit pipeline for a small user-visible change — specify → clarify (one round) → plan → tasks → implement → verify → PR — with each phase in a fresh subagent. Skips the checklist, resolve, analyze and converge phases that a small change does not earn, but still produces a spec, a plan and tests. Pauses only for the clarify questions. Use for a copy change, a spacing or colour fix, a small component adjustment — not for a feature slice and never for a dependency, CI, deployment, design-system or constitution change.
+description: Run the short speckit pipeline for a small user-visible change — specify → clarify (one round) → plan → tasks → implement → verify → PR — with each phase in a fresh subagent. Skips the checklist, resolve, analyze and converge phases that a small change does not earn, but still produces a spec, a plan and tests. Pauses only for the clarify questions. Use for a copy change, a spacing or colour fix, a small component adjustment — not for a content-only edit (/content), not for a feature slice and never for a dependency, CI, deployment, design-system or constitution change.
 argument-hint: "Change description, or a GitHub issue reference (#42, 42, or issue URL)"
 user-invocable: true
 disable-model-invocation: false
