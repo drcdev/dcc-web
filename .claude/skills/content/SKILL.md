@@ -105,8 +105,9 @@ local-site and project-template build tests. Follow the Local toolchain section 
 for the pnpm calls (node version, `perl` alarm for a long run). Why this is enough: copy, posts and
 stories cannot move a visual baseline, because the visual project builds the fixture site. One
 exception: the header, footer, open mobile menu and not-found shots are taken on the real site, so
-a menu change (adding, hiding or reordering a menu page, a `nav.label`, `visible` or `draft`, or
-the title of a menu page) moves them. That case needs the baseline refresh in
+a menu change (adding, removing or moving a page's `nav`, a `nav.label`, or the title of a menu
+page) moves them. A `visible` or `draft` flip does not, because that build keeps hidden and draft
+pages in the menus. That case needs the baseline refresh in
 `.claude/skills/_shared/visual-baselines.md`, which runs Docker and Playwright, so
 raise it with Don before the PR.
 
