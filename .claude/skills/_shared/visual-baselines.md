@@ -1,11 +1,12 @@
 # Visual baselines (shared)
 
-Included by `/deliver`, `/tweak`, `/squash` and `/chore`, and pointed to from `CLAUDE.md`. These
+Included by `/deliver`, `/tweak`, `/squash`, `/chore` and `/content`, and pointed to from `CLAUDE.md`. These
 rules are **mandatory** for the orchestrator and for every subagent told to read this file. Do not
 paraphrase them into a subagent prompt; pass them by reference.
 
 The visual project snapshots only the shell (header, footer and open mobile menu), the
-not-found page and the fixture site, never real content, so a content edit cannot fail it.
+not-found page and the fixture site, never real content, so a content edit cannot fail it, except
+a menu change, which moves the shell and not-found shots taken on the real site.
 Its per-platform baselines change only when the shell, a template or the design system
 changes.
 

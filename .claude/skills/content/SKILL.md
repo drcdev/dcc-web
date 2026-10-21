@@ -31,12 +31,12 @@ still `/content`; see "Code and schema changes".
 
 State today. All paths are under `src/content/`; the loaders are in `src/content.config.ts`. The
 `.md`/`.mdx`/`.yaml` mix is not a design: #200 will settle one file-format rule and #202 will merge
-the three small site-data collections (career, reading paths, Now), so re-read the schema before
+the three small site-data collections (Now, reading paths, assessment), so re-read the schema before
 trusting a row. Every schema is strict: an unknown or misspelled key fails the build.
 
 | Collection | Files | ID | Rules and where they are enforced | Author doc |
 |---|---|---|---|---|
-| `pages` | `pages/**/*.mdx` (or `.md`), except `writing` and `projects` | Address from the path: lower-case letters, digits, hyphens; `index.mdx` is `/` | `title` and `description` required; `visible` (default true) and `draft` (default false); `nav` puts it in the header or footer; the home page cannot be `visible: false`; no two files make one address; no route in `src/pages/` may own the address. Schema `schemas/page.ts`; checks `lib/content/addresses.ts` and `page-flags.ts`; section components in the body are prop-checked by `src/components/sections/{schemas,validate}.ts` | `docs/pages.md` |
+| `pages` | `pages/**/*.mdx` (or `.md`), except `writing` and `projects` | Address from the path: lower-case letters, digits, hyphens; `index.mdx` is `/` | `title` and `description` required; `visible` (default true) and `draft` (default false); `nav` puts it in the header or footer, one position per menu (`lib/content/navigation.ts`); the home page cannot be `visible: false`; no two files make one address; no route in `src/pages/` may own the address. Schema `schemas/page.ts`; checks `lib/content/addresses.ts` and `page-flags.ts`; section components in the body are prop-checked by `src/components/sections/{schemas,validate}.ts` | `docs/pages.md` |
 | `landing` | `pages/writing.mdx`, `pages/projects.mdx` | `writing`, `projects` | Menu settings only (`title`, header `nav`); the body must be empty (`assertLandingBody`). The pages themselves are code routes | `docs/pages.md` "Landing files" |
 | `posts` | `posts/*.mdx` | File name without extension | `.md` is rejected, no sub-folders, a few names are reserved (`all`, `topics`, series ids) (`assertPostFiles`); `title`, `summary`, `date` (YYYY-MM-DD, a real day, checked on the raw text by `post-dates.ts`), at least one topic, no duplicate topics, at most one series; `updated` not before `date`; `draft`, `featured`. Schema `schemas/post.ts`. `sample-everything.mdx` is the draft sample | `docs/posts.md`, `VOICE.md` |
 | `projects` | `projects/*.mdx` directly in the folder; `_`-prefixed files (`_template.mdx`) are not projects | File name, up to 64 characters of lower-case letters, digits, hyphens | `problem` is one sentence of at most 140 characters; 1 to 4 `themes`; `status`; `visual`; `replacedBy` only with `status: retired`; `demo` or `standIn`, not both; the story body is Problem, Options, Build and Lessons, with the Options table. Schema `schemas/project.ts`; story shape `lib/content/project-story.ts` | `docs/projects.md` |
@@ -53,8 +53,7 @@ component name or prop you are unsure of is listed in `docs/pages.md` "Component
 
 State today. `posts/images/` and `pages/images/` are flat folders; `projects/images/<slug>/`
 holds one folder per project. A path in front matter starts with `./images/` and is relative to
-the file. A missing file fails the build with the file named (`lib/content/images.ts`), and every
-image needs alt text. Diagrams with text follow `docs/projects.md` "Text in a diagram"
+the file. A missing file fails the build with the file named (`lib/content/images.ts`), and an image in front matter needs alt text. Diagrams with text follow `docs/projects.md` "Text in a diagram"
 (`pnpm run fonts:diagrams`). #201 will give all three one layout, so check the doc for the
 collection you are editing before adding a file.
 
@@ -62,7 +61,7 @@ collection you are editing before adding a file.
 
 State today. A rule can sit in any of three places, so when an edit fails or you need to know
 what is allowed, look in all of them: the schema (`src/content/schemas/<x>.ts`), the build-time
-checks (`src/lib/content/*.ts`, run from `generateId` in `src/content.config.ts`), and the reader
+checks (`src/lib/content/*.ts`, run from `generateId` in `src/content.config.ts` or, for some, by the readers and routes at build time), and the reader
 that assembles the collection (`src/lib/<x>.ts`, for example `now.ts`, `career.ts`,
 `reading-paths.ts`), plus the rendering component. #203 will put each collection's rules in one
 module. Two test guards bind a content edit:
@@ -80,7 +79,7 @@ module. Two test guards bind a content edit:
 2. **Branch** `content/<slug>` from `main` (a short kebab-case slug; no `specs/` or `.specify/`
    directory is made).
 3. **Edit** using the guide above and the author doc for the collection. Keep to the voice
-   rules in `VOICE.md` for prose. Commit with a conventional message (`content: ...`).
+   rules in `VOICE.md` for prose. Commit with a conventional message (`docs(content): ...` for an edit, `feat(content): ...` for a new entry).
 4. **Gate** (next section).
 5. **PR.** Read `.claude/skills/_shared/open-pr.md` and follow it exactly. The body says what
    changed and where to see it on the preview, includes `Closes #<n>` for an issue, and lists
@@ -90,8 +89,8 @@ module. Two test guards bind a content edit:
 ## Gate
 
 Read `.claude/skills/_shared/verify-gate.md`. It applies, with one difference. When the diff
-changes no code (no schema, `src/content.config.ts`, anything under `src/lib` or
-`src/components`, and no test), commit, run `git fetch origin` and
+changes no code (nothing outside `src/content/`, no file under `src/content/schemas/`, and no
+test), commit, run `git fetch origin` and
 `node scripts/ci/changed-paths.ts --base origin/main` as that file says, then run, whatever tier
 it prints:
 
@@ -103,8 +102,13 @@ instead of the full `pnpm run verify`, which needs no go-ahead from Don here. `t
 builds the site itself: `indexing.test.ts` runs `astro build` on the real content in a main and a
 preview environment, so no separate `pnpm run build` is needed. It also runs the navigation,
 local-site and project-template build tests. Follow the Local toolchain section of `CLAUDE.md`
-for the pnpm calls (node version, `perl` alarm for a long run). Why this is enough: content cannot
-move a visual baseline, because the visual project builds the fixture site, never real content.
+for the pnpm calls (node version, `perl` alarm for a long run). Why this is enough: copy, posts and
+stories cannot move a visual baseline, because the visual project builds the fixture site. One
+exception: the header, footer, open mobile menu and not-found shots are taken on the real site, so
+a menu change (adding, hiding or reordering a menu page, a `nav.label`, `visible` or `draft`, or
+the title of a menu page) moves them. That case needs the baseline refresh in
+`.claude/skills/_shared/visual-baselines.md`, which runs Docker and Playwright, so
+raise it with Don before the PR.
 
 State today: a YAML or `.md` collection prints `tier=full` and pays the full CI gate, though the
 diff changes no code. #199 will add a content-only tier for those collections. Until then, push

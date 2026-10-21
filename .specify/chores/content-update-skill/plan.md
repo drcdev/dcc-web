@@ -178,6 +178,9 @@ Sections:
    or layout, stop and hand off to `/tweak`. If it becomes a new feature, hand off to
    `/deliver`.
 
+Round 1 fixes: narrowed the visual-baseline claim to exclude menu changes (H1, with the matching
+sentence in `_shared/visual-baselines.md`), corrected #202's scope (H2), and applied L1-L6.
+
 ### [x] W2 Routing pointers and shared-file lines
 
 Files: `.claude/skills/tweak/SKILL.md`, `.claude/skills/chore/SKILL.md` (frontmatter

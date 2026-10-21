@@ -1,6 +1,6 @@
 # The `[PREVIEW-CHECK]` marker (shared)
 
-Included by `/deliver`, `/tweak` and `/chore`, and reached from `/squash` through `open-pr.md`.
+Included by `/deliver`, `/tweak`, `/chore` and `/content`, and reached from `/squash` through `open-pr.md`.
 These rules are **mandatory** for the orchestrator and for every subagent told to read this file.
 Do not paraphrase them into a subagent prompt; pass them by reference.
 
