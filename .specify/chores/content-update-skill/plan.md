@@ -198,7 +198,7 @@ Layer: unit (existing skill and docs readers stay green).
   `src/content/` with no spec and CI as the gate, and uses the same `_shared/` files. Where it
   says "the four pipelines" and that would now be wrong, change the count.
 
-### W3 Local gate and record
+### [x] W3 Local gate and record
 
 Files: none new (the review report is written by the review phase).
 Test: existing. Run `git fetch origin && node scripts/ci/changed-paths.ts --base origin/main`
@@ -251,3 +251,13 @@ to cite under Principle IV. The skill format follows the existing pipeline skill
   hands off as soon as CSS, a new component or a template change appears.
 - **The removed-sections guard** (`docs-content-structure.test.ts`) fails if the skill names
   `TextBlock` or `Offerings`, even as history. Do not mention them.
+
+## W3 record
+
+Tier printed: `tier=docs` (6 documentation files, 2 skip-safe). `pnpm run lint:secrets` passed;
+`pnpm run test:unit` passed (189 files, 2878 tests). Acceptance 4 greps and the
+`TextBlock|Offerings` grep found nothing in `.claude/skills/content`. No full `pnpm run verify`
+was run (not needed for tier=docs). The skill's claim that a YAML-only edit prints `tier=full`
+holds: `decide()` returns full for `src/content/career/a.yaml`, `src/content/now/now.md` and
+`src/content/reading-paths/p.yml`, because `CONTENT_FILE` and `CONTENT_IMAGE` accept only `.mdx`
+and images under pages/posts/projects, and neither skip-safe nor docs rules match `src/content`.
