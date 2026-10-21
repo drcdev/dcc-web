@@ -72,7 +72,8 @@ unset `tier` runs every job and `verify` fails.
 base of that ref against `HEAD`, prints `tier=<tier>: <reason>` and writes no output file; a base
 that is not a plain ref prints `tier=full`. The pipelines then run only that tier's checks
 locally: `pnpm run lint:secrets` for skip-safe, `pnpm run lint:secrets && pnpm run test:unit` for
-docs, and the full `pnpm run verify` for content-only or full. CI recomputes the tier and remains
+docs, and the full `pnpm run verify` for content-only or full (`/content` narrows this for code-free
+content edits, as its Gate section states). CI recomputes the tier and remains
 the gate.
 
 Accepted risk: nothing notices if a future check outside the unit tests starts reading files under

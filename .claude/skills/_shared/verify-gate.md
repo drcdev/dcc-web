@@ -1,6 +1,7 @@
 # Inner loop and gate (shared)
 
-Included by `/deliver`, `/tweak`, `/squash` and `/chore`. These rules are **mandatory** for the
+Included by `/deliver`, `/tweak`, `/squash`, `/chore` and `/content`
+(whose Gate section narrows the local checks for code-free content edits). These rules are **mandatory** for the
 orchestrator and for every subagent told to read this file. Do not paraphrase them into a
 subagent prompt; pass them by reference.
 

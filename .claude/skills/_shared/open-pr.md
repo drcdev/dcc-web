@@ -1,6 +1,6 @@
 # Open the PR and arm auto-merge (shared)
 
-Included by `/deliver`, `/tweak`, `/squash` and `/chore`. These rules are **mandatory** for the
+Included by `/deliver`, `/tweak`, `/squash`, `/chore` and `/content`. These rules are **mandatory** for the
 orchestrator. Do not paraphrase them into a subagent prompt; pass them by reference.
 
 1. **PR author account (required).** GitHub does not count an author's approval on their own PR,
