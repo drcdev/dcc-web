@@ -103,7 +103,7 @@ and the shared-file "Included by" lines gain a pointer to `/content`.
 
 ## Work items
 
-### W1 Write `.claude/skills/content/SKILL.md`
+### [x] W1 Write `.claude/skills/content/SKILL.md`
 
 Files: `.claude/skills/content/SKILL.md` (new).
 Test: `no behaviour: n/a (agent instructions; the existing skill-reading unit tests must stay green)`.
