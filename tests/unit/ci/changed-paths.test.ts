@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -351,6 +352,15 @@ function expandPlaceholders(literal: string, text: string): string[] {
   });
 }
 
+function isGitIgnored(path: string): boolean {
+  try {
+    execFileSync("git", ["check-ignore", "-q", "--no-index", path], { cwd: repoRoot });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 describe("drift guard", () => {
   it("no check reads a path the allowlist calls skip-safe", () => {
     const files = [
@@ -365,8 +375,9 @@ describe("drift guard", () => {
       const text = readFileSync(file, "utf-8");
       for (const m of text.matchAll(pattern)) {
         const p = m[1]!.replace(/^(\.\.\/)+/, "").replace(/^\//, "");
-        // An ignore glob such as ESLint's ".claude/worktrees/**" names no file a check reads.
-        if (p.endsWith("/**")) continue;
+        // A glob over a gitignored directory (ESLint's ".claude/worktrees/**") never appears in a
+        // diff, so it cannot change the tier.
+        if (p.endsWith("/**") && isGitIgnored(p.slice(0, -2))) continue;
         const expanded = expandPlaceholders(p, text);
         if (expanded.length === 0) {
           offenders.push(`${file}: ${p} (placeholder path matches no file in the repository)`);
