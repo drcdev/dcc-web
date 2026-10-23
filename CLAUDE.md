@@ -14,14 +14,17 @@ the constitution wins.
   inherited an older node keeps it. Never hard-code an nvm version path.
 - **macOS has no `timeout` binary.** Bound a long run with
   `perl -e 'alarm N; exec @ARGV' <cmd...>` instead.
-- **Docker Desktop is normally off.** It is only needed to regenerate the Linux visual
-  baselines locally (see `.claude/skills/_shared/visual-baselines.md`). If `docker info` fails, ask Don to start Docker Desktop with an
-  `AskUserQuestion` whose question text carries the instruction.
+- **`container` is normally running; Docker Desktop is normally off.** `container` (Apple's
+  tool) is a Homebrew login service, and the Linux visual baselines are regenerated in it
+  (see `.claude/skills/_shared/visual-baselines.md`). Docker Desktop is the fallback. If both
+  `container system status` and `docker info` fail, ask Don to start one
+  (`container system start`, or Docker Desktop) with an `AskUserQuestion` whose question text
+  carries the instruction.
 
 ## Visual baselines
 
-The visual project, its per-platform baselines and how to refresh them (macOS, and Linux via Docker)
-are in `.claude/skills/_shared/visual-baselines.md`. Read it before
+The visual project, its per-platform baselines and how to refresh them (macOS, and Linux via
+`container` or Docker) are in `.claude/skills/_shared/visual-baselines.md`. Read it before
 changing or refreshing a baseline.
 
 ## Merging

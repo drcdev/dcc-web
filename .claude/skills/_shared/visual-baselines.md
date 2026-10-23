@@ -15,13 +15,14 @@ refreshes both sets.
 
 1. **macOS.** The phase that changed a snapshotted surface on purpose runs
    `pnpm run test:visual:update`.
-2. **Linux (what CI compares against).** Regenerate with `pnpm run test:visual:update:linux`,
-   which needs Docker Desktop and runs in the Docker image matching the installed
-   `@playwright/test` version. If `docker info` fails, ask Don to start Docker Desktop with an
-   `AskUserQuestion` whose question text carries the instruction, then wait for him to
-   start it. There is no other way to make the Linux baselines.
+2. **Linux (what CI compares against).** Regenerate with `pnpm run test:visual:update:linux`.
+   The script runs the Playwright image matching the installed `@playwright/test` version in
+   Apple's `container` when `container system status` succeeds, and in Docker Desktop
+   (`docker info`) otherwise. If neither succeeds, ask Don to start one (`container system start`,
+   or Docker Desktop) with an `AskUserQuestion` whose question text carries the instruction,
+   then wait for him to start it. There is no other way to make the Linux baselines.
 3. **Commit and push the images before opening the PR**, so `verify` is green. If CI's
-   visual check then fails on images Docker made, stop and tell Don: Docker has drifted from CI,
-   and fixing that is its own change. Do not refresh the images from a CI run.
+   visual check then fails on images the local runtime (`container` or Docker) made, stop and
+   tell Don: that runtime has drifted from CI, and fixing that is its own change. Do not refresh the images from a CI run.
 
 A visual diff nobody predicted up front is a regression to fix, not a baseline to refresh.

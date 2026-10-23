@@ -108,7 +108,7 @@ exception: the header, footer, open mobile menu and not-found shots are taken on
 a menu change (adding, removing or moving a page's `nav`, a `nav.label`, or the title of a menu
 page) moves them. A `visible` or `draft` flip does not, because that build keeps hidden and draft
 pages in the menus. That case needs the baseline refresh in
-`.claude/skills/_shared/visual-baselines.md`, which runs Docker and Playwright, so
+`.claude/skills/_shared/visual-baselines.md`, which runs the Playwright image in `container` or Docker, so
 raise it with Don before the PR.
 
 State today: a YAML or `.md` collection prints `tier=full` and pays the full CI gate, though the
