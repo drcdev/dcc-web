@@ -100,3 +100,12 @@ After:
   the before-measurement confirmed this pattern works.
 - **Full tier cost.** `eslint.config.js` is code, so the PR runs the full CI tier. This is
   expected.
+
+## Deviation recorded after implement
+
+W1's new `".claude/worktrees/**"` literal tripped the drift guard "no check reads a path the
+allowlist calls skip-safe" in `tests/unit/ci/changed-paths.test.ts`, which this plan listed as
+untouched. The guard now skips a literal only when it ends in `/**` and `git check-ignore
+--no-index` reports its directory as ignored: a gitignored path never appears in a diff, so it
+cannot change the tier. Every other `.claude/`, `.specify/` and `specs/` literal is still checked
+(review LOW 1).
