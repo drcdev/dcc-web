@@ -365,6 +365,8 @@ describe("drift guard", () => {
       const text = readFileSync(file, "utf-8");
       for (const m of text.matchAll(pattern)) {
         const p = m[1]!.replace(/^(\.\.\/)+/, "").replace(/^\//, "");
+        // An ignore glob such as ESLint's ".claude/worktrees/**" names no file a check reads.
+        if (p.endsWith("/**")) continue;
         const expanded = expandPlaceholders(p, text);
         if (expanded.length === 0) {
           offenders.push(`${file}: ${p} (placeholder path matches no file in the repository)`);

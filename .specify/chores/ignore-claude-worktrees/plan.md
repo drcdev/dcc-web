@@ -69,7 +69,7 @@ After:
 
 ## Work items
 
-### W1 Ignore `.claude/worktrees/**` in ESLint
+### [x] W1 Ignore `.claude/worktrees/**` in ESLint
 
 - **Test first** (unit layer, the cheapest; this file already imports `eslint.config.js`): add an
   `it` to the "worker workspace and tooling wiring" describe in
