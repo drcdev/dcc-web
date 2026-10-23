@@ -22,7 +22,7 @@ refreshes both sets.
    or Docker Desktop) with an `AskUserQuestion` whose question text carries the instruction,
    then wait for him to start it. There is no other way to make the Linux baselines.
 3. **Commit and push the images before opening the PR**, so `verify` is green. If CI's
-   visual check then fails on images the container runtime made, stop and tell Don: the container runtime has drifted from CI,
-   and fixing that is its own change. Do not refresh the images from a CI run.
+   visual check then fails on images the local runtime (`container` or Docker) made, stop and
+   tell Don: that runtime has drifted from CI, and fixing that is its own change. Do not refresh the images from a CI run.
 
 A visual diff nobody predicted up front is a regression to fix, not a baseline to refresh.

@@ -17,14 +17,14 @@ the constitution wins.
 - **`container` is normally running; Docker Desktop is normally off.** `container` (Apple's
   tool) is a Homebrew login service, and the Linux visual baselines are regenerated in it
   (see `.claude/skills/_shared/visual-baselines.md`). Docker Desktop is the fallback. If both
-  `container system status` and `docker info` fail, ask Don to start one (`container system
-  start`, or Docker Desktop) with an `AskUserQuestion` whose question text carries the
-  instruction.
+  `container system status` and `docker info` fail, ask Don to start one
+  (`container system start`, or Docker Desktop) with an `AskUserQuestion` whose question text
+  carries the instruction.
 
 ## Visual baselines
 
-The visual project, its per-platform baselines and how to refresh them (macOS, and Linux via `container` or Docker)
-are in `.claude/skills/_shared/visual-baselines.md`. Read it before
+The visual project, its per-platform baselines and how to refresh them (macOS, and Linux via
+`container` or Docker) are in `.claude/skills/_shared/visual-baselines.md`. Read it before
 changing or refreshing a baseline.
 
 ## Merging
