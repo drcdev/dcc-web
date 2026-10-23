@@ -76,7 +76,7 @@ untouched.
 
 ## Work items
 
-### W1 Container route in `scripts/visual-baselines-linux.sh`
+### [x] W1 Container route in `scripts/visual-baselines-linux.sh`
 
 Files: `scripts/visual-baselines-linux.sh`.
 Test: acceptance run (Acceptance 1) via the container route, plus `bash -n`.
