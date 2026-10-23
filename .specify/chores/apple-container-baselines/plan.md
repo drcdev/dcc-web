@@ -107,7 +107,7 @@ Layer: e2e (manual acceptance run of the visual update; no automated test reads 
   `/work/node_modules`, and say so in the summary. If baselines differ, stop: do not commit
   them; report the diff (that is a `[NEEDS DECISION]` for Don, not a baseline refresh).
 
-### W2 Shared rule and CLAUDE.md
+### [x] W2 Shared rule and CLAUDE.md
 
 Files: `.claude/skills/_shared/visual-baselines.md` (steps 2 and 3), `CLAUDE.md` (Local
 toolchain Docker bullet, Visual baselines "Linux via Docker" phrase).
