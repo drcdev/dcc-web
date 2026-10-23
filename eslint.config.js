@@ -33,6 +33,9 @@ export default tseslint.config(
       // Read-only design reference (Flux theme), gitignored and never
       // imported (FR-033) — not this repository's code to lint.
       ".reference/**",
+      // Claude Code worktrees: full sibling checkouts, gitignored, not this
+      // checkout's code.
+      ".claude/worktrees/**",
     ],
   },
 );

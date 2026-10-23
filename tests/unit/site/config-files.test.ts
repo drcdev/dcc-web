@@ -370,6 +370,13 @@ describe("worker workspace and tooling wiring (007 contact form)", () => {
     expect(entry?.languageOptions?.parserOptions?.projectService).toBeTruthy();
   }, HEAVY_IMPORT_TIMEOUT);
 
+  it("keeps ESLint out of Claude Code worktrees", async () => {
+    const configs = (await import("../../../eslint.config.js")).default as unknown as {
+      ignores?: string[];
+    }[];
+    expect(configs.some((c) => c.ignores?.includes(".claude/worktrees/**"))).toBe(true);
+  }, HEAVY_IMPORT_TIMEOUT);
+
   it("typechecks the worker and checks its generated types", () => {
     expect(pkg.scripts.typecheck).toContain("tsc -p worker");
     expect(pkg.scripts.typecheck).toMatch(/wrangler types .*--check/);
