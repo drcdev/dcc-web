@@ -123,7 +123,7 @@ Layer: none (no test reads these files).
   Desktop is normally off and is the fallback; same ask-Don rule when neither runs. Visual
   baselines line: "Linux via `container` or Docker".
 
-### W3 Live docs
+### [x] W3 Live docs
 
 Files: `docs/setup.md` (~line 272), `docs/testing.md` (~line 217),
 `.claude/skills/content/SKILL.md` (~line 111).

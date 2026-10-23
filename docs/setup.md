@@ -269,7 +269,7 @@ in parallel, and a final `verify` job reports the result that branch protection 
 Nothing new to do here; `.github/workflows/ci.yml` is part of this slice's pull request. This
 item confirms it exists on `main` and that the latest run succeeded, after the merge.
 Linux visual baselines are regenerated locally with `pnpm run test:visual:update:linux`, which runs in the
-Playwright Docker image matching `@playwright/test` and needs Docker Desktop running.
+Playwright image matching `@playwright/test`, in Apple's `container` when it is running, else Docker Desktop.
 A pull request that changes only skip-safe paths (`CLAUDE.md`, `VOICE.md`, and any file under
 `.claude/` or `.specify/` that is not code and not a skill file, as defined in
 `scripts/ci/changed-paths.ts`) runs secretlint in the `static` job and skips `build-tests` and
