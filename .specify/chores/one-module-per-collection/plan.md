@@ -224,7 +224,7 @@ move of a helper).
   "topicLabel", "orderTopics" and "mainTopic" stay in `tests/unit/content/topic-ids.test.ts`.
 - `tests/unit/site/fixture-posts.test.ts`: only imports change.
 
-### W4 — Projects rules module
+### [x] W4 — Projects rules module
 
 **Files:**
 

@@ -4,8 +4,8 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { z } from "astro/zod";
-import { projectSchema } from "../../../src/content/schemas/project.ts";
-import { validateProjectStory } from "../../../src/lib/content/project-story.ts";
+import { projectSchema } from "../../../src/content/collections/project-rules.ts";
+import { validateProjectStory } from "../../../src/content/collections/project-rules.ts";
 import { projects } from "../../helpers/content.ts";
 import { filesUnder } from "../../helpers/files.ts";
 

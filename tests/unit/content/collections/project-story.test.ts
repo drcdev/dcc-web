@@ -1,7 +1,7 @@
 // Unit tests for validateProjectStory (contracts/build-errors.md rows P01-P07, T01-T13, R05, R06, the
 // allowed cases, and the OptionsComparison it returns; FR-002, FR-006, FR-013-FR-015, US3).
 import { describe, expect, it } from "vitest";
-import { validateProjectStory } from "../../../src/lib/content/project-story.ts";
+import { validateProjectStory } from "../../../../src/content/collections/project-rules.ts";
 
 const FILE = "src/content/projects/example.mdx";
 

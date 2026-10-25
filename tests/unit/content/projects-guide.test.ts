@@ -4,7 +4,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { z } from "astro/zod";
-import { projectSchema } from "../../../src/content/schemas/project.ts";
+import { projectSchema } from "../../../src/content/collections/project-rules.ts";
 import { partHeadings, partIds } from "../../../src/lib/content/parts.ts";
 
 const guide = readFileSync(new URL("../../../docs/projects.md", import.meta.url), "utf-8");

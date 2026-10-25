@@ -1,7 +1,8 @@
 // Unit tests (primary layer: unit) for the project status module: the four statuses, their labels and
 // pill tones (data-model.md "Derived: status presentation"; FR-001, FR-004).
 import { describe, expect, it } from "vitest";
-import { projectStatuses, statusLabel, statusTone } from "../../../src/lib/content/project-status.ts";
+import { projectStatuses } from "../../../src/content/collections/project-rules.ts";
+import { statusLabel, statusTone } from "../../../src/lib/content/project-status.ts";
 
 describe("project status", () => {
   it("lists the four statuses", () => {

@@ -1,11 +1,11 @@
 // Unit tests (primary layer: unit) for the project collection schema of the four-part story
 // (specs/014-project-four-part-story/data-model.md "Project", "PartPicture"; contracts/build-errors.md rows
 // S01-S08, R01-R04, N01-N03). `image()` is Astro's schema helper; a plain string stands in for it here.
-// The Options table is no longer settings data: it is checked by project-story.test.ts.
+// The Options table is no longer settings data: it is checked by collections/project-story.test.ts.
 import { describe, expect, it } from "vitest";
 import { z } from "astro/zod";
-import { projectSchema } from "../../../src/content/schemas/project.ts";
-import { partHeadings, partIds } from "../../../src/lib/content/parts.ts";
+import { projectSchema } from "../../../../src/content/collections/project-rules.ts";
+import { partHeadings, partIds } from "../../../../src/lib/content/parts.ts";
 
 const schema = projectSchema({ image: () => z.string() });
 

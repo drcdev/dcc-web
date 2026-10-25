@@ -23,7 +23,7 @@ import { assertLandingBody, bodyAfterFrontMatter, landingSchema } from "./conten
 import { nowSchema } from "./content/schemas/now.ts";
 import { readingPathSchema } from "./content/schemas/reading-path.ts";
 import { assertPostDates, postSchema } from "./content/collections/post-rules.ts";
-import { projectSchema } from "./content/schemas/project.ts";
+import { projectSchema } from "./content/collections/project-rules.ts";
 
 const pages = defineCollection({
   loader: glob({

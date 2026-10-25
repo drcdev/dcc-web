@@ -64,7 +64,7 @@ describe("removed settings (sync)", () => {
 
 describe("project route wiring (build)", () => {
   // P, T and R05-R06 call site: validateProjectStory runs on every entry, drafts included, before the production
-  // filter (FR-015, US3-7). The rule logic is asserted in tests/unit/content/project-story.test.ts.
+  // filter (FR-015, US3-7). The rule logic is asserted in tests/unit/content/collections/project-story.test.ts.
   it("a malformed options table in a draft fails a production build, naming the file and the rule (T06)", () =>
     expectRejected(
       "build",
@@ -82,7 +82,7 @@ describe("project route wiring (build)", () => {
     ));
 
   // RP04 call site: checkReplacements runs over every entry, drafts included, before the production
-  // filter. The check itself is asserted in tests/unit/content/project-replacement.test.ts; this run
+  // filter. The check itself is asserted in tests/unit/content/collections/project-replaced-by.test.ts; this run
   // proves the route calls it in the real build (second layer, contracts/build-errors.md).
   it("RP04: a retired draft naming a missing project fails a production build", () =>
     expectRejected(

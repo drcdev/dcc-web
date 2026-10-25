@@ -2,7 +2,8 @@
 // Project status as text in the shared pill (FR-017, FR-025). The tone is
 // decorative; the word is what carries the status.
 import Pill from "../Pill.astro";
-import { statusLabel, statusTone, type ProjectStatus } from "../../lib/content/project-status";
+import type { ProjectStatus } from "../../content/collections/project-rules";
+import { statusLabel, statusTone } from "../../lib/content/project-status";
 
 export interface Props {
   status: ProjectStatus;
