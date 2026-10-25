@@ -1,6 +1,6 @@
 // Unit tests for page, post and project addresses and slugs, and the checks that nothing else
 // claims them (data-model.md "derived values" and invariants; contracts/build-errors.md page rows
-// 13, 14, 17, post rows P13 to P17, project rows 26 and 27; FR-003, FR-008).
+// 13, 14, 17, post rows P13 to P17, project row 27; FR-003, FR-008).
 import { globSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -106,17 +106,8 @@ describe("assertNoTwin", () => {
     return base;
   };
 
-  const pages = folder("pages", ["about.md", "about.mdx", "x.mdx", "x/index.mdx", "solo.mdx", "legal/index.mdx", "_t.mdx"]);
+  const pages = folder("pages", ["about.mdx", "x.mdx", "x/index.mdx", "solo.mdx", "legal/index.mdx", "_t.mdx"]);
   const posts = folder("posts", ["x.mdx", "x.md", "a-post.mdx", "_template.mdx"]);
-  const projects = folder("projects", ["x.md", "x.mdx", "a-project.mdx", "_template.mdx"]);
-
-  it("fails for two page files with the same address, naming both and the address (row 13)", () => {
-    const run = () => assertNoTwin("page", pages, "about.md");
-    expect(run).toThrow(PageContentError);
-    expect(run).toThrow(
-      "Page files src/content/pages/about.md and src/content/pages/about.mdx: both make the address /about/. Keep one of them.",
-    );
-  });
 
   it("fails for x.mdx together with x/index.mdx, with the same message from either entry (row 13)", () => {
     const message =
@@ -132,23 +123,14 @@ describe("assertNoTwin", () => {
     expect(() => assertNoTwin("post", posts, "x.md")).toThrow(message);
   });
 
-  it("fails for two project files with one slug, naming both files and the slug (row 26)", () => {
-    const message =
-      "Project files src/content/projects/x.md and src/content/projects/x.mdx: both make the slug x. Keep one of them.";
-    expect(() => assertNoTwin("project", projects, "x.mdx")).toThrow(message);
-    expect(() => assertNoTwin("project", projects, "x.md")).toThrow(message);
-  });
-
   it("accepts a file with no twin, in every collection", () => {
     expect(() => assertNoTwin("page", pages, "solo.mdx")).not.toThrow();
     expect(() => assertNoTwin("page", pages, "legal/index.mdx")).not.toThrow();
     expect(() => assertNoTwin("post", posts, "a-post.mdx")).not.toThrow();
-    expect(() => assertNoTwin("project", projects, "a-project.mdx")).not.toThrow();
   });
 
   it("does not treat a template file as a twin of anything", () => {
     expect(() => assertNoTwin("post", posts, "a-post.mdx")).not.toThrow();
-    expect(() => assertNoTwin("project", projects, "a-project.mdx")).not.toThrow();
   });
 });
 

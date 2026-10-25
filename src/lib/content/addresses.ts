@@ -6,6 +6,7 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { seriesIds } from "../../config/topics.ts";
 import { contentError, type ContentKind } from "./errors.ts";
+import { assertFileFormat } from "./file-format.ts";
 
 const DIRS: Record<ContentKind, string> = {
   page: "src/content/pages",
@@ -64,19 +65,19 @@ export function slugFromPath(path: string): string {
 
 /**
  * Throws when another file in the collection folder would make the same id as `entry` (for
- * example `x.md` and `x.mdx`, or for pages `x.mdx` and `x/index.mdx`). The files are named in
+ * example posts `x.md` and `x.mdx`, or pages `x.mdx` and `x/index.mdx`). The files are named in
  * sorted order, so the message is the same whichever one is loaded first. Run from `generateId`,
  * which sees every file before Astro's own duplicate check does.
  * @param base absolute path of the collection folder
  * @param entry path of the file below it
  */
-export function assertNoTwin(kind: ContentKind, base: string, entry: string): void {
-  const id = kind === "page" ? idFromPath(entry) : kind === "post" ? slugFromPostPath(entry) : slugFromPath(entry);
-  const names = [`${id}.md`, `${id}.mdx`];
-  if (kind === "page") names.push(`${id}/index.md`, `${id}/index.mdx`);
+export function assertNoTwin(kind: "page" | "post", base: string, entry: string): void {
+  const id = kind === "page" ? idFromPath(entry) : slugFromPostPath(entry);
+  // Pages and projects reject `.md` before this runs; posts reject it later, at build.
+  const names = kind === "page" ? [`${id}.mdx`, `${id}/index.mdx`] : [`${id}.md`, `${id}.mdx`];
   const twin = names.find((name) => name !== entry && existsSync(resolve(base, name)));
   if (!twin) return;
-  const what = kind === "page" ? `address ${addressFromPath(entry)}` : kind === "post" ? `address ${postHref(id)}` : `slug ${id}`;
+  const what = kind === "page" ? `address ${addressFromPath(entry)}` : `address ${postHref(id)}`;
   const [a, b] = [entry, twin].sort();
   throw contentError(kind, [`${DIRS[kind]}/${a}`, `${DIRS[kind]}/${b}`], `both make the ${what}. Keep one of them.`);
 }
@@ -135,7 +136,7 @@ export function assertPostFiles(files: readonly string[]): void {
     const file = `${DIRS.post}/${path}`;
     const slug = slugFromPostPath(path);
     if (path.includes("/")) throw contentError("post", file, "posts cannot be in a sub-folder. Move the file to src/content/posts/.");
-    if (!path.endsWith(".mdx")) throw contentError("post", file, "a post must be an .mdx file, so rename it to .mdx.");
+    assertFileFormat("post", file);
     if (!NAME.test(slug)) throw contentError("post", file, `the file name may use only ${NAME_RULE}. Rename the file.`);
     if (RESERVED_POSTS.has(slug)) {
       const page = (seriesIds as readonly string[]).includes(slug) ? "the series page" : "a listing page";

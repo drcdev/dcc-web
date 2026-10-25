@@ -95,6 +95,13 @@ describe("assessment data and components (sync and build)", () => {
     expect(result.message).toContain("scale");
   });
 
+  it("a .yml assessment fails, naming the file and saying to rename it to .yaml", async () => {
+    result = await buildFixtureSite([], { mode: "sync", assessments: [{ from: sample, to: "sample.yml" }] });
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("sample.yml");
+    expect(result.message).toContain("rename it to .yaml");
+  });
+
   const withSample = async (post: string, ...contains: string[]) => {
     result = await buildFixtureSite([], { mode: "build", assessments: [sample], posts: [broken(post)] });
     expect(result.ok, "the build should fail").toBe(false);

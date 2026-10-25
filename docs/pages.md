@@ -14,8 +14,8 @@ The file name is the address.
 | `src/content/pages/index.mdx` | `/` (the home page) |
 | `src/content/pages/work-with-me.mdx` | `/work-with-me/` |
 
-Use lower-case letters, digits and hyphens only. Use `.mdx` when you want the components below;
-plain `.md` works for text only. Put images next to the page in `src/content/pages/images/`.
+Use lower-case letters, digits and hyphens only. Every page is an `.mdx` file, with or without components (the landing files below are `.mdx`
+too). A `.md` file fails the build with a message to rename it to `.mdx`. Put images next to the page in `src/content/pages/images/`.
 
 ## The top of the file
 
@@ -180,7 +180,7 @@ Speaker at the 2025 health leadership conference.
 ```
 
 `Now` shows the home page's Now section: the date, four short topics and the "open to" line. It takes
-no props and no content. Its text comes from `src/content/now/now.md`, so you edit that file and not
+no props and no content. Its text comes from `src/content/now/now.mdx`, so you edit that file and not
 the page.
 
 ```mdx
@@ -217,11 +217,12 @@ The build stops at the first problem and names the file. Messages start with `Pa
 - An image with no `alt`, an empty `alt`, or a file that does not exist: add the text or fix
   the path.
 - A page with no content.
+- A `.md` file in the pages folder: rename it to `.mdx`.
 - An unknown component (for example `<Callout>`); the message lists the valid ones.
 - A component missing something it needs, such as `CallToAction` without `href`, or an image
   component with no image.
 - A `# Heading` in the body: use `##`.
-- Two files with the same address (`about.md` and `about.mdx`), or an address that another
+- Two files with the same address (`about.mdx` and `about/index.mdx`), or an address that another
   route or a later feature reserves.
 - Two entries in one menu with the same `position` or the same link text.
 - `visible` or `draft` written as anything but `true` or `false`; `nav` without both `location`

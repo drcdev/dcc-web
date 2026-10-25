@@ -73,6 +73,13 @@ describe("page schema and loader wiring (sync)", () => {
   it("V12: a landing file in the footer is rejected, naming the file and location", () =>
     expectRejected("sync", [broken("25-landing-footer.mdx", "writing.mdx")], "writing.mdx", "location"));
 
+  // File format rule (#200): the pages and landing loaders call assertFileFormat first in generateId.
+  it("a .md page fails, naming the file and saying to rename it to .mdx", () =>
+    expectRejected("sync", [{ from: "visible-page.mdx", to: "visible-page.md" }], "visible-page.md", "rename it to .mdx."));
+
+  it("a .md landing file fails, naming the file and saying to rename it to .mdx", () =>
+    expectRejected("sync", [broken("24-landing-no-nav.mdx", "writing.md")], "writing.md", "rename it to .mdx."));
+
   // The twin check runs in generateId, so it fires at sync with the custom wording, ahead of Astro's own
   // duplicate-slug error (prerenderConflictBehavior: 'error').
   it("row 13: generateId runs the twin check (x.mdx and x/index.mdx)", () =>

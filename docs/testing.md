@@ -324,7 +324,7 @@ Call-site runs, all in `build/page-validation.test.ts`:
 | 10 | Unknown section | `unit/body.test.ts` "rejects an unknown capitalised tag, naming the file, the tag and the valid sections" | build, rows 8 to 10 and 16 |
 | 11 | Section missing a prop | `component/sections/CallToAction.test.ts` "throws naming the section and the missing or invalid prop" | build, rows 11 and 12 (names the page file) |
 | 12 | Image section without image | `component/sections/Images.test.ts` "throws naming the section when there is no image", and `unit/section-schemas.test.ts` "says an image is needed" | build, rows 11 and 12 (same `checkSection` path) |
-| 13 | Two files, one address | `unit/addresses.test.ts` "fails for two page files with the same address, naming both and the address (row 13)" and "fails for x.mdx together with x/index.mdx, with the same message from either entry (row 13)" (`assertNoTwin`) | sync, row 13 (`x.mdx` with `x/index.mdx`; `generateId` runs the twin check) |
+| 13 | Two files, one address | `unit/addresses.test.ts` "fails for x.mdx together with x/index.mdx, with the same message from either entry (row 13)" (`assertNoTwin`) | sync, row 13 (`x.mdx` with `x/index.mdx`; `generateId` runs the twin check) |
 | 14 | Address used by a route | `unit/addresses.test.ts` "fails for a page against a route file in src/pages", "fails for a page against a generated route file such as robots.txt.ts", "fails for the home page against src/pages/index.astro", "fails for a page under the fixed prefix of a route with a variable part", and "row 14: page addresses against the real route files (/projects/ prefix)" (which also covers pages at `writing.mdx` and `projects.mdx` against the Writing and Projects route files); the route-file list at the call site: `build/page-validation.test.ts` "row 14" (a page at `404.mdx` against `src/pages/404.astro`) | build, row 14 (the route-file list, `assertPageAddressesFree` in the route) |
 | 15 (V6, V11) | Same navigation position or link text in one menu | `unit/navigation.test.ts` "fails when two pages use one position in a menu, naming both files in path order, the menu and the position" and "fails when two entries in one menu show the same link text" | `build/page-validation.test.ts` "V6" and "V11", and `build/navigation.test.ts` (the menus of every built page equal the menus from the page files) |
 | 16 | Level-1 heading | `unit/body.test.ts` "rejects a level-1 Markdown heading and an <h1>, saying to use ##" | build, rows 8 to 10 and 16 |
@@ -407,8 +407,8 @@ Call-site runs:
 - **sync**: "validates drafts too: the projects schema is wired and Astro names the file (row 03,
   FR-073)" (production environment); "row 17: generateId runs assertImagesExist (and the clip check of row 19)";
   "row 27: generateId runs slugFromPath (and rejects a nested file the same way)"; "R01: a
-  removed setting in a draft fails at sync under production"; "row 26: generateId runs the twin
-  check".
+  removed setting in a draft fails at sync under production"; "a .md project fails, naming
+  the file and saying to rename it to .mdx" (S11).
 - **build**: "a malformed options table in a
   draft fails a production build" (T06) and "an MDX element in a draft fails a production
   build" (R05): `validateProjectStory` runs on every entry, drafts included.
@@ -424,7 +424,7 @@ is checked by `unit/project-template.test.ts`, and the guide by `unit/projects-g
 | S01 to S08 | Required settings, status, themes, pictures, unknown setting, problem length, addresses, picture name. S02 changed in `specs/015-project-retired-status/contracts/build-errors.md`: its message now lists `retired` too | `unit/project-schema.test.ts` "S01" to "S08" | schema sync (row 03 run) |
 | S09 | Missing picture file | `unit/images.test.ts` "names the project file, with the project wording, when a visual is missing (S09)" | sync, row 17 |
 | S10 | Bad file name, nested file | `unit/addresses.test.ts` "slugFromPath (projects)" rejects table and "rejects a nested file" | sync, row 27 |
-| S11 | Two files, one slug | `unit/addresses.test.ts` "fails for two project files with one slug, naming both files and the slug (row 26)" (`assertNoTwin`) | sync, row 26 |
+| S11 | A `.md` project file (two files with one slug can no longer happen) | `unit/content/file-format.test.ts` (`assertFileFormat`) | sync, "a .md project fails, naming the file and saying to rename it to .mdx" |
 | R01 to R04 | Removed settings: `order`, `demo.embed`, a clip picture, `comparison` | `unit/project-schema.test.ts` "R01" to "R04" | sync, "R01" run |
 | R05, R06 | MDX element, import or export in the body | `unit/project-story.test.ts` "R05", "R06" | build, "an MDX element in a draft" |
 | N01 to N03 | `part` value, one picture per part, `invitation` text | `unit/project-schema.test.ts` "N01" to "N03" | schema sync |
@@ -446,7 +446,7 @@ proven by the page build run for row 14.
 | N01, N04, N05, N09 | Now `updated` missing, a topic missing or blank, unknown key, topic over 200 characters or on more than one line | `unit/content/now-schema.test.ts` "N01", "N04", "N05", "N09" | schema sync |
 | N02, N03 | `updated` is not a real day; `updated` is after the build date (UTC) | `unit/content/dates.test.ts` (N02, N03) and `unit/content/now-schema.test.ts` "N02", "N03" | build, `build/home-sections.test.ts` "N03" |
 | N06, N08 | The body links to `/contact/`; it is one paragraph with no heading | `unit/content/now-body.test.ts` "N06", "N08" | build, "N06" |
-| N07 | Exactly one Now file | `build/home-sections.test.ts` "N07" (two files, no file) | build |
+| N07 | Exactly one Now file, named `now.mdx` | `build/home-sections.test.ts` "N07" (two files, no file) and "a now.md fails, naming the file and saying to rename it to .mdx" | build, sync |
 | R01, R02, R03, R08, R10 | Path settings, one-sentence description, 1 to 5 items, item shape, position 1 to 4 | `unit/content/reading-path-schema.test.ts` "R01" to "R10" | schema sync |
 | R04 to R07 | Missing target, duplicate item, more than four paths, shared position | `unit/content/reading-paths.test.ts` "R04" to "R07" | build, "R04" |
 | R09 | YAML that does not parse | `build/home-sections.test.ts` "R09" | build |
@@ -454,6 +454,26 @@ proven by the page build run for row 14.
 The section markup is asserted in `component/sections/Now.test.ts` and
 `component/sections/StartHere.test.ts`, the home journey in `e2e/home.spec.ts`, and the
 `home-now-start-here-*` shots in `e2e/visual.spec.ts`.
+
+### File format: issue #200
+
+A file with a body is `.mdx` and a file without one is `.yaml`. `assertFileFormat` in
+`src/lib/content/file-format.ts` fails a file with the wrong extension, naming it and saying what to
+rename it to. It is asserted in `unit/content/file-format.test.ts`, which also keeps the post
+message unchanged. Each loader in `src/content.config.ts` matches the wrong extension only so that
+the check can fail it, and a sync run per collection proves the loader calls the check:
+
+| Collection | Run |
+|---|---|
+| pages | `build/page-validation.test.ts` "a .md page fails, naming the file and saying to rename it to .mdx" |
+| landing | `build/page-validation.test.ts` "a .md landing file fails, naming the file and saying to rename it to .mdx" |
+| projects | `build/project-validation.test.ts` "a .md project fails, naming the file and saying to rename it to .mdx" |
+| now | `build/home-sections.test.ts` "a now.md fails, naming the file and saying to rename it to .mdx" |
+| reading paths | `build/home-sections.test.ts` "a .yml reading path fails, naming the file and saying to rename it to .yaml" |
+| career | `build/career-timeline.test.ts` "a .yml career step fails, naming the file and saying to rename it to .yaml" |
+| assessments | `build/post-validation.test.ts` "a .yml assessment fails, naming the file and saying to rename it to .yaml" |
+
+Posts keep their build-time `.md` check (P13).
 
 ### Writing series: `specs/013-writing-series/contracts/build-errors.md`
 
@@ -513,6 +533,9 @@ Counted on 2026-10-01 after phase 2:
 Feature 041 (career timeline) adds `career-timeline.test.ts`: 1 build (T09, the About page) and
 2 syncs (T01 and a site with no step files). The T10 and T11 rows reach the build through the same
 call site and are proven at the unit layer.
+
+Issue #200 (content file format) adds 7 syncs and no builds, one per row of the "File format"
+table above. The table is not recounted here.
 
 Before phase 2 the project ran 144 runs: 132 full builds and 12 syncs.
 

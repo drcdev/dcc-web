@@ -15,6 +15,13 @@ describe("career timeline wiring", () => {
     expect(result.message).toContain("scope");
   });
 
+  it("a .yml career step fails, naming the file and saying to rename it to .yaml", async () => {
+    result = await buildFixtureSite([], { mode: "sync", career: [{ from: "valid/01-first-role.yaml", to: "01-first-role.yml" }] });
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("01-first-role.yml");
+    expect(result.message).toContain("rename it to .yaml");
+  });
+
   it("T09: the About page build fails on a latest step that does not end present, naming the file", async () => {
     // Only the real build shows that checkCareer() runs from the page (its one build run).
     result = await buildFixtureSite([], { career: ["broken/latest-not-present.yaml"] });

@@ -16,9 +16,9 @@ export async function getNow(): Promise<Now> {
   const entries = await getCollection("now");
   const entry = entries[0];
   if (entries.length !== 1 || !entry) {
-    throw contentError("now", "src/content/now/", "there must be exactly one Now file, now.md.");
+    throw contentError("now", "src/content/now/", "there must be exactly one Now file, now.mdx.");
   }
-  checkNowBody(entry.filePath ?? "src/content/now/now.md", entry.body ?? "");
+  checkNowBody(entry.filePath ?? "src/content/now/now.mdx", entry.body ?? "");
   const { Content } = await render(entry);
   const { updated, ...topics } = entry.data;
   return { updated, topics, OpenTo: Content };
