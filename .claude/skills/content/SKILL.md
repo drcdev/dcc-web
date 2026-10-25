@@ -112,10 +112,6 @@ pages in the menus. That case needs the baseline refresh in
 `.claude/skills/_shared/visual-baselines.md`, which runs the Playwright image in `container` or Docker, so
 raise it with Don before the PR.
 
-State today: a YAML or `.md` collection prints `tier=full` and pays the full CI gate, though the
-diff changes no code. #199 will add a content-only tier for those collections. Until then, push
-and let CI run the tier it computes. CI is the gate and auto-merge waits for a green `verify`.
-
 ## Code and schema changes
 
 When the edit needs code outside `src/content/` (a section component, a reader or check in

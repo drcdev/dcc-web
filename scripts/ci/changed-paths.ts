@@ -8,7 +8,8 @@ import { parseArgs } from "node:util";
  * `docs/` and non-code files under `.claude/skills/`, which unit tests read), content-only (the
  * full gate, but the build tests that read real content by name instead of the whole build
  * project) and full. A path is skip-safe only when no check reads it, and content-only only when
- * it is an `.mdx` file or an image under a content collection. Anything not positively
+ * it is an `.mdx` file or an image under pages, posts or projects, or a data file (a `.yaml` file
+ * directly under career, reading-paths or assessments, or `now/now.mdx`). Anything not positively
  * recognised runs the full gate (fail closed).
  *
  * Under `.claude/` and `.specify/` every file is skip-safe (only the local Claude Code harness and
@@ -68,9 +69,14 @@ export const CONTENT_FILE =
 export const CONTENT_IMAGE =
   /^src\/content\/(pages|posts|projects)\/images\/(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+\.(avif|gif|jpe?g|mp4|png|svg|webm|webp)$/;
 
+// Data collections: a `.yaml` file directly in the folder (no sub-folders), and the Now note by
+// exact name. Their schemas and loaders are code and stay full tier.
+export const CONTENT_DATA =
+  /^src\/content\/(?:(?:career|reading-paths|assessments)\/[A-Za-z0-9._-]+\.yaml|now\/now\.mdx)$/;
+
 export function isContentOnly(path: string): boolean {
   if (isMalformed(path)) return false;
-  return CONTENT_FILE.test(path) || CONTENT_IMAGE.test(path);
+  return CONTENT_FILE.test(path) || CONTENT_IMAGE.test(path) || CONTENT_DATA.test(path);
 }
 
 /**
