@@ -1,6 +1,6 @@
 // Test-owned assessment data for the unit and component tests of specs/037. It is not the site's
 // real assessment: the tests never name real content, so editing the data file needs no test edit.
-import type { Assessment } from "../../src/content/schemas/assessment.ts";
+import type { Assessment } from "../../src/content/collections/assessment-rules.ts";
 
 const shiftNames = ["Alpha", "Bravo", "Charlie", "Delta", "Echo"];
 

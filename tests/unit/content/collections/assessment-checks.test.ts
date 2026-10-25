@@ -1,7 +1,7 @@
 // Unit tests for the post checks A9 and A10 (contracts/assessment-data.md).
 import { describe, expect, it } from "vitest";
-import { assessmentsNamedIn, checkFromToLines, checkNoMovedText } from "../../../src/lib/assessment/checks.ts";
-import { sampleAssessment } from "../../helpers/assessment.ts";
+import { assessmentsNamedIn, checkBlockHeading, checkFromToLines, checkNoMovedText } from "../../../../src/content/collections/assessment-rules.ts";
+import { sampleAssessment } from "../../../helpers/assessment.ts";
 
 const FILE = "src/content/posts/example.mdx";
 const assessment = sampleAssessment();
@@ -82,5 +82,17 @@ describe("assessmentsNamedIn", () => {
 
   it("finds nothing in a plain post", () => {
     expect(assessmentsNamedIn("Plain prose.")).toEqual({ used: [], withBlock: [] });
+  });
+});
+
+describe("checkBlockHeading", () => {
+  it("passes when a heading carries the block's id", () => {
+    expect(() => checkBlockHeading({ file: FILE, title: "Self Check", slug: "self-check", headings: [{ slug: "self-check" }] })).not.toThrow();
+  });
+
+  it("names the post and the missing heading otherwise", () => {
+    expect(() => checkBlockHeading({ file: FILE, title: "Self Check", slug: "self-check", headings: [{ slug: "other" }] })).toThrow(
+      /the self-assessment needs a heading "## Self Check" just above it, so the block and the title-card link have a target\./,
+    );
   });
 });

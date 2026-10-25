@@ -2,7 +2,7 @@
 // contracts/assessment-data.md "Question source"). Pure and build-only. The questions panel keeps
 // the same text it had when the Practical Application paragraphs were prose, and the hash covers
 // the expanded text, so a change to the data file regenerates the questions.
-import type { Assessment } from "../../content/schemas/assessment.ts";
+import type { Assessment } from "../../content/collections/assessment-rules.ts";
 import { countWords } from "../markdown/reading-time.ts";
 import { contentError } from "../content/errors.ts";
 

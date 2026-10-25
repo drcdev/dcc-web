@@ -2,7 +2,7 @@
 // build-time wiring: no browser, no build). Both components share it, so it is covered once here.
 import { describe, expect, it } from "vitest";
 import PracticalApplication from "../../../src/components/assessment/PracticalApplication.astro";
-import { findAssessment, findShift } from "../../../src/lib/assessment/lookup.ts";
+import { findAssessment, findShift } from "../../../src/content/collections/assessment-rules.ts";
 import { sampleAssessment } from "../../helpers/assessment.ts";
 import { render } from "../sections/helpers.ts";
 

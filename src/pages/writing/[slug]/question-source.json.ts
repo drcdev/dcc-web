@@ -4,7 +4,7 @@
 // page does, so drafts exist only in builds that publish them
 // (docs.astro.build/en/guides/endpoints/#static-file-endpoints).
 import type { APIRoute } from "astro";
-import { assessmentsNamedIn } from "../../../lib/assessment/checks";
+import { assessmentsNamedIn } from "../../../content/collections/assessment-rules";
 import { loadAssessments } from "../../../lib/assessment/lookup";
 import { expandForQuestions } from "../../../lib/assessment/question-text";
 import { prepareQuestionSource } from "../../../lib/questions/source";

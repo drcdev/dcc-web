@@ -11,7 +11,7 @@ import { createRequire } from "node:module";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Assessment } from "../../src/content/schemas/assessment.ts";
+import type { Assessment } from "../../src/content/collections/assessment-rules.ts";
 import { seriesIds, topicHref, topics } from "../../src/config/topics.ts";
 import { filesUnder } from "./files.ts";
 import { addressFromPath, idFromPath, postHref, projectHref, slugFromPath, slugFromPostPath } from "../../src/lib/content/addresses.ts";

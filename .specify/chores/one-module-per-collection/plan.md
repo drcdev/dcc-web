@@ -335,7 +335,7 @@ move of a helper).
 Coverage mapping: "exactly one Now file" stays covered by `tests/build/home-sections.test.ts`
 (two cases), which builds and so runs `getNow()` → `checkNowFiles`.
 
-### W8 — Assessments rules module
+### [x] W8 — Assessments rules module
 
 **Files:**
 

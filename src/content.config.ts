@@ -16,7 +16,7 @@ import { assertNoTwin, idFromPath, slugFromPath, slugFromPostPath } from "./lib/
 import { assertFileFormat } from "./lib/content/file-format.ts";
 import { assertImagesExist } from "./lib/content/images.ts";
 import { careerSchema } from "./content/collections/career-rules.ts";
-import { assessmentSchema } from "./content/schemas/assessment.ts";
+import { assessmentSchema } from "./content/collections/assessment-rules.ts";
 import { assertHomeVisible, pageSchema } from "./content/collections/page-rules.ts";
 import { assertLandingBody, bodyAfterFrontMatter, landingSchema } from "./content/collections/landing-rules.ts";
 import { assertNowDate, nowSchema } from "./content/collections/now-rules.ts";

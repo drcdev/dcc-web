@@ -1,7 +1,7 @@
 // Unit tests for the assessment collection schema (contracts/assessment-data.md rows A1 to A3).
 import { describe, expect, it } from "vitest";
-import { assessmentSchema } from "../../../src/content/schemas/assessment.ts";
-import { sampleAssessment } from "../../helpers/assessment.ts";
+import { assessmentSchema } from "../../../../src/content/collections/assessment-rules.ts";
+import { sampleAssessment } from "../../../helpers/assessment.ts";
 
 const parse = (value: unknown) => assessmentSchema.safeParse(value);
 const messages = (value: unknown) => {
