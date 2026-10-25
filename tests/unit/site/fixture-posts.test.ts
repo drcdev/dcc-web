@@ -8,8 +8,7 @@ import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
 import { z } from "astro/zod";
-import { postSchema } from "../../../src/content/schemas/post.ts";
-import { assertPostDates } from "../../../src/lib/content/post-dates.ts";
+import { assertPostDates, postSchema } from "../../../src/content/collections/post-rules.ts";
 import { assertPostFiles } from "../../../src/lib/content/addresses.ts";
 import { FIXTURE_PAGES, generateFixturePosts } from "../../../scripts/build-fixture-site.ts";
 

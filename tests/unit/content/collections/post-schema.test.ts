@@ -13,9 +13,8 @@ import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
 import { z } from "astro/zod";
-import { topicIds } from "../../../src/config/topics.ts";
-import { postSchema } from "../../../src/content/schemas/post.ts";
-import { assertPostDates } from "../../../src/lib/content/post-dates.ts";
+import { topicIds } from "../../../../src/config/topics.ts";
+import { assertPostDates, postSchema } from "../../../../src/content/collections/post-rules.ts";
 
 // `@astrojs/internal-helpers` is Astro's own dependency, so resolve it from Astro.
 const fromAstro = createRequire(createRequire(import.meta.url).resolve("astro/package.json"));

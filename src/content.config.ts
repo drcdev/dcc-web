@@ -16,14 +16,13 @@ import { assertNoTwin, idFromPath, slugFromPath, slugFromPostPath } from "./lib/
 import { assertFileFormat } from "./lib/content/file-format.ts";
 import { assertImagesExist } from "./lib/content/images.ts";
 import { assertNowDate } from "./lib/content/now-file.ts";
-import { assertPostDates } from "./lib/content/post-dates.ts";
 import { careerSchema } from "./content/schemas/career.ts";
 import { assessmentSchema } from "./content/schemas/assessment.ts";
 import { assertHomeVisible, pageSchema } from "./content/collections/page-rules.ts";
 import { assertLandingBody, bodyAfterFrontMatter, landingSchema } from "./content/collections/landing-rules.ts";
 import { nowSchema } from "./content/schemas/now.ts";
 import { readingPathSchema } from "./content/schemas/reading-path.ts";
-import { postSchema } from "./content/schemas/post.ts";
+import { assertPostDates, postSchema } from "./content/collections/post-rules.ts";
 import { projectSchema } from "./content/schemas/project.ts";
 
 const pages = defineCollection({

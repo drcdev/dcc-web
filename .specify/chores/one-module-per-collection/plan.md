@@ -203,7 +203,7 @@ move of a helper).
   `tests/build/page-validation.test.ts` "V9", which builds and so runs `getNavigation()` →
   `checkLandingFiles`.
 
-### W3 — Posts rules module
+### [x] W3 — Posts rules module
 
 **Files:**
 
