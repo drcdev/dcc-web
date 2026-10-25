@@ -69,3 +69,23 @@ None.
 
 - HIGH-1: removed the "#202 will merge the three small site-data collections" sentence from `.claude/skills/content/SKILL.md`; no #202 mention remains in the skill.
 - LOW-2: deleted the unused fixtures `tests/fixtures/projects/broken/26-duplicate-slug.mdx` and `tests/fixtures/reading-paths/broken/two-now/now.mdx` after confirming nothing reads them (only `two-now/now-extra.mdx` is read, by the N07 test; `docs/testing.md` does not reference them).
+
+## Round 2 review
+
+Reviewed commit `1938c750` on 2026-10-25.
+
+- **HIGH-1 closed.** `.claude/skills/content/SKILL.md` has no `#202` left (`grep -n "#202"` on the skill directory is empty). The Collection guide intro now states only the rule: `.mdx` for a file with a body, `.yaml` for one without, the other extension fails with a rename message, pages hold only `.mdx` including the landing files, every schema is strict. It reads coherently.
+- **LOW-2 closed.** No reference to `26-duplicate-slug` or `two-now/now.mdx` remains in `tests/`, `scripts/`, `src/` or `docs/`. `project-validation.test.ts` reads `broken/` fixtures only by name; `home-sections.test.ts` reads only `two-now/now-extra.mdx`. The directory-wide reads (`content-helper.test.ts`, `font-coverage.test.ts`, `fixture-site-content.test.ts`, `fixture-site.ts`) list the top level of `tests/fixtures/projects` filtered to `.mdx` and do not descend into `broken/`.
+- **Scope.** The commit touches only the skill, the two fixtures and this report. No test, assertion, schema or check changed, so nothing is weakened.
+
+### CRITICAL
+
+None.
+
+### HIGH
+
+None.
+
+### LOW
+
+1. **Long joined line in the skill.** `.claude/skills/content/SKILL.md:36` is now about 160 characters where the paragraph wraps near 100, because "Every schema is strict…" was appended to the shortened line instead of rewrapped. Cosmetic; rewrap if the file is touched again.
