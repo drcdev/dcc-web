@@ -1,6 +1,6 @@
-// Finds an assessment and its shifts for the post components and the post route (contracts/
-// assessment-data.md rows A4 and A5). The finders are pure; `loadAssessments()` reads the
-// collection and is the only part that needs Astro's content runtime, so it is imported lazily.
+// Loads assessments for the post components and the post route. The finders and their rules
+// (contracts/assessment-data.md rows A4 and A5) live in content/collections/assessment-rules.ts;
+// `loadAssessments()` is the only part that needs Astro's content runtime, so it is imported lazily.
 import { findAssessment, type Assessment, type Assessments } from "../../content/collections/assessment-rules.ts";
 
 /** Every assessment in the collection, keyed by id (the file name). */

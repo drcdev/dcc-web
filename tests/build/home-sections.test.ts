@@ -1,7 +1,7 @@
 // Wiring runs for the Now rows of specs/040-home-now-start-here/contracts/build-errors.md. The rules
-// are unit-tested (tests/unit/content/now-schema.test.ts, now-body.test.ts); these runs prove the real
-// build runs them and renders the section. Each run holds one broken file, because a build stops at the
-// first error. Fixtures live in tests/fixtures/now/ and tests/fixtures/reading-paths/broken/.
+// are unit-tested (tests/unit/content/collections/now-schema.test.ts, now-body.test.ts); these runs
+// prove the real build runs them and renders the section. Each run holds one broken file, because a
+// build stops at the first error. Fixtures live in tests/fixtures/now/ and tests/fixtures/reading-paths/broken/.
 import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it } from "vitest";
 import { buildFixtureSite, type FixtureSiteResult } from "./fixture-site.ts";
