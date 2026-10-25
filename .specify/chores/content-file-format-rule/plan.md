@@ -80,21 +80,15 @@ only the rule. No page changes for a reader
 **Not changed:** `specs/**` contracts (history), `scripts/ci/changed-paths.ts`, any component,
 schema or visual baseline.
 
-## [NEEDS DECISION] Landing files under the rule
+## Decision: landing files stay `.mdx`
 
 The two landing files (`pages/writing.mdx`, `pages/projects.mdx`) have no body (the build requires
-it empty), so the rule as worded would make them `.yaml`. The issue does not name them.
-
-- **A (recommended):** keep them `.mdx`, matched as `{writing,projects}.{md,mdx}` with `.md`
-  rejected like any page. They sit in the pages folder beside the pages they configure, use the
-  same `title`/`nav` front matter, and no doc or test moves. The skill and `docs/pages.md` say the
-  pages folder holds only `.mdx`, landing files included.
-- **B:** move them to `writing.yaml` and `projects.yaml` (landing pattern `{writing,projects}.yaml`,
-  `.yml` rejected, `assertLandingBody` deleted since a YAML file has no body). Literal to the rule,
-  but puts YAML in the pages folder and rewrites the "Landing files" doc and V8 test.
-
-The plan below follows **A**. Choosing B adds a step to W1 and changes V8 (the landing-body test
-would be deleted, its guarantee carried by the format itself).
+it empty), so the rule as worded would make them `.yaml`. The issue does not name them. Don chose
+(2026-10-25) to keep them `.mdx`: the `landing` loader matches `{writing,projects}.{md,mdx}` and
+rejects `.md` like any page. They sit in the pages folder beside the pages they configure and use
+the same `title`/`nav` front matter, so no doc or test moves. The skill and `docs/pages.md` say
+the pages folder holds only `.mdx`, landing files included. Moving them to `.yaml` was considered
+and not chosen.
 
 ## Constitution Check
 
@@ -226,7 +220,7 @@ line 183: `now.mdx`; line 224: the twin example becomes `about.mdx` and `about/i
 bullet for a `.md` file); `docs/projects.md` (line 21 drop the `.md`/`.mdx` pair sentence, line
 233 the error bullet says a `.md` file must be renamed); `.claude/skills/content/SKILL.md`
 "Collection guide" (replace the "State today" sentence, including #200/#202, with the rule and the
-landing-file note from option A; keep "All paths are under `src/content/`…" and "Every schema is
+landing-file note from the decision above; keep "All paths are under `src/content/`…" and "Every schema is
 strict"; `pages` row `pages/**/*.mdx` with `.md` rejected; `career` and `readingPaths` rows
 `*.yaml`, `.yml` rejected; `assessments` row notes `.yml` rejected; `now` row `now/now.mdx`);
 `docs/testing.md` (row 13 cell, the project row 26 coverage, N07 message, a new "File format" row
