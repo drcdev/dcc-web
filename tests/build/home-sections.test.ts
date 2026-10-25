@@ -71,6 +71,16 @@ describe("Start here wiring", () => {
     expect(result.message).toContain("item 1 (post: no-such-post) does not exist");
   });
 
+  it("a .yml reading path fails, naming the file and saying to rename it to .yaml", async () => {
+    result = await buildFixtureSite([], {
+      mode: "sync",
+      readingPaths: [{ from: "harness/minimal-path.yaml", to: "minimal-path.yml" }],
+    });
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("minimal-path.yml");
+    expect(result.message).toContain("rename it to .yaml");
+  });
+
   it("R09: the build fails on YAML that does not parse, naming the file", async () => {
     result = await buildFixtureSite([], { ...base, readingPaths: ["broken/bad-yaml/path.yaml"] });
     expect(result.ok).toBe(false);

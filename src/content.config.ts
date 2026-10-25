@@ -101,7 +101,14 @@ const projects = defineCollection({
 // `assessments`: one YAML file per self-assessment in src/content/assessments/; the file name is
 // the id a post names in its components (specs/037-wayfinder-self-assessment/data-model.md).
 const assessments = defineCollection({
-  loader: glob({ pattern: "*.yaml", base: "./src/content/assessments" }),
+  loader: glob({
+    pattern: "*.{yaml,yml}",
+    base: "./src/content/assessments",
+    generateId: ({ entry }) => {
+      assertFileFormat("assessment", `src/content/assessments/${entry}`);
+      return entry.replace(/\.yaml$/, "");
+    },
+  }),
   schema: assessmentSchema,
 });
 
@@ -124,7 +131,14 @@ const now = defineCollection({
 // name. Rules that span files (missing items, duplicates, the four-path limit) run in
 // src/lib/reading-paths.ts when the home page is built (contracts/build-errors.md R04 to R07).
 const readingPaths = defineCollection({
-  loader: glob({ pattern: "*.{yaml,yml}", base: "./src/content/reading-paths" }),
+  loader: glob({
+    pattern: "*.{yaml,yml}",
+    base: "./src/content/reading-paths",
+    generateId: ({ entry }) => {
+      assertFileFormat("reading path", `src/content/reading-paths/${entry}`);
+      return entry.replace(/\.yaml$/, "");
+    },
+  }),
   schema: readingPathSchema(),
 });
 
@@ -132,7 +146,14 @@ const readingPaths = defineCollection({
 // span files (the current role, missing and draft posts) run in src/lib/content/career.ts when the
 // About page builds (specs/041-career-timeline/contracts/build-errors.md). No files means no steps.
 const career = defineCollection({
-  loader: glob({ pattern: "*.{yaml,yml}", base: "./src/content/career" }),
+  loader: glob({
+    pattern: "*.{yaml,yml}",
+    base: "./src/content/career",
+    generateId: ({ entry }) => {
+      assertFileFormat("career step", `src/content/career/${entry}`);
+      return entry.replace(/\.yaml$/, "");
+    },
+  }),
   schema: careerSchema(),
 });
 

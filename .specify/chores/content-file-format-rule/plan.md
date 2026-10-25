@@ -194,7 +194,7 @@ and `two-now/{now.md,now-extra.md}` → `.mdx` (`git mv`); `scripts/build-fixtur
   review. No test is added for this: it is a one-off migration check, and the existing build test
   already asserts the section renders with its date.
 
-### W3 Career, reading paths and assessments reject `.yml`
+### W3 (done) Career, reading paths and assessments reject `.yml`
 
 **Files:** `src/content.config.ts` (`career`, `readingPaths`, `assessments`: pattern
 `*.{yaml,yml}`, and a `generateId` that calls `assertFileFormat("career step" | "reading path" |
