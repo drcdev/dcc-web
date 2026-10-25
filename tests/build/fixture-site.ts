@@ -85,7 +85,7 @@ export interface FixtureSiteOptions {
    * are left out of the copy unless real posts are kept (`realPosts`), because they name real posts.
    */
   career?: readonly (string | FixtureFile)[];
-  /** A Now fixture file, relative to tests/fixtures/now/, installed as src/content/now/now.md in place of the default; `false` leaves the site with no Now file. */
+  /** A Now fixture file, relative to tests/fixtures/now/, installed as src/content/now/now.mdx in place of the default; `false` leaves the site with no Now file. */
   now?: string | false;
   /** Page files to delete from the copied site, relative to src/content/pages/ (for example a landing file). */
   removePages?: readonly string[];
@@ -215,10 +215,10 @@ export async function buildFixtureSite(
     mkdirSync(copiedCareer, { recursive: true });
     copyFixtures(options.career, careerFixturesRoot, copiedCareer);
   }
-  if (options.now === false) rmSync(resolve(root, "src/content/now/now.md"), { force: true });
+  if (options.now === false) rmSync(resolve(root, "src/content/now/now.mdx"), { force: true });
   else if (options.now) {
     mkdirSync(resolve(root, "src/content/now"), { recursive: true });
-    copyFixtures([{ from: options.now, to: "now.md" }], nowFixturesRoot, resolve(root, "src/content/now"));
+    copyFixtures([{ from: options.now, to: "now.mdx" }], nowFixturesRoot, resolve(root, "src/content/now"));
   }
 
   const pagesDir = resolve(root, "src/content/pages");

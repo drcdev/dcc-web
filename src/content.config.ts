@@ -105,15 +105,16 @@ const assessments = defineCollection({
   schema: assessmentSchema,
 });
 
-// `now`: the one Now file, src/content/now/now.md: the date and four topics in its front matter and
+// `now`: the one Now file, src/content/now/now.mdx: the date and four topics in its front matter and
 // the "open to" line as its body. The date check reads the raw text (specs/040-home-now-start-here).
 const now = defineCollection({
   loader: glob({
-    pattern: "*.md",
+    pattern: "*.{md,mdx}",
     base: "./src/content/now",
     generateId: ({ entry, base }) => {
+      assertFileFormat("now", `src/content/now/${entry}`);
       assertNowDate(`src/content/now/${entry}`, readFileSync(resolve(fileURLToPath(base), entry), "utf-8"));
-      return entry.replace(/\.md$/, "");
+      return entry.replace(/\.mdx$/, "");
     },
   }),
   schema: nowSchema(),

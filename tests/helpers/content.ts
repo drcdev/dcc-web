@@ -161,9 +161,9 @@ export function currentCareerStep(steps: readonly CareerStepFile[]): CareerStepF
   return sorted[sorted.length - 1]!;
 }
 
-/** The Now file (src/content/now/now.md): its parsed front matter and its body (the "open to" line). */
+/** The Now file (src/content/now/now.mdx): its parsed front matter and its body (the "open to" line). */
 function readNow(): Entry | undefined {
-  const file = join(root, "src/content/now/now.md");
+  const file = join(root, "src/content/now/now.mdx");
   if (!existsSync(file)) return undefined;
   const { frontmatter, content } = parseFrontmatter(readFileSync(file, "utf-8"));
   return {

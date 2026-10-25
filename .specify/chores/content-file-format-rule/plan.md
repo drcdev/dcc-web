@@ -166,7 +166,7 @@ proves `generateId` calls it, per docs/testing.md "Build, `sync`"):**
 | `project-validation.test.ts` "row 26: generateId runs the twin check" (`x.mdx` + `x.md`) | Replaced by the new project `.md` sync run; same fixture pair, now expects "rename it to .mdx". One sync run, not two. |
 | `addresses.test.ts` post twin and P13 cases | Unchanged. |
 
-### W2 Now note moves to `now.mdx`
+### W2 (done) Now note moves to `now.mdx`
 
 **Files:** `src/content/now/now.md` → `now.mdx` (`git mv`, content unchanged);
 `src/content.config.ts` (`now`: pattern `*.{md,mdx}`, `generateId` calls

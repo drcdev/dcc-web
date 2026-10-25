@@ -175,7 +175,7 @@ export function prepareFixtureSite(siteRoot: string): void {
   const nowDir = resolve(siteRoot, "src/content/now");
   rmSync(nowDir, { recursive: true, force: true });
   mkdirSync(nowDir, { recursive: true });
-  cpSync(resolve(repoRoot, "tests/fixtures/now/now.md"), resolve(nowDir, "now.md"));
+  cpSync(resolve(repoRoot, "tests/fixtures/now/now.mdx"), resolve(nowDir, "now.mdx"));
   // Dependencies resolve through the repository's node_modules.
   symlinkSync(resolve(repoRoot, "node_modules"), resolve(siteRoot, "node_modules"), "dir");
 

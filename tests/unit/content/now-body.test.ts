@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { checkNowBody } from "../../../src/content/schemas/now.ts";
 
-const file = "src/content/now/now.md";
+const file = "src/content/now/now.mdx";
 
 describe("checkNowBody", () => {
   it("accepts one paragraph with a link to /contact/, and extra links", () => {

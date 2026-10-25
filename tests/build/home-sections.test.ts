@@ -11,7 +11,7 @@ afterEach(() => result?.cleanup());
 
 describe("Now wiring", () => {
   it("builds a valid Now entry and the home page holds the Now section", async () => {
-    result = await buildFixtureSite([], { mode: "build", now: "now.md" });
+    result = await buildFixtureSite([], { mode: "build", now: "now.mdx" });
     expect(result.ok, result.message).toBe(true);
     const home = result.read("index.html");
     expect(home).toContain("data-now");
@@ -19,14 +19,14 @@ describe("Now wiring", () => {
   });
 
   it("N03: the build fails on a future-dated Now", async () => {
-    result = await buildFixtureSite([], { mode: "build", now: "../reading-paths/broken/future-now/now.md" });
+    result = await buildFixtureSite([], { mode: "build", now: "../reading-paths/broken/future-now/now.mdx" });
     expect(result.ok).toBe(false);
     expect(result.message).toContain("is in the future");
-    expect(result.message).toContain("now.md");
+    expect(result.message).toContain("now.mdx");
   });
 
   it("N06: the build fails on a Now body with no contact link", async () => {
-    result = await buildFixtureSite([], { mode: "build", now: "../reading-paths/broken/now-no-contact/now.md" });
+    result = await buildFixtureSite([], { mode: "build", now: "../reading-paths/broken/now-no-contact/now.mdx" });
     expect(result.ok).toBe(false);
     expect(result.message).toContain("must link to");
   });
@@ -34,17 +34,28 @@ describe("Now wiring", () => {
   it("N07: the build fails when there are two Now files", async () => {
     result = await buildFixtureSite([], {
       mode: "build",
-      now: "now.md",
-      write: { "src/content/now/now-extra.md": readFileSync(new URL("../fixtures/now/now.md", import.meta.url), "utf-8") },
+      now: "now.mdx",
+      write: { "src/content/now/now-extra.mdx": readFileSync(new URL("../fixtures/reading-paths/broken/two-now/now-extra.mdx", import.meta.url), "utf-8") },
     });
     expect(result.ok).toBe(false);
-    expect(result.message).toContain("there must be exactly one Now file, now.md.");
+    expect(result.message).toContain("there must be exactly one Now file, now.mdx.");
+  });
+
+  it("a now.md fails, naming the file and saying to rename it to .mdx", async () => {
+    result = await buildFixtureSite([], {
+      mode: "sync",
+      now: false,
+      write: { "src/content/now/now.md": readFileSync(new URL("../fixtures/now/now.mdx", import.meta.url), "utf-8") },
+    });
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("now.md");
+    expect(result.message).toContain("rename it to .mdx");
   });
 
   it("N07: the build fails when there is no Now file", async () => {
     result = await buildFixtureSite([], { mode: "build", now: false });
     expect(result.ok).toBe(false);
-    expect(result.message).toContain("there must be exactly one Now file, now.md.");
+    expect(result.message).toContain("there must be exactly one Now file, now.mdx.");
   });
 });
 

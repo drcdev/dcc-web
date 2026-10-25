@@ -28,7 +28,7 @@ beforeAll(async () => {
     ],
     projects: ["minimal.mdx", "every-setting.mdx", "draft.mdx"],
     readingPaths: [{ from: "harness/minimal-path.yaml", to: "renamed-path.yaml" }],
-    now: "now.md",
+    now: "now.mdx",
   });
   s1Root = s1.root;
   s2 = await buildFixtureSite([], { mode: "sync", realPosts: true });
@@ -87,8 +87,8 @@ describe("fixture-site harness, S1 (every kind of file, default options)", () =>
   });
 
   it("installs the fixture Now file in place of the default one", () => {
-    expect(readFileSync(`${s1.root}/src/content/now/now.md`, "utf-8")).toBe(readFileSync(`${root}tests/fixtures/now/now.md`, "utf-8"));
-    expect(readdirSync(`${s1.root}/src/content/now`)).toEqual(["now.md"]);
+    expect(readFileSync(`${s1.root}/src/content/now/now.mdx`, "utf-8")).toBe(readFileSync(`${root}tests/fixtures/now/now.mdx`, "utf-8"));
+    expect(readdirSync(`${s1.root}/src/content/now`)).toEqual(["now.mdx"]);
   });
 
   it("removes the temporary site on cleanup", () => {
@@ -133,7 +133,7 @@ describe("Playwright fixture site copy", () => {
   });
 
   it("holds exactly the fixture Now file", () => {
-    expect(readdirSync(`${siteRoot}/src/content/now`)).toEqual(["now.md"]);
-    expect(readFileSync(`${siteRoot}/src/content/now/now.md`, "utf-8")).toBe(readFileSync(`${root}tests/fixtures/now/now.md`, "utf-8"));
+    expect(readdirSync(`${siteRoot}/src/content/now`)).toEqual(["now.mdx"]);
+    expect(readFileSync(`${siteRoot}/src/content/now/now.mdx`, "utf-8")).toBe(readFileSync(`${root}tests/fixtures/now/now.mdx`, "utf-8"));
   });
 });
