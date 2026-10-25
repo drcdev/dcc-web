@@ -7,7 +7,7 @@ import { z } from "astro/zod";
 import { projectStatuses } from "../../lib/content/project-status.ts";
 import { partIds } from "../../lib/content/parts.ts";
 import { themeKey } from "../../lib/content/themes.ts";
-import { requiredText as text, type ImageValidator } from "./shared.ts";
+import { requiredText as text, type ImageValidator } from "../../lib/content/schema-fields.ts";
 
 const httpsUrl = z.url({ protocol: /^https$/, error: "use an address that starts with https://" });
 

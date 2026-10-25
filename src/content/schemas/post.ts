@@ -9,7 +9,7 @@
 import { z } from "astro/zod";
 import { seriesIds, topicIds } from "../../config/topics.ts";
 import { nearMiss } from "../../lib/content/topic-ids.ts";
-import { requiredText, type ImageValidator } from "./shared.ts";
+import { requiredText, type ImageValidator } from "../../lib/content/schema-fields.ts";
 
 const allowedTopics = topicIds.join(", ");
 

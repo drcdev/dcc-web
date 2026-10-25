@@ -162,7 +162,7 @@ Common to every item:
   `src/lib/content/` shared helpers. It must never import a reader (`src/lib/*.ts`,
   `src/lib/assessment/lookup.ts`), a component or a page.
 
-### W1 — Shared schema fields move to `src/lib/content/schema-fields.ts`
+### [x] W1 — Shared schema fields move to `src/lib/content/schema-fields.ts`
 
 **Files:** `git mv src/content/schemas/shared.ts src/lib/content/schema-fields.ts`. Update its
 importers: `src/content/schemas/{page,post,project}.ts` (they move later and keep this import) and

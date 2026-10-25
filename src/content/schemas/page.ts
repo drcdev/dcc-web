@@ -2,7 +2,7 @@
 // with the `image` helper from the collection schema context
 // (docs.astro.build/en/guides/images/#images-in-content-collections).
 import { z } from "astro/zod";
-import { captionedImage, imageWithAlt, linkTarget, navField, requiredText, seoFields, type ImageValidator } from "./shared.ts";
+import { captionedImage, imageWithAlt, linkTarget, navField, requiredText, seoFields, type ImageValidator } from "../../lib/content/schema-fields.ts";
 
 // One shared definition for the introduction card's two buttons (data-model.md "CallToAction").
 const callToAction = z.strictObject({ label: requiredText, href: linkTarget });

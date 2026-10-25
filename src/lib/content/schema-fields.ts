@@ -1,4 +1,5 @@
-// Schema pieces shared by the page collection (data-model.md "Page"). Every
+// Schema pieces shared by the page, landing, post and project rules and the
+// section prop schemas (data-model.md "Page"). Every
 // object is strict, so an unknown or misspelled key fails the build (FR-007).
 // Zod comes from Astro's own re-export
 // (docs.astro.build/en/reference/modules/astro-zod/).

@@ -4,7 +4,7 @@
 // `content`, so "needs text" and "needs exactly one image" are checked the same
 // way as a missing prop.
 import { z } from "astro/zod";
-import { linkTarget } from "../../content/schemas/shared.ts";
+import { linkTarget } from "../../lib/content/schema-fields.ts";
 import type { SectionName } from "./index.ts";
 
 const text = z.string().trim().min(1);
