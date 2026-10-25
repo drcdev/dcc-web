@@ -125,7 +125,7 @@ path list):**
 No test moves or is removed. Use made-up entry names in the new literals (Real content in tests,
 `docs/testing.md`), so the test stays independent of content.
 
-### W2 — Docs and the `/content` skill match
+### W2 — Docs and the `/content` skill match [x]
 
 **Files:** `docs/testing.md`; `.claude/skills/content/SKILL.md`.
 
