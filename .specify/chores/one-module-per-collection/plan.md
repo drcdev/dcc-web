@@ -48,10 +48,21 @@ every check stays the same: no reader sees a change.
    `src/lib/content/` or `src/config/`. The new guard test (W10) checks this.
 6. `grep -rn "content/schemas\|lib/content/\(page-flags\|post-dates\|now-file\|options-comparison\|project-story\|reading-paths\|career\)\.ts\|assessment/checks" src tests docs .claude scripts`
    prints nothing. Historical records under `specs/` and `.specify/` are not edited.
-7. `pnpm run test:unit` passes with **2914 tests** (2911 plus the 3 new guard tests in W10) in
-   196 files: five test files are split (W2, W3, W4, W5, W6) and one guard file is added. No moved
-   or split test changes what it asserts. `astro check` reports 0 errors, `pnpm run lint` passes,
-   and the full verify gate passes in CI.
+7. `pnpm run test:unit` passes with **2925 tests** in **196 files** (before: 190 files, 2911
+   tests; +6 files, +14 tests). No moved or split test changes what it asserts. The 14 extra tests:
+   - +5 from the generated "no real content named in tests" guard, which emits one test per file
+     under `tests/e2e`, `tests/build` and `tests/unit/content`: the splits add
+     `draft-pages.test.ts` (W2), `topic-near-miss.test.ts` (W3), `project-replaced-by.test.ts` (W4),
+     `career-view.test.ts` (W5) and `reading-path-view.test.ts` (W6).
+   - +2 from the same guard: W8 moved two assessment test files into
+     `tests/unit/content/collections/`, which brought them into its scope.
+   - +1 from W5, which split one career test that used both `checkCareer` and `buildTimeline` into
+     a rules test and a view test, keeping every assertion.
+   - +2 from W8: two `checkBlockHeading` unit tests for the rule moved out of the post route.
+   - +3 from the W10 guard (`boundaries.test.ts`).
+   - +1 from the same literal guard, because the W10 file lies in `tests/unit/content/`.
+   Files: +5 split files, +1 guard file (the W8 moves add none). `astro check` reports 0 errors,
+   `pnpm run lint` passes, and the full verify gate passes in CI.
 8. In `.claude/skills/content/SKILL.md`, `grep -n "#203\|src/content/schemas" ` prints nothing, and
    each "Collection guide" row names its `collections/<name>-rules.ts` module.
 
@@ -411,7 +422,7 @@ Coverage mapping: "exactly one Now file" stays covered by `tests/build/home-sect
 are the checks; `docs-content-structure.test.ts` and `changed-paths.test.ts` keep their test
 counts.
 
-### W10 — Boundary guard test and final sweep
+### [x] W10 — Boundary guard test and final sweep
 
 **Files:** new `tests/unit/content/collections/boundaries.test.ts`. Primary layer: **unit**, the
 cheapest layer that can observe it; it reads source files and builds nothing (as
