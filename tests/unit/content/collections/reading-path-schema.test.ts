@@ -1,7 +1,7 @@
 // The reading path front matter schema (specs/040-home-now-start-here/contracts/build-errors.md rows
 // R01, R02, R03, R08, R10). Items are references; a plain slug string is what the YAML holds.
 import { describe, expect, it } from "vitest";
-import { readingPathSchema } from "../../../src/content/schemas/reading-path.ts";
+import { readingPathSchema } from "../../../../src/content/collections/reading-path-rules.ts";
 
 const schema = readingPathSchema();
 const valid = {

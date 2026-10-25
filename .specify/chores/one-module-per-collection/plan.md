@@ -290,7 +290,7 @@ move of a helper).
   `tests/component/sections/CareerTimeline.test.ts`: only imports change.
   `job-title-only-on-about.test.ts` does not change (the reader is still `src/lib/career.ts`).
 
-### W6 — Reading-path rules module and view helper
+### [x] W6 — Reading-path rules module and view helper
 
 **Files:**
 

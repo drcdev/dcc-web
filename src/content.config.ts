@@ -21,7 +21,7 @@ import { assessmentSchema } from "./content/schemas/assessment.ts";
 import { assertHomeVisible, pageSchema } from "./content/collections/page-rules.ts";
 import { assertLandingBody, bodyAfterFrontMatter, landingSchema } from "./content/collections/landing-rules.ts";
 import { nowSchema } from "./content/schemas/now.ts";
-import { readingPathSchema } from "./content/schemas/reading-path.ts";
+import { readingPathSchema } from "./content/collections/reading-path-rules.ts";
 import { assertPostDates, postSchema } from "./content/collections/post-rules.ts";
 import { projectSchema } from "./content/collections/project-rules.ts";
 

@@ -1,13 +1,45 @@
-// The pure part of the home page's reading paths (specs/040-home-now-start-here/contracts/build-errors.md
-// rows R04 to R07; spec FR-008, FR-013). src/lib/reading-paths.ts reads the collections and passes
-// them in, so these functions need no Astro runtime.
-import { contentError, PageContentError } from "./errors.ts";
+// All of the `readingPaths` collection's rules (specs/040-home-now-start-here/data-model.md; contracts/
+// build-errors.md rows R01 to R08, R10). One YAML file per path: a name, a one-sentence description, a
+// position and one to five items, each a post or a project named by its file name. Items are references
+// (docs.astro.build/en/guides/content-collections/#defining-collection-references). Beside the schema:
+// the rules that span files (R04 to R07), run by src/lib/reading-paths.ts when the home page builds.
+// Zod comes from Astro's own re-export.
+import { reference } from "astro:content";
+import { z } from "astro/zod";
+import { contentError, PageContentError } from "../../lib/content/errors.ts";
 
 /** The most paths the home page shows, and the most items in one. */
 export const MAX_PATHS = 4;
 export const MAX_ITEMS = 5;
 
 export type ItemKind = "post" | "project";
+
+const MAX_DESCRIPTION = 160;
+
+const text = z.string().trim().min(1);
+
+const itemMessage = "each item is either post: <slug> or project: <slug>";
+const itemsMessage = `list between 1 and ${MAX_ITEMS} items`;
+
+const description = text
+  .max(MAX_DESCRIPTION, `description: keep it to one sentence of at most ${MAX_DESCRIPTION} characters`)
+  .refine(
+    (value) => value.endsWith(".") && !/[.!?]\s+\S/.test(value),
+    "description: write one sentence that ends with a full stop",
+  );
+
+export function readingPathSchema() {
+  const item = z.union(
+    [z.strictObject({ post: reference("posts") }), z.strictObject({ project: reference("projects") })],
+    { error: itemMessage },
+  );
+  return z.strictObject({
+    title: text,
+    description,
+    position: z.number().int().min(1, `position: use a whole number from 1 to ${MAX_PATHS}`).max(MAX_PATHS, `position: use a whole number from 1 to ${MAX_PATHS}`),
+    items: z.array(item).min(1, itemsMessage).max(MAX_ITEMS, itemsMessage),
+  });
+}
 
 /** One reading path file with its items as plain slugs. */
 export interface PathFile {
@@ -18,21 +50,7 @@ export interface PathFile {
   data: { title: string; description: string; position: number; items: ({ post: string } | { project: string })[] };
 }
 
-export interface ResolvedItem {
-  kind: ItemKind;
-  title: string;
-  href: string;
-  minutesRead: number;
-}
-
-export interface ResolvedPath {
-  id: string;
-  title: string;
-  description: string;
-  items: ResolvedItem[];
-}
-
-const kindOf = (item: PathFile["data"]["items"][number]): { kind: ItemKind; slug: string } =>
+export const kindOf = (item: PathFile["data"]["items"][number]): { kind: ItemKind; slug: string } =>
   "post" in item ? { kind: "post", slug: item.post } : { kind: "project", slug: item.project };
 
 /**
@@ -75,31 +93,4 @@ export function checkReadingPaths(
       seen.add(key);
     });
   }
-}
-
-interface Visible {
-  title: string;
-  href: string;
-  minutesRead: number;
-}
-
-/**
- * The paths the home page shows: sorted by position, items in file order, with any item that is not
- * in `visible` (a draft in a production build) dropped, and any path left empty dropped.
- */
-export function resolveReadingPaths(
-  files: readonly PathFile[],
-  visible: { posts: ReadonlyMap<string, Visible>; projects: ReadonlyMap<string, Visible> },
-): ResolvedPath[] {
-  return [...files]
-    .sort((a, b) => a.data.position - b.data.position)
-    .map((file): ResolvedPath => {
-      const items = file.data.items.flatMap((item): ResolvedItem[] => {
-        const { kind, slug } = kindOf(item);
-        const found = (kind === "post" ? visible.posts : visible.projects).get(slug);
-        return found ? [{ kind, ...found }] : [];
-      });
-      return { id: file.id, title: file.data.title, description: file.data.description, items };
-    })
-    .filter((path) => path.items.length > 0);
 }

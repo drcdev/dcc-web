@@ -4,7 +4,8 @@
 // checked against every post and project file, drafts included, so a draft is never a build error.
 import { getCollection, render } from "astro:content";
 import { projectHref } from "./content/addresses.ts";
-import { checkReadingPaths, resolveReadingPaths, type PathFile, type ResolvedPath } from "./content/reading-paths.ts";
+import { checkReadingPaths, type PathFile } from "../content/collections/reading-path-rules.ts";
+import { resolveReadingPaths, type ResolvedPath } from "./content/reading-path-view.ts";
 import { getPostSummaries } from "./posts.ts";
 import { getPublishedProjects } from "./projects.ts";
 
