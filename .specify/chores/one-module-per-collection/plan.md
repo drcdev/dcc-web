@@ -315,7 +315,7 @@ move of a helper).
   `tests/unit/content/reading-path-view.test.ts`.
 - `launch-paths.test.ts` stays (it reads real content).
 
-### W7 — Now rules module
+### [x] W7 — Now rules module
 
 **Files:**
 

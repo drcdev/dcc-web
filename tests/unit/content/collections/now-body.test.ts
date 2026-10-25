@@ -1,6 +1,6 @@
 // checkNowBody(): the Now body is the "open to" line (contracts/build-errors.md rows N06 and N08).
 import { describe, expect, it } from "vitest";
-import { checkNowBody } from "../../../src/content/schemas/now.ts";
+import { checkNowBody } from "../../../../src/content/collections/now-rules.ts";
 
 const file = "src/content/now/now.mdx";
 

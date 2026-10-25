@@ -1,6 +1,6 @@
 // The Now front matter schema (specs/040-home-now-start-here/contracts/build-errors.md rows N01 to N05, N09).
 import { describe, expect, it } from "vitest";
-import { nowSchema } from "../../../src/content/schemas/now.ts";
+import { nowSchema } from "../../../../src/content/collections/now-rules.ts";
 
 const clock = () => new Date("2026-10-11T12:00:00Z");
 const schema = nowSchema(clock);
