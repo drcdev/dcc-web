@@ -5,7 +5,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { z } from "astro/zod";
-import { landingSchema, pageSchema } from "../../../src/content/schemas/page.ts";
+import { pageSchema } from "../../../src/content/collections/page-rules.ts";
+import { landingSchema } from "../../../src/content/collections/landing-rules.ts";
 import { landingPages, pages } from "../../helpers/content";
 
 const dir = fileURLToPath(new URL("../../../src/content/pages/", import.meta.url));

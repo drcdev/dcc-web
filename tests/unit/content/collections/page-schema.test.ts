@@ -3,7 +3,8 @@
 // for it here so the schema can be tested without the content layer.
 import { describe, expect, it } from "vitest";
 import { z } from "astro/zod";
-import { landingSchema, pageSchema } from "../../../src/content/schemas/page.ts";
+import { pageSchema } from "../../../../src/content/collections/page-rules.ts";
+import { landingSchema } from "../../../../src/content/collections/landing-rules.ts";
 
 const schema = pageSchema({ image: () => z.string() });
 

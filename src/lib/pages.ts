@@ -5,7 +5,7 @@ import { getCollection, type CollectionEntry } from "astro:content";
 import { landingPages, type SiteNavigation } from "../config/navigation.ts";
 import { WORKERS_CI, WORKERS_CI_BRANCH } from "astro:env/server";
 import { includeDrafts } from "./build-mode.ts";
-import { contentError } from "./content/errors.ts";
+import { checkLandingFiles } from "../content/collections/landing-rules.ts";
 import { buildMenus } from "./content/navigation.ts";
 
 export type PageEntry = CollectionEntry<"pages">;
@@ -37,12 +37,7 @@ export async function getPages(): Promise<PageEntry[]> {
  */
 export async function getNavigation(): Promise<SiteNavigation> {
   const [entries, landing] = await Promise.all([getPages(), getCollection("landing")]);
-  for (const address of landingPages) {
-    const id = address.replaceAll("/", "");
-    if (!landing.some((entry) => entry.id === id)) {
-      throw contentError("page", `src/content/pages/${id}.mdx`, "missing. Add the landing file with a title and nav.");
-    }
-  }
+  checkLandingFiles(landingPages, landing.map((entry) => entry.id));
   return buildMenus([
     ...entries.map((entry) => ({
       file: fileOf(entry),

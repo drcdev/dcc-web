@@ -173,7 +173,7 @@ and project rules and the section prop schemas").
 `section-schemas`, `site-pages`). No test imports `shared.ts` directly. No behaviour: n/a (a pure
 move of a helper).
 
-### W2 — Pages and landing rules modules
+### [x] W2 — Pages and landing rules modules
 
 **Files:**
 
