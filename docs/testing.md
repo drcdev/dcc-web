@@ -84,7 +84,7 @@ move that directory out of the docs tier.
 
 | Skipped on content-only | Why the guarantee holds |
 |---|---|
-| `drafts.test.ts`, `blog-listing.test.ts`, `page-validation.test.ts`, `post-validation.test.ts`, `project-validation.test.ts` | They test the schema, loader, route and render machinery with fixture files. That machinery lives in `src/content/schemas/**`, `src/content.config.ts`, `src/lib/**`, components and pages. None of those is content-only, so a change to them runs the full gate. That the real content still builds is proven by `pnpm run build` in `e2e`, and the unit tests that read the real content files still run in `test:unit`. |
+| `drafts.test.ts`, `blog-listing.test.ts`, `page-validation.test.ts`, `post-validation.test.ts`, `project-validation.test.ts` | They test the schema, loader, route and render machinery with fixture files. That machinery lives in `src/content/collections/**`, `src/content.config.ts`, `src/lib/**`, components and pages. None of those is content-only, so a change to them runs the full gate. That the real content still builds is proven by `pnpm run build` in `e2e`, and the unit tests that read the real content files still run in `test:unit`. |
 | `fixture-site.test.ts` | Harness tests (`tests/build/fixture-site.ts`, not content-only). Its sync of the real posts is covered by the real `pnpm run build` in `e2e`. |
 | `career-timeline.test.ts`, `home-sections.test.ts`, `assessment-scripts.test.ts`, `question-source.test.ts` | They test the career timeline, home sections, assessment scripts and question source with fixture files. Their machinery (schemas, `src/content.config.ts`, `src/lib/**`, components) is not content-only. The real data files are parsed by `indexing.test.ts` (it runs `astro build`) and by `pnpm run build` in `e2e`, and the unit tests under `tests/unit/content/` that read the real data still run in `test:unit`. A future build test that reads a real data entry by name outside `test:build:content` would be skipped on a data edit, and `content-tier.test.ts` walks pages, posts and projects only; the rule against naming real entries in tests covers it. |
 
@@ -276,7 +276,7 @@ need a colour theme before first paint share one helper, `tests/e2e/color-theme.
 A validation rule has two parts, and each is proven once.
 
 1. **Logic**: does this input produce this message? That belongs in the unit test of the plain
-   function or schema that decides it (`src/lib/content/`, `src/content/schemas/`,
+   function or schema that decides it (`src/lib/content/`, `src/content/collections/`,
    `src/components/sections/validate.ts`), or a component test when the check lives in a
    component. Astro's `errorMap` is not a public export, so schema unit tests format zod's issues
    like Astro does (`<path>: <message>`) and assert the row's phrase against that text.
@@ -313,11 +313,11 @@ Call-site runs, all in `build/page-validation.test.ts`:
 
 | Row | Rule | Primary assertion | Call-site run |
 |---|---|---|---|
-| 1 | No `title` | `unit/page-schema.test.ts` "row 1: a missing title names title" | sync, rows 1 to 5 |
-| 2 | No `description` | `unit/page-schema.test.ts` "row 2: a missing description names description" | sync, rows 1 to 5 |
-| 3 | Wrong type | `unit/page-schema.test.ts` "row 3: a wrong type for nav.position names position" | sync, rows 1 to 5 |
-| 4 | Misspelled key | `unit/page-schema.test.ts` "row 4: a misspelled key is named in the issue text" | sync, rows 1 to 5 |
-| 5 | Image without alt | `unit/page-schema.test.ts` "row 5: image and featureImage without alt name alt" | sync, rows 1 to 5 |
+| 1 | No `title` | `unit/content/collections/page-schema.test.ts` "row 1: a missing title names title" | sync, rows 1 to 5 |
+| 2 | No `description` | `unit/content/collections/page-schema.test.ts` "row 2: a missing description names description" | sync, rows 1 to 5 |
+| 3 | Wrong type | `unit/content/collections/page-schema.test.ts` "row 3: a wrong type for nav.position names position" | sync, rows 1 to 5 |
+| 4 | Misspelled key | `unit/content/collections/page-schema.test.ts` "row 4: a misspelled key is named in the issue text" | sync, rows 1 to 5 |
+| 5 | Image without alt | `unit/content/collections/page-schema.test.ts` "row 5: image and featureImage without alt name alt" | sync, rows 1 to 5 |
 | 6 | Missing frontmatter image | `unit/images.test.ts` "names the page file and the image path when a file is missing" | sync, row 6 |
 | 7 | Missing body image | `build/page-validation.test.ts` "row 7" (build only: Astro's own message, which may not name the page file) | build, row 7 |
 | 8 | Empty alt in the body | `unit/body.test.ts` "rejects an image with empty alt text" | build, rows 8 to 10 and 16 |
@@ -338,18 +338,18 @@ Rows V1 to V12 replace row 15 above. Paths are relative to `tests/`; "Unit" is
 
 | Row | Rule | Primary assertion | Call-site run |
 |---|---|---|---|
-| V1 | `visible` or `draft` not a boolean | `unit/content/page-schema.test.ts` "V1" | `build/page-validation.test.ts` "V1" |
-| V2 | `nav.location` not header or footer | `unit/content/page-schema.test.ts` "V2" | sync, via V1 run |
-| V3 | `nav` without `location`, or empty | `unit/content/page-schema.test.ts` "V3" | sync, via V1 run |
-| V4 | `nav` without `position` | `unit/content/page-schema.test.ts` "V4" | sync, via V1 run |
-| V5 | Home page not visible | `unit/content/page-flags.test.ts` (`assertHomeVisible`) | `build/page-validation.test.ts` "V5" |
+| V1 | `visible` or `draft` not a boolean | `unit/content/collections/page-schema.test.ts` "V1" | `build/page-validation.test.ts` "V1" |
+| V2 | `nav.location` not header or footer | `unit/content/collections/page-schema.test.ts` "V2" | sync, via V1 run |
+| V3 | `nav` without `location`, or empty | `unit/content/collections/page-schema.test.ts` "V3" | sync, via V1 run |
+| V4 | `nav` without `position` | `unit/content/collections/page-schema.test.ts` "V4" | sync, via V1 run |
+| V5 | Home page not visible | `unit/content/collections/page-flags.test.ts` (`assertHomeVisible`) | `build/page-validation.test.ts` "V5" |
 | V6 | Position clash in one menu | `unit/content/navigation.test.ts` (position clash) | `build/page-validation.test.ts` "V6"; `build/navigation.test.ts` |
-| V7 | Landing file with extra keys | `unit/content/page-schema.test.ts` "V7" | `build/page-validation.test.ts` "V7" |
-| V8 | Landing file with a body | `unit/content/page-flags.test.ts` (`assertLandingBody`) | `build/page-validation.test.ts` "V8" |
+| V7 | Landing file with extra keys | `unit/content/collections/page-schema.test.ts` "V7" | `build/page-validation.test.ts` "V7" |
+| V8 | Landing file with a body | `unit/content/collections/page-flags.test.ts` (`assertLandingBody`) | `build/page-validation.test.ts` "V8" |
 | V9 | Landing file missing | build only | `build/page-validation.test.ts` "V9" |
-| V10 | Landing file without `nav` | `unit/content/page-schema.test.ts` "V10" | `build/page-validation.test.ts` "V10" |
+| V10 | Landing file without `nav` | `unit/content/collections/page-schema.test.ts` "V10" | `build/page-validation.test.ts` "V10" |
 | V11 | Link text clash in one menu | `unit/content/navigation.test.ts` "V11" | `build/page-validation.test.ts` "V11" |
-| V12 | Landing file in the footer | `unit/content/page-schema.test.ts` "V12" | `build/page-validation.test.ts` "V12" |
+| V12 | Landing file in the footer | `unit/content/collections/page-schema.test.ts` "V12" | `build/page-validation.test.ts` "V12" |
 
 Behaviour, not errors: not-visible pages (production omits, preview keeps) are in
 `build/drafts.test.ts`; the menus of every built page against the page files, and pages with no
@@ -371,17 +371,17 @@ Call-site runs, all in `build/post-validation.test.ts`:
 
 | Row | Rule | Primary assertion | Call-site run |
 |---|---|---|---|
-| P1 | No or blank `title` | `unit/post-schema.test.ts` "rejects a missing, empty or blank %s, naming the key (P1, P2)" | schema sync |
+| P1 | No or blank `title` | `unit/content/collections/post-schema.test.ts` "rejects a missing, empty or blank %s, naming the key (P1, P2)" | schema sync |
 | P2 | No or blank `summary` | same `it.each` as P1 | schema sync |
-| P3 | No `date` | `unit/post-schema.test.ts` "rejects a missing date, naming date (P3)" | schema sync |
-| P4 | Unreadable date | `unit/post-schema.test.ts` "rejects date: %s, naming the file, date and the value found (P4)" (the four contract inputs), and "rejects date: %j, naming the file and date" | sync, P4 |
-| P5 | No or empty `topics` | `unit/post-schema.test.ts` "rejects a missing or empty topics list, naming topics (P5)" | schema sync |
-| P6 | Unknown topic | `unit/post-schema.test.ts` "rejects a near-miss of a controlled id, naming it, the intended id and every controlled id in list order (P6)" | schema sync |
-| P7 | Same topic twice | `unit/post-schema.test.ts` "rejects the same topic twice, naming topics (P7)" | schema sync |
-| P8 | `featureImage` without alt | `unit/post-schema.test.ts` "rejects a feature image without alt or with empty alt, saying alt and alt text (P8)" | schema sync |
+| P3 | No `date` | `unit/content/collections/post-schema.test.ts` "rejects a missing date, naming date (P3)" | schema sync |
+| P4 | Unreadable date | `unit/content/collections/post-schema.test.ts` "rejects date: %s, naming the file, date and the value found (P4)" (the four contract inputs), and "rejects date: %j, naming the file and date" | sync, P4 |
+| P5 | No or empty `topics` | `unit/content/collections/post-schema.test.ts` "rejects a missing or empty topics list, naming topics (P5)" | schema sync |
+| P6 | Unknown topic | `unit/content/collections/post-schema.test.ts` "rejects a near-miss of a controlled id, naming it, the intended id and every controlled id in list order (P6)" | schema sync |
+| P7 | Same topic twice | `unit/content/collections/post-schema.test.ts` "rejects the same topic twice, naming topics (P7)" | schema sync |
+| P8 | `featureImage` without alt | `unit/content/collections/post-schema.test.ts` "rejects a feature image without alt or with empty alt, saying alt and alt text (P8)" | schema sync |
 | P9 | Missing feature image | `unit/images.test.ts` "names the post file, with the post wording, when a post's feature image is missing (P9)" | sync, P9 |
-| P10 | `updated` before `date` | `unit/post-schema.test.ts` "rejects updated earlier than date, naming updated (P10)" | schema sync |
-| P11 | Unknown setting | `unit/post-schema.test.ts` "rejects an unknown or misspelled setting, naming it (P11)" | schema sync |
+| P10 | `updated` before `date` | `unit/content/collections/post-schema.test.ts` "rejects updated earlier than date, naming updated (P10)" | schema sync |
+| P11 | Unknown setting | `unit/content/collections/post-schema.test.ts` "rejects an unknown or misspelled setting, naming it (P11)" | schema sync |
 | P12 | Body image, empty alt | `unit/body.test.ts` "keeps the same rules: use ##, unknown section with the list, alt text" and "starts every message with Post file and names the file" | build, P20 |
 | P13 | `.md` file | `unit/addresses.test.ts` "rejects a .md file, naming the file and saying to rename it to .mdx (P13)" | build, P13 |
 | P14 | Sub-folder | `unit/addresses.test.ts` "rejects a post in a sub-folder, naming the file and the sub-folder (P14)" | build, P13 (same `assertPostFiles` call) |
@@ -416,24 +416,24 @@ Call-site runs:
 - **template**: `build/project-template.test.ts` "X01: _template.mdx is excluded" and "X02: a renamed copy
   of the template builds with four parts, links and the invitation" (in `test:build:content`).
 
-Schema rows are asserted in `unit/project-schema.test.ts` (the row id is in each title). Body
-rows are asserted in `unit/project-story.test.ts`, one `it` per row id. The template itself
+Schema rows are asserted in `unit/content/collections/project-schema.test.ts` (the row id is in each title). Body
+rows are asserted in `unit/content/collections/project-story.test.ts`, one `it` per row id. The template itself
 is checked by `unit/project-template.test.ts`, and the guide by `unit/projects-guide.test.ts`.
 
 | Rows (contract ids) | Rule | Primary assertion | Call-site run |
 |---|---|---|---|
-| S01 to S08 | Required settings, status, themes, pictures, unknown setting, problem length, addresses, picture name. S02 changed in `specs/015-project-retired-status/contracts/build-errors.md`: its message now lists `retired` too | `unit/project-schema.test.ts` "S01" to "S08" | schema sync (row 03 run) |
+| S01 to S08 | Required settings, status, themes, pictures, unknown setting, problem length, addresses, picture name. S02 changed in `specs/015-project-retired-status/contracts/build-errors.md`: its message now lists `retired` too | `unit/content/collections/project-schema.test.ts` "S01" to "S08" | schema sync (row 03 run) |
 | S09 | Missing picture file | `unit/images.test.ts` "names the project file, with the project wording, when a visual is missing (S09)" | sync, row 17 |
 | S10 | Bad file name, nested file | `unit/addresses.test.ts` "slugFromPath (projects)" rejects table and "rejects a nested file" | sync, row 27 |
 | S11 | A `.md` project file (two files with one slug can no longer happen) | `unit/content/file-format.test.ts` (`assertFileFormat`) | sync, "a .md project fails, naming the file and saying to rename it to .mdx" |
-| R01 to R04 | Removed settings: `order`, `demo.embed`, a clip picture, `comparison` | `unit/project-schema.test.ts` "R01" to "R04" | sync, "R01" run |
-| R05, R06 | MDX element, import or export in the body | `unit/project-story.test.ts` "R05", "R06" | build, "an MDX element in a draft" |
-| N01 to N03 | `part` value, one picture per part, `invitation` text | `unit/project-schema.test.ts` "N01" to "N03" | schema sync |
-| P01 to P07 | The four parts, heading level, body images, text before the first part | `unit/project-story.test.ts` "P01" to "P07" | build, "a malformed options table in a draft" run (same call) |
-| T01 to T13 | The Options constraint list, table, bold option and "Why" line | `unit/project-story.test.ts` "T01" to "T13" | build, "a malformed options table in a draft" |
+| R01 to R04 | Removed settings: `order`, `demo.embed`, a clip picture, `comparison` | `unit/content/collections/project-schema.test.ts` "R01" to "R04" | sync, "R01" run |
+| R05, R06 | MDX element, import or export in the body | `unit/content/collections/project-story.test.ts` "R05", "R06" | build, "an MDX element in a draft" |
+| N01 to N03 | `part` value, one picture per part, `invitation` text | `unit/content/collections/project-schema.test.ts` "N01" to "N03" | schema sync |
+| P01 to P07 | The four parts, heading level, body images, text before the first part | `unit/content/collections/project-story.test.ts` "P01" to "P07" | build, "a malformed options table in a draft" run (same call) |
+| T01 to T13 | The Options constraint list, table, bold option and "Why" line | `unit/content/collections/project-story.test.ts` "T01" to "T13" | build, "a malformed options table in a draft" |
 | X01, X02 | The template is excluded; a renamed copy builds | `unit/project-template.test.ts`; `build/project-template.test.ts` "X01", "X02" | build |
-| RP01 to RP03 | Retired status and `replacedBy` (`specs/015-project-retired-status/contracts/build-errors.md`): replacement on a non-retired project, `project` and `name` both or neither or `href` beside `project`, bad `href`, unknown key, empty `name`, null | `unit/project-schema.test.ts` "RP01" to "RP03" | schema sync (row 03 run) |
-| RP04, RP05 | `replacedBy.project` names no project file, or the project itself | `unit/project-replacement.test.ts` "RP04", "RP05" | build, "RP04: a retired draft naming a missing project fails a production build" (RP05 shares the `checkReplacements` call) |
+| RP01 to RP03 | Retired status and `replacedBy` (`specs/015-project-retired-status/contracts/build-errors.md`): replacement on a non-retired project, `project` and `name` both or neither or `href` beside `project`, bad `href`, unknown key, empty `name`, null | `unit/content/collections/project-schema.test.ts` "RP01" to "RP03" | schema sync (row 03 run) |
+| RP04, RP05 | `replacedBy.project` names no project file, or the project itself | `unit/content/collections/project-replaced-by.test.ts` "RP04", "RP05" | build, "RP04: a retired draft naming a missing project fails a production build" (RP05 shares the `checkReplacements` call) |
 
 A page file under `/projects/...` fails through the page address check:
 `unit/addresses.test.ts` "fails for a page file under the projects story route's prefix" and
@@ -444,12 +444,12 @@ proven by the page build run for row 14.
 
 | Rows (contract ids) | Rule | Primary assertion | Call-site run |
 |---|---|---|---|
-| N01, N04, N05, N09 | Now `updated` missing, a topic missing or blank, unknown key, topic over 200 characters or on more than one line | `unit/content/now-schema.test.ts` "N01", "N04", "N05", "N09" | schema sync |
-| N02, N03 | `updated` is not a real day; `updated` is after the build date (UTC) | `unit/content/dates.test.ts` (N02, N03) and `unit/content/now-schema.test.ts` "N02", "N03" | build, `build/home-sections.test.ts` "N03" |
-| N06, N08 | The body links to `/contact/`; it is one paragraph with no heading | `unit/content/now-body.test.ts` "N06", "N08" | build, "N06" |
+| N01, N04, N05, N09 | Now `updated` missing, a topic missing or blank, unknown key, topic over 200 characters or on more than one line | `unit/content/collections/now-schema.test.ts` "N01", "N04", "N05", "N09" | schema sync |
+| N02, N03 | `updated` is not a real day; `updated` is after the build date (UTC) | `unit/content/dates.test.ts` (N02, N03) and `unit/content/collections/now-schema.test.ts` "N02", "N03" | build, `build/home-sections.test.ts` "N03" |
+| N06, N08 | The body links to `/contact/`; it is one paragraph with no heading | `unit/content/collections/now-body.test.ts` "N06", "N08" | build, "N06" |
 | N07 | Exactly one Now file, named `now.mdx` | `build/home-sections.test.ts` "N07" (two files, no file) and "a now.md fails, naming the file and saying to rename it to .mdx" | build, sync |
-| R01, R02, R03, R08, R10 | Path settings, one-sentence description, 1 to 5 items, item shape, position 1 to 4 | `unit/content/reading-path-schema.test.ts` "R01" to "R10" | schema sync |
-| R04 to R07 | Missing target, duplicate item, more than four paths, shared position | `unit/content/reading-paths.test.ts` "R04" to "R07" | build, "R04" |
+| R01, R02, R03, R08, R10 | Path settings, one-sentence description, 1 to 5 items, item shape, position 1 to 4 | `unit/content/collections/reading-path-schema.test.ts` "R01" to "R10" | schema sync |
+| R04 to R07 | Missing target, duplicate item, more than four paths, shared position | `unit/content/collections/reading-paths.test.ts` "R04" to "R07" | build, "R04" |
 | R09 | YAML that does not parse | `build/home-sections.test.ts` "R09" | build |
 
 The section markup is asserted in `component/sections/Now.test.ts` and
@@ -480,11 +480,11 @@ Posts keep their build-time `.md` check (P13).
 
 | Row | Rule | Primary assertion | Call-site run |
 |---|---|---|---|
-| P23 | Both series on one post | `unit/post-schema.test.ts` "rejects both series, naming both ids and one series (P23)" | `build/post-validation.test.ts` sync "validates drafts too" (a draft with both series) |
-| P24 | Free-form id near a controlled id | `unit/post-schema.test.ts` "rejects the near-miss %s, naming %s (P24)" | schema sync |
+| P23 | Both series on one post | `unit/content/collections/post-schema.test.ts` "rejects both series, naming both ids and one series (P23)" | `build/post-validation.test.ts` sync "validates drafts too" (a draft with both series) |
+| P24 | Free-form id near a controlled id | `unit/content/collections/post-schema.test.ts` "rejects the near-miss %s, naming %s (P24)" | schema sync |
 | P25 | Post file named for a series | `unit/addresses.test.ts` "rejects the series slug %s, naming the address (P25)" | build, P13 |
-| P26 | Free-form id breaking the id rules | `unit/post-schema.test.ts` "rejects ids that break the id rules (P26)" | schema sync |
-| P6 (changed) | Near-miss message names the intended id | `unit/post-schema.test.ts` P6 case (see the post table) | schema sync |
+| P26 | Free-form id breaking the id rules | `unit/content/collections/post-schema.test.ts` "rejects ids that break the id rules (P26)" | schema sync |
+| P6 (changed) | Near-miss message names the intended id | `unit/content/collections/post-schema.test.ts` P6 case (see the post table) | schema sync |
 | P21 (changed) | Removed topic id builds | `build/post-validation.test.ts` sync "P21 (changed)" | the same run |
 | Must build: no series tag | Builds, no warning | `build/local-site.test.ts` "builds a post that is untagged, with a silent build" | the L1 build |
 | Must build: only a free-form topic | Builds; the pill links to an existing topic page | `build/local-site.test.ts` "builds a post that is free-form only, with a silent build"; the topic page: `build/blog-listing.test.ts` "builds a plain banner and listing for a free-form id named by a visible post" | the L1 build |
@@ -494,9 +494,9 @@ Posts keep their build-time `.md` check (P13).
 
 | Rows | Rule | Primary assertion | Call-site run |
 |---|---|---|---|
-| T01 to T07, T12, T14 | Required text, `YYYY-MM` and `present`, end not before start, unknown key, empty lists, award shape and https `href`, duplicate post, text limits, `volunteer` true or false | `unit/content/career-schema.test.ts` (row id in each title) | schema sync, `build/career-timeline.test.ts` "T01" |
-| T08, T09 | The current role (latest start) has no `nextMove` and ends `present` | `unit/content/career.test.ts` "T08", "T09" | build, `build/career-timeline.test.ts` "T09" |
-| T10, T11 | A listed post exists and is not a draft | `unit/content/career.test.ts` "T10", "T11" | the same build run as T09 |
+| T01 to T07, T12, T14 | Required text, `YYYY-MM` and `present`, end not before start, unknown key, empty lists, award shape and https `href`, duplicate post, text limits, `volunteer` true or false | `unit/content/collections/career-schema.test.ts` (row id in each title) | schema sync, `build/career-timeline.test.ts` "T01" |
+| T08, T09 | The current role (latest start) has no `nextMove` and ends `present` | `unit/content/collections/career.test.ts` "T08", "T09" | build, `build/career-timeline.test.ts` "T09" |
+| T10, T11 | A listed post exists and is not a draft | `unit/content/collections/career.test.ts` "T10", "T11" | the same build run as T09 |
 | T13 | A step file that does not parse | none: Astro's YAML loader decides it | none |
 
 The timeline markup is asserted in `component/sections/CareerTimeline.test.ts`, the filter logic

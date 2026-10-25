@@ -53,20 +53,19 @@ siblings to these paths instead of new conventions.
 | Path | Holds | Later features add |
 |---|---|---|
 | `src/content.config.ts` | Every collection definition (`pages`, `posts` and `projects`) | Nothing; add a collection here |
-| `src/content/schemas/shared.ts` | Reusable Zod pieces: `imageWithAlt`, `seoFields`, `navField` | Nothing; reuse |
-| `src/content/schemas/page.ts` | `pageSchema({ image })` | `post.ts`, `project.ts` beside it |
+| `src/content/collections/` | One `<name>-rules.ts` per collection: its schema, build-time checks and limits | A new collection adds its own rules file |
+| `src/lib/content/schema-fields.ts` | Reusable Zod pieces: `imageWithAlt`, `seoFields`, `navField` | Nothing; reuse |
 | `src/content/pages/` (+ `images/`) | Page files and their images | Nothing; add a file |
 | `src/content/posts/` (+ `images/`) | One MDX file per blog post, with its images (`docs/posts.md`) | Nothing; add a file |
 | `src/content/projects/` (+ `images/`) | One MDX file per project, with its images and clips (`docs/projects.md`) | Nothing; add a file |
-| `src/content/schemas/project.ts` | `projectSchema({ image })`: the settings, comparison and visuals rules | Nothing; extend here |
 | `src/components/project/` (`ProjectPart`, `OptionsTable`, `PartPicture`, `BuildLinks`, `ProjectInvitation`) | The four-part story: `src/lib/markdown/project-parts.ts` wraps each `##` part and the Options table, and the route hands `ProjectPart` and `OptionsTable` to `<Content components>` | Parts are fixed (`src/lib/content/parts.ts`); the body is plain Markdown |
 | `src/pages/projects/` | The Projects index and the one story route `[slug].astro` | Nothing |
 | `src/components/Pill.astro` and `src/components/post/TopicPill.astro` | Two pills on purpose, not one: `Pill` is the bordered rectangular text label the portfolio uses for a project's status and themes (`project/StatusPill.astro`, `project/ThemePills.astro`), with a decorative tone (the Retired status alone uses the filled mauve tone, the other statuses stay bordered) and an optional link; `TopicPill` is the blog's rounded, topic-coloured link to a topic page (`post/topic-styles.ts`), used on post cards, the post header and the topic pill row | Reuse the one that matches: a label takes `Pill`, a topic link takes `TopicPill` |
-| `src/lib/content/project-*.ts` | Project build checks: address, body, images, order | Reused |
+| `src/lib/content/project-*.ts` | Project view and display helpers (status, replacement, order); the project rules are in `src/content/collections/project-rules.ts` | Reused |
 | `src/components/sections/` | Sections usable in any MDX body: one `.astro` file each, `index.ts` (the registry, a closed list of names) and `schemas.ts` (prop rules) | New sections register in `index.ts` and `schemas.ts` |
 | `src/components/page/` | `HomeIntro`, `FeatureImage`, `DraftNotice` | Post and project furniture in `src/components/post/` and similar |
 | `src/layouts/PageLayout.astro` | Standard page layout inside `BaseLayout` | `PostLayout`, `ProjectLayout` |
-| `src/lib/content/` | `address.ts`, `body.ts`, `navigation.ts`, `images.ts`, `errors.ts`: build-time checks that raise `PageContentError` | Reused for posts and projects |
+| `src/lib/content/` | Checks shared by several collections (`addresses.ts`, `body.ts`, `navigation.ts`, `images.ts`, `errors.ts`, `file-format.ts`, `dates.ts`), which raise `PageContentError`, plus view and display helpers | Reused for posts and projects |
 | `src/pages/[...slug].astro` | The one route that renders every page file | `src/pages/writing/` and `src/pages/projects/` routes; the address check reserves their addresses |
 | `docs/pages.md`, `docs/posts.md`, `docs/projects.md` | Don's authoring guides (pages, posts and projects, all done) | Nothing; add a guide beside them |
 

@@ -37,14 +37,14 @@ and that includes the landing files `writing.mdx` and `projects.mdx`, which have
 
 | Collection | Files | ID | Rules and where they are enforced | Author doc |
 |---|---|---|---|---|
-| `pages` | `pages/**/*.mdx` (`.md` is rejected), except `writing` and `projects` | Address from the path: lower-case letters, digits, hyphens; `index.mdx` is `/` | `title` and `description` required; `visible` (default true) and `draft` (default false); `nav` puts it in the header or footer, one position per menu (`lib/content/navigation.ts`); the home page cannot be `visible: false`; no two files make one address; no route in `src/pages/` may own the address. Schema `schemas/page.ts`; checks `lib/content/addresses.ts` and `page-flags.ts`; section components in the body are prop-checked by `src/components/sections/{schemas,validate}.ts` | `docs/pages.md` |
-| `landing` | `pages/writing.mdx`, `pages/projects.mdx` | `writing`, `projects` | Menu settings only (`title`, header `nav`); the body must be empty (`assertLandingBody`). The pages themselves are code routes | `docs/pages.md` "Landing files" |
-| `posts` | `posts/*.mdx` | File name without extension | `.md` is rejected, no sub-folders, a few names are reserved (`all`, `topics`, series ids) (`assertPostFiles`); `title`, `summary`, `date` (YYYY-MM-DD, a real day, checked on the raw text by `post-dates.ts`), at least one topic, no duplicate topics, at most one series; `updated` not before `date`; `draft`, `featured`. Schema `schemas/post.ts`. `sample-everything.mdx` is the draft sample | `docs/posts.md`, `VOICE.md` |
-| `projects` | `projects/*.mdx` directly in the folder; `_`-prefixed files (`_template.mdx`) are not projects | File name, up to 64 characters of lower-case letters, digits, hyphens | `problem` is one sentence of at most 140 characters; 1 to 4 `themes`; `status`; `visual`; `replacedBy` only with `status: retired`; `demo` or `standIn`, not both; the story body is Problem, Options, Build and Lessons, with the Options table. Schema `schemas/project.ts`; story shape `lib/content/project-story.ts` | `docs/projects.md` |
-| `career` | `career/*.yaml` (`.yml` is rejected) | File name | `role`, `organization`, `start` and `end` as `YYYY-MM` (`end` may be `present`), `scope`; optional categories (leadership, awards, volunteer) and post references that must exist and not be drafts; the newest step is the current role: `end: present` and no `nextMove`. Schema `schemas/career.ts`; cross-file rules `lib/content/career.ts`. Rendered by `CareerTimeline` on About | none; the schema is the reference |
-| `readingPaths` | `reading-paths/*.yaml` (`.yml` is rejected) | File name | `title`, one-sentence `description` ending in a full stop, `position` 1 to 4, 1 to 5 `items` each `post: <slug>` or `project: <slug>`; cross-file rules (missing, duplicate, the four-path limit) in `lib/content/reading-paths.ts`. Rendered by `StartHere` on the home page | none |
-| `now` | `now/now.mdx` (`now.md` is rejected) | `now` | `updated` (a real day, not in the future), four one-line topics (`workingOn`, `reading`, `mbaResearch`, `aiExperiments`, up to 200 characters); the body is one paragraph linking to `/contact/`. Schema `schemas/now.ts`. Rendered by `Now` on the home page | none |
-| `assessments` | `assessments/*.yaml` (`wayfinder.yaml`; `.yml` is rejected) | File name; a post names it in its components | Exactly five shifts of three statements, five scale labels (first "Rarely", last "Almost always"), unique `id` and `anchor`. Schema `schemas/assessment.ts` | `docs/posts.md` "Assessment components" |
+| `pages` | `pages/**/*.mdx` (`.md` is rejected), except `writing` and `projects` | Address from the path: lower-case letters, digits, hyphens; `index.mdx` is `/` | `title` and `description` required; `visible` (default true) and `draft` (default false); `nav` puts it in the header or footer, one position per menu (`lib/content/navigation.ts`); the home page cannot be `visible: false`; no two files make one address; no route in `src/pages/` may own the address. Rules `collections/page-rules.ts`; shared checks `lib/content/addresses.ts` and `navigation.ts`; section components in the body are prop-checked by `src/components/sections/{schemas,validate}.ts` | `docs/pages.md` |
+| `landing` | `pages/writing.mdx`, `pages/projects.mdx` | `writing`, `projects` | Menu settings only (`title`, header `nav`); the body must be empty (`assertLandingBody` in `collections/landing-rules.ts`). The pages themselves are code routes | `docs/pages.md` "Landing files" |
+| `posts` | `posts/*.mdx` | File name without extension | `.md` is rejected, no sub-folders, a few names are reserved (`all`, `topics`, series ids) (`assertPostFiles`); `title`, `summary`, `date` (YYYY-MM-DD, a real day, checked on the raw text by `collections/post-rules.ts`), at least one topic, no duplicate topics, at most one series; `updated` not before `date`; `draft`, `featured`. Rules `collections/post-rules.ts`. `sample-everything.mdx` is the draft sample | `docs/posts.md`, `VOICE.md` |
+| `projects` | `projects/*.mdx` directly in the folder; `_`-prefixed files (`_template.mdx`) are not projects | File name, up to 64 characters of lower-case letters, digits, hyphens | `problem` is one sentence of at most 140 characters; 1 to 4 `themes`; `status`; `visual`; `replacedBy` only with `status: retired`; `demo` or `standIn`, not both; the story body is Problem, Options, Build and Lessons, with the Options table. Rules and story shape `collections/project-rules.ts` | `docs/projects.md` |
+| `career` | `career/*.yaml` (`.yml` is rejected) | File name | `role`, `organization`, `start` and `end` as `YYYY-MM` (`end` may be `present`), `scope`; optional categories (leadership, awards, volunteer) and post references that must exist and not be drafts; the newest step is the current role: `end: present` and no `nextMove`. Rules, including the cross-file ones, `collections/career-rules.ts`. Rendered by `CareerTimeline` on About | none; the schema is the reference |
+| `readingPaths` | `reading-paths/*.yaml` (`.yml` is rejected) | File name | `title`, one-sentence `description` ending in a full stop, `position` 1 to 4, 1 to 5 `items` each `post: <slug>` or `project: <slug>`; cross-file rules (missing, duplicate, the four-path limit) in `collections/reading-path-rules.ts`. Rendered by `StartHere` on the home page | none |
+| `now` | `now/now.mdx` (`now.md` is rejected) | `now` | `updated` (a real day, not in the future), four one-line topics (`workingOn`, `reading`, `mbaResearch`, `aiExperiments`, up to 200 characters); the body is one paragraph linking to `/contact/`. Rules `collections/now-rules.ts`. Rendered by `Now` on the home page | none |
+| `assessments` | `assessments/*.yaml` (`wayfinder.yaml`; `.yml` is rejected) | File name; a post names it in its components | Exactly five shifts of three statements, five scale labels (first "Rarely", last "Almost always"), unique `id` and `anchor`. Rules `collections/assessment-rules.ts` | `docs/posts.md` "Assessment components" |
 
 Rules that are not in a schema: the job title appears only on the About page, so describe what
 Don leads elsewhere (`tests/unit/content/job-title-only-on-about.test.ts`). A site section
@@ -60,12 +60,13 @@ collection you are editing before adding a file.
 
 ## Where the rules live
 
-State today. A rule can sit in any of three places, so when an edit fails or you need to know
-what is allowed, look in all of them: the schema (`src/content/schemas/<x>.ts`), the build-time
-checks (`src/lib/content/*.ts`, run from `generateId` in `src/content.config.ts` or, for some, by the readers and routes at build time), and the reader
-that assembles the collection (`src/lib/<x>.ts`, for example `now.ts`, `career.ts`,
-`reading-paths.ts`), plus the rendering component. #203 will put each collection's rules in one
-module. Two test guards bind a content edit:
+Each collection's schema, build-time checks and limits are in one module,
+`src/content/collections/<name>-rules.ts`. When an edit fails or you need to know what is
+allowed, read that module. Checks that several collections use are in `src/lib/content/`. The
+reader (`src/lib/<x>.ts`, for example `now.ts`, `career.ts`, `reading-paths.ts`,
+`assessment/lookup.ts`) loads and assembles the collection and holds no rule. Some checks run
+from `generateId` in `src/content.config.ts`, and others when a reader or route calls them at
+build time. Two test guards bind a content edit:
 
 - Tests never name real content. They read `src/content/**` through `tests/helpers/content.ts`
   (`docs/testing.md` "Real content in tests"; guard `tests/unit/content/no-real-content-in-tests.test.ts`).
@@ -90,7 +91,7 @@ module. Two test guards bind a content edit:
 ## Gate
 
 Read `.claude/skills/_shared/verify-gate.md`. It applies, with one difference. When the diff
-changes no code (nothing outside `src/content/`, no file under `src/content/schemas/`, and no
+changes no code (nothing outside `src/content/`, no file under `src/content/collections/`, and no
 test), commit, run `git fetch origin` and
 `node scripts/ci/changed-paths.ts --base origin/main` as that file says, then run, whatever tier
 it prints:

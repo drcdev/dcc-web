@@ -368,7 +368,7 @@ Coverage mapping: "exactly one Now file" stays covered by `tests/build/home-sect
   `PracticalApplication`. Its `findAssessment`/`findShift` import points at the rules module.
   `SelfAssessment.test.ts`: only imports change if needed.
 
-### W9 — Docs, comments and the `/content` skill
+### [x] W9 — Docs, comments and the `/content` skill
 
 **Files:**
 

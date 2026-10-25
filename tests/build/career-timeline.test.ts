@@ -1,5 +1,5 @@
 // Wiring runs for the career timeline (specs/041-career-timeline/contracts/build-errors.md "Wiring").
-// The schema rules are unit-tested (tests/unit/content/career-schema.test.ts); this run proves the
+// The schema rules are unit-tested (tests/unit/content/collections/career-schema.test.ts); this run proves the
 // collection is registered in src/content.config.ts and Astro names the step file and field.
 import { afterEach, describe, expect, it } from "vitest";
 import { buildFixtureSite, type FixtureSiteResult } from "./fixture-site.ts";
