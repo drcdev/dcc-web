@@ -3,7 +3,8 @@
 // that span files run here, so a bad set fails the About page build naming the step file.
 import { getCollection } from "astro:content";
 import { getPostLookup } from "./posts.ts";
-import { buildTimeline, checkCareer, type StepFile, type Timeline } from "./content/career.ts";
+import { checkCareer, type StepFile } from "../content/collections/career-rules.ts";
+import { buildTimeline, type Timeline } from "./content/career-view.ts";
 
 export async function getCareerTimeline(): Promise<Timeline> {
   const entries = await getCollection("career");

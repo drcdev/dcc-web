@@ -1,7 +1,6 @@
 // The career timeline filter's pure logic (specs/041-career-timeline US3; FR-009 to FR-013).
 import { describe, expect, it } from "vitest";
-import { categoryIds } from "../../../src/lib/content/career.ts";
-import { applyChoice, matchingSteps, statusText, usedCategories, type FilterStep } from "../../../src/lib/content/career-filter.ts";
+import { applyChoice, categoryIds, matchingSteps, statusText, usedCategories, type FilterStep } from "../../../src/lib/content/career-filter.ts";
 
 const steps: FilterStep[] = [
   { id: "a", categories: ["leadership", "volunteer"] },

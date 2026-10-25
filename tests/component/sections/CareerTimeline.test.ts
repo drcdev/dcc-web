@@ -1,7 +1,8 @@
 // CareerTimeline (specs/041-career-timeline US1; contracts/timeline-markup.md). Neutral content only.
 import { describe, expect, it } from "vitest";
 import CareerTimeline from "../../../src/components/sections/CareerTimeline.astro";
-import { buildTimeline, type StepFile } from "../../../src/lib/content/career.ts";
+import type { StepFile } from "../../../src/content/collections/career-rules.ts";
+import { buildTimeline } from "../../../src/lib/content/career-view.ts";
 import { byName, tags, textOf } from "../html.ts";
 import { render } from "./helpers.ts";
 

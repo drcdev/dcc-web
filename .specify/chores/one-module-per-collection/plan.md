@@ -261,7 +261,7 @@ move of a helper).
 - Extra check for this item: `pnpm exec astro check` must pass. It runs `astro sync`, which loads
   `content.config.ts` with `satteri` now in its graph.
 
-### W5 — Career rules module and view helper
+### [x] W5 — Career rules module and view helper
 
 **Files:**
 

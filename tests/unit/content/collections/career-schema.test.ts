@@ -1,7 +1,7 @@
 // The career step schema (specs/041-career-timeline/contracts/build-errors.md rows T01 to T07, T12 and T14).
 // Posts are references; a plain slug string is what the YAML holds.
 import { describe, expect, it } from "vitest";
-import { careerSchema } from "../../../src/content/schemas/career.ts";
+import { careerSchema } from "../../../../src/content/collections/career-rules.ts";
 
 const schema = careerSchema();
 const valid = {

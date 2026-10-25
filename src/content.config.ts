@@ -16,7 +16,7 @@ import { assertNoTwin, idFromPath, slugFromPath, slugFromPostPath } from "./lib/
 import { assertFileFormat } from "./lib/content/file-format.ts";
 import { assertImagesExist } from "./lib/content/images.ts";
 import { assertNowDate } from "./lib/content/now-file.ts";
-import { careerSchema } from "./content/schemas/career.ts";
+import { careerSchema } from "./content/collections/career-rules.ts";
 import { assessmentSchema } from "./content/schemas/assessment.ts";
 import { assertHomeVisible, pageSchema } from "./content/collections/page-rules.ts";
 import { assertLandingBody, bodyAfterFrontMatter, landingSchema } from "./content/collections/landing-rules.ts";
@@ -142,8 +142,8 @@ const readingPaths = defineCollection({
 });
 
 // `career`: one YAML file per career step in src/content/career/; the file name is the id. Rules that
-// span files (the current role, missing and draft posts) run in src/lib/content/career.ts when the
-// About page builds (specs/041-career-timeline/contracts/build-errors.md). No files means no steps.
+// span files (the current role, missing and draft posts) live in src/content/collections/career-rules.ts
+// and run when the About page builds (specs/041-career-timeline/contracts/build-errors.md). No files means no steps.
 const career = defineCollection({
   loader: glob({
     pattern: "*.{yaml,yml}",
