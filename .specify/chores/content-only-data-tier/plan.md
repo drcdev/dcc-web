@@ -91,7 +91,7 @@ files), any schema, loader, component, page, fixture or visual baseline.
 Run tests through the Local toolchain rules in `CLAUDE.md` (`node -v`, `nvm use` in the same
 command if needed).
 
-### W1 — Data files are content-only in `changed-paths.ts`
+### W1 — Data files are content-only in `changed-paths.ts` [x]
 
 **Files:** `scripts/ci/changed-paths.ts`; `tests/unit/ci/changed-paths.test.ts`.
 

@@ -83,6 +83,10 @@ const CONTENT_TRUE = [
   "src/content/posts/images/focus-pocus-hero.png",
   "src/content/projects/images/focus-pocus/architecture.svg",
   "src/content/projects/images/clip.webm",
+  "src/content/career/example-entry.yaml",
+  "src/content/reading-paths/example-path.yaml",
+  "src/content/assessments/example-check.yaml",
+  "src/content/now/now.mdx",
 ];
 
 const CONTENT_FALSE = [
@@ -98,6 +102,16 @@ const CONTENT_FALSE = [
   "/src/content/pages/a.mdx",
   "src\\content\\pages\\a.mdx",
   "src/content/pages/a b.mdx",
+  "src/content/schemas/career.ts",
+  "src/content/career/x.yml",
+  "src/content/reading-paths/x.md",
+  "src/content/career/old/x.yaml",
+  "src/content/assessments/sub/x.yaml",
+  "src/content/now/other.mdx",
+  "src/content/now/now.md",
+  "src/content/career/images/x.png",
+  "src/content/career/x.yaml.ts",
+  "src/content/career/a b.yaml",
   "public/og-default.png",
   "src/pages/index.astro",
   "tests/build/indexing.test.ts",
@@ -188,6 +202,30 @@ describe("decide() docs tier", () => {
       expect(d.reason).toContain(file);
     },
   );
+  it("picks the content-only tier for data files of every kind", () => {
+    const d = decide({
+      event: "pull_request",
+      files: [
+        "src/content/career/example-entry.yaml",
+        "src/content/reading-paths/example-path.yaml",
+        "src/content/assessments/example-check.yaml",
+        "src/content/now/now.mdx",
+      ],
+    });
+    expect(d.tier).toBe("content-only");
+  });
+  it("picks the content-only tier for a data file plus a docs file", () => {
+    const d = decide({
+      event: "pull_request",
+      files: ["src/content/career/example-entry.yaml", "docs/testing.md"],
+    });
+    expect(d.tier).toBe("content-only");
+  });
+  it.each(["src/lib/now.ts", "src/content/schemas/career.ts"])("runs the full tier for a data file plus %s", (file) => {
+    const d = decide({ event: "pull_request", files: ["src/content/career/example-entry.yaml", file] });
+    expect(d.tier).toBe("full");
+    expect(d.reason).toContain(file);
+  });
   it.each([[[]], [["", "  "]], [null]] as const)("fails closed for %j", (files) => {
     expect(pr(files as string[] | null).tier).toBe("full");
   });
