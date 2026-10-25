@@ -115,7 +115,7 @@ and not chosen.
 Each item leaves the suite green on its own. Run tests through the Local toolchain rules in
 `CLAUDE.md` (`node -v`, `nvm use` in the same command if needed).
 
-### W1 One format check; pages, landing and projects reject `.md`
+### W1 (done) One format check; pages, landing and projects reject `.md`
 
 **Files:** new `src/lib/content/file-format.ts`; `src/lib/content/addresses.ts`
 (`assertPostFiles` calls the helper; `assertNoTwin` narrowed); `src/lib/content/errors.ts`

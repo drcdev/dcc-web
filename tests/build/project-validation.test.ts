@@ -48,11 +48,11 @@ describe("project schema and loader wiring (sync)", () => {
       "lower-case letters, digits and hyphens",
     ]));
 
-  it("row 26: generateId runs the twin check", () =>
+  it("a .md project fails, naming the file and saying to rename it to .mdx (replaces the old row 26 twin run)", () =>
     expectRejected(
       "sync",
-      [broken("26-duplicate-slug", "x.mdx"), broken("26-duplicate-slug", "x.md")],
-      ["x.md", "x.mdx", "both make the slug x. Keep one of them."],
+      [{ from: "minimal.mdx", to: "minimal.md" }],
+      ["minimal.md", "a project must be an .mdx file, so rename it to .mdx."],
     ));
 });
 

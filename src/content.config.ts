@@ -1,5 +1,6 @@
 // Content collections (docs.astro.build/en/guides/content-collections/).
-// `pages`: every Markdown or MDX file in src/content/pages/ is one page. The
+// `pages`: every MDX file in src/content/pages/ is one page (a `.md` file is matched only so
+// `assertFileFormat` can fail it with a rename message, #200). The
 // entry id comes from the file path through `addressFromPath()`, so a file name
 // becomes its address (specs/003-standalone-pages/research.md R5).
 // `posts`: every file at the top of src/content/posts/ is one blog post; the file
@@ -12,6 +13,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertNoTwin, idFromPath, slugFromPath, slugFromPostPath } from "./lib/content/addresses.ts";
+import { assertFileFormat } from "./lib/content/file-format.ts";
 import { assertImagesExist } from "./lib/content/images.ts";
 import { assertHomeVisible, assertLandingBody, bodyAfterFrontMatter } from "./lib/content/page-flags.ts";
 import { assertNowDate } from "./lib/content/now-file.ts";
@@ -33,6 +35,7 @@ const pages = defineCollection({
     // bad file names, the twin check names two files with one address, and the image
     // check names the page of a missing image.
     generateId: ({ entry, base, data }) => {
+      assertFileFormat("page", `src/content/pages/${entry}`);
       const id = idFromPath(entry);
       assertNoTwin("page", fileURLToPath(base), entry);
       assertImagesExist("page", fileURLToPath(base), entry, data);
@@ -51,6 +54,7 @@ const landing = defineCollection({
     base: "./src/content/pages",
     generateId: ({ entry, base }) => {
       const dir = fileURLToPath(base);
+      assertFileFormat("page", `src/content/pages/${entry}`);
       assertNoTwin("page", dir, entry);
       assertLandingBody(entry, bodyAfterFrontMatter(readFileSync(resolve(dir, entry), "utf-8")));
       return idFromPath(entry);
@@ -85,8 +89,8 @@ const projects = defineCollection({
     pattern: ["**/*.{md,mdx}", "!**/_*"],
     base: "./src/content/projects",
     generateId: ({ entry, base, data }) => {
+      assertFileFormat("project", `src/content/projects/${entry}`);
       const slug = slugFromPath(entry);
-      assertNoTwin("project", fileURLToPath(base), entry);
       assertImagesExist("project", fileURLToPath(base), entry, data);
       return slug;
     },
