@@ -213,7 +213,7 @@ site):**
 
 No new fixture files: the harness's `{ from, to }` copies give the wrong extension.
 
-### W4 Docs and the `/content` skill describe only the rule
+### W4 (done) Docs and the `/content` skill describe only the rule
 
 **Files:** `docs/pages.md` (line 18: pages are `.mdx`, a `.md` file fails with a rename message;
 line 183: `now.mdx`; line 224: the twin example becomes `about.mdx` and `about/index.mdx`, plus a

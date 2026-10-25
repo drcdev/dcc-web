@@ -90,7 +90,7 @@ describe("docs/projects.md", () => {
     ["a missing Why line", /`Why`|"Why"|word Why/],
     ["an unsupported image file", /(unsupported|not supported|other than)[^\n]*(picture|image|file type)/i],
     ["a page claiming an address under /projects/", /\/projects\/[^\n]*(page|address)|page[^\n]*\/projects\//i],
-    ["two files with the same address", /same address|`x\.md`/i],
+    ["a .md project file", /`\.md` file[^\n]*rename it to `\.mdx`/i],
     ["a replacement on a project that is not retired (RP01)", /replacedBy[^\n]*(not retired|only a retired)|only a retired/i],
     ["a replacement that names both or neither of project and name (RP02)", /both[^\n]*`project`[^\n]*`name`|`project`[^\n]*`name`[^\n]*(both|neither)/i],
     ["a replacement address that is not https (RP03)", /replacedBy[^\n]*https|href[^\n]*https/i],

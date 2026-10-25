@@ -18,8 +18,7 @@ The file name is the address.
 | `src/content/projects/focus-pocus.mdx` | `/projects/focus-pocus/` |
 
 Use lower-case letters, digits and hyphens only, and put the file straight in
-`src/content/projects/` (no subfolders). Do not have both `focus-pocus.md` and
-`focus-pocus.mdx`. Put pictures in `src/content/projects/images/<project-name>/` and point to
+`src/content/projects/` (no subfolders). A project file is `.mdx`; a `.md` file fails the build with a message to rename it. Put pictures in `src/content/projects/images/<project-name>/` and point to
 them with paths that start `./images/`, as in the example below.
 
 ## The top of the file
@@ -230,7 +229,7 @@ The build stops at the first problem and names the file. Messages start with `Pr
   diagram with no `description`, or a file that does not exist.
 - A page elsewhere on the site that claims an address under `/projects/`; that address belongs
   to the projects.
-- Two files with the same address (`x.md` and `x.mdx`), a file in a subfolder, or a file name
+- A `.md` file (rename it to `.mdx`), a file in a subfolder, or a file name
   with anything other than lower-case letters, digits and hyphens.
 - A `problem` over 140 characters or with more than one sentence.
 - A `replacedBy` on a project whose `status` is not `retired` (only a retired project can name a replacement).
