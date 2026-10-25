@@ -64,3 +64,8 @@ None.
 - Move the posts `.md` rejection from build (`assertPostFiles`) into `generateId` at sync, like the other seven collections. This changes P13, P17 and the post twin check; the plan put it out of scope.
 - #199 (content-only tier for data files) builds on this rule.
 - Recount the "Build budget" table in `docs/testing.md`, last counted on 2026-10-01.
+
+## Round 2 fixes
+
+- HIGH-1: removed the "#202 will merge the three small site-data collections" sentence from `.claude/skills/content/SKILL.md`; no #202 mention remains in the skill.
+- LOW-2: deleted the unused fixtures `tests/fixtures/projects/broken/26-duplicate-slug.mdx` and `tests/fixtures/reading-paths/broken/two-now/now.mdx` after confirming nothing reads them (only `two-now/now-extra.mdx` is read, by the N07 test; `docs/testing.md` does not reference them).

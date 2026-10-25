@@ -33,9 +33,7 @@ All paths are under `src/content/`; the loaders are in `src/content.config.ts`. 
 rule covers every collection: a file with a body is `.mdx`, and a file without one is `.yaml`. A
 file with the other extension (`.md`, or `.yml`) fails the build with a message that names it and
 says what to rename it to (`src/lib/content/file-format.ts`). The pages folder holds only `.mdx`,
-and that includes the landing files `writing.mdx` and `projects.mdx`, which have no body. #202 will
-merge the three small site-data collections (Now, reading paths, assessment), so re-read the schema
-before trusting a row. Every schema is strict: an unknown or misspelled key fails the build.
+and that includes the landing files `writing.mdx` and `projects.mdx`, which have no body. Every schema is strict: an unknown or misspelled key fails the build.
 
 | Collection | Files | ID | Rules and where they are enforced | Author doc |
 |---|---|---|---|---|
