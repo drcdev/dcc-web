@@ -52,7 +52,7 @@ const boldB64 = readFileSync(join(fontsDir, "Inter-Bold.woff2")).toString("base6
 describe("diagram files", () => {
   it("finds the published diagrams and the template starter", () => {
     expect(diagramFiles.length).toBeGreaterThanOrEqual(2);
-    expect(diagramFiles.some((file) => file.includes("/template/"))).toBe(true);
+    expect(diagramFiles.some((file) => file.includes("/_template/"))).toBe(true);
   });
 
   // D01 to D04, D06 to D08 come from diagramProblems(); each file is its own case so a failure

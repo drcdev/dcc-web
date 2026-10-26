@@ -193,7 +193,7 @@ contract, so naming it is allowed). The assertion is unchanged.
 `pnpm run build`, which renders every post and fails on a missing image). No behaviour: n/a (paths
 only).
 
-### W3 — Page images into one folder per page, and the template's folder
+### [x] W3 — Page images into one folder per page, and the template's folder
 
 **Files:**
 

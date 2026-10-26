@@ -22,7 +22,7 @@ const { frontmatter, content } = parseFrontmatter(source);
 describe("the project template", () => {
   it("exists, and its picture file exists", () => {
     expect(source).not.toBe("");
-    expect(existsSync(new URL("../../../src/content/projects/images/template/diagram.svg", import.meta.url))).toBe(true);
+    expect(existsSync(new URL("../../../src/content/projects/images/_template/diagram.svg", import.meta.url))).toBe(true);
   });
 
   it("is a draft", () => expect(frontmatter.draft).toBe(true));
