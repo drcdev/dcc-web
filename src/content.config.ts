@@ -15,16 +15,14 @@ import { fileURLToPath } from "node:url";
 import { assertNoTwin, idFromPath, slugFromPath, slugFromPostPath } from "./lib/content/addresses.ts";
 import { assertFileFormat } from "./lib/content/file-format.ts";
 import { assertImagesExist } from "./lib/content/images.ts";
-import { assertHomeVisible, assertLandingBody, bodyAfterFrontMatter } from "./lib/content/page-flags.ts";
-import { assertNowDate } from "./lib/content/now-file.ts";
-import { assertPostDates } from "./lib/content/post-dates.ts";
-import { careerSchema } from "./content/schemas/career.ts";
-import { assessmentSchema } from "./content/schemas/assessment.ts";
-import { landingSchema, pageSchema } from "./content/schemas/page.ts";
-import { nowSchema } from "./content/schemas/now.ts";
-import { readingPathSchema } from "./content/schemas/reading-path.ts";
-import { postSchema } from "./content/schemas/post.ts";
-import { projectSchema } from "./content/schemas/project.ts";
+import { careerSchema } from "./content/collections/career-rules.ts";
+import { assessmentSchema } from "./content/collections/assessment-rules.ts";
+import { assertHomeVisible, pageSchema } from "./content/collections/page-rules.ts";
+import { assertLandingBody, bodyAfterFrontMatter, landingSchema } from "./content/collections/landing-rules.ts";
+import { assertNowDate, nowSchema } from "./content/collections/now-rules.ts";
+import { readingPathSchema } from "./content/collections/reading-path-rules.ts";
+import { assertPostDates, postSchema } from "./content/collections/post-rules.ts";
+import { projectSchema } from "./content/collections/project-rules.ts";
 
 const pages = defineCollection({
   loader: glob({
@@ -143,8 +141,8 @@ const readingPaths = defineCollection({
 });
 
 // `career`: one YAML file per career step in src/content/career/; the file name is the id. Rules that
-// span files (the current role, missing and draft posts) run in src/lib/content/career.ts when the
-// About page builds (specs/041-career-timeline/contracts/build-errors.md). No files means no steps.
+// span files (the current role, missing and draft posts) live in src/content/collections/career-rules.ts
+// and run when the About page builds (specs/041-career-timeline/contracts/build-errors.md). No files means no steps.
 const career = defineCollection({
   loader: glob({
     pattern: "*.{yaml,yml}",

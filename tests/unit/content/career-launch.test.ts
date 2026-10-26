@@ -2,7 +2,7 @@
 // through the content helper and names no role, organization or post. The rules that need the
 // launch files to exist (at least one step, the launch content) are added with them (T018).
 import { describe, expect, it } from "vitest";
-import { orderSteps } from "../../../src/lib/content/career.ts";
+import { orderSteps } from "../../../src/content/collections/career-rules.ts";
 import { careerSteps, currentCareerStep, pages, posts } from "../../helpers/content.ts";
 
 describe("the real career steps", () => {

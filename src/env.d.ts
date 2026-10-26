@@ -10,7 +10,7 @@ declare namespace App {
       file: string;
       data: import("./lib/projects.ts").ProjectEntry["data"];
       /** The checked Options table, parsed from the body by validateProjectStory. */
-      comparison: import("./lib/content/options-comparison.ts").OptionsComparison;
+      comparison: import("./content/collections/project-rules.ts").OptionsComparison;
     };
   }
 }

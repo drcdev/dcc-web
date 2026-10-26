@@ -6,8 +6,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
 import { z } from "astro/zod";
-import { projectSchema } from "../../../src/content/schemas/project.ts";
-import { validateProjectStory } from "../../../src/lib/content/project-story.ts";
+import { projectSchema } from "../../../src/content/collections/project-rules.ts";
+import { validateProjectStory } from "../../../src/content/collections/project-rules.ts";
 
 // `@astrojs/internal-helpers` is Astro's own dependency, so resolve it from Astro.
 const fromAstro = createRequire(createRequire(import.meta.url).resolve("astro/package.json"));

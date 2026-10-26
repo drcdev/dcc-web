@@ -1,8 +1,7 @@
-// Project status and how it is shown (data-model.md "Derived: status presentation"). The word in
-// the pill carries the status; the tone is decoration.
-export const projectStatuses = ["shipped", "experiment", "in-progress", "retired"] as const;
-
-export type ProjectStatus = (typeof projectStatuses)[number];
+// How a project status is shown (data-model.md "Derived: status presentation"). The word in
+// the pill carries the status; the tone is decoration. The statuses themselves are in
+// src/content/collections/project-rules.ts.
+import type { ProjectStatus } from "../../content/collections/project-rules.ts";
 
 const labels: Record<ProjectStatus, string> = {
   shipped: "Shipped",

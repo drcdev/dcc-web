@@ -1,7 +1,13 @@
 // The career timeline filter's pure logic (specs/041-career-timeline US3). The client script in
 // CareerTimeline.astro reads each step's categories from the page and applies the plan returned
 // here; nothing in this file touches the DOM.
-import { categoryIds, type CategoryId } from "./career.ts";
+
+export type CategoryId = "leadership" | "awards" | "volunteer";
+/**
+ * The fixed category list, in display order (data-model.md "Category"). Achievements are shown but are
+ * not a category (spec Clarifications, session 2026-10-19).
+ */
+export const categoryIds: readonly CategoryId[] = ["leadership", "awards", "volunteer"];
 
 /** The choice in the filter: one category, or everything. */
 export type Choice = CategoryId | "all";

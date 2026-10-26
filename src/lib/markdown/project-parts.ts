@@ -5,7 +5,7 @@
 // `<Content components>` (docs.astro.build/en/guides/integrations-guide/mdx/#passing-components-to-mdx-content).
 // The plugin shape follows docs.astro.build/en/recipes/reading-time/. It does nothing for a file
 // outside src/content/projects/, so posts and pages are untouched. The story check
-// (src/lib/content/project-story.ts) has already made sure the four headings are present and in order.
+// (src/content/collections/project-rules.ts) has already made sure the four headings are present and in order.
 import { defineMdastPlugin } from "satteri";
 import type { PluginFactoryContext } from "satteri";
 import { partHeadings, partIds, type PartId } from "../content/parts.ts";

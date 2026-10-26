@@ -90,7 +90,7 @@ const CONTENT_TRUE = [
 ];
 
 const CONTENT_FALSE = [
-  "src/content/schemas/post.ts",
+  "src/content/collections/post-rules.ts",
   "src/content.config.ts",
   "src/content/posts/x.md",
   "src/content/pages/about.ts",
@@ -102,7 +102,7 @@ const CONTENT_FALSE = [
   "/src/content/pages/a.mdx",
   "src\\content\\pages\\a.mdx",
   "src/content/pages/a b.mdx",
-  "src/content/schemas/career.ts",
+  "src/content/collections/career-rules.ts",
   "src/content/career/x.yml",
   "src/content/reading-paths/x.md",
   "src/content/career/old/x.yaml",
@@ -221,7 +221,7 @@ describe("decide() docs tier", () => {
     });
     expect(d.tier).toBe("content-only");
   });
-  it.each(["src/lib/now.ts", "src/content/schemas/career.ts"])("runs the full tier for a data file plus %s", (file) => {
+  it.each(["src/lib/now.ts", "src/content/collections/career-rules.ts"])("runs the full tier for a data file plus %s", (file) => {
     const d = decide({ event: "pull_request", files: ["src/content/career/example-entry.yaml", file] });
     expect(d.tier).toBe("full");
     expect(d.reason).toContain(file);
@@ -263,10 +263,10 @@ describe("decide()", () => {
   it("runs the full tier when content changes with a schema", () => {
     const d = decide({
       event: "pull_request",
-      files: ["src/content/posts/starting-something-new.mdx", "src/content/schemas/post.ts"],
+      files: ["src/content/posts/starting-something-new.mdx", "src/content/collections/post-rules.ts"],
     });
     expect(d.tier).toBe("full");
-    expect(d.reason).toContain("src/content/schemas/post.ts");
+    expect(d.reason).toContain("src/content/collections/post-rules.ts");
   });
   it.each([[[]], [["", "  "]], [null]] as const)("fails closed for %j", (files) => {
     const d = decide({ event: "pull_request", files: files as string[] | null });

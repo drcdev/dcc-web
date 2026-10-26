@@ -3,8 +3,9 @@
 // rendered from the assessment data file in the markup the Markdown produced before it moved
 // (specs/037 contracts/assessment-data.md; FR-004). The optional `data` prop replaces the
 // collection lookup and exists for component tests only.
-import type { Assessment } from "../../content/schemas/assessment.ts";
-import { findShift, resolveAssessment } from "../../lib/assessment/lookup.ts";
+import type { Assessment } from "../../content/collections/assessment-rules.ts";
+import { findShift } from "../../content/collections/assessment-rules.ts";
+import { resolveAssessment } from "../../lib/assessment/lookup.ts";
 import { typographic } from "../../lib/assessment/typography.ts";
 
 export interface Props {

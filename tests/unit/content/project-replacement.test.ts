@@ -1,7 +1,7 @@
-// Unit tests (primary layer: unit) for the replacement checks and resolver (data-model.md
-// "Validation rules (collection)" and "Derived: ResolvedReplacement"; contract rows RP04 and RP05).
+// Unit tests (primary layer: unit) for the replacement resolver (data-model.md "Derived:
+// ResolvedReplacement"). The checks are tested in collections/project-replaced-by.test.ts.
 import { describe, expect, it } from "vitest";
-import { checkReplacements, resolveReplacement } from "../../../src/lib/content/project-replacement.ts";
+import { resolveReplacement } from "../../../src/lib/content/project-replacement.ts";
 
 type Replaced = { project: { collection: "projects"; id: string } } | { name: string; href?: string };
 interface E {
@@ -14,30 +14,6 @@ const e = (id: string, data: Partial<E["data"]> = {}): E => ({
 });
 const onSite = (id: string): Replaced => ({ project: { collection: "projects", id } });
 const old = (replacedBy?: Replaced) => e("old", { status: "retired", replacedBy });
-
-describe("checkReplacements", () => {
-  it("accepts a replacement that names another file", () => {
-    expect(() => checkReplacements([old(onSite("new")), e("new")])).not.toThrow();
-  });
-
-  it("RP04: names the file, replacedBy, the id and the file to add", () => {
-    expect(() => checkReplacements([old(onSite("gone"))])).toThrow(
-      /Project file src\/content\/projects\/old\.mdx: .*replacedBy.*"gone".*src\/content\/projects\/gone\.mdx/,
-    );
-  });
-
-  it("RP05: a project cannot replace itself", () => {
-    expect(() => checkReplacements([old(onSite("old"))])).toThrow(/this project itself/);
-  });
-
-  it("counts a draft as a file", () => {
-    expect(() => checkReplacements([old(onSite("new")), e("new", { draft: true })])).not.toThrow();
-  });
-
-  it("ignores projects with no on-site replacement", () => {
-    expect(() => checkReplacements([old({ name: "Elsewhere" }), e("x")])).not.toThrow();
-  });
-});
 
 describe("resolveReplacement", () => {
   const all = [e("pub"), e("dra", { draft: true })];

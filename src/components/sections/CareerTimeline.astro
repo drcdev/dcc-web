@@ -6,7 +6,8 @@
 // here works without JavaScript. Text is rendered as text, never as markup (FR-003b), no style
 // attribute is set (CSP, FR-017a), and nothing animates (FR-015).
 import { getCareerTimeline } from "../../lib/career.ts";
-import { formatMonth, stepHas, type CategoryId, type Timeline } from "../../lib/content/career.ts";
+import type { CategoryId } from "../../lib/content/career-filter.ts";
+import { formatMonth, stepHas, type Timeline } from "../../lib/content/career-view.ts";
 import "./career-timeline.css";
 
 export interface Props {
@@ -145,8 +146,7 @@ const list = "m-0 list-disc pl-6 [overflow-wrap:anywhere]";
 }
 
 <script>
-  import { applyChoice, type Choice, type FilterStep } from "../../lib/content/career-filter.ts";
-  import { categoryIds, type CategoryId } from "../../lib/content/career.ts";
+  import { applyChoice, categoryIds, type CategoryId, type Choice, type FilterStep } from "../../lib/content/career-filter.ts";
 
   // The filter (contracts/timeline-markup.md "Client behaviour"). The server renders the complete
   // timeline and keeps the filter and status line hidden; this element reveals them once its

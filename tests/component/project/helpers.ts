@@ -1,7 +1,7 @@
 // Shared setup for the project component tests: a project record shaped like
 // the one the story route puts in `Astro.locals.project`, and a renderer.
 import type { AstroComponentFactory } from "astro/runtime/server/index.js";
-import type { OptionsComparison } from "../../../src/lib/content/options-comparison.ts";
+import type { OptionsComparison } from "../../../src/content/collections/project-rules.ts";
 import { render as renderComponent } from "../sections/helpers.ts";
 
 export const image = { src: "/_astro/sample.abc123.png", width: 64, height: 48, format: "png" } as const;

@@ -20,7 +20,7 @@ function section(doc: string, heading: string): string {
 describe("docs/design-source.md content structure", () => {
   const paths = [
     "src/content.config.ts",
-    "src/content/schemas/",
+    "src/content/collections/",
     "src/content/pages/",
     "src/components/sections/",
     "src/components/page/",
