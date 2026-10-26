@@ -176,7 +176,7 @@ Common to every item:
 `tests/unit/content/site-pages.test.ts`, and `pnpm run build` (the home page and a post page import
 the file). No behaviour: n/a (same file, new path).
 
-### W2 — Post images into one folder per post
+### [x] W2 — Post images into one folder per post
 
 **Files:** for each real post and the sample post, `git mv src/content/posts/images/<file>
 src/content/posts/images/<slug>/<file>`, where `<slug>` is the post file name without `.mdx` (13
