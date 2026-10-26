@@ -218,7 +218,7 @@ path in `tests/component/sections/figure-in-mdx.mdx` to the new file.
 **Test:** existing component tests (`pnpm run test:component` or the component project). No
 behaviour: n/a (test asset path only).
 
-### W5 — Fixture images per entry, and a build harness that copies only used images
+### [x] W5 — Fixture images per entry, and a build harness that copies only used images
 
 **Files:**
 

@@ -21,10 +21,10 @@ import { filesUnder } from "../helpers/files.ts";
 const draftWithAssets: FixtureFile = {
   from: "draft.mdx",
   replace: [
-    ["src: ./images/sample.png", "src: ./images/draft-only.png"],
+    ["src: ./images/draft/sample.png", "src: ./images/draft/draft-only.png"],
     [
       "draft: true\n",
-      "draft: true\nvisuals:\n  shot:\n    kind: image\n    src: ./images/draft-only.png\n    alt: A draft picture\n    part: build\n",
+      "draft: true\nvisuals:\n  shot:\n    kind: image\n    src: ./images/draft/draft-only.png\n    alt: A draft picture\n    part: build\n",
     ],
   ],
 };

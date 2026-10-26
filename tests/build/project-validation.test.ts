@@ -40,7 +40,7 @@ describe("project schema and loader wiring (sync)", () => {
     ));
 
   it("row 17: generateId runs assertImagesExist (and the clip check of row 19)", () =>
-    expectRejected("sync", [broken("17-missing-image")], ["17-missing-image", "./images/nope.png"]));
+    expectRejected("sync", [broken("17-missing-image")], ["17-missing-image", "./images/17-missing-image/nope.png"]));
 
   it("row 27: generateId runs slugFromPath (and rejects a nested file the same way)", () =>
     expectRejected("sync", [broken("27-bad-file-name", "Bad Name.mdx")], [
