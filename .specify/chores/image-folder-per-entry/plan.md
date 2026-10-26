@@ -277,7 +277,7 @@ behaviour: n/a (test asset path only).
   `project-validation.test.ts` and `project-template.test.ts` (`vitest run --project build <files>`).
   No assertion is removed; the fixture-site test gains one expectation (real image folders gone).
 
-### W6 — Playwright fixture site in the same layout
+### [x] W6 — Playwright fixture site in the same layout
 
 **Files:** `scripts/build-fixture-site.ts`:
 

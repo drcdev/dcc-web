@@ -7,12 +7,15 @@
 // (specs/008-blog/tasks.md, T026). Three fixture posts from tests/fixtures/posts/valid/ are added
 // too: a post with no feature image and a post with a very long title, the cases the removed
 // sample posts used to cover, and a post that shows every part of the post template, the lead
-// story and the subject of the post-template snapshot (FIXTURE_POSTS). Written to .cache/fixture-site/dist.
+// story and the subject of the post-template snapshot (FIXTURE_POSTS). Each fixture file brings only the pictures it references, from
+// tests/fixtures/<collection>/images/<entry>/ (scripts/fixture-images.ts), so the build meets no
+// unused image. Written to .cache/fixture-site/dist.
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { basename, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { deflateSync, crc32 } from "node:zlib";
 import { build } from "astro";
+import { copyReferencedImages } from "./fixture-images.ts";
 
 /** A generated post: its file text and its small feature image. */
 export interface GeneratedPost {
@@ -23,8 +26,8 @@ export interface GeneratedPost {
 }
 
 /**
- * Fixture posts copied from tests/fixtures/posts/valid/ (with the pictures in
- * tests/fixtures/posts/images/): a text-only post (no feature image, 2026-08-10) and a post
+ * Fixture posts copied from tests/fixtures/posts/valid/ (with the pictures they
+ * reference in tests/fixtures/posts/images/<post>/): a text-only post (no feature image, 2026-08-10) and a post
  * with a very long title holding an unbroken word (2026-08-20), and a featured post that shows
  * every part of the post template (2099-01-01, so it is always the newest post and the lead
  * story). All three also carry the free-form topic `fixture-cards`, so that topic page lists
@@ -33,8 +36,8 @@ export interface GeneratedPost {
 export const FIXTURE_POSTS = ["text-only.mdx", "long-title.mdx", "every-part.mdx"] as const;
 
 /**
- * Fixture pages copied from tests/fixtures/pages/ into src/content/pages/ (with the pictures in
- * tests/fixtures/pages/images/). The contact form has its own page so that adding it does not
+ * Fixture pages copied from tests/fixtures/pages/ into src/content/pages/ (with the pictures they
+ * reference in tests/fixtures/pages/images/<page>/). The contact form has its own page so that adding it does not
  * change the sections page: its baselines and its no-JavaScript script count stay as they are.
  */
 export const FIXTURE_PAGES = ["sections.mdx", "contact-form.mdx"] as const;
@@ -99,7 +102,7 @@ export function generateFixturePosts(count = MINIMUM_POSTS): GeneratedPost[] {
       "topics:",
       ...topics.map((topic) => `  - ${topic}`),
       "featureImage:",
-      `  src: ./images/${name}`,
+      `  src: ./images/${slug}/${name}`,
       `  alt: A plain coloured rectangle for fixture post ${number}`,
       ...(index === 0 ? ["featured: true"] : []),
       "---",
@@ -125,6 +128,25 @@ export function lowerFilterThreshold(text: string): string {
     throw new Error("PROJECT_FILTER_THRESHOLD = 10; must appear exactly once in src/config/projects.ts");
   }
   return text.replace(pattern, `PROJECT_FILTER_THRESHOLD = ${FIXTURE_FILTER_THRESHOLD};`);
+}
+
+/**
+ * Copies fixture files from `fromDir` into `toDir`, and the pictures each one references from
+ * `fromImages` (default: `fromDir/images`) into `toDir/images/<entry>/`, never a whole images tree.
+ */
+function copyWithImages(names: readonly string[], fromDir: string, toDir: string, fromImages = resolve(fromDir, "images")): void {
+  mkdirSync(toDir, { recursive: true });
+  for (const name of names) {
+    const id = basename(name, ".mdx");
+    const text = copyReferencedImages({
+      text: readFileSync(resolve(fromDir, name), "utf8"),
+      sourceId: id,
+      targetId: id,
+      fromImages,
+      toImages: resolve(toDir, "images"),
+    });
+    writeFileSync(resolve(toDir, name), text);
+  }
 }
 
 /** Lays out the fixture site's source tree in `siteRoot` (everything but the Astro build). */
@@ -188,31 +210,27 @@ export function prepareFixtureSite(siteRoot: string): void {
 
   if (FIXTURE_PAGES.some((name) => existsSync(resolve(pageFixtures, name)))) {
     mkdirSync(resolve(siteRoot, "src/content/pages"), { recursive: true });
-    for (const name of FIXTURE_PAGES) {
-      if (existsSync(resolve(pageFixtures, name))) cpSync(resolve(pageFixtures, name), resolve(siteRoot, "src/content/pages", name));
-    }
-    const images = resolve(pageFixtures, "images");
-    if (existsSync(images)) cpSync(images, resolve(siteRoot, "src/content/pages/images"), copyOptions);
+    copyWithImages(FIXTURE_PAGES.filter((name) => existsSync(resolve(pageFixtures, name))), pageFixtures, resolve(siteRoot, "src/content/pages"));
   }
 
   const postsDir = resolve(siteRoot, "src/content/posts");
   mkdirSync(resolve(postsDir, "images"), { recursive: true });
   for (const post of generateFixturePosts()) {
     writeFileSync(resolve(postsDir, `${post.slug}.mdx`), post.source);
-    writeFileSync(resolve(postsDir, "images", post.image.name), post.image.data);
+    const imageDir = resolve(postsDir, "images", post.slug);
+    mkdirSync(imageDir, { recursive: true });
+    writeFileSync(resolve(imageDir, post.image.name), post.image.data);
   }
   const postFixtures = resolve(repoRoot, "tests/fixtures/posts");
-  cpSync(resolve(postFixtures, "images"), resolve(postsDir, "images"), copyOptions);
-  for (const name of FIXTURE_POSTS) cpSync(resolve(postFixtures, "valid", name), resolve(postsDir, name));
+  copyWithImages(FIXTURE_POSTS, resolve(postFixtures, "valid"), postsDir, resolve(postFixtures, "images"));
 
   // Fixture projects (with their images) go into the projects collection.
   const projectFixtures = resolve(repoRoot, "tests/fixtures/projects");
   if (existsSync(projectFixtures)) {
-    // broken/ holds the files that must fail the build (tests/build/project-validation.test.ts).
-    cpSync(projectFixtures, resolve(siteRoot, "src/content/projects"), {
-      ...copyOptions,
-      filter: (source: string) => copyOptions.filter(source) && !source.includes("/broken"),
-    });
+    // broken/ holds the files that must fail the build (tests/build/project-validation.test.ts);
+    // only the valid files at the top level are copied.
+    const names = readdirSync(projectFixtures).filter((name) => name.endsWith(".mdx"));
+    copyWithImages(names, projectFixtures, resolve(siteRoot, "src/content/projects"));
   }
 
 }

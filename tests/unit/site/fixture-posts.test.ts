@@ -53,7 +53,7 @@ describe("generateFixturePosts", () => {
     for (const post of posts) {
       const { featureImage } = parseFrontmatter(post.source).frontmatter as { featureImage?: { src: string; alt: string } };
       expect(featureImage?.alt.trim()).toBeTruthy();
-      expect(featureImage?.src).toBe(`./images/${post.image.name}`);
+      expect(featureImage?.src).toBe(`./images/${post.slug}/${post.image.name}`);
       expect(post.image.name.endsWith(".png")).toBe(true);
       names.add(post.image.name);
       expect([...post.image.data.slice(0, 8)]).toEqual([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
