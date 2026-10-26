@@ -19,7 +19,7 @@ The name may use lower-case letters, digits and hyphens only.
   `drift`, `convergence`. A post cannot use them (build error P25).
 - There is no year or category in the address, and there are no redirects.
   **Do not rename a published post**: its old address stops working and any link to it breaks.
-- Put pictures in `src/content/posts/images/`. Refer to them as `./images/name.png`.
+- Put pictures in `src/content/posts/images/<post-file-name>/`, a folder named exactly like the post file without `.mdx`. Refer to them as `./images/<post-file-name>/name.png`. A folder with no post, or a picture no post uses, fails the build (P27 to P29).
 
 ## The top of the file
 
@@ -33,7 +33,7 @@ topics:
   - compliant-data
   - technology-teams
 featureImage:
-  src: ./images/audit-trail.png
+  src: ./images/why-audit-trails-matter/audit-trail.png
   alt: A ledger with one line highlighted
   caption: A ledger, the oldest audit trail
 featured: false
@@ -48,7 +48,7 @@ draft: false
 | `date` | yes | The publication date, written `YYYY-MM-DD` with no quotes and no time. Posts are listed newest first. A future date is published like any other: there is no scheduling. |
 | `updated` | no | The date of the last change, `YYYY-MM-DD`, on or after `date`. The post then shows "Updated" with this date. |
 | `topics` | yes | One or more topic identifiers, each once (see Topics below). A series id goes first. At most one series. A text-only card takes its colour from the series, else the first controlled topic, else stays neutral. |
-| `featureImage` | no | A picture at the top of the post and on its cards: `src` (a file in `images/`), `alt` (required) and `caption` (optional). Without it the post has a text-only card and no picture area. |
+| `featureImage` | no | A picture at the top of the post and on its cards: `src` (a file in the post's folder in `images/`), `alt` (required) and `caption` (optional). Without it the post has a text-only card and no picture area. |
 | `featured` | no | `true` shows the post in the Featured area of the writing page. Default `false`. |
 | `draft` | no | `true` keeps the post off the live site (see Drafts below). Default `false`. |
 
@@ -103,24 +103,24 @@ screens. `FullImage` runs the full page width. `caption` is optional on all thre
 ```mdx
 <Figure caption="The audit log after the change">
 
-![A table of log lines with one line highlighted](./images/log.png)
+![A table of log lines with one line highlighted](./images/why-audit-trails-matter/log.png)
 
 </Figure>
 
 <WideImage>
 
-![A diagram of three systems exchanging records](./images/systems.png)
+![A diagram of three systems exchanging records](./images/why-audit-trails-matter/systems.png)
 
 </WideImage>
 
 <FullImage caption="Optional caption">
 
-![A wide photo of a server room](./images/room.jpg)
+![A wide photo of a server room](./images/why-audit-trails-matter/room.jpg)
 
 </FullImage>
 ```
 
-A plain `![description](./images/name.png)` also works and sits in the text column. Every image
+A plain `![description](./images/<post-file-name>/name.png)` also works and sits in the text column. Every image
 in a post body is served in several widths (360 to 1536 px, quality 75), so a phone downloads a
 file near its own width rather than the original. Two other components from `docs/pages.md` work
 in posts: `Lead` and `CallToAction`. That guide also states the Markdown rule.
@@ -225,7 +225,7 @@ and name the post and the setting.
 | P6 | A topic id is a near miss of a controlled one (`agentic-a1`) | The message asks "Did you mean" the right id and lists them all; fix the spelling. |
 | P7 | The same topic twice | Name each topic once. |
 | P8 | `featureImage` has no `alt` (or an empty one) | Describe the picture in `alt`. |
-| P9 | The feature image file does not exist | Add the file to `images/`, or fix the path. |
+| P9 | The feature image file does not exist | Add the file to the post's folder in `images/`, or fix the path. |
 | P10 | `updated` is earlier than `date` | Use a date on or after `date`. |
 | P11 | A misspelled setting (`sumary`) | Fix the spelling; the message names the setting. |
 | P12 | An image in the body has no alt text | Describe the image inside the square brackets. |
@@ -238,10 +238,13 @@ and name the post and the setting.
 | P19 | An unknown tag such as `<Callout>`; it is not a section | Use one of the sections the message lists. |
 | P20 | The body has no content | Add text below the settings. |
 | P21 | A topic was removed from the list while a post still names it | Not an error now: the id is a free-form topic. |
-| P22 | An image file in the body does not exist (`![...](./images/missing.png)`) | Add the file to `images/`, or fix the path. |
+| P22 | An image file in the body does not exist (`![...](./images/why-audit-trails-matter/missing.png)`) | Add the file to the post's folder in `images/`, or fix the path. |
 | P23 | The post lists both series (`drift` and `convergence`) | Keep one series. |
 | P24 | A topic id is close to a controlled topic (`convergance`, `drfit`) | Use the id the message suggests, or pick an id that is not close. |
 | P25 | The file is `drift.mdx` or `convergence.mdx` | Rename the file; the address is reserved for the series page. |
 | P26 | A topic id has capitals, spaces or other characters, or is over 40 characters | Use lower-case letters, digits and hyphens, at most 40 characters. |
+| P27 | An image sits directly in `images/`, not in a post folder | Move it into `images/<post-file-name>/`. |
+| P28 | An image folder has no post with that name | Rename the folder after its post, or delete it. |
+| P29 | No post uses an image | Use the image, or delete it. |
 
 There is no warning level: nothing else about a post file is checked.

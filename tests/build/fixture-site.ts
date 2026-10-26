@@ -7,14 +7,17 @@
 // build() or sync() (docs.astro.build/en/reference/programmatic-reference/).
 // The repository's real (non-`sample-*`) posts are left out of the copy unless a test sets
 // `realPosts`, so a fixture build holds only the sample post and the fixtures it adds (and does
-// not spend time resizing the real posts' photos).
+// not spend time resizing the real posts' photos). Fixture pictures live in
+// tests/fixtures/<collection>/images/<entry>/; only the ones a copied file references are copied
+// (scripts/fixture-images.ts), so no build meets an unused image.
 // The programmatic API is experimental; only tests use it.
 import { execFile } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { basename, dirname, extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import { copyReferencedImages } from "../../scripts/fixture-images.ts";
 import { filesUnder } from "../helpers/files.ts";
 
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -49,7 +52,7 @@ export interface FixtureSiteOptions {
   /**
    * Post fixture files, relative to tests/fixtures/posts/ (for example `valid/minimal.mdx` or
    * `broken/P01-no-title.mdx`), copied into the site's src/content/posts/ together with the
-   * pictures in tests/fixtures/posts/images/.
+   * pictures they reference in tests/fixtures/posts/images/.
    */
   posts?: readonly (string | FixtureFile)[];
   /**
@@ -59,7 +62,7 @@ export interface FixtureSiteOptions {
   env?: Record<string, string>;
   /** Fixture assessment data files from tests/fixtures/assessments/, copied to src/content/assessments/. */
   assessments?: readonly (string | FixtureFile)[];
-  /** Fixture project files from tests/fixtures/projects/, copied to src/content/projects/ with their images. */
+  /** Fixture project files from tests/fixtures/projects/, copied to src/content/projects/ with the images they reference. */
   projects?: readonly (string | FixtureFile)[];
   /**
    * Keep the repository's real posts (every src/content/posts/*.mdx not named `sample-*`) in the
@@ -68,8 +71,8 @@ export interface FixtureSiteOptions {
   realPosts?: boolean;
   /**
    * Leave out the repository's real projects (every src/content/projects/*.md and *.mdx not starting
-   * with `_`) from the copied site, so a build holds only the fixtures in `projects`. Their pictures stay,
-   * unreferenced. Default false.
+   * with `_`) from the copied site, so a build holds only the fixtures in `projects`. Their image folders go too
+   * (the `_template` folder stays with its file). Default false.
    */
   withoutRealProjects?: boolean;
   /**
@@ -140,13 +143,39 @@ async function runAstro(root: string, mode: "build" | "sync", env: Record<string
   }
 }
 
-/** Copies fixture files from `fromRoot` into `into`, applying each file's `to` name and `replace` edit. */
-function copyFixtures(files: readonly (string | FixtureFile)[], fromRoot: string, into: string): void {
+/** The fixture images folder of a content collection: where its files' pictures come from and go to. */
+interface ImageFolders {
+  from: string;
+  to: string;
+}
+
+/**
+ * Copies fixture files from `fromRoot` into `into`, applying each file's `to` name and `replace`
+ * edit. With `images`, the pictures a copied file references go along (after the edit, so a test's
+ * replacement path decides what is copied) and its own image folder follows a `to` rename.
+ */
+function copyFixtures(
+  files: readonly (string | FixtureFile)[],
+  fromRoot: string,
+  into: string,
+  images?: ImageFolders,
+): void {
   for (const file of files) {
     const { from, to, replace } = typeof file === "string" ? ({ from: file } as FixtureFile) : file;
     const target = resolve(into, to ?? from.split("/").at(-1) ?? from);
     mkdirSync(dirname(target), { recursive: true });
-    if (replace) {
+    if (images) {
+      let text = readFileSync(resolve(fromRoot, from), "utf-8");
+      if (replace) {
+        // One pair or a list of pairs; each replaces its first occurrence, in order.
+        const pairs = (typeof replace[0] === "string" ? [replace] : replace) as readonly (readonly [string, string])[];
+        for (const [search, replacement] of pairs) text = text.replace(search, replacement);
+      }
+      const sourceId = basename(from, extname(from));
+      const targetId = (to ?? from.split("/").at(-1) ?? from).replace(/\.mdx?$/, "");
+      text = copyReferencedImages({ text, sourceId, targetId, fromImages: images.from, toImages: images.to });
+      writeFileSync(target, text);
+    } else if (replace) {
       // One pair or a list of pairs; each replaces its first occurrence, in order.
       const pairs = (typeof replace[0] === "string" ? [replace] : replace) as readonly (readonly [string, string])[];
       let text = readFileSync(resolve(fromRoot, from), "utf-8");
@@ -175,11 +204,14 @@ export async function buildFixtureSite(
   symlinkSync(resolve(repoRoot, "node_modules"), resolve(root, "node_modules"), "dir");
 
   if (!options.realPosts) {
-    // Leave out the real posts; their pictures stay, unreferenced, so nothing builds them.
+    // Leave out the real posts and their image folders.
     const copiedPosts = resolve(root, "src/content/posts");
     if (existsSync(copiedPosts)) {
       for (const name of readdirSync(copiedPosts)) {
-        if (/\.mdx?$/.test(name) && !name.startsWith("sample-")) rmSync(resolve(copiedPosts, name));
+        if (/\.mdx?$/.test(name) && !name.startsWith("sample-")) {
+          rmSync(resolve(copiedPosts, name));
+          rmSync(resolve(copiedPosts, "images", basename(name, extname(name))), { recursive: true, force: true });
+        }
       }
     }
   }
@@ -188,7 +220,10 @@ export async function buildFixtureSite(
     const copiedProjects = resolve(root, "src/content/projects");
     if (existsSync(copiedProjects)) {
       for (const name of readdirSync(copiedProjects)) {
-        if (/\.mdx?$/.test(name) && !name.startsWith("_")) rmSync(resolve(copiedProjects, name));
+        if (/\.mdx?$/.test(name) && !name.startsWith("_")) {
+          rmSync(resolve(copiedProjects, name));
+          rmSync(resolve(copiedProjects, "images", basename(name, extname(name))), { recursive: true, force: true });
+        }
       }
     }
   }
@@ -223,17 +258,21 @@ export async function buildFixtureSite(
 
   const pagesDir = resolve(root, "src/content/pages");
   mkdirSync(pagesDir, { recursive: true });
-  const images = resolve(fixturesRoot, "images");
-  if (existsSync(images)) cpSync(images, resolve(pagesDir, "images"), { recursive: true });
-  for (const name of options.removePages ?? []) rmSync(resolve(pagesDir, name), { force: true });
-  copyFixtures(files, fixturesRoot, pagesDir);
+  for (const name of options.removePages ?? []) {
+    rmSync(resolve(pagesDir, name), { force: true });
+    // A page's image folder is named after its id: the path without the extension, minus a trailing /index.
+    const id = name.replace(/\.mdx?$/, "").replace(/(^|\/)index$/, "");
+    if (id) rmSync(resolve(pagesDir, "images", id), { recursive: true, force: true });
+  }
+  copyFixtures(files, fixturesRoot, pagesDir, { from: resolve(fixturesRoot, "images"), to: resolve(pagesDir, "images") });
 
   if (options.posts) {
     const postsDir = resolve(root, "src/content/posts");
     mkdirSync(postsDir, { recursive: true });
-    const postImages = resolve(postFixturesRoot, "images");
-    if (existsSync(postImages)) cpSync(postImages, resolve(postsDir, "images"), { recursive: true });
-    copyFixtures(options.posts, postFixturesRoot, postsDir);
+    copyFixtures(options.posts, postFixturesRoot, postsDir, {
+      from: resolve(postFixturesRoot, "images"),
+      to: resolve(postsDir, "images"),
+    });
   }
 
   if (options.assessments) {
@@ -245,9 +284,10 @@ export async function buildFixtureSite(
   if (options.projects) {
     const projectsDir = resolve(root, "src/content/projects");
     mkdirSync(projectsDir, { recursive: true });
-    const projectImages = resolve(projectFixturesRoot, "images");
-    if (existsSync(projectImages)) cpSync(projectImages, resolve(projectsDir, "images"), { recursive: true });
-    copyFixtures(options.projects, projectFixturesRoot, projectsDir);
+    copyFixtures(options.projects, projectFixturesRoot, projectsDir, {
+      from: resolve(projectFixturesRoot, "images"),
+      to: resolve(projectsDir, "images"),
+    });
   }
 
   for (const [path, value] of Object.entries(options.overrides ?? {})) {

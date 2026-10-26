@@ -9,6 +9,7 @@ import sitemap from "@astrojs/sitemap";
 import mdx from "@astrojs/mdx";
 import { satteri } from "@astrojs/markdown-satteri";
 
+import { imageFolderCheck } from "./src/lib/content/images.ts";
 import { pruneDraftAssets } from "./src/lib/prune-unreferenced-assets.ts";
 import { INTER_UNICODE_RANGE, MONO_FALLBACK_STACK, SYSTEM_FONT_STACK } from "./src/lib/fonts/charset.ts";
 import { unlistedPageAddresses } from "./src/lib/content/draft-pages.ts";
@@ -172,6 +173,8 @@ export default defineConfig({
       },
     }),
     mdx(),
+    // Fails the build for an image outside its entry's folder or one no entry uses (#201).
+    imageFolderCheck(),
     pruneDraftAssets(process.env),
   ],
 });

@@ -15,7 +15,7 @@ The file name is the address.
 | `src/content/pages/work-with-me.mdx` | `/work-with-me/` |
 
 Use lower-case letters, digits and hyphens only. Every page is an `.mdx` file, with or without components (the landing files below are `.mdx`
-too). A `.md` file fails the build with a message to rename it to `.mdx`. Put images next to the page in `src/content/pages/images/`.
+too). A `.md` file fails the build with a message to rename it to `.mdx`. Put images in `src/content/pages/images/<page>/`, a folder named after the page address without the slashes at the ends: `about`, `index` for the home page, and the nested address for a nested page, for example `images/privacy/tempo/`. Refer to them as `./images/<page>/name.jpg`. A folder with no page, or a picture no page uses, fails the build.
 
 ## The top of the file
 
@@ -136,19 +136,19 @@ and the full page width. `caption` is optional. The image needs alt text.
 ```mdx
 <Figure caption="Speaking at a 2025 conference">
 
-![Don Coleman on stage, gesturing toward a slide](./images/stage.jpg)
+![Don Coleman on stage, gesturing toward a slide](./images/work-with-me/stage.jpg)
 
 </Figure>
 
 <WideImage>
 
-![A whiteboard of a service map](./images/service-map.jpg)
+![A whiteboard of a service map](./images/work-with-me/service-map.jpg)
 
 </WideImage>
 
 <FullImage caption="Optional caption">
 
-![A wide landscape photo](./images/landscape.jpg)
+![A wide landscape photo](./images/work-with-me/landscape.jpg)
 
 </FullImage>
 ```
@@ -160,7 +160,7 @@ some text.
 ```mdx
 <SideImage>
 
-![A conference badge](./images/badge.png)
+![A conference badge](./images/work-with-me/badge.png)
 
 Speaker at the 2025 health leadership conference.
 
@@ -216,6 +216,7 @@ The build stops at the first problem and names the file. Messages start with `Pa
   misspelled key: fix the top of the file.
 - An image with no `alt`, an empty `alt`, or a file that does not exist: add the text or fix
   the path.
+- An image that sits directly in `images/`, a folder in `images/` with no page of that name, or an image no page uses: the message names the file or folder; move, rename or delete it.
 - A page with no content.
 - A `.md` file in the pages folder: rename it to `.mdx`.
 - An unknown component (for example `<Callout>`); the message lists the valid ones.

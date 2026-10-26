@@ -54,12 +54,12 @@ describe("fixture-site harness, S1 (every kind of file, default options)", () =>
     expect(existsSync(`${s1.root}/src/content/projects/minimal.mdx`)).toBe(true);
     expect(existsSync(`${s1.root}/src/content/projects/every-setting.mdx`)).toBe(true);
     expect(existsSync(`${s1.root}/src/content/projects/draft.mdx`)).toBe(true);
-    expect(existsSync(`${s1.root}/src/content/projects/images/sample.png`)).toBe(true);
+    expect(existsSync(`${s1.root}/src/content/projects/images/minimal/sample.png`)).toBe(true);
   });
 
   it("copies post files and their images from tests/fixtures/posts/ into src/content/posts/", () => {
     expect(existsSync(`${s1.root}/src/content/posts/minimal.mdx`)).toBe(true);
-    expect(existsSync(`${s1.root}/src/content/posts/images/sample.png`)).toBe(true);
+    expect(existsSync(`${s1.root}/src/content/posts/images/minimal/sample.png`)).toBe(true);
   });
 
   it("leaves the repository's real posts out by default and keeps the sample post", () => {
@@ -68,6 +68,12 @@ describe("fixture-site harness, S1 (every kind of file, default options)", () =>
     expect(realPostNames.length).toBeGreaterThan(0);
     for (const name of realPostNames) expect(posts, name).not.toContain(name);
     expect(posts.filter((name) => !name.startsWith("sample-")).sort()).toEqual(["minimal.mdx", "renamed-post.mdx"]);
+  });
+
+  it("leaves the real posts' image folders out too", () => {
+    const folders = readdirSync(`${s1.root}/src/content/posts/images`);
+    for (const name of realPostNames) expect(folders, name).not.toContain(name.replace(/\.mdx?$/, ""));
+    expect(folders).toContain("minimal");
   });
 
   it("places a post file at the `to` name", () => {

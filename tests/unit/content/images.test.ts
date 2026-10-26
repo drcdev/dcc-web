@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 import { PageContentError } from "../../../src/lib/content/errors.ts";
-import { assertImagesExist } from "../../../src/lib/content/images.ts";
+import { assertImagesExist, checkImageFolders, readImageFolders } from "../../../src/lib/content/images.ts";
 
 const root = mkdtempSync(join(tmpdir(), "images-test-"));
 mkdirSync(join(root, "images"));
@@ -73,5 +73,106 @@ describe("assertImagesExist", () => {
     expect(() =>
       assertImagesExist("project", root, "a-project.mdx", { visual: here, image: here, visuals: { hero: here } }),
     ).not.toThrow();
+  });
+});
+
+describe("checkImageFolders (#201)", () => {
+  const uses = (path: string) => `---\nimage:\n  src: ${path}\n---\n`;
+
+  it("passes when every image is in its entry's folder and used", () => {
+    expect(() =>
+      checkImageFolders(
+        "page",
+        [
+          { file: "example-page.mdx", text: uses("./images/example-page/a.png") },
+          { file: "privacy/policy.mdx", text: "![a](../images/privacy/policy/b.png)" },
+          { file: "index.mdx", text: uses("./images/index/c.png") },
+        ],
+        ["images/example-page/a.png", "images/privacy/policy/b.png", "images/index/c.png"],
+      ),
+    ).not.toThrow();
+    expect(() =>
+      checkImageFolders(
+        "post",
+        [{ file: "example-post.mdx", text: uses("./images/example-post/a.png") }],
+        ["images/example-post/a.png"],
+      ),
+    ).not.toThrow();
+    expect(() =>
+      checkImageFolders(
+        "project",
+        [{ file: "_template.mdx", text: uses("./images/_template/a.png") }],
+        ["images/_template/a.png"],
+      ),
+    ).not.toThrow();
+  });
+
+  it("names the folder when no entry is named after it", () => {
+    expect(() =>
+      checkImageFolders("post", [{ file: "example-post.mdx", text: "" }], ["images/no-such-post/a.png"]),
+    ).toThrow(/Post file src\/content\/posts\/images\/no-such-post\/: no post is named no-such-post/);
+  });
+
+  it("names the file when an image sits directly in images/", () => {
+    expect(() =>
+      checkImageFolders("page", [{ file: "example-page.mdx", text: "./images/a.png" }], ["images/a.png"]),
+    ).toThrow(/Page file src\/content\/pages\/images\/a\.png: sits directly in images\//);
+  });
+
+  it("names the file when no entry uses the image", () => {
+    expect(() =>
+      checkImageFolders("project", [{ file: "example.mdx", text: "" }], ["images/example/a.png"]),
+    ).toThrow(/Project file src\/content\/projects\/images\/example\/a\.png: no project uses this image/);
+  });
+
+  it("counts a body image and a front matter src as uses", () => {
+    expect(() =>
+      checkImageFolders(
+        "post",
+        [{ file: "example-post.mdx", text: `${uses("./images/example-post/a.png")}![a](./images/example-post/b.png)` }],
+        ["images/example-post/a.png", "images/example-post/b.png"],
+      ),
+    ).not.toThrow();
+  });
+
+  it("ignores dot files", () => {
+    expect(() =>
+      checkImageFolders("page", [{ file: "example-page.mdx", text: "" }], [
+        "images/.gitkeep",
+        "images/example-page/.DS_Store",
+      ]),
+    ).not.toThrow();
+  });
+
+  it("counts a reference from another entry as a use", () => {
+    expect(() =>
+      checkImageFolders(
+        "page",
+        [
+          { file: "example-page.mdx", text: "" },
+          { file: "other-page.mdx", text: "./images/example-page/a.png" },
+        ],
+        ["images/example-page/a.png"],
+      ),
+    ).not.toThrow();
+  });
+
+  it("reads a content root and throws for an orphan placed there", () => {
+    const base = mkdtempSync(join(tmpdir(), "image-folders-"));
+    try {
+      for (const dir of ["pages", "posts", "projects"]) mkdirSync(join(base, dir, "images", "example"), { recursive: true });
+      writeFileSync(join(base, "pages", "example.mdx"), "./images/example/a.png");
+      writeFileSync(join(base, "pages", "images", "example", "a.png"), "x");
+      writeFileSync(join(base, "pages", "images", ".gitkeep"), "");
+      const read = readImageFolders(base);
+      expect(read.pages.entries.map((e) => e.file)).toEqual(["example.mdx"]);
+      expect(read.pages.images).toEqual(["images/example/a.png"]);
+      expect(() => checkImageFolders("page", read.pages.entries, read.pages.images)).not.toThrow();
+      writeFileSync(join(base, "posts", "images", "example", "orphan.png"), "x");
+      const posts = readImageFolders(base).posts;
+      expect(() => checkImageFolders("post", posts.entries, posts.images)).toThrow(/images\/example\//);
+    } finally {
+      rmSync(base, { recursive: true, force: true });
+    }
   });
 });

@@ -18,7 +18,7 @@ The file name is the address.
 | `src/content/projects/focus-pocus.mdx` | `/projects/focus-pocus/` |
 
 Use lower-case letters, digits and hyphens only, and put the file straight in
-`src/content/projects/` (no subfolders). A project file is `.mdx`; a `.md` file fails the build with a message to rename it. Put pictures in `src/content/projects/images/<project-name>/` and point to
+`src/content/projects/` (no subfolders). A project file is `.mdx`; a `.md` file fails the build with a message to rename it. Put pictures in `src/content/projects/images/<project-name>/`, a folder named exactly like the project file without `.mdx` (the template's is `_template`), and point to
 them with paths that start `./images/`, as in the example below.
 
 ## The top of the file
@@ -227,6 +227,7 @@ The build stops at the first problem and names the file. Messages start with `Pr
 - No paragraph starting with the word `Why` straight after the table.
 - An unsupported picture file type (use a common picture format), a picture with no `alt`, a
   diagram with no `description`, or a file that does not exist.
+- A picture that sits directly in `images/`, a folder in `images/` with no project of that name, or a picture no project uses: the message names the file or folder; move, rename or delete it.
 - A page elsewhere on the site that claims an address under `/projects/`; that address belongs
   to the projects.
 - A `.md` file (rename it to `.mdx`), a file in a subfolder, or a file name

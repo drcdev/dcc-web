@@ -108,7 +108,7 @@ describe("sample posts", () => {
 
   // Only the sample post's pictures (sample-*): the real posts' photos are sized by the build.
   it("keeps every sample image small, for the performance budget", () => {
-    const images = `${dir}images/`;
+    const images = `${dir}images/sample-everything/`;
     if (!existsSync(images)) return;
     const names = readdirSync(images).filter((name) => /^sample-/.test(name));
     expect(names.length).toBeGreaterThan(0);

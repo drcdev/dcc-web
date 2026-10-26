@@ -37,7 +37,7 @@ describe("post schema and loader wiring (sync)", () => {
     expectRejected("sync", [broken("p04-date-impossible.mdx")], "p04-date-impossible", "date", "2026-02-30"));
 
   it("P9: generateId runs assertImagesExist with the post wording", () =>
-    expectRejected("sync", [broken("p09-image-missing.mdx")], "Post file", "p09-image-missing", "./images/missing.png"));
+    expectRejected("sync", [broken("p09-image-missing.mdx")], "Post file", "p09-image-missing", "./images/p09-image-missing/missing.png"));
 
   it("P17: generateId runs the twin check", () =>
     expectRejected(
@@ -70,7 +70,7 @@ describe("post schema and loader wiring (sync)", () => {
 describe("post route and Astro wiring (build)", () => {
   // Astro's own image import error names the post file and the image path (spike 3, research R1).
   it("P22: Astro rejects a body image that does not exist", () =>
-    expectRejected("build", [broken("p22-body-image-missing.mdx")], "p22-body-image-missing", "./images/missing.png"));
+    expectRejected("build", [broken("p22-body-image-missing.mdx")], "p22-body-image-missing", "./images/p22-body-image-missing/missing.png"));
 
   it("P13: getCheckedPosts runs assertPostFiles", () =>
     expectRejected("build", [broken("p13-markdown-file.md")], "Post file", "p13-markdown-file.md", "rename it to .mdx"));

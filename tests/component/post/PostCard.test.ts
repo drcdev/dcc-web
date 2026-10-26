@@ -7,7 +7,7 @@ import PostCard from "../../../src/components/post/PostCard.astro";
 import { cardEdge, topicStyles } from "../../../src/components/post/topic-styles.ts";
 import { topics } from "../../../src/config/topics.ts";
 import { byName, classList, textOf } from "../html.ts";
-import sample from "../../fixtures/pages/images/sample.png";
+import sample from "../../fixtures/assets/sample.png";
 import { summary, withImage } from "./fixtures.ts";
 
 let container: AstroContainer;

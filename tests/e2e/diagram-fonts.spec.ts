@@ -29,7 +29,7 @@ type Label = {
 
 test("finds at least the published diagrams and the template starter", () => {
   expect(diagrams.length).toBeGreaterThanOrEqual(2);
-  expect(diagrams.some((d) => d.file.includes("/template/"))).toBe(true);
+  expect(diagrams.some((d) => d.file.includes("/_template/"))).toBe(true);
 });
 
 for (const { file, url } of diagrams) {
