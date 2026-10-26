@@ -1,5 +1,5 @@
 // Post summaries for the post component tests (data-model.md "PostSummary").
-import sample from "../../fixtures/pages/images/sample.png";
+import sample from "../../fixtures/assets/sample.png";
 import type { PostSummary } from "../../../src/lib/content/post-summary.ts";
 
 export function summary(slug: string, extra: Partial<PostSummary> = {}): PostSummary {

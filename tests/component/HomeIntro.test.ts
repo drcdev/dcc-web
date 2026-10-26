@@ -5,7 +5,7 @@ import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, it } from "vitest";
 import HomeIntro from "../../src/components/page/HomeIntro.astro";
 import SiteFooter from "../../src/components/SiteFooter.astro";
-import sample from "../fixtures/pages/images/sample.png";
+import sample from "../fixtures/assets/sample.png";
 import { byName, classList, focusable, tags, textOf } from "./html.ts";
 
 const intro = {

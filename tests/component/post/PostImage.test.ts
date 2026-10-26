@@ -4,7 +4,7 @@
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, it } from "vitest";
 import PostImage from "../../../src/components/post/PostImage.astro";
-import sample from "../../fixtures/pages/images/sample.png";
+import sample from "../../fixtures/assets/sample.png";
 import { byName } from "../html.ts";
 
 let container: AstroContainer;

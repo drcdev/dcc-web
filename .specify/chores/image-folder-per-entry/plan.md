@@ -207,7 +207,7 @@ only).
 **Test:** existing (`project-template.test.ts`, `tests/build/project-template.test.ts` X01/X02 in
 the content tier, `pnpm run build`). No behaviour: n/a (paths only).
 
-### W4 — Component tests use their own picture
+### [x] W4 — Component tests use their own picture
 
 **Files:** copy `tests/fixtures/pages/images/sample.png` to `tests/fixtures/assets/sample.png`
 (the original stays for W5 to move into the fixture page's folder). Repoint the imports in

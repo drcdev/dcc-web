@@ -3,7 +3,7 @@
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, it } from "vitest";
 import PostHero from "../../../src/components/post/PostHero.astro";
-import sample from "../../fixtures/pages/images/sample.png";
+import sample from "../../fixtures/assets/sample.png";
 import { byName } from "../html.ts";
 
 let container: AstroContainer;
