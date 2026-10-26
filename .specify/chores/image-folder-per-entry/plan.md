@@ -338,7 +338,7 @@ behaviour: n/a (same pictures, new paths).
   `pnpm run build`, `node scripts/build-fixture-site.ts`, and the build tests listed in W5. A
   failure there means a W1 to W6 path was missed; fix the path, never the check.
 
-### W8 — Example paths in `changed-paths.test.ts`
+### [x] W8 — Example paths in `changed-paths.test.ts`
 
 **Files:** `tests/unit/ci/changed-paths.test.ts`: the content-only image examples (lines 81 to 85)
 and the tier example (line 256) use the per-entry form with neutral names, for example
