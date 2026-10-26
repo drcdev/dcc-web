@@ -165,7 +165,7 @@ Common to every item:
 - Tests never name a real post or project (`docs/testing.md` "Real content in tests"); read real
   content through `tests/helpers/content.ts` or use neutral example names.
 
-### W1 — Shared portrait to `src/assets/`
+### [x] W1 — Shared portrait to `src/assets/`
 
 **Files:** `git mv src/content/pages/images/don-coleman.jpg src/assets/don-coleman.jpg`.
 `src/content/pages/index.mdx` line 11: `src: ../../assets/don-coleman.jpg` (relative to the file, as
