@@ -118,6 +118,16 @@ describe("page route and component wiring (build)", () => {
     expect(result.message).toContain("missing");
   });
 
+  // Second layer: only a real build shows the integration is registered and that its error reaches the output.
+  it("an image folder with no page fails the build naming the folder (#201)", async () => {
+    result = await buildFixtureSite([], {
+      mode: "build",
+      write: { "src/content/pages/images/no-such-page/x.png": new Uint8Array([1, 2, 3]) },
+    });
+    expect(result.ok, "the build should fail").toBe(false);
+    expect(result.message).toContain("src/content/pages/images/no-such-page/");
+  });
+
   it("row 7: Astro rejects a body image that does not exist", () =>
     expectRejected("build", [broken("07-missing-image-body.mdx")], "does-not-exist.png"));
 

@@ -295,7 +295,7 @@ behaviour: n/a (test asset path only).
 pass. Run the fixture e2e specs that show images if time allows; otherwise CI covers them. No
 behaviour: n/a (same pictures, new paths).
 
-### W7 — The image folder check
+### [x] W7 — The image folder check
 
 **Files:**
 
