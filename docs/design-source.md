@@ -55,9 +55,9 @@ siblings to these paths instead of new conventions.
 | `src/content.config.ts` | Every collection definition (`pages`, `posts` and `projects`) | Nothing; add a collection here |
 | `src/content/collections/` | One `<name>-rules.ts` per collection: its schema, build-time checks and limits | A new collection adds its own rules file |
 | `src/lib/content/schema-fields.ts` | Reusable Zod pieces: `imageWithAlt`, `seoFields`, `navField` | Nothing; reuse |
-| `src/content/pages/` (+ `images/`) | Page files and their images | Nothing; add a file |
-| `src/content/posts/` (+ `images/`) | One MDX file per blog post, with its images (`docs/posts.md`) | Nothing; add a file |
-| `src/content/projects/` (+ `images/`) | One MDX file per project, with its images and clips (`docs/projects.md`) | Nothing; add a file |
+| `src/content/pages/` (+ `images/<entry>/`) | Page files and their images, one folder per entry | Nothing; add a file |
+| `src/content/posts/` (+ `images/<entry>/`) | One MDX file per blog post, with its images, one folder per entry (`docs/posts.md`) | Nothing; add a file |
+| `src/content/projects/` (+ `images/<entry>/`) | One MDX file per project, with its images and clips, one folder per entry (`docs/projects.md`) | Nothing; add a file |
 | `src/components/project/` (`ProjectPart`, `OptionsTable`, `PartPicture`, `BuildLinks`, `ProjectInvitation`) | The four-part story: `src/lib/markdown/project-parts.ts` wraps each `##` part and the Options table, and the route hands `ProjectPart` and `OptionsTable` to `<Content components>` | Parts are fixed (`src/lib/content/parts.ts`); the body is plain Markdown |
 | `src/pages/projects/` | The Projects index and the one story route `[slug].astro` | Nothing |
 | `src/components/Pill.astro` and `src/components/post/TopicPill.astro` | Two pills on purpose, not one: `Pill` is the bordered rectangular text label the portfolio uses for a project's status and themes (`project/StatusPill.astro`, `project/ThemePills.astro`), with a decorative tone (the Retired status alone uses the filled mauve tone, the other statuses stay bordered) and an optional link; `TopicPill` is the blog's rounded, topic-coloured link to a topic page (`post/topic-styles.ts`), used on post cards, the post header and the topic pill row | Reuse the one that matches: a label takes `Pill`, a topic link takes `TopicPill` |

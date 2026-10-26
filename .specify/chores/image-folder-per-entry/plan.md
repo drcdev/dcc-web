@@ -351,7 +351,7 @@ and the tier example (line 256) use the per-entry form with neutral names, for e
 **Test:** existing (same assertions on renamed example paths). No behaviour: n/a (examples only;
 the pattern is unchanged).
 
-### W9 — Docs and the `/content` skill
+### [x] W9 — Docs and the `/content` skill
 
 **Files:**
 

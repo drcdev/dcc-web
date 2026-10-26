@@ -52,11 +52,7 @@ component name or prop you are unsure of is listed in `docs/pages.md` "Component
 
 ## Images
 
-State today. `posts/images/` and `pages/images/` are flat folders; `projects/images/<slug>/`
-holds one folder per project. A path in front matter starts with `./images/` and is relative to
-the file. A missing file fails the build with the file named (`lib/content/images.ts`), and an image in front matter needs alt text. Diagrams with text follow `docs/projects.md` "Text in a diagram"
-(`pnpm run fonts:diagrams`). #201 will give all three one layout, so check the doc for the
-collection you are editing before adding a file.
+One folder per entry: `src/content/<collection>/images/<entry>/`, named after the entry. That is the post or project file name without `.mdx`, the page id for a page (`index` for the home page, the nested address such as `privacy/tempo` for a nested page). A path starts `./images/<entry>/` and is relative to the file. To retire an entry, delete its file and its folder. The build fails naming a folder with no entry, an image directly in `images/`, and an image no entry uses; drafts count as entries (`lib/content/images.ts`). A missing file also fails the build with the file named, and an image in front matter needs alt text. The shared portrait is `src/assets/don-coleman.jpg`. Diagrams with text follow `docs/projects.md` "Text in a diagram" (`pnpm run fonts:diagrams`).
 
 ## Where the rules live
 
