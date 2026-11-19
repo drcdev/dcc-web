@@ -497,7 +497,7 @@ Common rules for every item:
 - **Risk:** medium. Transitive re-resolution can pull in a shiki, unifont or lightningcss patch
   that changes output. The final HTML diff catches it. Revert the specific `update` if it does.
 
-### W8. Playwright 1.65 and axe 4.14, then macOS and Linux baselines
+### [x] W8. Playwright 1.65 and axe 4.14, then macOS and Linux baselines
 
 Read `.claude/skills/_shared/visual-baselines.md` first. Its rules apply as written.
 
