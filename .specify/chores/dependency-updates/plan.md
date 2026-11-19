@@ -423,7 +423,7 @@ Common rules for every item:
   API, hold the worker at vitest 4.1.x (latest 4.1 patch, ≥ 4.1.12 for the @vitest/mocker
   advisory) with plugin 1.8.x, and record why.
 
-### W5. secretlint 14; remove the built-in preset package
+### [x] W5. secretlint 14; remove the built-in preset package
 
 - **Change:** `secretlint` 14.0.1, and `corepack pnpm remove @secretlint/secretlint-rule-preset-recommend`.
   `.secretlintrc.json` and `.secretlintignore` are not edited.
