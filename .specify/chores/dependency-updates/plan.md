@@ -328,7 +328,7 @@ Common rules for every item:
 - Check `lsof -i :4321` before any e2e run.
 - Commit after each item so a fallback is a clean revert.
 
-### W1. GitHub Actions bumps (absorbs #211, adds pnpm/action-setup)
+### [x] W1. GitHub Actions bumps (absorbs #211, adds pnpm/action-setup)
 
 - **Files:** `.github/workflows/ci.yml`.
 - **Change:** move setup-node to `949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0` (5
