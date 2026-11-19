@@ -468,7 +468,7 @@ Common rules for every item:
 - **Risk:** medium to high. Sätteri is a 0.x renderer, and a minor bump can change smart
   punctuation, heading ids, footnotes or code-block markup. The gate is strict by design.
 
-### W7. Transitive refresh, audit, @emnapi and the frozen-install proof
+### [x] W7. Transitive refresh, audit, @emnapi and the frozen-install proof
 
 - **Change:** re-resolve transitive dependencies within their declared ranges, to pick up the
   audit fixes.
