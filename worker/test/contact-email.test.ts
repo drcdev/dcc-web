@@ -120,15 +120,15 @@ describe("headerText and the subject", () => {
     for (let code = 0x7f; code <= 0x9f; code += 1) {
       expect(headerText(`a${String.fromCharCode(code)}b`), code.toString(16)).toBe("a b");
     }
-    expect(headerText("a b")).toBe("a b");
-    expect(headerText("a b")).toBe("a b");
-    expect(headerText("  a     b  ")).toBe("a b");
+    expect(headerText("a\u2028b")).toBe("a b");
+    expect(headerText("a\u2029b")).toBe("a b");
+    expect(headerText("  a \u2028\u2029  b  ")).toBe("a b");
   });
 
   it("builds the subject examples from the contract", () => {
     expect(build().subject).toBe("Contact form: Ada Lovelace");
     expect(build({ name: "Ada\u0085Bcc: x" }).subject).toBe("Contact form: Ada Bcc: x");
-    expect(build({ name: "Ada Bcc: x", project: "Flux  X" }).subject).toBe(
+    expect(build({ name: "Ada\u2028Bcc: x", project: "Flux\u2029 X" }).subject).toBe(
       "Contact form: Ada Bcc: x (about Flux X)",
     );
     expect(build({ name: "Ada", project: "Flux" }).subject).toBe("Contact form: Ada (about Flux)");
