@@ -377,7 +377,7 @@ Common rules for every item:
 - **Risk:** medium. Astro minor releases can change rendered output, inlined CSS or the Fonts
   API, and Tailwind patches can change generated CSS. The HTML diff catches these.
 
-### W3. Lint, type and test tooling (TypeScript held)
+### [x] W3. Lint, type and test tooling (TypeScript held)
 
 - **Change:** `eslint` 10.15.0, `typescript-eslint` 8.73.0, root `vitest` 5.1.1,
   `@types/node` 24.19.2. `typescript` stays 6.0.3. Record the TS 7 findings above in the report.
