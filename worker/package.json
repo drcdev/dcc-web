@@ -7,7 +7,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "devDependencies": {
-    "@cloudflare/vitest-plugin": "1.4.0",
-    "vitest": "4.1.11"
+    "@cloudflare/vitest-plugin": "1.8.4",
+    "vitest": "4.1.12"
   }
 }

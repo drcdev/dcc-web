@@ -389,7 +389,7 @@ Common rules for every item:
 - **Layer:** unit (tooling); no behaviour.
 - **Risk:** low. Minor versions within the same majors, and the root is already on Vitest 5.
 
-### W4. Wrangler, Cloudflare SDK, and worker Vitest 5 with the plugin
+### [x] W4. Wrangler, Cloudflare SDK, and worker Vitest 5 with the plugin
 
 - **Change:**
   - Root: `wrangler` 4.165.0 and `cloudflare` 7.3.0.
@@ -413,7 +413,12 @@ Common rules for every item:
 - **Layer:** integration (Workers runtime tests) and unit (config).
 - **Risk:** medium. This is a major Vitest move in the worker. Known Vitest 5 plugin fixes are
   in 1.6.1 (vi.mock factories under 5.1) and 1.8.0 (CJS deps in inline projects), so target
-  ≥ 1.8.4. If the worker suite fails in a way that needs a test-code change beyond a renamed
+  ≥ 1.8.4. **Outcome:** wrangler 4.165.0 and plugin 1.8.5 were under 24 h old, so the pair
+  4.164.0 + 1.8.4 was used. Vitest 5.1.1 failed `worker/test/contact-email.test.ts` (literal
+  U+2028/U+2029 characters in the test source break the Vitest 5 workerd transform with
+  "SyntaxError: Invalid or unexpected token"); escaping them fixes it, but that is a test edit,
+  so the worker is held at vitest 4.1.12 with plugin 1.8.4. Follow-up: escape those characters
+  in a test change, then move the worker to Vitest 5. If the worker suite fails in a way that needs a test-code change beyond a renamed
   API, hold the worker at vitest 4.1.x (latest 4.1 patch, ≥ 4.1.12 for the @vitest/mocker
   advisory) with plugin 1.8.x, and record why.
 
