@@ -343,7 +343,7 @@ Common rules for every item:
 - **Risk:** low. Patch and minor releases, the same SHAs Dependabot proposed, and CI exercises
   them.
 
-### W2. Baseline dist snapshot, then the Astro stack on the Sätteri-0.10 line
+### [x] W2. Baseline dist snapshot, then the Astro stack on the Sätteri-0.10 line
 
 - **Step 1, capture before (current `main` versions, before touching any manifest):**
   1. `corepack pnpm install --frozen-lockfile`.
