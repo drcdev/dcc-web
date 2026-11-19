@@ -445,7 +445,7 @@ Common rules for every item:
 - **Risk:** low to medium. The migration guide says "most users can upgrade without changing
   anything", and the matcher change is the one thing to watch.
 
-### W6. Sätteri 0.11 with Astro 7.4.13 — HTML diff gate
+### [x] W6. Sätteri 0.11 with Astro 7.4.13 — HTML diff gate
 
 - **Change:** `astro` 7.4.13 (or 7.4.12), `@astrojs/mdx` 8.1.6, `@astrojs/markdown-satteri`
   0.4.10, `satteri` 0.11.7. Confirm `pnpm why satteri` shows only 0.11.7. The custom

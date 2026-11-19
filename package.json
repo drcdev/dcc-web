@@ -37,13 +37,13 @@
     "setup:check": "node scripts/setup-check/cli.ts"
   },
   "dependencies": {
-    "@astrojs/markdown-satteri": "0.4.6",
-    "@astrojs/mdx": "8.1.2",
+    "@astrojs/markdown-satteri": "0.4.10",
+    "@astrojs/mdx": "8.1.6",
     "@astrojs/rss": "4.0.19",
     "@astrojs/sitemap": "3.7.5",
     "@tailwindcss/vite": "4.3.5",
-    "astro": "7.4.6",
-    "satteri": "0.10.5",
+    "astro": "7.4.12",
+    "satteri": "0.11.7",
     "sharp": "0.35.5",
     "tailwindcss": "4.3.5"
   },
